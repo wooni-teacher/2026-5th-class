@@ -282,6 +282,16 @@
   .btn.danger { background: #E2584A; color: #fff; }
   .modal#confirmBox { z-index: 30; width: min(460px, 92vw); }
   .cf-body { margin: 0 0 12px; font-size: 18px; line-height: 1.5; text-align: center; white-space: pre-line; }
+  #tpSetup code, #tpSetup textarea, .uid-chars { -webkit-user-select: text; user-select: text; }
+  .uid-box { margin: 10px 0 4px; padding: 10px 12px; background: #fff; border: 2px dashed #C9BBA8; border-radius: 12px; }
+  .uid-head { margin: 0 0 6px; font-size: 15px; opacity: .8; }
+  .uid-chars { display: flex; flex-wrap: wrap; gap: 3px; font-family: Consolas, 'Courier New', monospace; font-size: 24px; font-variant-numeric: slashed-zero; }
+  .uid-chars span { min-width: 22px; text-align: center; padding: 2px 1px; border-bottom: 3px solid #E6DED2; }
+  .uid-chars .d, .uid-legend .d { color: #1F5FD0; font-weight: 700; }
+  .uid-chars .u, .uid-legend .u { color: #2B2420; }
+  .uid-chars .l, .uid-legend .l { color: #2E8A3E; }
+  .uid-legend { margin: 6px 0 8px; font-size: 14px; }
+  #tpUidText { width: 100%; margin-top: 8px; font-family: Consolas, 'Courier New', monospace; font-size: 16px; padding: 6px 8px; border: 2px solid var(--ink); border-radius: 8px; resize: none; }
   #tpSetup code { font-family: inherit; background: #fff; border: 2px solid var(--ink); border-radius: 6px; padding: 0 4px; word-break: break-all; }
 
   /* 상호작용 버튼 */
@@ -862,6 +872,13 @@
   <div id="tpSetup" class="hidden">
     <p style="font-size:18px;line-height:1.5">이 기기는 아직 선생님으로 등록되지 않았어요.<br>
     Firebase 콘솔 → Realtime Database에서<br><code id="tpPath"></code><br>경로에 <code>true</code>를 넣고 아래 버튼을 눌러 주세요.</p>
+    <div class="uid-box">
+      <p class="uid-head">이 기기 번호 (teachers 안쪽 키 칸에 넣어요)</p>
+      <div id="tpUid" class="uid-chars" aria-live="polite"></div>
+      <p class="uid-legend"><span class="d">파란 글자 = 숫자</span> · <span class="u">검은 글자 = 영어 대문자</span> · <span class="l">초록 글자 = 영어 소문자</span></p>
+      <div class="row-center wrap"><button class="btn" id="tpUidCopy" style="background:#fff">📋 기기 번호 복사</button><button class="btn" id="tpPathCopy" style="background:#fff">📋 전체 경로 복사</button></div>
+      <textarea id="tpUidText" readonly rows="1" aria-label="기기 번호 (길게 눌러 복사할 수도 있어요)"></textarea>
+    </div>
     <div class="row-center"><button class="btn" id="tpRecheck" style="background:var(--leaf);color:#fff">✅ 등록했어요, 다시 확인</button></div>
   </div>
   <div class="row-center" style="margin-top:14px"><button class="btn" id="tpClose" style="background:#E6DED2">관리 화면 닫기</button></div>
@@ -3856,11 +3873,25 @@ async function contributeMission() {
   } finally { missionBusy = false; fillMissionPanel(); }
 }
 
+// 기기 번호를 헷갈리지 않게: 숫자·대문자·소문자를 색으로 나누고, 0은 빗금 0으로 (O와 구분)
+function renderUid(uid) {
+  const box = $('tpUid'); box.textContent = '';
+  [...uid].forEach(ch => { const sp = document.createElement('span'); sp.className = /[0-9]/.test(ch) ? 'd' : /[A-Z]/.test(ch) ? 'u' : 'l'; sp.textContent = ch; sp.title = /[0-9]/.test(ch) ? `숫자 ${ch}` : /[A-Z]/.test(ch) ? `대문자 ${ch}` : `소문자 ${ch}`; box.append(sp); });
+  box.setAttribute('aria-label', [...uid].map(ch => /[0-9]/.test(ch) ? `숫자 ${ch}` : /[A-Z]/.test(ch) ? `대문자 ${ch}` : `소문자 ${ch}`).join(', '));
+  $('tpUidText').value = uid;
+}
+async function copyText(text, what) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch { /* 아래 방법으로 */ }
+  if (!ok) { const ta = $('tpUidText'), keep = ta.value; ta.value = text; ta.select(); try { ok = document.execCommand('copy'); } catch { ok = false; } ta.value = keep; }
+  toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
+}
 function fillTeacherPanel() {
   fillPlotAdmin(); fillHvAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
+  renderUid(backend?.uid || '');
   $('tpNote').textContent = backend?.mode === 'firebase'
     ? '학생 화면에는 보이지 않아요. 바꾼 내용은 같은 반 코드로 들어온 모두에게 바로 반영돼요.'
     : '학생 화면에는 보이지 않아요. 지금은 이 브라우저에만 저장돼요 (다른 기기와 공유 안 됨).';
@@ -8468,6 +8499,11 @@ function initPin() {
     else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); pin.next = null; closePin(); }
   }, true);
 }
+function initUidCopy() {
+  $('tpUidCopy').onclick = () => copyText(backend?.uid || '', '기기 번호');
+  $('tpPathCopy').onclick = () => copyText(`${DB_ROOT}/teachers/${backend?.uid}`, '전체 경로');
+  $('tpUidText').onfocus = (e) => e.target.select();
+}
 function initRoleUI() {
   $('roleBtn').onclick = () => { $('tip').classList.add('hidden'); if (isTeacher) switchRole(false); else askPin(() => switchRole(true)); };
   $('tpRecheck').onclick = () => switchRole(true);
@@ -9124,7 +9160,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initKiteUI(); initHvAdmin(); initMuralUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
