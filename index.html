@@ -1623,7 +1623,8 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       return { ok: false };
     },
     async paintMural(p, c) { // 칸마다 한 번만 (규칙이 막아요)
-      try { await D.set(R(`state/mural/${p}/${c}`), true); return { ok: true }; } catch (e) { return { ok: false }; }
+      try { await D.set(R(`state/mural/${p}/${c}`), true); return { ok: true }; }
+      catch (e) { console.warn('벽화 칠하기 실패', e); return { ok: false, reason: cache.mural?.[p]?.[c] ? 'taken' : 'denied' }; }
     },
     async hvBuild(id) { // 지은 곳은 한 번만, 재료가 모자라면 규칙이 막아요
       try { await D.set(R(`state/hv/built/${id}`), true); return { ok: true }; }
@@ -9132,13 +9133,22 @@ async function paintMural(cell) {
   mural.cur = cell;
   if (muralPainted(p)[cell]) { fillMural(); return; }
   const n = muralCell(p, cell);
-  if (n !== mural.sel) { $('muralFeedback').textContent = `🤔 이 칸은 ${n}번 ${josa(MURAL_COLORS[n].name, '이에요', '예요')}`; playSfx('wrong'); fillMural(); return; }
+  if (n !== mural.sel) { // 다른 번호 칸: 그 칸의 색으로 바꿔 주고, 한 번 더 누르면 칠해져요
+    mural.sel = n;
+    const msg = `🎨 이 칸은 ${n}번 ${josa(MURAL_COLORS[n].name, '이에요', '예요')}. ${josa(MURAL_COLORS[n].name, '을', '를')} 골랐어요. 한 번 더 누르면 칠해져요!`;
+    $('muralFeedback').textContent = msg; toast(msg, 'info'); playSfx('wrong'); fillMural(); return;
+  }
   if (performance.now() - mural.cool < 250) return;
   mural.cool = performance.now();
   const res = await backend.paintMural(p, cell);
   if (res.ok) { playSfx('pick'); $('muralFeedback').textContent = `🖌️ ${n}번 ${josa(MURAL_COLORS[n].name, '을', '를')} 칠했어요!`; }
+  else if (res.reason === 'denied') { // 서버가 막았어요 (대개 데이터베이스 규칙에 벽화 부분이 없을 때)
+    const msg = isTeacher ? '⚠️ 칠하기가 저장되지 않았어요. Firebase 규칙에 database.rules.json의 mural 부분이 게시됐는지 확인해 주세요' : '⚠️ 칠하기가 저장되지 않았어요. 선생님께 알려 주세요';
+    $('muralFeedback').textContent = msg; toast(msg, 'warn');
+  }
   else if (res.reason !== 'offline') $('muralFeedback').textContent = '앗, 친구가 먼저 칠했어요!';
   fillMural();
+  $('muralFeedback').scrollIntoView?.({ block: 'nearest' });
 }
 function nextMuralCell() { // 고른 색의 다음 빈 칸으로
   const p = muralNow(); if (p < 0) return;
@@ -9146,7 +9156,11 @@ function nextMuralCell() { // 고른 색의 다음 빈 칸으로
 }
 function initMuralUI() {
   const cv = $('muralCanvas');
-  cv.addEventListener('pointerdown', e => { const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * MW), y = Math.floor((e.clientY - r.top) / r.height * MH); paintMural(y * MW + x); });
+  cv.addEventListener('pointerdown', e => { // 테두리 두께를 빼고 칸을 계산해요
+    const r = cv.getBoundingClientRect(), w = cv.clientWidth || r.width, h = cv.clientHeight || r.height;
+    const x = Math.floor((e.clientX - r.left - cv.clientLeft) / w * MW), y = Math.floor((e.clientY - r.top - cv.clientTop) / h * MH);
+    if (x >= 0 && x < MW && y >= 0 && y < MH) paintMural(y * MW + x);
+  });
   cv.addEventListener('keydown', e => {
     const k = e.key; let c = mural.cur;
     if (k === 'ArrowLeft') c = Math.max(0, c - 1); else if (k === 'ArrowRight') c = Math.min(MW * MH - 1, c + 1);
