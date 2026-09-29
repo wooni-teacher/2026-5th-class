@@ -409,6 +409,12 @@
   .map-legend { margin: 10px 0; font-size: 15px; }
   #meetBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(112px + var(--safe-bottom)); display: flex; gap: 6px; padding: 6px; flex-wrap: wrap; justify-content: center; max-width: 94vw; }
   #ctfBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 16px; text-align: center; min-width: 240px; }
+  body.in-ctf #decorBtn, body.in-ctf #decorMenu { display: none !important; }
+  body.in-ctf #toast { top: calc(222px + var(--safe-top)); }
+  #ctfCatch { position: fixed; left: 50%; margin-left: -52px; bottom: calc(24px + var(--safe-bottom)); width: 104px; height: 104px; border-radius: 50%; padding: 0; font-size: 20px; background: #E8E2D6; opacity: .65; touch-action: none; }
+  #ctfCatch.ready { background: var(--sun); opacity: 1; animation: ctfPulse .8s ease-in-out infinite alternate; }
+  @keyframes ctfPulse { to { transform: scale(1.08); } }
+  body.touch #ctfCatch { left: auto; margin-left: 0; right: calc(140px + env(safe-area-inset-right, 0px)); bottom: calc(36px + var(--safe-bottom)); }
   #ctfScore { font-size: 30px; line-height: 1.1; } #ctfScore b { font-weight: 400; }
   #ctfInfo { font-size: 16px; } #ctfMine { font-size: 14px; opacity: .8; }
   #meetBar .btn { font-size: 16px; padding: 7px 10px; background: #fff; white-space: nowrap; }
@@ -588,6 +594,7 @@
   <div id="guideText"></div>
 </div>
 <div id="freezeBar" class="hidden" role="alert"><div class="sticker"><b>✋ 잠깐 멈춤!</b><span>선생님 이야기를 들어요</span></div></div>
+<button id="ctfCatch" class="btn hidden" aria-label="잡기">🖐️ 잡기</button>
 <div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
   <button class="btn" id="mbHand" aria-pressed="false">🙋 손들기</button><button class="btn" id="mbGood">👍 좋아요</button><button class="btn" id="mbThink">🤔 다른 생각</button><button class="btn" id="mbAsk">❓ 궁금해요</button><button class="btn hidden" id="mbVote" style="background:var(--sun)">🗳️ 목표 투표</button><button class="btn hidden" id="mbLike" style="background:var(--sun)">💡 제안 공감</button><button class="btn" id="mbScript">📜 대본</button><button class="btn" id="mbView" aria-pressed="false">📋 칠판 보기</button>
@@ -824,9 +831,10 @@
 
     <h3>🚩 깃발뺏기 팀전</h3>
     <p class="hint" id="tpCtfNow"></p>
-    <p class="hint">시작하면 접속한 학생이 🔴 빨강 · 🔵 파랑 두 팀으로 반반 나뉘어 운동장으로 이동해요. 상대 깃발을 들고 우리 진영 동그라미로 돌아오면 1점, 상대 진영에서 상대에게 닿으면 잡혀서 우리 진영으로 돌아가요. 팀 점수만 보이고, 끝내면 점수도 지워져요.</p>
+    <p class="hint">시작하면 접속한 학생이 🔴 빨강 · 🔵 파랑 두 팀으로 반반 나뉘어 운동장으로 이동해요. 상대 깃발을 들고 우리 진영 동그라미로 돌아오면 1점이에요. 우리 진영에 들어온 상대가 가까이 오면 🖐️ 잡기(E) 버튼으로 잡아요. 잡히면 상대 진영 구석 🔒 감옥으로 가고, 같은 팀 친구가 감옥 가까이 오면 풀려나요(30초 지나면 저절로). 팀 점수만 보이고, 끝내면 점수도 지워져요.</p>
     <div class="row-center wrap">
       <label class="sr-only" for="tpCtfMin">경기 시간</label><select id="tpCtfMin" class="tinput" style="width:auto"><option value="3">3분</option><option value="5" selected>5분</option><option value="7">7분</option></select>
+      <label class="sr-only" for="tpCtfMode">잡기 규칙</label><select id="tpCtfMode" class="tinput" style="width:auto"><option value="0" selected>우리 진영에 들어온 상대 모두 잡기</option><option value="1">깃발 든 사람만 잡기</option></select>
       <label class="sr-only" for="tpCtfGoal">목표 점수</label><select id="tpCtfGoal" class="tinput" style="width:auto"><option value="3" selected>먼저 3점</option><option value="5">먼저 5점</option></select>
       <button class="btn" id="tpCtfStart" style="background:var(--leaf);color:#fff">🚩 팀 나누고 시작</button>
     </div>
@@ -1459,7 +1467,7 @@ function normalize(v) {
     meetLikes: Object.fromEntries(Object.entries(toObj(v.meetLikes)).map(([r, ps]) => [r, Object.fromEntries(Object.entries(toObj(ps)).map(([p, u]) => [p, toObj(u)]))])),
     meetLog: Object.fromEntries(Object.entries(toObj(v.meetLog)).map(([k, e]) => [k, { ...e, mirror: Object.fromEntries(Object.entries(toObj(e?.mirror)).map(([c, x]) => [c, toObj(x)])), goals: toObj(e?.goals), vc: toObj(e?.vc), props: toObj(e?.props) }])),
     meetCfg: { ...toObj(v.meetCfg), promise: toObj(v.meetCfg?.promise) },
-    ctf: v.ctf ? { ...v.ctf, team: v.ctf.team || {}, flag: toObj(v.ctf.flag), score: toObj(v.ctf.score) } : null,
+    ctf: v.ctf ? { ...v.ctf, team: v.ctf.team || {}, flag: toObj(v.ctf.flag), score: toObj(v.ctf.score), jail: v.ctf.jail || {} } : null,
     hv: { picks: v.hv?.picks || 0, crates: toObj(v.hv?.crates), built: v.hv?.built || {}, kite: v.hv?.kite || {} },
     rvote: v.rvote ? { ...v.rvote, cands: v.rvote.cands || {}, votes: v.rvote.votes || {} } : null,
   };
@@ -1547,6 +1555,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async ctfTake(e) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h) return { ok: false }; c.flag ||= {}; c.flag[e] = { h: 'me' }; emit(); return { ok: true }; },
     async ctfDrop(e) { if (st.ctf?.flag?.[e]?.h === 'me') { delete st.ctf.flag[e]; emit(); } return { ok: true }; },
     async ctfScore(e, t) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h !== 'me') return { ok: false }; delete c.flag[e]; c.score ||= {}; c.score[t] = (c.score[t] || 0) + 1; emit(); return { ok: true }; },
+    async ctfCatch(u) { const c = st.ctf; if (!c?.on || c.jail?.[u] || !c.team?.[u] || c.team[u] === c.team.me) return { ok: false }; c.jail ||= {}; c.jail[u] = { t: Date.now() }; emit(); return { ok: true }; },
+    async ctfFree(us) { const c = st.ctf; if (!c?.jail) return { ok: false }; for (const u of us) delete c.jail[u]; emit(); return { ok: true }; },
     async ctfJoin(t) { if (!st.ctf) return { ok: false }; st.ctf.team ||= {}; if (!st.ctf.team.me) st.ctf.team.me = t; emit(); return { ok: true }; },
     async meetLike(r, p) { const m = st.meeting; if (!m || m.step !== 3 || m.r !== r || !m.props?.[p]) return { ok: false, reason: 'closed' }; st.meetLikes ||= {}; st.meetLikes[r] ||= {}; st.meetLikes[r][p] ||= {}; if (st.meetLikes[r][p].me) return { ok: false, reason: 'done' }; st.meetLikes[r][p].me = true; emit(); return { ok: true }; },
     async paintMural(p, c) { st.mural[p] ||= {}; if (st.mural[p][c]) return { ok: false }; st.mural[p][c] = true; emit(); return { ok: true }; },
@@ -1758,6 +1768,8 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async ctfDrop(e) { try { await D.set(R(`state/ctf/flag/${e}`), null); return { ok: true }; } catch (err) { return { ok: false }; } },
     async ctfScore(e, t, n) { try { await D.update(R('state/ctf'), { [`flag/${e}`]: null, [`score/${t}`]: n }); return { ok: true }; } catch (err) { return { ok: false }; } },
     async ctfJoin(t) { try { await D.set(R(`state/ctf/team/${uid}`), t); return { ok: true }; } catch (err) { return { ok: false }; } },
+    async ctfCatch(u) { try { await D.set(R(`state/ctf/jail/${u}`), { t: D.serverTimestamp() }); return { ok: true }; } catch (err) { return { ok: false }; } }, // 이미 갇혔으면 규칙이 막아요
+    async ctfFree(us) { try { await D.update(R('state/ctf/jail'), Object.fromEntries(us.map(u => [u, null]))); return { ok: true }; } catch (err) { return { ok: false }; } },
     async meetLike(r, p) { // 제안마다 한 번만 공감
       try { await D.set(R(`state/meetLikes/${r}/${p}/${uid}`), true); return { ok: true }; }
       catch (e) { return { ok: false, reason: cache.meetLikes?.[r]?.[p]?.[uid] ? 'done' : 'denied' }; }
@@ -1974,7 +1986,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -10106,15 +10118,22 @@ function updateClassroom(dt) {
 
 /* =====================================================================
    48. 🚩 깃발뺏기 팀전 — 선생님이 시작하면 접속한 학생이 🔴 빨강 · 🔵 파랑 두 팀으로 나뉘어 운동장에서 겨뤄요
-   · 상대 깃발을 들고 우리 진영 동그라미로 돌아오면 1점. 상대 진영에서 상대 팀에게 닿으면 잡혀서 우리 진영으로 (깃발은 제자리로)
+   · 상대 깃발을 들고 우리 진영 동그라미로 돌아오면 1점
+   · 🖐️ 잡기: 우리 진영에 들어온 상대가 가까이(2.2m) 있으면 잡기 버튼(E)이 켜지고, 잡는 사람이 눌러야 잡혀요 (잡는 사람 화면 기준, 2초 쉬기)
+     선생님이 '깃발 든 사람만 잡기'를 고르면 깃발을 든 사람만 잡을 수 있어요 (ctf.mode 1)
+   · 🔒 감옥: 잡히면 상대 진영 구석 감옥으로 (깃발은 제자리로). 같은 팀 친구가 감옥 가까이 오면 모두 풀려나 우리 진영으로, 30초가 지나면 저절로 풀려요
    · 팀 점수만 보여요. 누가 깃발을 가져왔는지는 남기지 않고, 경기를 끝내면 점수도 지워요 (경제 보상 없음)
-   · 저장: state/ctf { on, r 회차, at 시작 시각, end 끝 시각, goal 목표 점수, team {기기: 1|2}, flag {1|2: {h: 든 기기}}, score {1, 2}, win }
+   · 저장: state/ctf { on, r 회차, at 시작 시각, end 끝 시각, goal 목표 점수, mode 0|1, team {기기: 1|2}, flag {1|2: {h: 든 기기}}, jail {기기: {t 잡힌 시각}}, score {1, 2}, win }
    ===================================================================== */
 const ARENA = { x: 650, z: 80, w: 40, d: 64 };
 const CTF_T = { 1: { name: '빨강', icon: '🔴', col: 0xE2584A, css: '#E2584A', base: [650, 53], dir: 0 }, 2: { name: '파랑', icon: '🔵', col: 0x3E6AC8, css: '#3E6AC8', base: [650, 107], dir: Math.PI } };
+const JAIL = { 1: [ARENA.x + 14, ARENA.z + 20], 2: [ARENA.x - 14, ARENA.z - 20] }; // 1 = 빨강 팀이 갇히는 곳 (파랑 진영 구석), 2 = 파랑 팀이 갇히는 곳
+const JAIL_R = 3.2, JAIL_FREE = 30, CATCH_R = 2.2;
 const inArena = (x, z) => Math.abs(x - ARENA.x) <= ARENA.w / 2 - 0.8 && Math.abs(z - ARENA.z) <= ARENA.d / 2 - 0.8;
 const arenaRegion = () => joined && player.pos.x > 600 && player.pos.z > 30;
-const ctf = { group: null, flags: {}, immune: 0, lastR: '', told: '', hudKey: '', ended: '', busy: false, count: 0 };
+const ctf = { group: null, flags: {}, immune: 0, lastR: '', told: '', hudKey: '', ended: '', busy: false, count: 0, cool: 0, target: null, wasJailed: false };
+const isJailed = (u) => !!S.ctf?.jail?.[u];
+const jailLeft = (u) => { const j = S.ctf?.jail?.[u]; return j ? Math.max(0, Math.ceil(JAIL_FREE - (backend.now() - j.t) / 1000)) : 0; };
 const ctfOn = () => !!S.ctf?.on;
 const myTeam = () => S.ctf?.team?.[backend?.uid] || 0;
 const teamOfUid = (u) => S.ctf?.team?.[u] || 0;
@@ -10150,6 +10169,16 @@ function buildArena() {
     const k = Math.abs(dx * 3 + dz) % 2;
     if (dz === 3 || dz === -3) { box(g, 2.4, 1.3, 1.6, 0xE8C66A, X + dx, 0.75, Z + dz * (dx === -14 || dx === 14 ? 1 : 1)); continue; }
     cyl(g, 0.9, 1.4, k ? 0xE8C66A : 0xDDB85A, X + dx, 0.8, Z + dz, { rz: Math.PI / 2 });
+  }
+  for (const t of [1, 2]) { // 감옥 (기둥 울타리 — 갇힌 친구는 밖으로 못 나가요)
+    const [jx, jz] = JAIL[t], H = JAIL_R;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(H * 2, H * 2), new THREE.MeshBasicMaterial({ color: 0x8C95A3, transparent: true, opacity: 0.45, depthWrite: false }));
+    floor.rotation.x = -Math.PI / 2; floor.position.set(jx, 0.13, jz); g.add(floor);
+    for (let k = -H; k <= H + 0.01; k += H / 3) for (const [x, z] of [[jx + k, jz - H], [jx + k, jz + H], [jx - H, jz + k], [jx + H, jz + k]]) cyl(g, 0.07, 1.6, 0x5A6270, x, 0.9, z, o);
+    for (const [w, d, x, z] of [[H * 2, 0.12, jx, jz - H], [H * 2, 0.12, jx, jz + H], [0.12, H * 2, jx - H, jz], [0.12, H * 2, jx + H, jz]]) box(g, w, 0.12, d, 0x5A6270, x, 1.7, z, o);
+    makeLabel(g, [`🔒 ${CTF_T[t].icon} ${CTF_T[t].name} 팀 감옥`], 0.7, jx, 2.6, jz, { bg: '#FFFFFF', fg: '#3B2F2A', font: 44, pad: 8 });
+    const ring = new THREE.Mesh(new THREE.RingGeometry(JAIL_R + 0.9, JAIL_R + 1.1, 40), new THREE.MeshBasicMaterial({ color: CTF_T[t].col, transparent: true, opacity: 0.5, depthWrite: false }));
+    ring.rotation.x = -Math.PI / 2; ring.position.set(jx, 0.14, jz); g.add(ring); // 구출 범위 (이 선 안으로 오면 풀려나요)
   }
   registerSolids(g, 'arena');
   g.visible = false;
@@ -10189,7 +10218,7 @@ function ctfSpawn() { // 우리 진영 동그라미 둘레의 내 자리
 function syncCtf(prev, first) {
   const c = S.ctf, p = prev.ctf;
   if (c && c.r !== ctf.lastR) { // 새 경기
-    ctf.lastR = c.r; ctf.ended = ''; ctf.immune = 0;
+    ctf.lastR = c.r; ctf.ended = ''; ctf.immune = 0; ctf.wasJailed = false; ctf.cool = 0;
     if (!first || arenaRegion()) {
       if (!isTeacher && !myTeam() && c.on) { // 늦게 들어온 친구: 사람이 적은 팀으로
         const n1 = Object.values(c.team || {}).filter(v => v === 1).length, n2 = Object.values(c.team || {}).filter(v => v === 2).length;
@@ -10207,6 +10236,12 @@ function syncCtf(prev, first) {
       const h = c.flag?.[t]?.h, ph = p.flag?.[t]?.h;
       if (h && h !== ph && arenaRegion()) { const mine = h === backend.uid, ours = teamOfUid(h) === myTeam(); toast(mine ? `🚩 ${CTF_T[t].name} 깃발을 들었어요! 우리 진영 동그라미로 달려요` : ours ? `🚩 우리 팀이 ${CTF_T[t].name} 깃발을 가져가고 있어요!` : `⚠️ 우리 ${CTF_T[t].name} 깃발을 빼앗겼어요! 잡으러 가요`, mine ? 'success' : 'info'); }
     }
+    const newJ = Object.keys(c.jail || {}).filter(u => !p.jail?.[u] && u !== backend.uid), freed = Object.keys(p.jail || {}).filter(u => !c.jail?.[u] && u !== backend.uid);
+    if (arenaRegion() && myTeam()) {
+      const mt = myTeam();
+      if (newJ.some(u => teamOfUid(u) === mt)) toast('🔒 우리 팀 친구가 잡혀서 감옥에 갔어요! 구하러 가요', 'info');
+      if (freed.length && freed.some(u => teamOfUid(u) === mt) && !isJailed(backend.uid)) toast('🔓 우리 팀 친구들이 풀려났어요!', 'success');
+    }
     for (const t of [1, 2]) if ((c.score?.[t] || 0) > (p.score?.[t] || 0) && arenaRegion()) {
       playSfx('fanfare'); burst(new V3(CTF_T[t].base[0], 3, CTF_T[t].base[1]), [CTF_T[t].col, 0xFFFFFF, C.gold], 60, 6, 3);
       toast(`${CTF_T[t].icon} ${CTF_T[t].name} 팀 득점! ${c.score?.[1] || 0} : ${c.score?.[2] || 0}`, 'success');
@@ -10221,34 +10256,56 @@ function updateCtf(dt) {
   const c = S.ctf;
   // 팀 표시·등에 멘 깃발 (내 캐릭터와 친구)
   if (player.avatar) { setCtfLook(player.avatar, c ? myTeam() : 0); setCarry(player.avatar, c ? [1, 2].find(t => c.flag?.[t]?.h === backend.uid) || 0 : 0); }
-  for (const [uid, r] of remotes) { setCtfLook(r.a, c ? teamOfUid(uid) : 0); setCarry(r.a, c ? [1, 2].find(t => c.flag?.[t]?.h === uid) || 0 : 0); }
+  for (const [uid, r] of remotes) { setCtfLook(r.a, c ? teamOfUid(uid) : 0); setCarry(r.a, c ? [1, 2].find(t => c.flag?.[t]?.h === uid) || 0 : 0); if (r.a.ctfObjs?.[2]) r.a.ctfObjs[2].userData.set([c && isJailed(uid) ? '🔒' : CTF_T[teamOfUid(uid)]?.icon || '']); }
   for (const t of [1, 2]) { const f = ctf.flags[t]; if (f) { f.cloth.visible = !c?.flag?.[t]?.h; f.cloth.rotation.y = Math.sin(time * 2 + t) * 0.35; } }
   renderCtfHud(false);
-  if (!c || !joined) return;
+  if (!c || !joined) { renderCatchBtn(); return; }
   // 선생님 기기: 시간이 끝나거나 목표 점수면 결과 기록 · 나간 친구가 든 깃발은 제자리로
   if (isTeacher && (ctf.count += dt) > 1) {
     ctf.count = 0;
     const w = ctfWinner();
     if (c.on && w) backend.adminUpdate({ 'ctf/on': 0, 'ctf/win': w, 'ctf/flag': null });
-    for (const t of [1, 2]) { const h = c.flag?.[t]?.h; if (h && h !== backend.uid && !remotes.has(h)) backend.adminUpdate({ [`ctf/flag/${t}`]: null }); }
+    for (const t of [1, 2]) { const h = c.flag?.[t]?.h; if (h && h !== backend.uid && (!remotes.has(h) || isJailed(h))) backend.adminUpdate({ [`ctf/flag/${t}`]: null }); }
+    for (const [u, j] of Object.entries(c.jail || {})) if (u !== backend.uid && !remotes.has(u) || backend.now() - j.t > (JAIL_FREE + 5) * 1000) backend.adminUpdate({ [`ctf/jail/${u}`]: null }); // 나간 친구·오래 갇힌 친구 풀어 주기
   }
   const t = myTeam();
-  if (!t || !c.on || !ctfStarted() || ctfWinner() || !arenaRegion() || ctf.busy) return;
-  const p = player.pos, e = 3 - t, enemyHalf = t === 1 ? p.z > ARENA.z : p.z < ARENA.z;
-  const holding = c.flag?.[e]?.h === backend.uid;
-  ctf.immune = Math.max(0, ctf.immune - dt);
-  if (enemyHalf && !ctf.immune) { // 상대 진영에서 상대에게 닿으면 잡혀요
-    for (const [uid, r] of remotes) {
-      if (teamOfUid(uid) !== e) continue;
-      if (Math.hypot(r.target.x - p.x, r.target.z - p.z) < 1.4) {
-        ctf.busy = true; ctf.immune = 3;
-        (holding ? backend.ctfDrop(e) : Promise.resolve()).finally(() => { ctf.busy = false; });
-        playSfx('oops'); toast(holding ? '😵 잡혔어요! 깃발은 제자리로 돌아갔어요. 우리 진영에서 다시 출발!' : '😵 잡혔어요! 우리 진영에서 다시 출발해요', 'warn');
-        ctfSpawn(); return;
-      }
-    }
+  ctf.cool = Math.max(0, ctf.cool - dt);
+  const jailed = t && isJailed(backend.uid);
+  // 🔒 내가 잡혔을 때: 감옥으로, 든 깃발은 제자리로 / 풀려나면 우리 진영으로
+  if (jailed && !ctf.wasJailed) {
+    ctf.wasJailed = true; const [jx, jz] = JAIL[t];
+    if (c.flag?.[3 - t]?.h === backend.uid) backend.ctfDrop(3 - t);
+    ctfTeleport(jx, jz, t === 1 ? 0 : Math.PI); playSfx('oops');
+    toast('🔒 잡혔어요! 감옥에서 기다려요. 우리 팀 친구가 가까이 오면 풀려나요', 'warn');
+  } else if (!jailed && ctf.wasJailed) {
+    ctf.wasJailed = false; ctfSpawn(); toast('🔓 풀려났어요! 우리 진영에서 다시 출발해요', 'success'); playSfx('pick');
   }
-  const [ex, ez] = CTF_T[e].base, [mx, mz] = CTF_T[t].base;
+  if (jailed) {
+    const [jx, jz] = JAIL[t], p = player.pos, H = JAIL_R - 0.6;
+    p.x = Math.max(jx - H, Math.min(jx + H, p.x)); p.z = Math.max(jz - H, Math.min(jz + H, p.z)); // 감옥 밖으로 못 나가요
+    if (jailLeft(backend.uid) <= 0 && !ctf.busy) { ctf.busy = true; backend.ctfFree([backend.uid]).finally(() => { ctf.busy = false; }); }
+  }
+  ctf.target = null;
+  if (!t || !c.on || !ctfStarted() || ctfWinner() || !arenaRegion() || jailed) { renderCatchBtn(); return; }
+  const p = player.pos, e = 3 - t;
+  const mineHalf = (z) => t === 1 ? z < ARENA.z : z > ARENA.z;
+  // 🖐️ 잡을 수 있는 상대 (내 화면에 보이는 위치 기준)
+  let best = null, bd = CATCH_R;
+  for (const [uid, r] of remotes) {
+    if (teamOfUid(uid) !== e || isJailed(uid) || !mineHalf(r.pos.z) || !inArena(r.pos.x, r.pos.z)) continue;
+    if (c.mode === 1 && c.flag?.[t]?.h !== uid) continue; // 깃발 든 사람만
+    const d = Math.hypot(r.pos.x - p.x, r.pos.z - p.z); if (d < bd) { bd = d; best = uid; }
+  }
+  ctf.target = best; renderCatchBtn();
+  if (ctf.busy) return;
+  // 🔓 구출: 우리 팀이 갇혀 있고 내가 감옥 가까이 오면
+  const [jx, jz] = JAIL[t], mates = Object.keys(c.jail || {}).filter(u => teamOfUid(u) === t);
+  if (mates.length && Math.hypot(p.x - jx, p.z - jz) < JAIL_R + 1.1) {
+    ctf.busy = true;
+    backend.ctfFree(mates).then(res => { if (res.ok) { toast(`🔓 우리 팀 ${mates.length}명을 구했어요!`, 'success'); playSfx('fanfare'); burst(new V3(jx, 2, jz), [CTF_T[t].col, 0xFFFFFF, C.gold], 50, 5, 2); } }).finally(() => { ctf.busy = false; });
+    return;
+  }
+  const holding = c.flag?.[e]?.h === backend.uid, [ex, ez] = CTF_T[e].base, [mx, mz] = CTF_T[t].base;
   if (!holding && !c.flag?.[e]?.h && Math.hypot(p.x - ex, p.z - ez) < 2.2) { // 상대 깃발 들기
     ctf.busy = true;
     backend.ctfTake(e).then(res => { if (res.ok) { playSfx('pick'); playAct(player.avatar, 'cheer'); } }).finally(() => { ctf.busy = false; });
@@ -10257,19 +10314,39 @@ function updateCtf(dt) {
     backend.ctfScore(e, t, (c.score?.[t] || 0) + 1).finally(() => { ctf.busy = false; });
   }
 }
+function renderCatchBtn() {
+  const b = $('ctfCatch'), on = !!ctf.target;
+  document.body.classList.toggle('in-ctf', !!(S.ctf && arenaRegion()));
+  b.classList.toggle('hidden', !(S.ctf && arenaRegion() && myTeam()));
+  b.disabled = !on || ctf.cool > 0;
+  b.classList.toggle('ready', on && ctf.cool <= 0);
+  b.textContent = ctf.cool > 0 ? `🖐️ ${ctf.cool.toFixed(1)}` : on ? '🖐️ 잡기!' : '🖐️ 잡기';
+}
+async function doCatch() {
+  const u = ctf.target; if (!u || ctf.cool > 0 || !S.ctf?.on) return;
+  ctf.cool = 2; renderCatchBtn();
+  const r = remotes.get(u);
+  player.heading = r ? Math.atan2(r.pos.x - player.pos.x, r.pos.z - player.pos.z) : player.heading;
+  playAct(player.avatar, 'clap');
+  const res = await backend.ctfCatch(u);
+  if (res.ok) { playSfx('pick'); toast('🖐️ 잡았다! 상대 친구가 감옥으로 가요', 'success'); if (r) burst(r.pos.clone().setY(1.6), [0xFFFFFF, C.gold, CTF_T[myTeam()].col], 30, 4, 2); }
+  else if (res.reason !== 'offline') toast('앗, 놓쳤어요!', 'info');
+}
 function renderCtfHud(force) {
   const c = S.ctf, show = !!c && arenaRegion();
   $('ctfBar').classList.toggle('hidden', !show);
   if (!show) return;
   const s1 = c.score?.[1] || 0, s2 = c.score?.[2] || 0, left = ctfLeft(), w = ctfWinner(), t = myTeam(), wait = Math.ceil((c.at - backend.now()) / 1000);
-  const key = [s1, s2, left, w, t, wait > 0 ? wait : 0, c.flag?.[1]?.h || '', c.flag?.[2]?.h || ''].join('|');
+  const key = [s1, s2, left, w, t, wait > 0 ? wait : 0, c.flag?.[1]?.h || '', c.flag?.[2]?.h || '', JSON.stringify(c.jail || {}), t ? jailLeft(backend.uid) : 0].join('|');
   if (!force && key === ctf.hudKey) return;
   ctf.hudKey = key;
   $('ctfScore').innerHTML = `<b style="color:${CTF_T[1].css}">🔴 ${s1}</b> : <b style="color:${CTF_T[2].css}">${s2} 🔵</b>`;
   $('ctfInfo').textContent = w ? (w === 3 ? '🤝 비겼어요! 모두 멋졌어요' : `🏆 ${CTF_T[w].icon} ${CTF_T[w].name} 팀 승리! 모두 수고했어요`)
     : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} · 먼저 ${c.goal}점`;
   const holding = t && c.flag?.[3 - t]?.h === backend.uid;
-  $('ctfMine').textContent = !t ? '👀 선생님은 옆줄에서 응원해요' : holding ? '🚩 깃발을 들었어요! 우리 진영 동그라미로!' : `나는 ${CTF_T[t].icon} ${CTF_T[t].name} 팀 · ${CTF_T[3 - t].icon} 깃발을 가져와요`;
+  const jl = t ? jailLeft(backend.uid) : 0, mates = t ? Object.keys(c.jail || {}).filter(u => teamOfUid(u) === t && u !== backend.uid).length : 0;
+  $('ctfMine').textContent = !t ? '👀 선생님은 옆줄에서 응원해요' : jl ? `🔒 감옥이에요! 친구가 구하러 오면 풀려나요 (⏱ ${jl}초)` : holding ? '🚩 깃발을 들었어요! 우리 진영 동그라미로!'
+    : `나는 ${CTF_T[t].icon} ${CTF_T[t].name} 팀 · ${CTF_T[3 - t].icon} 깃발을 가져와요${mates ? ` · 🔒 우리 팀 ${mates}명이 감옥에! 구하러 가요` : ''}`;
   if (w && ctf.ended !== c.r) { ctf.ended = c.r; showBanner(w === 3 ? '🤝 비겼어요!' : `🏆 ${CTF_T[w].icon} ${CTF_T[w].name} 팀 승리!`, `${s1} : ${s2} · 서로 잘했다고 인사해요 👏`, 6000); if (player.avatar) burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
 // ---------- 선생님 ----------
@@ -10285,14 +10362,21 @@ async function startCtf() {
   if (backend.mode !== 'firebase' && !students.includes(backend.uid)) students.push(backend.uid); // 연습 모드: 나도 참가
   if (!students.length) { toast('접속한 학생이 없어요', 'warn'); return; }
   const min = +$('tpCtfMin').value, goal = +$('tpCtfGoal').value;
-  if (!(await confirmAction({ title: '🚩 깃발뺏기를 시작할까요?', body: `접속한 학생 ${students.length}명을 🔴 빨강 · 🔵 파랑 두 팀으로 나눠서 운동장으로 옮겨요.\n${min}분 동안, 먼저 ${goal}점을 내는 팀이 이겨요. 하던 놀이는 닫혀요.`, okText: '시작' }))) return;
+  if (!(await confirmAction({ title: '🚩 깃발뺏기를 시작할까요?', body: `접속한 학생 ${students.length}명을 🔴 빨강 · 🔵 파랑 두 팀으로 나눠서 운동장으로 옮겨요.\n${min}분 동안, 먼저 ${goal}점을 내는 팀이 이겨요. (${+$('tpCtfMode').value ? '깃발 든 사람만' : '우리 진영에 들어온 상대 모두'} 잡을 수 있어요)\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
   for (let i = students.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [students[i], students[j]] = [students[j], students[i]]; }
   const team = Object.fromEntries(students.map((u, i) => [u, i % 2 ? 2 : 1])), now = backend.now();
-  await adminDo({ ctf: { on: 1, r: Date.now().toString(36), at: now + 5000, end: now + 5000 + min * 60000, goal, team, score: { 1: 0, 2: 0 } } }, `🚩 깃발뺏기를 시작해요! (${min}분 · 먼저 ${goal}점)`);
+  const mode = +$('tpCtfMode').value;
+  await adminDo({ ctf: { on: 1, r: Date.now().toString(36), at: now + 5000, end: now + 5000 + min * 60000, goal, mode, team, score: { 1: 0, 2: 0 } } }, `🚩 깃발뺏기를 시작해요! (${min}분 · 먼저 ${goal}점${mode ? ' · 깃발 든 사람만 잡기' : ''})`);
   if (isTeacher && !arenaRegion()) ctfSpawn();
 }
 function initCtfUI() {
   $('tpCtfStart').onclick = startCtf;
+  $('ctfCatch').onclick = doCatch;
+  addEventListener('keydown', e => { // 경기 중에는 E가 '잡기'
+    if (e.key.toLowerCase() !== 'e' || e.repeat || !ctf.target || !S.ctf?.on || !arenaRegion()) return;
+    if (e.target instanceof Element && e.target.matches('input, textarea, select')) return;
+    e.stopImmediatePropagation(); doCatch();
+  }, true);
   $('tpCtfEnd').onclick = async () => {
     if (!(await confirmAction({ title: '🏁 깃발뺏기를 끝낼까요?', body: '경기장에 있는 친구들이 광장으로 돌아가고, 점수는 지워져요.', okText: '끝내기' }))) return;
     adminDo({ ctf: null }, '🏁 깃발뺏기를 끝냈어요');
