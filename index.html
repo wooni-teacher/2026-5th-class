@@ -418,12 +418,16 @@
   .map-legend { margin: 10px 0; font-size: 15px; }
   #meetBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(112px + var(--safe-bottom)); display: flex; gap: 6px; padding: 6px; flex-wrap: wrap; justify-content: center; max-width: 94vw; }
   #ctfBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 16px; text-align: center; min-width: 240px; }
-  body.in-ctf #decorBtn, body.in-ctf #decorMenu { display: none !important; }
+  body.in-ctf #decorBtn, body.in-ctf #decorMenu, body.in-home #decorBtn, body.in-home #decorMenu { display: none !important; } /* 운동장·집 안에서는 마을 꾸미기 버튼을 숨겨요 */
   body.in-ctf #toast { top: calc(222px + var(--safe-top)); }
   #ctfCatch { position: fixed; left: 50%; margin-left: -52px; bottom: calc(24px + var(--safe-bottom)); width: 104px; height: 104px; border-radius: 50%; padding: 0; font-size: 20px; background: #E8E2D6; opacity: .65; touch-action: none; }
   #ctfCatch.ready { background: var(--sun); opacity: 1; animation: ctfPulse .8s ease-in-out infinite alternate; }
   @keyframes ctfPulse { to { transform: scale(1.08); } }
   body.touch #ctfCatch { left: auto; margin-left: 0; right: calc(140px + env(safe-area-inset-right, 0px)); bottom: calc(36px + var(--safe-bottom)); }
+  #homeBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(80px + var(--safe-top)); display: flex; align-items: center; gap: 6px; padding: 6px 10px; flex-wrap: wrap; justify-content: center; max-width: 96vw; }
+  #homeBar b { font-weight: 800; font-size: 16px; margin: 0 6px; white-space: nowrap; }
+  #homeBar .btn { font-size: 15px; padding: 7px 12px; background: #fff; }
+  @media (max-width: 760px) { #homeBar { top: calc(118px + var(--safe-top)); } }
   #ctfScore { font-size: 30px; line-height: 1.1; } #ctfScore b { font-weight: 700; }
   #ctfInfo { font-size: 16px; } #ctfMine { font-size: 14px; opacity: .8; }
   #meetBar .btn { font-size: 16px; padding: 7px 10px; background: #fff; white-space: nowrap; }
@@ -646,6 +650,10 @@
 </div>
 <div id="freezeBar" class="hidden" role="alert"><div class="sticker"><b>✋ 잠깐 멈춤!</b><span>선생님 이야기를 들어요</span></div></div>
 <button id="ctfCatch" class="btn hidden" aria-label="잡기">🖐️ 잡기</button>
+<div id="homeBar" class="sticker hidden" role="group" aria-label="집 안"><b id="hbTitle"></b>
+  <button class="btn" id="hbEdit">🛋️ 꾸미기</button><button class="btn" id="hbHouse">🎨 집 바꾸기·키우기</button>
+  <button class="btn hidden" id="hbPlace" style="background:var(--leaf);color:#fff">✅ 놓기</button><button class="btn hidden" id="hbRot">🔄 돌리기</button><button class="btn hidden" id="hbCancel">✖ 그만</button>
+  <button class="btn" id="hbExit">🚪 나가기</button></div>
 <div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
   <button class="btn" id="mbHand" aria-pressed="false">🙋 손들기</button><button class="btn" id="mbGood">👍 좋아요</button><button class="btn" id="mbThink">🤔 다른 생각</button><button class="btn" id="mbAsk">❓ 궁금해요</button><button class="btn hidden" id="mbVote" style="background:var(--sun)">🗳️ 목표 투표</button><button class="btn hidden" id="mbLike" style="background:var(--sun)">💡 제안 공감</button><button class="btn" id="mbScript">📜 대본</button><button class="btn" id="mbView" aria-pressed="false">📋 칠판 보기</button>
@@ -1193,6 +1201,7 @@
    47. 우리 반 교실 · 학급회의
    48. 깃발뺏기 팀전
    49. 경제 다듬기 (가게 예산·시세·옷가게·집 키우기·반 기부·도감 배지)
+   50. 집 안 꾸미기 · 친구 집 놀러 가기
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1384,6 +1393,9 @@ function sanitizeState(raw) {
     if (!ok(!Object.values(out.plots).some(q => q.o === pl.o))) continue; // 한 사람 한 곳
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
     if (pl.h != null && ok(isInt(pl.h.s, 0, 2) && isInt(pl.h.c, 0, 5))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; }
+    if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
+      for (const [cell, d] of Object.entries(plainObj(inn.c))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) (o.c ||= {})[cell] = { t: d.t, r: d.r };
+      if (Object.keys(o).length) out.plots[n].in = o; }
     for (const [k, d] of Object.entries(plainObj(pl.items))) if (ok(/^[0-5]_[0-5]$/.test(k) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) out.plots[n].items[k] = { t: d.t, r: d.r };
   }
   for (const [n, pl] of Object.entries(out.plots)) out.plotOwner[pl.o] = n; // 주인 목록은 땅에서 다시 만들어요
@@ -1746,6 +1758,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false };
       pl.h = { ...h }; emit(); return { ok: true };
     },
+    async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = { ...v }; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
       const pl = st.plots[n];
       if (!pl || pl.o !== 'me') return { ok: false, reason: 'notmine' };
@@ -2032,6 +2045,9 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async setHouse(n, h) { // 내 땅에만 (주인만 쓸 수 있어요)
       try { await D.set(R(`state/plots/${n}/h`), h); return { ok: true }; } catch (e) { return { ok: false }; }
     },
+    async homeSet(n, upd) { // 우리 집 안 (주인만 쓸 수 있어요)
+      try { await D.update(R(`state/plots/${n}/in`), upd); return { ok: true }; } catch (e) { return { ok: false }; }
+    },
     async plotPlace(n, cell, t, r) { // 내 땅 빈 칸에만 (주인만 쓸 수 있어요)
       try { await D.set(R(`state/plots/${n}/items/${cell}`), { t, r }); return { ok: true }; } catch (e) { return { ok: false }; }
     },
@@ -2054,7 +2070,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -3017,7 +3033,7 @@ function updateCamera(dt) {
     }
   }
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
-  const inCls = player.pos.x > 600 && player.pos.z < 30, cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
+  const inCls = (player.pos.x > 600 && player.pos.x < 700 && player.pos.z < 30) || player.pos.x > 740, cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
   const want = new V3(
     t.x + Math.sin(camYaw) * Math.cos(cp) * cd,
     t.y + Math.sin(cp) * cd,
@@ -3093,6 +3109,7 @@ function updateRemotes(dt) {
     const grounded = Math.abs(r.pos.y - before.y) / Math.max(dt, 1e-3) < 1.5;
     if ((t.m | 0) !== r.lastM) { r.lastM = t.m | 0; playAct(r.a, ACTS[r.lastM % 32] || null); } // 친구의 몸짓
     animateAvatar(r.a, Math.min(1, speed / SPEED), dt, grounded, backend.now() < (t.b || 0));
+    { const myRoom = player.pos.x > 740 ? roomAt(player.pos.x, player.pos.z) : '', theirs = r.pos.x > 740 ? roomAt(r.pos.x, r.pos.z) : ''; r.a.g.visible = myRoom ? theirs === myRoom : !theirs; } // 집 안: 같은 집에 있는 친구만 보여요
   }
 }
 const PRESENCE_INTERVAL = 0.5; // 초
@@ -5666,7 +5683,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -6783,7 +6800,7 @@ function buildHomeVillage() {
   lotFx.buy = addInteract({ pos: new V3(0, -99, 0), r: 9, text: () => lotFx.buyId ? ['이 땅 사기 🏡', `🐚 ${LAND_PRICE} · ${lotName(lotFx.buyId)}`] : null, run: () => buyLot(lotFx.buyId) });
   lotFx.house = addInteract({ pos: new V3(0, -99, 0), r: 2.6, text: () => {
     const id = myLot(); if (!id) return null;
-    return S.plots[id].h ? ['집 바꾸기 🎨', `🐚 ${REMODEL_PRICE}`] : ['집 짓기 🏠', `🐚 ${HOUSE_PRICE}`];
+    return S.plots[id].h ? null : ['집 짓기 🏠', `🐚 ${HOUSE_PRICE}`]; // 집이 있으면 문에서 들어가요 (바꾸기·키우기는 집 안에서)
   }, run: () => openHouse() });
 }
 
@@ -8536,7 +8553,7 @@ function updateMap(dt) {
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
   const want = hvRegion() ? MAPB_HV : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
-  const inCls = classRegion() || arenaRegion(); // 교실·깃발뺏기 운동장에서는 작은 지도를 숨겨요
+  const inCls = classRegion() || arenaRegion() || homeRegion(); // 교실·운동장·집 안에서는 작은 지도를 숨겨요
   $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
   if (mapUI.show && !placing.active && !inCls) drawMini();
   if (!$('mapPanel').classList.contains('hidden')) drawBig();
@@ -9656,7 +9673,7 @@ function renderTeachLookUI() {
    ===================================================================== */
 const CR = { x: 650, z: 0, w: 28, d: 24 }; // 교실 가운데와 크기
 const inClass = (x, z) => x >= CR.x - CR.w / 2 + 0.6 && x <= CR.x + CR.w / 2 - 0.6 && z >= CR.z - CR.d / 2 + 0.6 && z <= CR.z + CR.d / 2 - 0.6;
-const classRegion = () => joined && player.pos.x > 600 && player.pos.z < 30;
+const classRegion = () => joined && player.pos.x > 600 && player.pos.x < 700 && player.pos.z < 30;
 const SEATS = []; // [{ n, r 줄, c 칸, x, z (의자 자리) }]
 for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) SEATS.push({ n: r * 5 + c + 1, r, c, x: CR.x - 8 + c * 4, z: CR.z - 2.5 + r * 4.6 + 1.0 });
 const MEET_STEPS = ['개회선언 · 우리반 약속', '거울(돌아보기) 회의', '다음 달 목표 정하기', '제안하기', '선생님 말씀', '폐회선언'];
@@ -9693,7 +9710,7 @@ const isSeated = (a) => !!a?.act?.k?.startsWith('sit');
 function mySeat() { return isSeated(player.avatar) ? seatNear(player.pos.x, player.pos.z) : null; }
 function classCount() { // 교실 안 학생 수 (선생님 제외 — 이 기기가 학생이면 나도 셈)
   let n = !isTeacher && classRegion() ? 1 : 0;
-  for (const r of remotes.values()) if (r.pos.x > 600 && r.pos.z < 30 && !r.target.t) n++;
+  for (const r of remotes.values()) if (r.pos.x > 600 && r.pos.x < 700 && r.pos.z < 30 && !r.target.t) n++;
   return n;
 }
 async function meetDo(upd) { const res = await backend.adminUpdate(upd); if (!res.ok) toast('저장하지 못했어요. 선생님 등록과 데이터베이스 규칙을 확인해 주세요', 'warn'); return res.ok; }
@@ -10212,7 +10229,7 @@ function initMeetUI() {
 let meetT = 0;
 function updateClassroom(dt) {
   if (!cls.group) return;
-  cls.group.visible = (player.pos.x > 600 && player.pos.z < 30) || (camera.position.x > 600 && camera.position.z < 30);
+  cls.group.visible = classRegion() || (camera.position.x > 600 && camera.position.x < 700 && camera.position.z < 30);
   if (cls.spotMat) cls.spotMat.opacity = 0.2 + Math.sin(time * 3) * 0.07;
   if ((meetT -= dt) <= 0) {
     meetT = 0.5; renderMeetUI();
@@ -10235,7 +10252,7 @@ const CTF_T = { 1: { name: '빨강', icon: '🔴', col: 0xE2584A, css: '#E2584A'
 const JAIL = { 1: [ARENA.x + 14, ARENA.z + 20], 2: [ARENA.x - 14, ARENA.z - 20] }; // 1 = 빨강 팀이 갇히는 곳 (파랑 진영 구석), 2 = 파랑 팀이 갇히는 곳
 const JAIL_R = 3.2, JAIL_FREE = 30, CATCH_R = 2.2;
 const inArena = (x, z) => Math.abs(x - ARENA.x) <= ARENA.w / 2 - 0.8 && Math.abs(z - ARENA.z) <= ARENA.d / 2 - 0.8;
-const arenaRegion = () => joined && player.pos.x > 600 && player.pos.z > 30;
+const arenaRegion = () => joined && player.pos.x > 600 && player.pos.x < 700 && player.pos.z > 30;
 const ctf = { group: null, flags: {}, immune: 0, lastR: '', told: '', hudKey: '', ended: '', busy: false, count: 0, cool: 0, target: null, wasJailed: false };
 const isJailed = (u) => !!S.ctf?.jail?.[u];
 const jailLeft = (u) => { const j = S.ctf?.jail?.[u]; return j ? Math.max(0, Math.ceil(JAIL_FREE - (backend.now() - j.t) / 1000)) : 0; };
@@ -10356,7 +10373,7 @@ function syncCtf(prev, first) {
 }
 function updateCtf(dt) {
   if (!ctf.group) return;
-  const near = player.pos.x > 600 && player.pos.z > 30 || camera.position.x > 600 && camera.position.z > 30;
+  const near = arenaRegion() || (camera.position.x > 600 && camera.position.x < 700 && camera.position.z > 30);
   ctf.group.visible = near;
   const c = S.ctf;
   // 팀 표시·등에 멘 깃발 (내 캐릭터와 친구)
@@ -10726,6 +10743,239 @@ function initEconUI() {
 }
 
 /* =====================================================================
+   50. 🏠 집 안 꾸미기 · 친구 집 놀러 가기
+   · 집이 있는 땅마다 실내 방이 따로 있어요 (월드 x 760~, 땅 번호 i_j → 방 자리). 집 앞 문에서 E로 들어가요
+   · 우리 집: 벽지·바닥(🐚50)과 가구 20종(가구점에서 조개돈으로 사서 6×5칸에 놓기, 치우면 내 가구 상자로)
+   · 친구 집: 구경만 해요 (바꿀 수 없어요). 같은 방에 있는 친구만 보여요
+   · 저장: plots/{땅}/in { w 벽지, f 바닥, c {칸 "열_행": {t 가구, r 방향}} } — 주인만 쓸 수 있어요 · 산 가구 상자(bag.fur)는 이 기기에
+   ===================================================================== */
+const HOME_IN = { x0: 760, z0: -70, step: 22, w: 14, d: 12, cols: 6, rows: 5, cell: 2 };
+const inRoomCenter = (id) => { const m = /^(\d+)_(\d)$/.exec(id); return m ? [HOME_IN.x0 + (+m[1]) * HOME_IN.step, HOME_IN.z0 + (+m[2]) * HOME_IN.step] : null; };
+function roomAt(x, z) { // 이 자리가 어느 집 안인가
+  if (x < HOME_IN.x0 - 10) return '';
+  const i = Math.round((x - HOME_IN.x0) / HOME_IN.step), j = Math.round((z - HOME_IN.z0) / HOME_IN.step);
+  if (i < 0 || i > 10 || j < 0 || j > 5) return '';
+  const [cx, cz] = inRoomCenter(`${i}_${j}`);
+  return Math.abs(x - cx) <= HOME_IN.w / 2 && Math.abs(z - cz) <= HOME_IN.d / 2 ? `${i}_${j}` : '';
+}
+const inHomeRoom = (x, z) => { const id = roomAt(x, z); if (!id) return false; const [cx, cz] = inRoomCenter(id); return Math.abs(x - cx) <= HOME_IN.w / 2 - 0.6 && Math.abs(z - cz) <= HOME_IN.d / 2 - 0.6; };
+const homeRegion = () => joined && player.pos.x > 740;
+const WALLS = [0xFFF3DC, 0xFFE0E8, 0xDCEEFF, 0xE3F5D0, 0xF1E4FF, 0xFFF6B8];
+const FLOORS = [0xD9B07A, 0xB9875A, 0xE8D8C0, 0x9FB8C8, 0xC9E0B0, 0xF0C8C8];
+const FURN = [
+  { icon: '🛏️', name: '침대', price: 300 }, { icon: '📚', name: '책장', price: 250 }, { icon: '✏️', name: '책상 세트', price: 250 }, { icon: '🛋️', name: '소파', price: 400 },
+  { icon: '🍽️', name: '둥근 식탁', price: 350 }, { icon: '🪴', name: '화분', price: 80 }, { icon: '🧸', name: '곰 인형', price: 150 }, { icon: '📺', name: '텔레비전', price: 500 },
+  { icon: '🎹', name: '피아노', price: 800 }, { icon: '🐠', name: '어항', price: 450 }, { icon: '💡', name: '스탠드', price: 120 }, { icon: '🟫', name: '러그', price: 100 },
+  { icon: '🚪', name: '옷장', price: 300 }, { icon: '🎮', name: '게임기', price: 600 }, { icon: '🧺', name: '빨래 바구니', price: 60 }, { icon: '⏰', name: '괘종시계', price: 400 },
+  { icon: '🌟', name: '별 조명', price: 700 }, { icon: '🎄', name: '트리', price: 500 }, { icon: '🏆', name: '트로피', price: 900 }, { icon: '🐱', name: '고양이 쿠션', price: 200 },
+];
+bag.fur ||= {};
+const home = { id: '', group: null, key: '', edit: null, ghost: null, ghostKey: '', inItem: null, exitI: null, doorI: null };
+const DOOR_CELLS = new Set(['2_4', '3_4']); // 문 앞 길은 비워 둬요
+function roomCellPos(id, cell) { const [cx, cz] = inRoomCenter(id), [c, r] = cell.split('_').map(Number); return [cx - 5 + c * 2, cz - 4 + r * 2]; }
+function buildFurn(t, g) {
+  const o = { solid: false }, W = C.wood;
+  switch (t) {
+    case 0: box(g, 1.3, 0.4, 1.9, W, 0, 0.2, 0); box(g, 1.2, 0.2, 1.8, 0xFFFFFF, 0, 0.5, 0, o); box(g, 1.22, 0.22, 1.0, 0x7FB2E8, 0, 0.52, 0.35, o); box(g, 0.8, 0.14, 0.35, 0xFFFFFF, 0, 0.66, -0.65, o); box(g, 1.3, 0.8, 0.1, W, 0, 0.6, -0.95, o); break;
+    case 1: box(g, 1.5, 1.9, 0.45, W, 0, 0.95, -0.6); for (const y of [0.4, 0.95, 1.5]) { box(g, 1.4, 0.05, 0.42, 0x8A5A34, 0, y - 0.25, -0.58, o); for (let k = 0; k < 6; k++) box(g, 0.16, 0.38, 0.3, [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E][(k + y * 10) % 6 | 0], -0.55 + k * 0.21, y - 0.03, -0.55, o); } break;
+    case 2: box(g, 1.3, 0.08, 0.7, 0xE9C98F, 0, 0.76, -0.3); for (const [x, z] of [[-0.58, -0.6], [0.58, -0.6], [-0.58, 0], [0.58, 0]]) box(g, 0.06, 0.74, 0.06, 0x8C95A3, x, 0.37, z, o); box(g, 0.3, 0.2, 0.22, 0x5FBE5A, 0.35, 0.9, -0.4, o); box(g, 0.5, 0.06, 0.45, 0x5E9BD6, 0, 0.46, 0.45, o); box(g, 0.5, 0.5, 0.05, 0x5E9BD6, 0, 0.72, 0.68, o); break;
+    case 3: box(g, 1.8, 0.45, 0.85, 0xE2787A, 0, 0.23, 0); box(g, 1.8, 0.55, 0.22, 0xD8605A, 0, 0.6, -0.34, o); for (const x of [-0.85, 0.85]) box(g, 0.2, 0.6, 0.85, 0xD8605A, x, 0.35, 0, o); for (const x of [-0.45, 0.45]) box(g, 0.75, 0.12, 0.6, 0xF09A9A, x, 0.5, 0.05, o); break;
+    case 4: cyl(g, 0.75, 0.07, 0xE9C98F, 0, 0.74, 0); cyl(g, 0.08, 0.7, 0x8A5A34, 0, 0.36, 0, o); for (const x of [-0.95, 0.95]) cyl(g, 0.25, 0.45, 0xB88A55, x, 0.23, 0, o); ball(g, 0.14, 0xFF7A6A, 0.1, 0.84, 0.1, o); ball(g, 0.12, 0xFFD23C, -0.15, 0.83, -0.05, o); break;
+    case 5: cyl(g, 0.3, 0.45, 0xD9814A, 0, 0.23, 0); for (const [x, y, z, r] of [[0, 0.8, 0, 0.35], [0.2, 1.0, 0.1, 0.25], [-0.2, 0.95, -0.1, 0.25], [0, 1.2, 0, 0.2]]) ball(g, r, 0x4FA04F, x, y, z, o); break;
+    case 6: ball(g, 0.35, 0xB88A55, 0, 0.35, 0); ball(g, 0.26, 0xB88A55, 0, 0.85, 0, o); for (const x of [-0.18, 0.18]) ball(g, 0.1, 0xB88A55, x, 1.08, 0, o); ball(g, 0.1, 0xE8C8A0, 0, 0.8, 0.22, o); for (const x of [-0.08, 0.08]) ball(g, 0.03, 0x2B2B36, x, 0.9, 0.24, o); break;
+    case 7: box(g, 1.4, 0.5, 0.5, 0x8A5A34, 0, 0.25, -0.5); box(g, 1.3, 0.8, 0.08, 0x2B2B36, 0, 0.95, -0.55, o); box(g, 1.18, 0.66, 0.02, 0x4A9AE8, 0, 0.95, -0.5, { solid: false, emissive: 0.6 }); break;
+    case 8: box(g, 1.6, 1.0, 0.6, 0x1E1E26, 0, 0.5, -0.4); box(g, 1.5, 0.05, 0.25, 0xFFFFFF, 0, 0.78, -0.02, o); for (let k = 0; k < 9; k++) box(g, 0.06, 0.03, 0.14, 0x1E1E26, -0.64 + k * 0.16, 0.81, -0.06, o); box(g, 0.6, 0.06, 0.4, 0x3B3B46, 0, 0.45, 0.5, o); break;
+    case 9: box(g, 1.3, 0.6, 0.6, 0x8A5A34, 0, 0.3, -0.4); { const gl = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.5), new THREE.MeshStandardMaterial({ color: 0x7FD3F2, transparent: true, opacity: 0.45 })); gl.position.set(0, 0.95, -0.4); g.add(gl); } box(g, 1.15, 0.08, 0.45, 0xE8D8A0, 0, 0.64, -0.4, o); for (const [x, c] of [[-0.25, 0xFF9E5E], [0.2, 0xFFD23C]]) mesh(SPH_LO, g, 0.12, 0.08, 0.05, c, x, 1.0, -0.4, o); break;
+    case 10: cyl(g, 0.25, 0.05, 0x3B3B46, 0, 0.03, 0); cyl(g, 0.03, 1.4, 0x3B3B46, 0, 0.72, 0, o); mesh(CONE, g, 0.3, 0.35, 0.3, 0xFFE8A0, 0, 1.5, 0, { solid: false, emissive: 0.7 }); break;
+    case 11: box(g, 1.8, 0.03, 1.3, 0xD8605A, 0, 0.12, 0, o); box(g, 1.5, 0.035, 1.0, 0xFFD6A0, 0, 0.125, 0, o); break;
+    case 12: box(g, 1.3, 2.0, 0.6, 0xC9A06A, 0, 1.0, -0.6); box(g, 0.02, 1.8, 0.02, 0x8A5A34, 0, 1.0, -0.29, o); for (const x of [-0.1, 0.1]) ball(g, 0.04, C.gold, x, 1.0, -0.28, o); break;
+    case 13: box(g, 1.2, 0.5, 0.5, 0xFFFFFF, 0, 0.25, -0.3); box(g, 0.5, 0.12, 0.3, 0x3B3B46, 0, 0.56, -0.3, o); box(g, 0.3, 0.06, 0.15, 0xE2584A, 0.15, 0.53, 0.2, o); box(g, 0.3, 0.06, 0.15, 0x4A9AE8, -0.2, 0.53, 0.2, o); break;
+    case 14: cyl(g, 0.35, 0.5, 0xE8D8A0, 0, 0.25, 0); ball(g, 0.2, 0xFF9AC0, 0.05, 0.5, 0, o); ball(g, 0.18, 0x7FB2E8, -0.1, 0.52, 0.08, o); break;
+    case 15: box(g, 0.6, 2.1, 0.45, 0x7A4A2A, 0, 1.05, -0.6); cyl(g, 0.22, 0.04, 0xFFFFFF, 0, 1.6, -0.36, { solid: false, rx: Math.PI / 2 }); box(g, 0.03, 0.15, 0.02, 0x2B2B36, 0, 1.64, -0.33, o); box(g, 0.05, 0.4, 0.02, C.gold, 0, 0.9, -0.36, o); break;
+    case 16: cyl(g, 0.04, 1.5, 0xFFFFFF, 0, 0.75, 0, o); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; ball(g, 0.1, [0xFFD23C, 0xFF9AC0, 0x7FD3F2, 0xB58CF0, 0x9BE36B][k], Math.sin(a) * 0.3, 1.6 + Math.cos(a) * 0.3, 0, { solid: false, emissive: 0.8 }); } ball(g, 0.16, 0xFFD23C, 0, 1.6, 0, { solid: false, emissive: 0.9 }); break;
+    case 17: cyl(g, 0.12, 0.3, 0x8A5A34, 0, 0.15, 0); [[0.7, 0.8, 0.6], [0.55, 0.7, 1.1], [0.38, 0.6, 1.55]].forEach(([r, h, y]) => mesh(CONE, g, r, h, r, 0x3E8A45, 0, y, 0, o)); ball(g, 0.12, 0xFFD23C, 0, 1.95, 0, { solid: false, emissive: 0.8 }); for (let k = 0; k < 6; k++) ball(g, 0.06, [0xE2584A, 0x4A9AE8, 0xFFD23C][k % 3], Math.sin(k) * 0.45, 0.7 + k * 0.15, Math.cos(k) * 0.45, o); break;
+    case 18: box(g, 0.6, 0.8, 0.6, 0xE8E2D6, 0, 0.4, 0); cyl(g, 0.12, 0.25, C.gold, 0, 0.93, 0, { solid: false, emissive: 0.3 }); mesh(CONE, g, 0.25, 0.35, 0.25, C.gold, 0, 1.2, 0, { solid: false, emissive: 0.3, rx: Math.PI }); break;
+    case 19: mesh(SPH_MID, g, 0.55, 0.28, 0.5, 0xF5A623, 0, 0.28, 0); ball(g, 0.25, 0xF5A623, 0, 0.55, 0.3, o); for (const x of [-0.12, 0.12]) mesh(CONE, g, 0.07, 0.14, 0.07, 0xF5A623, x, 0.8, 0.3, o); break;
+  }
+  return g;
+}
+function buildRoom(id) { // 지금 들어가 있는 집 안만 그려요
+  if (home.group) { scene.remove(home.group); removeColliders('in:' + home.id); home.group = null; }
+  const pl = S.plots[id]; if (!pl) return;
+  const inn = pl.in || {}, [cx, cz] = inRoomCenter(id), W = HOME_IN.w, D = HOME_IN.d, H = 3.0, o = { solid: false };
+  const g = new THREE.Group(); scene.add(g); home.group = g;
+  const wall = WALLS[inn.w | 0] ?? WALLS[0], floor = FLOORS[inn.f | 0] ?? FLOORS[0], trim = 0xB07C50;
+  box(g, 60, 0.1, 50, 0x8CCB6A, cx, -0.03, cz, o);                                                   // 바깥 마당
+  box(g, W, 0.2, D, floor, cx, 0, cz, { emissive: 0.3 });                                             // 바닥 (위 0.1)
+  for (let i = -W / 2 + 1; i < W / 2; i += 1) box(g, 0.03, 0.02, D - 0.2, shade(floor, 0.9), cx + i, 0.11, cz, o);
+  box(g, W + 0.6, H, 0.3, wall, cx, H / 2, cz - D / 2, { emissive: 0.38 });                             // 뒤 벽
+  box(g, 0.3, H, D, wall, cx - W / 2, H / 2, cz, { emissive: 0.38 }); box(g, 0.3, H, D, wall, cx + W / 2, H / 2, cz, { emissive: 0.38 });
+  for (const s of [-1, 1]) box(g, W / 2 - 1.2, H, 0.3, wall, cx + s * (W / 4 + 0.6), H / 2, cz + D / 2, { emissive: 0.38 }); // 앞 벽 (가운데는 문)
+  box(g, 2.4, 0.6, 0.3, wall, cx, H - 0.3, cz + D / 2, o);
+  for (const [w, x, z] of [[W + 0.6, cx, cz - D / 2], [W + 0.6, cx, cz + D / 2]]) box(g, w, 0.2, 0.34, trim, x, H, z, o);
+  box(g, 0.34, 0.2, D, trim, cx - W / 2, H, cz, o); box(g, 0.34, 0.2, D, trim, cx + W / 2, H, cz, o);
+  for (const x of [-3.5, 3.5]) { box(g, 1.8, 1.2, 0.1, 0xBFE6FF, cx + x, 1.8, cz - D / 2 + 0.2, o); box(g, 1.9, 0.08, 0.14, trim, cx + x, 1.18, cz - D / 2 + 0.24, o); } // 창문
+  box(g, 1.8, 0.02, 1.0, 0xE2584A, cx, 0.115, cz + D / 2 - 0.9, o);                                   // 현관 매트
+  const mine = pl.o === backend?.uid;
+  signPlane(g, [mine ? '⭐ 우리 집' : `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집`], 2.4, 0.5, cx, H - 0.5, cz - D / 2 + 0.2, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = 0;
+  for (const [cell, d] of Object.entries(inn.c || {})) {
+    if (!/^[0-5]_[0-4]$/.test(cell)) continue;
+    const [x, z] = roomCellPos(id, cell), it = new THREE.Group(); it.position.set(x, 0.1, z); it.rotation.y = ((d.r | 0) % 4) * Math.PI / 2;
+    buildFurn(clamp(d.t | 0, 0, FURN.length - 1), it); g.add(it);
+  }
+  registerSolids(g, 'in:' + id);
+  home.id = id; home.key = JSON.stringify(inn);
+}
+async function goHome(id, inside) {
+  if (hv.travel || !joined) return;
+  if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
+  const pl = S.plots[id]; if (inside && !pl?.h) return;
+  hv.travel = true;
+  if (life.fishing) endFishing(); if (placing.active) stopPlacing(); if (kite.active) endKite(false);
+  closeModals(); mtn.view = null; playAct(player.avatar, null); homeEditStop();
+  const boat = document.querySelector('#travelFx .tv-boat'); if (boat) boat.textContent = '🏠';
+  $('travelText').textContent = inside ? (pl.o === backend.uid ? '🏠 우리 집에 들어가는 중…' : '🏠 친구 집에 놀러 가는 중…') : '🌳 밖으로 나가는 중…';
+  $('travelFx').classList.remove('hidden');
+  await sleep(350);
+  if (inside) { buildRoom(id); const [cx, cz] = inRoomCenter(id); player.pos.set(cx, 0.12, cz + HOME_IN.d / 2 - 1.6); player.heading = Math.PI; camYaw = 0; camPitch = 0.75; }
+  else { const [lx, lz] = lotCenter(id); player.pos.set(lx, 0.15, lz - 1.8); player.heading = Math.PI; camYaw = 0; camPitch = 0.45; }
+  player.vy = 0;
+  camera.position.set(player.pos.x, 7, player.pos.z + 8);
+  await sleep(300);
+  $('travelFx').classList.add('hidden'); if (boat) setTimeout(() => { boat.textContent = '⛵'; }, 300);
+  hv.travel = false;
+  if (inside) toast(pl.o === backend.uid ? '🏠 우리 집이에요! 위쪽 🛋️ 꾸미기로 가구를 놓아요' : '🏠 친구 집에 놀러 왔어요! 구경만 할 수 있어요', 'info');
+  renderHomeBar();
+}
+function renderHomeBar() {
+  const id = homeRegion() ? roomAt(player.pos.x, player.pos.z) || home.id : '', pl = id && S.plots[id], mine = pl && pl.o === backend?.uid;
+  $('homeBar').classList.toggle('hidden', !pl);
+  if (!pl) return;
+  $('hbTitle').textContent = mine ? '⭐ 우리 집' : `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집 구경 중`;
+  $('hbEdit').classList.toggle('hidden', !mine || !!home.edit); $('hbHouse').classList.toggle('hidden', !mine || !!home.edit);
+  $('hbPlace').classList.toggle('hidden', !home.edit); $('hbRot').classList.toggle('hidden', !home.edit); $('hbCancel').classList.toggle('hidden', !home.edit);
+  if (home.edit) $('hbPlace').textContent = `✅ ${FURN[home.edit.t].icon} 여기에 놓기`;
+}
+// ---------- 꾸미기 ----------
+function openHomeDecor() {
+  const id = home.id, pl = S.plots[id]; if (!pl || pl.o !== backend.uid) return;
+  openLife('🛋️ 우리 집 꾸미기', (box) => {
+    box.textContent = '';
+    const inn = pl.in || {};
+    box.append(el2('p', 'hint', `가구를 고르면 내 앞 칸에 미리 보여요. 자리를 잡고 ✅ 놓기(E), 🔄 돌리기(R). 놓은 가구 앞에서 E를 누르면 치워서 내 가구 상자에 넣어요. (내 조개돈 🐚${bag.shell || 0})`));
+    for (const [key, list, label] of [['w', WALLS, '벽지'], ['f', FLOORS, '바닥']]) {
+      box.append(el2('h3', 'lp-sec', `${label} (바꾸기 🐚50)`));
+      const row = el2('div', 'row-center wrap');
+      list.forEach((c, i) => {
+        const cur = (inn[key] | 0) === i, b = el2('button', 'btn', cur ? '✔' : ''); b.style.cssText = `width:46px;height:46px;padding:0;background:${hexStr(c)}`;
+        b.setAttribute('aria-label', `${label} ${i + 1}${cur ? ', 지금' : ''}`); b.disabled = cur || (bag.shell || 0) < 50;
+        b.onclick = async () => { if ((bag.shell || 0) < 50) return; const r = await backend.homeSet(id, { [key]: i }); if (r.ok) { bag.shell -= 50; saveBag(); playSfx('coin'); } refillLife(); };
+        row.append(b);
+      });
+      box.append(row);
+    }
+    const owned = Object.entries(bag.fur).filter(([, n]) => n > 0);
+    box.append(el2('h3', 'lp-sec', '📦 내 가구 상자'));
+    if (!owned.length) box.append(el2('div', 'vempty', '아직 없어요. 아래 가구점에서 사요'));
+    else { const grid = el2('div', 'lp-grid'); for (const [t, n] of owned) { const f = FURN[+t], card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', f.icon), el2('div', 'lp-name', `${f.name} ×${n}`)); const b = el2('button', 'btn lp-btn', '놓기'); b.onclick = () => homeEditStart(+t, false); card.append(b); grid.append(card); } box.append(grid); }
+    box.append(el2('h3', 'lp-sec', '🏬 가구점'));
+    const grid = el2('div', 'lp-grid');
+    FURN.forEach((f, t) => {
+      const card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', f.icon), el2('div', 'lp-name', f.name), el2('div', 'lp-sub', `🐚 ${f.price}`));
+      const b = el2('button', 'btn lp-btn', '사서 놓기'); b.disabled = (bag.shell || 0) < f.price; b.onclick = () => homeEditStart(t, true); card.append(b); grid.append(card);
+    });
+    box.append(grid);
+    box.append(el2('p', 'hint', `놓은 가구 ${Object.keys(inn.c || {}).length} / ${HOME_IN.cols * HOME_IN.rows - DOOR_CELLS.size}칸`));
+  });
+}
+function homeEditStart(t, buy) { closeLife(); home.edit = { t, r: 0, buy }; renderHomeBar(); }
+function homeEditStop() { home.edit = null; if (home.ghost) { home.ghost.parent?.remove(home.ghost); home.ghost = null; home.ghostKey = ''; } renderHomeBar(); }
+function frontCell() { // 내 앞 칸
+  const id = home.id; if (!id) return null;
+  const [cx, cz] = inRoomCenter(id), p = player.pos, fx = p.x + Math.sin(player.heading) * 1.6, fz = p.z + Math.cos(player.heading) * 1.6;
+  const c = Math.round((fx - (cx - 5)) / 2), r = Math.round((fz - (cz - 4)) / 2);
+  return c >= 0 && c < HOME_IN.cols && r >= 0 && r < HOME_IN.rows ? `${c}_${r}` : null;
+}
+function cellFree(cell) { return cell && !DOOR_CELLS.has(cell) && !S.plots[home.id]?.in?.c?.[cell]; }
+async function homePlace() {
+  const e = home.edit, id = home.id; if (!e || !id) return;
+  const cell = frontCell();
+  if (!cellFree(cell)) { toast(cell && DOOR_CELLS.has(cell) ? '🚪 문 앞 길은 비워 둬요' : '🙅 여기에는 놓을 수 없어요. 빈 칸을 바라봐요', 'warn'); return; }
+  const f = FURN[e.t];
+  if (e.buy && (bag.shell || 0) < f.price) { toast(`🐚 조개돈이 ${f.price - (bag.shell || 0)} 모자라요`, 'warn'); return; }
+  if (!e.buy && !(bag.fur[e.t] > 0)) { homeEditStop(); return; }
+  const res = await backend.homeSet(id, { [`c/${cell}`]: { t: e.t, r: e.r } });
+  if (!res.ok) { if (res.reason !== 'offline') toast('🚫 놓지 못했어요. 한 번 더 해 봐요', 'warn'); return; }
+  if (e.buy) bag.shell -= f.price; else bag.fur[e.t]--;
+  saveBag(); playSfx('build');
+  const [x, z] = roomCellPos(id, cell); burst(new V3(x, 1, z), [0xFFD23C, 0xFFFFFF, 0x9BE36B], 20, 3, 2);
+  toast(`${f.icon} ${josa(f.name, '을', '를')} 놓았어요!`, 'success');
+  homeEditStop();
+}
+async function homeRemove(cell) {
+  const id = home.id, d = S.plots[id]?.in?.c?.[cell]; if (!d) return;
+  const res = await backend.homeSet(id, { [`c/${cell}`]: null });
+  if (res.ok) { bag.fur[d.t] = (bag.fur[d.t] || 0) + 1; saveBag(); playSfx('pick'); toast(`📦 ${FURN[d.t].icon} ${FURN[d.t].name}을(를) 내 가구 상자에 넣었어요`, 'info'); }
+}
+function updateHome(dt) {
+  // 집 문 (우리 집: 들어가기 · 친구 집: 놀러 가기)
+  const p = player.pos;
+  let door = null, bd = 6;
+  if (joined && inField(p.x, p.z)) for (const [id, pl] of Object.entries(S.plots)) { if (!pl.h) continue; const [lx, lz] = lotCenter(id), d = Math.hypot(p.x - lx, p.z - (lz - 0.4)); if (d < bd) { bd = d; door = id; } }
+  home.doorId = door; if (door) { const [lx, lz] = lotCenter(door); home.doorI.pos.set(lx, 1, lz - 0.4); } else home.doorI.pos.set(0, -99, 0);
+  const inside = homeRegion(), rid = inside ? roomAt(p.x, p.z) : '';
+  document.body.classList.toggle('in-home', inside);
+  if (inside && rid && (rid !== home.id || !home.group)) buildRoom(rid);
+  if (!inside && home.group) { scene.remove(home.group); removeColliders('in:' + home.id); home.group = null; home.id = ''; homeEditStop(); }
+  if (home.group && home.id) {
+    const pl = S.plots[home.id];
+    if (!pl || !pl.h) { goHome(home.id, false); return; } // 선생님이 땅을 비웠어요
+    if (JSON.stringify(pl.in || {}) !== home.key) buildRoom(home.id);
+    const [cx, cz] = inRoomCenter(home.id); home.exitI.pos.set(cx, 1, cz + HOME_IN.d / 2 - 0.8);
+    // 놓은 가구 치우기 (주인만)
+    let best = null, bd2 = 1.7;
+    if (pl.o === backend.uid && !home.edit) for (const cell of Object.keys(pl.in?.c || {})) { const [x, z] = roomCellPos(home.id, cell), d = Math.hypot(p.x - x, p.z - z); if (d < bd2) { bd2 = d; best = cell; } }
+    home.inCell = best; if (best) { const [x, z] = roomCellPos(home.id, best); home.inItem.pos.set(x, 1, z); } else home.inItem.pos.set(0, -99, 0);
+  } else { home.exitI.pos.set(0, -99, 0); home.inItem.pos.set(0, -99, 0); }
+  // 미리보기 가구
+  if (home.edit && home.group) {
+    const cell = frontCell(), key = `${home.edit.t}|${home.edit.r}|${cell}|${cellFree(cell)}`;
+    if (key !== home.ghostKey) {
+      home.ghostKey = key; if (home.ghost) home.ghost.parent?.remove(home.ghost);
+      home.ghost = null;
+      if (cell) {
+        const g = new THREE.Group(), [x, z] = roomCellPos(home.id, cell); g.position.set(x, 0.1, z); g.rotation.y = home.edit.r * Math.PI / 2;
+        buildFurn(home.edit.t, g);
+        const ok = cellFree(cell), mat = new THREE.MeshBasicMaterial({ color: ok ? 0x9BE36B : 0xE2584A, transparent: true, opacity: 0.45, depthWrite: false });
+        g.traverse(o => { if (o.isMesh) o.material = mat; });
+        const pad = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), mat); pad.rotation.x = -Math.PI / 2; pad.position.y = 0.03; g.add(pad);
+        scene.add(g); home.ghost = g;
+      }
+    }
+  }
+  if ((home.t = (home.t || 0) - dt) <= 0) { home.t = 0.3; renderHomeBar(); }
+}
+function initHomeUI() {
+  home.doorI = addInteract({ pos: new V3(0, -99, 0), r: 2.2, text: () => { const pl = S.plots[home.doorId]; if (!pl) return null; return pl.o === backend?.uid ? ['우리 집 들어가기 🚪', '집 안을 꾸밀 수 있어요'] : ['친구 집 놀러 가기 🏠', `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집 · 구경만 해요`]; }, run: () => goHome(home.doorId, true) });
+  home.exitI = addInteract({ pos: new V3(0, -99, 0), r: 1.8, text: () => home.id ? ['밖으로 나가기 🚪', '마당으로'] : null, run: () => goHome(home.id, false) });
+  home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => home.inCell ? ['가구 치우기 📦', `${FURN[S.plots[home.id]?.in?.c?.[home.inCell]?.t | 0]?.name} → 내 가구 상자`] : null, run: () => homeRemove(home.inCell) });
+  $('hbEdit').onclick = openHomeDecor;
+  $('hbHouse').onclick = () => openHouse();
+  $('hbPlace').onclick = homePlace;
+  $('hbRot').onclick = () => { if (home.edit) { home.edit.r = (home.edit.r + 1) % 4; } };
+  $('hbCancel').onclick = homeEditStop;
+  $('hbExit').onclick = () => { if (home.id) goHome(home.id, false); };
+  addEventListener('keydown', e => { // 가구를 고른 동안: E 놓기 · R 돌리기 · Esc 그만
+    if (!home.edit || e.repeat) return;
+    if (e.target instanceof Element && e.target.matches('input, textarea, select')) return;
+    const k = e.key.toLowerCase();
+    if (k === 'e') { e.stopImmediatePropagation(); homePlace(); }
+    else if (k === 'r') { e.stopImmediatePropagation(); home.edit.r = (home.edit.r + 1) % 4; }
+    else if (k === 'escape') { e.stopImmediatePropagation(); homeEditStop(); }
+  }, true);
+}
+
+/* =====================================================================
    45. 시작 & 반복
    ===================================================================== */
 await Promise.race([Promise.all([document.fonts.load('800 40px Pretendard', '가나다ABC123'), document.fonts.load('500 20px Pretendard', '가')]), sleep(3500)]).catch(() => {});
@@ -10744,7 +10994,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildFundWorld(); initEconUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -10766,6 +11016,7 @@ function loop() {
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   updateFund(dt);
+  if (joined) updateHome(dt);
   updateFx(dt); grassWind.value = time;
   updateControl(); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
