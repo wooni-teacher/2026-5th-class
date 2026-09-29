@@ -407,6 +407,38 @@
   #teachBar #tbFreeze[aria-pressed="true"] { background: var(--sun); }
   #bigMap { border: 3px solid var(--ink); border-radius: 12px; display: block; }
   .map-legend { margin: 10px 0; font-size: 15px; }
+  #meetBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(112px + var(--safe-bottom)); display: flex; gap: 6px; padding: 6px; flex-wrap: wrap; justify-content: center; max-width: 94vw; }
+  #meetBar .btn { font-size: 16px; padding: 7px 10px; background: #fff; white-space: nowrap; }
+  #meetBar #mbHand[aria-pressed="true"], #meetBar #mbView[aria-pressed="true"] { background: var(--sun); }
+  #meetTeach { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); width: min(260px, 44vw); padding: 10px; max-height: 60vh; overflow-y: auto; }
+  #meetTeach b { display: block; text-align: center; font-weight: 400; font-size: 18px; margin-bottom: 4px; }
+  #mtBody { display: flex; flex-direction: column; gap: 6px; }
+  #mtBody .btn { font-size: 15px; padding: 7px 10px; background: #fff; }
+  #mtBody .hint { margin: 2px 0; font-size: 14px; }
+  .mt-now { margin: 0; font-size: 15px; text-align: center; }
+  .mt-hands { display: flex; flex-wrap: wrap; gap: 4px; }
+  .mt-hands .btn { background: #FFE9A8 !important; }
+  .mv-opts { display: grid; gap: 8px; margin: 10px 0; }
+  .mv-opt { font-size: 20px; padding: 12px; background: #fff; }
+  .mv-opt.on { background: #FFF3C4; box-shadow: 0 0 0 3px var(--ink) inset; }
+  .meet-form { display: grid; gap: 6px; margin: 8px 0; }
+  .meet-form label { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+  .meet-form input { flex: 1; user-select: text; -webkit-user-select: text; }
+  .meet-log { margin: 4px 0 8px; padding-left: 20px; font-size: 14px; max-height: 200px; overflow-y: auto; }
+  .meet-log li { margin: 4px 0; } .meet-log .btn { font-size: 13px; padding: 3px 8px; background: #fff; }
+  #meetTeach { width: min(320px, 46vw); max-height: calc(100vh - 110px); }
+  #mtBody input, #mtBody select { user-select: text; -webkit-user-select: text; font-size: 15px; padding: 5px 7px; min-width: 0; }
+  .mt-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; } .mt-row input { flex: 1; }
+  .mt-col { display: flex; flex-direction: column; gap: 4px; }
+  .mt-lab { font-size: 14px; opacity: .8; } .mt-sub { margin: 6px 0 0; font-size: 14px; }
+  .mt-list { margin: 0; padding-left: 16px; font-size: 13px; } .mt-list li { margin: 2px 0; }
+  .mt-x { border: 0; background: none; cursor: pointer; font-size: 13px; opacity: .6; margin-left: 4px; }
+  .mv-script { max-height: 52vh; overflow-y: auto; text-align: left; margin: 8px 0; }
+  .mv-sec { padding: 8px 10px; border-radius: 12px; margin-bottom: 6px; } .mv-sec.now { background: #FFF3C4; box-shadow: 0 0 0 3px var(--ink) inset; }
+  .mv-sec b { font-weight: 400; font-size: 18px; } .mv-sec p { margin: 3px 0 0 8px; font-size: 16px; line-height: 1.45; } .mv-promise { color: #6A5A4A; }
+  .mv-opt { display: flex; flex-direction: column; align-items: flex-start; text-align: left; } .mv-opt small { font-size: 14px; opacity: .75; } .mv-opt em { font-style: normal; font-size: 14px; align-self: flex-end; }
+  body.touch #meetBar { bottom: auto; top: calc(80px + var(--safe-top)); max-width: calc(100vw - 300px); }
+  @media (max-width: 760px) { body.touch #meetBar { max-width: 96vw; top: calc(118px + var(--safe-top)); } }
   .tl-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; justify-content: center; }
   .tl-lab { font-size: 15px; min-width: 52px; text-align: right; opacity: .8; }
   .tl-opts { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -553,6 +585,10 @@
   <div id="guideText"></div>
 </div>
 <div id="freezeBar" class="hidden" role="alert"><div class="sticker"><b>✋ 잠깐 멈춤!</b><span>선생님 이야기를 들어요</span></div></div>
+<div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
+  <button class="btn" id="mbHand" aria-pressed="false">🙋 손들기</button><button class="btn" id="mbGood">👍 좋아요</button><button class="btn" id="mbThink">🤔 다른 생각</button><button class="btn" id="mbAsk">❓ 궁금해요</button><button class="btn hidden" id="mbVote" style="background:var(--sun)">🗳️ 목표 투표</button><button class="btn hidden" id="mbLike" style="background:var(--sun)">💡 제안 공감</button><button class="btn" id="mbScript">📜 대본</button><button class="btn" id="mbView" aria-pressed="false">📋 칠판 보기</button>
+</div>
+<div id="meetTeach" class="sticker hidden" role="group" aria-label="학급회의 진행 (선생님)"><b>🏫 회의 진행</b><div id="mtBody"></div></div>
 <div id="teachBar" class="sticker hidden" role="group" aria-label="선생님 수업 도구">
   <button class="btn" id="tbGather">📣 모두 모여</button>
   <button class="btn" id="tbFreeze" aria-pressed="false">✋ 잠깐 멈춤</button>
@@ -565,6 +601,13 @@
   <div id="kiteLevel" class="kb-level"></div>
   <div class="row-center"><button class="btn" id="kitePull" style="background:var(--leaf);color:#fff">🪁 당기기</button><button class="btn" id="kiteStop" style="background:#fff">그만</button></div>
 </div>
+<section id="meetVotePanel" class="modal sticker hidden" aria-label="학급회의 투표">
+  <h2 id="mvHead">🗳️ 투표해요</h2>
+  <p class="hint" id="mvTitle" style="font-size:18px;text-align:center"></p>
+  <div id="mvOpts" class="mv-opts"></div>
+  <p class="hint" id="mvNote" style="text-align:center"></p>
+  <div class="row-center"><button class="btn" id="mvClose">닫기</button></div>
+</section>
 <section id="muralPanel" class="modal sticker hidden" aria-label="함께 그리는 벽화">
   <h2>🖌️ 함께 그리는 벽화</h2>
   <p class="hint" id="muralInfo"></p>
@@ -752,6 +795,28 @@
     </div>
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
     <p class="hint" style="margin-top:6px">선생님 화면 왼쪽에도 모이기·멈춤 버튼이 있어요. 멈춤은 10분이 지나면 저절로 풀려요.</p>
+
+    <h3 id="tpMeetSec">🏫 학급회의 (학교 건물 안 교실)</h3>
+    <p class="hint" id="tpMeetNow"></p>
+    <p class="hint">회의 대본 순서대로 진행해요: ① 개회선언·우리반 약속 → ② 거울(돌아보기) 회의 → ③ 다음 달 목표 정하기 → ④ 제안하기 → ⑤ 선생님 말씀 → ⑥ 폐회선언. 시작한 뒤에는 교실 안 오른쪽 위 🏫 회의 진행판으로 단계를 넘기고, 나온 의견을 받아 적어요.</p>
+    <div class="row-center wrap">
+      <label class="sr-only" for="tpMeetMo">회의 달</label><select id="tpMeetMo" class="tinput" style="width:auto"></select>
+      <label class="sr-only" for="tpMeetPe">교시</label><select id="tpMeetPe" class="tinput" style="width:auto"></select>
+      <button class="btn" id="tpMeetStart" style="background:var(--leaf);color:#fff">📋 학급회의 시작</button>
+    </div>
+    <div class="row-center wrap" style="margin-top:6px">
+      <button class="btn" id="tpMeetCall" style="background:#fff">📣 모두 교실로 부르기</button>
+      <button class="btn danger" id="tpMeetEnd">⏹ 회의 끝내기</button>
+    </div>
+    <p style="margin:10px 0 2px;font-size:16px">🤝 우리반 약속 (개회 때 칠판에 나와요, 한 줄 40자)</p>
+    <div class="meet-form">
+      <input id="tpProm0" class="tinput" maxlength="40"><input id="tpProm1" class="tinput" maxlength="40"><input id="tpProm2" class="tinput" maxlength="40"><input id="tpProm3" class="tinput" maxlength="40"><input id="tpProm4" class="tinput" maxlength="40" placeholder="(없어도 돼요)">
+    </div>
+    <div class="row-center wrap"><button class="btn" id="tpPromSave" style="background:#fff">🤝 약속 저장</button>
+      <label style="font-size:15px">자치팀 <select id="tpTeams" class="tinput" style="width:auto"><option value="3">3팀 (가로줄: 앞·가운데·뒷줄)</option><option value="5">5팀 (세로줄)</option></select></label></div>
+    <p style="margin:10px 0 2px;font-size:16px">📋 회의록 (우리반 학급회의 기록 양식 · 🖨️로 인쇄하거나 PDF로 저장)</p>
+    <ul id="tpMeetLog" class="meet-log"></ul>
+    <div class="row-center"><button class="btn danger" id="tpMeetLogClear">🧹 회의록 모두 지우기</button></div>
 
     <h3>🧑‍🏫 선생님 모습 (모두에게 보여요)</h3>
     <p class="hint">선생님 아바타에는 늘 <b>🧑‍🏫 선생님</b> 표시와 금빛 발밑 고리가 붙고, 지도에는 ⭐로 보여요. 아래에서 꾸밀 것을 골라요. (고른 모습은 이 기기에 저장)</p>
@@ -1042,6 +1107,7 @@
    43. 한옥 마을
    44. 함께 그리는 벽화
    46. 선생님 모습
+   47. 우리 반 교실 · 학급회의
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1278,10 +1344,31 @@ function sanitizeState(raw) {
   if (ct.freeze != null && ok(Number.isFinite(ct.freeze) && ct.freeze >= 0)) out.control.freeze = ct.freeze;
   if (ct.mute != null && ok(isInt(ct.mute, 0, 1))) out.control.mute = ct.mute;
   if (ct.lite != null && ok(isInt(ct.lite, 0, 1))) out.control.lite = ct.lite;
-  for (const [p, cells] of Object.entries(plainObj(v.mural))) { // 벽화: 그림 번호 → 칠한 칸 번호 (누가 칠했는지는 없음)
-    if (!ok(isInt(+p, 0, MURALS.length - 1))) continue;
-    for (const [c, x] of Object.entries(plainObj(cells))) if (ok(isInt(+c, 0, MW * MH - 1) && x === true)) (out.mural[p] ||= {})[c] = true;
+  if (ct.cls != null && ok(Number.isFinite(ct.cls) && ct.cls >= 0)) out.control.cls = ct.cls;
+  // 학급회의 (안건·기록 글은 선생님만 써요): 회의 진행, 투표(기기→목표 id), 공감, 회의록, 우리반 약속
+  const idOk = (k) => /^[a-z0-9]{1,12}$/.test(k), strOk = (x, n) => typeof x === 'string' && x.length >= 1 && x.length <= n;
+  const strMap = (x, n, max) => { const o = {}; for (const [k, t] of Object.entries(plainObj(x)).slice(0, max)) if (ok(idOk(k) && strOk(t, n))) o[k] = t; return o; };
+  const mirrorOf = (x) => { const o = {}; for (const k of ['g', 'b', 'w']) { const mm = strMap(plainObj(x)[k], 40, 20); if (Object.keys(mm).length) o[k] = mm; } return o; };
+  const propsOf = (x, withL) => { const o = {}; for (const [k, p] of Object.entries(plainObj(x)).slice(0, 12)) if (ok(idOk(k) && p && strOk(p.t, 30) && (p.y == null || strOk(p.y, 60)))) { o[k] = { t: p.t }; if (p.y) o[k].y = p.y; if (withL && isInt(p.l, 0, 99)) o[k].l = p.l; } return o; };
+  const mt = v.meeting;
+  if (mt && ok(idOk(String(mt.r)) && Number.isFinite(mt.at) && isInt(mt.step, 0, 5) && isInt(mt.mo, 1, 12))) {
+    const o = { r: mt.r, at: mt.at, step: mt.step, mo: mt.mo, sp: isInt(mt.sp, 0, 15) ? mt.sp : 0, team: isInt(mt.team, 0, 5) ? mt.team : 0, timer: Number.isFinite(mt.timer) ? mt.timer : 0, vst: isInt(mt.vst, 0, 2) ? mt.vst : 0,
+      mirror: mirrorOf(mt.mirror), goals: strMap(mt.goals, 30, 6), props: propsOf(mt.props) };
+    if (isInt(mt.pe, 1, 7)) o.pe = mt.pe; if (isInt(mt.n, 0, 40)) o.n = mt.n; if (strOk(mt.goal, 30)) o.goal = mt.goal; if (strOk(mt.tw, 100)) o.tw = mt.tw;
+    out.meeting = o;
   }
+  for (const [r, votes] of Object.entries(plainObj(v.meetVotes))) { if (!ok(idOk(r))) continue; for (const [u, g] of Object.entries(plainObj(votes))) if (ok(ANON_ID.test(u) && typeof g === 'string' && idOk(g))) (out.meetVotes[r] ||= {})[u] = g; }
+  for (const [r, ps] of Object.entries(plainObj(v.meetLikes))) { if (!ok(idOk(r))) continue; for (const [p, us] of Object.entries(plainObj(ps))) { if (!ok(idOk(p))) continue; for (const [u, x] of Object.entries(plainObj(us))) if (ok(ANON_ID.test(u) && x === true)) ((out.meetLikes[r] ||= {})[p] ||= {})[u] = true; } }
+  for (const [k, e] of Object.entries(plainObj(v.meetLog))) {
+    if (!ok(idOk(k) && e && Number.isFinite(e.at) && isInt(e.mo, 1, 12))) continue;
+    const vc = {}; for (const [g, n] of Object.entries(plainObj(e.vc))) if (idOk(g) && isInt(n, 0, 99)) vc[g] = n;
+    const rec = { at: e.at, mo: e.mo, n: isInt(e.n, 0, 40) ? e.n : 0, mirror: mirrorOf(e.mirror), goals: strMap(e.goals, 30, 6), vc, props: propsOf(e.props, true) };
+    if (isInt(e.pe, 1, 7)) rec.pe = e.pe; if (strOk(e.goal, 30)) rec.goal = e.goal; if (strOk(e.tw, 100)) rec.tw = e.tw;
+    out.meetLog[k] = rec;
+  }
+  const mc = plainObj(v.meetCfg);
+  { const pr = {}; for (const [i, t] of Object.entries(plainObj(mc.promise))) if (ok(/^[0-4]$/.test(i) && strOk(t, 40))) pr[i] = t; if (Object.keys(pr).length) out.meetCfg.promise = pr; }
+  if (mc.teams === 3 || mc.teams === 5) out.meetCfg.teams = mc.teams;
   const hvv = v.hv; // 한옥 마을: 재료 수, 상자 시각, 지은 곳, 연날리기 성공 (기기 번호만)
   if (ok(isInt(hvv.picks, 0, 500))) out.hv.picks = hvv.picks;
   for (const [k, t] of Object.entries(plainObj(hvv.crates))) if (ok(isInt(+k, 0, HV_CRATES.length - 1) && Number.isFinite(t))) out.hv.crates[k] = t;
@@ -1317,7 +1404,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {} }; }
+function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1348,6 +1435,11 @@ function normalize(v) {
     control: v.control || {},
     quiz: v.quiz || null,
     mural: Object.fromEntries(Object.entries(toObj(v.mural)).map(([p, c]) => [p, toObj(c)])),
+    meeting: v.meeting ? { ...v.meeting, mirror: Object.fromEntries(Object.entries(toObj(v.meeting.mirror)).map(([k, x]) => [k, toObj(x)])), goals: toObj(v.meeting.goals), props: toObj(v.meeting.props) } : null,
+    meetVotes: Object.fromEntries(Object.entries(toObj(v.meetVotes)).map(([r, c]) => [r, toObj(c)])),
+    meetLikes: Object.fromEntries(Object.entries(toObj(v.meetLikes)).map(([r, ps]) => [r, Object.fromEntries(Object.entries(toObj(ps)).map(([p, u]) => [p, toObj(u)]))])),
+    meetLog: Object.fromEntries(Object.entries(toObj(v.meetLog)).map(([k, e]) => [k, { ...e, mirror: Object.fromEntries(Object.entries(toObj(e?.mirror)).map(([c, x]) => [c, toObj(x)])), goals: toObj(e?.goals), vc: toObj(e?.vc), props: toObj(e?.props) }])),
+    meetCfg: { ...toObj(v.meetCfg), promise: toObj(v.meetCfg?.promise) },
     hv: { picks: v.hv?.picks || 0, crates: toObj(v.hv?.crates), built: v.hv?.built || {}, kite: v.hv?.kite || {} },
     rvote: v.rvote ? { ...v.rvote, cands: v.rvote.cands || {}, votes: v.rvote.votes || {} } : null,
   };
@@ -1431,6 +1523,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async importState(c) { for (const k of Object.keys(st)) delete st[k]; Object.assign(st, JSON.parse(JSON.stringify(c))); emit(); return { ok: true }; },
     subscribe(fn) { onState = fn; emit(); },
     async quizPick() { st.picks++; emit(); return { ok: true }; }, // 배움 게시판 정답 → 마을 재료 +1
+    async meetVote(r, g) { const m = st.meeting; if (!m || m.vst !== 1 || m.r !== r || !m.goals?.[g]) return { ok: false, reason: 'closed' }; st.meetVotes ||= {}; st.meetVotes[r] ||= {}; if (st.meetVotes[r].me !== undefined) return { ok: false, reason: 'done' }; st.meetVotes[r].me = g; emit(); return { ok: true }; },
+    async meetLike(r, p) { const m = st.meeting; if (!m || m.step !== 3 || m.r !== r || !m.props?.[p]) return { ok: false, reason: 'closed' }; st.meetLikes ||= {}; st.meetLikes[r] ||= {}; st.meetLikes[r][p] ||= {}; if (st.meetLikes[r][p].me) return { ok: false, reason: 'done' }; st.meetLikes[r][p].me = true; emit(); return { ok: true }; },
     async paintMural(p, c) { st.mural[p] ||= {}; if (st.mural[p][c]) return { ok: false }; st.mural[p][c] = true; emit(); return { ok: true }; },
     async hvPick(i) { const t = st.hv.crates[i]; if (t && Date.now() - t < HV_CRATE_MS) return { ok: false }; st.hv.crates[i] = Date.now(); st.hv.picks = (st.hv.picks || 0) + 1; emit(); return { ok: true }; },
     async hvBuild(id) { if (st.hv.built[id]) return { ok: false, reason: 'built' }; if (hvMaterials(st) < HV_SITE[id].cost) return { ok: false, reason: 'materials' }; st.hv.built[id] = true; emit(); return { ok: true }; },
@@ -1631,6 +1725,14 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
         catch (e) { await sleep(200 + Math.random() * 250); }
       }
       return { ok: false };
+    },
+    async meetVote(r, g) { // 한 회차에 한 번만 (규칙이 막아요). 누가 무엇을 골랐는지는 화면에 보여 주지 않아요
+      try { await D.set(R(`state/meetVotes/${r}/${uid}`), g); return { ok: true }; }
+      catch (e) { return { ok: false, reason: cache.meetVotes?.[r]?.[uid] !== undefined ? 'done' : 'denied' }; }
+    },
+    async meetLike(r, p) { // 제안마다 한 번만 공감
+      try { await D.set(R(`state/meetLikes/${r}/${p}/${uid}`), true); return { ok: true }; }
+      catch (e) { return { ok: false, reason: cache.meetLikes?.[r]?.[p]?.[uid] ? 'done' : 'denied' }; }
     },
     async paintMural(p, c) { // 칸마다 한 번만 (규칙이 막아요)
       try { await D.set(R(`state/mural/${p}/${c}`), true); return { ok: true }; }
@@ -1844,7 +1946,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -2545,8 +2647,10 @@ function animateAvatar(a, moving, dt, grounded, reading) {
 
 // ---- 몸짓 (낚시 찌 던지기·채집·인사 등) ----
 // 몸짓 번호는 위치와 함께 보내서 친구 화면에서도 같은 몸짓이 보여요 (글자·이름은 보내지 않아요)
-const ACTS = ['', 'cast', 'fish', 'reel', 'show', 'net', 'shake', 'mine', 'pick', 'water', 'cheer', 'wave', 'dance', 'clap', 'bow', 'yaho', 'look', 'oops'];
-const ACT_D = { cast: 0.8, fish: Infinity, reel: 0.45, show: 1.6, net: 0.6, shake: 0.9, mine: 1.0, pick: 0.7, water: 1.2, cheer: 1.4, wave: 1.6, dance: 2.8, clap: 1.4, bow: 1.2, yaho: 1.8, look: Infinity, oops: 1.0 };
+const ACTS = ['', 'cast', 'fish', 'reel', 'show', 'net', 'shake', 'mine', 'pick', 'water', 'cheer', 'wave', 'dance', 'clap', 'bow', 'yaho', 'look', 'oops',
+  'sit', 'sithand', 'sitgood', 'sitthink', 'sitask', 'hand', 'good', 'think', 'ask']; // 교실: 앉기·손들기·반응 (32개까지)
+const ACT_D = { cast: 0.8, fish: Infinity, reel: 0.45, show: 1.6, net: 0.6, shake: 0.9, mine: 1.0, pick: 0.7, water: 1.2, cheer: 1.4, wave: 1.6, dance: 2.8, clap: 1.4, bow: 1.2, yaho: 1.8, look: Infinity, oops: 1.0,
+  sit: Infinity, sithand: Infinity, sitgood: 4, sitthink: 4, sitask: 4, hand: Infinity, good: 4, think: 4, ask: 4 };
 const ACT_KEEP = new Set(['cast', 'fish', 'reel', 'show', 'cheer', 'wave', 'clap', 'yaho', 'oops']); // 걸어도 이어지는 몸짓
 let myAct = 0, actSeq = 0;
 const easeOut = (u) => 1 - (1 - u) ** 3, easeBack = (u) => 1 + 2.7 * (u - 1) ** 3 + 1.7 * (u - 1) ** 2;
@@ -2578,6 +2682,7 @@ function playAct(a, k, o = {}) {
     if (o.img) { a.held = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(o.img), transparent: true, depthWrite: false })); a.held.material.map.colorSpace = THREE.SRGBColorSpace; a.held.scale.setScalar(1.3); a.held.position.y = 3.65; a.g.add(a.held); }
     else a.held = makeLabel(a.g, [o.icon || '✨'], 0.95, 0, 3.6, 0, { stroke: false, pad: 4, font: 80 });
   }
+  { const ri = REACT[k?.startsWith('sit') ? k.slice(3) : k]; if (ri) a.held = makeLabel(a.g, [ri], 0.8, 0, a.tcode ? 3.95 : 3.55, 0, { stroke: false, pad: 4, font: 80 }); } // 교실 반응
   if (k === 'yaho') a.bubble = makeLabel(a.g, ['야호~!'], 0.62, 0, 3.75, 0, { bg: '#FFFFFF', fg: '#3B2F2A', font: 56, pad: 12 });
   if (a === player.avatar && ['cheer', 'yaho', 'clap'].includes(k)) playSfx(k);
   if (a === player.avatar) { actSeq = (actSeq + 1) % 8; myAct = actSeq * 32 + Math.max(0, ACTS.indexOf(k || '')); }
@@ -2618,6 +2723,17 @@ function poseAct(a, dt, moving, arms) { // 몸짓 자세 (팔·몸 기울기·�
       case 'yaho': arms[0] = arms[1] = -2.3; a.armL.rotation.z = 0.55; a.armR.rotation.z = -0.55; a.head.rotation.x = -0.35; hop = u < 0.2 ? Math.sin(u / 0.2 * Math.PI) * 0.3 : 0; break;
       case 'look': arms[0] = arms[1] = -1.35; a.armL.rotation.z = 0.3; a.armR.rotation.z = -0.3; break;
       case 'oops': a.head.rotation.y = Math.sin(t * 14) * 0.4 * (1 - u); a.armL.rotation.z = -0.35; a.armR.rotation.z = 0.35; arms[0] = arms[1] = -0.2; break;
+      case 'sit': case 'sithand': case 'sitgood': case 'sitthink': case 'sitask': // 의자에 앉기 (+ 손들기·반응)
+        a.legL.rotation.x = a.legR.rotation.x = -1.45; R.position.y -= 0.3; arms[0] = arms[1] = -0.6;
+        if (ac.k === 'sithand') { arms[1] = -2.95; a.armR.rotation.z = Math.sin(t * 3) * 0.06; }
+        else if (ac.k === 'sitgood') arms[1] = -1.5;
+        else if (ac.k === 'sitthink') { arms[1] = -2.0; a.armR.rotation.z = 0.5; a.head.rotation.z = -0.12; }
+        else if (ac.k === 'sitask') { arms[1] = -2.4; a.head.rotation.z = 0.15; }
+        break;
+      case 'hand': arms[1] = -2.95; a.armR.rotation.z = Math.sin(t * 3) * 0.06; break;
+      case 'good': arms[1] = -1.5; break;
+      case 'think': arms[1] = -2.0; a.armR.rotation.z = 0.5; a.head.rotation.z = -0.12; break;
+      case 'ask': arms[1] = -2.4; a.head.rotation.z = 0.15; break;
     }
     if (ac.t >= ac.d) { if (ac.next && !a.remote) playAct(a, ac.next, { icon: ac.icon, img: ac.img }); else { clearHeld(a); a.act = null; } }
   }
@@ -2776,6 +2892,11 @@ function updateCamera(dt) {
     camera.lookAt(t);
     return;
   }
+  if (cls.view) { // 📋 칠판 보기: 교실 뒤쪽 위에서 칠판과 반 전체를 봐요 (움직이면 돌아와요)
+    const moved = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(k => keys[k]) || joy.x || joy.y || jumpBuffer > 0;
+    if (moved || !classRegion()) { cls.view = false; renderMeetUI(); }
+    else { camera.position.lerp(new V3(CR.x, 4.6, CR.z + 1.5), 1 - Math.exp(-dt * 4)); camera.lookAt(CR.x, 1.7, CR.z - 11); return; }
+  }
   if (mtn.view) { // 🔭 망원경: 꼭대기에서 학교 → 광장 → 들판 쪽으로 천천히 둘러봐요
     const v = mtn.view; v.t += dt;
     const moved = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(k => keys[k]) || joy.x || joy.y || jumpBuffer > 0;
@@ -2787,10 +2908,11 @@ function updateCamera(dt) {
     }
   }
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
+  const inCls = player.pos.x > 600, cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
   const want = new V3(
-    t.x + Math.sin(camYaw) * Math.cos(camPitch) * camDist,
-    t.y + Math.sin(camPitch) * camDist,
-    t.z + Math.cos(camYaw) * Math.cos(camPitch) * camDist,
+    t.x + Math.sin(camYaw) * Math.cos(cp) * cd,
+    t.y + Math.sin(cp) * cd,
+    t.z + Math.cos(camYaw) * Math.cos(cp) * cd,
   );
   want.y = Math.max(want.y, terrainH(want.x, want.z) + 0.9); // 산비탈 속으로 들어가지 않게
   camera.position.lerp(want, 1 - Math.exp(-dt * 10));
@@ -2815,6 +2937,7 @@ function onPlayers(type, uid, data) {
     r = { a: makeAvatar(data.a | 0, data.c | 0, data.h | 0, data.k | 0), pos: new V3(data.x, data.y, data.z), heading: data.r || 0, target: data, lastM: data.m | 0 };
     r.a.remote = true;
     r.a.g.position.copy(r.pos);
+    if (ACTS[r.lastM % 32]) playAct(r.a, ACTS[r.lastM % 32]); // 이미 앉아 있거나 손을 든 친구도 그대로 보여요
     r.buf = [];
     remotes.set(uid, r);
     refreshSyncStatus();
@@ -3210,6 +3333,7 @@ function applyState(st) {
   syncQuiz(prev, first);
   syncHanok(prev, first);
   syncMural(prev, first);
+  syncMeeting(prev, first);
   syncRewardVote(prev, first);
   syncJump(prev, first);
   syncForest(prev, first);
@@ -3906,7 +4030,7 @@ function syncMission(prev, first) {
 }
 
 function closeModals() {
-  for (const id of ['tip', 'picker', 'decorMenu', 'missionPanel', 'teacherPanel', 'votePanel', 'activityPanel', 'memGame', 'dropGame', 'patGame', 'lifePanel', 'quizPanel', 'mapPanel']) $(id).classList.add('hidden');
+  for (const id of ['tip', 'picker', 'decorMenu', 'missionPanel', 'teacherPanel', 'votePanel', 'activityPanel', 'memGame', 'dropGame', 'patGame', 'lifePanel', 'quizPanel', 'mapPanel', 'meetVotePanel']) $(id).classList.add('hidden');
 }
 function openMissionPanel() { closeModals(); $('missionPanel').classList.remove('hidden'); fillMissionPanel(); }
 function fillNotice() {
@@ -3966,7 +4090,7 @@ async function copyText(text, what) {
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
 function fillTeacherPanel() {
-  fillPlotAdmin(); fillHvAdmin();
+  fillPlotAdmin(); fillHvAdmin(); fillMeetAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -5430,7 +5554,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -8268,8 +8392,9 @@ function updateMap(dt) {
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
   const want = hvRegion() ? MAPB_HV : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
-  $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active);
-  if (mapUI.show && !placing.active) drawMini();
+  const inCls = classRegion(); // 교실 안에서는 작은 지도를 숨겨요
+  $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
+  if (mapUI.show && !placing.active && !inCls) drawMini();
   if (!$('mapPanel').classList.contains('hidden')) drawBig();
 }
 function initMapUI() {
@@ -8663,7 +8788,7 @@ const HV_SITE = Object.fromEntries(HV_SITES.map(s => [s.id, s]));
 const HV_CRATES = [[486, -8], [490, 12], [507, -6], [514, 11], [528, -9], [533, 9], [553, -7], [556, 9]];
 const inHV = (x, z) => (x >= HV.x0 && x <= HV.x1 && z >= HV.z0 && z <= HV.z1 && Math.hypot(x - HV.pond[0], z - HV.pond[1]) > HV.pond[2] + 0.2)
   || (x >= HV.dock[0] && x <= HV.x0 && Math.abs(z) <= 1.3); // 나루터
-const hvRegion = () => joined && player.pos.x > 400;
+const hvRegion = () => joined && player.pos.x > 400 && player.pos.x < 600;
 const hvBuilt = (id) => !!S.hv?.built?.[id];
 const hvBuiltCount = (st = S) => HV_SITES.filter(s => st.hv?.built?.[s.id]).length;
 function hvMaterials(st = S) { let m = HV_START + (st.hv?.picks || 0); for (const s of HV_SITES) if (st.hv?.built?.[s.id]) m -= s.cost; return m; }
@@ -8944,7 +9069,7 @@ function syncHanok(prev, first) {
 }
 function updateHanok(dt) {
   if (!hv.group) return;
-  const near = player.pos.x > 300 || camera.position.x > 300;
+  const near = (player.pos.x > 300 && player.pos.x < 600) || (camera.position.x > 300 && camera.position.x < 600);
   hv.group.visible = hv.far.visible = hv.river.visible = near;
   hv.crates.forEach((c, k) => { const vis = hvCrateVisible(c.i); c.g.visible = vis && near; if (vis && near) { c.m.position.y = 0.9 + Math.sin(time * 2 + k) * 0.1; c.m.rotation.y = time * 0.6 + k; } });
   for (const info of Object.values(hv.sites)) if (!info.built && near) info.pad.material.emissiveIntensity = 0.45 + Math.sin(time * 3) * 0.3;
@@ -9375,6 +9500,582 @@ function renderTeachLookUI() {
 }
 
 /* =====================================================================
+   47. 우리 반 교실 · 학급회의 — 학교 건물 문으로 들어가면 책상·의자 15개가 있는 교실로 이동해요
+   · 회의 순서는 반월초 5학년 '회의 대본(회장, 부회장용)'과 '우리반 학급회의 기록' 양식을 따라요
+     ① 개회선언·우리반 약속 선서 ② 거울(돌아보기) 회의 ③ 다음 달 목표 정하기 ④ 제안하기 ⑤ 선생님 말씀 ⑥ 폐회선언
+   · 학생: 앉기 · 🙋 손들기 · 👍/🤔/❓ 반응 · 목표 투표(무기명) · 제안 👍 공감 · 📜 대본 보기 (글쓰기 없음, 이름 없음 — 자리 번호만)
+   · 선생님(서기): 단계 넘기기, 타이머, 팀·자리 발언권, 거울 회의·나온 의견·제안·선생님 말씀 받아 적기, 회의록 저장·인쇄
+   · 저장: state/meeting (진행 중 회의), state/meetVotes/{회차}/{기기} = 목표 id, state/meetLikes/{회차}/{제안 id}/{기기} = true,
+           state/meetLog/{id} (회의록), state/meetCfg {promise 우리반 약속, teams 3|5}, state/control/cls (모두 교실로)
+   ===================================================================== */
+const CR = { x: 650, z: 0, w: 28, d: 24 }; // 교실 가운데와 크기
+const inClass = (x, z) => x >= CR.x - CR.w / 2 + 0.6 && x <= CR.x + CR.w / 2 - 0.6 && z >= CR.z - CR.d / 2 + 0.6 && z <= CR.z + CR.d / 2 - 0.6;
+const classRegion = () => joined && player.pos.x > 600;
+const SEATS = []; // [{ n, r 줄, c 칸, x, z (의자 자리) }]
+for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) SEATS.push({ n: r * 5 + c + 1, r, c, x: CR.x - 8 + c * 4, z: CR.z - 2.5 + r * 4.6 + 1.0 });
+const MEET_STEPS = ['개회선언 · 우리반 약속', '거울(돌아보기) 회의', '다음 달 목표 정하기', '제안하기', '선생님 말씀', '폐회선언'];
+const MEET_ICONS = ['🔔', '🪞', '🎯', '💡', '🧑‍🏫', '👏'];
+const MEET_SHORT = ['개회', '거울 회의', '목표 정하기', '제안하기', '선생님 말씀', '폐회'];
+const MIRROR = [['g', '좋았던 점', '😊'], ['b', '아쉬웠던 점', '😥'], ['w', '바라는 점', '🙏']];
+const DEFAULT_PROMISE = ['서로 존중하고 배려해요', '고운 말을 써요', '친구의 말을 끝까지 들어요', '맡은 일을 책임감 있게 해요'];
+// 회장·부회장 대본 (올려 주신 '회의 대본'과 같은 말. {월}·{팀}은 자동으로 바뀌어요)
+const MEET_SCRIPT = [
+  ['안녕하세요. 이제 우리반 학급회의를 시작하려고 합니다.', '친구들은 바르게 앉아 주시기 바랍니다.', '지금부터 {월}월 우리반 학급회의를 시작합니다.', '먼저 우리반 약속을 함께 읽겠습니다.', '한 문장씩 제가 읽으면, 여러분은 따라 읽어 주십시오.'],
+  ['다음은 거울(돌아보기) 회의 시간입니다.', '거울 회의는 좋았던 점, 아쉬웠던 점, 바라는 점을 이야기하는 시간입니다.', '먼저 자치팀별로 모여 이야기를 나누겠습니다.', '좋았던 점, 아쉬웠던 점, 바라는 점을 차례대로 이야기해 주세요.', '친구의 말을 끊지 않고 끝까지 잘 들어주면 좋겠습니다. (잠시 회의 시간)', '이제 자치팀별 발표를 시작하겠습니다.', '{팀} 발표자 학생부터 차례대로 일어나 발표해 주세요.', '발표한 학생들에게 박수를 쳐줍시다.', '친구들의 의견을 잘 들으며 우리 반을 더 좋은 반으로 만들어 가면 좋겠습니다.'],
+  ['다음은 다음 달 목표를 정하는 시간입니다.', '우리 반이 다음 달에 함께 실천하면 좋을 목표를 생각해 봅시다. (잠시 생각할 시간)', '의견이 있는 친구는 손을 들고 발표해 주세요. (발표자 발표 후)', '여러 친구들의 의견을 들었습니다.', '이제 나온 의견을 바탕으로 우리 반의 다음 달 목표를 정하겠습니다. (투표 진행)', '정해진 목표를 다시 한번 함께 말해 보겠습니다. (정한 목표 함께 읽기)', '우리 모두 다음 달 목표를 기억하고 함께 실천해 보면 좋겠습니다.'],
+  ['다음은 제안하기 시간입니다.', '우리 반을 더 나은 반으로 만들기 위한 생각이 있으면 발표해 주세요. (잠시 생각할 시간)', '제안할 때에는 제안하는 이유도 함께 말해 주면 더 좋습니다.', '여러분은 발표자의 말을 잘 들어 주세요. (발표 후)', '좋은 의견을 내 준 학생들에게 박수 부탁드립니다.', '오늘 나온 제안은 함께 생각해 보고 실천할 수 있도록 하겠습니다.'],
+  ['다음은 담임 선생님 말씀을 듣겠습니다.', '선생님, 말씀 부탁드립니다.'],
+  ['끝까지 바르게 참여해 준 친구들 감사합니다.', '이상으로 {월}월 우리반 학급회의를 마치겠습니다. 감사합니다.'],
+];
+const REACT = { hand: '✋', good: '👍', think: '🤔', ask: '❓' };
+const cls = { group: null, board: null, boardTex: null, boardKey: '', log: null, logTex: null, logKey: '', spots: [], teachKey: '', door: null, view: false, timerRang: 0, panel: '' };
+const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+const newId = () => Date.now().toString(36).slice(-6) + Math.random().toString(36).slice(2, 5);
+const byAt = (o) => Object.entries(o || {}).sort((a, b) => a[0] < b[0] ? -1 : 1); // id가 시간 순이라 적은 순서대로
+const teamsN = () => S.meetCfg?.teams === 5 ? 5 : 3;
+const teamOf = (s) => teamsN() === 5 ? s.c + 1 : s.r + 1;
+const teamName = (t) => teamsN() === 5 ? `${t}팀 (왼쪽에서 ${t}번째 세로줄)` : `${t}팀 (${['앞줄', '가운데 줄', '뒷줄'][t - 1]})`;
+const promiseLines = () => { const p = S.meetCfg?.promise; const l = p ? Object.keys(p).sort().map(k => p[k]).filter(Boolean) : []; return l.length ? l : DEFAULT_PROMISE; };
+const scriptFor = (step, m = S.meeting) => (MEET_SCRIPT[step] || []).map(l => l.replace('{월}', m?.mo || new Date().getMonth() + 1).replace('{팀}', m?.team ? `${m.team}팀` : '1팀'));
+function goalCounts(m = S.meeting) { const c = {}; if (m) for (const v of Object.values(S.meetVotes?.[m.r] || {})) if (m.goals?.[v]) c[v] = (c[v] || 0) + 1; return c; }
+const likeCount = (pid, m = S.meeting) => m ? Object.keys(S.meetLikes?.[m.r]?.[pid] || {}).length : 0;
+const myVote = () => S.meeting ? S.meetVotes?.[S.meeting.r]?.[backend?.uid] : undefined;
+const iLiked = (pid) => !!(S.meeting && S.meetLikes?.[S.meeting.r]?.[pid]?.[backend?.uid]);
+const timerLeft = () => { const t = S.meeting?.timer || 0; return t ? Math.max(0, Math.ceil((t - backend.now()) / 1000)) : 0; };
+function seatNear(x, z, r = 0.7) { let best = null, bd = r; for (const s of SEATS) { const d = Math.hypot(s.x - x, s.z - z); if (d < bd) { bd = d; best = s; } } return best; }
+const isSeated = (a) => !!a?.act?.k?.startsWith('sit');
+function mySeat() { return isSeated(player.avatar) ? seatNear(player.pos.x, player.pos.z) : null; }
+function classCount() { // 교실 안 학생 수 (선생님 제외 — 이 기기가 학생이면 나도 셈)
+  let n = !isTeacher && classRegion() ? 1 : 0;
+  for (const r of remotes.values()) if (r.pos.x > 600 && !r.target.t) n++;
+  return n;
+}
+async function meetDo(upd) { const res = await backend.adminUpdate(upd); if (!res.ok) toast('저장하지 못했어요. 선생님 등록과 데이터베이스 규칙을 확인해 주세요', 'warn'); return res.ok; }
+
+function buildClassroom() {
+  const g = new THREE.Group(); g.name = 'Classroom'; scene.add(g); cls.group = g;
+  const X = CR.x, Z = CR.z, W = CR.w, D = CR.d, o = { solid: false }, H = 3.2;
+  box(g, 140, 0.1, 140, 0x8CCB6A, X, -0.02, Z, o);                                                   // 바깥 운동장 풀밭
+  box(g, W, 0.2, D, 0xD9B07A, X, 0, Z);                                                              // 나무 바닥 (위가 0.1)
+  for (let i = -W / 2 + 1; i < W / 2; i += 2) box(g, 0.04, 0.02, D - 0.2, 0xC49A64, X + i, 0.11, Z, o); // 마루 줄
+  const wall = 0xFFF3DC, trim = 0xB07C50;
+  box(g, W + 0.6, H, 0.3, wall, X, H / 2, Z - D / 2); box(g, W + 0.6, H, 0.3, wall, X, H / 2, Z + D / 2);   // 앞뒤 벽
+  box(g, 0.3, H, D, wall, X - W / 2, H / 2, Z); box(g, 0.3, H, D, wall, X + W / 2, H / 2, Z);              // 옆 벽
+  for (const z of [Z - D / 2, Z + D / 2]) box(g, W + 0.6, 0.25, 0.34, trim, X, H, z, o);
+  box(g, 0.34, 0.25, D, trim, X - W / 2, H, Z, o); box(g, 0.34, 0.25, D, trim, X + W / 2, H, Z, o);
+  for (const z of [-7, -1, 5]) { box(g, 0.1, 1.5, 2.6, 0xBFE6FF, X - W / 2 + 0.2, 1.9, Z + z, o); box(g, 0.12, 1.6, 0.1, trim, X - W / 2 + 0.22, 1.9, Z + z, o); } // 왼쪽 창문
+  // 칠판 (회의 단계·대본·기록을 그려요) — 캔버스 비율을 칠판 비율과 맞춰 글자가 늘어나지 않게
+  box(g, 12.4, 3.0, 0.2, trim, X, 1.95, Z - D / 2 + 0.25, o);
+  const bc = document.createElement('canvas'); bc.width = 1680; bc.height = 400;
+  cls.boardTex = new THREE.CanvasTexture(bc); cls.boardTex.colorSpace = THREE.SRGBColorSpace; cls.boardTex.anisotropy = 4;
+  cls.board = new THREE.Mesh(new THREE.PlaneGeometry(11.8, 2.8), new THREE.MeshBasicMaterial({ map: cls.boardTex, toneMapped: false }));
+  cls.board.position.set(X, 1.95, Z - D / 2 + 0.37); g.add(cls.board);
+  box(g, 12, 0.12, 0.3, 0xE8E2D6, X, 0.5, Z - D / 2 + 0.4, o);                                    // 분필 받침
+  box(g, 2.4, 1.1, 1.0, 0x9C6A3E, X, 0.65, Z - 7.5); box(g, 2.6, 0.08, 1.15, 0x7A4A2A, X, 1.24, Z - 7.5, o); // 교탁
+  cyl(g, 0.55, 0.08, 0xFFFFFF, X + 8.5, 2.6, Z - D / 2 + 0.2, { solid: false, rx: Math.PI / 2 });  // 시계
+  box(g, 0.05, 0.4, 0.04, 0x3B2F2A, X + 8.5, 2.72, Z - D / 2 + 0.27, o); box(g, 0.3, 0.05, 0.04, 0x3B2F2A, X + 8.62, 2.6, Z - D / 2 + 0.27, o);
+  signPlane(g, ['🌱 서로 존중하는 우리 반'], 5, 0.6, X - 8.5, 2.7, Z - D / 2 + 0.2, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFF9EE', stroke: false }).rotation.y = 0;
+  for (const s of SEATS) { // 책상·의자 15쌍 (자리 번호는 의자 등받이에)
+    const dz = s.z - 1.0;
+    box(g, 1.4, 0.08, 0.8, 0xE9C98F, s.x, 0.8, dz);                                                  // 책상 위판 (부딪혀요)
+    box(g, 1.3, 0.7, 0.7, 0xB88A55, s.x, 0.43, dz, o);
+    box(g, 0.56, 0.06, 0.52, 0x5E9BD6, s.x, 0.5, s.z, o);                                            // 의자
+    for (const [lx, lz] of [[-0.23, -0.2], [0.23, -0.2], [-0.23, 0.2], [0.23, 0.2]]) box(g, 0.05, 0.42, 0.05, 0x8C95A3, s.x + lx, 0.3, s.z + lz, o);
+    box(g, 0.56, 0.5, 0.05, 0x5E9BD6, s.x, 0.85, s.z + 0.26, o);
+    signPlane(g, [String(s.n)], 0.36, 0.3, s.x, 0.88, s.z + 0.29, { font: 60, pad: 2, fg: '#FFFFFF', stroke: false }).rotation.y = 0;
+  }
+  // 회의록 게시판 (오른쪽 벽)
+  const lc = document.createElement('canvas'); lc.width = 720; lc.height = 396;
+  cls.logTex = new THREE.CanvasTexture(lc); cls.logTex.colorSpace = THREE.SRGBColorSpace;
+  box(g, 0.15, 3.0, 5.4, trim, X + W / 2 - 0.2, 1.8, Z + 1, o);
+  cls.log = new THREE.Mesh(new THREE.PlaneGeometry(5, 2.75), new THREE.MeshBasicMaterial({ map: cls.logTex, toneMapped: false }));
+  cls.log.position.set(X + W / 2 - 0.3, 1.8, Z + 1); cls.log.rotation.y = -Math.PI / 2; g.add(cls.log);
+  box(g, 2.2, 2.6, 0.12, 0x8A5A34, X, 1.3, Z + D / 2 - 0.2, o); ball(g, 0.08, C.gold, X + 0.8, 1.3, Z + D / 2 - 0.28, o); // 문
+  signPlane(g, ['🚪 밖으로'], 1.8, 0.45, X, 2.85, Z + D / 2 - 0.3, { font: 40, pad: 4, fg: '#3B2F2A', bg: '#FFF9EE', stroke: false });
+  // 발표 자리 빛기둥 (자리마다 하나, 발언권·팀 발표 때 켜져요)
+  const spotMat = new THREE.MeshBasicMaterial({ color: 0xFFE27A, transparent: true, opacity: 0.26, depthWrite: false, side: THREE.DoubleSide });
+  const spotGeo = new THREE.CylinderGeometry(0.85, 0.85, 5, 18, 1, true);
+  cls.spotMat = spotMat;
+  for (const s of SEATS) { const m = new THREE.Mesh(spotGeo, spotMat); m.position.set(s.x, 2.6, s.z - 0.4); m.visible = false; g.add(m); cls.spots.push(m); }
+  cls.spotLabel = makeLabel(g, ['🎤'], 0.9, X, -10, Z, { stroke: false, pad: 4, font: 80 });
+  registerSolids(g, 'classroom');
+  const sc = scene.getObjectByName('School');
+  const door = sc ? sc.localToWorld(new V3(0, 0, -5.4)) : new V3(0, 0, -36.6);
+  cls.door = door;
+  addInteract({ pos: door.clone().setY(1), r: 3.2, text: () => ['교실로 들어가기 🏫', S.meeting ? `📋 ${S.meeting.mo}월 학급회의 중!` : '우리 반 교실'], run: () => goClass(true) });
+  addInteract({ pos: new V3(X, 1, Z + D / 2 - 1.2), r: 2.4, text: () => ['밖으로 나가기 🚪', '학교 앞으로'], run: () => goClass(false) });
+  for (const s of SEATS) addInteract({ pos: new V3(s.x, 1, s.z), r: 1.1, text: () => mySeat() === s ? ['일어서기', `🪑 ${s.n}번 자리`] : ['앉기 🪑', `${s.n}번 자리 · ${teamOf(s)}팀`], run: () => sitAt(s) });
+  renderBoard(true); renderLog(true);
+}
+async function goClass(inside, quiet) {
+  if (hv.travel || !joined) return;
+  if (isFrozen() && !quiet) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
+  hv.travel = true;
+  if (life.fishing) endFishing(); if (placing.active) stopPlacing(); if (kite.active) endKite(false);
+  closeModals(); mtn.view = null; cls.view = false; playAct(player.avatar, null);
+  const boat = document.querySelector('#travelFx .tv-boat');
+  if (boat) boat.textContent = '🏫';
+  $('travelText').textContent = inside ? '🏫 교실로 들어가는 중…' : '🌳 학교 밖으로 나가는 중…';
+  $('travelFx').classList.remove('hidden');
+  await sleep(450);
+  if (inside) {
+    const h = Math.abs([...String(backend.uid || 'x')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7));
+    player.pos.set(CR.x - 6 + (h % 13), 0.12, CR.z + CR.d / 2 - 2.2 - ((h >> 5) % 2) * 1.2); player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
+  } else {
+    const d = cls.door || new V3(0, 0, -36.6);
+    player.pos.set(d.x, 0.35, d.z + 1.5); player.heading = 0; camYaw = Math.PI; camPitch = 0.4;
+  }
+  player.vy = 0;
+  camera.position.set(player.pos.x - Math.sin(player.heading) * 8, 6, player.pos.z - Math.cos(player.heading) * 8);
+  await sleep(350);
+  $('travelFx').classList.add('hidden'); if (boat) setTimeout(() => { boat.textContent = '⛵'; }, 300);
+  hv.travel = false;
+  if (inside) toast(S.meeting ? `📋 ${S.meeting.mo}월 학급회의 중이에요 · 빈 책상 뒤 의자에서 E(누르기)로 앉아요` : '🏫 우리 반 교실이에요! 의자에서 E(누르기)로 앉을 수 있어요', 'info');
+  updateHUD(null); renderMeetUI();
+}
+function sitAt(s) {
+  if (mySeat() === s) { playAct(player.avatar, null); renderMeetUI(); return; }
+  for (const r of remotes.values()) if (Math.hypot(r.pos.x - s.x, r.pos.z - s.z) < 0.5 && isSeated(r.a)) { toast('이미 친구가 앉아 있어요. 다른 자리를 골라요', 'info'); return; }
+  player.pos.set(s.x, 0.12, s.z); player.vy = 0; player.heading = Math.PI; camYaw = 0;
+  playAct(player.avatar, 'sit'); playSfx('pick'); renderMeetUI();
+}
+function react(k) { // 🙋 손들기 · 👍 · 🤔 · ❓
+  if (!joined || isFrozen()) return;
+  const seated = isSeated(player.avatar), cur = player.avatar.act?.k;
+  if (k === 'hand') {
+    if (cur === 'hand' || cur === 'sithand') playAct(player.avatar, seated ? 'sit' : null);
+    else playAct(player.avatar, seated ? 'sithand' : 'hand');
+  } else playAct(player.avatar, seated ? 'sit' + k : k, seated ? { next: 'sit' } : {});
+  renderMeetUI();
+}
+
+// ---------- 칠판 ----------
+function wrapText(c, text, maxW) { // 글이 길면 줄을 나눠요 (한국어는 글자 단위)
+  const out = []; let line = '';
+  for (const ch of String(text)) { if (c.measureText(line + ch).width > maxW && line) { out.push(line); line = ch.trimStart(); } else line += ch; }
+  if (line) out.push(line); return out;
+}
+function drawBoard(c) {
+  const W = 1680, H = 400, m = S.meeting, F = (s) => `${s}px Jua, sans-serif`;
+  c.fillStyle = '#2F5D46'; c.fillRect(0, 0, W, H);
+  c.textBaseline = 'middle'; c.textAlign = 'center';
+  if (!m) {
+    c.fillStyle = '#FFFFFF'; c.font = F(64); c.fillText('📋 우리반 학급회의', W / 2, 150);
+    c.font = F(34); c.fillStyle = '#DDEEDD'; c.fillText('선생님이 회의를 시작하면 이곳에 순서와 대본이 나와요 · 의자에서 E(누르기)로 앉아요', W / 2, 240);
+    return;
+  }
+  // 위: 제목 + 단계 표시
+  c.font = F(30); c.fillStyle = '#FFE27A'; c.textAlign = 'left'; c.fillText(`📋 ${m.mo}월 우리반 학급회의`, 30, 34);
+  MEET_STEPS.forEach((t, i) => { const x = 520 + i * 190; c.fillStyle = i === m.step ? '#FFE27A' : i < m.step ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.25)'; c.font = F(i === m.step ? 26 : 22); c.fillText(`${MEET_ICONS[i]} ${i + 1}`, x, 34); });
+  const left = timerLeft();
+  if (left) { c.textAlign = 'right'; c.font = F(40); c.fillStyle = left <= 10 ? '#FF9E8A' : '#FFFFFF'; c.fillText(`⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`, W - 30, 36); }
+  c.textAlign = 'center'; c.fillStyle = '#FFFFFF'; c.font = F(52); c.fillText(`${MEET_ICONS[m.step]} ${m.step + 1}. ${MEET_STEPS[m.step]}`, W / 2, 96);
+  const body = (lines, y0, size, col = '#FFFFFF', lh = size * 1.3) => { c.font = F(size); c.fillStyle = col; lines.forEach((l, i) => c.fillText(l, W / 2, y0 + i * lh)); };
+  const cols = (items, x, y, w, size, col = '#FFFFFF', maxRows = 5) => { c.textAlign = 'left'; c.font = F(size); c.fillStyle = col; let row = 0; for (const t of items) { for (const l of wrapText(c, t, w)) { if (row >= maxRows) return; c.fillText(l, x, y + row * size * 1.25); row++; } } };
+  const foot = (t) => { c.textAlign = 'center'; c.font = F(26); c.fillStyle = '#CFE3D5'; c.fillText(t, W / 2, H - 22); };
+  if (m.step === 0) {
+    const p = promiseLines();
+    c.font = F(30); c.fillStyle = '#FFE27A'; c.fillText('🤝 우리반 약속 (한 문장씩 따라 읽어요)', W / 2, 146);
+    p.slice(0, 5).forEach((l, i) => { c.font = F(p.length > 4 ? 32 : 38); c.fillStyle = '#FFFFFF'; c.fillText(`${i + 1}. ${l}`, W / 2, 196 + i * (p.length > 4 ? 38 : 44)); });
+  } else if (m.step === 1) {
+    MIRROR.forEach(([k, name, ic], i) => {
+      const x = 40 + i * 546; c.textAlign = 'left'; c.font = F(32); c.fillStyle = '#FFE27A'; c.fillText(`${ic} ${name}`, x, 146);
+      cols(byAt(m.mirror?.[k]).map(([, t]) => `· ${t}`), x, 190, 510, 26, '#FFFFFF', 5);
+    });
+    foot(m.team ? `🎤 ${teamName(m.team)} 발표 중 · 친구의 말을 끊지 않고 끝까지 들어요` : left ? '🗣️ 자치팀별로 좋았던 점 · 아쉬웠던 점 · 바라는 점을 이야기해요' : '🙋 친구의 말을 끊지 않고 끝까지 잘 들어 주세요');
+  } else if (m.step === 2) {
+    const goals = byAt(m.goals), cnt = goalCounts(m), total = Object.values(cnt).reduce((a, b) => a + b, 0);
+    if (m.goal) { body(['🎯 우리 반 다음 달 목표'], 160, 34, '#FFE27A'); body([m.goal], 230, 64); foot('📣 정해진 목표를 다시 한번 함께 말해 보아요!'); }
+    else {
+      c.textAlign = 'left'; c.font = F(30); c.fillStyle = '#FFE27A'; c.fillText(`💬 나온 의견 ${goals.length ? '' : '(아직 없어요)'}`, 60, 146);
+      goals.slice(0, 6).forEach(([id, t], i) => {
+        const y = 192 + i * 30 * 1.25, col = i < 3 ? 60 : 860, yy = i < 3 ? y : 192 + (i - 3) * 37.5;
+        c.textAlign = 'left'; c.font = F(30); c.fillStyle = '#FFFFFF'; c.fillText(`${i + 1}. ${t}`, col, yy);
+        if (m.vst === 2) { const n = cnt[id] || 0, bw = 200 * (total ? n / total : 0); c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(col + 520, yy - 12, Math.max(4, bw), 24); c.fillStyle = '#FFFFFF'; c.font = F(26); c.fillText(`${n}표`, col + 530 + Math.max(4, bw), yy); }
+      });
+      foot(m.vst === 1 ? `🗳️ 투표 중 · ${total}명 투표했어요 (누가 골랐는지는 남지 않아요)` : m.vst === 2 ? `📊 모두 ${total}명이 투표했어요` : m.sp ? `🎤 ${m.sp}번 자리 친구가 이야기해요` : left ? '🤔 다음 달에 함께 실천하면 좋을 목표를 생각해 봐요' : '🙋 의견이 있는 친구는 손을 들어요');
+    }
+  } else if (m.step === 3) {
+    const props = byAt(m.props);
+    if (!props.length) body(['우리 반을 더 나은 반으로 만들기 위한 생각을 발표해요', '제안할 때에는 이유도 함께 말해요'], 190, 34, '#DDEEDD', 52);
+    props.slice(0, 6).forEach(([id, p], i) => {
+      const x = i < 3 ? 40 : 860, y = 150 + (i % 3) * 68;
+      c.textAlign = 'left'; c.font = F(30); c.fillStyle = '#FFE27A'; c.fillText(`★ ${p.t}  👍${likeCount(id, m)}`, x, y);
+      c.font = F(22); c.fillStyle = '#DDEEDD'; c.fillText(wrapText(c, p.y || '', 780)[0] || '', x + 30, y + 30);
+    });
+    foot(m.sp ? `🎤 ${m.sp}번 자리 친구가 제안해요 · 발표자의 말을 잘 들어 주세요` : props.length > 6 ? `제안 ${props.length}개 · 👍 공감하기 버튼으로 마음을 보여 줘요` : '💡 제안에 공감하면 👍 공감하기를 눌러요');
+  } else if (m.step === 4) {
+    if (m.tw) { c.font = F(40); c.fillStyle = '#FFFFFF'; wrapText(c, m.tw, W - 200).slice(0, 4).forEach((l, i) => c.fillText(l, W / 2, 170 + i * 52)); }
+    else body(['선생님, 말씀 부탁드립니다.'], 200, 44, '#DDEEDD');
+  } else {
+    body(['끝까지 바르게 참여해 준 친구들 감사합니다.', `이상으로 ${m.mo}월 우리반 학급회의를 마치겠습니다. 감사합니다.`], 170, 40, '#FFFFFF', 58);
+    if (m.goal) body([`🎯 다음 달 목표: ${m.goal}`], 300, 32, '#FFE27A');
+  }
+}
+function renderBoard(force) {
+  if (!cls.board) return;
+  const m = S.meeting, key = JSON.stringify([m, m ? goalCounts(m) : 0, m ? Object.keys(m.props || {}).map(id => likeCount(id)) : 0, timerLeft(), S.meetCfg]);
+  if (!force && key === cls.boardKey) return;
+  cls.boardKey = key;
+  drawBoard(cls.boardTex.image.getContext('2d')); cls.boardTex.needsUpdate = true;
+}
+function renderLog(force) { // 오른쪽 벽: 가장 최근 회의록 요약
+  if (!cls.log) return;
+  const list = Object.entries(S.meetLog || {}).sort((a, b) => b[1].at - a[1].at), e = list[0]?.[1], key = JSON.stringify(e || null) + list.length;
+  if (!force && key === cls.logKey) return;
+  cls.logKey = key;
+  const c = cls.logTex.image.getContext('2d'), W = 720, H = 396, F = (n) => `${n}px Jua, sans-serif`;
+  c.fillStyle = '#FFF9EE'; c.fillRect(0, 0, W, H); c.strokeStyle = '#B07C50'; c.lineWidth = 10; c.strokeRect(5, 5, W - 10, H - 10);
+  c.fillStyle = '#3B2F2A'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = F(40); c.fillText('📋 우리 반 회의록', W / 2, 44);
+  c.textAlign = 'left';
+  if (!e) { c.font = F(30); c.fillStyle = '#8A7A6A'; c.fillText('아직 저장한 회의록이 없어요', 40, 140); cls.logTex.needsUpdate = true; return; }
+  const d = new Date(e.at);
+  c.font = F(26); c.fillStyle = '#8A7A6A'; c.fillText(`${e.mo}월 회의 · ${d.getMonth() + 1}/${d.getDate()}${e.pe ? ` ${e.pe}교시` : ''} · 참석 ${e.n || 0}명`, 36, 92);
+  c.font = F(30); c.fillStyle = '#3B2F2A'; c.fillText('🎯 다음 달 목표', 36, 138);
+  c.font = F(36); c.fillStyle = '#B83A30'; c.fillText(wrapText(c, e.goal || '(정하지 않음)', W - 80)[0], 46, 182);
+  c.font = F(28); c.fillStyle = '#3B2F2A'; c.fillText('💡 제안', 36, 232);
+  byAt(e.props).slice(0, 3).forEach(([, p], i) => { c.font = F(26); c.fillStyle = '#3B2F2A'; c.fillText(wrapText(c, `★ ${p.t}`, W - 90)[0], 46, 270 + i * 34); });
+  if (list.length > 1) { c.font = F(20); c.fillStyle = '#8A7A6A'; c.fillText(`지난 회의록 ${list.length - 1}개는 선생님 관리 화면에서 볼 수 있어요`, 36, H - 26); }
+  cls.logTex.needsUpdate = true;
+}
+
+// ---------- 상태가 바뀌면 ----------
+function syncMeeting(prev, first) {
+  renderBoard(false); renderLog(false);
+  const m = S.meeting, pm = prev.meeting, inside = classRegion();
+  const cl = S.control?.cls || 0, pcl = prev.control?.cls || 0;
+  if (!first && cl && cl !== pcl && !isTeacher && !classRegion()) { toast('📣 선생님이 모두를 교실로 불렀어요!', 'success'); goClass(true, true); }
+  if (!first && m && (!pm || pm.r !== m.r)) {
+    if (inside) showBanner(`📋 ${m.mo}월 우리반 학급회의`, '바르게 앉아 주세요. 곧 시작해요', 4000);
+    else toast(`🏫 ${m.mo}월 학급회의가 열렸어요! 학교 건물 문으로 들어와요`, 'info');
+  } else if (!first && m && pm && pm.r === m.r) {
+    if (m.step !== pm.step && inside) { showBanner(`${MEET_ICONS[m.step]} ${m.step + 1}. ${MEET_STEPS[m.step]}`, scriptFor(m.step, m)[0] || '', 2600); if (!isTeacher) cls.view = true; }
+    if (m.vst === 1 && pm.vst !== 1 && inside && !isTeacher) openMeetPanel('vote');
+    if (m.vst === 2 && pm.vst === 1) { $('meetVotePanel').classList.add('hidden'); if (inside) toast('📊 투표가 끝났어요! 칠판에서 결과를 봐요', 'info'); }
+    if (m.goal && m.goal !== pm.goal) { if (inside) { showBanner('🎯 다음 달 목표', m.goal, 5000); burst(cls.board.getWorldPosition(new V3()), RAINBOW, 70, 5, 2); } else toast(`🎯 우리 반 다음 달 목표: ${m.goal}`, 'success'); }
+    if ((m.sp || 0) !== (pm.sp || 0) && m.sp) {
+      const me = mySeat();
+      if (me && me.n === m.sp) { toast('🎤 내 차례예요! 교실에서 친구들에게 이야기해요', 'success'); if (player.avatar.act?.k === 'sithand') playAct(player.avatar, 'sit'); }
+      else if (inside) toast(`🎤 ${m.sp}번 자리 친구가 이야기해요. 모두 귀 기울여요`, 'info');
+    }
+    if ((m.team || 0) !== (pm.team || 0) && m.team && inside) { const me = mySeat(); toast(me && teamOf(me) === m.team ? `🎤 우리 팀(${m.team}팀) 발표 차례예요! 발표자가 일어나 발표해요` : `🎤 ${teamName(m.team)} 발표 차례예요`, 'info'); }
+    if ((m.timer || 0) !== (pm.timer || 0) && m.timer && inside) toast(`⏱ ${Math.round((m.timer - backend.now()) / 60000)}분 동안 ${m.step === 1 ? '자치팀별로 이야기해요' : '생각해 봐요'}`, 'info');
+  } else if (!first && !m && pm) { toast('📋 학급회의가 끝났어요. 수고했어요!', 'info'); $('meetVotePanel').classList.add('hidden'); cls.view = false; }
+  updateSpots();
+  if (!$('teacherPanel').classList.contains('hidden')) fillMeetAdmin();
+  if (cls.panel && !$('meetVotePanel').classList.contains('hidden')) openMeetPanel(cls.panel, true);
+  renderMeetUI();
+}
+function updateSpots() {
+  const m = S.meeting; let lab = null;
+  cls.spots.forEach((sp, i) => {
+    const s = SEATS[i], on = !!m && (m.sp === s.n || (!!m.team && m.step === 1 && teamOf(s) === m.team)); // true/false로 (three.js는 0을 '보이기'로 봐요)
+    sp.visible = on; if (on && m.sp === s.n) lab = s;
+  });
+  if (cls.spotLabel) { cls.spotLabel.visible = !!lab; if (lab) cls.spotLabel.position.set(lab.x, 3.9, lab.z - 0.4); }
+}
+// 학생 창: 목표 투표 · 제안 공감 · 대본
+function openMeetPanel(mode, refresh) {
+  const m = S.meeting;
+  if (!refresh) closeModals();
+  cls.panel = mode;
+  const box = $('mvOpts'); box.textContent = ''; box.className = 'mv-opts';
+  if (mode === 'script') {
+    $('mvHead').textContent = '📜 회의 대본 (회장 · 부회장용)';
+    $('mvTitle').textContent = m ? `${m.mo}월 우리반 학급회의 · 지금: ${m.step + 1}. ${MEET_STEPS[m.step]}` : '회의가 시작되면 지금 순서가 표시돼요';
+    box.className = 'mv-script';
+    MEET_STEPS.forEach((t, i) => {
+      const sec = el2('div', 'mv-sec' + (m && m.step === i ? ' now' : ''), '');
+      sec.append(el2('b', '', `${MEET_ICONS[i]} ${t}`));
+      for (const l of scriptFor(i, m)) sec.append(el2('p', '', l));
+      if (i === 0) sec.append(el2('p', 'mv-promise', '🤝 ' + promiseLines().join(' / ')));
+      box.append(sec);
+    });
+    $('mvNote').textContent = '회장·부회장이 이 대본을 보고 회의를 이끌어요';
+    $('meetVotePanel').classList.remove('hidden');
+    if (!refresh) setTimeout(() => box.querySelector('.now')?.scrollIntoView({ block: 'center' }), 50);
+    return;
+  }
+  if (!m) { $('meetVotePanel').classList.add('hidden'); return; }
+  if (mode === 'vote') {
+    if (m.vst !== 1) { $('meetVotePanel').classList.add('hidden'); return; }
+    $('mvHead').textContent = '🗳️ 다음 달 목표 투표'; $('mvTitle').textContent = '함께 실천하고 싶은 목표를 하나 골라요';
+    const mine = myVote();
+    byAt(m.goals).forEach(([id, t], i) => {
+      const b = el2('button', 'btn mv-opt' + (mine === id ? ' on' : ''), `${i + 1}. ${t}`);
+      b.disabled = mine !== undefined;
+      b.onclick = async () => {
+        b.disabled = true;
+        const res = await backend.meetVote(m.r, id);
+        if (res.ok) { toast(`🗳️ '${t}'에 투표했어요!`, 'success'); playSfx('pick'); $('meetVotePanel').classList.add('hidden'); }
+        else if (res.reason !== 'offline') { toast(res.reason === 'done' ? '이미 투표했어요' : '투표가 저장되지 않았어요. 선생님께 알려 주세요', 'warn'); openMeetPanel('vote', true); }
+      };
+      box.append(b);
+    });
+    $('mvNote').textContent = mine !== undefined ? '✅ 투표했어요. 선생님이 투표를 마치면 칠판에 결과가 나와요' : '하나만 고를 수 있고, 고른 뒤에는 바꿀 수 없어요 (누가 골랐는지는 남지 않아요)';
+  } else if (mode === 'like') {
+    $('mvHead').textContent = '💡 제안에 공감하기'; $('mvTitle').textContent = '공감하는 제안에 👍를 눌러요 (여러 개 눌러도 돼요)';
+    const props = byAt(m.props);
+    if (!props.length) box.append(el2('p', 'hint', '아직 적힌 제안이 없어요'));
+    for (const [id, p] of props) {
+      const liked = iLiked(id), b = el2('button', 'btn mv-opt' + (liked ? ' on' : ''), '');
+      b.innerHTML = ''; b.append(el2('span', 'mv-t', `★ ${p.t}`), el2('small', '', p.y || ''), el2('em', '', `👍 ${likeCount(id)}`));
+      b.disabled = liked || m.step !== 3;
+      b.onclick = async () => {
+        b.disabled = true;
+        const res = await backend.meetLike(m.r, id);
+        if (res.ok) { playSfx('pick'); toast('👍 공감했어요!', 'success'); }
+        else if (res.reason !== 'offline') toast(res.reason === 'done' ? '이미 공감했어요' : '저장되지 않았어요. 선생님께 알려 주세요', 'warn');
+      };
+      box.append(b);
+    }
+    $('mvNote').textContent = '누가 공감했는지는 남지 않고 개수만 보여요';
+  }
+  $('meetVotePanel').classList.remove('hidden');
+}
+function renderMeetUI() { // 교실 안 아래쪽 버튼 줄 + 선생님 진행판
+  const inside = classRegion(), m = S.meeting;
+  $('meetBar').classList.toggle('hidden', !inside);
+  if (inside) {
+    const cur = player.avatar?.act?.k, up = cur === 'hand' || cur === 'sithand';
+    $('mbHand').setAttribute('aria-pressed', String(up)); $('mbHand').textContent = up ? '🙋 손 내리기' : '🙋 손들기';
+    $('mbVote').classList.toggle('hidden', !(m && m.step === 2 && m.vst === 1) || isTeacher);
+    $('mbVote').textContent = myVote() !== undefined ? '✅ 투표했어요' : '🗳️ 목표 투표';
+    $('mbLike').classList.toggle('hidden', !(m && m.step === 3 && Object.keys(m.props || {}).length));
+    $('mbView').setAttribute('aria-pressed', String(!!cls.view)); $('mbView').textContent = cls.view ? '👀 내 자리 보기' : '📋 칠판 보기';
+  }
+  const show = inside && isTeacher;
+  $('meetTeach').classList.toggle('hidden', !show);
+  if (show) renderTeach();
+}
+// ---------- 선생님 진행판 (교실 안 오른쪽) ----------
+function handsNow() {
+  const hands = [];
+  for (const r of remotes.values()) { const k = ACTS[r.lastM % 32]; if (k === 'hand' || k === 'sithand') { const s = seatNear(r.pos.x, r.pos.z, 1.2); if (s) hands.push(s.n); } }
+  return hands.sort((a, b) => a - b);
+}
+function renderTeach() {
+  const m = S.meeting, hands = handsNow(), left = timerLeft();
+  const key = JSON.stringify([m, hands, m ? goalCounts(m) : 0, m ? Object.keys(m.props || {}).map(likeCount) : 0, left > 0, classCount(), S.meetCfg]);
+  if (key === cls.teachKey) { if (left) $('mtTimer') && ($('mtTimer').textContent = `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} 남음`); return; }
+  cls.teachKey = key;
+  const box = $('mtBody');
+  // 쓰던 글·초점은 다시 그려도 지켜요
+  const keep = {}; box.querySelectorAll('[data-keep]').forEach(i => { keep[i.dataset.keep] = i.value; });
+  const act = document.activeElement?.dataset?.keep, selS = document.activeElement?.selectionStart;
+  box.textContent = '';
+  const add = (el) => { box.append(el); return el; };
+  const btn = (txt, fn, style, parent = box) => { const b = el2('button', 'btn', txt); if (style) b.style.cssText = style; b.onclick = fn; parent.append(b); return b; };
+  const row = () => add(el2('div', 'mt-row', ''));
+  const input = (k, ph, max, parent) => { const i = document.createElement('input'); i.className = 'tinput'; i.dataset.keep = k; i.placeholder = ph; i.maxLength = max; parent.append(i); return i; };
+  if (!m) { add(el2('p', 'hint', '아직 회의가 없어요')); btn('📋 회의 시작하러 가기', openMeetAdmin); return; }
+  // 단계 이동
+  add(el2('p', 'mt-now', `${MEET_ICONS[m.step]} ${m.step + 1}/6 ${MEET_STEPS[m.step]}`));
+  const nav = row();
+  btn('◀ 이전', () => meetDo({ 'meeting/step': Math.max(0, m.step - 1), 'meeting/sp': 0, 'meeting/team': 0, 'meeting/timer': 0 }), '', nav).disabled = m.step === 0;
+  btn(m.step < 5 ? `다음: ${MEET_SHORT[m.step + 1]} ▶` : '끝', () => m.step < 5 && meetDo({ 'meeting/step': m.step + 1, 'meeting/sp': 0, 'meeting/team': 0, 'meeting/timer': 0 }), 'background:var(--leaf);color:#fff', nav).disabled = m.step === 5 || (m.step === 2 && m.vst === 1);
+  const tim = add(el2('p', 'hint', '')); tim.id = 'mtTimer'; if (left) tim.textContent = `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} 남음`;
+  const timers = (label, mins) => { const r = row(); r.append(el2('span', 'mt-lab', label)); for (const n of mins) btn(`${n}분`, () => meetDo({ 'meeting/timer': backend.now() + n * 60000 }), '', r); if (left) btn('멈춤', () => meetDo({ 'meeting/timer': 0 }), '', r); };
+  const handRow = (title) => {
+    add(el2('p', 'hint', hands.length ? `🙋 손 든 자리 (누르면 발언권)` : `🙋 손 든 자리가 없어요`));
+    const r = row(); for (const n of hands) btn(`${n}번`, () => meetDo({ 'meeting/sp': n }), 'background:#FFE9A8', r);
+    if (m.sp) btn(`🎤 ${m.sp}번 발언 끝`, () => meetDo({ 'meeting/sp': 0 }));
+  };
+  const list = (entries, path, fmt) => { const ul = add(el2('ul', 'mt-list', '')); for (const [id, v] of entries) { const li = el2('li', '', fmt(v, id)); const x = el2('button', 'mt-x', '✕'); x.title = '지우기'; x.onclick = () => meetDo({ [`${path}/${id}`]: null }); li.append(x); ul.append(li); } if (!entries.length) ul.append(el2('li', 'hint', '아직 없어요')); };
+  if (m.step === 0) {
+    add(el2('p', 'hint', `회장이 개회를 선언하고 우리반 약속을 한 문장씩 읽어요. 약속 문장은 관리 화면에서 바꿀 수 있어요.`));
+    add(el2('p', 'hint', `교실 안 학생 ${classCount()}명`));
+  } else if (m.step === 1) {
+    timers('⏱ 팀 회의', [2, 3, 5]);
+    add(el2('p', 'hint', '🎤 자치팀 발표 순서 (누르면 그 팀 자리가 빛나요)'));
+    const r = row(); for (let t = 1; t <= teamsN(); t++) btn(`${t}팀`, () => meetDo({ 'meeting/team': m.team === t ? 0 : t }), m.team === t ? 'background:var(--sun)' : '', r);
+    handRow();
+    add(el2('p', 'hint', '✏️ 받아 적기'));
+    const r2 = row(); const sel = document.createElement('select'); sel.className = 'tinput'; sel.dataset.keep = 'mc';
+    for (const [k, name] of MIRROR) { const o = document.createElement('option'); o.value = k; o.textContent = name; sel.append(o); }
+    r2.append(sel);
+    const inp = input('mt', '예: 체육 시간에 화내는 사람이 적어짐', 40, add(el2('div', 'mt-row', '')));
+    const addIt = () => { const t = clean(inp.value, 40); if (!t) return; inp.value = ''; meetDo({ [`meeting/mirror/${sel.value}/${newId()}`]: t }); };
+    inp.onkeydown = (e) => { if (e.key === 'Enter') addIt(); };
+    btn('적기', addIt, 'background:var(--leaf);color:#fff', inp.parentElement);
+    for (const [k, name, ic] of MIRROR) { add(el2('p', 'mt-sub', `${ic} ${name}`)); list(byAt(m.mirror?.[k]), `meeting/mirror/${k}`, v => v); }
+  } else if (m.step === 2) {
+    if (m.goal) {
+      add(el2('p', 'mt-now', `🎯 최종 목표: ${m.goal}`));
+      btn('↩ 다시 정하기', () => meetDo({ 'meeting/goal': null, 'meeting/vst': 0 }));
+    } else if (m.vst === 1) {
+      const cnt = goalCounts(m), total = Object.values(cnt).reduce((a, b) => a + b, 0);
+      add(el2('p', 'hint', `🗳️ 투표 중 · ${total}명 투표 / 교실 학생 ${classCount()}명`));
+      btn('📊 투표 마감 · 결과 보기', () => meetDo({ 'meeting/vst': 2 }), 'background:var(--sun)');
+    } else if (m.vst === 2) {
+      const cnt = goalCounts(m);
+      add(el2('p', 'hint', '표 수를 보고 최종 목표를 골라요'));
+      for (const [id, t] of byAt(m.goals)) btn(`🎯 ${t} (${cnt[id] || 0}표)`, () => meetDo({ 'meeting/goal': t }));
+      btn('↩ 투표 다시 하기', () => meetDo({ 'meeting/vst': 0, [`meetVotes/${m.r}`]: null }));
+    } else {
+      timers('⏱ 생각할 시간', [1, 2]);
+      handRow();
+      add(el2('p', 'hint', '✏️ 나온 의견 적기 (최대 6개)'));
+      const inp = input('mg', '예: 안전하고 질서있는 학교 생활', 30, add(el2('div', 'mt-row', '')));
+      const addIt = () => { const t = clean(inp.value, 30); if (!t) return; if (Object.keys(m.goals || {}).length >= 6) { toast('나온 의견은 6개까지 적을 수 있어요', 'warn'); return; } inp.value = ''; meetDo({ [`meeting/goals/${newId()}`]: t }); };
+      inp.onkeydown = (e) => { if (e.key === 'Enter') addIt(); };
+      btn('적기', addIt, 'background:var(--leaf);color:#fff', inp.parentElement);
+      list(byAt(m.goals), 'meeting/goals', v => v);
+      const n = Object.keys(m.goals || {}).length;
+      if (n >= 2) btn('🗳️ 투표 시작', () => meetDo({ 'meeting/vst': 1, 'meeting/sp': 0, 'meeting/timer': 0, [`meetVotes/${m.r}`]: null }), 'background:var(--leaf);color:#fff');
+      if (n === 1) btn(`🎯 '${Object.values(m.goals)[0]}'(으)로 정하기`, () => meetDo({ 'meeting/goal': Object.values(m.goals)[0] }));
+    }
+  } else if (m.step === 3) {
+    timers('⏱ 생각할 시간', [1, 2]);
+    handRow();
+    add(el2('p', 'hint', '✏️ 제안 적기 (★ 제안 + 이유)'));
+    const w = add(el2('div', 'mt-col', ''));
+    const t1 = input('pt', '★ 제안 (예: 복도에서는 뛰지 않기)', 30, w), t2 = input('py', '이유 (예: 부딪쳐 다칠 수 있기 때문입니다)', 60, w);
+    const addIt = () => { const t = clean(t1.value, 30), y = clean(t2.value, 60); if (!t) return; if (Object.keys(m.props || {}).length >= 12) { toast('제안은 12개까지 적을 수 있어요', 'warn'); return; } t1.value = t2.value = ''; meetDo({ [`meeting/props/${newId()}`]: y ? { t, y } : { t } }); };
+    t2.onkeydown = t1.onkeydown = (e) => { if (e.key === 'Enter') addIt(); };
+    btn('적기', addIt, 'background:var(--leaf);color:#fff');
+    list(byAt(m.props), 'meeting/props', (p, id) => `★ ${p.t} 👍${likeCount(id)}${p.y ? ` — ${p.y}` : ''}`);
+  } else if (m.step === 4) {
+    add(el2('p', 'hint', '✏️ 선생님 말씀 (칠판과 회의록에 남아요, 100자)'));
+    const inp = input('tw', '예: 이번 달도 서로 격려하는 우리 반이 되어요', 100, add(el2('div', 'mt-col', '')));
+    if (m.tw && keep.tw === undefined) inp.value = m.tw;
+    btn('칠판에 올리기', () => meetDo({ 'meeting/tw': clean(inp.value, 100) || null }), 'background:var(--leaf);color:#fff');
+  } else {
+    add(el2('p', 'hint', '회장이 폐회를 선언하면 회의록을 저장해요'));
+    const r = row(); r.append(el2('span', 'mt-lab', '참석 인원'));
+    const n = document.createElement('input'); n.type = 'number'; n.min = 0; n.max = 40; n.className = 'tinput'; n.dataset.keep = 'n'; n.style.width = '64px'; n.value = keep.n ?? (m.n || classCount()); r.append(n, el2('span', 'mt-lab', '명'));
+    btn('📋 회의록 저장', () => saveMeetLog(Math.max(0, Math.min(40, parseInt(n.value, 10) || 0))), 'background:var(--leaf);color:#fff');
+  }
+  btn('⏹ 회의 끝내기', endMeeting, 'background:#fff;margin-top:6px');
+  box.querySelectorAll('[data-keep]').forEach(i => { if (keep[i.dataset.keep] !== undefined) i.value = keep[i.dataset.keep]; });
+  if (act) { const el = box.querySelector(`[data-keep="${act}"]`); if (el) { el.focus(); try { el.setSelectionRange(selS, selS); } catch {} } }
+}
+function meetRecord(m, n) { // 회의록 한 건 (올려 주신 '우리반 학급회의 기록' 양식과 같은 항목)
+  const cnt = goalCounts(m), rec = { at: m.at, mo: m.mo, n, mirror: {}, goals: {}, vc: {}, props: {} };
+  if (m.pe) rec.pe = m.pe;
+  for (const [k] of MIRROR) if (m.mirror?.[k]) rec.mirror[k] = { ...m.mirror[k] };
+  for (const [id, t] of byAt(m.goals)) { rec.goals[id] = t; if (cnt[id]) rec.vc[id] = cnt[id]; }
+  if (m.goal) rec.goal = m.goal;
+  for (const [id, p] of byAt(m.props)) rec.props[id] = { ...p, l: likeCount(id, m) };
+  if (m.tw) rec.tw = m.tw;
+  return rec;
+}
+async function saveMeetLog(n) {
+  const m = S.meeting; if (!m) return;
+  const upd = { [`meetLog/${m.r}`]: meetRecord(m, n), 'meeting/n': n };
+  const old = Object.entries(S.meetLog || {}).filter(([k]) => k !== m.r).sort((a, b) => b[1].at - a[1].at).slice(11); // 회의록은 12개까지
+  for (const [k] of old) upd[`meetLog/${k}`] = null;
+  if (await meetDo(upd)) toast('📋 회의록을 저장했어요! 관리 화면에서 인쇄할 수 있어요', 'success');
+}
+async function endMeeting() {
+  const m = S.meeting; if (!m) return;
+  const saved = !!S.meetLog?.[m.r];
+  if (!(await confirmAction({ title: '⏹ 학급회의를 끝낼까요?', body: saved ? '칠판이 비워지고 투표·공감 기록이 지워져요.\n회의록은 저장되어 있어요.' : '⚠️ 아직 회의록을 저장하지 않았어요!\n끝내면 이번 회의 내용이 사라져요. (폐회선언 단계에서 저장할 수 있어요)', okText: '끝내기' }))) return;
+  adminDo({ meeting: null, [`meetVotes/${m.r}`]: null, [`meetLikes/${m.r}`]: null }, '⏹ 학급회의를 끝냈어요');
+}
+// ---------- 회의록 보기·인쇄 (A4 한 장, 올려 주신 기록 양식) ----------
+function recordHTML(e) {
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const d = new Date(e.at), day = '일월화수목금토'[d.getDay()];
+  const lines = (o) => byAt(o).map(([, t]) => `<div>${esc(t)}</div>`).join('') || '<div class="none">-</div>';
+  const goals = byAt(e.goals).map(([id, t]) => esc(t) + (e.vc?.[id] ? ` (${e.vc[id]}표)` : '')).join(', ') || '-';
+  const props = byAt(e.props).map(([, p]) => `<div class="star">★ ${esc(p.t)}${p.l ? ` <small>👍${p.l}</small>` : ''}</div>${p.y ? `<div>${esc(p.y)}</div>` : ''}`).join('') || '<div class="none">-</div>';
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>우리반 학급회의 기록(${e.mo}월)</title><style>
+  @page { size: A4; margin: 14mm; } body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; font-size: 12.5px; line-height: 1.55; color: #222; margin: 0; padding: 20px; }
+  h1 { text-align: center; font-size: 22px; margin: 0 0 4px; } .date { text-align: center; margin: 0 0 16px; }
+  .wrap { column-count: 2; column-gap: 28px; } h2 { font-size: 14px; margin: 12px 0 4px; break-after: avoid; } .lab { font-weight: bold; margin-top: 4px; } .star { font-weight: bold; margin-top: 6px; } .none { color: #999; }
+  .tools { text-align: center; margin-bottom: 14px; } .tools button { font-size: 15px; padding: 6px 16px; } @media print { .tools { display: none; } body { padding: 0; } }
+  </style></head><body><div class="tools"><button onclick="print()">🖨️ 인쇄 · PDF로 저장</button></div>
+  <h1>학급회의 우리반 학급회의 기록(${e.mo}월)</h1>
+  <p class="date">날짜: ${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일, ${day}요일${e.pe ? `, ${e.pe}교시` : ''}</p>
+  <div class="wrap">
+  <h2>【 1. 개회 메모 】</h2><div>참석 인원 ${e.n || 0}명</div>
+  <h2>【 2. 거울(돌아보기) 회의 】</h2>
+  <div class="lab">좋았던 점:</div>${lines(e.mirror?.g)}<div class="lab">아쉬웠던 점:</div>${lines(e.mirror?.b)}<div class="lab">바라는 점:</div>${lines(e.mirror?.w)}
+  <h2>【 3. 다음 달 목표 정하기 】</h2><div>나온 의견: ${goals}</div><div>최종 목표: ${esc(e.goal || '-')}</div>
+  <h2>【 4. 제안하기 】</h2>${props}
+  <h2>【 5. 선생님 말씀 】</h2><div>${esc(e.tw || '')}</div>
+  </div></body></html>`;
+}
+function printRecord(id) {
+  const e = S.meetLog?.[id]; if (!e) return;
+  const w = window.open('', '_blank');
+  if (!w) { toast('새 창이 막혀 있어요. 브라우저 팝업 허용 후 다시 눌러 주세요', 'warn'); return; }
+  w.document.open(); w.document.write(recordHTML(e)); w.document.close();
+}
+// ---------- 선생님 관리 화면 — 🏫 학급회의 ----------
+function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hidden'); fillTeacherPanel(); setTimeout(() => $('tpMeetSec')?.scrollIntoView({ block: 'start' }), 80); }
+function fillMeetAdmin() {
+  const m = S.meeting;
+  $('tpMeetNow').textContent = m ? `지금: ${m.mo}월 학급회의 · ${m.step + 1}. ${MEET_STEPS[m.step]}` : '지금 열린 회의가 없어요';
+  $('tpMeetEnd').disabled = !m;
+  $('tpMeetStart').textContent = m ? '📋 새 회의로 다시 시작' : '📋 학급회의 시작';
+  const p = promiseLines(), keep = document.activeElement?.id?.startsWith('tpProm');
+  if (!keep) for (let i = 0; i < 5; i++) $('tpProm' + i).value = S.meetCfg?.promise ? (p[i] || '') : (i < DEFAULT_PROMISE.length ? DEFAULT_PROMISE[i] : '');
+  $('tpTeams').value = String(teamsN());
+  const list = Object.entries(S.meetLog || {}).sort((a, b) => b[1].at - a[1].at);
+  const ul = $('tpMeetLog'); ul.textContent = '';
+  for (const [id, e] of list) {
+    const d = new Date(e.at), li = el2('li', '', `${e.mo}월 (${d.getMonth() + 1}/${d.getDate()}) · 🎯 ${e.goal || '목표 없음'} · 제안 ${Object.keys(e.props || {}).length}개 `);
+    const b = el2('button', 'btn', '🖨️ 보기·인쇄'); b.onclick = () => printRecord(id); li.append(b); ul.append(li);
+  }
+  if (!list.length) ul.append(el2('li', 'hint', '아직 저장한 회의록이 없어요'));
+  $('tpMeetLogClear').disabled = !list.length;
+}
+function initMeetUI() {
+  const now = new Date(), mo = $('tpMeetMo'), pe = $('tpMeetPe');
+  for (let i = 1; i <= 12; i++) { const o = document.createElement('option'); o.value = i; o.textContent = `${i}월`; mo.append(o); }
+  mo.value = String(now.getMonth() + 1);
+  pe.append(Object.assign(document.createElement('option'), { value: '0', textContent: '교시 (선택)' }));
+  for (let i = 1; i <= 7; i++) { const o = document.createElement('option'); o.value = i; o.textContent = `${i}교시`; pe.append(o); }
+  $('tpMeetStart').onclick = async () => {
+    if (S.meeting && !(await confirmAction({ title: '📋 새 회의로 다시 시작할까요?', body: S.meetLog?.[S.meeting.r] ? '지금 회의 내용이 지워져요. (회의록은 저장되어 있어요)' : '⚠️ 지금 회의는 아직 회의록을 저장하지 않았어요. 내용이 사라져요.', okText: '다시 시작' }))) return;
+    const r = Date.now().toString(36), upd = { meeting: { r, at: Date.now(), step: 0, mo: +mo.value, sp: 0, team: 0, timer: 0, vst: 0 } };
+    if (+pe.value) upd.meeting.pe = +pe.value;
+    if (S.meeting) { upd[`meetVotes/${S.meeting.r}`] = null; upd[`meetLikes/${S.meeting.r}`] = null; }
+    adminDo(upd, `📋 ${mo.value}월 학급회의를 시작했어요. 교실 안 오른쪽 위 진행판으로 진행해요`);
+  };
+  $('tpMeetEnd').onclick = endMeeting;
+  $('tpMeetCall').onclick = async () => {
+    if (!(await confirmAction({ title: '📣 모두 교실로 부를까요?', body: '접속한 학생 모두의 캐릭터가 교실 뒤쪽으로 이동해요.\n하던 놀이는 닫혀요.', okText: '부르기' }))) return;
+    await adminDo({ 'control/cls': Date.now() }, '📣 모두 교실로 불렀어요');
+    if (!classRegion()) goClass(true, true);
+  };
+  $('tpPromSave').onclick = () => {
+    const l = [0, 1, 2, 3, 4].map(i => clean($('tpProm' + i).value, 40)).filter(Boolean);
+    if (!l.length) { toast('약속을 한 문장 이상 써 주세요', 'warn'); return; }
+    adminDo({ 'meetCfg/promise': Object.fromEntries(l.map((t, i) => [i, t])) }, '🤝 우리반 약속을 저장했어요');
+  };
+  $('tpTeams').onchange = (e) => adminDo({ 'meetCfg/teams': +e.target.value }, `🧑‍🤝‍🧑 자치팀을 ${e.target.value}팀으로 나눴어요`);
+  $('tpMeetLogClear').onclick = async () => {
+    if (!(await confirmAction({ title: '🧹 회의록을 모두 지울까요?', body: '저장한 회의록이 모두 사라져요. 필요하면 먼저 🖨️ 인쇄해 두세요.', typeWord: '지우기', okText: '지우기' }))) return;
+    adminDo({ meetLog: null }, '🧹 회의록을 지웠어요');
+  };
+  $('mbHand').onclick = () => react('hand');
+  $('mbGood').onclick = () => react('good');
+  $('mbThink').onclick = () => react('think');
+  $('mbAsk').onclick = () => react('ask');
+  $('mbVote').onclick = () => openMeetPanel('vote');
+  $('mbLike').onclick = () => openMeetPanel('like');
+  $('mbScript').onclick = () => openMeetPanel('script');
+  $('mbView').onclick = () => { cls.view = !cls.view; renderMeetUI(); };
+  $('mvClose').onclick = () => { $('meetVotePanel').classList.add('hidden'); cls.panel = ''; };
+  // 글 쓰는 칸에서는 게임 단축키(WASD·E·B·Q·M 등)가 눌리지 않게 (Enter·Esc는 그대로)
+  addEventListener('keydown', e => { if (e.target instanceof Element && e.target.matches('input, textarea, select') && e.key !== 'Enter' && e.key !== 'Escape') e.stopImmediatePropagation(); }, true);
+}
+let meetT = 0;
+function updateClassroom(dt) {
+  if (!cls.group) return;
+  cls.group.visible = player.pos.x > 600 || camera.position.x > 600;
+  if (cls.spotMat) cls.spotMat.opacity = 0.2 + Math.sin(time * 3) * 0.07;
+  if ((meetT -= dt) <= 0) {
+    meetT = 0.5; renderMeetUI();
+    const left = timerLeft();
+    if (S.meeting?.timer) { renderBoard(false); if (!left && cls.timerRang !== S.meeting.timer && classRegion()) { cls.timerRang = S.meeting.timer; playSfx('bell'); toast('⏱ 시간이 다 됐어요!', 'info'); } }
+  }
+}
+
+/* =====================================================================
    45. 시작 & 반복
    ===================================================================== */
 await Promise.race([document.fonts.load('40px Jua'), sleep(2500)]).catch(() => {});
@@ -9393,7 +10094,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -9412,6 +10113,7 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
+  if (joined) updateClassroom(dt);
   updateFx(dt); grassWind.value = time;
   updateControl(); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
