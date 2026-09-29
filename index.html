@@ -739,6 +739,8 @@
   <h2>🔐 선생님 관리 화면</h2>
   <p class="admin-note" id="tpNote">학생 화면에는 보이지 않아요.</p>
   <div class="row-center" style="margin-top:8px"><button class="btn" id="tpBigScreen" style="background:#fff">🖥️ 큰 화면 모드 (교실 TV·프로젝터)</button></div>
+  <div class="row-center" style="margin-top:8px"><button class="btn" id="tpRuleCheck" style="background:#fff">🔎 Firebase 규칙 점검</button></div>
+  <p class="hint" id="tpRuleResult" style="white-space:pre-line"></p>
   <div id="tpForm">
     <h3>🧑‍🏫 수업 도구</h3>
     <p class="hint" id="tpCtrlNow"></p>
@@ -1823,6 +1825,15 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       catch (e) { return { ok: false }; }
     },
     presence(data) { if (online) D.set(me, data).catch(() => {}); },
+    async checkRules() { // 선생님: 게시된 규칙이 최신인지 점검 (시험 칸을 썼다가 바로 지워요)
+      const out = {};
+      const test = async (k, fn) => { try { await fn(); out[k] = true; } catch (e) { out[k] = String(e?.code || e?.message || e).includes('PERMISSION') ? false : null; } };
+      await test('read', () => D.get(R('state/picks')));
+      await test('mural', async () => { await D.set(R('state/mural/9/191'), true); await D.set(R('state/mural/9'), null); });
+      await test('hv', async () => { const v = (await D.get(R('state/hv/picks'))).val(); await D.set(R('state/hv/picks'), v ?? 0); });
+      await test('look', async () => { const cur = (await D.get(me)).val(); if (cur) await D.update(me, { t: 1 }); });
+      return out;
+    },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
     'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
@@ -2859,7 +2870,8 @@ function setupInteractables() {
 
 function updateInteract() {
   let best = null, bestScore = Infinity, bestText = null;
-  if (joined && $('picker').classList.contains('hidden') && !placing.active) {
+  const modalOpen = !!document.querySelector('.modal:not(.hidden)'); // 창이 열려 있으면 'E 누르기' 안내를 숨겨요 (창 버튼을 가리지 않게)
+  if (joined && $('picker').classList.contains('hidden') && !placing.active && !modalOpen) {
     for (const it of interactables) {
       const t = it.text();
       if (!t) continue;
@@ -8524,7 +8536,22 @@ function initPin() {
     else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); pin.next = null; closePin(); }
   }, true);
 }
+async function runRuleCheck() {
+  const out = $('tpRuleResult');
+  if (backend?.mode !== 'firebase' || !backend.checkRules) { out.textContent = '연습 모드(이 브라우저만)라서 점검할 규칙이 없어요.'; return; }
+  if (!isTeacher) { out.textContent = '먼저 이 기기를 선생님으로 등록해 주세요.'; return; }
+  out.textContent = '점검하는 중…';
+  const r = await backend.checkRules();
+  lastSent = ''; // 점검 뒤 접속 정보를 다시 보내요
+  const mark = (v) => v === true ? '✅' : v === false ? '❌' : '⚠️';
+  const lines = [`${mark(r.read)} 마을 읽기`, `${mark(r.mural)} 함께 그리는 벽화`, `${mark(r.hv)} 한옥 마을`, `${mark(r.look)} 선생님 모습`];
+  const bad = [r.read, r.mural, r.hv, r.look].some(v => v !== true);
+  out.textContent = lines.join('   ') + (bad
+    ? '\n❌가 있으면 콘솔에 게시된 규칙이 예전 것이에요. 최신 database.rules.json의 schoolVillage 부분을 통째로 붙여 넣고 [게시]를 누른 뒤 다시 점검해 주세요.'
+    : '\n모두 최신 규칙이에요!');
+}
 function initUidCopy() {
+  $('tpRuleCheck').onclick = runRuleCheck;
   $('tpUidCopy').onclick = () => copyText(backend?.uid || '', '기기 번호');
   $('tpPathCopy').onclick = () => copyText(`${DB_ROOT}/teachers/${backend?.uid}`, '전체 경로');
   $('tpUidText').onfocus = (e) => e.target.select();
@@ -9143,7 +9170,7 @@ async function paintMural(cell) {
   const res = await backend.paintMural(p, cell);
   if (res.ok) { playSfx('pick'); $('muralFeedback').textContent = `🖌️ ${n}번 ${josa(MURAL_COLORS[n].name, '을', '를')} 칠했어요!`; }
   else if (res.reason === 'denied') { // 서버가 막았어요 (대개 데이터베이스 규칙에 벽화 부분이 없을 때)
-    const msg = isTeacher ? '⚠️ 칠하기가 저장되지 않았어요. Firebase 규칙에 database.rules.json의 mural 부분이 게시됐는지 확인해 주세요' : '⚠️ 칠하기가 저장되지 않았어요. 선생님께 알려 주세요';
+    const msg = isTeacher ? '⚠️ 칠하기가 저장되지 않았어요. 콘솔에 게시된 규칙이 예전 것이에요. 관리 화면의 🔎 Firebase 규칙 점검을 눌러 확인해 주세요' : '⚠️ 칠하기가 저장되지 않았어요. 선생님께 알려 주세요';
     $('muralFeedback').textContent = msg; toast(msg, 'warn');
   }
   else if (res.reason !== 'offline') $('muralFeedback').textContent = '앗, 친구가 먼저 칠했어요!';
