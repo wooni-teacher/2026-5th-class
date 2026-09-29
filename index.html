@@ -407,6 +407,11 @@
   #teachBar #tbFreeze[aria-pressed="true"] { background: var(--sun); }
   #bigMap { border: 3px solid var(--ink); border-radius: 12px; display: block; }
   .map-legend { margin: 10px 0; font-size: 15px; }
+  .tl-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; justify-content: center; }
+  .tl-lab { font-size: 15px; min-width: 52px; text-align: right; opacity: .8; }
+  .tl-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tl-chip { font: inherit; font-size: 15px; padding: 6px 10px; border-radius: 999px; border: 2px solid var(--ink); background: #fff; cursor: pointer; }
+  .tl-chip[aria-pressed="true"] { background: #FFD84D; box-shadow: 0 2px 0 var(--ink); }
   .map-toggle { font-size: 16px; display: flex; align-items: center; gap: 6px; }
   #tip details { margin: 0 0 12px; }
   #tip summary { font-size: 18px; cursor: pointer; margin-bottom: 10px; text-align: center; opacity: .8; }
@@ -467,18 +472,17 @@
     body.has-mission #toast { top: calc(106px + var(--safe-top)); }
     #toast { top: calc(70px + var(--safe-top)); font-size: 18px; }
   }
-  @media (hover: none) and (pointer: coarse) {
-    #decorBtn { bottom: calc(150px + var(--safe-bottom)); }
-    #emoteBtn { bottom: calc(216px + var(--safe-bottom)); }
-    #soundBtn { bottom: calc(222px + var(--safe-bottom)); }
-    #emoteBar { bottom: calc(206px + var(--safe-bottom)); }
-    #placeBar { bottom: calc(170px + var(--safe-bottom)); }
-    #prompt .key { display: none; }
-    #prompt { padding: 12px 24px; }
-    #tip .keys { display: none; }
-  }
-  @media (hover: none) and (pointer: coarse) and (max-width: 760px) {
-    #prompt { bottom: calc(170px + var(--safe-bottom)); }
+  /* 터치 기기: body.touch (태블릿 크롬의 '데스크톱 사이트' 모드처럼 미디어 쿼리가 틀려도 JS가 붙여 줘요) */
+  body.touch #decorBtn { bottom: calc(150px + var(--safe-bottom)); }
+  body.touch #emoteBtn { bottom: calc(216px + var(--safe-bottom)); }
+  body.touch #soundBtn { bottom: calc(222px + var(--safe-bottom)); }
+  body.touch #emoteBar { bottom: calc(206px + var(--safe-bottom)); }
+  body.touch #placeBar { bottom: calc(170px + var(--safe-bottom)); }
+  body.touch #prompt .key { display: none; }
+  body.touch #prompt { padding: 12px 24px; }
+  body.touch #tip .keys { display: none; }
+  @media (max-width: 760px) {
+    body.touch #prompt { bottom: calc(170px + var(--safe-bottom)); }
   }
   @media (prefers-reduced-motion: reduce) {
     #celebrate { animation: none; }
@@ -589,7 +593,7 @@
 <section id="mapPanel" class="modal sticker hidden" aria-label="우리 마을 지도">
   <h2>🗺️ 우리 마을 지도</h2>
   <div class="row-center"><canvas id="bigMap" aria-label="마을 지도: 가운데 마을, 북쪽 뒷산, 남쪽 우리 집 마을 들판, 동쪽 바닷가"></canvas></div>
-  <p class="hint map-legend">🔺 나 · ⚪ 친구 · 점선 네모 = 아직 안 지은 곳 · ⛰️ 뒷산(북쪽) · 🏡 들판(남쪽) · 🏖️ 바닷가(동쪽) · ⛵ 부두에서 배를 타면 한옥 마을</p>
+  <p class="hint map-legend">🔺 나 · ⚪ 친구 · ⭐ 선생님 · 점선 네모 = 아직 안 지은 곳 · ⛰️ 뒷산(북쪽) · 🏡 들판(남쪽) · 🏖️ 바닷가(동쪽) · ⛵ 부두에서 배를 타면 한옥 마을</p>
   <div class="row-center wrap">
     <label class="map-toggle"><input type="checkbox" id="miniToggle"> 왼쪽 위 작은 지도 보이기</label>
     <button class="btn" id="mapClose">닫기</button>
@@ -744,6 +748,12 @@
     </div>
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button></div>
     <p class="hint" style="margin-top:6px">선생님 화면 왼쪽에도 모이기·멈춤 버튼이 있어요. 멈춤은 10분이 지나면 저절로 풀려요.</p>
+
+    <h3>🧑‍🏫 선생님 모습 (모두에게 보여요)</h3>
+    <p class="hint">선생님 아바타에는 늘 <b>🧑‍🏫 선생님</b> 표시와 금빛 발밑 고리가 붙고, 지도에는 ⭐로 보여요. 아래에서 꾸밀 것을 골라요. (고른 모습은 이 기기에 저장)</p>
+    <div class="tl-row"><span class="tl-lab">모자</span><div id="tlHats" class="tl-opts"></div></div>
+    <div class="tl-row"><span class="tl-lab">소품</span><div id="tlItems" class="tl-opts"></div></div>
+    <div class="tl-row"><span class="tl-lab">발자국</span><div id="tlTrail" class="tl-opts"></div></div>
 
     <h3>🖌️ 함께 그리는 벽화</h3>
     <div class="row-center wrap"><button class="btn danger" id="tpMuralReset">🖌️ 벽화 처음부터</button></div>
@@ -1027,6 +1037,7 @@
    42. 배움 게시판
    43. 한옥 마을
    44. 함께 그리는 벽화
+   46. 선생님 모습
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1833,7 +1844,10 @@ try { renderer = new THREE.WebGLRenderer({ canvas: $('scene'), antialias: window
 catch { window.svShowFallback('이 기기(브라우저)에서는 3D 그림을 그릴 수 없어요 (WebGL).'); throw new Error('WebGL unavailable'); }
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
 // 태블릿·휴대폰은 가볍게(그림자 끄고 풀 수 줄이기), PC는 부드러운 그림자
-const LOW_GFX = matchMedia('(hover: none) and (pointer: coarse)').matches;
+// 터치 기기 알아보기: 태블릿 크롬은 '데스크톱 사이트' 모드·S펜·키보드 커버 때문에 (hover: none) 검사가 틀릴 때가 있어서 여러 방법으로 확인해요
+const IS_TOUCH = matchMedia('(hover: none) and (pointer: coarse)').matches || matchMedia('(any-pointer: coarse)').matches || navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+if (IS_TOUCH) document.body.classList.add('touch');
+const LOW_GFX = matchMedia('(hover: none) and (pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(any-pointer: fine)').matches);
 const SHADOWS = !LOW_GFX;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.12;
@@ -2464,10 +2478,10 @@ function makeAvatar(animalIdx, shirtIdx, hairIdx = 0, hairColorIdx = 0, parent =
   box(book, 0.54, 0.38, 0.04, C.white, 0, 0, 0.05, o);
   book.position.set(0, 1.0, 0.5); book.rotation.x = -0.5; book.visible = false;
   rig.add(book);
-  makeLabel(g, [CFG.ANIMALS[animalIdx] ?? '🐶'], 0.6, 0, 2.75, 0, { stroke: false, pad: 4, font: 80 }); // 동물 배지
+  const badge = makeLabel(g, [CFG.ANIMALS[animalIdx] ?? '🐶'], 0.6, 0, 2.75, 0, { stroke: false, pad: 4, font: 80 }); // 동물 배지
   parent.add(g);
   for (const e of eyes) e.userData.sy = e.scale.y;
-  const av = { g, rig, head, legL, legR, armL, armR, book, eyes, phase: 0, idle: Math.random() * 6, blink: 1 + Math.random() * 3, still: 0, squash: 0, air: 0, act: null };
+  const av = { g, rig, head, legL, legR, armL, armR, book, eyes, badge, phase: 0, idle: Math.random() * 6, blink: 1 + Math.random() * 3, still: 0, squash: 0, air: 0, act: null };
   makeProps(av);
   return av;
 }
@@ -2796,6 +2810,7 @@ function sendPresence(time) {
   if (!joined || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
   const p = player.pos;
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
+  if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   const key = JSON.stringify(d);
   if (key === lastSent) return;
   lastSent = key; lastSentAt = time;
@@ -3317,13 +3332,17 @@ async function join(practice, asTeacher = false) {
   $('emoteBtn').classList.remove('hidden'); $('soundBtn').classList.remove('hidden');
   $('tip').classList.remove('hidden');
   setTimeout(() => $('tip').classList.add('hidden'), 25000);
-  if (matchMedia('(hover: none) and (pointer: coarse)').matches) {
-    $('stick').classList.remove('hidden');
-    $('jumpBtn').classList.remove('hidden');
-  } else {
-    $('controls').classList.remove('hidden');
-  }
+  if (document.body.classList.contains('touch')) showTouchControls();
+  else $('controls').classList.remove('hidden');
 }
+function showTouchControls() { // 조이스틱·점프 버튼 보이기 (키보드 안내는 숨겨요)
+  document.body.classList.add('touch');
+  $('stick').classList.remove('hidden'); $('jumpBtn').classList.remove('hidden'); $('controls').classList.add('hidden');
+}
+// 미리 알아보지 못한 터치 화면이어도, 손가락으로 한 번 누르면 바로 조이스틱이 나타나요
+addEventListener('pointerdown', e => {
+  if (e.pointerType === 'touch' && joined && $('stick').classList.contains('hidden')) { showTouchControls(); toast('🕹️ 왼쪽 아래 동그라미를 끌어서 움직여요', 'info'); }
+}, true);
 
 /* =====================================================================
    10. 조작 (키보드, 마우스·터치 끌기, 조이스틱)
@@ -8084,6 +8103,11 @@ const MAP_LABELS = () => MAPB === MAPB_HV ? [
 function drawMarks(c, toPx, scale, big) { // 친구(점) · 나(화살표) · 보는 방향
   for (const r of remotes.values()) {
     const [x, y] = toPx(r.pos.x, r.pos.z);
+    if (r.target.t) { // 선생님은 금색 별
+      const R = big ? 9 : 7; c.fillStyle = '#FFC93C'; c.strokeStyle = '#3B2F2A'; c.lineWidth = 1.5; c.beginPath();
+      for (let i = 0; i < 10; i++) { const rr = i % 2 ? R * 0.45 : R, t = i / 10 * Math.PI * 2 - Math.PI / 2; c.lineTo(x + Math.cos(t) * rr, y + Math.sin(t) * rr); }
+      c.closePath(); c.fill(); c.stroke(); continue;
+    }
     c.fillStyle = '#' + new THREE.Color(CFG.SHIRTS[r.target.c | 0] ?? 0xFFFFFF).getHexString(); c.strokeStyle = '#fff'; c.lineWidth = 2;
     c.beginPath(); c.arc(x, y, big ? 5 : 4, 0, Math.PI * 2); c.fill(); c.stroke();
   }
@@ -9142,6 +9166,91 @@ function initMuralUI() {
 }
 
 /* =====================================================================
+   46. 선생님 모습 — 선생님 아바타에는 늘 '🧑‍🏫 선생님' 표시와 금빛 발밑 고리가 붙고, 모자·소품·반짝이 발자국을 골라 꾸며요
+   (접속 정보 t = 1 + 모자 + 4×소품 + 16×반짝이 → 1~32. 서버 규칙이 등록된 선생님 기기만 t를 보낼 수 있게 막아요.
+    고른 모습은 이 기기에만 저장해요: sv-teach-look)
+   ===================================================================== */
+const TL_HATS = [['없음', '🚫'], ['학사모', '🎓'], ['밀짚모자', '👒'], ['왕관', '👑']];
+const TL_ITEMS = [['없음', '🚫'], ['안경', '👓'], ['나비넥타이', '🎀'], ['망토', '🦸']];
+const tlLook = (() => {
+  const raw = store.get('sv-teach-look'), v = raw ? raw.split(',').map(Number) : [];
+  const ok = (n, max, d) => Number.isInteger(n) && n >= 0 && n < max ? n : d;
+  return { hat: ok(v[0], 4, 1), item: ok(v[1], 4, 2), trail: ok(v[2], 2, 1) };
+})();
+const tlCode = () => 1 + tlLook.hat + 4 * tlLook.item + 16 * tlLook.trail;
+const TL_CONE = new THREE.ConeGeometry(1, 1, 8);
+const TL_RING = new THREE.RingGeometry(0.62, 0.8, 32);
+const TL_TORUS = new THREE.TorusGeometry(1, 0.2, 6, 16);
+const tlRingMat = new THREE.MeshBasicMaterial({ color: 0xFFD24A, transparent: true, opacity: 0.75, depthWrite: false, side: THREE.DoubleSide });
+function setTeachLook(a, code) {
+  code = Number.isInteger(code) && code >= 1 && code <= 32 ? code : 0;
+  if ((a.tcode || 0) === code) return;
+  if (a.tl) { for (const x of a.tl.objs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } } a.tl = null; }
+  a.tcode = code;
+  if (a.badge) a.badge.position.y = 2.75;
+  if (!code) return;
+  const n = code - 1, hat = n % 4, item = (n >> 2) % 4, trail = n >> 4, o = { solid: false }, objs = [], GOLD = 0xFFC93C;
+  const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
+  if (hat && a.badge) a.badge.position.y = 3.02; // 모자 위로 동물 배지를 살짝 올려요
+  objs.push(makeLabel(a.g, ['🧑‍🏫 선생님'], 0.5, 0, hat ? 3.55 : 3.28, 0, { bg: '#FFD84D', fg: '#3B2F2A', font: 52, pad: 10 })); // 선생님 표시
+  const ring = new THREE.Mesh(TL_RING, tlRingMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); // 금빛 고리
+  if (hat === 1) add(a.head, g => { // 학사모
+    box(g, 0.72, 0.26, 0.72, 0x2B2B36, 0, 2.4, 0, o); box(g, 1.2, 0.06, 1.2, 0x2B2B36, 0, 2.55, 0, { solid: false, ry: 0.2 });
+    ball(g, 0.06, GOLD, 0, 2.6, 0, o); box(g, 0.55, 0.03, 0.03, GOLD, 0.3, 2.59, 0, o); cyl(g, 0.025, 0.3, GOLD, 0.58, 2.44, 0, o); ball(g, 0.07, GOLD, 0.58, 2.28, 0, o);
+  });
+  else if (hat === 2) add(a.head, g => { // 밀짚모자
+    cyl(g, 0.8, 0.05, 0xE9C77B, 0, 2.33, 0, o); cyl(g, 0.48, 0.3, 0xE9C77B, 0, 2.5, 0, o); cyl(g, 0.49, 0.09, 0xE2584A, 0, 2.41, 0, o);
+    ball(g, 0.1, 0xFF8FB3, 0.42, 2.44, 0.2, o); ball(g, 0.05, GOLD, 0.45, 2.46, 0.27, o);
+  });
+  else if (hat === 3) add(a.head, g => { // 왕관
+    cyl(g, 0.42, 0.22, GOLD, 0, 2.42, 0, o);
+    for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; mesh(TL_CONE, g, 0.09, 0.22, 0.09, GOLD, Math.sin(t) * 0.36, 2.63, Math.cos(t) * 0.36, o); ball(g, 0.04, 0xFFFFFF, Math.sin(t) * 0.36, 2.76, Math.cos(t) * 0.36, o); }
+    ball(g, 0.07, 0xE2584A, 0, 2.42, 0.43, o); ball(g, 0.06, 0x4A9AE8, 0.3, 2.42, 0.3, o); ball(g, 0.06, 0x5FBE5A, -0.3, 2.42, 0.3, o);
+  });
+  let cape = null;
+  if (item === 1) add(a.head, g => { // 안경
+    for (const x of [-0.19, 0.19]) mesh(TL_TORUS, g, 0.14, 0.14, 0.14, 0x2B2B36, x, 1.75, 0.48, o);
+    box(g, 0.12, 0.03, 0.03, 0x2B2B36, 0, 1.77, 0.48, o);
+    for (const x of [-0.45, 0.45]) box(g, 0.03, 0.03, 0.4, 0x2B2B36, x, 1.77, 0.3, o);
+  });
+  else if (item === 2) add(a.rig, g => { // 나비넥타이
+    mesh(TL_CONE, g, 0.11, 0.17, 0.07, 0xE2584A, -0.1, 1.19, 0.28, { solid: false, rz: -Math.PI / 2 });
+    mesh(TL_CONE, g, 0.11, 0.17, 0.07, 0xE2584A, 0.1, 1.19, 0.28, { solid: false, rz: Math.PI / 2 });
+    ball(g, 0.05, 0xB83A30, 0, 1.19, 0.29, o);
+  });
+  else if (item === 3) cape = add(a.rig, g => { // 망토 (걸으면 펄럭여요)
+    g.position.set(0, 1.24, -0.27);
+    box(g, 0.9, 1.0, 0.05, 0xD84A4A, 0, -0.5, 0, o); box(g, 0.92, 0.07, 0.07, GOLD, 0, -0.98, 0, o); box(g, 0.94, 0.08, 0.1, GOLD, 0, 0, 0.02, o);
+  });
+  a.tl = { objs, cape, trail: !!trail, tt: 0, last: a.g.position.clone(), sp: 0 };
+}
+function updateTeachLooks(dt) {
+  if (!joined) return;
+  tlRingMat.opacity = 0.55 + Math.sin(time * 3) * 0.25;
+  if (player.avatar) setTeachLook(player.avatar, isTeacher ? tlCode() : 0);
+  for (const r of remotes.values()) setTeachLook(r.a, r.target.t | 0);
+  for (const a of [player.avatar, ...[...remotes.values()].map(r => r.a)]) {
+    const tl = a?.tl; if (!tl) continue;
+    const p = a.g.position, sp = Math.hypot(p.x - tl.last.x, p.z - tl.last.z) / Math.max(dt, 1e-3); tl.last.copy(p);
+    tl.sp += (Math.min(1, sp / SPEED) - tl.sp) * Math.min(1, dt * 8);
+    if (tl.cape) tl.cape.rotation.x = 0.1 + tl.sp * 0.45 + Math.sin(time * (3 + tl.sp * 6)) * (0.03 + tl.sp * 0.08);
+    if (tl.trail && tl.sp > 0.3 && (tl.tt -= dt) <= 0) { tl.tt = 0.14; burst(p.clone().setY(p.y + 0.25), [0xFFD24A, 0xFFFFFF, 0xFF9FC8], 3, 1.1, 1.4, 0.6, -2); }
+  }
+}
+function renderTeachLookUI() {
+  const mk = (boxId, list, key) => {
+    const bx = $(boxId); bx.textContent = '';
+    list.forEach(([name, icon], i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'tl-chip';
+      b.textContent = `${icon} ${name}`; b.setAttribute('aria-pressed', String(tlLook[key] === i));
+      b.onclick = () => { tlLook[key] = i; store.set('sv-teach-look', `${tlLook.hat},${tlLook.item},${tlLook.trail}`); renderTeachLookUI(); playSfx('pick'); };
+      bx.appendChild(b);
+    });
+  };
+  mk('tlHats', TL_HATS, 'hat'); mk('tlItems', TL_ITEMS, 'item'); mk('tlTrail', [['끄기', '🚫'], ['반짝이 발자국', '✨']], 'trail');
+}
+
+/* =====================================================================
    45. 시작 & 반복
    ===================================================================== */
 await Promise.race([document.fonts.load('40px Jua'), sleep(2500)]).catch(() => {});
@@ -9160,7 +9269,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -9186,6 +9295,7 @@ function loop() {
   updatePretty(dt);
   updateEnv(dt);
   if (joined) updateRemotes(dt);
+  updateTeachLooks(dt);
 
   world.crates.forEach((c, k) => {
     const vis = crateVisible(c.i);
