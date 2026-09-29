@@ -408,6 +408,9 @@
   #bigMap { border: 3px solid var(--ink); border-radius: 12px; display: block; }
   .map-legend { margin: 10px 0; font-size: 15px; }
   #meetBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(112px + var(--safe-bottom)); display: flex; gap: 6px; padding: 6px; flex-wrap: wrap; justify-content: center; max-width: 94vw; }
+  #ctfBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 16px; text-align: center; min-width: 240px; }
+  #ctfScore { font-size: 30px; line-height: 1.1; } #ctfScore b { font-weight: 400; }
+  #ctfInfo { font-size: 16px; } #ctfMine { font-size: 14px; opacity: .8; }
   #meetBar .btn { font-size: 16px; padding: 7px 10px; background: #fff; white-space: nowrap; }
   #meetBar #mbHand[aria-pressed="true"], #meetBar #mbView[aria-pressed="true"] { background: var(--sun); }
   #meetTeach { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); width: min(260px, 44vw); padding: 10px; max-height: 60vh; overflow-y: auto; }
@@ -585,6 +588,7 @@
   <div id="guideText"></div>
 </div>
 <div id="freezeBar" class="hidden" role="alert"><div class="sticker"><b>✋ 잠깐 멈춤!</b><span>선생님 이야기를 들어요</span></div></div>
+<div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
   <button class="btn" id="mbHand" aria-pressed="false">🙋 손들기</button><button class="btn" id="mbGood">👍 좋아요</button><button class="btn" id="mbThink">🤔 다른 생각</button><button class="btn" id="mbAsk">❓ 궁금해요</button><button class="btn hidden" id="mbVote" style="background:var(--sun)">🗳️ 목표 투표</button><button class="btn hidden" id="mbLike" style="background:var(--sun)">💡 제안 공감</button><button class="btn" id="mbScript">📜 대본</button><button class="btn" id="mbView" aria-pressed="false">📋 칠판 보기</button>
 </div>
@@ -817,6 +821,20 @@
     <p style="margin:10px 0 2px;font-size:16px">📋 회의록 (우리반 학급회의 기록 양식 · 🖨️로 인쇄하거나 PDF로 저장)</p>
     <ul id="tpMeetLog" class="meet-log"></ul>
     <div class="row-center"><button class="btn danger" id="tpMeetLogClear">🧹 회의록 모두 지우기</button></div>
+
+    <h3>🚩 깃발뺏기 팀전</h3>
+    <p class="hint" id="tpCtfNow"></p>
+    <p class="hint">시작하면 접속한 학생이 🔴 빨강 · 🔵 파랑 두 팀으로 반반 나뉘어 운동장으로 이동해요. 상대 깃발을 들고 우리 진영 동그라미로 돌아오면 1점, 상대 진영에서 상대에게 닿으면 잡혀서 우리 진영으로 돌아가요. 팀 점수만 보이고, 끝내면 점수도 지워져요.</p>
+    <div class="row-center wrap">
+      <label class="sr-only" for="tpCtfMin">경기 시간</label><select id="tpCtfMin" class="tinput" style="width:auto"><option value="3">3분</option><option value="5" selected>5분</option><option value="7">7분</option></select>
+      <label class="sr-only" for="tpCtfGoal">목표 점수</label><select id="tpCtfGoal" class="tinput" style="width:auto"><option value="3" selected>먼저 3점</option><option value="5">먼저 5점</option></select>
+      <button class="btn" id="tpCtfStart" style="background:var(--leaf);color:#fff">🚩 팀 나누고 시작</button>
+    </div>
+    <div class="row-center wrap" style="margin-top:6px">
+      <button class="btn" id="tpCtfGo" style="background:#fff">🏃 운동장 가기</button>
+      <button class="btn" id="tpCtfFlags" style="background:#fff">🚩 깃발 제자리로</button>
+      <button class="btn danger" id="tpCtfEnd">🏁 끝내고 광장으로</button>
+    </div>
 
     <h3>🧑‍🏫 선생님 모습 (모두에게 보여요)</h3>
     <p class="hint">선생님 아바타에는 늘 <b>🧑‍🏫 선생님</b> 표시와 금빛 발밑 고리가 붙고, 지도에는 ⭐로 보여요. 아래에서 꾸밀 것을 골라요. (고른 모습은 이 기기에 저장)</p>
@@ -1108,6 +1126,7 @@
    44. 함께 그리는 벽화
    46. 선생님 모습
    47. 우리 반 교실 · 학급회의
+   48. 깃발뺏기 팀전
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1404,7 +1423,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {} }; }
+function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1440,6 +1459,7 @@ function normalize(v) {
     meetLikes: Object.fromEntries(Object.entries(toObj(v.meetLikes)).map(([r, ps]) => [r, Object.fromEntries(Object.entries(toObj(ps)).map(([p, u]) => [p, toObj(u)]))])),
     meetLog: Object.fromEntries(Object.entries(toObj(v.meetLog)).map(([k, e]) => [k, { ...e, mirror: Object.fromEntries(Object.entries(toObj(e?.mirror)).map(([c, x]) => [c, toObj(x)])), goals: toObj(e?.goals), vc: toObj(e?.vc), props: toObj(e?.props) }])),
     meetCfg: { ...toObj(v.meetCfg), promise: toObj(v.meetCfg?.promise) },
+    ctf: v.ctf ? { ...v.ctf, team: v.ctf.team || {}, flag: toObj(v.ctf.flag), score: toObj(v.ctf.score) } : null,
     hv: { picks: v.hv?.picks || 0, crates: toObj(v.hv?.crates), built: v.hv?.built || {}, kite: v.hv?.kite || {} },
     rvote: v.rvote ? { ...v.rvote, cands: v.rvote.cands || {}, votes: v.rvote.votes || {} } : null,
   };
@@ -1524,6 +1544,10 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     subscribe(fn) { onState = fn; emit(); },
     async quizPick() { st.picks++; emit(); return { ok: true }; }, // 배움 게시판 정답 → 마을 재료 +1
     async meetVote(r, g) { const m = st.meeting; if (!m || m.vst !== 1 || m.r !== r || !m.goals?.[g]) return { ok: false, reason: 'closed' }; st.meetVotes ||= {}; st.meetVotes[r] ||= {}; if (st.meetVotes[r].me !== undefined) return { ok: false, reason: 'done' }; st.meetVotes[r].me = g; emit(); return { ok: true }; },
+    async ctfTake(e) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h) return { ok: false }; c.flag ||= {}; c.flag[e] = { h: 'me' }; emit(); return { ok: true }; },
+    async ctfDrop(e) { if (st.ctf?.flag?.[e]?.h === 'me') { delete st.ctf.flag[e]; emit(); } return { ok: true }; },
+    async ctfScore(e, t) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h !== 'me') return { ok: false }; delete c.flag[e]; c.score ||= {}; c.score[t] = (c.score[t] || 0) + 1; emit(); return { ok: true }; },
+    async ctfJoin(t) { if (!st.ctf) return { ok: false }; st.ctf.team ||= {}; if (!st.ctf.team.me) st.ctf.team.me = t; emit(); return { ok: true }; },
     async meetLike(r, p) { const m = st.meeting; if (!m || m.step !== 3 || m.r !== r || !m.props?.[p]) return { ok: false, reason: 'closed' }; st.meetLikes ||= {}; st.meetLikes[r] ||= {}; st.meetLikes[r][p] ||= {}; if (st.meetLikes[r][p].me) return { ok: false, reason: 'done' }; st.meetLikes[r][p].me = true; emit(); return { ok: true }; },
     async paintMural(p, c) { st.mural[p] ||= {}; if (st.mural[p][c]) return { ok: false }; st.mural[p][c] = true; emit(); return { ok: true }; },
     async hvPick(i) { const t = st.hv.crates[i]; if (t && Date.now() - t < HV_CRATE_MS) return { ok: false }; st.hv.crates[i] = Date.now(); st.hv.picks = (st.hv.picks || 0) + 1; emit(); return { ok: true }; },
@@ -1730,6 +1754,10 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       try { await D.set(R(`state/meetVotes/${r}/${uid}`), g); return { ok: true }; }
       catch (e) { return { ok: false, reason: cache.meetVotes?.[r]?.[uid] !== undefined ? 'done' : 'denied' }; }
     },
+    async ctfTake(e) { try { await D.set(R(`state/ctf/flag/${e}`), { h: uid }); return { ok: true }; } catch (err) { return { ok: false }; } }, // 비어 있을 때만 (규칙)
+    async ctfDrop(e) { try { await D.set(R(`state/ctf/flag/${e}`), null); return { ok: true }; } catch (err) { return { ok: false }; } },
+    async ctfScore(e, t, n) { try { await D.update(R('state/ctf'), { [`flag/${e}`]: null, [`score/${t}`]: n }); return { ok: true }; } catch (err) { return { ok: false }; } },
+    async ctfJoin(t) { try { await D.set(R(`state/ctf/team/${uid}`), t); return { ok: true }; } catch (err) { return { ok: false }; } },
     async meetLike(r, p) { // 제안마다 한 번만 공감
       try { await D.set(R(`state/meetLikes/${r}/${p}/${uid}`), true); return { ok: true }; }
       catch (e) { return { ok: false, reason: cache.meetLikes?.[r]?.[p]?.[uid] ? 'done' : 'denied' }; }
@@ -1946,7 +1974,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -2908,7 +2936,7 @@ function updateCamera(dt) {
     }
   }
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
-  const inCls = player.pos.x > 600, cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
+  const inCls = player.pos.x > 600 && player.pos.z < 30, cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
   const want = new V3(
     t.x + Math.sin(camYaw) * Math.cos(cp) * cd,
     t.y + Math.sin(cp) * cd,
@@ -3334,6 +3362,7 @@ function applyState(st) {
   syncHanok(prev, first);
   syncMural(prev, first);
   syncMeeting(prev, first);
+  syncCtf(prev, first);
   syncRewardVote(prev, first);
   syncJump(prev, first);
   syncForest(prev, first);
@@ -4090,7 +4119,7 @@ async function copyText(text, what) {
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
 function fillTeacherPanel() {
-  fillPlotAdmin(); fillHvAdmin(); fillMeetAdmin();
+  fillPlotAdmin(); fillHvAdmin(); fillMeetAdmin(); fillCtfAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -5554,7 +5583,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -8392,7 +8421,7 @@ function updateMap(dt) {
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
   const want = hvRegion() ? MAPB_HV : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
-  const inCls = classRegion(); // 교실 안에서는 작은 지도를 숨겨요
+  const inCls = classRegion() || arenaRegion(); // 교실·깃발뺏기 운동장에서는 작은 지도를 숨겨요
   $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
   if (mapUI.show && !placing.active && !inCls) drawMini();
   if (!$('mapPanel').classList.contains('hidden')) drawBig();
@@ -9510,7 +9539,7 @@ function renderTeachLookUI() {
    ===================================================================== */
 const CR = { x: 650, z: 0, w: 28, d: 24 }; // 교실 가운데와 크기
 const inClass = (x, z) => x >= CR.x - CR.w / 2 + 0.6 && x <= CR.x + CR.w / 2 - 0.6 && z >= CR.z - CR.d / 2 + 0.6 && z <= CR.z + CR.d / 2 - 0.6;
-const classRegion = () => joined && player.pos.x > 600;
+const classRegion = () => joined && player.pos.x > 600 && player.pos.z < 30;
 const SEATS = []; // [{ n, r 줄, c 칸, x, z (의자 자리) }]
 for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) SEATS.push({ n: r * 5 + c + 1, r, c, x: CR.x - 8 + c * 4, z: CR.z - 2.5 + r * 4.6 + 1.0 });
 const MEET_STEPS = ['개회선언 · 우리반 약속', '거울(돌아보기) 회의', '다음 달 목표 정하기', '제안하기', '선생님 말씀', '폐회선언'];
@@ -9547,7 +9576,7 @@ const isSeated = (a) => !!a?.act?.k?.startsWith('sit');
 function mySeat() { return isSeated(player.avatar) ? seatNear(player.pos.x, player.pos.z) : null; }
 function classCount() { // 교실 안 학생 수 (선생님 제외 — 이 기기가 학생이면 나도 셈)
   let n = !isTeacher && classRegion() ? 1 : 0;
-  for (const r of remotes.values()) if (r.pos.x > 600 && !r.target.t) n++;
+  for (const r of remotes.values()) if (r.pos.x > 600 && r.pos.z < 30 && !r.target.t) n++;
   return n;
 }
 async function meetDo(upd) { const res = await backend.adminUpdate(upd); if (!res.ok) toast('저장하지 못했어요. 선생님 등록과 데이터베이스 규칙을 확인해 주세요', 'warn'); return res.ok; }
@@ -10066,13 +10095,210 @@ function initMeetUI() {
 let meetT = 0;
 function updateClassroom(dt) {
   if (!cls.group) return;
-  cls.group.visible = player.pos.x > 600 || camera.position.x > 600;
+  cls.group.visible = (player.pos.x > 600 && player.pos.z < 30) || (camera.position.x > 600 && camera.position.z < 30);
   if (cls.spotMat) cls.spotMat.opacity = 0.2 + Math.sin(time * 3) * 0.07;
   if ((meetT -= dt) <= 0) {
     meetT = 0.5; renderMeetUI();
     const left = timerLeft();
     if (S.meeting?.timer) { renderBoard(false); if (!left && cls.timerRang !== S.meeting.timer && classRegion()) { cls.timerRang = S.meeting.timer; playSfx('bell'); toast('⏱ 시간이 다 됐어요!', 'info'); } }
   }
+}
+
+/* =====================================================================
+   48. 🚩 깃발뺏기 팀전 — 선생님이 시작하면 접속한 학생이 🔴 빨강 · 🔵 파랑 두 팀으로 나뉘어 운동장에서 겨뤄요
+   · 상대 깃발을 들고 우리 진영 동그라미로 돌아오면 1점. 상대 진영에서 상대 팀에게 닿으면 잡혀서 우리 진영으로 (깃발은 제자리로)
+   · 팀 점수만 보여요. 누가 깃발을 가져왔는지는 남기지 않고, 경기를 끝내면 점수도 지워요 (경제 보상 없음)
+   · 저장: state/ctf { on, r 회차, at 시작 시각, end 끝 시각, goal 목표 점수, team {기기: 1|2}, flag {1|2: {h: 든 기기}}, score {1, 2}, win }
+   ===================================================================== */
+const ARENA = { x: 650, z: 80, w: 40, d: 64 };
+const CTF_T = { 1: { name: '빨강', icon: '🔴', col: 0xE2584A, css: '#E2584A', base: [650, 53], dir: 0 }, 2: { name: '파랑', icon: '🔵', col: 0x3E6AC8, css: '#3E6AC8', base: [650, 107], dir: Math.PI } };
+const inArena = (x, z) => Math.abs(x - ARENA.x) <= ARENA.w / 2 - 0.8 && Math.abs(z - ARENA.z) <= ARENA.d / 2 - 0.8;
+const arenaRegion = () => joined && player.pos.x > 600 && player.pos.z > 30;
+const ctf = { group: null, flags: {}, immune: 0, lastR: '', told: '', hudKey: '', ended: '', busy: false, count: 0 };
+const ctfOn = () => !!S.ctf?.on;
+const myTeam = () => S.ctf?.team?.[backend?.uid] || 0;
+const teamOfUid = (u) => S.ctf?.team?.[u] || 0;
+const ctfLeft = () => S.ctf ? Math.max(0, Math.ceil((S.ctf.end - backend.now()) / 1000)) : 0;
+const ctfStarted = () => S.ctf && backend.now() >= S.ctf.at;
+function ctfWinner() { // 0 진행 중 · 1/2 이긴 팀 · 3 비김
+  const c = S.ctf; if (!c) return 0; if (c.win) return c.win;
+  const s1 = c.score?.[1] || 0, s2 = c.score?.[2] || 0;
+  if (s1 >= c.goal || s2 >= c.goal || backend.now() >= c.end) return s1 > s2 ? 1 : s2 > s1 ? 2 : 3;
+  return 0;
+}
+function buildArena() {
+  const g = new THREE.Group(); g.name = 'Arena'; scene.add(g); ctf.group = g;
+  const X = ARENA.x, Z = ARENA.z, W = ARENA.w, D = ARENA.d, o = { solid: false };
+  box(g, W + 30, 0.1, D + 30, 0x7FBF5C, X, -0.02, Z, o);                                           // 바깥 풀밭
+  box(g, W, 0.2, D, 0x8FD06A, X, 0, Z);                                                            // 경기장 (위 0.1)
+  box(g, W, 0.02, D / 2, 0xF3B3AA, X, 0.11, Z - D / 4, { solid: false, flat: true });                 // 빨강 진영 바닥 (옅게)
+  box(g, W, 0.02, D / 2, 0xAFC3EE, X, 0.11, Z + D / 4, { solid: false, flat: true });                 // 파랑 진영 바닥
+  box(g, W, 0.03, 0.3, 0xFFFFFF, X, 0.13, Z, o);                                                   // 가운데 선
+  for (const [x, z, w, d] of [[X, Z - D / 2, W + 1, 0.6], [X, Z + D / 2, W + 1, 0.6], [X - W / 2, Z, 0.6, D], [X + W / 2, Z, 0.6, D]]) box(g, w, 1.1, d, 0xFFF3DC, x, 0.55, z); // 낮은 울타리 (부딪혀요)
+  for (const t of [1, 2]) { // 진영 동그라미 + 깃대
+    const [bx, bz] = CTF_T[t].base;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(4.3, 5, 40), new THREE.MeshBasicMaterial({ color: CTF_T[t].col, transparent: true, opacity: 0.85, depthWrite: false }));
+    ring.rotation.x = -Math.PI / 2; ring.position.set(bx, 0.14, bz); g.add(ring);
+    cyl(g, 0.08, 3.4, 0xEEEEEE, bx, 1.8, bz, o);
+    const cloth = new THREE.Group(); cloth.position.set(bx, 3.0, bz); g.add(cloth);
+    box(cloth, 1.3, 0.85, 0.06, CTF_T[t].col, 0.68, 0, 0, o); ball(cloth, 0.12, C.gold, 0, 0.55, 0, o);
+    ctf.flags[t] = { cloth, x: bx, z: bz };
+    signPlane(g, [`${CTF_T[t].icon} ${CTF_T[t].name} 진영`], 4, 0.8, bx, 1.4, t === 1 ? Z - D / 2 + 0.35 : Z + D / 2 - 0.35, { font: 56, pad: 4, fg: '#FFFFFF', bg: CTF_T[t].css, stroke: false }).rotation.y = t === 1 ? 0 : Math.PI;
+  }
+  // 숨을 수 있는 짚단 (양쪽이 똑같이)
+  for (const [dx, dz] of [[-9, -14], [9, -14], [0, -8], [-14, -3], [14, -3], [-5, 3], [5, 3], [-14, 3], [14, 3], [0, 8], [-9, 14], [9, 14]]) {
+    const k = Math.abs(dx * 3 + dz) % 2;
+    if (dz === 3 || dz === -3) { box(g, 2.4, 1.3, 1.6, 0xE8C66A, X + dx, 0.75, Z + dz * (dx === -14 || dx === 14 ? 1 : 1)); continue; }
+    cyl(g, 0.9, 1.4, k ? 0xE8C66A : 0xDDB85A, X + dx, 0.8, Z + dz, { rz: Math.PI / 2 });
+  }
+  registerSolids(g, 'arena');
+  g.visible = false;
+}
+function setCtfLook(a, t) { // 팀 조끼 + 발밑 고리 + 머리 위 팀 표시
+  if ((a.ctfT || 0) === t) return;
+  if (a.ctfObjs) { for (const x of a.ctfObjs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } } a.ctfObjs = null; }
+  a.ctfT = t; if (!t) return;
+  const col = CTF_T[t].col, o = { solid: false }, objs = [];
+  const vest = new THREE.Group(); a.rig.add(vest); objs.push(vest);
+  box(vest, 0.84, 0.5, 0.54, col, 0, 0.98, 0, o); box(vest, 0.3, 0.3, 0.02, 0xFFFFFF, 0, 1.0, 0.28, o);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.72, 28), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.8, depthWrite: false }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06; a.g.add(ring); objs.push(ring);
+  objs.push(makeLabel(a.g, [CTF_T[t].icon], 0.5, 0, a.tcode ? 3.95 : 3.3, 0, { stroke: false, pad: 4, font: 80 }));
+  a.ctfObjs = objs;
+}
+function setCarry(a, flagT) { // 등에 멘 깃발
+  if ((a.carry || 0) === flagT) return;
+  if (a.carryObj) { a.carryObj.parent?.remove(a.carryObj); a.carryObj = null; }
+  a.carry = flagT; if (!flagT) return;
+  const g = new THREE.Group(), o = { solid: false }; g.position.set(0.2, 1.1, -0.3); a.rig.add(g);
+  cyl(g, 0.04, 1.8, 0xEEEEEE, 0, 0.6, 0, o); box(g, 0.8, 0.55, 0.04, CTF_T[flagT].col, 0.42, 1.2, 0, o);
+  a.carryObj = g;
+}
+function ctfTeleport(x, z, h) {
+  if (life.fishing) endFishing(); if (placing.active) stopPlacing(); if (kite.active) endKite(false);
+  closeModals(); mtn.view = null; cls.view = false; playAct(player.avatar, null);
+  player.pos.set(x, 0.35, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.45;
+  camera.position.set(x - Math.sin(h) * 9, 6, z - Math.cos(h) * 9);
+}
+function ctfSpawn() { // 우리 진영 동그라미 둘레의 내 자리
+  const t = myTeam(); if (!t) { ctfTeleport(ARENA.x - ARENA.w / 2 + 2.5, ARENA.z, Math.PI / 2); return; } // 선생님(구경)은 옆줄
+  const hsh = Math.abs([...String(backend.uid || 'x')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7));
+  const a = (hsh % 12) / 12 * Math.PI * 2, [bx, bz] = CTF_T[t].base;
+  ctfTeleport(bx + Math.sin(a) * 3.2, bz + Math.cos(a) * 3.2 * 0.6 + (t === 1 ? -1 : 1), CTF_T[t].dir);
+}
+function syncCtf(prev, first) {
+  const c = S.ctf, p = prev.ctf;
+  if (c && c.r !== ctf.lastR) { // 새 경기
+    ctf.lastR = c.r; ctf.ended = ''; ctf.immune = 0;
+    if (!first || arenaRegion()) {
+      if (!isTeacher && !myTeam() && c.on) { // 늦게 들어온 친구: 사람이 적은 팀으로
+        const n1 = Object.values(c.team || {}).filter(v => v === 1).length, n2 = Object.values(c.team || {}).filter(v => v === 2).length;
+        backend.ctfJoin(n1 <= n2 ? 1 : 2);
+      }
+      setTimeout(() => { ctfSpawn(); const t = myTeam(); showBanner('🚩 깃발뺏기 팀전!', t ? `나는 ${CTF_T[t].icon} ${CTF_T[t].name} 팀 · 상대 깃발을 가져와 우리 진영 동그라미로!` : '선생님은 옆줄에서 응원해요', 4000); }, first ? 800 : 200);
+    }
+  }
+  if (!c && p) { // 선생님이 끝냄 → 경기장에 있던 친구는 광장으로
+    ctf.lastR = '';
+    if (arenaRegion()) { if (isTeacher) ctfTeleport(0, 14, Math.PI); else gatherHere(); toast('🏁 깃발뺏기가 끝났어요. 광장으로 돌아왔어요', 'info'); }
+  }
+  if (c && p && c.r === p.r) {
+    for (const t of [1, 2]) {
+      const h = c.flag?.[t]?.h, ph = p.flag?.[t]?.h;
+      if (h && h !== ph && arenaRegion()) { const mine = h === backend.uid, ours = teamOfUid(h) === myTeam(); toast(mine ? `🚩 ${CTF_T[t].name} 깃발을 들었어요! 우리 진영 동그라미로 달려요` : ours ? `🚩 우리 팀이 ${CTF_T[t].name} 깃발을 가져가고 있어요!` : `⚠️ 우리 ${CTF_T[t].name} 깃발을 빼앗겼어요! 잡으러 가요`, mine ? 'success' : 'info'); }
+    }
+    for (const t of [1, 2]) if ((c.score?.[t] || 0) > (p.score?.[t] || 0) && arenaRegion()) {
+      playSfx('fanfare'); burst(new V3(CTF_T[t].base[0], 3, CTF_T[t].base[1]), [CTF_T[t].col, 0xFFFFFF, C.gold], 60, 6, 3);
+      toast(`${CTF_T[t].icon} ${CTF_T[t].name} 팀 득점! ${c.score?.[1] || 0} : ${c.score?.[2] || 0}`, 'success');
+    }
+  }
+  renderCtfHud(true);
+}
+function updateCtf(dt) {
+  if (!ctf.group) return;
+  const near = player.pos.x > 600 && player.pos.z > 30 || camera.position.x > 600 && camera.position.z > 30;
+  ctf.group.visible = near;
+  const c = S.ctf;
+  // 팀 표시·등에 멘 깃발 (내 캐릭터와 친구)
+  if (player.avatar) { setCtfLook(player.avatar, c ? myTeam() : 0); setCarry(player.avatar, c ? [1, 2].find(t => c.flag?.[t]?.h === backend.uid) || 0 : 0); }
+  for (const [uid, r] of remotes) { setCtfLook(r.a, c ? teamOfUid(uid) : 0); setCarry(r.a, c ? [1, 2].find(t => c.flag?.[t]?.h === uid) || 0 : 0); }
+  for (const t of [1, 2]) { const f = ctf.flags[t]; if (f) { f.cloth.visible = !c?.flag?.[t]?.h; f.cloth.rotation.y = Math.sin(time * 2 + t) * 0.35; } }
+  renderCtfHud(false);
+  if (!c || !joined) return;
+  // 선생님 기기: 시간이 끝나거나 목표 점수면 결과 기록 · 나간 친구가 든 깃발은 제자리로
+  if (isTeacher && (ctf.count += dt) > 1) {
+    ctf.count = 0;
+    const w = ctfWinner();
+    if (c.on && w) backend.adminUpdate({ 'ctf/on': 0, 'ctf/win': w, 'ctf/flag': null });
+    for (const t of [1, 2]) { const h = c.flag?.[t]?.h; if (h && h !== backend.uid && !remotes.has(h)) backend.adminUpdate({ [`ctf/flag/${t}`]: null }); }
+  }
+  const t = myTeam();
+  if (!t || !c.on || !ctfStarted() || ctfWinner() || !arenaRegion() || ctf.busy) return;
+  const p = player.pos, e = 3 - t, enemyHalf = t === 1 ? p.z > ARENA.z : p.z < ARENA.z;
+  const holding = c.flag?.[e]?.h === backend.uid;
+  ctf.immune = Math.max(0, ctf.immune - dt);
+  if (enemyHalf && !ctf.immune) { // 상대 진영에서 상대에게 닿으면 잡혀요
+    for (const [uid, r] of remotes) {
+      if (teamOfUid(uid) !== e) continue;
+      if (Math.hypot(r.target.x - p.x, r.target.z - p.z) < 1.4) {
+        ctf.busy = true; ctf.immune = 3;
+        (holding ? backend.ctfDrop(e) : Promise.resolve()).finally(() => { ctf.busy = false; });
+        playSfx('oops'); toast(holding ? '😵 잡혔어요! 깃발은 제자리로 돌아갔어요. 우리 진영에서 다시 출발!' : '😵 잡혔어요! 우리 진영에서 다시 출발해요', 'warn');
+        ctfSpawn(); return;
+      }
+    }
+  }
+  const [ex, ez] = CTF_T[e].base, [mx, mz] = CTF_T[t].base;
+  if (!holding && !c.flag?.[e]?.h && Math.hypot(p.x - ex, p.z - ez) < 2.2) { // 상대 깃발 들기
+    ctf.busy = true;
+    backend.ctfTake(e).then(res => { if (res.ok) { playSfx('pick'); playAct(player.avatar, 'cheer'); } }).finally(() => { ctf.busy = false; });
+  } else if (holding && Math.hypot(p.x - mx, p.z - mz) < 4.8) { // 우리 진영에 도착 → 득점
+    ctf.busy = true;
+    backend.ctfScore(e, t, (c.score?.[t] || 0) + 1).finally(() => { ctf.busy = false; });
+  }
+}
+function renderCtfHud(force) {
+  const c = S.ctf, show = !!c && arenaRegion();
+  $('ctfBar').classList.toggle('hidden', !show);
+  if (!show) return;
+  const s1 = c.score?.[1] || 0, s2 = c.score?.[2] || 0, left = ctfLeft(), w = ctfWinner(), t = myTeam(), wait = Math.ceil((c.at - backend.now()) / 1000);
+  const key = [s1, s2, left, w, t, wait > 0 ? wait : 0, c.flag?.[1]?.h || '', c.flag?.[2]?.h || ''].join('|');
+  if (!force && key === ctf.hudKey) return;
+  ctf.hudKey = key;
+  $('ctfScore').innerHTML = `<b style="color:${CTF_T[1].css}">🔴 ${s1}</b> : <b style="color:${CTF_T[2].css}">${s2} 🔵</b>`;
+  $('ctfInfo').textContent = w ? (w === 3 ? '🤝 비겼어요! 모두 멋졌어요' : `🏆 ${CTF_T[w].icon} ${CTF_T[w].name} 팀 승리! 모두 수고했어요`)
+    : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} · 먼저 ${c.goal}점`;
+  const holding = t && c.flag?.[3 - t]?.h === backend.uid;
+  $('ctfMine').textContent = !t ? '👀 선생님은 옆줄에서 응원해요' : holding ? '🚩 깃발을 들었어요! 우리 진영 동그라미로!' : `나는 ${CTF_T[t].icon} ${CTF_T[t].name} 팀 · ${CTF_T[3 - t].icon} 깃발을 가져와요`;
+  if (w && ctf.ended !== c.r) { ctf.ended = c.r; showBanner(w === 3 ? '🤝 비겼어요!' : `🏆 ${CTF_T[w].icon} ${CTF_T[w].name} 팀 승리!`, `${s1} : ${s2} · 서로 잘했다고 인사해요 👏`, 6000); if (player.avatar) burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
+}
+// ---------- 선생님 ----------
+function fillCtfAdmin() {
+  const c = S.ctf;
+  const n = [...remotes.values()].filter(r => !r.target.t).length;
+  $('tpCtfNow').textContent = c ? (c.on ? `경기 중 · 🔴 ${c.score?.[1] || 0} : ${c.score?.[2] || 0} 🔵 · 남은 시간 ${Math.floor(ctfLeft() / 60)}분 ${ctfLeft() % 60}초` : `경기 끝 · ${c.win === 3 ? '비김' : `${CTF_T[c.win]?.name || ''} 팀 승리`} (${c.score?.[1] || 0} : ${c.score?.[2] || 0})`) : `지금 접속한 학생 ${n}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
+  $('tpCtfEnd').disabled = !c; $('tpCtfFlags').disabled = !c?.on;
+}
+async function startCtf() {
+  const students = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u]) => u);
+  if (!isTeacher && backend.mode === 'firebase') return;
+  if (backend.mode !== 'firebase' && !students.includes(backend.uid)) students.push(backend.uid); // 연습 모드: 나도 참가
+  if (!students.length) { toast('접속한 학생이 없어요', 'warn'); return; }
+  const min = +$('tpCtfMin').value, goal = +$('tpCtfGoal').value;
+  if (!(await confirmAction({ title: '🚩 깃발뺏기를 시작할까요?', body: `접속한 학생 ${students.length}명을 🔴 빨강 · 🔵 파랑 두 팀으로 나눠서 운동장으로 옮겨요.\n${min}분 동안, 먼저 ${goal}점을 내는 팀이 이겨요. 하던 놀이는 닫혀요.`, okText: '시작' }))) return;
+  for (let i = students.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [students[i], students[j]] = [students[j], students[i]]; }
+  const team = Object.fromEntries(students.map((u, i) => [u, i % 2 ? 2 : 1])), now = backend.now();
+  await adminDo({ ctf: { on: 1, r: Date.now().toString(36), at: now + 5000, end: now + 5000 + min * 60000, goal, team, score: { 1: 0, 2: 0 } } }, `🚩 깃발뺏기를 시작해요! (${min}분 · 먼저 ${goal}점)`);
+  if (isTeacher && !arenaRegion()) ctfSpawn();
+}
+function initCtfUI() {
+  $('tpCtfStart').onclick = startCtf;
+  $('tpCtfEnd').onclick = async () => {
+    if (!(await confirmAction({ title: '🏁 깃발뺏기를 끝낼까요?', body: '경기장에 있는 친구들이 광장으로 돌아가고, 점수는 지워져요.', okText: '끝내기' }))) return;
+    adminDo({ ctf: null }, '🏁 깃발뺏기를 끝냈어요');
+  };
+  $('tpCtfFlags').onclick = () => adminDo({ 'ctf/flag': null }, '🚩 깃발을 모두 제자리로 돌려놨어요');
+  $('tpCtfGo').onclick = () => { if (S.ctf) { closeModals(); ctfSpawn(); } else toast('진행 중인 경기가 없어요', 'info'); };
 }
 
 /* =====================================================================
@@ -10094,7 +10320,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -10114,6 +10340,7 @@ function loop() {
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) updateClassroom(dt);
+  if (joined) updateCtf(dt);
   updateFx(dt); grassWind.value = time;
   updateControl(); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
