@@ -101,6 +101,7 @@
   #prog { display: flex; flex-direction: column; gap: 4px; width: 128px; }
   #progText { font-size: 20px; text-align: center; }
   .bar { height: 12px; border: 2px solid var(--ink); border-radius: 8px; background: #EDE3D2; overflow: hidden; }
+  .bar > div:not([class]):not([id]) { height: 100%; background: var(--leaf); transition: width .4s; } /* 가게·기부함 막대 */
   #barFill { height: 100%; width: 0; background: var(--leaf); transition: width .5s; }
   #icons { display: flex; gap: 4px; }
   .sicon {
@@ -965,6 +966,12 @@
       <select id="tpTime" class="tinput" style="width:auto"><option value="auto">시간: 자동</option><option value="day">☀️ 낮</option><option value="night">🌙 밤</option></select>
     </div>
 
+    <h3>🏪 가게와 반 기부</h3>
+    <p class="hint">팔면 반 동전은 값만큼, 학생 조개돈은 절반만 늘어요. 같은 물건을 많이 팔면 값이 내려가요(다음 날 회복). 하루 가게 예산은 학생 한 명이 하루에 팔아서 벌 수 있는 조개돈 한도예요.</p>
+    <div class="row-center wrap"><label style="font-size:16px">하루 가게 예산 <select id="tpCap" class="tinput" style="width:auto"><option value="100">🐚 100</option><option value="200">🐚 200 (기본)</option><option value="300">🐚 300</option><option value="500">🐚 500</option><option value="0">한도 없음</option></select></label></div>
+    <p class="hint" id="tpFundNow"></p>
+    <div class="row-center"><button class="btn danger" id="tpFundReset">🐷 반 기부 처음부터</button></div>
+
     <h3>🏡 우리 집 마을 (개인 공간)</h3>
     <p class="hint" id="tpPlotInfo"></p>
     <div class="row-center wrap">
@@ -1135,6 +1142,7 @@
    46. 선생님 모습
    47. 우리 반 교실 · 학급회의
    48. 깃발뺏기 팀전
+   49. 경제 다듬기 (가게 예산·시세·옷가게·집 키우기·반 기부·도감 배지)
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1325,7 +1333,7 @@ function sanitizeState(raw) {
     if (!ok(/^(10|[0-9])_[0-5]$/.test(n) && pl && ANON_ID.test(pl.o) && isInt(pl.a, 0, 5) && isInt(pl.c, 0, 5))) continue;
     if (!ok(!Object.values(out.plots).some(q => q.o === pl.o))) continue; // 한 사람 한 곳
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
-    if (pl.h != null && ok(isInt(pl.h.s, 0, 2) && isInt(pl.h.c, 0, 5))) out.plots[n].h = { s: pl.h.s, c: pl.h.c };
+    if (pl.h != null && ok(isInt(pl.h.s, 0, 2) && isInt(pl.h.c, 0, 5))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; }
     for (const [k, d] of Object.entries(plainObj(pl.items))) if (ok(/^[0-5]_[0-5]$/.test(k) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) out.plots[n].items[k] = { t: d.t, r: d.r };
   }
   for (const [n, pl] of Object.entries(out.plots)) out.plotOwner[pl.o] = n; // 주인 목록은 땅에서 다시 만들어요
@@ -1396,6 +1404,8 @@ function sanitizeState(raw) {
   const mc = plainObj(v.meetCfg);
   { const pr = {}; for (const [i, t] of Object.entries(plainObj(mc.promise))) if (ok(/^[0-4]$/.test(i) && strOk(t, 40))) pr[i] = t; if (Object.keys(pr).length) out.meetCfg.promise = pr; }
   if (mc.teams === 3 || mc.teams === 5) out.meetCfg.teams = mc.teams;
+  const ec = plainObj(v.econ); if (ec.cap != null && ok(ECON_CAPS.includes(ec.cap))) out.econ.cap = ec.cap; // 하루 가게 예산
+  const fd = v.fund; if (fd && ok(isInt(fd.p, 0, FUND.length) && isInt(fd.n, 0, 99999))) out.fund = { p: fd.p, n: fd.n }; // 반 기부
   const hvv = v.hv; // 한옥 마을: 재료 수, 상자 시각, 지은 곳, 연날리기 성공 (기기 번호만)
   if (ok(isInt(hvv.picks, 0, 500))) out.hv.picks = hvv.picks;
   for (const [k, t] of Object.entries(plainObj(hvv.crates))) if (ok(isInt(+k, 0, HV_CRATES.length - 1) && Number.isFinite(t))) out.hv.crates[k] = t;
@@ -1431,7 +1441,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null }; }
+function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1467,6 +1477,7 @@ function normalize(v) {
     meetLikes: Object.fromEntries(Object.entries(toObj(v.meetLikes)).map(([r, ps]) => [r, Object.fromEntries(Object.entries(toObj(ps)).map(([p, u]) => [p, toObj(u)]))])),
     meetLog: Object.fromEntries(Object.entries(toObj(v.meetLog)).map(([k, e]) => [k, { ...e, mirror: Object.fromEntries(Object.entries(toObj(e?.mirror)).map(([c, x]) => [c, toObj(x)])), goals: toObj(e?.goals), vc: toObj(e?.vc), props: toObj(e?.props) }])),
     meetCfg: { ...toObj(v.meetCfg), promise: toObj(v.meetCfg?.promise) },
+    econ: toObj(v.econ), fund: v.fund || null,
     ctf: v.ctf ? { ...v.ctf, team: v.ctf.team || {}, flag: toObj(v.ctf.flag), score: toObj(v.ctf.score), jail: v.ctf.jail || {} } : null,
     hv: { picks: v.hv?.picks || 0, crates: toObj(v.hv?.crates), built: v.hv?.built || {}, kite: v.hv?.kite || {} },
     rvote: v.rvote ? { ...v.rvote, cands: v.rvote.cands || {}, votes: v.rvote.votes || {} } : null,
@@ -1555,6 +1566,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async ctfTake(e) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h) return { ok: false }; c.flag ||= {}; c.flag[e] = { h: 'me' }; emit(); return { ok: true }; },
     async ctfDrop(e) { if (st.ctf?.flag?.[e]?.h === 'me') { delete st.ctf.flag[e]; emit(); } return { ok: true }; },
     async ctfScore(e, t) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h !== 'me') return { ok: false }; delete c.flag[e]; c.score ||= {}; c.score[t] = (c.score[t] || 0) + 1; emit(); return { ok: true }; },
+    async fundGive(amt) { const f = st.fund || { p: 0, n: 0 }; if (f.p >= FUND.length) return { ok: false }; f.n += amt; if (f.n >= FUND[f.p].goal) { f.n -= FUND[f.p].goal; f.p++; } st.fund = f; emit(); return { ok: true }; },
     async ctfCatch(u) { const c = st.ctf; if (!c?.on || c.jail?.[u] || !c.team?.[u] || c.team[u] === c.team.me) return { ok: false }; c.jail ||= {}; c.jail[u] = { t: Date.now() }; emit(); return { ok: true }; },
     async ctfFree(us) { const c = st.ctf; if (!c?.jail) return { ok: false }; for (const u of us) delete c.jail[u]; emit(); return { ok: true }; },
     async ctfJoin(t) { if (!st.ctf) return { ok: false }; st.ctf.team ||= {}; if (!st.ctf.team.me) st.ctf.team.me = t; emit(); return { ok: true }; },
@@ -1768,6 +1780,12 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async ctfDrop(e) { try { await D.set(R(`state/ctf/flag/${e}`), null); return { ok: true }; } catch (err) { return { ok: false }; } },
     async ctfScore(e, t, n) { try { await D.update(R('state/ctf'), { [`flag/${e}`]: null, [`score/${t}`]: n }); return { ok: true }; } catch (err) { return { ok: false }; } },
     async ctfJoin(t) { try { await D.set(R(`state/ctf/team/${uid}`), t); return { ok: true }; } catch (err) { return { ok: false }; } },
+    async fundGive(amt) { // 한 번에 500까지 · 목표를 넘으면 다음 시설로 (규칙이 막아요)
+      try {
+        const r = await D.runTransaction(R('state/fund'), cur => { const f = cur || { p: 0, n: 0 }; if (f.p >= FUND.length) return; let n = f.n + amt, p = f.p; if (n >= FUND[p].goal) { n -= FUND[p].goal; p++; } return { p, n }; });
+        return { ok: r.committed };
+      } catch (err) { return { ok: false }; }
+    },
     async ctfCatch(u) { try { await D.set(R(`state/ctf/jail/${u}`), { t: D.serverTimestamp() }); return { ok: true }; } catch (err) { return { ok: false }; } }, // 이미 갇혔으면 규칙이 막아요
     async ctfFree(us) { try { await D.update(R('state/ctf/jail'), Object.fromEntries(us.map(u => [u, null]))); return { ok: true }; } catch (err) { return { ok: false }; } },
     async meetLike(r, p) { // 제안마다 한 번만 공감
@@ -1986,7 +2004,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -3032,6 +3050,7 @@ function sendPresence(time) {
   if (!joined || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
   const p = player.pos;
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
+  if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   const key = JSON.stringify(d);
   if (key === lastSent) return;
@@ -3375,6 +3394,7 @@ function applyState(st) {
   syncMural(prev, first);
   syncMeeting(prev, first);
   syncCtf(prev, first);
+  syncFund(prev, first);
   syncRewardVote(prev, first);
   syncJump(prev, first);
   syncForest(prev, first);
@@ -4131,7 +4151,7 @@ async function copyText(text, what) {
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
 function fillTeacherPanel() {
-  fillPlotAdmin(); fillHvAdmin(); fillMeetAdmin(); fillCtfAdmin();
+  fillPlotAdmin(); fillHvAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -6733,7 +6753,7 @@ function renderLot(id, first) {
   const cloth = box(g, 0.9, 0.55, 0.04, CFG.SHIRTS[pl.c] ?? 0xFFFFFF, cx - 5.14, 2.3, cz - 5.6, o);
   cloth.name = 'Cloth';
   const tint = new THREE.Color(CFG.SHIRTS[pl.c] ?? 0xFFE8C8).lerp(new THREE.Color(0xFFFFFF), 0.55).getHex();
-  if (pl.h) buildHouse(g, cx, cz, pl.h);
+  if (pl.h) { buildHouse(g, cx, cz, pl.h); if (pl.h.lv) buildHouseLv(g, cx, cz, pl.h.lv); }
   for (const [cell, d] of Object.entries(pl.items || {})) {
     const pos = lotCellCenter(id, cell); if (!pos) continue;
     const it = buildPlotItem(clamp(d.t | 0, 0, 19), g, tint);
@@ -6817,7 +6837,7 @@ function openHouse() {
     if ((bag.shell || 0) < price) box.append(el2('p', 'hint', `🐚 조개돈이 ${price - (bag.shell || 0)} 모자라요`));
     go.onclick = async () => {
       if ((bag.shell || 0) < price) return;
-      const res = await backend.setHouse(id, { s: pick.s, c: pick.c });
+      const res = await backend.setHouse(id, cur?.lv ? { s: pick.s, c: pick.c, lv: cur.lv } : { s: pick.s, c: pick.c });
       if (!res.ok) { if (res.reason !== 'offline') toast('🚫 집을 짓지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
       bag.shell -= price; saveBag();
       const [cx, cz] = lotCenter(id); burst(new V3(cx, 3, cz + 3), RAINBOW, 80, 7, 3);
@@ -6825,6 +6845,24 @@ function openHouse() {
       closeLife();
     };
     box.append(el2('div', 'row-center', null)); box.lastChild.append(go);
+    if (cur) { // 🏗️ 집 키우기 (단계마다 차례로)
+      const lv = cur.lv || 0, nx = HOUSE_LV[lv + 1];
+      box.append(el2('h3', 'lp-sec', '🏗️ 집 키우기'));
+      HOUSE_LV.forEach((st, i) => { if (st) box.append(el2('div', 'lp-row', `${i <= lv ? '✅' : i === lv + 1 ? '⬜' : '🔒'} ${st.icon} ${st.name} · ${st.desc} (🐚${st.price})`)); });
+      if (nx) {
+        const up = el2('button', 'btn lp-btn', `${nx.icon} ${nx.name} 만들기 (🐚${nx.price})`); up.disabled = (bag.shell || 0) < nx.price;
+        up.onclick = async () => {
+          if ((bag.shell || 0) < nx.price) return;
+          const res = await backend.setHouse(id, { s: cur.s, c: cur.c, lv: lv + 1 });
+          if (!res.ok) { if (res.reason !== 'offline') toast('🚫 저장하지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
+          bag.shell -= nx.price; saveBag();
+          const [cx, cz] = lotCenter(id); burst(new V3(cx, 3, cz), RAINBOW, 80, 7, 3);
+          toast(`🏗️ ${nx.icon} ${nx.name}이(가) 생겼어요!`, 'success'); closeLife();
+        };
+        box.append(el2('div', 'row-center', null)); box.lastChild.append(up);
+        if ((bag.shell || 0) < nx.price) box.append(el2('p', 'hint', `🐚 조개돈이 ${nx.price - (bag.shell || 0)} 모자라요`));
+      } else box.append(el2('p', 'lp-big', '🌟 집을 끝까지 키웠어요!'));
+    }
     function refill() { refillLife(); }
   });
 }
@@ -7152,7 +7190,7 @@ const pickWeighted = (list) => { // 비쌀수록 드물게
 };
 function gainCritter(c) {
   guideDone('gather'); setTimeout(() => playSfx('catch'), 350);
-  bag.c[c.id] = (bag.c[c.id] || 0) + 1; saveBag();
+  bag.c[c.id] = (bag.c[c.id] || 0) + 1; saveBag(); seeCritter(c.id);
   const first = !S.dex?.[c.id];
   toast(`${c.icon} ${josa(c.name, '을', '를')} ${(c.id[0] === 's' && c.kind !== 'crab') || c.kind === 'coin' || c.kind === 'pot' ? '주웠어요' : '잡았어요'}! (가방 ${critCount()}/${CAP_CRIT})${first ? ' · 🏛️ 도감관에 처음 기증할 수 있어요!' : ''}`, 'success');
 }
@@ -7713,7 +7751,10 @@ function openShop() {
     box.textContent = '';
     const coins = coinNow(), next = UPGRADES.find(u => coins < u.at);
     box.append(el2('p', 'lp-big', `🪙 반 동전 ${coins}`));
-    box.append(el2('p', 'hint', `팔면 반 동전과 내 🐚 조개돈이 같이 늘어요. 반 동전이 모이면 마을이 좋아지고, 조개돈으로는 우리 집 마을에서 땅(🐚${LAND_PRICE})을 사고 집(🐚${HOUSE_PRICE})을 지어요. (내 조개돈 🐚${bag.shell || 0}, 나만 보여요)`));
+    box.append(el2('p', 'hint', `팔면 반 동전은 값만큼, 내 🐚 조개돈은 값의 절반만큼 늘어요. 오늘 같은 물건을 많이 팔면 값이 내려가요(내일 회복). 조개돈으로 땅(🐚${LAND_PRICE})·집(🐚${HOUSE_PRICE})·집 키우기·👕 옷을 사고, 🐷 반 기부함에 모아 바닷가 놀이 시설을 지어요. (내 조개돈 🐚${bag.shell || 0}, 나만 보여요)`));
+    { const cap = capNow(), used = earnToday();
+      if (cap) { const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, Math.round(used / cap * 100))}%`; bar.append(fill); box.append(el2('p', '', `🏪 오늘 가게 예산: 🐚 ${used} / ${cap} ${used >= cap ? '· 다 썼어요! 내일 또 와요' : ''}`), bar); } }
+    { const w = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', '👕 옷가게 · 내 옷장'), b2 = el2('button', 'btn', '🐷 반 기부함 알아보기'); b1.onclick = openWardrobe; b2.onclick = openFund; w.append(b1, b2); box.append(w); }
     // 팔 것
     box.append(el2('h3', 'lp-sec', '🎒 팔기'));
     const rows = [...Object.entries(bag.m).filter(([, n]) => n > 0).map(([k, n]) => ({ key: k, icon: MATS[k].icon, name: MATS[k].name, n, price: MATS[k].price, mat: true })),
@@ -7721,7 +7762,9 @@ function openShop() {
     if (!rows.length) box.append(el2('div', 'vempty', '가방이 비어 있어요. 나무를 흔들고, 곤충과 물고기를 잡아 와요!'));
     for (const r of rows) {
       const row = el2('div', 'lp-row');
-      row.append(r.mat ? el2('span', 'lp-icon', r.icon) : critIcon(CRITTER[r.key], 'lp-icon', 'span'), el2('span', 'lp-name', `${r.name} ×${r.n}`), el2('span', 'lp-sub', `개당 🪙${r.price}`));
+      const pr = unitPrice(r.price, soldToday(r.key)), down = pr < r.price;
+      row.append(r.mat ? el2('span', 'lp-icon', r.icon) : critIcon(CRITTER[r.key], 'lp-icon', 'span'), el2('span', 'lp-name', `${r.name} ×${r.n}`), el2('span', 'lp-sub', `개당 🪙${pr} · 🐚${shellOf(pr)}${down ? ' 📉' : ''}`));
+      if (down) row.title = `오늘 ${soldToday(r.key)}개 팔아서 값이 내려갔어요 (원래 🪙${r.price}, 내일 회복)`;
       const one = el2('button', 'btn lp-btn', '1개'), all = el2('button', 'btn lp-btn', '모두');
       one.onclick = () => sell(r, 1); all.onclick = () => sell(r, r.n);
       row.append(one, all); box.append(row);
@@ -7738,16 +7781,22 @@ function openShop() {
     box.append(el2('p', 'vempty', saveNote()));
   });
 }
-async function sell(r, n) {
+async function sell(r, n) { // 반 동전은 값만큼, 내 조개돈은 절반 · 하루 가게 예산 · 오늘 많이 판 물건은 값이 내려가요
   const have = r.mat ? bag.m[r.key] : bag.c[r.key];
   n = Math.min(n, have || 0); if (!n) return;
-  const ok = await earnCoins(n * r.price);
+  const cap = capNow(), left = cap ? cap - earnToday() : Infinity;
+  if (left <= 0) { toast('🏪 오늘 가게 예산을 다 썼어요! 내일 또 팔 수 있어요 (도감관 기증·만들기·주민 부탁은 계속 돼요)', 'warn'); return; }
+  const c0 = soldToday(r.key); let coins = 0, shells = 0, k = 0;
+  for (; k < n; k++) { const pr = unitPrice(r.price, c0 + k), sh = shellOf(pr); if (shells + sh > left) break; coins += pr; shells += sh; }
+  if (!k) { toast(`🏪 오늘 가게 예산이 🐚${left}밖에 안 남아서 이 물건은 팔 수 없어요. 내일 또 와요!`, 'warn'); return; }
+  const ok = await earnCoins(coins);
   if (!ok) { refillLife(); return; }
-  if (r.mat) bag.m[r.key] -= n; else { bag.c[r.key] -= n; if (!bag.c[r.key]) delete bag.c[r.key]; }
-  earnShell(n * r.price); // 판 값만큼 내 조개돈도 늘어요
+  if (r.mat) bag.m[r.key] -= k; else { bag.c[r.key] -= k; if (!bag.c[r.key]) delete bag.c[r.key]; }
+  bag.sold[r.key] = c0 + k; bag.earn.n += shells;
+  earnShell(shells);
   guideDone('sell'); playSfx('coin');
-  toast(`🪙 ${r.icon} ${r.name} ${n}개를 팔았어요. 반 동전 +${n * r.price} · 내 🐚 +${n * r.price}`, 'success');
-  $('lpLive').textContent = `반 동전 ${n * r.price} 늘었어요`;
+  toast(`🪙 ${r.icon} ${r.name} ${k}개를 팔았어요. 반 동전 +${coins} · 내 🐚 +${shells}${k < n ? ' (오늘 가게 예산이 다 되어 여기까지만 팔았어요)' : ''}`, 'success');
+  $('lpLive').textContent = `반 동전 ${coins} 늘었어요`;
   refillLife();
 }
 function openCraft(mode) {
@@ -7771,6 +7820,9 @@ function openBag() {
   openLife('🎒 내 가방', (box) => {
     box.textContent = '';
     box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', '가방과 조개돈은 이 기기에만 저장돼요. 친구에게 보이지 않고, 비교하지 않아요.'));
+    { const d = dexProgress(), badges = DEX_BADGES.map(([t]) => bag.badges[t] ? `🏅${t}%` : `▫️${t}%`).join(' ');
+      box.append(el2('h3', 'lp-sec', `📖 내가 잡아 본 생물 ${d.have} / ${d.all} (${d.pct}%)`), el2('p', '', `도감 배지: ${badges} · 배지를 받으면 👕 옷장에 배지 전용 꾸미기가 생겨요`));
+      const b = el2('button', 'btn', '👕 내 옷장'); b.onclick = openWardrobe; const w = el2('div', 'row-center'); w.append(b); box.append(w); }
     box.append(el2('h3', 'lp-sec', '재료'), el2('p', 'lp-big', Object.entries(MATS).map(([k, m]) => `${m.icon} ${m.name} ${bag.m[k] || 0}`).join('   ')));
     box.append(el2('h3', 'lp-sec', `곤충·물고기 (${critCount()}/${CAP_CRIT})`));
     const cs = Object.entries(bag.c).filter(([, n]) => n > 0);
@@ -8358,7 +8410,7 @@ const MAP_LABELS = () => MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['⛵', BEACH.pierX1 - 1, BEACH.pierZ], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
-  ['🏡', -15, 106], ['🏖️', 69, 0], ['⚓', 88, BEACH.pierZ], ['⛰️', -30, -66], ['💦', 30, -80], ['🚩', MT.peak[0], MT.peak[1]], [forestOpen() ? '⛺' : '🔒', -74, -17],
+  ['🏡', -15, 106], ['🏖️', 69, 0], ['🐷', FUND_BOX[0], FUND_BOX[1]], ...FUND.map(f => [f.icon, ...f.pos]), ['⚓', 88, BEACH.pierZ], ['⛰️', -30, -66], ['💦', 30, -80], ['🚩', MT.peak[0], MT.peak[1]], [forestOpen() ? '⛺' : '🔒', -74, -17],
   ...CFG.REWARDS.filter(r => S.unlocks[r.id]).map(r => [r.icon, ...r.pos]),
 ];
 function drawMarks(c, toPx, scale, big) { // 친구(점) · 나(화살표) · 보는 방향
@@ -9519,6 +9571,8 @@ function updateTeachLooks(dt) {
   tlRingMat.opacity = 0.55 + Math.sin(time * 3) * 0.25;
   if (player.avatar) setTeachLook(player.avatar, isTeacher ? tlCode() : 0);
   for (const r of remotes.values()) setTeachLook(r.a, r.target.t | 0);
+  if (player.avatar) setWear(player.avatar, myWearCode());
+  for (const r of remotes.values()) setWear(r.a, r.target.w | 0);
   for (const a of [player.avatar, ...[...remotes.values()].map(r => r.a)]) {
     const tl = a?.tl; if (!tl) continue;
     const p = a.g.position, sp = Math.hypot(p.x - tl.last.x, p.z - tl.last.z) / Math.max(dt, 1e-3); tl.last.copy(p);
@@ -10386,6 +10440,241 @@ function initCtfUI() {
 }
 
 /* =====================================================================
+   49. 경제 다듬기 — 조개돈이 너무 빨리 풀리지 않게, 오래 모을 목표가 생기게
+   · 팔 때: 반 동전은 값만큼, 내 🐚 조개돈은 값의 절반만
+   · 🏪 가게 예산: 하루에 벌 수 있는 조개돈 한도 (선생님이 관리 화면에서 0=무제한·100·200·300·500, 기본 200)
+   · 📉 시세: 오늘 같은 물건을 팔수록 값이 10%씩 내려가요 (최대 절반까지, 내일 회복) — 기기마다
+   · 👕 옷가게: 모자·얼굴·등 꾸미기를 조개돈으로 사서 입어요 (친구에게 보여요, 접속 정보 w = 모자×100 + 얼굴×10 + 등)
+   · 🏗️ 집 키우기: 꽃울타리 500 → 작은 분수 1000 → 반짝 정원 2000 (plots/{땅}/h/lv)
+   · 🐷 반 기부: 모두의 조개돈을 모아 바닷가에 관람차 → 무지개 분수 → 전망탑 (state/fund {p 몇 번째, n 모인 조개돈}, 누가 냈는지는 없어요)
+   · 🏅 도감 배지: 내가 잡아 본 생물이 25·50·75·100%가 되면 배지와 배지 전용 꾸미기 (이 기기에만)
+   ===================================================================== */
+const ECON_CAPS = [0, 100, 200, 300, 500];
+const capNow = () => S.econ?.cap ?? 200;
+function earnToday() { if (bag.earn?.day !== todayKey()) bag.earn = { day: todayKey(), n: 0 }; return bag.earn.n; }
+function soldToday(key) { if (bag.sold?.day !== todayKey()) bag.sold = { day: todayKey() }; return bag.sold[key] || 0; }
+const unitPrice = (base, cnt) => Math.max(1, Math.round(base * Math.max(0.5, 1 - 0.1 * cnt)));
+const shellOf = (p) => Math.floor(p / 2);
+// ---------- 👕 옷가게 ----------
+const WEAR = {
+  h: [null, { icon: '🧢', name: '야구모자', price: 150 }, { icon: '👒', name: '밀짚모자', price: 200 }, { icon: '🎀', name: '리본', price: 250 }, { icon: '🧶', name: '털모자', price: 300 },
+    { icon: '🌸', name: '꽃관', price: 400 }, { icon: '🎩', name: '신사 모자', price: 700 }, { icon: '🐰', name: '토끼 귀', price: 1000 }, { icon: '🌟', name: '별 머리핀', badge: 25 }],
+  f: [null, { icon: '👓', name: '동그란 안경', price: 200 }, { icon: '⭐', name: '볼 스티커', price: 300 }, { icon: '🕶️', name: '선글라스', price: 400 }, { icon: '🥽', name: '물안경', price: 500 }, { icon: '✨', name: '반짝 안경', badge: 50 }],
+  b: [null, { icon: '🎒', name: '책가방', price: 300 }, { icon: '🎈', name: '풍선', price: 500 }, { icon: '🦸', name: '망토', price: 800 }, { icon: '🐢', name: '거북 등껍질', price: 1200 }, { icon: '🪽', name: '날개', price: 1500 },
+    { icon: '🏅', name: '금빛 망토', badge: 75 }, { icon: '🌈', name: '무지개 날개', badge: 100 }],
+};
+const WEAR_SLOT = { h: '모자', f: '얼굴', b: '등' };
+bag.own ||= {}; bag.wear ||= { h: 0, f: 0, b: 0 }; bag.seen ||= {}; bag.badges ||= {};
+for (const id of Object.keys(bag.c || {})) bag.seen[id] ||= 1; // 이미 가진 생물은 '잡아 본 생물'로
+const myWearCode = () => (bag.wear.h || 0) * 100 + (bag.wear.f || 0) * 10 + (bag.wear.b || 0);
+const WEAR_CONE = new THREE.ConeGeometry(1, 1, 10), WEAR_TORUS = new THREE.TorusGeometry(1, 0.18, 6, 18);
+function setWear(a, code) {
+  code = Number.isInteger(code) && code >= 0 && code <= 999 ? code : 0;
+  const key = code * 10 + (a.tcode ? 1 : 0);
+  if (a.wearKey === key) return;
+  if (a.wearObjs) { for (const x of a.wearObjs) x.parent?.remove(x); a.wearObjs = null; }
+  a.wearKey = key; if (!code) { if (!a.tcode && a.badge) a.badge.position.y = 2.75; return; }
+  const h = Math.floor(code / 100), f = Math.floor(code / 10) % 10, bk = code % 10, o = { solid: false }, objs = [], GOLD = 0xFFC93C;
+  const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
+  if (h && !a.tcode) { // 선생님 모자와 겹치면 선생님 모자를 보여요
+    if (a.badge) a.badge.position.y = 3.02;
+    add(a.head, g => {
+      if (h === 1) { mesh(SPH_MID, g, 0.52, 0.34, 0.52, 0x3E6AC8, 0, 2.25, 0, o); box(g, 0.62, 0.05, 0.4, 0x3E6AC8, 0, 2.2, 0.5, o); ball(g, 0.07, 0xFFFFFF, 0, 2.58, 0, o); }
+      else if (h === 2) { cyl(g, 0.78, 0.05, 0xE9C77B, 0, 2.33, 0, o); cyl(g, 0.46, 0.28, 0xE9C77B, 0, 2.48, 0, o); cyl(g, 0.47, 0.08, 0x5FBE5A, 0, 2.39, 0, o); }
+      else if (h === 3) { for (const s of [-1, 1]) mesh(WEAR_CONE, g, 0.16, 0.34, 0.1, 0xFF7AA8, s * 0.2, 2.42, 0.1, { solid: false, rz: s * Math.PI / 2 }); ball(g, 0.09, 0xE2587A, 0, 2.42, 0.1, o); }
+      else if (h === 4) { mesh(SPH_MID, g, 0.52, 0.42, 0.52, 0xE2584A, 0, 2.2, 0, o); cyl(g, 0.53, 0.14, 0xFFFFFF, 0, 2.1, 0, o); ball(g, 0.14, 0xFFFFFF, 0, 2.66, 0, o); }
+      else if (h === 5) { for (let k = 0; k < 8; k++) { const t = k / 8 * Math.PI * 2; ball(g, 0.1, [0xFF8FB3, 0xFFD23C, 0xFFFFFF, 0xB58CF0][k % 4], Math.sin(t) * 0.45, 2.34, Math.cos(t) * 0.45, o); } }
+      else if (h === 6) { cyl(g, 0.62, 0.05, 0x2B2B36, 0, 2.33, 0, o); cyl(g, 0.38, 0.55, 0x2B2B36, 0, 2.6, 0, o); cyl(g, 0.39, 0.1, 0xE2584A, 0, 2.4, 0, o); }
+      else if (h === 7) { for (const s of [-1, 1]) { mesh(SPH_LO, g, 0.1, 0.34, 0.07, 0xFFFFFF, s * 0.2, 2.62, 0, o); mesh(SPH_LO, g, 0.05, 0.24, 0.04, 0xFFB3C7, s * 0.2, 2.62, 0.04, o); } box(g, 0.9, 0.05, 0.08, 0xFFFFFF, 0, 2.32, 0, o); }
+      else if (h === 8) { mesh(WEAR_CONE, g, 0.12, 0.14, 0.12, GOLD, 0.32, 2.3, 0.3, o); ball(g, 0.1, GOLD, 0.32, 2.3, 0.3, { solid: false, emissive: 0.5 }); }
+    });
+  } else if (!a.tcode && a.badge) a.badge.position.y = 2.75;
+  if (f) add(a.head, g => {
+    if (f === 1 || f === 5) { const col = f === 5 ? GOLD : 0x3B2F2A; for (const x of [-0.19, 0.19]) mesh(WEAR_TORUS, g, 0.13, 0.13, 0.13, col, x, 1.75, 0.48, f === 5 ? { solid: false, emissive: 0.4 } : o); box(g, 0.12, 0.03, 0.03, col, 0, 1.77, 0.48, o); }
+    else if (f === 2) { for (const x of [-0.3, 0.3]) mesh(WEAR_CONE, g, 0.07, 0.03, 0.07, 0xFFD23C, x, 1.6, 0.47, { solid: false, rx: Math.PI / 2 }); }
+    else if (f === 3) { box(g, 0.7, 0.16, 0.04, 0x1E1E26, 0, 1.75, 0.48, o); }
+    else if (f === 4) { for (const x of [-0.19, 0.19]) mesh(SPH_LO, g, 0.14, 0.12, 0.06, 0x7FD3F2, x, 1.75, 0.49, o); box(g, 0.95, 0.06, 0.06, 0x3E6AC8, 0, 1.75, 0.44, o); }
+  });
+  if (bk) add(a.rig, g => {
+    g.position.set(0, 0, -0.3);
+    if (bk === 1) { box(g, 0.62, 0.7, 0.26, 0xE2584A, 0, 0.95, -0.05, o); box(g, 0.5, 0.25, 0.04, 0xFFD23C, 0, 0.8, -0.19, o); }
+    else if (bk === 2) { cyl(g, 0.01, 1.4, 0xFFFFFF, 0.3, 1.8, 0, o); ball(g, 0.3, 0xFF7AA8, 0.3, 2.65, 0, o); }
+    else if (bk === 3 || bk === 6) { box(g, 0.9, 1.0, 0.05, bk === 6 ? GOLD : 0x6A4AE0, 0, 0.74, -0.02, bk === 6 ? { solid: false, emissive: 0.25 } : o); }
+    else if (bk === 4) { mesh(SPH_MID, g, 0.5, 0.45, 0.3, 0x5E8A3A, 0, 0.95, -0.05, o); for (const [x, y] of [[-0.2, 1.1], [0.2, 1.1], [0, 0.8]]) box(g, 0.2, 0.2, 0.05, 0x7DAA4F, x, y, -0.3, o); }
+    else if (bk === 5 || bk === 7) { const cols = bk === 7 ? [0xFF6B6B, 0xFFD23C, 0x5FBE5A, 0x4A9AE8] : [0xFFFFFF, 0xEAF4FF]; for (const s of [-1, 1]) cols.forEach((c, i) => mesh(SPH_LO, g, 0.34 - i * 0.05, 0.16, 0.05, c, s * (0.35 + i * 0.1), 1.25 - i * 0.12, -0.05, { solid: false, rz: s * 0.5 })); }
+  });
+  a.wearObjs = objs;
+}
+function openWardrobe() {
+  openLife('👕 옷가게 · 내 옷장', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', '산 옷은 이 기기에 저장되고, 입은 모습은 친구들에게도 보여요. 🏅 표시는 도감 배지를 받으면 생겨요.'));
+    for (const slot of ['h', 'f', 'b']) {
+      box.append(el2('h3', 'lp-sec', `${WEAR_SLOT[slot]} ${bag.wear[slot] ? `· 지금: ${WEAR[slot][bag.wear[slot]].icon} ${WEAR[slot][bag.wear[slot]].name}` : ''}`));
+      const grid = el2('div', 'lp-grid');
+      WEAR[slot].forEach((it, i) => {
+        if (!i) return;
+        const key = slot + i, own = !!bag.own[key], worn = bag.wear[slot] === i, card = el2('div', 'lp-card' + (worn ? ' done' : ''));
+        card.append(el2('div', 'lp-icon', it.icon), el2('div', 'lp-name', it.name), el2('div', 'lp-sub', own ? (worn ? '입는 중' : '내 옷') : it.badge ? `🏅 도감 ${it.badge}%` : `🐚 ${it.price}`));
+        const b = el2('button', 'btn lp-btn', own ? (worn ? '벗기' : '입기') : it.badge ? '배지 필요' : '사기');
+        b.disabled = !own && (!!it.badge || (bag.shell || 0) < it.price);
+        b.onclick = () => {
+          if (!own) { if ((bag.shell || 0) < it.price) return; bag.shell -= it.price; bag.own[key] = true; bag.wear[slot] = i; playSfx('coin'); toast(`👕 ${it.icon} ${josa(it.name, '을', '를')} 샀어요! 바로 입었어요`, 'success'); }
+          else bag.wear[slot] = worn ? 0 : i;
+          saveBag(); refillLife();
+        };
+        card.append(b); grid.append(card);
+      });
+      box.append(grid);
+    }
+  });
+}
+// ---------- 🏗️ 집 키우기 ----------
+const HOUSE_LV = [null, { icon: '🌷', name: '꽃울타리', price: 500, desc: '땅 둘레에 하얀 울타리와 꽃이 생겨요' }, { icon: '⛲', name: '작은 분수', price: 1000, desc: '마당에 작은 분수와 가로등이 생겨요' }, { icon: '🌟', name: '반짝 정원', price: 2000, desc: '무지개 아치와 반짝이는 지붕 장식이 생겨요' }];
+function buildHouseLv(g, cx, cz, lv) { // buildHouse 뒤에 불러요 (g는 땅 그룹)
+  const o = { solid: false };
+  if (lv >= 1) {
+    for (const [x0, z0, x1, z1] of [[-5.7, -5.7, -1.4, -5.7], [1.4, -5.7, 5.7, -5.7], [-5.7, 5.7, 5.7, 5.7], [-5.7, -5.7, -5.7, 5.7], [5.7, -5.7, 5.7, 5.7]]) {
+      const len = Math.hypot(x1 - x0, z1 - z0), n = Math.round(len / 0.8);
+      for (let k = 0; k <= n; k++) { const u = k / n; box(g, 0.12, 0.7, 0.12, 0xFFFFFF, cx + x0 + (x1 - x0) * u, 0.35, cz + z0 + (z1 - z0) * u, o); }
+      box(g, Math.abs(x1 - x0) + 0.12, 0.08, Math.abs(z1 - z0) + 0.12, 0xFFFFFF, cx + (x0 + x1) / 2, 0.55, cz + (z0 + z1) / 2, o);
+    }
+    for (const [x, z] of [[-5, -5], [5, -5], [-5, 5], [5, 5]]) for (let k = 0; k < 5; k++) ball(g, 0.14, [0xFF7AA8, 0xFFD23C, 0xFFFFFF, 0xB58CF0, 0xFF9E5E][k], cx + x + Math.cos(k) * 0.35, 0.35, cz + z + Math.sin(k) * 0.35, o);
+  }
+  if (lv >= 2) {
+    cyl(g, 0.9, 0.35, 0xE8E2D6, cx + 4.2, 0.18, cz - 4.2, o); cyl(g, 0.75, 0.05, 0x7FD3F2, cx + 4.2, 0.37, cz - 4.2, o); cyl(g, 0.12, 0.8, 0xE8E2D6, cx + 4.2, 0.7, cz - 4.2, o); ball(g, 0.2, 0x9FD3FF, cx + 4.2, 1.15, cz - 4.2, o);
+    for (const x of [-1.8, 1.8]) lantern(g, cx + x, cz - 5.3, 1.8);
+  }
+  if (lv >= 3) {
+    const cols = [0xFF6B6B, 0xFFA94D, 0xFFD23C, 0x5FBE5A, 0x4A9AE8, 0x9A5AD8];
+    cols.forEach((c, i) => { const r = new THREE.Mesh(new THREE.TorusGeometry(1.7 - i * 0.12, 0.07, 6, 24, Math.PI), M(c)); r.position.set(cx, 0.05, cz - 5.8); g.add(r); });
+    ball(g, 0.35, 0xFFC93C, cx, 8.4, cz + 3, { solid: false, emissive: 0.6 }); cyl(g, 0.05, 1.2, 0xFFC93C, cx, 7.6, cz + 3, o);
+  }
+}
+// ---------- 🐷 반 기부 ----------
+const FUND = [
+  { id: 'wheel', icon: '🎡', name: '바닷가 관람차', goal: 3000, pos: [70, -50] },
+  { id: 'fountain', icon: '🌈', name: '무지개 분수', goal: 6000, pos: [70, 94] },
+  { id: 'tower', icon: '🗼', name: '반월 전망탑', goal: 10000, pos: [70, 130] },
+];
+const FUND_BOX = [40, -20];
+const fundNow = () => ({ p: S.fund?.p || 0, n: S.fund?.n || 0 });
+const fundV = { built: [], signs: [], wheel: null };
+function buildFundWorld() {
+  const o = { solid: false }, g = new THREE.Group(); g.name = 'FundBox'; scene.add(g);
+  const [x, z] = FUND_BOX; // 돼지 저금통
+  mesh(SPH_MID, g, 0.9, 0.8, 1.1, 0xFF9AC0, x, 1.1, z); mesh(SPH_LO, g, 0.28, 0.24, 0.2, 0xFF7AA8, x, 1.1, z + 1.05, o);
+  for (const s of [-1, 1]) { mesh(WEAR_CONE, g, 0.18, 0.3, 0.18, 0xFF9AC0, x + s * 0.45, 1.85, z + 0.5, o); cyl(g, 0.16, 0.5, 0xFF9AC0, x + s * 0.5, 0.25, z + 0.55, o); cyl(g, 0.16, 0.5, 0xFF9AC0, x + s * 0.5, 0.25, z - 0.55, o); }
+  box(g, 0.5, 0.06, 0.12, 0x3B2F2A, x, 1.9, z, o); for (const s of [-1, 1]) ball(g, 0.06, 0x3B2F2A, x + s * 0.3, 1.35, z + 0.95, o);
+  fundV.boxLabel = makeLabel(g, [''], 1.1, x, 3.1, z);
+  registerSolids(g, 'fund');
+  addInteract({ pos: new V3(x, 1, z), r: 3, text: () => ['반 기부함 🐷', fundNow().p < FUND.length ? `${FUND[fundNow().p].icon} ${FUND[fundNow().p].name} 짓기` : '모두 완성!'], run: openFund });
+  FUND.forEach((f, i) => { // 공사 중 표지
+    const s = new THREE.Group(); s.position.set(f.pos[0], 0, f.pos[1]); scene.add(s);
+    for (const [dx, dz] of [[-3, -3], [3, -3], [-3, 3], [3, 3]]) cyl(s, 0.12, 1.1, 0xFFB020, dx, 0.55, dz, o);
+    for (const [w, d, dx, dz] of [[6, 0.08, 0, -3], [6, 0.08, 0, 3], [0.08, 6, -3, 0], [0.08, 6, 3, 0]]) box(s, w, 0.12, d, 0x3B2F2A, dx, 0.9, dz, o);
+    const lab = makeLabel(s, [''], 1.2, 0, 3.2, 0);
+    fundV.signs[i] = { g: s, lab };
+  });
+  renderFund(true);
+}
+function buildFundProject(i) {
+  const f = FUND[i], g = new THREE.Group(), o = { solid: false }; g.position.set(f.pos[0], 0, f.pos[1]); scene.add(g);
+  if (f.id === 'wheel') {
+    for (const s of [-1, 1]) { box(g, 0.4, 9, 0.4, 0xE8E2D6, 0, 4.5, s * 2.2, { rx: s * -0.25 }); }
+    box(g, 3, 0.3, 5.6, 0xB07C50, 0, 0.15, 0);
+    const wheel = new THREE.Group(); wheel.position.set(0, 8.4, 0); g.add(wheel);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(6, 0.18, 8, 48), M(0xFFFFFF)); ring.rotation.y = Math.PI / 2; wheel.add(ring);
+    const cols = [0xE2584A, 0xFFD23C, 0x5FBE5A, 0x4A9AE8, 0x9A5AD8, 0xFF9AC0, 0xFFA94D, 0x7FD3F2];
+    for (let k = 0; k < 8; k++) {
+      const a = k / 8 * Math.PI * 2; box(wheel, 0.1, 12, 0.1, 0xFFFFFF, 0, 0, 0, { solid: false }).rotation.x = a;
+      const cab = new THREE.Group(); cab.position.set(0, Math.cos(a) * 6, Math.sin(a) * 6); wheel.add(cab);
+      box(cab, 1.2, 1.0, 1.2, cols[k], 0, -0.6, 0, o); box(cab, 1.3, 0.12, 1.3, 0xFFFFFF, 0, -0.05, 0, o); cab.userData.cab = true;
+    }
+    fundV.wheel = wheel;
+  } else if (f.id === 'fountain') {
+    cyl(g, 3.2, 0.6, 0xE8E2D6, 0, 0.3, 0); cyl(g, 2.9, 0.1, 0x7FD3F2, 0, 0.62, 0, o);
+    cyl(g, 0.35, 2.4, 0xE8E2D6, 0, 1.6, 0, o); cyl(g, 1.3, 0.25, 0xE8E2D6, 0, 2.8, 0, o);
+    [0xFF6B6B, 0xFFA94D, 0xFFD23C, 0x5FBE5A, 0x4A9AE8, 0x9A5AD8].forEach((c, k) => { const r = new THREE.Mesh(new THREE.TorusGeometry(2.6 - k * 0.14, 0.08, 6, 30, Math.PI), M(c)); r.position.set(0, 0.6, 0); r.rotation.y = Math.PI / 2; g.add(r); });
+    fundV.fountain = g;
+  } else {
+    for (let k = 0; k < 4; k++) box(g, 3 - k * 0.5, 3, 3 - k * 0.5, k % 2 ? 0xFFFFFF : 0xE2584A, 0, 1.5 + k * 3, 0, k ? o : undefined);
+    cyl(g, 2.2, 0.3, 0xB07C50, 0, 12.2, 0, o); mesh(WEAR_CONE, g, 1.4, 2, 1.4, 0x4A9AE8, 0, 13.6, 0, o); ball(g, 0.35, 0xFFC93C, 0, 14.8, 0, { solid: false, emissive: 0.6 });
+    signPlane(g, ['🗼 반월 전망탑'], 3, 0.7, 0, 3.4, -1.55, { font: 50, pad: 4, fg: '#FFFFFF', bg: '#E2584A', stroke: false });
+  }
+  makeLabel(g, [`${f.icon} ${f.name}`, '반 모두가 함께 지었어요'], 1.1, 0, f.id === 'tower' ? 16.5 : f.id === 'wheel' ? 15.5 : 4.6, 0);
+  registerSolids(g, 'fund:' + f.id);
+  fundV.built[i] = g;
+}
+function renderFund(first) {
+  const { p, n } = fundNow();
+  FUND.forEach((f, i) => {
+    const done = i < p;
+    if (done && !fundV.built[i]) { buildFundProject(i); if (!first) { burst(new V3(f.pos[0], 6, f.pos[1]), RAINBOW, 90, 8, 3); showBanner(`${f.icon} ${f.name} 완성!`, '모두의 조개돈으로 함께 지었어요. 바닷가에 가 봐요!', 6000); } }
+    if (!done && fundV.built[i]) { scene.remove(fundV.built[i]); removeColliders('fund:' + f.id); fundV.built[i] = null; if (f.id === 'wheel') fundV.wheel = null; }
+    const s = fundV.signs[i]; if (s) { s.g.visible = !done; s.lab.userData.set(i === p ? [`🚧 ${f.icon} ${f.name} 짓는 중`, `🐚 ${n} / ${f.goal}`] : [`🚧 ${f.icon} ${f.name}`, i > p ? '앞의 것을 먼저 지어요' : '']); }
+  });
+  fundV.boxLabel?.userData.set(p < FUND.length ? ['🐷 반 기부함', `${FUND[p].icon} ${FUND[p].name} 🐚${n}/${FUND[p].goal}`] : ['🐷 반 기부함', '🎉 모두 완성!']);
+}
+function openFund() {
+  openLife('🐷 반 기부함', (box) => {
+    box.textContent = '';
+    const { p, n } = fundNow();
+    box.append(el2('p', 'hint', '모두의 조개돈을 모아 바닷가에 큰 놀이 시설을 지어요. 누가 얼마나 냈는지는 남지 않고, 모인 합계만 보여요.'));
+    FUND.forEach((f, i) => box.append(el2('div', 'lp-row', `${i < p ? '✅' : i === p ? '🚧' : '🔒'} ${f.icon} ${f.name} · 🐚 ${f.goal}${i === p ? ` (지금 ${n})` : ''}`)));
+    if (p >= FUND.length) { box.append(el2('p', 'lp-big', '🎉 모두 완성했어요! 고마워요')); return; }
+    const f = FUND[p], bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, Math.round(n / f.goal * 100))}%`; bar.append(fill);
+    box.append(el2('p', 'lp-big', `${f.icon} ${f.name} 🐚 ${n} / ${f.goal}`), bar, el2('p', 'hint', `내 조개돈 🐚${bag.shell || 0}`));
+    const row = el2('div', 'row-center wrap');
+    for (const amt of [10, 50, 100, 500]) {
+      const b = el2('button', 'btn lp-btn', `🐚 ${amt} 기부`); b.disabled = (bag.shell || 0) < amt;
+      b.onclick = async () => {
+        if ((bag.shell || 0) < amt) return;
+        b.disabled = true;
+        const res = await backend.fundGive(amt);
+        if (res.ok) { bag.shell -= amt; saveBag(); playSfx('coin'); toast(`🐷 🐚${amt}을 기부했어요! 고마워요`, 'success'); burst(new V3(FUND_BOX[0], 2.4, FUND_BOX[1]), [0xFF9AC0, C.gold, 0xFFFFFF], 24, 3, 2); }
+        else if (res.reason !== 'offline') toast('기부가 저장되지 않았어요. 잠시 뒤 다시 해 봐요', 'warn');
+        refillLife();
+      };
+      row.append(b);
+    }
+    box.append(row);
+  });
+}
+function syncFund(prev, first) { renderFund(first); if (!$('teacherPanel').classList.contains('hidden')) fillEconAdmin(); }
+function updateFund(dt) {
+  if (fundV.wheel) { fundV.wheel.rotation.x += dt * 0.15; fundV.wheel.children.forEach(c => { if (c.userData.cab) c.rotation.x = -fundV.wheel.rotation.x; }); }
+}
+// ---------- 🏅 도감 배지 ----------
+const DEX_BADGES = [[25, 'h8'], [50, 'f5'], [75, 'b6'], [100, 'b7']];
+function dexProgress() { const all = Object.keys(CRITTER).length, have = Object.keys(bag.seen).filter(id => CRITTER[id]).length; return { have, all, pct: Math.floor(have / all * 100) }; }
+function seeCritter(id) {
+  if (bag.seen[id]) return;
+  bag.seen[id] = 1;
+  const { pct } = dexProgress();
+  for (const [t, item] of DEX_BADGES) if (pct >= t && !bag.badges[t]) {
+    bag.badges[t] = 1; bag.own[item] = true;
+    const it = WEAR[item[0]][+item.slice(1)];
+    setTimeout(() => showBanner(`🏅 도감 배지 ${t}%!`, `잡아 본 생물이 ${t}%가 됐어요 · 배지 선물: ${it.icon} ${it.name} (👕 옷장에서 입어요)`, 6000), 900);
+  }
+  saveBag();
+}
+// ---------- 선생님 ----------
+function fillEconAdmin() {
+  $('tpCap').value = String(capNow());
+  const { p, n } = fundNow();
+  $('tpFundNow').textContent = p < FUND.length ? `반 기부: ${FUND[p].icon} ${FUND[p].name} 🐚${n}/${FUND[p].goal} (완성 ${p}/${FUND.length})` : `반 기부: 모두 완성 (${FUND.length}/${FUND.length})`;
+}
+function initEconUI() {
+  $('tpCap').onchange = (e) => adminDo({ 'econ/cap': +e.target.value }, +e.target.value ? `🏪 하루 가게 예산을 🐚${e.target.value}로 바꿨어요` : '🏪 가게 예산 한도를 없앴어요');
+  $('tpFundReset').onclick = async () => {
+    if (!(await confirmAction({ title: '🐷 반 기부를 처음부터 할까요?', body: '모인 조개돈과 지은 시설(관람차·분수·전망탑)이 모두 사라져요.', typeWord: '초기화', okText: '처음부터' }))) return;
+    adminDo({ fund: null }, '🐷 반 기부를 처음부터 다시 시작해요');
+  };
+  $('lpWardrobe')?.addEventListener('click', openWardrobe);
+}
+
+/* =====================================================================
    45. 시작 & 반복
    ===================================================================== */
 await Promise.race([document.fonts.load('40px Jua'), sleep(2500)]).catch(() => {});
@@ -10404,7 +10693,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildFundWorld(); initEconUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -10425,6 +10714,7 @@ function loop() {
   if (joined) updateHanok(dt);
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
+  updateFund(dt);
   updateFx(dt); grassWind.value = time;
   updateControl(); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
