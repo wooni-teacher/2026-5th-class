@@ -627,6 +627,8 @@
     </ol>
   </details>
   <p class="keys">움직이기: WASD 또는 방향키 / 점프: 스페이스 / 누르기: E / 활동 게시판: B / 몸짓: Q / 지도: M</p>
+  <div class="tl-row"><span class="tl-lab">🖥️ 화질</span><div id="gfxOpts" class="tl-opts"></div></div>
+  <p class="hint" id="gfxNote" style="text-align:center;margin:0 0 10px"></p>
   <div class="row-center wrap"><button class="btn" id="tipGuide" style="background:#fff">🧭 첫걸음 안내 다시 보기</button><button class="btn" id="tipOk">알겠어요 👍</button></div>
   <button id="roleBtn" class="hidden" style="display:block;margin:12px auto 0;border:0;background:none;font-size:16px;text-decoration:underline;opacity:.7;cursor:pointer">🧑‍🏫 선생님으로 바꾸기</button>
 </section>
@@ -748,7 +750,7 @@
       <button class="btn" id="tpGather" style="background:var(--leaf);color:#fff">📣 모두 광장으로 모이기</button>
       <button class="btn" id="tpFreeze" style="background:#fff">✋ 잠깐 멈춤</button>
     </div>
-    <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button></div>
+    <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
     <p class="hint" style="margin-top:6px">선생님 화면 왼쪽에도 모이기·멈춤 버튼이 있어요. 멈춤은 10분이 지나면 저절로 풀려요.</p>
 
     <h3>🧑‍🏫 선생님 모습 (모두에게 보여요)</h3>
@@ -1275,6 +1277,7 @@ function sanitizeState(raw) {
   if (ct.gather != null && ok(Number.isFinite(ct.gather) && ct.gather >= 0)) out.control.gather = ct.gather;
   if (ct.freeze != null && ok(Number.isFinite(ct.freeze) && ct.freeze >= 0)) out.control.freeze = ct.freeze;
   if (ct.mute != null && ok(isInt(ct.mute, 0, 1))) out.control.mute = ct.mute;
+  if (ct.lite != null && ok(isInt(ct.lite, 0, 1))) out.control.lite = ct.lite;
   for (const [p, cells] of Object.entries(plainObj(v.mural))) { // 벽화: 그림 번호 → 칠한 칸 번호 (누가 칠했는지는 없음)
     if (!ok(isInt(+p, 0, MURALS.length - 1))) continue;
     for (const [c, x] of Object.entries(plainObj(cells))) if (ok(isInt(+c, 0, MW * MH - 1) && x === true)) (out.mural[p] ||= {})[c] = true;
@@ -1609,7 +1612,12 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     mode: 'firebase', storageKind: 'firebase', uid, now,
     onConnection(fn) { D.onValue(D.ref(db, '.info/connected'), s => fn(s.val() === true)); },
     subscribe(onState, onPlayers, onError) {
-      D.onValue(R('state'), s => { cache = normalize(s.val()); onState(cache); }, err => onError(err));
+      // 친구들이 한꺼번에 바꿔도 짧은 순간(0.08초)의 변화는 모아서 한 번만 화면에 반영해요 (잔렉 줄이기)
+      let timer = 0;
+      D.onValue(R('state'), s => {
+        cache = normalize(s.val());
+        if (!timer) timer = setTimeout(() => { timer = 0; onState(cache); }, 80);
+      }, err => onError(err));
       const pr = R('players');
       D.onChildAdded(pr, s => onPlayers('set', s.key, s.val()));
       D.onChildChanged(pr, s => onPlayers('set', s.key, s.val()));
@@ -2037,6 +2045,8 @@ function makeLabel(parent, lines, height, x, y, z, o = {}) {
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false }));
   sp.position.set(x, y, z);
   sp.userData.set = (ls) => {
+    const key = JSON.stringify(ls); if (key === sp.userData.key) return; // 글이 같으면 다시 그리지 않아요 (잔렉 줄이기)
+    sp.userData.key = key;
     const { tex, aspect } = paintText(ls, o);
     if (sp.material.map) sp.material.map.dispose();
     sp.material.map = tex; sp.material.needsUpdate = true;
@@ -2062,11 +2072,23 @@ function registerSolids(root, owner) {
   });
 }
 
-// 반짝이 효과
+// 반짝이 효과 — 한 번 만든 점 묶음은 버리지 않고 다시 써요 (자주 만들고 버리면 브라우저 정리 때 멈칫해요)
 const particles = [];
+const PT_CAPS = [8, 16, 32, 64, 128, 256], ptPool = new Map(PT_CAPS.map(c => [c, []]));
+function takePts(n) {
+  const cap = PT_CAPS.find(c => c >= n) ?? 256, list = ptPool.get(cap);
+  if (list.length) return list.pop();
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(cap * 3), 3).setUsage(THREE.DynamicDrawUsage));
+  geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(cap * 3), 3).setUsage(THREE.DynamicDrawUsage));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.35, vertexColors: true, transparent: true, depthWrite: false }));
+  pts.frustumCulled = false; pts.userData.cap = cap; pts.userData.v = new Float32Array(cap * 3);
+  return pts;
+}
 function burst(pos, colors, count = 30, speed = 5, up = 0, life = 1.2, gravity = -8) {
   const arr = Array.isArray(colors) ? colors : [colors];
-  const p = new Float32Array(count * 3), v = new Float32Array(count * 3), c = new Float32Array(count * 3);
+  count = Math.min(count, 256);
+  const pts = takePts(count), p = pts.geometry.attributes.position.array, c = pts.geometry.attributes.color.array, v = pts.userData.v;
   const col = new THREE.Color();
   for (let i = 0; i < count; i++) {
     p[i * 3] = pos.x; p[i * 3 + 1] = pos.y; p[i * 3 + 2] = pos.z;
@@ -2077,26 +2099,25 @@ function burst(pos, colors, count = 30, speed = 5, up = 0, life = 1.2, gravity =
     col.set(arr[i % arr.length]);
     c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b;
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(c, 3));
-  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.35, vertexColors: true, transparent: true, depthWrite: false }));
+  pts.geometry.setDrawRange(0, count);
+  pts.geometry.attributes.position.needsUpdate = true; pts.geometry.attributes.color.needsUpdate = true;
+  pts.material.opacity = 1;
   scene.add(pts);
-  particles.push({ pts, v, t: 0, life, gravity });
+  particles.push({ pts, v, n: count, t: 0, life, gravity });
 }
 function updateParticles(dt) {
   for (let k = particles.length - 1; k >= 0; k--) {
     const q = particles[k];
     q.t += dt;
     const pos = q.pts.geometry.attributes.position.array;
-    for (let i = 0; i < q.v.length; i += 3) {
+    for (let i = 0; i < q.n * 3; i += 3) {
       q.v[i + 1] += q.gravity * dt;
       pos[i] += q.v[i] * dt; pos[i + 1] += q.v[i + 1] * dt; pos[i + 2] += q.v[i + 2] * dt;
     }
     q.pts.geometry.attributes.position.needsUpdate = true;
     q.pts.material.opacity = Math.max(0, 1 - q.t / q.life);
     if (q.t >= q.life) {
-      scene.remove(q.pts); q.pts.geometry.dispose(); q.pts.material.dispose();
+      scene.remove(q.pts); ptPool.get(q.pts.userData.cap).push(q.pts); // 다시 쓰려고 넣어 둬요
       particles.splice(k, 1);
     }
   }
@@ -2794,18 +2815,44 @@ function onPlayers(type, uid, data) {
     r = { a: makeAvatar(data.a | 0, data.c | 0, data.h | 0, data.k | 0), pos: new V3(data.x, data.y, data.z), heading: data.r || 0, target: data, lastM: data.m | 0 };
     r.a.remote = true;
     r.a.g.position.copy(r.pos);
+    r.buf = [];
     remotes.set(uid, r);
     refreshSyncStatus();
   }
   r.target = data;
+  // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
+  const now = performance.now(), last = r.buf[r.buf.length - 1];
+  if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
+  if (last && Math.hypot(data.x - last.x, data.z - last.z) > 15) r.buf.length = 0; // 순간 이동(모이기·배 타기)은 바로 옮겨요
+  r.buf.push({ t: now, x: data.x, y: data.y, z: data.z, r: data.r || 0 });
+  if (r.buf.length > 12) r.buf.splice(0, r.buf.length - 12);
 }
+const REMOTE_DELAY = 650; // ms (위치는 0.5초마다 와요)
+function remoteSample(r, out) { // 지금 보여 줄 위치·방향
+  const b = r.buf, rt = performance.now() - REMOTE_DELAY;
+  if (!b.length) return false;
+  if (rt <= b[0].t || b.length === 1) { const q = rt <= b[0].t ? b[0] : b[b.length - 1]; out.set(q.x, q.y, q.z); return q.r; }
+  for (let i = b.length - 1; i > 0; i--) {
+    const q0 = b[i - 1], q1 = b[i];
+    if (rt >= q0.t) {
+      if (rt >= q1.t) { out.set(q1.x, q1.y, q1.z); return q1.r; }
+      const u = (rt - q0.t) / Math.max(1, q1.t - q0.t);
+      out.set(q0.x + (q1.x - q0.x) * u, q0.y + (q1.y - q0.y) * u, q0.z + (q1.z - q0.z) * u);
+      const d = Math.atan2(Math.sin(q1.r - q0.r), Math.cos(q1.r - q0.r));
+      return q0.r + d * u;
+    }
+  }
+  return b[0].r;
+}
+const remoteTmp = new V3();
 function updateRemotes(dt) {
   const k = 1 - Math.exp(-dt * 5); // 0.5초마다 오는 위치를 부드럽게 따라가요
   for (const r of remotes.values()) {
     const t = r.target;
     const before = r.pos.clone();
-    r.pos.lerp(new V3(t.x, t.y, t.z), k);
-    let diff = (t.r || 0) - r.heading;
+    const want = remoteSample(r, remoteTmp);
+    if (want !== false) r.pos.lerp(remoteTmp, Math.min(1, dt * 20)); else r.pos.lerp(new V3(t.x, t.y, t.z), k);
+    let diff = (want !== false ? want : (t.r || 0)) - r.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
     r.heading += diff * k;
     const speed = Math.hypot(r.pos.x - before.x, r.pos.z - before.z) / Math.max(dt, 1e-3);
@@ -6173,28 +6220,60 @@ function resetSpray(pos, i, spread) {
   pos[i * 3] = 0; pos[i * 3 + 1] = 3.2 + (spread ? Math.random() * 1.5 : 0); pos[i * 3 + 2] = 0;
   pretty.sprayV[i * 3] = Math.cos(a) * s; pretty.sprayV[i * 3 + 1] = 3 + Math.random() * 1.5; pretty.sprayV[i * 3 + 2] = Math.sin(a) * s;
 }
-// 자동 화면 가볍게: 들어온 뒤 4초 동안 속도를 재서 느리면 그림자 → 풀·구름 순서로 줄여요
-const gfx = { frames: 0, t: 0, level: 0, done: false };
-function adaptGfx(dt) {
-  if (!joined || gfx.done) return;
-  gfx.frames++; gfx.t += dt;
-  if (gfx.t < 4) return;
-  const fps = gfx.frames / gfx.t; gfx.frames = 0; gfx.t = 0;
-  if (fps >= 28) { gfx.done = gfx.level > 0 || fps >= 40; return; }
-  if (renderer.shadowMap.enabled) { // 1단계: 그림자 끄기
-    renderer.shadowMap.enabled = false; if (world.sun) world.sun.castShadow = false;
+// 화질 — 기기마다 고를 수 있어요 (sv-gfx: auto 자동 · light 가볍게 · normal 보통). 선생님이 '모두 가볍게'를 켜면 학생 기기는 가볍게.
+// 단계 0 보통(그림자) → 1 그림자 끔 → 2 풀·구름·물줄기 숨김 + 해상도 1 → 3 해상도 더 낮춤
+// 자동: 3초마다 속도를 재서 느리면 한 단계씩 가볍게, 한참 여유 있으면 한 단계 되돌려요 (그림자는 다시 켜지 않아요 — 켤 때 멈칫해서)
+const gfx = { mode: ['auto', 'light', 'normal'].includes(store.get('sv-gfx')) ? store.get('sv-gfx') : 'auto', level: 0, frames: 0, t0: 0, good: 0, told: false, dropped: false };
+const gfxWanted = () => (S.control?.lite && !isTeacher) ? 'light' : gfx.mode;
+function setGfxLevel(lv) {
+  lv = Math.max(0, Math.min(3, lv));
+  if (lv === gfx.level && gfx.applied) return;
+  gfx.applied = true; gfx.level = lv;
+  const shadowsOn = SHADOWS && lv === 0;
+  if (renderer.shadowMap.enabled !== shadowsOn) {
+    renderer.shadowMap.enabled = shadowsOn; if (world.sun) world.sun.castShadow = shadowsOn;
     scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => { m.needsUpdate = true; }); });
-    gfx.level = 1;
-  } else if (gfx.level < 2) { // 2단계: 풀·꽃·구름·물줄기 줄이고 해상도 낮추기
-    (pretty.instanced || []).forEach(m => { m.visible = false; });
-    pretty.clouds.forEach(c => { c.visible = false; }); if (pretty.spray) pretty.spray.visible = false;
-    renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
-    gfx.level = 2; gfx.done = true;
-  } else gfx.done = true;
-  if (gfx.level && !gfx.told) { gfx.told = true; toast('🖥️ 이 기기에 맞게 화면을 조금 가볍게 바꿨어요', 'info'); }
+  }
+  const extra = lv < 2, winter = seasonNow() === 'wi';
+  (pretty.instanced || []).forEach((m, i) => { m.visible = extra && !(i < 2 && winter); });
+  (pretty.mtnGrass || []).forEach(m => { m.visible = extra; });
+  pretty.clouds.forEach(c => { c.visible = extra; }); if (pretty.spray) pretty.spray.visible = extra;
+  const pr = lv >= 3 ? 0.75 : lv >= 2 ? 1 : Math.min(window.devicePixelRatio, 1.75);
+  if (Math.abs(renderer.getPixelRatio() - pr) > 0.01) { renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight); }
+}
+function setGfxMode(m) { // 도움말 창의 화질 버튼
+  gfx.mode = m; store.set('sv-gfx', m); gfx.t0 = 0; gfx.good = 0; gfx.dropped = false;
+  setGfxLevel(m === 'light' ? 2 : 0); renderGfxUI();
+}
+function renderGfxUI() {
+  const box = $('gfxOpts'); if (!box) return; box.textContent = '';
+  for (const [k, label] of [['auto', '⚙️ 자동'], ['light', '🪶 가볍게'], ['normal', '✨ 보통']]) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tl-chip'; b.textContent = label;
+    b.setAttribute('aria-pressed', String(gfx.mode === k)); b.onclick = () => setGfxMode(k); box.appendChild(b);
+  }
+  const lite = S.control?.lite && !isTeacher;
+  $('gfxNote').textContent = lite ? '선생님이 모두 가볍게로 맞춰 두었어요' : gfx.mode === 'auto' ? '느려지면 저절로 가볍게 바꿔요' : gfx.mode === 'light' ? '그림자·풀·구름을 줄여 빠르게 움직여요' : '늘 가장 예쁘게 그려요 (느린 기기는 끊길 수 있어요)';
+}
+let lastWanted = '';
+function adaptGfx() {
+  if (!joined) return;
+  const want = gfxWanted();
+  if (want !== lastWanted) { lastWanted = want; gfx.t0 = 0; gfx.good = 0; setGfxLevel(want === 'light' ? Math.max(2, gfx.level) : want === 'normal' ? 0 : gfx.level); if (want === 'normal') gfx.dropped = false; }
+  if (want === 'normal') return;
+  const floor = want === 'light' ? 2 : gfx.dropped ? 1 : 0;
+  const now = performance.now();
+  if (!gfx.t0 || document.hidden) { gfx.t0 = now; gfx.frames = 0; return; }
+  gfx.frames++;
+  const el = now - gfx.t0; if (el < 3000) return;
+  const fps = gfx.frames * 1000 / el; gfx.t0 = now; gfx.frames = 0;
+  if (fps < 24 && gfx.level < 3) {
+    setGfxLevel(gfx.level + 1); gfx.good = 0; gfx.dropped = true;
+    if (!gfx.told && want === 'auto') { gfx.told = true; toast('🖥️ 이 기기에 맞게 화면을 조금 가볍게 바꿨어요', 'info'); }
+  } else if (fps > 52 && gfx.level > floor) { if (++gfx.good >= 3) { setGfxLevel(gfx.level - 1); gfx.good = 0; } }
+  else gfx.good = 0;
 }
 function updatePretty(dt) {
-  adaptGfx(dt);
+  adaptGfx();
   pretty.sky.position.copy(camera.position);
   for (const c of pretty.clouds) { c.position.x += dt * 1.2; if (c.position.x > 190) c.position.x = -190; }
   const pos = pretty.spray.geometry.attributes.position.array, v = pretty.sprayV;
@@ -7881,6 +7960,7 @@ function buildMountain() {
     }
     tufts.count = a; flw.count = b;
     for (const im of [tufts, flw]) { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; im.receiveShadow = SHADOWS; scene.add(im); }
+    pretty.mtnGrass = [tufts, flw]; // 화질 '가볍게'에서 숨겨요
   }
   // ---- 계곡: 연못·폭포·개울·나무다리 ----
   const wTex = waterTex(), waterMat = new THREE.MeshStandardMaterial({ color: 0x5EC4F0, roughness: 0.2, metalness: 0.05, transparent: true, opacity: 0.85 });
@@ -7989,7 +8069,7 @@ function syncControl(prev, first) {
   const g = S.control?.gather || 0, pg = prev.control?.gather || 0;
   if (!first && g && g !== pg) gatherHere();
   if (!$('teacherPanel').classList.contains('hidden')) fillControlAdmin();
-  renderTeachBar(); renderSoundBtn();
+  renderTeachBar(); renderSoundBtn(); renderGfxUI();
 }
 function gatherHere() {
   if (!joined) return;
@@ -8048,10 +8128,13 @@ function fillControlAdmin() {
   const on = freezeOn();
   $('tpCtrlNow').textContent = (on ? '✋ 지금 학생들이 멈춰 있어요' : '학생들이 자유롭게 움직이고 있어요') + (backend?.mode === 'firebase' ? '' : ' · Firebase가 없어서 이 브라우저에서만 돼요');
   $('tpFreeze').textContent = on ? '▶️ 다시 움직이기' : '✋ 잠깐 멈춤';
+  $('tpLite').textContent = S.control?.lite ? '🪶 학생 화질: 모두 가볍게 (끄기)' : '🪶 학생 화질 모두 가볍게';
 }
 function initControlUI() {
   for (const id of ['tbGather', 'tpGather']) $(id).onclick = teacherGather;
   for (const id of ['tbFreeze', 'tpFreeze']) $(id).onclick = () => teacherFreeze(!freezeOn());
+  $('tpLite').onclick = () => { if (isTeacher) adminDo({ 'control/lite': S.control?.lite ? 0 : 1 }, S.control?.lite ? '✨ 학생 기기가 각자 고른 화질로 돌아가요' : '🪶 학생 기기 화질을 모두 가볍게 맞췄어요 (교실 태블릿에 좋아요)'); };
+  renderGfxUI();
 }
 
 // ---------- 지도 ----------
