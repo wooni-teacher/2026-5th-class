@@ -134,15 +134,19 @@
   #toast.hide { opacity: 0; transform: translate(-50%, -8px); }
 
   /* 학급 공동 미션 */
-  #missionBar {
-    position: fixed; top: calc(84px + var(--safe-top)); left: 50%; transform: translateX(-50%);
-    display: flex; align-items: center; gap: 10px; max-width: min(560px, 94vw); padding: 6px 14px; font-size: 18px;
-  }
-  #missionBar .mtitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 230px; }
-  #missionBar .bar { width: 80px; flex: none; }
+  /* 미션: 화면 오른쪽 위 작은 카드 (› 로 접으면 🎯 숫자만) */
+  #missionDock { position: fixed; top: calc(84px + var(--safe-top)); right: calc(12px + env(safe-area-inset-right, 0px)); display: flex; align-items: flex-start; gap: 4px; z-index: 2; }
+  #missionBar { display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 210px; padding: 10px 12px; font-size: 15px; text-align: left; cursor: pointer; }
+  #missionBar .mtitle { font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #missionBar .bar { width: 100%; flex: none; height: 8px; }
+  #missionBar .mshort { display: none; font-weight: 800; }
+  #missionFold { width: 28px; height: 28px; margin-top: 6px; padding: 0; border-radius: 50%; border: 1px solid var(--line-2); background: var(--paper); font-size: 16px; font-weight: 800; box-shadow: 0 2px 6px rgba(40, 30, 20, .15); cursor: pointer; }
+  #missionDock.mini #missionBar { width: auto; padding: 7px 12px; flex-direction: row; align-items: center; }
+  #missionDock.mini .mtitle, #missionDock.mini .bar, #missionDock.mini .mcount { display: none; }
+  #missionDock.mini .mshort { display: inline; }
+  body:has(#meetTeach:not(.hidden)) #missionDock, body:has(#starHud:not(.hidden)) #missionDock { display: none; } /* 교실 진행판·별자리 놀이와 겹치지 않게 */
   #mFill, #mpFill, #apFill { height: 100%; width: 0; background: var(--sun); transition: width .5s; }
-  #missionBar .mcount { white-space: nowrap; }
-  body.has-mission #toast { top: calc(132px + var(--safe-top)); }
+  #missionBar .mcount { font-size: 13px; color: var(--muted); }
   #missionPanel .bar { height: 22px; border-radius: 12px; margin: 4px 0 10px; }
   .mp-count { margin: 0 0 6px; text-align: center; font-size: 24px; }
   #mpDone, #apJoin { background: var(--leaf); color: #fff; font-size: 24px; }
@@ -522,8 +526,7 @@
     #prog { width: 84px; } #progText { font-size: 16px; }
     .sicon { width: 28px; height: 28px; font-size: 14px; }
     #helpBtn, #teacherBtn, #actBtn, #bagBtn { width: 32px; height: 32px; font-size: 18px; }
-    #missionBar { top: calc(64px + var(--safe-top)); font-size: 15px; }
-    body.has-mission #toast { top: calc(106px + var(--safe-top)); }
+    #missionDock { top: calc(64px + var(--safe-top)); } #missionBar { width: 170px; font-size: 14px; }
     #toast { top: calc(70px + var(--safe-top)); font-size: 18px; }
   }
   /* 터치 기기: body.touch (태블릿 크롬의 '데스크톱 사이트' 모드처럼 미디어 쿼리가 틀려도 JS가 붙여 줘요) */
@@ -778,11 +781,15 @@
 
 <button id="decorBtn" class="btn hidden">🌼 꾸미기</button>
 
-<button id="missionBar" class="sticker hidden" aria-label="우리 반 미션 보기">
+<div id="missionDock" class="hidden">
+<button id="missionFold" aria-label="미션 카드 접기">›</button>
+<button id="missionBar" class="sticker" aria-label="우리 반 미션 보기">
   <span class="mtitle" id="mTitle"></span>
   <span class="bar"><span id="mFill" style="display:block"></span></span>
   <span class="mcount" id="mCount"></span>
+  <span class="mshort" id="mShort"></span>
 </button>
+</div>
 <section id="missionPanel" class="modal sticker hidden">
   <div class="notice hidden" id="mpNotice"></div>
   <h2 id="mpTitle">🎯 우리 반 미션</h2>
@@ -4117,12 +4124,16 @@ let missionKey = '';
 function renderMission() {
   const m = S.mission;
   document.body.classList.toggle('has-mission', !!m && joined);
-  $('missionBar').classList.toggle('hidden', !m || !joined);
+  $('missionDock').classList.toggle('hidden', !m || !joined);
   if (m) {
     const left = Math.max(0, m.goal - m.count);
     $('mTitle').textContent = `🎯 ${m.title}`;
     $('mFill').style.width = `${Math.min(100, (m.count / m.goal) * 100)}%`;
-    $('mCount').textContent = left ? `${m.count}/${m.goal}  ${left}번 남았어요` : '🎉 성공!';
+    $('mCount').textContent = left ? `${m.count}/${m.goal} · ${left}번 남았어요` : '🎉 성공!';
+    $('mShort').textContent = left ? `🎯 ${m.count}/${m.goal}` : '🎯 🎉';
+    const f = store.get('sv-mfold'), mini = f === m.title || (innerWidth < 900 && f !== 'open:' + m.title); // 접어 둔 미션 (새 미션이 오면 다시 펼쳐져요) · 좁은 화면은 처음부터 접어서
+    $('missionDock').classList.toggle('mini', mini);
+    $('missionFold').textContent = mini ? '‹' : '›'; $('missionFold').setAttribute('aria-label', mini ? '미션 카드 펼치기' : '미션 카드 접기');
   }
   const lines = [];
   if (S.notice) lines.push(CFG.NOTICES[S.notice.i]); // 공지는 맨 위
@@ -4273,6 +4284,8 @@ function initMissionUI() {
     $('tpRewards').appendChild(b);
   });
   $('missionBar').onclick = openMissionPanel;
+  $('missionFold').onclick = () => { const m = S.mission; if (!m) return; store.set('sv-mfold', $('missionDock').classList.contains('mini') ? 'open:' + m.title : m.title); renderMission(); };
+  addEventListener('resize', () => { if (S.mission) renderMission(); });
   $('mpDone').onclick = contributeMission;
   $('mpClose').onclick = () => $('missionPanel').classList.add('hidden');
   $('teacherBtn').onclick = () => { closeModals(); $('teacherPanel').classList.remove('hidden'); fillTeacherPanel(); };
