@@ -409,6 +409,26 @@
   body:has(#emoteBar:not(.hidden)) #soundBtn { visibility: hidden; }
   #muralPanel { width: min(600px, 96vw); }
   #minePanel { width: min(560px, 96vw); max-height: 92vh; overflow: auto; }
+  #thxPanel { width: min(560px, 96vw); max-height: 92vh; overflow: auto; }
+  #artPanel { width: min(520px, 96vw); max-height: 94vh; overflow: auto; }
+  #artCanvas { width: min(384px, 80vw); height: min(384px, 80vw); image-rendering: pixelated; border: 2px solid var(--line-2); border-radius: 8px; touch-action: none; cursor: crosshair; }
+  .art-pal { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
+  .art-sw { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--line-2); cursor: pointer; }
+  .art-sw.on { box-shadow: 0 0 0 3px var(--ink); }
+  .art-mine { display: flex; flex-wrap: wrap; gap: 6px; }
+  .art-th { padding: 2px; background: #fff; border: 1.5px solid var(--line-2); border-radius: 6px; line-height: 0; cursor: pointer; }
+  .art-th canvas { width: 48px; height: 48px; image-rendering: pixelated; }
+  #gymPanel { width: min(540px, 96vw); }
+  #gymCanvas { width: min(480px, 88vw); height: auto; border-radius: 10px; border: 1.5px solid var(--line-2); }
+  .thx-input { width: 100%; resize: none; font-size: 18px; line-height: 1.4; }
+  .thx-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin: 6px 0; }
+  .thx-row .hint { margin: 0; }
+  #thxSend { background: #FF8FB3; color: #fff; }
+  .thx-wall { display: flex; flex-direction: column; gap: 6px; max-height: 42vh; overflow: auto; padding: 2px; }
+  .thx-card { background: #FFF4F8; border: 1.5px solid #FFC9DC; border-radius: 12px; padding: 8px 12px; font-size: 16px; line-height: 1.4; word-break: keep-all; }
+  .thx-card.mine { background: #F7F2E8; border-style: dashed; border-color: var(--line-2); margin-bottom: 4px; }
+  .thx-card.mine.ok { background: #EAF7DE; border-style: solid; border-color: #9BD48A; }
+  .thx-day { font-weight: 800; font-size: 14px; color: var(--muted); margin-top: 6px; }
   #mnTitle:focus { outline: none; }
   .mn-goal { text-align: center; font-size: 20px; font-weight: 700; margin: 4px 0 8px; }
   .mn-goal b { display: inline-block; min-width: 2.4em; padding: 2px 12px; margin-left: 6px; font-size: 34px; border-radius: 12px; background: #FFF3C4; box-shadow: 0 0 0 2px var(--ink) inset; }
@@ -481,6 +501,14 @@
   #bigMap { border: 1.5px solid var(--line-2); border-radius: 12px; display: block; }
   .map-legend { margin: 10px 0; font-size: 15px; }
   #meetBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(112px + var(--safe-bottom)); display: flex; gap: 6px; padding: 6px; flex-wrap: wrap; justify-content: center; max-width: 94vw; }
+  #hideBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(84px + var(--safe-top)); padding: 8px 16px; text-align: center; min-width: 260px; max-width: 94vw; z-index: 3; }
+  #hdT { font-weight: 800; font-size: 17px; } #hdS { font-size: 14px; color: var(--muted); }
+  .hide-props { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+  .hide-prop { font-size: 24px; padding: 4px 10px; background: #fff; }
+  .hide-prop.on { background: #FFF3C4; box-shadow: 0 0 0 3px var(--ink) inset; }
+  #hideBlind { position: fixed; inset: 0; z-index: 40; background: rgba(20, 16, 14, .94); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 26px; font-weight: 800; text-align: center; }
+  #hideBlind b { font-size: 90px; }
+  body.in-hide #missionDock { top: calc(190px + var(--safe-top)); }
   #ctfBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 16px; text-align: center; min-width: 240px; }
   body.in-ctf #decorBtn, body.in-ctf #decorMenu, body.in-home #decorBtn, body.in-home #decorMenu { display: none !important; } /* 운동장·집 안에서는 마을 꾸미기 버튼을 숨겨요 */
   body.in-ctf #toast { top: calc(222px + var(--safe-top)); }
@@ -717,6 +745,12 @@
   <button class="btn" id="hbEdit">🛋️ 꾸미기</button><button class="btn" id="hbHouse">🎨 집 바꾸기·키우기</button>
   <button class="btn hidden" id="hbPlace" style="background:var(--leaf);color:#fff">✅ 놓기</button><button class="btn hidden" id="hbRot">🔄 돌리기</button><button class="btn hidden" id="hbCancel">✖ 그만</button>
   <button class="btn" id="hbExit">🚪 나가기</button></div>
+<div id="hideBar" class="sticker hidden" role="status" aria-live="polite">
+  <div id="hdT"></div><div id="hdS"></div>
+  <div class="row-center wrap" style="margin-top:6px"><button class="btn hidden" id="hideJoin" style="background:var(--leaf);color:#fff">🙋 참가하기</button><button class="btn hidden" id="hideFind" style="background:#E2584A;color:#fff">🔍 찾았다! (F)</button></div>
+  <div id="hideProps" class="hide-props hidden" aria-label="변신할 물건"></div>
+</div>
+<div id="hideBlind" class="hidden"><div>🙈 술래는 눈을 감고 있어요</div><b id="hideBlindT"></b><div style="font-size:18px">친구들이 숨는 동안 기다려요</div></div>
 <div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
   <button class="btn" id="mbHand" aria-pressed="false">🙋 손들기</button><button class="btn" id="mbGood">👍 좋아요</button><button class="btn" id="mbThink">🤔 다른 생각</button><button class="btn" id="mbAsk">❓ 궁금해요</button><button class="btn hidden" id="mbVote" style="background:var(--sun)">🗳️ 목표 투표</button><button class="btn hidden" id="mbLike" style="background:var(--sun)">💡 제안 공감</button><button class="btn" id="mbScript">📜 대본</button><button class="btn" id="mbView" aria-pressed="false">📋 칠판 보기</button>
@@ -780,8 +814,45 @@
   <div id="pinPad" class="pin-pad"></div>
   <div class="row-center"><button class="btn" id="pinCancel" style="background:#fff">취소</button></div>
 </section>
-<section id="quizPanel" class="modal sticker hidden" aria-label="배움 게시판">
-  <h2>📝 배움 게시판</h2>
+<section id="artPanel" class="modal sticker hidden" role="dialog" aria-modal="true" aria-labelledby="artTitle">
+  <h2 id="artTitle">🖌️ 내 그림 작업실</h2>
+  <p class="hint">색을 고르고 칸을 누르거나 끌어서 칠해요. 💾 저장은 이 기기에만, 🖼️ 전시 신청은 선생님이 확인하면 공방 전시 벽에 걸려요.</p>
+  <div class="row-center"><canvas id="artCanvas" width="384" height="384" aria-label="16×16 그림판"></canvas></div>
+  <div id="artPal" class="art-pal"></div>
+  <div class="row-center wrap">
+    <button class="btn" id="artFill" style="background:#fff">🪣 고른 색으로 채우기</button>
+    <button class="btn" id="artClear" style="background:#fff">🧹 새 그림</button>
+    <button class="btn" id="artSave" style="background:var(--leaf);color:#fff">💾 내 작품 저장</button>
+    <button class="btn" id="artShow" style="background:#FF8FB3;color:#fff">🖼️ 전시 신청</button>
+  </div>
+  <p id="artFb" class="qz-fb" role="status"></p>
+  <div class="field">📂 내 작품 (누르면 불러와요)</div>
+  <div id="artMine" class="art-mine"></div>
+  <p class="hint" id="artMyShow"></p>
+  <div class="row-center"><button class="btn" id="artClose" style="background:#E6DED2">닫기</button></div>
+</section>
+<section id="gymPanel" class="modal sticker hidden" role="dialog" aria-modal="true" aria-labelledby="gymTitle">
+  <h2 id="gymTitle"></h2>
+  <p class="hint" id="gymHelp"></p>
+  <div class="row-center"><canvas id="gymCanvas" width="480" height="300" aria-hidden="true"></canvas></div>
+  <p id="gymFb" class="qz-fb" role="status"></p>
+  <div class="row-center wrap"><button class="btn" id="gymGo" style="background:var(--leaf);color:#fff">▶ 시작</button><button class="btn" id="gymAct" style="background:#FFD23C;font-size:22px">⬆️ 점프!</button><button class="btn" id="gymClose" style="background:#E6DED2">닫기</button></div>
+  <p class="hint" style="text-align:center">개인 기록은 남기지 않고, 반 전체 기록에 보태요</p>
+</section>
+<section id="thxPanel" class="modal sticker hidden" role="dialog" aria-modal="true" aria-labelledby="thxTitle">
+  <h2 id="thxTitle">💌 감사 게시판</h2>
+  <p class="hint" id="thxInfo"></p>
+  <label class="sr-only" for="thxText">오늘 고마웠던 일</label>
+  <textarea id="thxText" class="tinput thx-input" maxlength="40" rows="2" placeholder="예: 짝꿍이 지우개를 빌려줘서 고마웠어요" autocomplete="off"></textarea>
+  <div class="thx-row"><span class="hint" id="thxCount">0 / 40</span><span class="hint" id="thxLeft"></span><button class="btn" id="thxSend">💌 보내기</button></div>
+  <p id="thxFb" class="qz-fb" role="status"></p>
+  <div id="thxMineList"></div>
+  <h3 class="ap-sec">📌 게시판</h3>
+  <div id="thxWall" class="thx-wall"></div>
+  <div class="row-center"><button class="btn" id="thxClose" style="background:#E6DED2">닫기</button></div>
+</section>
+<section id="quizPanel" class="modal sticker hidden" aria-label="서당 문제">
+  <h2>📜 서당 문제</h2>
   <p class="hint" id="qzInfo"></p>
   <div id="qzQ" class="qz-q" aria-live="polite"></div>
   <div id="qzChoices" class="qz-choices"></div>
@@ -821,7 +892,7 @@
       <li><span class="em">🐚</span>팔면 내 조개돈이 생겨요. 남쪽 우리 집 마을에서 땅을 사고 집을 지어요</li>
       <li><span class="em">⛰️</span>북쪽 울타리 틈으로 뒷산에 올라요. 계곡에서 낚시하고, 꼭대기에서 🔭 마을을 내려다봐요</li>
       <li><span class="em">😊</span>😊 버튼(또는 Q)으로 인사·만세·춤 몸짓을 해요</li>
-      <li><span class="em">📝</span>광장 오른쪽 배움 게시판에서 문제를 맞히면 마을 재료가 생겨요</li>
+      <li><span class="em">💌</span>광장 오른쪽 감사 게시판에 오늘 고마웠던 일을 적으면 하루 한 번 🐚 보상을 받아요</li>
       <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 한옥 마을에 가요. 함께 짓고, 연을 날려요</li>
     </ol>
   </details>
@@ -1007,14 +1078,33 @@
     <p class="hint" id="tpMathNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpBlkRefill" style="background:#fff">⛰️ 블록 산 다시 채우기</button><button class="btn danger" id="tpMathReset">⛏️ 광산 마을 처음으로</button></div>
 
-    <h3>📝 배움 게시판 문제</h3>
+    <h3>🙈 변신 숨바꼭질 (메인 마을)</h3>
+    <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
+    <p class="hint" id="tpHideNow"></p>
+    <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
+
+    <h3>🏫 건물 안 활동</h3>
+    <p class="hint" id="tpRoomNow"></p>
+    <div class="field">🖼️ 미술 공방 전시 신청 (✅ 전시를 눌러야 걸려요)</div>
+    <div id="tpArtList"></div>
+    <div class="row-center wrap"><button class="btn danger" id="tpRoomReset">🏫 독서·체육관 기록 처음으로</button></div>
+
+    <h3>💌 감사 게시판</h3>
+    <p class="hint">학생이 쓴 감사 글은 선생님이 ✅ 보이기를 눌러야 광장 게시판에 보여요. 이름은 남지 않아요.</p>
+    <p class="hint" id="tpThxNow"></p>
+    <div id="tpThxList"></div>
+    <div class="row-center wrap"><button class="btn" id="tpThxAll" style="background:var(--leaf);color:#fff">✅ 모두 보이기</button><button class="btn" id="tpThxOld" style="background:#fff">🧹 일주일 지난 글 지우기</button></div>
+    <div class="field">게시된 글 (최근 15개)</div>
+    <div id="tpThxShown"></div>
+
+    <h3>📜 서당 문제 (한옥 마을)</h3>
     <p class="hint" id="tpQuizNow"></p>
     <div class="row-center wrap">
       <select id="tpQuizSel" aria-label="올릴 문제 묶음" style="font-size:16px;max-width:100%"></select>
       <button class="btn" id="tpQuizPost" style="background:var(--leaf);color:#fff">📝 올리기</button>
       <button class="btn" id="tpQuizOff" style="background:#fff">내리기</button>
     </div>
-    <p class="hint" style="margin-top:6px">광장 오른쪽 게시판에서 풀어요. 처음에 맞히면 마을 재료 +1. 문제는 index.html의 QUIZ_SETS에서 바꿀 수 있어요.</p>
+    <p class="hint" style="margin-top:6px">한옥 마을 서당에서 풀어요. 처음에 맞히면 재료 +1. 문제는 index.html의 QUIZ_SETS에서 바꿀 수 있어요.</p>
 
     <h3>📢 게시판 공지</h3>
     <p class="hint" id="tpNoticeSave"></p>
@@ -1299,6 +1389,9 @@
    49. 경제 다듬기 (가게 예산·시세·옷가게·집 키우기·반 기부·도감 배지)
    50. 집 안 꾸미기 · 친구 집 놀러 가기
    51. 수학 광산 마을
+   52. 감사 게시판
+   53. 건물 안 활동
+   54. 변신 숨바꼭질
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1492,7 +1585,7 @@ function sanitizeState(raw) {
     if (pl.h != null && ok(isInt(pl.h.s, 0, 2) && isInt(pl.h.c, 0, 5))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
       for (const [cell, d] of Object.entries(plainObj(inn.c))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) (o.c ||= {})[cell] = { t: d.t, r: d.r };
-      for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && isInt(mi, 0, 29))) (o.p ||= {})[k] = mi; // 벽화 액자
+      for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
     for (const [k, d] of Object.entries(plainObj(pl.items))) if (ok(/^[0-5]_[0-5]$/.test(k) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) out.plots[n].items[k] = { t: d.t, r: d.r };
   }
@@ -1614,7 +1707,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {} }; }
+function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1643,6 +1736,9 @@ function normalize(v) {
     ...(() => { const m = migrateLots(v.plots, v.plotOwner); return { plots: Object.fromEntries(Object.entries(m.plots).map(([n, pl]) => [n, { ...pl, items: pl.items || {} }])), plotOwner: m.owner }; })(),
     plotExtra: v.plotExtra || {},
     math: v.math || {},
+    thx: v.thx || {},
+    read: v.read || {}, art: v.art || {}, gym: v.gym || {},
+    hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
     coins: v.coins || 0,
     dex: v.dex || {},
     control: v.control || {},
@@ -1801,6 +1897,13 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       emit(); return { ok: true };
     },
     async startMission(m) { st.mission = { ...m, done: {} }; emit(); return { ok: true }; },
+    async hideSet(o) { if (!st.hide) return { ok: false }; Object.assign(st.hide, o); if (o.ph === 'end') st.hide.t3 = Date.now(); emit(); return { ok: true }; },
+    async hideJoin() { if (!st.hide) return { ok: false }; (st.hide.in ||= {}).me = true; emit(); return { ok: true }; },
+    async hideFind(u) { if (!st.hide) return { ok: false }; (st.hide.f ||= {})[u] = Date.now(); emit(); return { ok: true }; },
+    async readLog(g) { st.read ||= {}; st.read.n = (st.read.n || 0) + 1; (st.read.g ||= {})[g] = (st.read.g[g] || 0) + 1; emit(); return { ok: true }; },
+    async artPost(p) { (st.art ||= {})[`me_${Date.now().toString(36)}`] = { p, ok: false, at: Date.now() }; emit(); return { ok: true }; },
+    async gymAdd(k, n) { st.gym ||= {}; st.gym[k] = (st.gym[k] || 0) + n; emit(); return { ok: true }; },
+    async thxPost(t, d) { st.thx ||= {}; st.thx[`me_${Date.now().toString(36)}`] = { t, d, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async mathOre(id) { st.math ||= {}; st.math[id] = (st.math[id] || 0) + 1; emit(); return { ok: true }; },
     async mathBlock(id) { st.math ||= {}; st.math.blk ||= {}; const t = st.math.blk[id]; if (t && Date.now() - t < BM.respawn) return { ok: false, reason: 'taken' }; st.math.blk[id] = Date.now(); emit(); return { ok: true }; },
     async addMission(m) { st.missions ||= {}; st.missions[m.id] = { ...m, done: {} }; emit(); return { ok: true }; },
@@ -2086,6 +2189,28 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async startMission(m) {
       try { await D.set(R('state/mission'), m); return { ok: true }; } catch (e) { return { ok: false }; }
     },
+    async hideSet(o) { // 🙈 술래·선생님: 단계 넘기기 (찾기 시작 · 끝)
+      const upd = {}; for (const [k, v] of Object.entries(o)) upd[`hide/${k}`] = v; if (o.ph === 'end') upd['hide/t3'] = D.serverTimestamp();
+      try { await D.update(R('state'), upd); return { ok: true }; } catch (e) { return { ok: false }; }
+    },
+    async hideJoin() { try { await D.set(R(`state/hide/in/${uid}`), true); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async hideFind(u) { try { await D.set(R(`state/hide/f/${u}`), D.serverTimestamp()); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async readLog(g) { // 📒 독서 기록: 반 전체 권수 +1, 장르 +1 (누가 읽었는지는 없어요)
+      try { const a = await D.runTransaction(R('state/read/n'), c => (c || 0) + 1); await D.runTransaction(R(`state/read/g/${g}`), c => (c || 0) + 1); return { ok: a.committed }; }
+      catch (e) { return { ok: false }; }
+    },
+    async artPost(p) { // 🖼️ 전시 신청 (선생님이 ok를 켜야 걸려요)
+      try { await D.set(R(`state/art/${uid}_${Date.now().toString(36)}`), { p, ok: false, at: D.serverTimestamp() }); return { ok: true }; }
+      catch (e) { return { ok: false }; }
+    },
+    async gymAdd(k, n) { // 🏀 체육관: 반 전체 기록에 보태기 (한 번에 200까지)
+      try { const r = await D.runTransaction(R(`state/gym/${k}`), c => (c || 0) + n); return { ok: r.committed }; }
+      catch (e) { return { ok: false }; }
+    },
+    async thxPost(t, d) { // 💌 감사 글: 열쇠 = 내 기기 번호_시각 (내 글 표시용), 선생님이 ok를 켜야 게시판에 보여요
+      try { await D.set(R(`state/thx/${uid}_${Date.now().toString(36)}`), { t, d, ok: false, at: D.serverTimestamp() }); return { ok: true }; }
+      catch (e) { return { ok: false }; }
+    },
     async mathBlock(id) { // ⛰️ 블록 산: 캔 시각 (10분 안에는 다시 못 캐요 — 규칙이 막아요)
       try { await D.set(R(`state/math/blk/${id}`), D.serverTimestamp()); return { ok: true }; }
       catch (e) { return { ok: false, reason: 'taken' }; }
@@ -2233,7 +2358,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'hideSet', 'hideJoin', 'hideFind', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -3129,7 +3254,7 @@ function updatePlayer(dt) {
   const x0 = p.x, z0 = p.z; // 움직이기 전 위치 (경계에서 되돌릴 때 사용)
   let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
-  if (isFrozen() || kite.active || hv.travel) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -3196,7 +3321,7 @@ function updateCamera(dt) {
     }
   }
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
-  const inCls = (player.pos.x > 600 && player.pos.x < 700 && player.pos.z < 30) || (player.pos.x > 740 && player.pos.x < 1000), cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
+  const inCls = (player.pos.x > 600 && player.pos.x < 700 && player.pos.z < 30) || (player.pos.x > 740 && player.pos.x < 1000) || (player.pos.x > 1410 && player.pos.x < 1610), cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
   const want = new V3(
     t.x + Math.sin(camYaw) * Math.cos(cp) * cd,
     t.y + Math.sin(cp) * cd,
@@ -3282,6 +3407,7 @@ function sendPresence(time) {
   const p = player.pos;
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
+  if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   const key = JSON.stringify(d);
   if (key === lastSent) return;
@@ -3623,6 +3749,9 @@ function applyState(st) {
   syncQuiz(prev, first);
   syncHanok(prev, first);
   syncMath(prev, first);
+  syncThx(prev, first);
+  syncHide(prev, first);
+  renderRooms(false); if (!$('teacherPanel').classList.contains('hidden')) fillRoomAdmin();
   syncMural(prev, first);
   syncMeeting(prev, first);
   syncCtf(prev, first);
@@ -4354,7 +4483,7 @@ function syncMission(prev, first) {
 }
 
 function closeModals() {
-  for (const id of ['tip', 'picker', 'decorMenu', 'missionPanel', 'teacherPanel', 'votePanel', 'activityPanel', 'memGame', 'dropGame', 'patGame', 'lifePanel', 'quizPanel', 'mapPanel', 'meetVotePanel', 'minePanel']) $(id).classList.add('hidden');
+  for (const id of ['tip', 'picker', 'decorMenu', 'missionPanel', 'teacherPanel', 'votePanel', 'activityPanel', 'memGame', 'dropGame', 'patGame', 'lifePanel', 'quizPanel', 'mapPanel', 'meetVotePanel', 'minePanel', 'thxPanel', 'artPanel', 'gymPanel']) $(id).classList.add('hidden');
 }
 function openMissionPanel() { closeModals(); $('missionPanel').classList.remove('hidden'); fillMissionPanel(); }
 const openMissionHub = openMissionPanel; // 예전 이름 (마을 미션 탭은 없어졌어요)
@@ -4414,7 +4543,7 @@ async function copyText(text, what) {
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
 function fillTeacherPanel() {
-  fillPlotAdmin(); fillHvAdmin(); fillMathAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
+  fillPlotAdmin(); fillHvAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -6005,7 +6134,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -7544,7 +7673,7 @@ const NPCS = [
     lines: ['어서 와! 마을 가게야.', '팔면 모두 반 동전이 돼. 우리 마을이 점점 좋아질 거야!', '연못에서 잡은 물고기도 사고 있어.'] },
   // 한옥 마을 주민
   { id: 'n5', name: '범이 훈장님', kind: 'tiger', icon: '🐯', fur: 0xF0A040, shirt: 0x3B5A8A, home: [505, -13], req: HV_REQUESTS,
-    lines: ['하늘 천, 따 지~ 서당에서 함께 글공부를 하자꾸나.', '서당을 지으면 배움 게시판 문제를 여기서도 풀 수 있단다.', '연을 높이 날리려면 바람을 잘 보아야 해.'] },
+    lines: ['하늘 천, 따 지~ 서당에서 함께 글공부를 하자꾸나.', '서당을 지으면 선생님이 낸 문제를 여기서 풀 수 있단다.', '연을 높이 날리려면 바람을 잘 보아야 해.'] },
   { id: 'n6', name: '도토리', kind: 'squirrel', icon: '🐿️', fur: 0xB0703A, shirt: 0xE2584A, home: [540, -9], req: HV_REQUESTS,
     lines: ['장터에 온 걸 환영해요!', '장터를 지으면 장독대·청사초롱·솟대를 만들 수 있어요.', '감나무를 흔들면 감이 톡 떨어져요!'] },
 ];
@@ -8903,7 +9032,7 @@ function updateMap(dt) {
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
   const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
-  const inCls = classRegion() || arenaRegion() || homeRegion(); // 교실·운동장·집 안에서는 작은 지도를 숨겨요
+  const inCls = classRegion() || arenaRegion() || homeRegion() || bldRegion(); // 교실·운동장·집 안·건물 안에서는 작은 지도를 숨겨요
   $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
   if (mapUI.show && !placing.active && !inCls) drawMini();
   if (!$('mapPanel').classList.contains('hidden')) drawBig();
@@ -9082,21 +9211,21 @@ const quizSet = () => (S.quiz && QUIZ_SETS[S.quiz.s]) || null;
 function buildQuizBoard() { // 광장 오른쪽, 미션 게시판 맞은편
   const g = frame(10, 5, -1, 0);
   box(g, 0.35, 3.4, 0.35, C.wood, -1.8, 1.7, 0); box(g, 0.35, 3.4, 0.35, C.wood, 1.8, 1.7, 0);
-  box(g, 4.4, 2.6, 0.25, 0xEAF6FF, 0, 2.9, 0);
-  for (const [w, h, x, y] of [[4.7, 0.18, 0, 4.25], [4.7, 0.18, 0, 1.55], [0.18, 2.8, -2.3, 2.9], [0.18, 2.8, 2.3, 2.9]]) box(g, w, h, 0.32, 0x4F8FE8, x, y, 0, { solid: false });
-  mesh(GABLE, g, 1.0, 0.7, 5.3, 0x4F8FE8, 0, 4.34, 0, { solid: false, ry: Math.PI / 2 });
-  for (const [x, y, c] of [[-1.3, 2.3, 0xFFE066], [0, 2.1, 0xFFFFFF], [1.3, 2.35, 0xC8F0B4]]) { box(g, 0.95, 0.72, 0.03, c, x, y, -0.15, { solid: false }); box(g, 0.6, 0.06, 0.02, 0x3B2F2A, x, y + 0.12, -0.17, { solid: false }); box(g, 0.45, 0.06, 0.02, 0x3B2F2A, x, y - 0.08, -0.17, { solid: false }); }
-  signPlane(g, ['📝 배움 게시판'], 4.2, 1.1, 0, 3.6, -0.14, { font: 70, pad: 6, fg: '#3B2F2A', stroke: false });
-  quiz.board = makeLabel(g, [''], 1.2, 0, 5.3, 0);
+  box(g, 4.4, 2.6, 0.25, 0xFFF4F8, 0, 2.9, 0);
+  for (const [w, h, x, y] of [[4.7, 0.18, 0, 4.25], [4.7, 0.18, 0, 1.55], [0.18, 2.8, -2.3, 2.9], [0.18, 2.8, 2.3, 2.9]]) box(g, w, h, 0.32, 0xFF8FB3, x, y, 0, { solid: false });
+  mesh(GABLE, g, 1.0, 0.7, 5.3, 0xFF8FB3, 0, 4.34, 0, { solid: false, ry: Math.PI / 2 });
+  for (const [x, y, c] of [[-1.3, 2.3, 0xFFC9DC], [0, 2.1, 0xFFFFFF], [1.3, 2.35, 0xFFE9A0]]) { box(g, 0.95, 0.72, 0.03, c, x, y, -0.15, { solid: false }); box(g, 0.6, 0.06, 0.02, 0x3B2F2A, x, y + 0.12, -0.17, { solid: false }); box(g, 0.45, 0.06, 0.02, 0x3B2F2A, x, y - 0.08, -0.17, { solid: false }); }
+  signPlane(g, ['💌 감사 게시판'], 4.2, 1.1, 0, 3.6, -0.14, { font: 70, pad: 6, fg: '#3B2F2A', stroke: false });
+  thx.board = makeLabel(g, [''], 1.2, 0, 5.3, 0); quiz.board = null;
   registerSolids(g, 'quiz'); batchStatic(g);
-  addInteract({ pos: g.localToWorld(new V3(0, 1, -1.4)), r: 3.2, text: () => ['문제 풀기 📝', quizSet() ? '배움 게시판' : '아직 문제가 없어요'], run: openQuiz });
+  addInteract({ pos: g.localToWorld(new V3(0, 1, -1.4)), r: 3.2, text: () => ['감사 글 쓰기 💌', '감사 게시판'], run: openThx });
 }
 function syncQuiz(prev, first) {
   const set = quizSet(), key = S.quiz ? `${S.quiz.s}_${S.quiz.at}` : '';
   if (quiz.key !== key) {
     quiz.key = key; quiz.order = []; quiz.done = {};
     quiz.board?.userData.set([set ? `📝 ${set.name.split(' (')[0]}` : '📝 문제 준비 중']);
-    if (!first && set && (!prev.quiz || prev.quiz.at !== S.quiz.at)) toast(`📝 배움 게시판에 새 문제가 올라왔어요: ${set.name.split(' (')[0]}`, 'info');
+    if (!first && set && (!prev.quiz || prev.quiz.at !== S.quiz.at)) toast(`📜 한옥 마을 서당에 새 문제가 올라왔어요: ${set.name.split(' (')[0]}`, 'info');
     if (!$('quizPanel').classList.contains('hidden')) (set ? nextQuestion() : fillQuiz());
   }
   if (!$('teacherPanel').classList.contains('hidden')) fillQuizAdmin();
@@ -9168,7 +9297,7 @@ function fillQuizAdmin() {
 function initQuizUI() {
   $('qzNext').onclick = nextQuestion; $('qzClose').onclick = closeQuiz;
   $('tpQuizPost').onclick = () => { const s = +$('tpQuizSel').value; adminDo({ quiz: { s, at: Date.now() } }, `📝 "${QUIZ_SETS[s].name.split(' (')[0]}" 문제를 올렸어요`); };
-  $('tpQuizOff').onclick = () => adminDo({ quiz: null }, '📝 배움 게시판 문제를 내렸어요');
+  $('tpQuizOff').onclick = () => adminDo({ quiz: null }, '📜 서당 문제를 내렸어요');
   addEventListener('keydown', e => {
     if ($('quizPanel').classList.contains('hidden') || e.repeat) return;
     if (e.key === 'Escape') { closeQuiz(); return; }
@@ -9290,7 +9419,7 @@ function initRoleUI() {
 const HV = { x: 520, x0: 474, x1: 566, z0: -44, z1: 44, dock: [462, 474], pond: [496, 27, 6.5], hill: [546, 24] };
 const HV_START = 2, HV_CRATE_MS = 8000;
 const HV_SITES = [
-  { id: 'seodang', name: '서당', icon: '📜', cost: 4, pos: [502, -24], color: 0x8A5A34, after: '서당에서 배움 게시판 문제를 풀 수 있어요' },
+  { id: 'seodang', name: '서당', icon: '📜', cost: 4, pos: [502, -24], color: 0x8A5A34, after: '서당에서 선생님이 올린 문제를 풀 수 있어요' },
   { id: 'market', name: '장터', icon: '🏮', cost: 4, pos: [542, -22], color: 0xE2584A, after: '장터에서 한옥 가구를 만들 수 있어요' },
   { id: 'pavilion', name: '연못 정자', icon: '🪷', cost: 3, pos: [510, 22], color: 0x5FBE5A, after: '연못에서 낚시할 수 있어요' },
   { id: 'kite', name: '연날리기 언덕', icon: '🪁', cost: 3, pos: [546, 24], color: 0x4F8FE8, after: '언덕에서 연을 날릴 수 있어요' },
@@ -11400,11 +11529,11 @@ function buildRoom(id) { // 지금 들어가 있는 집 안만 그려요
     buildFurn(clamp(d.t | 0, 0, FURN.length - 1), it); g.add(it);
   }
   for (const [slot, mi] of Object.entries(inn.p || {})) { // 🖼️ 벽에 건 벽화 액자
-    const at = WALL_SLOTS[+slot]; if (!at || !MURALS[mi]) continue;
+    const at = WALL_SLOTS[+slot], artP = typeof mi === 'string' ? S.art?.[mi]?.p : null; if (!at || (!MURALS[mi] && !artP)) continue;
     const fg = new THREE.Group(); fg.position.set(cx + at.x, 1.75, cz + at.z); fg.rotation.y = at.ry; g.add(fg);
     box(fg, 2.3, 1.8, 0.08, 0xB07C50, 0, 0, 0, o); box(fg, 2.42, 0.1, 0.12, 0x8A5A34, 0, -0.93, 0.02, o);
-    const t = new THREE.CanvasTexture(muralFullCanvas(mi)); t.colorSpace = THREE.SRGBColorSpace;
-    const pic = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.5), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); pic.position.z = 0.05; fg.add(pic);
+    const t = new THREE.CanvasTexture(artP ? pixCanvas(artP, 8) : muralFullCanvas(mi)); t.colorSpace = THREE.SRGBColorSpace; if (artP) t.magFilter = THREE.NearestFilter;
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(artP ? 1.5 : 2.0, 1.5), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); pic.position.z = 0.05; fg.add(pic);
   }
   registerSolids(g, 'in:' + id);
   home.id = id; home.key = JSON.stringify(inn);
@@ -11457,19 +11586,20 @@ function openHomeDecor() {
       });
       box.append(row);
     }
-    // 🖼️ 벽화 액자: 반이 함께 완성한 벽화를 골라 벽에 걸어요
-    const doneM = MURALS.map((_, i) => i).filter(muralDone);
-    box.append(el2('h3', 'lp-sec', `🖼️ 벽화 액자 걸기 (한 번 걸 때 🐚${FRAME_PRICE})`));
-    if (!doneM.length) box.append(el2('div', 'vempty', '아직 완성한 벽화가 없어요. 미술 공방에서 친구들과 벽화를 완성하면 걸 수 있어요'));
+    // 🖼️ 액자: 반이 함께 완성한 벽화 + 선생님이 확인한 내 그림
+    const doneM = MURALS.map((_, i) => i).filter(muralDone), myArts = artList().filter(a => artMine(a) && a.ok).map(a => a.k);
+    const picks = [...doneM, ...myArts], pName = (v) => typeof v === 'string' ? '내 그림' : `${MURALS[v].icon} ${MURALS[v].name}`;
+    box.append(el2('h3', 'lp-sec', `🖼️ 액자 걸기: 벽화·내 그림 (한 번 걸 때 🐚${FRAME_PRICE})`));
+    if (!picks.length) box.append(el2('div', 'vempty', '아직 걸 그림이 없어요. 미술 공방에서 벽화를 완성하거나, 공방 안 작업실에서 그린 그림을 전시 신청해 보세요'));
     else WALL_SLOTS.forEach((sl, k) => {
-      const cur = inn.p?.[k], row = el2('div', 'frame-row', '');
-      row.append(el2('div', 'frame-name', `${sl.name}${cur != null && MURALS[cur] ? ` · 지금 ${MURALS[cur].icon} ${MURALS[cur].name}` : ' · 비어 있어요'}`));
+      const cur = inn.p?.[k], row = el2('div', 'frame-row', ''), curOk = cur != null && (typeof cur === 'string' ? !!S.art?.[cur] : !!MURALS[cur]);
+      row.append(el2('div', 'frame-name', `${sl.name}${curOk ? ` · 지금 ${pName(cur)}` : ' · 비어 있어요'}`));
       const pick = el2('div', 'frame-pick', '');
-      for (const mi of doneM) {
-        const b = el2('button', 'btn frame-btn' + (cur === mi ? ' on' : ''), ''); b.title = MURALS[mi].name; b.setAttribute('aria-label', `${sl.name}에 ${MURALS[mi].name} 걸기`);
-        const cv = muralFullCanvas(mi, 60 / mW(mi)); b.append(cv);
-        b.disabled = cur === mi || (bag.shell || 0) < FRAME_PRICE;
-        b.onclick = async () => { if ((bag.shell || 0) < FRAME_PRICE) return; const r = await backend.homeSet(id, { [`p/${k}`]: mi }); if (r.ok) { bag.shell -= FRAME_PRICE; saveBag(); playSfx('build'); toast(`🖼️ ${MURALS[mi].icon} ${MURALS[mi].name} 액자를 ${sl.name}에 걸었어요!`, 'success'); } refillLife(); };
+      for (const v of picks) {
+        const nm = pName(v), b = el2('button', 'btn frame-btn' + (cur === v ? ' on' : ''), ''); b.title = nm; b.setAttribute('aria-label', `${sl.name}에 ${nm} 걸기`);
+        const cv = typeof v === 'string' ? pixCanvas(S.art[v].p, 4) : muralFullCanvas(v, 60 / mW(v)); b.append(cv);
+        b.disabled = cur === v || (bag.shell || 0) < FRAME_PRICE;
+        b.onclick = async () => { if ((bag.shell || 0) < FRAME_PRICE) return; const r = await backend.homeSet(id, { [`p/${k}`]: v }); if (r.ok) { bag.shell -= FRAME_PRICE; saveBag(); playSfx('build'); toast(`🖼️ ${nm} 액자를 ${sl.name}에 걸었어요!`, 'success'); } refillLife(); };
         pick.append(b);
       }
       if (cur != null) { const off = el2('button', 'btn frame-off', '떼기'); off.onclick = async () => { await backend.homeSet(id, { [`p/${k}`]: null }); refillLife(); }; pick.append(off); }
@@ -12060,6 +12190,573 @@ function fillMathAdmin() {
   $('tpMathNow').textContent = `⛏️ 함께 캔 광석 ${MINES.reduce((a, m) => a + mineCount(m.id), 0)}개 · 광산 단계 ${mineLvSum()} / ${MINES.length * MINE_MAX} (${MINES.map(m => `${m.icon}${mineCount(m.id)}`).join(' ')})`;
 }
 
+
+/* =====================================================================
+   52. 💌 감사 게시판 — 광장 오른쪽 게시판 (예전 배움 게시판 자리, 배움 문제는 한옥 마을 서당에 남아 있어요)
+   · 오늘 고마웠던 일을 40자까지 써요. 선생님이 확인한 글만 게시판에 보여요. 누가 썼는지(이름)는 저장하지 않아요
+   · 하루에 처음 한 가지 이상 쓰면 보상: 내 🐚 +20 (이 기기에서 하루 한 번) · 하루 5개까지 쓸 수 있어요
+   · 저장: state/thx/{기기번호_시각} = { t 글, d 날 번호, ok 선생님 확인, at 시각 } — 열쇠의 기기 번호는 "내 글 표시"에만 써요
+   ===================================================================== */
+const THX_MAX = 40, THX_PER_DAY = 5, THX_REWARD = 20;
+const THX_BAD = ['시발', '씨발', 'ㅅㅂ', '병신', 'ㅂㅅ', '개새', '미친', '존나', 'ㅈㄴ', '닥쳐', '꺼져', '죽어', '지랄', '바보', '멍청', '찐따', '새끼'];
+const thx = { board: null, busy: false };
+const thxList = (st = S) => Object.entries(st.thx || {}).map(([k, v]) => ({ k, ...v })).filter(x => typeof x.t === 'string').sort((a, b) => (b.at || 0) - (a.at || 0));
+const thxMine = (x) => !!backend?.uid && x.k.startsWith(backend.uid + '_');
+const thxToday = () => thxList().filter(x => x.d === dayNum());
+function thxBadWord(t) { const s = t.replace(/\s/g, ''); return THX_BAD.find(w => s.includes(w)); }
+function syncThx(prev, first) {
+  const ok = thxList().filter(x => x.ok), today = ok.filter(x => x.d === dayNum());
+  thx.board?.userData.set(['💌 감사 게시판', today.length ? `오늘의 감사 ${today.length}개` : '오늘 고마웠던 일을 적어요', ...(ok[0] ? [`"${ok[0].t.length > 18 ? ok[0].t.slice(0, 18) + '…' : ok[0].t}"`] : [])]);
+  if (!first) {
+    const before = new Set(thxList(prev).filter(x => x.ok).map(x => x.k));
+    const newMine = ok.filter(x => !before.has(x.k) && thxMine(x));
+    if (newMine.length) toast('💌 선생님이 내 감사 글을 게시판에 올려 주셨어요!', 'success');
+  }
+  if (!$('thxPanel').classList.contains('hidden')) fillThx();
+  if (!$('teacherPanel').classList.contains('hidden')) fillThxAdmin();
+}
+function openThx() { closeModals(); $('thxPanel').classList.remove('hidden'); $('thxFb').textContent = ''; fillThx(); setTimeout(() => $('thxText').focus(), 50); }
+function closeThx() { $('thxPanel').classList.add('hidden'); }
+function fillThx() {
+  const mineToday = thxToday().filter(thxMine), left = THX_PER_DAY - mineToday.length, rewarded = bag.thxDay === dayNum();
+  $('thxInfo').textContent = `오늘 고마웠던 일을 한 가지 이상 적어요 (${THX_MAX}자까지). 선생님이 확인하면 게시판에 보여요. 이름은 남지 않아요. ${rewarded ? '🎁 오늘 보상은 받았어요' : `🎁 오늘 처음 쓰면 🐚 +${THX_REWARD}`}`;
+  $('thxSend').disabled = thx.busy || left <= 0;
+  $('thxLeft').textContent = left > 0 ? `오늘 ${left}개 더 쓸 수 있어요` : '오늘은 다 썼어요. 내일 또 적어요!';
+  const mine = $('thxMineList'); mine.textContent = '';
+  for (const x of mineToday) mine.append(el2('div', 'thx-card mine' + (x.ok ? ' ok' : ''), `${x.ok ? '✅' : '⏳'} ${x.t}`));
+  if (mineToday.length && mineToday.some(x => !x.ok)) mine.append(el2('p', 'hint', '⏳ 표시는 선생님 확인을 기다리는 글이에요 (나만 보여요)'));
+  const wall = $('thxWall'); wall.textContent = '';
+  const ok = thxList().filter(x => x.ok).slice(0, 30);
+  if (!ok.length) wall.append(el2('div', 'vempty', '아직 게시된 감사 글이 없어요. 첫 번째로 적어 볼까요?'));
+  let lastDay = null;
+  for (const x of ok) {
+    if (x.d !== lastDay) { lastDay = x.d; wall.append(el2('div', 'thx-day', x.d === dayNum() ? '🌞 오늘' : x.d === dayNum() - 1 ? '어제' : `${dayNum() - x.d}일 전`)); }
+    wall.append(el2('div', 'thx-card', `💌 ${x.t}`));
+  }
+}
+async function sendThx() {
+  const ta = $('thxText'), t = ta.value.replace(/\s+/g, ' ').trim().slice(0, THX_MAX), fb = $('thxFb');
+  if (!t) { fb.textContent = '고마웠던 일을 적어 주세요'; return; }
+  if (t.length < 3) { fb.textContent = '조금 더 자세히 적어 볼까요? (3자 이상)'; return; }
+  if (thxBadWord(t)) { fb.textContent = '🙅 고운 말로 다시 적어 주세요'; playSfx('wrong'); return; }
+  if (thxToday().filter(thxMine).length >= THX_PER_DAY) { fb.textContent = '오늘은 다 썼어요. 내일 또 적어요!'; return; }
+  thx.busy = true; fillThx();
+  const res = await backend.thxPost(t, dayNum());
+  thx.busy = false;
+  if (!res.ok) { if (res.reason !== 'offline') fb.textContent = '⚠️ 올리지 못했어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요'; fillThx(); return; }
+  ta.value = ''; $('thxCount').textContent = `0 / ${THX_MAX}`;
+  let msg = '💌 감사 글을 보냈어요! 선생님이 확인하면 게시판에 보여요';
+  if (bag.thxDay !== dayNum()) { bag.thxDay = dayNum(); earnShell(THX_REWARD); msg += ` · 🎁 오늘의 보상 🐚 +${THX_REWARD}`; playAct(player.avatar, 'cheer'); burst(player.pos.clone().setY(2), [0xFF9AC0, 0xFFFFFF, C.gold], 30, 3, 2); }
+  saveBag(); playSfx('coin'); fb.textContent = msg; toast(msg, 'success'); fillThx();
+}
+// ---------- 선생님 ----------
+function fillThxAdmin() {
+  const all = thxList(), wait = all.filter(x => !x.ok), box = $('tpThxList'); box.textContent = '';
+  $('tpThxNow').textContent = `확인을 기다리는 글 ${wait.length}개 · 게시된 글 ${all.length - wait.length}개 (오늘 ${thxToday().filter(x => x.ok).length}개)`;
+  for (const x of wait.slice(0, 40)) {
+    const row = el2('div', 'tp-mrow', ''); row.append(el2('div', '', `${x.d === dayNum() ? '' : `(${dayNum() - x.d}일 전) `}${x.t}`));
+    const btns = el2('div', 'row-center wrap', ''); btns.style.margin = '0';
+    const okb = el2('button', 'btn', '✅ 보이기'); okb.onclick = () => adminDo({ [`thx/${x.k}/ok`]: true }, '💌 게시판에 올렸어요');
+    const del = el2('button', 'btn', '🗑️'); del.setAttribute('aria-label', '이 글 지우기'); del.onclick = () => adminDo({ [`thx/${x.k}`]: null }, '🗑️ 글을 지웠어요');
+    btns.append(okb, del); row.append(btns); box.append(row);
+  }
+  if (!wait.length) box.append(el2('div', 'vempty', '확인을 기다리는 글이 없어요'));
+  $('tpThxAll').disabled = !wait.length;
+  const shown = $('tpThxShown'); shown.textContent = '';
+  for (const x of all.filter(x => x.ok).slice(0, 15)) {
+    const row = el2('div', 'tp-mrow', ''); row.append(el2('div', '', `💌 ${x.t}`));
+    const hide = el2('button', 'btn', '숨기기'); hide.onclick = () => adminDo({ [`thx/${x.k}/ok`]: false }, '💌 게시판에서 숨겼어요');
+    row.append(hide); shown.append(row);
+  }
+}
+function initThxUI() {
+  $('thxSend').onclick = sendThx; $('thxClose').onclick = closeThx;
+  $('thxText').addEventListener('input', () => { $('thxCount').textContent = `${$('thxText').value.length} / ${THX_MAX}`; });
+  $('thxText').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendThx(); } if (e.key === 'Escape') closeThx(); });
+  $('tpThxAll').onclick = async () => {
+    const wait = thxList().filter(x => !x.ok); if (!wait.length) return;
+    if (!(await confirmAction({ title: '✅ 모두 게시할까요?', body: `확인을 기다리는 글 ${wait.length}개를 모두 게시판에 올려요.`, okText: '모두 올리기' }))) return;
+    adminDo(Object.fromEntries(wait.map(x => [`thx/${x.k}/ok`, true])), `💌 ${wait.length}개를 게시판에 올렸어요`);
+  };
+  $('tpThxOld').onclick = async () => {
+    const old = thxList().filter(x => x.d < dayNum() - 6); if (!old.length) { toast('일주일보다 오래된 글이 없어요', 'info'); return; }
+    if (!(await confirmAction({ title: '🧹 오래된 감사 글을 지울까요?', body: `일주일보다 오래된 글 ${old.length}개를 지워요.`, okText: '지우기' }))) return;
+    adminDo(Object.fromEntries(old.map(x => [`thx/${x.k}`, null])), '🧹 오래된 감사 글을 지웠어요');
+  };
+}
+
+
+/* =====================================================================
+   53. 🏫 건물 안 활동 — 도서관·미술 공방·실내 체육관 문에서 E로 들어가요 (방은 월드 x 1430~1590에 따로 있어요)
+   · 📚 도서관: 독서 기록장 (장르·별점·느낌을 골라 기록 → 반 전체 독서 나무가 자라요. 책 제목은 이 기기에만)
+   · 🎨 미술 공방: 내 그림 작업실 (16×16 픽셀 그림 → 내 작품 저장, 전시 신청 → 선생님 확인 후 전시 벽·우리 집 액자)
+   · 🏀 실내 체육관(놀이터 옆 작은 건물): 줄넘기 리듬 · 과녁 맞히기 → 반 전체 기록에 보태요 (개인 기록·순위 없음)
+   · 저장: state/read {n, g/{장르}} · state/art/{기기번호_시각} {p 그림, ok, at} · state/gym {rope, hit}
+   ===================================================================== */
+const ROOMS = {
+  lib: { name: '도서관', icon: '📚', cx: 1450, cz: 0, w: 22, d: 16, wall: 0xF3E6CF, floor: 0xB9875A, site: 'Library' },
+  art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
+  gym: { name: '실내 체육관', icon: '🏀', cx: 1570, cz: 0, w: 24, d: 18, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
+};
+const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
+const READ_FEELS = ['재미있었어요', '감동적이었어요', '새로 알게 됐어요', '다음 권도 읽고 싶어요', '친구에게 추천해요'];
+const inRoom = (x, z) => Object.values(ROOMS).some(r => Math.abs(x - r.cx) <= r.w / 2 - 0.5 && Math.abs(z - r.cz) <= r.d / 2 - 0.5);
+const bldRegion = () => joined && player.pos.x > 1410 && player.pos.x < 1610;
+const roomNow = () => Object.entries(ROOMS).find(([, r]) => Math.abs(player.pos.x - r.cx) <= r.w / 2 + 1 && Math.abs(player.pos.z - r.cz) <= r.d / 2 + 1)?.[0] || '';
+bag.reads ||= []; bag.arts ||= [];
+const bld = { group: null, doors: {}, tree: null, leafs: [], genreSign: null, artFrames: [], artKey: '', readKey: '', gymLabel: null };
+function roomShell(g, r) {
+  const { cx, cz, w, d } = r, H = 3.0, o = { solid: false };
+  box(g, w + 30, 0.1, d + 30, 0x8CCB6A, cx, -0.06, cz, o);
+  box(g, w, 0.2, d, r.floor, cx, 0, cz, { emissive: 0.25 });
+  box(g, w + 0.6, H, 0.3, r.wall, cx, H / 2, cz - d / 2, { emissive: 0.35 });
+  for (const s of [-1, 1]) box(g, 0.3, H, d, r.wall, cx + s * w / 2, H / 2, cz, { emissive: 0.35 });
+  for (const s of [-1, 1]) box(g, w / 2 - 1.4, H, 0.3, r.wall, cx + s * (w / 4 + 0.7), H / 2, cz + d / 2, { emissive: 0.35 });
+  box(g, 2.8, 0.5, 0.3, r.wall, cx, H - 0.25, cz + d / 2, o);
+  box(g, 2.0, 0.02, 1.0, 0xE2584A, cx, 0.115, cz + d / 2 - 0.9, o);
+  signPlane(g, [`${r.icon} ${r.name}`], 3.6, 0.8, cx, H + 0.5, cz - d / 2 + 0.2, { font: 52, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = 0;
+}
+function buildInteriors() {
+  const g = new THREE.Group(); g.name = 'Interiors'; scene.add(g); bld.group = g;
+  const o = { solid: false };
+  // ---------- 📚 도서관 ----------
+  { const r = ROOMS.lib, { cx, cz, w, d } = r; roomShell(g, r);
+    const cols = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E];
+    for (let k = 0; k < 4; k++) { const x = cx - 7.5 + k * 5; box(g, 4.2, 2.8, 0.6, 0x8A5A34, x, 1.4, cz - d / 2 + 0.5); for (const y of [0.5, 1.3, 2.1]) for (let b = 0; b < 10; b++) box(g, 0.32, 0.6, 0.4, cols[(b + k + y * 3) % 6 | 0], x - 1.8 + b * 0.4, y + 0.3, cz - d / 2 + 0.55, o); }
+    for (const s of [-1, 1]) for (let k = 0; k < 2; k++) { const z = cz - 3 + k * 5; box(g, 0.6, 2.6, 4, 0x8A5A34, cx + s * (w / 2 - 0.5), 1.3, z); for (const y of [0.5, 1.25, 2.0]) for (let b = 0; b < 8; b++) box(g, 0.4, 0.55, 0.32, cols[(b + k + y * 2) % 6 | 0], cx + s * (w / 2 - 0.55), y + 0.28, z - 1.6 + b * 0.45, o); }
+    for (const [x, z] of [[cx + 3, cz + 1], [cx + 6.5, cz + 1]]) { box(g, 2.6, 0.12, 1.4, 0xE9C98F, x, 0.8, z); for (const sx of [-1.1, 1.1]) for (const sz of [-0.5, 0.5]) box(g, 0.1, 0.75, 0.1, 0x8A5A34, x + sx, 0.38, z + sz, o); for (const sz of [-1.1, 1.1]) box(g, 0.6, 0.45, 0.6, 0x5E9BD6, x, 0.23, z + sz); }
+    // 독서 나무 (반 전체 기록 수만큼 잎이 자라요)
+    const tx = cx - 5, tz = cz + 1; mesh(TAPER, g, 0.5, 3.2, 0.5, 0x7A5436, tx, 1.6, tz); cyl(g, 1.3, 0.3, 0x8A5A34, tx, 0.15, tz);
+    bld.leafs = [];
+    for (let k = 0; k < 40; k++) { const a = k * 2.399, rr = 0.4 + (k % 7) * 0.22, y = 3.0 + (k % 5) * 0.35; const m = mesh(SPH_LO, g, 0.38, 0.32, 0.38, [0x5DB85F, 0x4FA04F, 0x7CC85C][k % 3], tx + Math.cos(a) * rr, y, tz + Math.sin(a) * rr, { solid: false, flat: true }); m.visible = false; m.userData.kind = k % 9 === 4 ? 'flower' : k % 9 === 7 ? 'fruit' : 'leaf'; bld.leafs.push(m); }
+    bld.treeLabel = makeLabel(g, [''], 0.8, tx, 5.6, tz);
+    bld.genreSign = makeLabel(g, [''], 0.7, cx + 4.7, 3.7, cz - d / 2 + 1);
+    box(g, 2.4, 0.12, 1.2, 0xE9C98F, cx - 1, 0.85, cz - 2.5); box(g, 0.8, 0.1, 0.6, 0xFFFFFF, cx - 1, 0.95, cz - 2.5, o); box(g, 0.08, 0.3, 0.08, 0x3B2F2A, cx - 0.6, 1.05, cz - 2.4, { solid: false, rz: 0.5 }); // 기록장 책상
+    for (const sx of [-1, 1]) box(g, 0.1, 0.8, 0.1, 0x8A5A34, cx - 1 + sx * 1.1, 0.4, cz - 2.5, o);
+    addInteract({ pos: new V3(cx - 1, 1, cz - 1.5), r: 2.6, text: () => roomNow() === 'lib' ? ['독서 기록하기 📒', '독서 기록장'] : null, run: openReadLog });
+    addInteract({ pos: new V3(tx, 1, tz + 1.4), r: 2.4, text: () => roomNow() === 'lib' ? ['독서 나무 보기 🌳', `반 전체 ${S.read?.n || 0}권`] : null, run: () => toast(`🌳 우리 반이 함께 기록한 책 ${S.read?.n || 0}권! 기록할 때마다 잎이 하나씩 자라요`, 'info') });
+  }
+  // ---------- 🎨 미술 공방 ----------
+  { const r = ROOMS.art, { cx, cz, w, d } = r; roomShell(g, r);
+    bld.artFrames = [];
+    for (let k = 0; k < 12; k++) { const col = k % 6, row = Math.floor(k / 6), x = cx - 7.5 + col * 3, y = 1.15 + (1 - row) * 1.25; box(g, 1.4, 1.15, 0.08, 0xB07C50, x, y, cz - d / 2 + 0.22, o); const f = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.0), new THREE.MeshBasicMaterial({ color: 0xF3EDE0, toneMapped: false })); f.position.set(x, y, cz - d / 2 + 0.28); g.add(f); bld.artFrames.push(f); }
+    for (const [x, z] of [[cx - 5, cz + 1.5], [cx, cz + 2], [cx + 5, cz + 1.5]]) { // 이젤
+      for (const sx of [-0.5, 0.5]) box(g, 0.1, 2.0, 0.1, 0x8A5A34, x + sx, 1.0, z, { solid: false, rz: sx * 0.15 }); box(g, 0.1, 1.8, 0.1, 0x8A5A34, x, 0.9, z + 0.5, { solid: false, rx: -0.3 });
+      box(g, 1.3, 1.3, 0.06, 0xFFFFFF, x, 1.6, z - 0.05, o); box(g, 1.4, 0.08, 0.2, 0x8A5A34, x, 0.95, z, o); box(g, 1.4, 2, 0.6, 0xFFFFFF, x, 1, z).visible = false;
+      addInteract({ pos: new V3(x, 1, z + 1.3), r: 1.8, text: () => roomNow() === 'art' ? ['그림 그리기 🖌️', '내 그림 작업실'] : null, run: openArtStudio });
+    }
+    box(g, 3, 1, 1, 0xC8D2DC, cx + 8, 0.5, cz - 4); for (let k = 0; k < 6; k++) cyl(g, 0.18, 0.3, [0xE2584A, 0xFFD23C, 0x4A9AE8, 0x5FBE5A, 0x9A5AD8, 0xFF9AC0][k], cx + 6.9 + k * 0.45, 1.15, cz - 4, o);
+    bld.artLabel = makeLabel(g, [''], 0.8, cx + 6, 4.4, cz - d / 2 + 1);
+  }
+  // ---------- 🏀 실내 체육관 ----------
+  { const r = ROOMS.gym, { cx, cz, w, d } = r; roomShell(g, r);
+    for (const [x0, z0, x1, z1] of [[-9, -6, 9, -6], [-9, 6, 9, 6], [-9, -6, -9, 6], [9, -6, 9, 6], [0, -6, 0, 6]]) box(g, Math.abs(x1 - x0) + 0.12, 0.02, Math.abs(z1 - z0) + 0.12, 0xFFFFFF, cx + (x0 + x1) / 2, 0.11, cz + (z0 + z1) / 2, o);
+    cyl(g, 2, 0.02, 0xE2584A, cx, 0.115, cz, o); cyl(g, 1.85, 0.03, r.floor, cx, 0.12, cz, o);
+    // 줄넘기 자리 (왼쪽)
+    const jx = cx - 6, jz = cz + 1;
+    for (const sx of [-1.8, 1.8]) cyl(g, 0.12, 1.2, 0x5E6670, jx + sx, 0.6, jz);
+    const rope = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.04, 6, 24, Math.PI), M(0xE2584A)); rope.position.set(jx, 1.1, jz); rope.rotation.y = Math.PI / 2; rope.rotation.order = 'YXZ'; g.add(rope); bld.rope = rope;
+    addInteract({ pos: new V3(jx, 1, jz + 1.6), r: 2.4, text: () => roomNow() === 'gym' ? ['줄넘기 하기 🪢', '리듬 맞추기'] : null, run: () => openGym('rope') });
+    // 과녁 (오른쪽 벽)
+    const tx = cx + 6;
+    for (const [rr, c] of [[1.0, 0xFFFFFF], [0.75, 0xE2584A], [0.5, 0xFFFFFF], [0.25, 0xE2584A]]) cyl(g, rr, 0.06, c, tx, 1.6, cz - d / 2 + 0.25 + (1.2 - rr) * 0.02, { solid: false, rx: Math.PI / 2 });
+    for (let k = 0; k < 5; k++) ball(g, 0.25, 0xFF9628, cx + 4 + k * 0.6, 0.35, cz + 3, o);
+    addInteract({ pos: new V3(tx, 1, cz - d / 2 + 3.5), r: 2.6, text: () => roomNow() === 'gym' ? ['과녁 맞히기 🎯', '공 던지기'] : null, run: () => openGym('hit') });
+    // 농구 골대 (보기)
+    box(g, 0.2, 2.4, 0.2, 0x5E6670, cx, 1.2, cz - d / 2 + 0.6); box(g, 1.6, 1.0, 0.08, 0xFFFFFF, cx, 2.5, cz - d / 2 + 0.7, o);
+    const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.03, 6, 16), M(0xFF6A2A)); hoop.position.set(cx, 2.2, cz - d / 2 + 1.1); hoop.rotation.x = Math.PI / 2; g.add(hoop);
+    bld.gymLabel = makeLabel(g, [''], 0.8, cx, 4.0, cz - 2);
+  }
+  // 나가는 문
+  for (const [id, r] of Object.entries(ROOMS)) addInteract({ pos: new V3(r.cx, 1, r.cz + r.d / 2 - 0.8), r: 2.2, text: () => roomNow() === id ? ['밖으로 나가기 🚪', r.name] : null, run: () => exitRoom(id) });
+  registerSolids(g, 'rooms');
+  // 체육관 입구 (놀이터 앞 작은 건물 — 놀이터가 없어도 보여요)
+  const gb = new THREE.Group(); gb.position.set(GYM_DOOR[0], 0, GYM_DOOR[1]); gb.rotation.y = Math.PI / 2; scene.add(gb);
+  box(gb, 4.4, 3.4, 3.2, 0xE3F0FF, 0, 1.7, 0); mesh(GABLE, gb, 4.9, 1.4, 3.6, 0x4F8FE8, 0, 3.4, 0, { solid: false });
+  box(gb, 1.6, 2.4, 0.1, C.dark, 0, 1.2, -1.62, o); signPlane(gb, ['🏀 실내 체육관'], 2.8, 0.6, 0, 2.9, -1.68, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false });
+  registerSolids(gb, 'static');
+  renderRooms(true);
+}
+const GYM_DOOR = [52, -14]; // 놀이터(40,0) 북동쪽 · 문은 서쪽(-x)을 봐요
+function buildingDoor(id) { // 도서관·미술 공방: 건물 문 앞 (세워진 다음에)
+  const info = world.sites?.[id]; if (!info?.model) return null;
+  info.model.updateMatrixWorld(true);
+  return info.model.localToWorld(new V3(0, 0, id === 'Art' ? 0.3 : -1.6));
+}
+function setupDoors() {
+  addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '📚 도서관 안'] : null, run: () => enterRoom('lib') });
+  addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'art', text: () => S.built.Art ? ['들어가기 🚪', '🎨 미술 공방 안'] : null, run: () => enterRoom('art') });
+  addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() ? null : ['들어가기 🚪', '🏀 실내 체육관'], run: () => enterRoom('gym') });
+}
+function updateDoors() {
+  for (const it of interactables) if (it.dyn) { const p = buildingDoor(ROOMS[it.dyn].site); if (p) it.pos.set(p.x, 1, p.z); else it.pos.set(0, -99, 0); }
+}
+async function enterRoom(id) {
+  if (hv.travel || !joined) return;
+  if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
+  const r = ROOMS[id]; hv.travel = true; closeModals(); if (placing.active) stopPlacing();
+  $('travelText').textContent = `${r.icon} ${r.name} 안으로 들어가는 중…`; $('travelFx').classList.remove('hidden');
+  await sleep(350);
+  player.pos.set(r.cx, 0.12, r.cz + r.d / 2 - 3.2); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
+  camera.position.set(player.pos.x, 7, player.pos.z + 8);
+  await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
+  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gym: '🏀 실내 체육관이에요! 줄넘기와 과녁 맞히기를 해 봐요' }[id], 'info');
+}
+async function exitRoom(id) {
+  if (hv.travel) return;
+  hv.travel = true; closeModals();
+  $('travelText').textContent = '🌳 밖으로 나가는 중…'; $('travelFx').classList.remove('hidden');
+  await sleep(350);
+  let x, z, h;
+  if (id === 'gym') { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
+  else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
+  player.pos.set(x, 0.15, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.45;
+  camera.position.set(x - Math.sin(h) * 8, 6, z - Math.cos(h) * 8);
+  await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
+}
+function renderRooms(force) {
+  if (!bld.group) return;
+  const rd = S.read || {}, n = rd.n || 0, key = JSON.stringify(rd);
+  if (force || key !== bld.readKey) {
+    bld.readKey = key;
+    const show = Math.min(40, Math.ceil(n / 2)); // 2권마다 잎 하나
+    bld.leafs.forEach((m, k) => {
+      const on = k < show; m.visible = on; if (!on) return;
+      if (m.userData.kind === 'flower' && n >= 50) m.material = M(0xFF9AC0); else if (m.userData.kind === 'fruit' && n >= 100) m.material = M(0xE63C32);
+    });
+    bld.treeLabel.userData.set(['🌳 우리 반 독서 나무', `함께 기록한 책 ${n}권${n >= 100 ? ' · 🍎 열매가 열렸어요' : n >= 50 ? ' · 🌸 꽃이 폈어요' : ''}`]);
+    const g = rd.g || {}, top = READ_GENRES.map(([ic, nm], i) => [ic, nm, g[i] || 0]).sort((a, b) => b[2] - a[2]).filter(x => x[2]).slice(0, 3);
+    bld.genreSign.userData.set(['📊 우리 반이 많이 읽은 책', ...(top.length ? top.map(([ic, nm, c]) => `${ic} ${nm} ${c}권`) : ['아직 기록이 없어요'])]);
+  }
+  const arts = artList().filter(a => a.ok).slice(0, 12), ak = arts.map(a => a.k).join(',');
+  if (force || ak !== bld.artKey) {
+    bld.artKey = ak;
+    bld.artFrames.forEach((f, k) => {
+      if (f.material.map) { f.material.map.dispose(); f.material.map = null; }
+      const a = arts[k];
+      if (a) { const t = new THREE.CanvasTexture(pixCanvas(a.p, 8)); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; f.material.map = t; f.material.color.setHex(0xFFFFFF); }
+      else f.material.color.setHex(0xF3EDE0);
+      f.material.needsUpdate = true;
+    });
+    bld.artLabel?.userData.set(['🖼️ 우리 반 전시 벽', arts.length ? `작품 ${arts.length}점` : '선생님이 확인한 작품이 걸려요']);
+  }
+  const gy = S.gym || {};
+  bld.gymLabel?.userData.set(['🏀 우리 반 체육관 기록', `🪢 함께 넘은 줄넘기 ${gy.rope || 0}번 · 🎯 맞힌 공 ${gy.hit || 0}개`]);
+}
+function updateRooms(dt) {
+  if (!bld.group) return;
+  const near = (player.pos.x > 1400 && player.pos.x < 1620) || (camera.position.x > 1400 && camera.position.x < 1620);
+  bld.group.visible = near;
+  if (bld.rope && near) bld.rope.rotation.x = time * 3.2;
+  bld.dt = (bld.dt || 0) - dt; if (bld.dt <= 0) { bld.dt = 0.25; updateDoors(); }
+}
+// ---------- 📒 독서 기록장 ----------
+function openReadLog() {
+  const pick = { g: -1, s: 0, f: -1 };
+  openLife('📒 독서 기록장', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', `읽은 책을 기록하면 반 전체 독서 나무가 자라요. 책 제목은 이 기기의 내 기록장에만 남아요. ${bag.readDay === dayNum() ? '🎁 오늘 보상은 받았어요' : '🎁 오늘 처음 기록하면 🐚 +10'}`));
+    box.append(el2('h3', 'lp-sec', '1. 책 제목 (내 기록장에만, 선택)'));
+    const ti = el2('input', 'tinput', null); ti.id = 'readTitle'; ti.maxLength = 30; ti.placeholder = '예: 어린 왕자'; ti.autocomplete = 'off'; ti.value = pick.t || ''; ti.oninput = () => { pick.t = ti.value; }; box.append(ti);
+    box.append(el2('h3', 'lp-sec', '2. 어떤 책이에요?'));
+    const gr = el2('div', 'row-center wrap');
+    READ_GENRES.forEach(([ic, nm], i) => { const b = el2('button', 'btn' + (pick.g === i ? ' on' : ''), `${ic} ${nm}`); b.style.background = pick.g === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.g === i)); b.onclick = () => { pick.g = i; refillLife(); }; gr.append(b); });
+    box.append(gr, el2('h3', 'lp-sec', '3. 별점'));
+    const st = el2('div', 'row-center wrap');
+    for (let k = 1; k <= 5; k++) { const b = el2('button', 'btn', k <= pick.s ? '⭐' : '☆'); b.style.cssText = 'font-size:28px;padding:4px 10px;background:#fff'; b.setAttribute('aria-label', `별 ${k}개`); b.onclick = () => { pick.s = k; refillLife(); }; st.append(b); }
+    box.append(st, el2('h3', 'lp-sec', '4. 읽고 나서'));
+    const fe = el2('div', 'row-center wrap');
+    READ_FEELS.forEach((f, i) => { const b = el2('button', 'btn', f); b.style.background = pick.f === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.f === i)); b.onclick = () => { pick.f = i; refillLife(); }; fe.append(b); });
+    box.append(fe);
+    const go = el2('button', 'btn lp-btn', '📒 기록하기'); go.disabled = pick.g < 0 || !pick.s || pick.f < 0 || bld.readBusy;
+    go.onclick = async () => {
+      bld.readBusy = true; refillLife();
+      const res = await backend.readLog(pick.g); bld.readBusy = false;
+      if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
+      bag.reads.unshift({ t: (pick.t || '').trim().slice(0, 30), g: pick.g, s: pick.s, f: pick.f, at: Date.now() }); bag.reads = bag.reads.slice(0, 60);
+      let msg = `📒 기록했어요! 독서 나무가 자라요`;
+      if (bag.readDay !== dayNum()) { bag.readDay = dayNum(); earnShell(10); msg += ' · 🎁 🐚 +10'; }
+      saveBag(); playSfx('coin'); toast(msg, 'success');
+      pick.g = -1; pick.s = 0; pick.f = -1; pick.t = ''; refillLife();
+    };
+    box.append(el2('div', 'row-center', null)); box.lastChild.append(go);
+    box.append(el2('h3', 'lp-sec', `📚 내 독서 기록장 (${bag.reads.length}권 · 나만 보여요)`));
+    if (!bag.reads.length) box.append(el2('div', 'vempty', '아직 기록이 없어요'));
+    for (const r of bag.reads.slice(0, 20)) { const [ic, nm] = READ_GENRES[r.g] || READ_GENRES[6]; box.append(el2('div', 'lp-row', `${ic} [${nm}] ${r.t || '(제목 없음)'} · ${'⭐'.repeat(r.s)} · ${READ_FEELS[r.f] || ''} · ${new Date(r.at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}`)); }
+  });
+}
+// ---------- 🖌️ 내 그림 작업실 (16×16, 색 12가지 = 벽화 색 번호 1~12 → 그림 글자 0~b) ----------
+const PIX_N = 16, PIX_COLORS = MURAL_COLORS.slice(1).map(c => c.hex);
+const pixBlank = () => '6'.repeat(PIX_N * PIX_N); // 흰색 (7번 → 글자 6)
+const pixHex = (ch) => PIX_COLORS[parseInt(ch, 16)] || '#FFFFFF';
+function pixCanvas(p, size = 8) { const cv = document.createElement('canvas'); cv.width = cv.height = PIX_N * size; const c = cv.getContext('2d'); for (let i = 0; i < PIX_N * PIX_N; i++) { c.fillStyle = pixHex(p[i]); c.fillRect((i % PIX_N) * size, Math.floor(i / PIX_N) * size, size, size); } return cv; }
+const artList = (st = S) => Object.entries(st.art || {}).map(([k, v]) => ({ k, ...v })).filter(a => typeof a.p === 'string' && a.p.length === PIX_N * PIX_N).sort((a, b) => (b.at || 0) - (a.at || 0));
+const artMine = (a) => !!backend?.uid && a.k.startsWith(backend.uid + '_');
+const studio = { p: '', col: 0, down: false, slot: -1 };
+function openArtStudio() {
+  closeModals(); studio.p = studio.p || pixBlank(); $('artPanel').classList.remove('hidden'); $('artFb').textContent = ''; fillArt();
+}
+function closeArt() { $('artPanel').classList.add('hidden'); }
+function drawStudio() { const cv = $('artCanvas'), c = cv.getContext('2d'), s = cv.width / PIX_N; for (let i = 0; i < PIX_N * PIX_N; i++) { c.fillStyle = pixHex(studio.p[i]); c.fillRect((i % PIX_N) * s, Math.floor(i / PIX_N) * s, s, s); c.strokeStyle = 'rgba(0,0,0,.08)'; c.strokeRect((i % PIX_N) * s + 0.5, Math.floor(i / PIX_N) * s + 0.5, s - 1, s - 1); } }
+function fillArt() {
+  drawStudio();
+  const pal = $('artPal'); pal.textContent = '';
+  PIX_COLORS.forEach((hex, i) => { const b = el2('button', 'art-sw' + (studio.col === i ? ' on' : ''), ''); b.style.background = hex; b.setAttribute('aria-label', MURAL_COLORS[i + 1].name); b.onclick = () => { studio.col = i; fillArt(); }; pal.append(b); });
+  const mine = $('artMine'); mine.textContent = '';
+  bag.arts.forEach((a, k) => { const b = el2('button', 'art-th', ''); b.append(pixCanvas(a.p, 3)); b.title = `내 작품 ${k + 1} 불러오기`; b.onclick = () => { studio.p = a.p; studio.slot = k; $('artFb').textContent = `📂 내 작품 ${k + 1}을 불러왔어요`; fillArt(); }; mine.append(b); });
+  if (!bag.arts.length) mine.append(el2('span', 'hint', '아직 저장한 작품이 없어요'));
+  const shown = artList().filter(artMine);
+  $('artMyShow').textContent = shown.length ? `🖼️ 전시 신청한 작품 ${shown.length}점 (확인됨 ${shown.filter(a => a.ok).length}점 · 확인된 작품은 우리 집 액자로도 걸 수 있어요)` : '';
+}
+function artPaintAt(e) {
+  const cv = $('artCanvas'), r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * PIX_N), y = Math.floor((e.clientY - r.top) / r.height * PIX_N);
+  if (x < 0 || y < 0 || x >= PIX_N || y >= PIX_N) return;
+  const i = y * PIX_N + x, ch = studio.col.toString(16); if (studio.p[i] === ch) return;
+  studio.p = studio.p.slice(0, i) + ch + studio.p.slice(i + 1); drawStudio();
+}
+function initArtUI() {
+  const cv = $('artCanvas');
+  cv.addEventListener('pointerdown', e => { studio.down = true; cv.setPointerCapture?.(e.pointerId); artPaintAt(e); });
+  cv.addEventListener('pointermove', e => { if (studio.down) artPaintAt(e); });
+  addEventListener('pointerup', () => { studio.down = false; });
+  $('artClear').onclick = () => { studio.p = pixBlank(); studio.slot = -1; fillArt(); };
+  $('artFill').onclick = () => { studio.p = studio.col.toString(16).repeat(PIX_N * PIX_N); fillArt(); };
+  $('artSave').onclick = () => {
+    if (studio.p === pixBlank()) { $('artFb').textContent = '먼저 그림을 그려요'; return; }
+    if (studio.slot >= 0 && bag.arts[studio.slot]) bag.arts[studio.slot] = { p: studio.p, at: Date.now() };
+    else { if (bag.arts.length >= 6) bag.arts.pop(); bag.arts.unshift({ p: studio.p, at: Date.now() }); studio.slot = 0; }
+    let msg = '💾 내 작품으로 저장했어요 (이 기기에만, 6점까지)';
+    if (bag.artDay !== dayNum()) { bag.artDay = dayNum(); earnShell(10); msg += ' · 🎁 오늘의 보상 🐚 +10'; }
+    saveBag(); playSfx('coin'); $('artFb').textContent = msg; fillArt();
+  };
+  $('artShow').onclick = async () => {
+    if (studio.p === pixBlank()) { $('artFb').textContent = '먼저 그림을 그려요'; return; }
+    if (artList().filter(a => artMine(a) && !a.ok).length >= 3) { $('artFb').textContent = '확인을 기다리는 작품이 3점 있어요. 선생님이 확인한 다음에 또 신청해요'; return; }
+    const res = await backend.artPost(studio.p);
+    $('artFb').textContent = res.ok ? '🖼️ 전시 신청했어요! 선생님이 확인하면 전시 벽에 걸려요' : res.reason === 'offline' ? '' : '⚠️ 신청하지 못했어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요';
+    if (res.ok) playSfx('build'); fillArt();
+  };
+  $('artClose').onclick = closeArt;
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !$('artPanel').classList.contains('hidden')) closeArt(); });
+}
+// ---------- 🏀 체육관 놀이 (줄넘기 리듬 · 과녁 맞히기) ----------
+const gym = { mode: '', t0: 0, run: false, n: 0, lives: 0, raf: 0, last: -1, balls: 0, hits: 0, tx: 0, tv: 0, flash: '', msg: '' };
+function openGym(mode) {
+  closeModals(); gym.mode = mode; gym.run = false; gym.n = 0; gym.hits = 0;
+  $('gymPanel').classList.remove('hidden');
+  $('gymTitle').textContent = mode === 'rope' ? '🪢 줄넘기 리듬' : '🎯 과녁 맞히기';
+  $('gymHelp').textContent = mode === 'rope' ? '줄이 발밑(아래)에 올 때 점프! (스페이스 또는 버튼) · 3번 놓치면 끝 · 점점 빨라져요' : '과녁이 움직여요. 가운데에 왔을 때 던지기! 공은 5개 · 가운데 3점, 빨강 2점, 흰색 1점';
+  $('gymGo').textContent = '▶ 시작'; $('gymAct').textContent = mode === 'rope' ? '⬆️ 점프!' : '⚾ 던지기!'; $('gymAct').disabled = true;
+  $('gymFb').textContent = ''; gymDraw();
+}
+function closeGym() { gym.run = false; cancelAnimationFrame(gym.raf); $('gymPanel').classList.add('hidden'); }
+function gymStart() {
+  gym.run = true; gym.t0 = performance.now(); gym.n = 0; gym.lives = 3; gym.last = -1; gym.balls = 5; gym.hits = 0; gym.score = 0; gym.tx = 0; gym.tv = 0.9; gym.flash = ''; gym.jumpT = -9;
+  $('gymGo').disabled = true; $('gymAct').disabled = false; $('gymFb').textContent = ''; $('gymAct').focus();
+  const loop = () => { if (!gym.run) return; gymTick(); gymDraw(); gym.raf = requestAnimationFrame(loop); }; loop();
+}
+function gymPhase() { const t = (performance.now() - gym.t0) / 1000, speed = 0.75 + Math.min(1.1, gym.n * 0.03); return { t, ang: (t * speed * Math.PI * 2) % (Math.PI * 2), speed }; }
+function gymTick() {
+  const now = performance.now();
+  if (gym.mode === 'rope') {
+    const turn = Math.floor(((now - gym.t0) / 1000) * (0.75 + Math.min(1.1, gym.n * 0.03)));
+    if (turn !== gym.last) { // 줄이 바닥을 지날 때: 그 사이에 점프했는지
+      if (gym.last >= 0) { if (now - gym.jumpT < 520) { gym.n++; gym.flash = 'ok'; playSfx('pick'); } else { gym.lives--; gym.flash = 'miss'; playSfx('wrong'); if (gym.lives <= 0) return gymEnd(); } }
+      gym.last = turn;
+    }
+  } else {
+    gym.tx += gym.tv * 0.016 * (1 + gym.hits * 0.15); if (Math.abs(gym.tx) > 1) { gym.tv *= -1; gym.tx = Math.sign(gym.tx); }
+  }
+}
+function gymAct() {
+  if (!gym.run) return;
+  if (gym.mode === 'rope') { gym.jumpT = performance.now(); return; }
+  const d = Math.abs(gym.tx), pts = d < 0.12 ? 3 : d < 0.3 ? 2 : d < 0.5 ? 1 : 0;
+  gym.balls--; if (pts) { gym.hits++; gym.score += pts; playSfx('pick'); gym.flash = `+${pts}`; } else { playSfx('wrong'); gym.flash = '빗나감'; }
+  gym.flashT = performance.now();
+  if (gym.balls <= 0) setTimeout(gymEnd, 400);
+}
+async function gymEnd() {
+  gym.run = false; cancelAnimationFrame(gym.raf); $('gymGo').disabled = false; $('gymGo').textContent = '🔄 다시 하기'; $('gymAct').disabled = true;
+  const n = gym.mode === 'rope' ? gym.n : gym.hits;
+  const sh = Math.min(gym.mode === 'rope' ? Math.floor(n / 5) : gym.score, 15), cap = capNow(), left = cap ? Math.max(0, cap - earnToday()) : sh, give = Math.min(sh, left);
+  if (n > 0) await backend.gymAdd(gym.mode, Math.min(200, n));
+  if (give > 0) { bag.earn.n += give; earnShell(give); }
+  $('gymFb').textContent = gym.mode === 'rope' ? `🪢 ${n}번 넘었어요! 우리 반 기록에 보탰어요${give ? ` · 🐚 +${give}` : ''}` : `🎯 5개 중 ${n}개 맞혔어요 (${gym.score}점)! 우리 반 기록에 보탰어요${give ? ` · 🐚 +${give}` : ''}`;
+  if (n > 0) playSfx('fanfare');
+  gymDraw();
+}
+function gymDraw() {
+  const cv = $('gymCanvas'), c = cv.getContext('2d'), W = cv.width, H = cv.height;
+  c.fillStyle = '#F5EBD8'; c.fillRect(0, 0, W, H); c.fillStyle = '#D9A866'; c.fillRect(0, H * 0.78, W, H * 0.22);
+  if (gym.mode === 'rope') {
+    const { ang } = gym.run ? gymPhase() : { ang: Math.PI / 2 }, cx = W / 2, top = H * 0.2, bot = H * 0.8;
+    const jumping = gym.run && performance.now() - gym.jumpT < 420, jy = jumping ? -Math.sin((performance.now() - gym.jumpT) / 420 * Math.PI) * 40 : 0;
+    c.fillStyle = '#4F8FE8'; c.fillRect(cx - 14, bot - 64 + jy, 28, 40); c.fillStyle = '#FFD6B0'; c.beginPath(); c.arc(cx, bot - 78 + jy, 16, 0, 7); c.fill(); c.fillStyle = '#3B2F2A'; c.fillRect(cx - 12, bot - 24 + jy, 9, 22); c.fillRect(cx + 3, bot - 24 + jy, 9, 22);
+    const ry = (top + bot) / 2 + Math.cos(ang) * (bot - top) / 2; // ang 0 = 아래(발밑)
+    c.strokeStyle = '#E2584A'; c.lineWidth = 5; c.beginPath(); c.moveTo(40, (top + bot) / 2); c.quadraticCurveTo(cx, ry * 2 - (top + bot) / 2, W - 40, (top + bot) / 2); c.stroke();
+    c.fillStyle = '#5E6670'; c.fillRect(30, (top + bot) / 2 - 8, 14, 60); c.fillRect(W - 44, (top + bot) / 2 - 8, 14, 60);
+    c.fillStyle = '#3B2F2A'; c.font = `bold 26px ${CANVAS_FONT}`; c.textAlign = 'left'; c.fillText(`🪢 ${gym.n}번`, 16, 36); c.textAlign = 'right'; c.fillText('❤️'.repeat(Math.max(0, gym.lives)), W - 16, 36);
+    if (gym.flash === 'miss') { c.fillStyle = 'rgba(226,88,74,.18)'; c.fillRect(0, 0, W, H); gym.flash = ''; }
+  } else {
+    const cx = W / 2 + gym.tx * (W / 2 - 70), cy = H * 0.38;
+    for (const [rr, col] of [[60, '#FFFFFF'], [45, '#E2584A'], [30, '#FFFFFF'], [15, '#E2584A']]) { c.fillStyle = col; c.beginPath(); c.arc(cx, cy, rr, 0, 7); c.fill(); }
+    c.strokeStyle = '#3B2F2A'; c.setLineDash([6, 6]); c.beginPath(); c.moveTo(W / 2, 20); c.lineTo(W / 2, H * 0.75); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#3B2F2A'; c.font = `bold 26px ${CANVAS_FONT}`; c.textAlign = 'left'; c.fillText(`🎯 ${gym.score || 0}점`, 16, 36); c.textAlign = 'right'; c.fillText('⚾'.repeat(Math.max(0, gym.run ? gym.balls : 5)), W - 16, 36);
+    if (gym.flash && performance.now() - (gym.flashT || 0) < 600) { c.textAlign = 'center'; c.font = `bold 34px ${CANVAS_FONT}`; c.fillStyle = gym.flash === '빗나감' ? '#C0392B' : '#2E7D32'; c.fillText(gym.flash, W / 2, H * 0.68); }
+  }
+}
+function initGymUI() {
+  $('gymGo').onclick = gymStart; $('gymAct').onclick = gymAct; $('gymClose').onclick = closeGym;
+  addEventListener('keydown', e => { if ($('gymPanel').classList.contains('hidden')) return; if (e.key === 'Escape') { closeGym(); return; } if ((e.key === ' ' || e.key === 'ArrowUp') && gym.run) { e.preventDefault(); gymAct(); } else if (e.key === 'Enter' && !gym.run) { e.preventDefault(); gymStart(); } });
+}
+// ---------- 선생님 ----------
+function fillRoomAdmin() {
+  const rd = S.read || {}, gy = S.gym || {}, arts = artList(), wait = arts.filter(a => !a.ok);
+  $('tpRoomNow').textContent = `📚 독서 기록 ${rd.n || 0}권 · 🪢 줄넘기 ${gy.rope || 0}번 · 🎯 과녁 ${gy.hit || 0}개 · 🖼️ 전시 ${arts.length - wait.length}점 (확인 기다림 ${wait.length}점)`;
+  const box = $('tpArtList'); box.textContent = '';
+  for (const a of arts.slice(0, 30)) {
+    const row = el2('div', 'tp-mrow', ''), left = el2('div', '', ''); left.style.cssText = 'display:flex;align-items:center;gap:8px';
+    const cv = pixCanvas(a.p, 3); cv.style.cssText = 'width:48px;height:48px;image-rendering:pixelated;border-radius:4px;border:1px solid #ccc'; left.append(cv, el2('span', '', a.ok ? '전시 중' : '⏳ 확인 기다림'));
+    const btns = el2('div', 'row-center wrap', ''); btns.style.margin = '0';
+    if (!a.ok) { const ok = el2('button', 'btn', '✅ 전시'); ok.onclick = () => adminDo({ [`art/${a.k}/ok`]: true }, '🖼️ 전시 벽에 걸었어요'); btns.append(ok); }
+    const del = el2('button', 'btn', '🗑️'); del.setAttribute('aria-label', '작품 지우기'); del.onclick = () => adminDo({ [`art/${a.k}`]: null }, '🗑️ 작품을 지웠어요'); btns.append(del);
+    row.append(left, btns); box.append(row);
+  }
+  if (!arts.length) box.append(el2('div', 'vempty', '전시 신청한 작품이 없어요'));
+}
+function initRoomAdmin() {
+  $('tpRoomReset').onclick = async () => {
+    if (!(await confirmAction({ title: '🏫 건물 안 기록을 처음부터 할까요?', body: '독서 나무(반 전체 독서 기록 수)와 체육관 기록이 0이 돼요.\n전시 작품과 학생 기기의 내 기록장은 그대로예요.', okText: '처음부터' }))) return;
+    adminDo({ read: null, gym: null }, '🏫 독서·체육관 기록을 처음부터 시작해요');
+  };
+}
+
+
+/* =====================================================================
+   54. 🙈 변신 숨바꼭질 — 메인 마을(울타리 안)에서. 숨는 사람은 마을 물건으로 변신해 숨고, 술래가 찾아요
+   · 선생님: 참가 모집 → 시작(참가자 중 술래 1명을 무작위로) → 숨기 40초(술래는 눈을 감아요) → 찾기 3분
+   · 숨는 사람: 아래 줄에서 물건(나무·벤치·가로등·화분·돌 등불·상자)을 골라 변신 (접속 정보 p)
+   · 술래: 변신한 친구 가까이(3m)에서 🔍 찾았다! → 모두 찾으면 술래 승리, 시간이 다 되면 숨는 사람 승리
+   · 저장: state/hide { ph join|hide|seek|end, id, sk 술래, t1 찾기 시작, t2 끝, win, in/{기기}, f/{기기} } — 이름·개인 기록은 남기지 않아요
+   ===================================================================== */
+const HIDE_T = 40000, SEEK_T = 180000, FIND_R = 3;
+const PROPS = [null,
+  { icon: '🌳', name: '나무', t: 0 }, { icon: '🪑', name: '벤치', t: 2 }, { icon: '💡', name: '가로등', t: 3 },
+  { icon: '🪴', name: '화분', t: 7 }, { icon: '🏮', name: '돌 등불', t: 11 }, { icon: '📦', name: '상자', t: -1 },
+];
+const hide = { prop: 0, rewarded: '', endSent: '', bar: false };
+const hideOn = () => !!S.hide && ['hide', 'seek'].includes(S.hide.ph);
+const hideIn = (uid) => !!S.hide?.in?.[uid];
+const hideFound = (uid) => !!S.hide?.f?.[uid];
+const iAmSeeker = () => !!S.hide && S.hide.sk === backend?.uid;
+const hideBlind = () => !!(joined && S.hide?.ph === 'hide' && iAmSeeker() && backend.now() < S.hide.t1);
+const inTown = (x, z) => Math.abs(x) <= CFG.MAP_LIMIT && Math.abs(z) <= CFG.MAP_LIMIT;
+function propModel(p) {
+  const g = new THREE.Group(), d = PROPS[p]; if (!d) return g;
+  if (d.t < 0) { box(g, 1.2, 1.1, 1.2, C.crate, 0, 0.55, 0, { solid: false }); for (const y of [0.15, 0.95]) box(g, 1.24, 0.1, 1.24, 0x8A5A34, 0, y, 0, { solid: false }); box(g, 0.1, 1.1, 1.24, 0x8A5A34, 0, 0.55, 0, { solid: false }); }
+  else buildPlotItem(d.t, g);
+  g.traverse(o => { if (o.isMesh) o.userData.solid = false; });
+  return g;
+}
+function disguise(a, p) { // 아바타를 물건으로 바꾸기 (p = 0이면 원래대로)
+  if ((a.propP || 0) === p) return;
+  if (a.propG) { a.g.remove(a.propG); a.propG = null; }
+  if (a.propVis) { a.propVis.forEach(([o, v]) => { o.visible = v; }); a.propVis = null; }
+  a.propP = p;
+  if (!p) return;
+  a.propVis = a.g.children.map(o => [o, o.visible]); a.g.children.forEach(o => { o.visible = false; });
+  a.propG = propModel(p); a.g.add(a.propG);
+}
+function updateHide(dt) {
+  const h = S.hide, me = backend?.uid;
+  // 내 변신: 숨는 중이고 아직 안 찾혔을 때만
+  const canProp = hideOn() && hideIn(me) && !iAmSeeker() && !hideFound(me);
+  if (!canProp && hide.prop) hide.prop = 0;
+  disguise(player.avatar, hide.prop);
+  for (const [uid, r] of remotes) { const p = hideOn() && hideIn(uid) && !hideFound(uid) && uid !== h?.sk ? (r.target.p | 0) : 0; disguise(r.a, p >= 1 && p < PROPS.length ? p : 0); }
+  // 술래 눈 가리기
+  const blind = hideBlind();
+  $('hideBlind').classList.toggle('hidden', !blind);
+  if (blind) $('hideBlindT').textContent = Math.max(0, Math.ceil((h.t1 - backend.now()) / 1000));
+  // 아래쪽 놀이 줄
+  renderHideBar();
+  // 술래·선생님 기기가 단계를 넘겨요 (찾기 시작 → 끝)
+  if (h && (iAmSeeker() || isTeacher) && h.id !== hide.endSent) {
+    const now = backend.now(), hiders = Object.keys(h.in || {}).filter(u => u !== h.sk), left = hiders.filter(u => !hideFound(u));
+    if (h.ph === 'hide' && now >= h.t1) { backend.hideSet({ ph: 'seek' }); }
+    else if (h.ph === 'seek' && (!left.length || now >= h.t2)) { hide.endSent = h.id; backend.hideSet({ ph: 'end', win: left.length ? 'hide' : 'seek' }); }
+  }
+  // 숨는 사람이 울타리 밖으로 나가면 안내
+  if (canProp && !inTown(player.pos.x, player.pos.z) && performance.now() - (hide.warnAt || 0) > 6000) { hide.warnAt = performance.now(); toast('🙈 숨바꼭질은 마을 울타리 안에서만 해요! 안으로 돌아와요', 'warn'); }
+}
+function renderHideBar() {
+  const h = S.hide, me = backend?.uid, bar = $('hideBar');
+  const show = joined && !!h && h.ph !== 'end' || (h?.ph === 'end' && backend && backend.now() - (h.t3 || 0) < 15000);
+  bar.classList.toggle('hidden', !show); document.body.classList.toggle('in-hide', !!show);
+  if (!show) return;
+  const now = backend.now(), hiders = Object.keys(h.in || {}).filter(u => u !== h.sk), found = hiders.filter(hideFound).length;
+  let title = '', sub = '';
+  if (h.ph === 'join') { title = '🙈 변신 숨바꼭질 참가자 모집 중'; sub = `참가 ${Object.keys(h.in || {}).length}명 · 선생님이 시작하면 술래를 뽑아요`; }
+  else if (h.ph === 'hide') { title = iAmSeeker() ? '🙈 나는 술래! 눈을 감고 있어요' : hideIn(me) ? '🏃 숨어요! 물건으로 변신해요' : '🙈 숨바꼭질 중 (구경해요)'; sub = `찾기 시작까지 ${Math.max(0, Math.ceil((h.t1 - now) / 1000))}초`; }
+  else if (h.ph === 'seek') { title = iAmSeeker() ? '🔍 술래! 변신한 친구를 찾아요' : hideFound(me) ? '👻 찾혔어요! 구경하며 응원해요' : hideIn(me) ? '🤫 들키지 않게 숨어 있어요' : '🔍 숨바꼭질 중 (구경해요)'; sub = `찾은 친구 ${found} / ${hiders.length} · 남은 시간 ${Math.max(0, Math.ceil((h.t2 - now) / 1000))}초`; }
+  else { title = h.win === 'seek' ? '🎉 술래가 모두 찾았어요!' : '🎉 숨은 친구들이 이겼어요!'; sub = `찾은 친구 ${found} / ${hiders.length}`; }
+  $('hdT').textContent = title; $('hdS').textContent = sub;
+  $('hideJoin').classList.toggle('hidden', !(h.ph === 'join' && !hideIn(me)));
+  const picking = (h.ph === 'hide' || h.ph === 'seek') && hideIn(me) && !iAmSeeker() && !hideFound(me);
+  $('hideProps').classList.toggle('hidden', !picking);
+  if (picking && $('hideProps').dataset.p !== String(hide.prop)) {
+    $('hideProps').dataset.p = String(hide.prop); $('hideProps').textContent = '';
+    PROPS.forEach((d, i) => { const b = el2('button', 'btn hide-prop' + (hide.prop === i ? ' on' : ''), d ? d.icon : '🙂'); b.title = d ? `${d.name}으로 변신` : '원래 모습'; b.setAttribute('aria-label', b.title); b.onclick = () => { hide.prop = i; if (i) { playSfx('plop'); burst(player.pos.clone().setY(1), [0xFFFFFF, C.gold], 20, 3, 2); } renderHideBar(); }; $('hideProps').append(b); });
+  }
+  // 술래: 가까운 변신 친구가 있으면 찾았다 버튼
+  let target = null;
+  if (h.ph === 'seek' && iAmSeeker()) { let bd = FIND_R; for (const [uid, r] of remotes) { if (!hideIn(uid) || hideFound(uid) || uid === h.sk) continue; const d = Math.hypot(r.pos.x - player.pos.x, r.pos.z - player.pos.z); if (d < bd) { bd = d; target = uid; } } }
+  hide.target = target;
+  $('hideFind').classList.toggle('hidden', !(h.ph === 'seek' && iAmSeeker()));
+  $('hideFind').disabled = !target;
+}
+async function hideFindNow() {
+  const uid = hide.target; if (!uid || !iAmSeeker()) return;
+  const res = await backend.hideFind(uid);
+  if (res.ok) { playSfx('right'); const r = remotes.get(uid); if (r) burst(r.pos.clone().setY(1.5), RAINBOW, 50, 5, 3); toast('🔍 찾았다! 한 명 찾았어요', 'success'); }
+}
+function syncHide(prev, first) {
+  const h = S.hide, ph = prev.hide, me = backend?.uid;
+  if (first || !h) { if (!h) { hide.prop = 0; } return; }
+  if (h.ph !== ph?.ph || h.id !== ph?.id) {
+    if (h.ph === 'join') toast('🙈 변신 숨바꼭질 참가자를 모아요! 아래 🙋 참가하기를 눌러요', 'info');
+    if (h.ph === 'hide' && hideIn(me)) { if (iAmSeeker()) showBanner('🙈 내가 술래예요!', '40초 동안 눈을 감고 있다가 변신한 친구들을 찾아요', 5000); else { showBanner('🏃 숨어요!', '아래 줄에서 물건을 골라 변신하고, 마을 안에 숨어요 (40초)', 5000); if (!inTown(player.pos.x, player.pos.z)) toast('🙈 마을 울타리 안으로 와서 숨어요', 'warn'); } }
+    if (h.ph === 'seek' && hideIn(me)) toast(iAmSeeker() ? '🔍 이제 찾아요! 변신한 물건 가까이 가서 🔍 찾았다!를 눌러요' : '🤫 술래가 찾기 시작했어요!', 'info');
+    if (h.ph === 'end') {
+      showBanner(h.win === 'seek' ? '🎉 술래 승리!' : '🎉 숨은 친구들 승리!', h.win === 'seek' ? '술래가 모두 찾았어요' : '끝까지 들키지 않은 친구가 있어요', 6000);
+      if (hideIn(me) && hide.rewarded !== h.id) { hide.rewarded = h.id; const win = iAmSeeker() ? h.win === 'seek' : !hideFound(me); const sh = win ? 15 : 8; earnShell(sh); saveBag(); toast(`🙈 숨바꼭질 참가 보상 🐚 +${sh}${win ? ' (승리!)' : ''}`, 'success'); }
+      hide.prop = 0;
+    }
+  }
+  if (h.f && ph?.f) for (const u of Object.keys(h.f)) if (!ph.f[u] && u === me) { toast('😮 술래에게 찾혔어요! 이제 구경하며 응원해요', 'info'); hide.prop = 0; }
+  if (!$('teacherPanel').classList.contains('hidden')) fillHideAdmin();
+}
+// ---------- 선생님 ----------
+function fillHideAdmin() {
+  const h = S.hide, n = Object.keys(h?.in || {}).length;
+  $('tpHideNow').textContent = !h ? '지금 숨바꼭질을 하고 있지 않아요' : h.ph === 'join' ? `참가자 모집 중 (${n}명)` : h.ph === 'end' ? `끝났어요 (${h.win === 'seek' ? '술래 승리' : '숨은 친구 승리'})` : `${h.ph === 'hide' ? '숨는 중' : '찾는 중'} · 참가 ${n}명`;
+  $('tpHideStart').disabled = !h || h.ph !== 'join' || n < 2;
+  $('tpHideStop').disabled = !h;
+}
+function initHideUI() {
+  $('hideJoin').onclick = () => backend.hideJoin();
+  $('hideFind').onclick = hideFindNow;
+  addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && !$('hideFind').classList.contains('hidden') && !$('hideFind').disabled && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); hideFindNow(); } });
+  $('tpHideOpen').onclick = () => adminDo({ hide: { ph: 'join', id: Date.now().toString(36), in: isTeacher ? {} : {} } }, '🙈 숨바꼭질 참가자를 모아요');
+  $('tpHideStart').onclick = () => {
+    const h = S.hide, ids = Object.keys(h?.in || {}); if (!h || ids.length < 2) return;
+    const sk = ids[Math.floor(Math.random() * ids.length)], now = backend.now();
+    adminDo({ 'hide/ph': 'hide', 'hide/sk': sk, 'hide/t1': now + HIDE_T, 'hide/t2': now + HIDE_T + SEEK_T }, '🙈 숨바꼭질을 시작했어요! 술래를 뽑았어요');
+  };
+  $('tpHideStop').onclick = () => adminDo({ hide: null }, '🙈 숨바꼭질을 끝냈어요');
+}
+
 /* =====================================================================
    45. 시작 & 반복
    ===================================================================== */
@@ -12079,7 +12776,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildFundWorld(); initEconUI(); initHomeUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); setupDoors(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -12098,7 +12795,7 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
-  if (joined) { updateMath(dt); updateBlocks(dt); }
+  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateHide(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   updateFund(dt);
