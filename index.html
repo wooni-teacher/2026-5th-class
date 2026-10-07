@@ -506,9 +506,37 @@
   .hide-props { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
   .hide-prop { font-size: 24px; padding: 4px 10px; background: #fff; }
   .hide-prop.on { background: #FFF3C4; box-shadow: 0 0 0 3px var(--ink) inset; }
+  #pestBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(84px + var(--safe-top)); padding: 8px 16px; font-weight: 800; font-size: 16px; background: #FFF4D6; z-index: 3; white-space: nowrap; }
+  #bbBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
+  #bbInfo { font-weight: 800; font-size: 16px; }
+  .bb-gauge { position: relative; height: 18px; border-radius: 10px; background: #EEE6D8; overflow: hidden; margin-top: 6px; }
+  .bb-gauge #bbFill { height: 100%; width: 0; background: linear-gradient(90deg, #FFD23C, #FF8A3A, #E2584A); }
+  .bb-gauge i { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #2E7D32; }
+  #bbShoot { background: #FF8A3A; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
   #hideBlind { position: fixed; inset: 0; z-index: 40; background: rgba(20, 16, 14, .94); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 26px; font-weight: 800; text-align: center; }
   #hideBlind b { font-size: 90px; }
   body.in-hide #missionDock { top: calc(190px + var(--safe-top)); }
+  /* 🏛️ 역사 마을 퀴즈 · ⚔️ 성 공방전 */
+  .hq-card { background: #FFF9EC; border-radius: 14px; padding: 12px 14px; margin: 8px 0; box-shadow: inset 0 0 0 2px #EADCC0; }
+  .hq-sub { font-size: 13px; color: var(--muted); }
+  .hq-ctx { font-size: 14px; color: #7A6A5A; margin-top: 4px; word-break: keep-all; }
+  .hq-q { font-size: 19px; font-weight: 800; margin-top: 6px; line-height: 1.45; word-break: keep-all; }
+  .hq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hq-opt { background: #fff; font-size: 17px; min-height: 48px; word-break: keep-all; }
+  .hq-opt.no { background: #F3D6D2; text-decoration: line-through; opacity: .7; }
+  #sgHud { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 12px; text-align: center; max-width: 94vw; z-index: 3; }
+  #sgNats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .sg-nat { position: relative; padding: 3px 8px 8px; border-radius: 10px; background: #fff; font-size: 14px; box-shadow: inset 0 0 0 2px var(--c); overflow: hidden; white-space: nowrap; }
+  .sg-nat.me { background: #FFF3C4; }
+  .sg-nat i { position: absolute; left: 0; bottom: 0; height: 5px; background: var(--c); }
+  #sgInfo { font-weight: 800; font-size: 15px; margin-top: 3px; }
+  #sgBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
+  #sgFill { height: 100%; width: 0; background: linear-gradient(90deg, #D9C49A, #8A6A44, #5A3A22); }
+  #sgThrow { background: #8A6A44; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
+  .sg-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed #E8DCC8; }
+  .sg-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #3B2F2A; }
+  .sg-ani { font-size: 20px; } .sg-name { flex: 1; }
+  body.in-siege #decorBtn, body.in-siege #decorMenu { display: none !important; }
   #ctfBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 16px; text-align: center; min-width: 240px; }
   body.in-ctf #decorBtn, body.in-ctf #decorMenu, body.in-home #decorBtn, body.in-home #decorMenu { display: none !important; } /* 운동장·집 안에서는 마을 꾸미기 버튼을 숨겨요 */
   body.in-ctf #toast { top: calc(222px + var(--safe-top)); }
@@ -750,7 +778,19 @@
   <div class="row-center wrap" style="margin-top:6px"><button class="btn hidden" id="hideJoin" style="background:var(--leaf);color:#fff">🙋 참가하기</button><button class="btn hidden" id="hideFind" style="background:#E2584A;color:#fff">🔍 찾았다! (F)</button></div>
   <div id="hideProps" class="hide-props hidden" aria-label="변신할 물건"></div>
 </div>
+<div id="pestBar" class="sticker hidden" role="status"></div>
+<div id="bbBar" class="sticker hidden">
+  <div id="bbInfo"></div>
+  <div class="bb-gauge"><div id="bbFill"></div><i style="left:62%"></i><i style="left:78%"></i></div>
+  <div class="row-center" style="margin-top:6px"><button class="btn" id="bbShoot">🏀 꾹 눌렀다 놓기 (F)</button><button class="btn" id="bbQuit" style="background:#fff">그만</button></div>
+</div>
 <div id="hideBlind" class="hidden"><div>🙈 술래는 눈을 감고 있어요</div><b id="hideBlindT"></b><div style="font-size:18px">친구들이 숨는 동안 기다려요</div></div>
+<div id="sgHud" class="sticker hidden" role="status" aria-live="polite"><div id="sgNats"></div><div id="sgInfo"></div></div>
+<div id="sgBar" class="sticker hidden">
+  <div id="sgAmmo" style="font-weight:800"></div>
+  <div class="bb-gauge"><div id="sgFill"></div></div>
+  <div class="row-center" style="margin-top:6px"><button class="btn" id="sgThrow">🪨 꾹 눌렀다 놓기 (F)</button><button class="btn hidden" id="sgHome" style="background:#fff">🏯 역사 마을로</button></div>
+</div>
 <div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
   <button class="btn" id="mbHand" aria-pressed="false">🙋 손들기</button><button class="btn" id="mbGood">👍 좋아요</button><button class="btn" id="mbThink">🤔 다른 생각</button><button class="btn" id="mbAsk">❓ 궁금해요</button><button class="btn hidden" id="mbVote" style="background:var(--sun)">🗳️ 목표 투표</button><button class="btn hidden" id="mbLike" style="background:var(--sun)">💡 제안 공감</button><button class="btn" id="mbScript">📜 대본</button><button class="btn" id="mbView" aria-pressed="false">📋 칠판 보기</button>
@@ -863,7 +903,7 @@
 <section id="mapPanel" class="modal sticker hidden" aria-label="우리 마을 지도">
   <h2>🗺️ 우리 마을 지도</h2>
   <div class="row-center"><canvas id="bigMap" aria-label="마을 지도: 가운데 마을, 북쪽 뒷산, 남쪽 우리 집 마을 들판, 동쪽 바닷가"></canvas></div>
-  <p class="hint map-legend">🔺 나 · ⚪ 친구 · ⭐ 선생님 · 점선 네모 = 아직 안 지은 곳 · ⛰️ 뒷산(북쪽) · 🏡 들판(남쪽) · 🏖️ 바닷가(동쪽) · ⛵ 부두에서 배를 타면 한옥 마을</p>
+  <p class="hint map-legend">🔺 나 · ⚪ 친구 · ⭐ 선생님 · 점선 네모 = 아직 안 지은 곳 · ⛰️ 뒷산(북쪽) · 🏡 들판(남쪽) · 🏖️ 바닷가(동쪽) · ⛵ 부두에서 배를 타면 역사 마을</p>
   <div class="row-center wrap">
     <label class="map-toggle"><input type="checkbox" id="miniToggle"> 왼쪽 위 작은 지도 보이기</label>
     <button class="btn" id="mapClose">닫기</button>
@@ -893,7 +933,7 @@
       <li><span class="em">⛰️</span>북쪽 울타리 틈으로 뒷산에 올라요. 계곡에서 낚시하고, 꼭대기에서 🔭 마을을 내려다봐요</li>
       <li><span class="em">😊</span>😊 버튼(또는 Q)으로 인사·만세·춤 몸짓을 해요</li>
       <li><span class="em">💌</span>광장 오른쪽 감사 게시판에 오늘 고마웠던 일을 적으면 하루 한 번 🐚 보상을 받아요</li>
-      <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 한옥 마을에 가요. 함께 짓고, 연을 날려요</li>
+      <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 역사 마을에 가요. 북쪽 🏛️ 역사의 길에서 시대 퀴즈를 풀어 시대 건축물을 함께 지어요</li>
     </ol>
   </details>
   <p class="keys">움직이기: WASD 또는 방향키 / 점프: 스페이스 / 누르기: E / 공동 미션: B / 몸짓: Q / 지도: M</p>
@@ -1071,9 +1111,24 @@
     <h3>🖌️ 함께 그리는 벽화</h3>
     <div class="row-center wrap"><button class="btn danger" id="tpMuralReset">🖌️ 벽화 처음부터</button></div>
 
-    <h3>🏯 한옥 마을</h3>
+    <h3>🏯 역사 마을 · 🏛️ 역사의 길</h3>
     <p class="hint" id="tpHvNow"></p>
-    <div class="row-center wrap"><button class="btn danger" id="tpHvReset">🏯 한옥 마을 처음으로</button></div>
+    <p class="hint" id="tpHistNow" style="white-space:pre-line"></p>
+    <p class="hint">시대 퀴즈는 사회 학습지 앱(History-worksheet)의 빈칸으로 4지선다를 만들어요. 선생님으로 들어오면 학습지를 한 번 자동으로 읽어 와서 반 전체에 올려요. 학습지를 고친 뒤에는 📥를 눌러요. 시대마다 반 전체가 새 문제를 12번 맞히면(처음 고를 때 맞힌 것만) 그 시대 건축물을 지을 수 있어요. 틀리면 정답은 보여 주지 않아요.</p>
+    <div class="row-center wrap"><button class="btn" id="tpHistLoad" style="background:#fff">📥 사회 학습지 다시 불러오기</button><button class="btn danger" id="tpHistReset">🏛️ 역사의 길 처음으로</button><button class="btn danger" id="tpHvReset">🏯 마을 건물 처음으로</button></div>
+
+    <h3>⚔️ 성 공방전 (역사 마을 남쪽 전쟁터)</h3>
+    <p class="hint" id="tpSgNow"></p>
+    <p class="hint">시대를 고르면 나라가 정해져요 (선사: 부족 · 삼국 · 남북국 · 후삼국). 학생마다 나라를 고르거나 ⚖️로 고르게 나눠요 (📍를 누르면 그 학생 위에 빛기둥이 보여요). 우리 성 🏕️ 병영에서 퀴즈를 맞히면 🪨 돌 3개, 꾹 눌렀다 놓아 던져 상대 성문을 맞히면 우리 나라 +1점(부수면 +5점, 20초 뒤 다시 세워져요). 우리 성문 🔨에서 퀴즈를 맞히면 성문 +3. 돌에 맞은 친구는 3초 멈춰요. 나라 점수만 보이고 끝내면 지워져요.</p>
+    <div class="row-center wrap">
+      <label class="sr-only" for="tpSgSet">시대</label><select id="tpSgSet" class="tinput" style="width:auto;max-width:100%"></select>
+      <label class="sr-only" for="tpSgMin">시간</label><select id="tpSgMin" class="tinput" style="width:auto"><option value="5">5분</option><option value="7" selected>7분</option><option value="10">10분</option></select>
+      <label class="sr-only" for="tpSgHp">성문 체력</label><select id="tpSgHp" class="tinput" style="width:auto"><option value="20">성문 20</option><option value="30" selected>성문 30</option><option value="40">성문 40</option></select>
+    </div>
+    <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
+    <div id="tpSgList"></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpBlkRefill" style="background:#fff">⛰️ 블록 산 다시 채우기</button><button class="btn danger" id="tpMathReset">⛏️ 광산 마을 처음으로</button></div>
@@ -1082,6 +1137,10 @@
     <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
     <p class="hint" id="tpHideNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
+
+    <h3>🌿 온실 · 🐛 해충</h3>
+    <p class="hint">해충은 텃밭 근처에 학생이 있으면 6분마다 가끔 저절로 나타나요. 지금 바로 부를 수도 있어요.</p>
+    <div class="row-center wrap"><button class="btn" id="tpPest" style="background:#fff">🐛 해충 부르기</button></div>
 
     <h3>🏫 건물 안 활동</h3>
     <p class="hint" id="tpRoomNow"></p>
@@ -1097,14 +1156,14 @@
     <div class="field">게시된 글 (최근 15개)</div>
     <div id="tpThxShown"></div>
 
-    <h3>📜 서당 문제 (한옥 마을)</h3>
+    <h3>📜 서당 문제 (역사 마을)</h3>
     <p class="hint" id="tpQuizNow"></p>
     <div class="row-center wrap">
       <select id="tpQuizSel" aria-label="올릴 문제 묶음" style="font-size:16px;max-width:100%"></select>
       <button class="btn" id="tpQuizPost" style="background:var(--leaf);color:#fff">📝 올리기</button>
       <button class="btn" id="tpQuizOff" style="background:#fff">내리기</button>
     </div>
-    <p class="hint" style="margin-top:6px">한옥 마을 서당에서 풀어요. 처음에 맞히면 재료 +1. 문제는 index.html의 QUIZ_SETS에서 바꿀 수 있어요.</p>
+    <p class="hint" style="margin-top:6px">역사 마을 서당에서 풀어요. 처음에 맞히면 재료 +1. 문제는 index.html의 QUIZ_SETS에서 바꿀 수 있어요.</p>
 
     <h3>📢 게시판 공지</h3>
     <p class="hint" id="tpNoticeSave"></p>
@@ -1336,7 +1395,7 @@
 <script type="module">
 /* =====================================================================
    📖 코드 지도 — 이 파일 안의 순서 (각 부분은 "/* ===" 줄과 번호로 찾을 수 있어요)
-   · 문구·숫자 설정은 0번(CFG), 배움 게시판 문제는 QUIZ_SETS, 한옥 마을은 HV·HV_SITES, 벽화 그림은 MURALS에 있어요.
+   · 문구·숫자 설정은 0번(CFG), 배움 게시판 문제는 QUIZ_SETS, 역사 마을은 HV·HV_SITES(마을 건물)·HIST_ERAS(역사의 길)·SIEGE_SETS(성 공방전 나라), 벽화 그림은 MURALS에 있어요.
    · 저장·공유되는 데이터 모양과 규칙은 SYNC.md를 보세요.
     0. 설정
     1. 데이터 계층
@@ -1381,7 +1440,7 @@
    40. 수업 도구 · 지도 · 첫걸음 안내
    41. 소리
    42. 배움 게시판
-   43. 한옥 마을
+   43. 역사 마을
    44. 함께 그리는 벽화
    46. 선생님 모습
    47. 우리 반 교실 · 학급회의
@@ -1392,6 +1451,8 @@
    52. 감사 게시판
    53. 건물 안 활동
    54. 변신 숨바꼭질
+   55. 온실 · 해충 잡기
+   56. 역사 마을 (역사의 길 · 시대 퀴즈 · 성 공방전)
    45. 시작 & 반복
    ===================================================================== */
 let THREE;
@@ -1584,7 +1645,7 @@ function sanitizeState(raw) {
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
     if (pl.h != null && ok(isInt(pl.h.s, 0, 2) && isInt(pl.h.c, 0, 5))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
-      for (const [cell, d] of Object.entries(plainObj(inn.c))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) (o.c ||= {})[cell] = { t: d.t, r: d.r };
+      for (const [cell, d] of Object.entries(plainObj(inn.c))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 24) && isInt(d.r, 0, 3))) (o.c ||= {})[cell] = { t: d.t, r: d.r };
       for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
     for (const [k, d] of Object.entries(plainObj(pl.items))) if (ok(/^[0-5]_[0-5]$/.test(k) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) out.plots[n].items[k] = { t: d.t, r: d.r };
@@ -1672,7 +1733,7 @@ function sanitizeState(raw) {
   if (mc.teams === 3 || mc.teams === 5) out.meetCfg.teams = mc.teams;
   const ec = plainObj(v.econ); if (ec.cap != null && ok(ECON_CAPS.includes(ec.cap))) out.econ.cap = ec.cap; // 하루 가게 예산
   const fd = v.fund; if (fd && ok(isInt(fd.p, 0, FUND.length) && isInt(fd.n, 0, 99999))) out.fund = { p: fd.p, n: fd.n }; // 반 기부
-  const hvv = v.hv; // 한옥 마을: 재료 수, 상자 시각, 지은 곳, 연날리기 성공 (기기 번호만)
+  const hvv = v.hv; // 역사 마을: 재료 수, 상자 시각, 지은 곳, 연날리기 성공 (기기 번호만)
   if (ok(isInt(hvv.picks, 0, 500))) out.hv.picks = hvv.picks;
   for (const [k, t] of Object.entries(plainObj(hvv.crates))) if (ok(isInt(+k, 0, HV_CRATES.length - 1) && Number.isFinite(t))) out.hv.crates[k] = t;
   for (const [k, b] of Object.entries(plainObj(hvv.built))) if (ok(!!HV_SITE[k] && b === true)) out.hv.built[k] = true;
@@ -1707,7 +1768,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null }; }
+function emptyState() { return { picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1739,6 +1800,9 @@ function normalize(v) {
     thx: v.thx || {},
     read: v.read || {}, art: v.art || {}, gym: v.gym || {},
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
+    pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
+    hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null,
+    siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), stun: v.siege.stun || {}, shot: v.siege.shot || {} } : null,
     coins: v.coins || 0,
     dex: v.dex || {},
     control: v.control || {},
@@ -1897,11 +1961,23 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       emit(); return { ok: true };
     },
     async startMission(m) { st.mission = { ...m, done: {} }; emit(); return { ok: true }; },
+    async potSet(p) { st.pots ||= {}; const today = Math.floor((Date.now() + 9 * 3600000) / 86400000), cur = st.pots.me; if (p && cur && p.n > cur.n && cur.w >= today) return { ok: false }; if (p) st.pots.me = { ...p }; else delete st.pots.me; emit(); return { ok: true }; },
+    async pestStart() { if (st.pest?.at && Date.now() < st.pest.at + PEST.cool) return { ok: false }; st.pest = { at: Date.now() + 2000, got: {} }; emit(); return { ok: true }; },
+    async pestGot(i) { if (!st.pest || st.pest.got?.[i]) return { ok: false }; (st.pest.got ||= {})[i] = true; emit(); return { ok: true }; },
+    async histRight(k) { st.hist ||= { n: {}, b: {} }; st.hist.n ||= {}; const n = (st.hist.n[k] ||= {}); n.me = (n.me || 0) + 1; emit(); return { ok: true }; },
+    async histBuild(k) { st.hist ||= { n: {}, b: {} }; st.hist.b ||= {}; if (st.hist.b[k]) return { ok: false, reason: 'built' }; st.hist.b[k] = true; emit(); return { ok: true }; },
+    async siegeJoin(t) { if (!st.siege) return { ok: false }; st.siege.team ||= {}; if (!st.siege.team.me) st.siege.team.me = t; emit(); return { ok: true }; },
+    async siegeHit(k, t) { const s = st.siege; if (!s?.on || !(s.hp?.[k] > 0)) return { ok: false }; s.hp[k]--; const left = s.hp[k]; if (!left) (s.down ||= {})[k] = Date.now(); (s.score ||= {})[t] = (s.score[t] || 0) + (left ? 1 : 5); emit(); return { ok: true, left }; },
+    async siegeFix(k, max) { const s = st.siege; if (!s?.on || !(s.hp?.[k] > 0) || s.hp[k] >= max) return { ok: false }; s.hp[k] = Math.min(max, s.hp[k] + 3); emit(); return { ok: true, hp: s.hp[k] }; },
+    async siegeRebuild(k, max) { const s = st.siege; if (!s?.on || s.hp?.[k] !== 0) return { ok: false }; s.hp[k] = max; if (s.down) delete s.down[k]; emit(); return { ok: true }; },
+    async siegeStun(u) { if (!st.siege?.on) return { ok: false }; (st.siege.stun ||= {})[u] = Date.now(); emit(); return { ok: true }; },
+    async siegeShot(o) { return { ok: true }; }, // 연습 모드: 내 화면에만 보여요
     async hideSet(o) { if (!st.hide) return { ok: false }; Object.assign(st.hide, o); if (o.ph === 'end') st.hide.t3 = Date.now(); emit(); return { ok: true }; },
     async hideJoin() { if (!st.hide) return { ok: false }; (st.hide.in ||= {}).me = true; emit(); return { ok: true }; },
     async hideFind(u) { if (!st.hide) return { ok: false }; (st.hide.f ||= {})[u] = Date.now(); emit(); return { ok: true }; },
     async readLog(g) { st.read ||= {}; st.read.n = (st.read.n || 0) + 1; (st.read.g ||= {})[g] = (st.read.g[g] || 0) + 1; emit(); return { ok: true }; },
     async artPost(p) { (st.art ||= {})[`me_${Date.now().toString(36)}`] = { p, ok: false, at: Date.now() }; emit(); return { ok: true }; },
+    async gymJc() { st.gym ||= {}; if (st.gym.jc && Date.now() < st.gym.jc + GYM2.jc.len) return { ok: false }; st.gym.jc = Date.now() + GYM2.jc.wait; emit(); return { ok: true }; },
     async gymAdd(k, n) { st.gym ||= {}; st.gym[k] = (st.gym[k] || 0) + n; emit(); return { ok: true }; },
     async thxPost(t, d) { st.thx ||= {}; st.thx[`me_${Date.now().toString(36)}`] = { t, d, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async mathOre(id) { st.math ||= {}; st.math[id] = (st.math[id] || 0) + 1; emit(); return { ok: true }; },
@@ -2061,7 +2137,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       D.onChildChanged(pr, s => onPlayers('set', s.key, s.val()));
       D.onChildRemoved(pr, s => onPlayers('remove', s.key));
     },
-    async hvPick(i) { // 한옥 재료 상자: 8초에 한 번, 재료 수는 한 번에 +1 (규칙이 확인)
+    async hvPick(i) { // 건축 재료 상자: 8초에 한 번, 재료 수는 한 번에 +1 (규칙이 확인)
       for (let attempt = 0; attempt < 4; attempt++) {
         const t = cache.hv?.crates?.[i];
         if (t && now() - t < HV_CRATE_MS) return { ok: false };
@@ -2189,6 +2265,32 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async startMission(m) {
       try { await D.set(R('state/mission'), m); return { ok: true }; } catch (e) { return { ok: false }; }
     },
+    async potSet(p) { // 🪴 내 화분 (null이면 비우기)
+      try { await D.set(R(`state/pots/${uid}`), p); return { ok: true }; } catch (e) { return { ok: false }; }
+    },
+    async pestStart() { // 🐛 해충 부르기 (지난번부터 6분 지났을 때만)
+      try { const r = await D.runTransaction(R('state/pest'), c => (c && c.at && now() < c.at + PEST.cool) ? undefined : { at: now() + 2000 }); return { ok: r.committed }; }
+      catch (e) { return { ok: false }; }
+    },
+    async pestGot(i) { try { await D.set(R(`state/pest/got/${i}`), true); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async histRight(k) { // 📜 시대 퀴즈: 내 기기의 맞힌 수 +1 (반 전체 점수는 모두 더해요)
+      try { const r = await D.runTransaction(R(`state/hist/n/${k}/${uid}`), c => (c || 0) + 1); return { ok: r.committed }; } catch (e) { return { ok: false }; }
+    },
+    async histBuild(k) { try { const r = await D.runTransaction(R(`state/hist/b/${k}`), c => c ? undefined : true); return { ok: r.committed, reason: r.committed ? '' : 'built' }; } catch (e) { return { ok: false }; } },
+    async siegeJoin(t) { try { await D.set(R(`state/siege/team/${uid}`), t); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async siegeHit(k, t) { // ⚔️ 상대 성문 -1 (0이 되면 부서진 시각) → 우리 나라 +1 (부수면 +5)
+      try {
+        const r = await D.runTransaction(R(`state/siege/hp/${k}`), c => (typeof c === 'number' && c > 0) ? c - 1 : undefined); if (!r.committed) return { ok: false };
+        const left = r.snapshot.val();
+        if (left === 0) await D.set(R(`state/siege/down/${k}`), D.serverTimestamp()).catch(() => {});
+        await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + (left === 0 ? 5 : 1));
+        return { ok: true, left };
+      } catch (e) { return { ok: false }; }
+    },
+    async siegeFix(k, max) { try { const r = await D.runTransaction(R(`state/siege/hp/${k}`), c => (typeof c === 'number' && c > 0 && c < max) ? Math.min(max, c + 3) : undefined); return { ok: r.committed, hp: r.snapshot.val() }; } catch (e) { return { ok: false }; } },
+    async siegeRebuild(k, max) { try { await D.update(R('state/siege'), { [`hp/${k}`]: max, [`down/${k}`]: null }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async siegeStun(u) { try { await D.set(R(`state/siege/stun/${u}`), D.serverTimestamp()); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async siegeShot(o) { try { await D.set(R(`state/siege/shot/${uid}`), { ...o, t: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } },
     async hideSet(o) { // 🙈 술래·선생님: 단계 넘기기 (찾기 시작 · 끝)
       const upd = {}; for (const [k, v] of Object.entries(o)) upd[`hide/${k}`] = v; if (o.ph === 'end') upd['hide/t3'] = D.serverTimestamp();
       try { await D.update(R('state'), upd); return { ok: true }; } catch (e) { return { ok: false }; }
@@ -2201,6 +2303,10 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
     async artPost(p) { // 🖼️ 전시 신청 (선생님이 ok를 켜야 걸려요)
       try { await D.set(R(`state/art/${uid}_${Date.now().toString(36)}`), { p, ok: false, at: D.serverTimestamp() }); return { ok: true }; }
+      catch (e) { return { ok: false }; }
+    },
+    async gymJc() { // 🌀 회전 막대 시작 (지금 판이 끝났을 때만, 5초 뒤 시작)
+      try { const r = await D.runTransaction(R('state/gym/jc'), c => (c && now() < c + GYM2.jc.len) ? undefined : now() + GYM2.jc.wait); return { ok: r.committed }; }
       catch (e) { return { ok: false }; }
     },
     async gymAdd(k, n) { // 🏀 체육관: 반 전체 기록에 보태기 (한 번에 200까지)
@@ -2358,7 +2464,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'hideSet', 'hideJoin', 'hideFind', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'histRight', 'histBuild', 'siegeJoin', 'siegeHit', 'siegeFix', 'siegeRebuild', 'siegeStun', 'siegeShot', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -3408,6 +3514,7 @@ function sendPresence(time) {
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
+  if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   const key = JSON.stringify(d);
   if (key === lastSent) return;
@@ -3593,6 +3700,7 @@ function setupActivity(id, model) {
       });
     });
     addInteract({ pos: wp('Barrel'), r: 2.6, text: () => ['물방울 순서 기억하기 💧', '텃밭 물통'], run: openDropGame });
+    signPlane(model, ['🌿 온실'], 1.8, 0.5, 0, 2.85, 1.9, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#E6F7EE', stroke: false });
     setTimeout(applyGardenBloom, 0); // 이미 성공한 친구가 있으면 새로 지은 텃밭에도 꽃
   } else if (id === 'Art') {
     buildMuralWall(model); // 🖌️ 함께 그리는 벽화 (예전 이젤 꾸미기·무늬 놀이 대신)
@@ -3748,9 +3856,11 @@ function applyState(st) {
   syncControl(prev, first);
   syncQuiz(prev, first);
   syncHanok(prev, first);
+  syncHist(prev, first); syncSiege(prev, first);
   syncMath(prev, first);
   syncThx(prev, first);
   syncHide(prev, first);
+  syncPest(prev, first); renderPots(false); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🪴 내 화분') refillLife();
   renderRooms(false); if (!$('teacherPanel').classList.contains('hidden')) fillRoomAdmin();
   syncMural(prev, first);
   syncMeeting(prev, first);
@@ -3782,7 +3892,7 @@ function toast(msg, kind = 'info') {
 }
 
 function updateHUD(prev) {
-  const inHv = hvRegion(); // 한옥 마을에서는 한옥 재료와 한옥 마을 짓기 진행을 보여요
+  const inHv = hvRegion(); // 역사 마을에서는 건축 재료와 역사 마을 짓기 진행을 보여요
   const m = inHv ? hvMaterials(S) : computeMaterials(S);
   const el = $('mat');
   if (mathRegion()) { // 광산 마을: 내 광석 수와 반 전체 광산 단계
@@ -3790,8 +3900,8 @@ function updateHUD(prev) {
     const n = mineLvSum(); $('progText').textContent = `⛏️ ${n} / ${MINES.length * MINE_MAX}`; $('barFill').style.width = `${(n / (MINES.length * MINE_MAX)) * 100}%`;
     return;
   }
-  el.textContent = inHv ? `🪵 재료 ${m}` : `🧱 재료 ${m}`; el.title = inHv ? '한옥 재료 (한옥 마을을 함께 지어요)' : '마을 재료';
-  if (inHv) { const n = hvBuiltCount(); $('progText').textContent = `🏯 ${n} / ${HV_SITES.length}`; $('barFill').style.width = `${(n / HV_SITES.length) * 100}%`; }
+  el.textContent = inHv ? `🪵 재료 ${m}` : `🧱 재료 ${m}`; el.title = inHv ? '건축 재료 (역사 마을을 함께 지어요)' : '마을 재료';
+  if (inHv) { const n = hvBuiltCount() + histBuiltCount(), N = HV_SITES.length + HIST_ERAS.length; $('progText').textContent = `🏯 ${n} / ${N}`; $('barFill').style.width = `${(n / N) * 100}%`; }
   if (prev) {
     const pm = inHv ? hvMaterials(prev) : computeMaterials(prev);
     if (m !== pm) {
@@ -4543,7 +4653,7 @@ async function copyText(text, what) {
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
 function fillTeacherPanel() {
-  fillPlotAdmin(); fillHvAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
+  fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -6134,7 +6244,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -7617,7 +7727,7 @@ const SHELLS = [
   { id: 's5', icon: '🦀', name: '꽃게', se: 'su au', tm: 'all', price: 40, col: 0xE2584A, kind: 'crab' },
   { id: 's6', icon: '🦪', name: '진주조개', se: 'sp su au wi', tm: 'all', price: 100, col: 0xEDE6F2, kind: 'shell' },
 ];
-// 한옥 마을 채집물 (한옥 마을에서만 나와요)
+// 역사 마을 채집물 (역사 마을에서만 나와요)
 const HANOK_ITEMS = [
   { id: 'h1', icon: '🪰', name: '고추잠자리', se: 'su au', tm: 'day', price: 45, col: 0xE2402A, kind: 'fly' },
   { id: 'h2', icon: '🦗', name: '방아깨비', se: 'su au', tm: 'all', price: 35, col: 0x7CC04A, kind: 'crawl' },
@@ -7629,7 +7739,7 @@ const HANOK_ITEMS = [
 const CRITTER = Object.fromEntries([...BUGS, ...FISH, ...SHELLS, ...HANOK_ITEMS].map(c => [c.id, c]));
 const ALL_DEX = [...BUGS, ...FISH, ...SHELLS, ...HANOK_ITEMS];
 const MATS = { branch: { icon: '🪵', name: '나뭇가지', price: 5 }, stone: { icon: '🪨', name: '돌', price: 5 }, fruit: { icon: '🍎', name: '과일', price: 10 } };
-const NEED_LABEL = { bug: { icon: '🦋', name: '곤충' }, fish: { icon: '🐟', name: '물고기' }, shell: { icon: '🐚', name: '바닷가 보물' }, hv: { icon: '🏯', name: '한옥 마을 채집물' } };
+const NEED_LABEL = { bug: { icon: '🦋', name: '곤충' }, fish: { icon: '🐟', name: '물고기' }, shell: { icon: '🐚', name: '바닷가 보물' }, hv: { icon: '🏯', name: '역사 마을 채집물' } };
 // 만들기 (작업대): 만든 가구는 내 땅에 놓아요. t는 개인 땅 물건 번호 8~15 (database.rules.json과 같아야 해요)
 const RECIPES = [
   { t: 8, icon: '🔥', name: '모닥불', need: { branch: 3, stone: 2 } },
@@ -7641,7 +7751,7 @@ const RECIPES = [
   { t: 14, icon: '🐠', name: '어항', need: { stone: 2, fish: 1 } },
   { t: 15, icon: '🔎', name: '곤충 관찰통', need: { branch: 2, bug: 1 } },
   { t: 16, icon: '🎐', name: '조개 풍경', need: { branch: 1, shell: 3 } },
-  // 한옥 가구: 한옥 마을 장터에서 만들어요
+  // 한옥 가구: 역사 마을 장터에서 만들어요
   { t: 17, icon: '🏺', name: '장독대', need: { stone: 3, fruit: 1 }, hv: true },
   { t: 18, icon: '🏮', name: '청사초롱', need: { branch: 2, hv: 1 }, hv: true },
   { t: 19, icon: '🪶', name: '솟대', need: { branch: 3 }, hv: true },
@@ -7656,8 +7766,8 @@ const UPGRADES = [
   { id: 'u5', at: 1000, icon: '🎆', name: '밤하늘 불꽃', desc: '밤이 되면 마을 하늘에 불꽃이 올라요' },
 ];
 // 동물 주민 (원작과 다른 우리 마을 주민이에요)
-const HV_REQUESTS = [ // 한옥 마을 주민 부탁
-  { need: { hv: 1 }, text: '한옥 마을에서 찾은 물건 하나 보여 줄래? 엽전이나 청자 조각 같은 것!', reward: 40 },
+const HV_REQUESTS = [ // 역사 마을 주민 부탁
+  { need: { hv: 1 }, text: '역사 마을에서 찾은 물건 하나 보여 줄래? 엽전이나 청자 조각 같은 것!', reward: 40 },
   { need: { fruit: 2 }, text: '감 두 개만 줄래? 곶감을 만들 거야.', reward: 30 },
   { need: { branch: 3 }, text: '나뭇가지 3개가 있으면 연 살을 만들 수 있어!', reward: 30 },
   { need: { stone: 3 }, text: '돌 3개로 무너진 돌담을 고치고 싶어.', reward: 30 },
@@ -7671,7 +7781,7 @@ const NPCS = [
     lines: ['남쪽 우리 집 마을 가 봤어? 다들 예쁘게 꾸몄더라!', '작업대에서 가구를 만들 수 있어.', '나뭇가지는 나무를 흔들면 떨어져!'] },
   { id: 'n4', name: '보리', kind: 'fox', icon: '🦊', fur: 0xE8823A, shirt: 0x4F8FE8, home: [36, -30],
     lines: ['어서 와! 마을 가게야.', '팔면 모두 반 동전이 돼. 우리 마을이 점점 좋아질 거야!', '연못에서 잡은 물고기도 사고 있어.'] },
-  // 한옥 마을 주민
+  // 역사 마을 주민
   { id: 'n5', name: '범이 훈장님', kind: 'tiger', icon: '🐯', fur: 0xF0A040, shirt: 0x3B5A8A, home: [505, -13], req: HV_REQUESTS,
     lines: ['하늘 천, 따 지~ 서당에서 함께 글공부를 하자꾸나.', '서당을 지으면 선생님이 낸 문제를 여기서 풀 수 있단다.', '연을 높이 날리려면 바람을 잘 보아야 해.'] },
   { id: 'n6', name: '도토리', kind: 'squirrel', icon: '🐿️', fur: 0xB0703A, shirt: 0xE2584A, home: [540, -9], req: HV_REQUESTS,
@@ -7835,7 +7945,7 @@ function buildLife() {
   // 채집: 가장 가까운 나무·돌·곤충·연못 한 곳씩만 버튼이 떠요
   life.near.tree = addInteract({ pos: new V3(0, -99, 0), r: 3.2, text: () => life.near.treeI != null ? ['나무 흔들기 🌳', '나무'] : null, run: shakeTree });
   life.near.rock = addInteract({ pos: new V3(0, -99, 0), r: 2.2, text: () => life.near.rockI != null ? ['돌 캐기 🪨', '돌'] : null, run: mineRock });
-  life.near.bug = addInteract({ pos: new V3(0, -99, 0), r: 2.0, dy: 3.5, text: () => { const b = life.bugs[life.near.bugI]; return life.near.bugI == null || !b ? null : b.c.id[0] === 's' ? ['줍기 🐚', '바닷가 보물'] : b.c.kind === 'coin' || b.c.kind === 'pot' ? ['줍기 ✨', '한옥 마을 보물'] : ['잡기 🥅', '곤충']; }, run: catchBug });
+  life.near.bug = addInteract({ pos: new V3(0, -99, 0), r: 2.0, dy: 3.5, text: () => { const b = life.bugs[life.near.bugI]; return life.near.bugI == null || !b ? null : b.c.id[0] === 's' ? ['줍기 🐚', '바닷가 보물'] : b.c.kind === 'coin' || b.c.kind === 'pot' ? ['줍기 ✨', '역사 마을 보물'] : ['잡기 🥅', '곤충']; }, run: catchBug });
   life.near.pond = addInteract({ pos: new V3(0, -99, 0), r: 2.6, text: pondText, run: pondAction });
 }
 function nearest(list, p) {
@@ -8131,7 +8241,7 @@ function updateBugs(dt) {
 }
 
 // ---------- 낚시 ----------
-function fishSpot(p) { // 낚시할 수 있는 자리: 연못가, 뒷산 계곡, 바닷가 물가, 부두, 한옥 마을 연꽃 연못
+function fishSpot(p) { // 낚시할 수 있는 자리: 연못가, 뒷산 계곡, 바닷가 물가, 부두, 역사 마을 연꽃 연못
   if (p.x > 400) { const [hx, hz, hr] = HV.pond, d = Math.hypot(p.x - hx, p.z - hz);
     if (d - hr < 2.6 && hvBuilt('pavilion')) { const a = Math.atan2(p.z - hz, p.x - hx); return { w: 'lotus', at: new V3(hx + Math.cos(a) * (hr - 1.8), 0.05, hz + Math.sin(a) * (hr - 1.8)) }; }
     if (d - hr < 2.6 && !hv.pondHint) { hv.pondHint = true; toast('🪷 연못 정자를 지으면 이 연못에서 낚시할 수 있어요', 'info'); }
@@ -8252,7 +8362,7 @@ function openMuseum() {
     const n = Object.keys(S.dex || {}).length;
     box.append(el2('p', 'lp-big', `우리 반 도감 ${n} / ${ALL_DEX.length}`));
     box.append(el2('p', 'hint', '처음 보는 곤충·물고기·바닷가 보물을 기증하면 반 전체 도감이 채워져요. 기증하면 반 동전 +15! (누가 기증했는지는 남기지 않아요)'));
-    for (const [head, list] of [['🦋 곤충', BUGS], ['🐟 연못 물고기', FISH.filter(f => f.w === 'pond')], ['🌊 바다 물고기', FISH.filter(f => f.w === 'sea')], ['🐚 바닷가 보물', SHELLS], ['🏯 한옥 마을', HANOK_ITEMS]]) {
+    for (const [head, list] of [['🦋 곤충', BUGS], ['🐟 연못 물고기', FISH.filter(f => f.w === 'pond')], ['🌊 바다 물고기', FISH.filter(f => f.w === 'sea')], ['🐚 바닷가 보물', SHELLS], ['🏯 역사 마을', HANOK_ITEMS]]) {
       box.append(el2('h3', 'lp-sec', head));
       const grid = el2('div', 'lp-grid');
       for (const c of list) {
@@ -8344,7 +8454,7 @@ function openCraft(mode) {
       card.append(b); grid.append(card);
     }
     box.append(grid);
-    if (!atMarket) box.append(el2('p', 'hint', '🏯 장독대·청사초롱·솟대 같은 한옥 가구는 한옥 마을 장터를 지으면 거기서 만들어요'));
+    if (!atMarket) box.append(el2('p', 'hint', '🏯 장독대·청사초롱·솟대 같은 한옥 가구는 역사 마을 장터를 지으면 거기서 만들어요'));
   });
 }
 function openBag() {
@@ -8886,11 +8996,11 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -58, z1: 58, s: 3 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 };
-let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (한옥 마을은 3칸)
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 };
+let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
-function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, JSON.stringify(S.hv?.built || {}), Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
+function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
 function drawMapBase() {
   if (MAPB === MAPB_HV) return drawHvMapBase();
   if (MAPB === MAPB_MATH) return drawMathMapBase();
@@ -8939,7 +9049,7 @@ function drawMapBase() {
   mapUI.key = mapKey();
 }
 const MAP_LABELS = () => MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
-  ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
+  ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['⚔️', SG.cx, SG.cz], ...(S.siege ? Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; }) : []), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
   ['🏡', -15, 106], ['🏖️', 69, 0], ['🐷', FUND_BOX[0], FUND_BOX[1]], ...FUND.map(f => [f.icon, ...f.pos]), ['⚓', 88, BEACH.pierZ], ['⛰️', -30, -66], ['💦', 30, -80], ['🚩', MT.peak[0], MT.peak[1]], [forestOpen() ? '⛺' : '🔒', -74, -17],
@@ -8979,7 +9089,7 @@ function drawMathMapBase() { // 수학 광산 마을 지도
   for (const [x, z] of [[1140, 28], [1175, 34], [1205, 30]]) rect(x - 2.5, z - 2, x + 2.5, z + 2, '#7A4A2A');
   mapUI.key = mapKey();
 }
-function drawHvMapBase() { // 한옥 마을 지도
+function drawHvMapBase() { // 역사 마을 지도
   const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s;
   const cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H;
   const c = cv.getContext('2d'), s = MAPB.s;
@@ -8991,9 +9101,15 @@ function drawHvMapBase() { // 한옥 마을 지도
   c.lineWidth = 4; c.strokeStyle = '#8C8578'; c.strokeRect(mapX(HV.x0), mapZ(HV.z0), (HV.x1 - HV.x0) * s, (HV.z1 - HV.z0) * s);
   c.strokeStyle = '#9ACB74'; c.lineWidth = 6; c.beginPath(); c.moveTo(mapX(HV.x0), mapZ(-3)); c.lineTo(mapX(HV.x0), mapZ(3)); c.stroke();
   rect(HV.x0, -2.5, HV.x1, 2.5, '#E8D9B5'); rect(518, HV.z0, 522, HV.z1, '#E8D9B5');
-  for (const [x, z, w, d] of [[486, -36, 11, 8], [522, -37, 8, 6], [558, -34, 8, 6], [481, 37, 8, 6], [527, 37, 10, 7.5], [561, 37, 7, 5.5]]) rect(x - w / 2, z - d / 2, x + w / 2, z + d / 2, '#7A6A5A');
+  for (const [x, z, w, d] of [[486, -36, 11, 8], [531, -37, 8, 6], [558, -34, 8, 6], [481, 37, 8, 6], [527, 37, 10, 7.5], [561, 37, 7, 5.5]]) rect(x - w / 2, z - d / 2, x + w / 2, z + d / 2, '#7A6A5A');
   c.fillStyle = '#4FA3C8'; c.beginPath(); c.arc(mapX(HV.pond[0]), mapZ(HV.pond[1]), HV.pond[2] * s, 0, Math.PI * 2); c.fill();
   for (const st of HV_SITES) { const [x, z] = st.pos, col = '#' + new THREE.Color(st.color).getHexString(); c.lineWidth = 2; if (hvBuilt(st.id)) rect(x - 6, z - 6, x + 6, z + 6, col, '#3B2F2A'); else { c.setLineDash([5, 4]); rect(x - 6, z - 6, x + 6, z + 6, 'rgba(255,255,255,.55)', col); c.setLineDash([]); } }
+  // 🏛️ 역사의 길 (북쪽) · ⚔️ 전쟁터 (남쪽)
+  rect(HIST.x0, HIST.z0, HIST.x1, HIST.z1, '#B5D69A'); c.lineWidth = 3; c.strokeStyle = '#8C8578'; c.strokeRect(mapX(HIST.x0), mapZ(HIST.z0), (HIST.x1 - HIST.x0) * s, (HIST.z1 - HIST.z0) * s);
+  rect(HIST.path - 2, HIST.z0, HIST.path + 2, HV.z0 + 2, '#E8D9B5');
+  for (const E of HIST_ERAS) { const col = '#' + new THREE.Color(E.col).getHexString(); c.lineWidth = 2; if (histBuilt(E.k)) rect(E.x - 6, E.z - 4.5, E.x + 6, E.z + 4.5, col, '#3B2F2A'); else { c.setLineDash([5, 4]); rect(E.x - 6, E.z - 4.5, E.x + 6, E.z + 4.5, 'rgba(255,255,255,.55)', col); c.setLineDash([]); } }
+  rect(SG.x0, SG.z0, SG.x1, SG.z1, S.siege ? '#C2CC8E' : '#B9C4A0'); c.strokeStyle = '#8A6A44'; c.strokeRect(mapX(SG.x0), mapZ(SG.z0), (SG.x1 - SG.x0) * s, (SG.z1 - SG.z0) * s);
+  if (S.siege) for (let t = 1; t <= S.siege.n; t++) { const ca = castleAt(t); if (ca) rect(ca.x - 6, ca.z - 6, ca.x + 6, ca.z + 6, '#' + new THREE.Color(sgSet().nat[t - 1].col).getHexString(), '#3B2F2A'); }
   mapUI.key = mapKey();
 }
 function drawMini() {
@@ -9021,7 +9137,7 @@ function openMap() {
   const panel = $('mapPanel'); panel.classList.remove('hidden');
   const aspect = (MAPB.x1 - MAPB.x0) / (MAPB.z1 - MAPB.z0), dpr = Math.min(2, devicePixelRatio || 1);
   const h = Math.max(220, Math.min(innerHeight - 230, 620)), w = Math.min(h * aspect, Math.min(520, innerWidth * 0.92) - 48);
-  panel.querySelector('h2').textContent = MAPB === MAPB_HV ? '🗺️ 한옥 마을 지도' : MAPB === MAPB_MATH ? '🗺️ 수학 광산 마을 지도' : '🗺️ 우리 마을 지도';
+  panel.querySelector('h2').textContent = MAPB === MAPB_HV ? '🗺️ 역사 마을 지도' : MAPB === MAPB_MATH ? '🗺️ 수학 광산 마을 지도' : '🗺️ 우리 마을 지도';
   const cv = $('bigMap'); cv.style.width = `${w}px`; cv.style.height = `${w / aspect}px`; cv.width = Math.round(w * dpr); cv.height = Math.round(w / aspect * dpr);
   $('miniToggle').checked = mapUI.show;
   drawBig(); $('mapClose').focus();
@@ -9225,7 +9341,7 @@ function syncQuiz(prev, first) {
   if (quiz.key !== key) {
     quiz.key = key; quiz.order = []; quiz.done = {};
     quiz.board?.userData.set([set ? `📝 ${set.name.split(' (')[0]}` : '📝 문제 준비 중']);
-    if (!first && set && (!prev.quiz || prev.quiz.at !== S.quiz.at)) toast(`📜 한옥 마을 서당에 새 문제가 올라왔어요: ${set.name.split(' (')[0]}`, 'info');
+    if (!first && set && (!prev.quiz || prev.quiz.at !== S.quiz.at)) toast(`📜 역사 마을 서당에 새 문제가 올라왔어요: ${set.name.split(' (')[0]}`, 'info');
     if (!$('quizPanel').classList.contains('hidden')) (set ? nextQuestion() : fillQuiz());
   }
   if (!$('teacherPanel').classList.contains('hidden')) fillQuizAdmin();
@@ -9392,7 +9508,7 @@ async function runRuleCheck() {
   const r = await backend.checkRules();
   lastSent = ''; // 점검 뒤 접속 정보를 다시 보내요
   const mark = (v) => v === true ? '✅' : v === false ? '❌' : '⚠️';
-  const lines = [`${mark(r.read)} 마을 읽기`, `${mark(r.mural)} 함께 그리는 벽화`, `${mark(r.hv)} 한옥 마을`, `${mark(r.look)} 선생님 모습`, `${mark(r.mission)} 여러 공동 미션`];
+  const lines = [`${mark(r.read)} 마을 읽기`, `${mark(r.mural)} 함께 그리는 벽화`, `${mark(r.hv)} 역사 마을`, `${mark(r.look)} 선생님 모습`, `${mark(r.mission)} 여러 공동 미션`];
   const bad = [r.read, r.mural, r.hv, r.look, r.mission].some(v => v !== true);
   out.textContent = lines.join('   ') + (bad
     ? '\n❌가 있으면 콘솔에 게시된 규칙이 예전 것이에요. 최신 database.rules.json의 schoolVillage 부분을 통째로 붙여 넣고 [게시]를 누른 뒤 다시 점검해 주세요.'
@@ -9411,9 +9527,9 @@ function initRoleUI() {
 }
 
 /* =====================================================================
-   43. 한옥 마을 — 바닷가 부두에서 배를 타고 가는 먼 마을 (x 474~566, z -44~44)
-   · 함께 짓기: 한옥 재료 상자를 모아 서당·장터·연못 정자·연날리기 언덕을 지어요 (state/hv)
-   · 한옥 마을 채집물 6종(도감), 주민 2명과 부탁, 장터 가구 3종, 연날리기 놀이
+   43. 역사 마을 — 바닷가 부두에서 배를 타고 가는 먼 마을 (x 474~566, z -44~44)
+   · 함께 짓기: 건축 재료 상자를 모아 서당·장터·연못 정자·연날리기 언덕을 지어요 (state/hv)
+   · 역사 마을 채집물 6종(도감), 주민 2명과 부탁, 장터 가구 3종, 연날리기 놀이
    · 이름·개인 기록은 저장하지 않아요. 연날리기는 성공한 사람 수만 보여요.
    ===================================================================== */
 const HV = { x: 520, x0: 474, x1: 566, z0: -44, z1: 44, dock: [462, 474], pond: [496, 27, 6.5], hill: [546, 24] };
@@ -9570,7 +9686,7 @@ function hvGhost(s, parent) { // 짓기 전: 반투명 모양 + 안내
 }
 function setHvSiteLabel(info) {
   const s = info.def, need = Math.max(0, s.cost - hvMaterials());
-  info.label.userData.set(info.built ? [`${s.icon} ${s.name} ✅`] : [`${s.icon} ${s.name}`, `🪵 한옥 재료 ${s.cost}개${need ? ` (${need}개 더)` : ' · 지을 수 있어요!'}`]);
+  info.label.userData.set(info.built ? [`${s.icon} ${s.name} ✅`] : [`${s.icon} ${s.name}`, `🪵 건축 재료 ${s.cost}개${need ? ` (${need}개 더)` : ' · 지을 수 있어요!'}`]);
 }
 
 // ---------- 마을 만들기 ----------
@@ -9585,7 +9701,7 @@ function buildHanok() {
   box(g, 4, 0.04, 80, C.path, 520, 0.021, 0, o);
   for (const s of HV_SITES) box(g, 16, 0.03, 16, 0xE0CFA4, s.pos[0], 0.015, s.pos[1], o);
   // 돌담 (서쪽은 나루터 입구만 비워요)
-  stoneWall(g, HV.x0 - 0.5, HV.z0 - 0.5, HV.x1 + 0.5, HV.z0 - 0.5); stoneWall(g, HV.x0 - 0.5, HV.z1 + 0.5, HV.x1 + 0.5, HV.z1 + 0.5);
+  stoneWall(g, HV.x0 - 0.5, HV.z0 - 0.5, 516.9, HV.z0 - 0.5); stoneWall(g, 523.1, HV.z0 - 0.5, HV.x1 + 0.5, HV.z0 - 0.5); stoneWall(g, HV.x0 - 0.5, HV.z1 + 0.5, HV.x1 + 0.5, HV.z1 + 0.5); // 북쪽 담 가운데는 역사의 길 문
   stoneWall(g, HV.x1 + 0.5, HV.z0 - 0.5, HV.x1 + 0.5, HV.z1 + 0.5);
   stoneWall(g, HV.x0 - 0.5, HV.z0 - 0.5, HV.x0 - 0.5, -3); stoneWall(g, HV.x0 - 0.5, 3, HV.x0 - 0.5, HV.z1 + 0.5);
   // 나루터 (배를 타고 내리는 곳)
@@ -9597,9 +9713,9 @@ function buildHanok() {
   { const sgn = signPlane(g, ['⛵ 나루터'], 2.2, 0.7, HV.x0 + 1.5, 2.2, -3.6, { font: 50, pad: 4, fg: '#3B2F2A', bg: '#FFF4D6' }); sgn.rotation.y = -Math.PI / 2; box(g, 0.15, 2.2, 0.15, C.wood, HV.x0 + 1.5, 1.1, -3.6, o); }
   jangseung(g, HV.x0 + 3, -3.4, 0x3B3F46, Math.PI / 2); jangseung(g, HV.x0 + 3, 3.4, 0xE2584A, Math.PI / 2);
   for (const [x, z] of [[HV.x0 + 5, -6], [HV.x0 + 5.8, -6.6], [HV.x0 + 4.4, -6.8]]) sotdae(g, x, z);
-  makeLabel(g, ['🏯 한옥 마을', '함께 짓기 · 채집 · 연날리기'], 1.4, HV.x0 + 8, 6, 0);
+  makeLabel(g, ['🏯 역사 마을', '북쪽 🏛️ 역사의 길 · 남쪽 ⚔️ 전쟁터'], 1.4, HV.x0 + 8, 6, 0);
   // 이미 있는 집들 (보기용)
-  giwaHouse(g, 486, -36, 0); thatchHouse(g, 522, -37, 0); thatchHouse(g, 558, -34, 0);
+  giwaHouse(g, 486, -36, 0); thatchHouse(g, 531, -37, 0); thatchHouse(g, 558, -34, 0);
   thatchHouse(g, 481, 37, Math.PI); giwaHouse(g, 527, 37, Math.PI, 8, 5.5); thatchHouse(g, 561, 37, Math.PI, 6, 4.5);
   // 우물·빨랫줄·장독대
   { const x = 527, z = -9; cyl(g, 1.1, 0.9, HANOK.stone, x, 0.45, z); cyl(g, 0.8, 0.05, 0x2E5F8A, x, 0.9, z, o); for (const s of [-1, 1]) box(g, 0.15, 2.4, 0.15, HANOK.wood, x + s * 1, 1.2, z, o); mesh(GABLE, g, 2.8, 0.7, 1.4, HANOK.giwa, x, 2.4, z, { solid: false, ry: Math.PI / 2 }); }
@@ -9609,12 +9725,12 @@ function buildHanok() {
   for (let z = -22; z <= -8; z += 4) bamboo(g, 477.5, z);
   for (const [x, z] of [[478, 20], [478, 28], [540, -40], [510, -40]]) { mesh(TAPER, g, 0.35, 3, 0.35, 0x7A5436, x, 1.5, z); [[2.2, 2.2, 2.6], [1.7, 2, 3.9], [1.2, 1.8, 5.1]].forEach(([r, h, y], j) => mesh(CONE, g, r, h, r, [0x3E8A45, 0x46994D, 0x52A858][j], x, y, z, { solid: false, flat: true })); }
   for (const [x, z] of [[489, -17], [534, 17], [489, 17], [536, -15]]) persimmonTree(g, x, z);
-  // 먼 산 (한옥 마을 둘레)
+  // 먼 산 (역사 마을 둘레)
   { const far = new THREE.Group(); scene.add(far);
     for (let k = 0; k < 14; k++) { const a = -Math.PI * 0.35 + k / 13 * Math.PI * 1.7, r = 160 + (k * 29 % 40), x = HV.x + 30 + Math.cos(a) * r, z = Math.sin(a) * r * 1.1, h = 40 + (k * 37 % 40), w = 36 + (k * 23 % 26);
       mesh(CONE, far, w, h, w * 0.9, [0x6E9E6A, 0x7FA88A, 0x5F8F6E][k % 3], x, h / 2 - 2, z, { solid: false, flat: true, ry: k }); }
     batchStatic(far); hv.far = far; }
-  // 한옥 재료 상자 (지게에 얹은 기와·통나무)
+  // 건축 재료 상자 (지게에 얹은 기와·통나무)
   HV_CRATES.forEach(([x, z], i) => {
     const cg = new THREE.Group(); cg.name = 'hvCrate'; cg.position.set(x, 0, z); g.add(cg);
     const m = new THREE.Group(); m.position.y = 0.9; cg.add(m);
@@ -9622,7 +9738,7 @@ function buildHanok() {
     for (let k = 0; k < 4; k++) box(m, 0.9, 0.08, 0.5, HANOK.giwa, 0, 0.05 + k * 0.1, 0, { solid: false, rz: 0.05 * (k % 2 ? 1 : -1) });
     const tag = makeLabel(cg, ['🪵'], 0.9, 0, 2.3, 0, { stroke: false, pad: 4, font: 72 });
     hv.crates.push({ i, g: cg, m, tag, pos: new V3(x, 1, z) });
-    addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => hvCrateVisible(i) && hvRegion() ? ['줍기 🪵', '한옥 재료'] : null, run: () => hvPick(i) });
+    addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => hvCrateVisible(i) && hvRegion() ? ['줍기 🪵', '건축 재료'] : null, run: () => hvPick(i) });
   });
   // 건축 부지
   for (const s of HV_SITES) {
@@ -9646,11 +9762,11 @@ function buildHanok() {
     box(g, pr * 1.4, 1, pr * 1.4, 0x4FA3C8, px, 0.5, pz).visible = false; }
   registerSolids(g, 'hanok'); batchStatic(g);
   // 주민 부탁: 우리 마을 가게처럼 반 동전·조개돈
-  // 부두 쪽 (우리 마을 바닷가): 한옥 마을 가는 배
+  // 부두 쪽 (우리 마을 바닷가): 역사 마을 가는 배
   const bg = new THREE.Group(); scene.add(bg);
-  signPlane(bg, ['⛵ 한옥 마을 가는 배'], 2.8, 0.7, BEACH.pierX1 - 1.5, 1.6, BEACH.pierZ - 1.5, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFF4D6' }).rotation.y = Math.PI;
+  signPlane(bg, ['⛵ 역사 마을 가는 배'], 2.8, 0.7, BEACH.pierX1 - 1.5, 1.6, BEACH.pierZ - 1.5, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFF4D6' }).rotation.y = Math.PI;
   box(bg, 0.12, 1.5, 0.12, C.wood, BEACH.pierX1 - 1.5, 0.9, BEACH.pierZ - 1.45, o);
-  addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.4, text: () => ['배 타기 ⛵', '한옥 마을 가기'], run: () => travelTo('hv') });
+  addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.4, text: () => ['배 타기 ⛵', '역사 마을 가기'], run: () => travelTo('hv') });
 }
 
 // ---------- 오가기 ----------
@@ -9662,7 +9778,7 @@ async function travelTo(dest) {
   closeModals(); mtn.view = null;
   const boat = document.querySelector('#travelFx .tv-boat'), cartTrip = dest === 'math' || dest === 'fromMath';
   if (boat) boat.textContent = cartTrip ? '🚃' : '⛵';
-  $('travelText').textContent = dest === 'hv' ? '⛵ 배를 타고 한옥 마을로 가는 중…' : dest === 'math' ? '🚃 광차를 타고 수학 광산 마을로 가는 중…' : dest === 'fromMath' ? '🚃 광차를 타고 우리 마을로 돌아가는 중…' : '⛵ 우리 마을로 돌아가는 중…';
+  $('travelText').textContent = dest === 'hv' ? '⛵ 배를 타고 역사 마을로 가는 중…' : dest === 'math' ? '🚃 광차를 타고 수학 광산 마을로 가는 중…' : dest === 'fromMath' ? '🚃 광차를 타고 우리 마을로 돌아가는 중…' : '⛵ 우리 마을로 돌아가는 중…';
   $('travelFx').classList.remove('hidden'); playSfx('cast');
   await sleep(1000);
   const [x, z, h] = dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' ? [MV.back[0] + 3, MV.back[1], Math.PI / 2] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2];
@@ -9671,7 +9787,7 @@ async function travelTo(dest) {
   await sleep(700);
   $('travelFx').classList.add('hidden'); playSfx('plop'); if (boat) setTimeout(() => { boat.textContent = '⛵'; }, 300);
   hv.travel = false;
-  if (dest === 'hv' && !hv.seen) { hv.seen = true; toast(`🏯 한옥 마을에 도착했어요! 🪵 한옥 재료를 모아 서당·장터·정자·연날리기 언덕을 함께 지어요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
+  if (dest === 'hv' && !hv.seen) { hv.seen = true; toast(`🏯 역사 마을에 도착했어요! 🪵 건축 재료를 모아 서당·장터·정자·연날리기 언덕을 함께 지어요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
   updateHUD(null);
 }
 
@@ -9680,13 +9796,13 @@ async function hvPick(i) {
   if (!hvCrateVisible(i)) return;
   const res = await backend.hvPick(i);
   const c = hv.crates[i];
-  if (res.ok) { player.heading = Math.atan2(c.pos.x - player.pos.x, c.pos.z - player.pos.z); playAct(player.avatar, 'pick'); playSfx('pick'); toast('🪵 한옥 재료 +1! 친구들과 모아서 한옥 마을을 지어요', 'success'); burst(c.pos.clone().setY(1.4), [0x9C6A3E, HANOK.giwa, C.gold], 26, 4, 2); }
+  if (res.ok) { player.heading = Math.atan2(c.pos.x - player.pos.x, c.pos.z - player.pos.z); playAct(player.avatar, 'pick'); playSfx('pick'); toast('🪵 건축 재료 +1! 친구들과 모아서 역사 마을을 지어요', 'success'); burst(c.pos.clone().setY(1.4), [0x9C6A3E, HANOK.giwa, C.gold], 26, 4, 2); }
   else if (res.reason !== 'offline') toast('앗, 다른 친구가 먼저 주웠어요!', 'info');
 }
 async function hvBuild(id) {
   const s = HV_SITE[id], have = hvMaterials();
   if (hvBuilt(id)) { toast('이미 지어졌어요!', 'info'); return; }
-  if (have < s.cost) { toast(`🪵 한옥 재료가 ${s.cost - have}개 더 필요해요! 마을 곳곳의 재료 지게를 찾아봐요`, 'warn'); return; }
+  if (have < s.cost) { toast(`🪵 건축 재료가 ${s.cost - have}개 더 필요해요! 마을 곳곳의 재료 지게를 찾아봐요`, 'warn'); return; }
   const res = await backend.hvBuild(id);
   if (res.ok) { playAct(player.avatar, 'cheer'); playSfx('build'); }
   else if (res.reason === 'built') toast('이미 지어졌어요!', 'info');
@@ -9699,14 +9815,14 @@ function syncHanok(prev, first) {
     if (on && !info.built) {
       info.built = true; info.ghost.visible = false; info.pad.visible = false;
       info.model = buildHvSite(s.id, hv.group);
-      if (!first) { burst(new V3(s.pos[0], 3, s.pos[1]), RAINBOW, 60, 6, 3); if (hvRegion()) showBanner(`${s.icon} ${s.name} 완성!`, s.after, 5000); else toast(`🏯 한옥 마을에 ${s.icon} ${s.name}이(가) 지어졌어요!`, 'success'); }
+      if (!first) { burst(new V3(s.pos[0], 3, s.pos[1]), RAINBOW, 60, 6, 3); if (hvRegion()) showBanner(`${s.icon} ${s.name} 완성!`, s.after, 5000); else toast(`🏯 역사 마을에 ${s.icon} ${s.name}이(가) 지어졌어요!`, 'success'); }
     } else if (!on && info.built) { // 선생님이 초기화
       info.built = false; info.ghost.visible = true; info.pad.visible = true;
       if (info.model) { hv.group.remove(info.model); removeColliders('hv:' + s.id); info.model = null; }
     }
     setHvSiteLabel(info);
   }
-  if (!first && hvBuiltCount() === HV_SITES.length && hvBuiltCount(prev) < HV_SITES.length) showBanner('🏯 한옥 마을 완성!', '모두 힘을 모아 한옥 마을을 지었어요', 6000);
+  if (!first && hvBuiltCount() === HV_SITES.length && hvBuiltCount(prev) < HV_SITES.length) showBanner('🏯 역사 마을 완성!', '모두 힘을 모아 역사 마을을 지었어요', 6000);
   if (hv.kiteLabel) { const n = Object.keys(S.hv?.kite || {}).length; hv.kiteLabel.userData.set([`🪁 연날리기 성공 ${n}명`]); }
 }
 function updateHanok(dt) {
@@ -9721,8 +9837,8 @@ function updateHanok(dt) {
   updateKite(dt);
 }
 
-// ---------- 한옥 마을 채집물 · 주민 ----------
-function spawnHanok() { // 한옥 마을 안: 잠자리·방아깨비, 땅에서 엽전·청자 조각
+// ---------- 역사 마을 채집물 · 주민 ----------
+function spawnHanok() { // 역사 마을 안: 잠자리·방아깨비, 땅에서 엽전·청자 조각
   const p = player.pos, treasure = Math.random() < 0.45;
   const list = availNow(HANOK_ITEMS.filter(c => treasure ? (c.kind === 'coin' || c.kind === 'pot') : (c.kind === 'fly' || c.kind === 'crawl')));
   if (!list.length) return;
@@ -9810,12 +9926,12 @@ function updateKite(dt) {
 }
 function fillHvAdmin() {
   const n = hvBuiltCount(), k = Object.keys(S.hv?.kite || {}).length;
-  $('tpHvNow').textContent = `지은 곳 ${n}/${HV_SITES.length} · 한옥 재료 ${hvMaterials()}개 · 연날리기 성공 ${k}명 (도감·가방은 그대로)`;
+  $('tpHvNow').textContent = `지은 곳 ${n}/${HV_SITES.length} · 건축 재료 ${hvMaterials()}개 · 연날리기 성공 ${k}명 (도감·가방은 그대로)`;
 }
 function initHvAdmin() {
   $('tpHvReset').onclick = async () => {
-    if (!(await confirmAction({ title: '🏯 한옥 마을을 처음으로 되돌릴까요?', body: '지은 건물·모은 한옥 재료·연날리기 성공 인원이 모두 지워져요.\n도감과 학생 가방은 그대로예요.', okText: '되돌리기' }))) return;
-    adminDo({ hv: null }, '🏯 한옥 마을을 처음으로 되돌렸어요');
+    if (!(await confirmAction({ title: '🏯 역사 마을을 처음으로 되돌릴까요?', body: '지은 건물·모은 건축 재료·연날리기 성공 인원이 모두 지워져요.\n도감과 학생 가방은 그대로예요.', okText: '되돌리기' }))) return;
+    adminDo({ hv: null }, '🏯 역사 마을을 처음으로 되돌렸어요');
   };
 }
 function initKiteUI() {
@@ -11465,6 +11581,7 @@ const FURN = [
   { icon: '🎹', name: '피아노', price: 800 }, { icon: '🐠', name: '어항', price: 450 }, { icon: '💡', name: '스탠드', price: 120 }, { icon: '🟫', name: '러그', price: 100 },
   { icon: '🚪', name: '옷장', price: 300 }, { icon: '🎮', name: '게임기', price: 600 }, { icon: '🧺', name: '빨래 바구니', price: 60 }, { icon: '⏰', name: '괘종시계', price: 400 },
   { icon: '🌟', name: '별 조명', price: 700 }, { icon: '🎄', name: '트리', price: 500 }, { icon: '🏆', name: '트로피', price: 900 }, { icon: '🐱', name: '고양이 쿠션', price: 200 },
+  { icon: '🌻', name: '해바라기 화분', grown: true }, { icon: '🌷', name: '튤립 화분', grown: true }, { icon: '🍅', name: '방울토마토 화분', grown: true }, { icon: '🌵', name: '선인장 화분', grown: true }, { icon: '🍓', name: '딸기 화분', grown: true }, // 온실에서 키운 화분 (가게에서 팔지 않아요)
 ];
 bag.fur ||= {};
 const home = { id: '', group: null, key: '', edit: null, ghost: null, ghostKey: '', inItem: null, exitI: null, doorI: null };
@@ -11501,6 +11618,7 @@ function buildFurn(t, g) {
     case 17: cyl(g, 0.12, 0.3, 0x8A5A34, 0, 0.15, 0); [[0.7, 0.8, 0.6], [0.55, 0.7, 1.1], [0.38, 0.6, 1.55]].forEach(([r, h, y]) => mesh(CONE, g, r, h, r, 0x3E8A45, 0, y, 0, o)); ball(g, 0.12, 0xFFD23C, 0, 1.95, 0, { solid: false, emissive: 0.8 }); for (let k = 0; k < 6; k++) ball(g, 0.06, [0xE2584A, 0x4A9AE8, 0xFFD23C][k % 3], Math.sin(k) * 0.45, 0.7 + k * 0.15, Math.cos(k) * 0.45, o); break;
     case 18: box(g, 0.6, 0.8, 0.6, 0xE8E2D6, 0, 0.4, 0); cyl(g, 0.12, 0.25, C.gold, 0, 0.93, 0, { solid: false, emissive: 0.3 }); mesh(CONE, g, 0.25, 0.35, 0.25, C.gold, 0, 1.2, 0, { solid: false, emissive: 0.3, rx: Math.PI }); break;
     case 19: mesh(SPH_MID, g, 0.55, 0.28, 0.5, 0xF5A623, 0, 0.28, 0); ball(g, 0.25, 0xF5A623, 0, 0.55, 0.3, o); for (const x of [-0.12, 0.12]) mesh(CONE, g, 0.07, 0.14, 0.07, 0xF5A623, x, 0.8, 0.3, o); break;
+    case 20: case 21: case 22: case 23: case 24: { const pg = new THREE.Group(); pg.scale.setScalar(1.6); g.add(pg); buildPlantModel(pg, t - 20, 4, false); box(g, 0.9, 1.2, 0.9, 0xFFFFFF, 0, 0.6, 0).visible = false; break; }
   }
   return g;
 }
@@ -11611,7 +11729,7 @@ function openHomeDecor() {
     else { const grid = el2('div', 'lp-grid'); for (const [t, n] of owned) { const f = FURN[+t], card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', f.icon), el2('div', 'lp-name', `${f.name} ×${n}`)); const b = el2('button', 'btn lp-btn', '놓기'); b.onclick = () => homeEditStart(+t, false); card.append(b); grid.append(card); } box.append(grid); }
     box.append(el2('h3', 'lp-sec', '🏬 가구점'));
     const grid = el2('div', 'lp-grid');
-    FURN.forEach((f, t) => {
+    FURN.forEach((f, t) => { if (f.grown) return; // 온실 화분은 가게에서 팔지 않아요
       const card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', f.icon), el2('div', 'lp-name', f.name), el2('div', 'lp-sub', `🐚 ${f.price}`));
       const b = el2('button', 'btn lp-btn', '사서 놓기'); b.disabled = (bag.shell || 0) < f.price; b.onclick = () => homeEditStart(t, true); card.append(b); grid.append(card);
     });
@@ -12192,7 +12310,7 @@ function fillMathAdmin() {
 
 
 /* =====================================================================
-   52. 💌 감사 게시판 — 광장 오른쪽 게시판 (예전 배움 게시판 자리, 배움 문제는 한옥 마을 서당에 남아 있어요)
+   52. 💌 감사 게시판 — 광장 오른쪽 게시판 (예전 배움 게시판 자리, 배움 문제는 역사 마을 서당에 남아 있어요)
    · 오늘 고마웠던 일을 40자까지 써요. 선생님이 확인한 글만 게시판에 보여요. 누가 썼는지(이름)는 저장하지 않아요
    · 하루에 처음 한 가지 이상 쓰면 보상: 내 🐚 +20 (이 기기에서 하루 한 번) · 하루 5개까지 쓸 수 있어요
    · 저장: state/thx/{기기번호_시각} = { t 글, d 날 번호, ok 선생님 확인, at 시각 } — 열쇠의 기기 번호는 "내 글 표시"에만 써요
@@ -12290,13 +12408,14 @@ function initThxUI() {
    53. 🏫 건물 안 활동 — 도서관·미술 공방·실내 체육관 문에서 E로 들어가요 (방은 월드 x 1430~1590에 따로 있어요)
    · 📚 도서관: 독서 기록장 (장르·별점·느낌을 골라 기록 → 반 전체 독서 나무가 자라요. 책 제목은 이 기기에만)
    · 🎨 미술 공방: 내 그림 작업실 (16×16 픽셀 그림 → 내 작품 저장, 전시 신청 → 선생님 확인 후 전시 벽·우리 집 액자)
-   · 🏀 실내 체육관(놀이터 옆 작은 건물): 줄넘기 리듬 · 과녁 맞히기 → 반 전체 기록에 보태요 (개인 기록·순위 없음)
+   · 🏀 실내 체육관(놀이터 옆 작은 건물): 🌀 회전 막대 점프(친구들과 함께 버티기) · 🏀 농구 슛 → 반 전체 기록에 보태요 (개인 기록·순위 없음)
    · 저장: state/read {n, g/{장르}} · state/art/{기기번호_시각} {p 그림, ok, at} · state/gym {rope, hit}
    ===================================================================== */
 const ROOMS = {
   lib: { name: '도서관', icon: '📚', cx: 1450, cz: 0, w: 22, d: 16, wall: 0xF3E6CF, floor: 0xB9875A, site: 'Library' },
   art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
   gym: { name: '실내 체육관', icon: '🏀', cx: 1570, cz: 0, w: 24, d: 18, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
+  gh: { name: '온실', icon: '🌿', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
 const READ_FEELS = ['재미있었어요', '감동적이었어요', '새로 알게 됐어요', '다음 권도 읽고 싶어요', '친구에게 추천해요'];
@@ -12350,22 +12469,31 @@ function buildInteriors() {
   }
   // ---------- 🏀 실내 체육관 ----------
   { const r = ROOMS.gym, { cx, cz, w, d } = r; roomShell(g, r);
-    for (const [x0, z0, x1, z1] of [[-9, -6, 9, -6], [-9, 6, 9, 6], [-9, -6, -9, 6], [9, -6, 9, 6], [0, -6, 0, 6]]) box(g, Math.abs(x1 - x0) + 0.12, 0.02, Math.abs(z1 - z0) + 0.12, 0xFFFFFF, cx + (x0 + x1) / 2, 0.11, cz + (z0 + z1) / 2, o);
-    cyl(g, 2, 0.02, 0xE2584A, cx, 0.115, cz, o); cyl(g, 1.85, 0.03, r.floor, cx, 0.12, cz, o);
-    // 줄넘기 자리 (왼쪽)
-    const jx = cx - 6, jz = cz + 1;
-    for (const sx of [-1.8, 1.8]) cyl(g, 0.12, 1.2, 0x5E6670, jx + sx, 0.6, jz);
-    const rope = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.04, 6, 24, Math.PI), M(0xE2584A)); rope.position.set(jx, 1.1, jz); rope.rotation.y = Math.PI / 2; rope.rotation.order = 'YXZ'; g.add(rope); bld.rope = rope;
-    addInteract({ pos: new V3(jx, 1, jz + 1.6), r: 2.4, text: () => roomNow() === 'gym' ? ['줄넘기 하기 🪢', '리듬 맞추기'] : null, run: () => openGym('rope') });
-    // 과녁 (오른쪽 벽)
-    const tx = cx + 6;
-    for (const [rr, c] of [[1.0, 0xFFFFFF], [0.75, 0xE2584A], [0.5, 0xFFFFFF], [0.25, 0xE2584A]]) cyl(g, rr, 0.06, c, tx, 1.6, cz - d / 2 + 0.25 + (1.2 - rr) * 0.02, { solid: false, rx: Math.PI / 2 });
-    for (let k = 0; k < 5; k++) ball(g, 0.25, 0xFF9628, cx + 4 + k * 0.6, 0.35, cz + 3, o);
-    addInteract({ pos: new V3(tx, 1, cz - d / 2 + 3.5), r: 2.6, text: () => roomNow() === 'gym' ? ['과녁 맞히기 🎯', '공 던지기'] : null, run: () => openGym('hit') });
-    // 농구 골대 (보기)
-    box(g, 0.2, 2.4, 0.2, 0x5E6670, cx, 1.2, cz - d / 2 + 0.6); box(g, 1.6, 1.0, 0.08, 0xFFFFFF, cx, 2.5, cz - d / 2 + 0.7, o);
-    const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.03, 6, 16), M(0xFF6A2A)); hoop.position.set(cx, 2.2, cz - d / 2 + 1.1); hoop.rotation.x = Math.PI / 2; g.add(hoop);
-    bld.gymLabel = makeLabel(g, [''], 0.8, cx, 4.0, cz - 2);
+    // 🌀 회전 막대 점프 링 (왼쪽)
+    const J = GYM2.jc;
+    cyl(g, J.r + 0.3, 0.04, 0xFFFFFF, J.x, 0.115, J.z, o); cyl(g, J.r + 0.1, 0.05, 0x5FBE5A, J.x, 0.12, J.z, o);
+    for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; box(g, 0.25, 0.02, J.r - 0.8, 0x4FA04F, J.x + Math.cos(a) * J.r / 2, 0.15, J.z + Math.sin(a) * J.r / 2, { solid: false, ry: -a + Math.PI / 2 }); }
+    cyl(g, 0.55, 1.0, 0xE2584A, J.x, 0.5, J.z); cyl(g, 0.65, 0.12, 0xFFD23C, J.x, 1.05, J.z, o);
+    bld.bars = [];
+    for (let k = 0; k < 2; k++) { // 막대 2개 (두 번째는 30초 뒤부터)
+      const bar = new THREE.Group(); bar.position.set(J.x, 0, J.z); g.add(bar);
+      const arm = cyl(bar, 0.14, J.r, k ? 0x9A5AD8 : 0xFF9628, J.r / 2, J.h, 0, { solid: false, rz: Math.PI / 2 });
+      ball(bar, 0.22, 0xFFFFFF, J.r, J.h, 0, { solid: false });
+      bar.visible = k === 0; bld.bars.push(bar);
+    }
+    bld.jcLabel = makeLabel(g, [''], 0.85, J.x, 3.2, J.z);
+    addInteract({ pos: new V3(J.x, 1, J.z + J.r + 1.2), r: 2.4, text: () => roomNow() === 'gym' ? (jcState() === 'idle' ? ['게임 시작 🌀', '회전 막대 점프'] : ['🌀 게임 중', jcState() === 'ready' ? '곧 시작해요! 링 안으로' : '링 안에서 점프!']) : null, run: jcStart });
+    // 🏀 농구 (오른쪽)
+    const B = GYM2.bb;
+    box(g, 0.25, B.h + 0.5, 0.25, 0x5E6670, B.x, (B.h + 0.5) / 2, cz - d / 2 + 0.5);
+    box(g, 1.8, 1.1, 0.08, 0xFFFFFF, B.x, B.h + 0.45, B.z - 0.45, o); box(g, 0.6, 0.45, 0.09, 0xE2584A, B.x, B.h + 0.2, B.z - 0.44, o); box(g, 0.5, 0.35, 0.1, 0xFFFFFF, B.x, B.h + 0.2, B.z - 0.43, o);
+    const hoop = new THREE.Mesh(new THREE.TorusGeometry(B.rim, 0.035, 6, 20), M(0xFF6A2A)); hoop.position.set(B.x, B.h, B.z); hoop.rotation.x = Math.PI / 2; g.add(hoop);
+    for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; box(g, 0.02, 0.45, 0.02, 0xFFFFFF, B.x + Math.cos(a) * B.rim * 0.85, B.h - 0.22, B.z + Math.sin(a) * B.rim * 0.85, { solid: false, rx: Math.sin(a) * 0.25, rz: -Math.cos(a) * 0.25 }); }
+    const arc = new THREE.Mesh(new THREE.RingGeometry(B.three - 0.06, B.three + 0.06, 40, 1, 0, Math.PI), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide })); arc.rotation.x = -Math.PI / 2; arc.position.set(B.x, 0.12, B.z); g.add(arc);
+    cyl(g, 1.0, 0.02, 0xFFFFFF, B.x, 0.115, B.z + 2.6, o); cyl(g, 0.92, 0.03, r.floor, B.x, 0.12, B.z + 2.6, o);
+    for (let k = 0; k < 6; k++) ball(g, 0.25, 0xFF8A3A, cx + 10.5, 0.35 + (k % 2) * 0.45, cz + 3 + Math.floor(k / 2) * 0.5, o);
+    bld.gymLabel = makeLabel(g, [''], 0.8, B.x, 4.2, B.z + 1);
+    addInteract({ pos: new V3(B.x, 1, B.z + 3.6), r: 3.2, text: () => roomNow() === 'gym' && !bb.on ? ['농구 하기 🏀', '꾹 눌러 힘을 모아 던져요'] : null, run: bbStart });
   }
   // 나가는 문
   for (const [id, r] of Object.entries(ROOMS)) addInteract({ pos: new V3(r.cx, 1, r.cz + r.d / 2 - 0.8), r: 2.2, text: () => roomNow() === id ? ['밖으로 나가기 🚪', r.name] : null, run: () => exitRoom(id) });
@@ -12381,11 +12509,12 @@ const GYM_DOOR = [52, -14]; // 놀이터(40,0) 북동쪽 · 문은 서쪽(-x)을
 function buildingDoor(id) { // 도서관·미술 공방: 건물 문 앞 (세워진 다음에)
   const info = world.sites?.[id]; if (!info?.model) return null;
   info.model.updateMatrixWorld(true);
-  return info.model.localToWorld(new V3(0, 0, id === 'Art' ? 0.3 : -1.6));
+  return info.model.localToWorld(new V3(0, 0, id === 'Art' ? 0.3 : id === 'Garden' ? 1.0 : -1.6)); // 텃밭: 창고 문(온실 입구)
 }
 function setupDoors() {
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '📚 도서관 안'] : null, run: () => enterRoom('lib') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'art', text: () => S.built.Art ? ['들어가기 🚪', '🎨 미술 공방 안'] : null, run: () => enterRoom('art') });
+  addInteract({ pos: new V3(0, -99, 0), r: 2.0, dyn: 'gh', text: () => S.built.Garden ? ['온실 들어가기 🌿', '내 화분 키우기'] : null, run: () => enterRoom('gh') });
   addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() ? null : ['들어가기 🚪', '🏀 실내 체육관'], run: () => enterRoom('gym') });
 }
 function updateDoors() {
@@ -12400,7 +12529,7 @@ async function enterRoom(id) {
   player.pos.set(r.cx, 0.12, r.cz + r.d / 2 - 3.2); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
-  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gym: '🏀 실내 체육관이에요! 줄넘기와 과녁 맞히기를 해 봐요' }[id], 'info');
+  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏀 실내 체육관이에요! 왼쪽은 🌀 회전 막대 점프(친구들과 함께), 오른쪽은 🏀 농구예요' }[id], 'info');
 }
 async function exitRoom(id) {
   if (hv.travel) return;
@@ -12441,13 +12570,13 @@ function renderRooms(force) {
     bld.artLabel?.userData.set(['🖼️ 우리 반 전시 벽', arts.length ? `작품 ${arts.length}점` : '선생님이 확인한 작품이 걸려요']);
   }
   const gy = S.gym || {};
-  bld.gymLabel?.userData.set(['🏀 우리 반 체육관 기록', `🪢 함께 넘은 줄넘기 ${gy.rope || 0}번 · 🎯 맞힌 공 ${gy.hit || 0}개`]);
+  bld.gymLabel?.userData.set(['🏀 우리 반 농구', `함께 넣은 골 ${gy.hit || 0}개`]);
 }
 function updateRooms(dt) {
   if (!bld.group) return;
   const near = (player.pos.x > 1400 && player.pos.x < 1620) || (camera.position.x > 1400 && camera.position.x < 1620);
   bld.group.visible = near;
-  if (bld.rope && near) bld.rope.rotation.x = time * 3.2;
+  if (near) { updateJc(dt); updateBB(dt); }
   bld.dt = (bld.dt || 0) - dt; if (bld.dt <= 0) { bld.dt = 0.25; updateDoors(); }
 }
 // ---------- 📒 독서 기록장 ----------
@@ -12539,7 +12668,110 @@ function initArtUI() {
   $('artClose').onclick = closeArt;
   addEventListener('keydown', e => { if (e.key === 'Escape' && !$('artPanel').classList.contains('hidden')) closeArt(); });
 }
-// ---------- 🏀 체육관 놀이 (줄넘기 리듬 · 과녁 맞히기) ----------
+// ---------- 🌀 회전 막대 점프 · 🏀 농구 (실내 체육관에서 몸으로 하는 놀이) ----------
+// 회전 막대: 누군가 시작을 누르면 state/gym/jc = 시작 시각(서버). 모두 같은 시각으로 막대 각도를 계산해서 같은 막대를 봐요
+//   링 안에 서 있다가 막대가 오면 점프! 맞으면 링 밖으로 튕겨 나가요. 90초 버티면 성공. 30초부터 막대가 2개
+// 농구: 꾹 누르고 있으면 힘 막대가 오르내려요. 알맞을 때 놓으면 골대 쪽으로 슛 (3점 선 밖이면 3점). 넣은 공은 반 전체 기록 state/gym/hit
+const GYM2 = { jc: { x: 1563.5, z: -0.5, r: 4.4, h: 0.42, len: 90000, wait: 5000 }, bb: { x: 1576.5, z: -7.7, h: 2.75, rim: 0.36, three: 5.2 } };
+const jcT0 = () => S.gym?.jc || 0;
+function jcState() { const t0 = jcT0(); if (!t0 || !backend) return 'idle'; const now = backend.now(); return now < t0 ? 'ready' : now < t0 + GYM2.jc.len ? 'run' : 'idle'; }
+const jcAngle = (s, k) => (1.15 * s + 0.012 * s * s) + k * Math.PI; // s초 뒤 막대 각도 (점점 빨라져요)
+const inJcRing = (x, z, pad = 0) => Math.hypot(x - GYM2.jc.x, z - GYM2.jc.z) < GYM2.jc.r + pad;
+const jc = { round: 0, out: false, prevA: [null, null], done: 0, t0: 0 };
+async function jcStart() {
+  if (jcState() !== 'idle') { toast('🌀 지금 게임 중이에요! 다음 판을 기다려요', 'info'); return; }
+  const res = await backend.gymJc();
+  if (res.ok) toast('🌀 5초 뒤 시작! 초록 링 안으로 들어가요', 'success');
+  else if (res.reason !== 'offline') toast('🌀 친구가 먼저 시작했어요! 링 안으로 들어가요', 'info');
+}
+function updateJc(dt) {
+  if (!bld.bars?.length) return;
+  const t0 = jcT0(), st = jcState(), J = GYM2.jc, p = player.pos;
+  if (t0 !== jc.t0) { jc.t0 = t0; jc.out = false; jc.prevA = [null, null]; jc.done = 0; }
+  const s = st === 'run' ? (backend.now() - t0) / 1000 : 0;
+  bld.bars.forEach((b, k) => { b.visible = k === 0 || s >= 30; b.rotation.y = -(st === 'run' ? jcAngle(s, k) : time * 0.3 + k * Math.PI); });
+  // 남은 친구 (링 안에 있고 탈락 표시가 없는 사람)
+  const onRing = (x, z) => inJcRing(x, z, 0.3);
+  let alive = (onRing(p.x, p.z) && !jc.out && roomNow() === 'gym') ? 1 : 0;
+  for (const r of remotes.values()) if (onRing(r.pos.x, r.pos.z) && !r.target.o) alive++;
+  bld.jcLabel?.userData.set(st === 'idle' ? ['🌀 회전 막대 점프', '링 앞에서 E로 시작 · 친구들과 함께 버텨요'] : st === 'ready' ? ['🌀 곧 시작해요!', `${Math.ceil((t0 - backend.now()) / 1000)}초 · 링 안으로 들어와요`] : [`🌀 ${Math.ceil((t0 + J.len - backend.now()) / 1000)}초 남았어요`, `링 위에 남은 친구 ${alive}명${s >= 30 ? ' · 막대 2개!' : ''}`]);
+  if (st !== 'run' || roomNow() !== 'gym') { jc.prevA = [null, null]; return; }
+  // 내가 막대에 맞았는지 (링 안, 발이 낮을 때)
+  if (!jc.out && onRing(p.x, p.z)) {
+    const ang = Math.atan2(p.z - J.z, p.x - J.x), dist = Math.hypot(p.x - J.x, p.z - J.z), low = p.y < 0.1 + J.h + 0.2;
+    for (let k = 0; k < 2; k++) {
+      if (k === 1 && s < 30) continue;
+      const a = jcAngle(s, k), pa = jc.prevA[k]; jc.prevA[k] = a;
+      if (pa == null || dist < 0.7 || dist > J.r + 0.2 || !low) continue;
+      const rel0 = ((ang - pa) % (Math.PI * 2) + Math.PI * 4) % (Math.PI * 2), sweep = a - pa;
+      if (rel0 <= sweep + 0.12) { // 막대가 내 자리를 지나갔어요 → 탈락
+        jc.out = true; const ux = (p.x - J.x) / (dist || 1), uz = (p.z - J.z) / (dist || 1);
+        p.x = J.x + ux * (J.r + 1.4); p.z = J.z + uz * (J.r + 1.4); player.vy = 6;
+        playSfx('wrong'); burst(p.clone().setY(1), [0xFF9628, 0xFFFFFF], 30, 4, 2);
+        toast(`💥 막대에 맞았어요! ${Math.floor(s)}초 버텼어요 · 다음 판에 또 도전!`, 'warn');
+        jcReward(false, s); break;
+      }
+    }
+  } else jc.prevA = [jcAngle(s, 0), jcAngle(s, 1)];
+  if (!jc.out && !jc.done && s >= J.len / 1000 - 0.3 && onRing(p.x, p.z)) { jc.done = 1; showBanner('🏆 끝까지 버텼어요!', `회전 막대를 90초 동안 모두 피했어요`, 4500); jcReward(true, s); }
+}
+function jcReward(win, s) {
+  if (jc.rewarded === jc.t0) return; jc.rewarded = jc.t0;
+  const sh = win ? 12 : Math.min(6, 1 + Math.floor(s / 15)), cap = capNow(), give = cap ? Math.max(0, Math.min(sh, cap - earnToday())) : sh;
+  if (give > 0) { bag.earn.n += give; earnShell(give); toast(`🌀 회전 막대 점프 🐚 +${give}`, 'success'); }
+  backend.gymAdd('rope', Math.max(1, Math.floor(s))); // 반 전체 '버틴 시간(초)'에 보태요
+}
+// 🏀 농구
+const bb = { on: false, hold: false, pow: 0, dir: 1, balls: [], score: 0, made: 0, shots: 0, cool: 0 };
+function bbStart() { bb.on = true; bb.score = 0; bb.made = 0; bb.shots = 0; $('bbBar').classList.remove('hidden'); bbRender(); toast('🏀 F 키나 🏀 버튼을 꾹 누르면 힘이 모여요. 알맞을 때 놓아요! (움직여서 자리를 바꿔도 돼요)', 'info'); }
+function bbStop() { bb.on = false; bb.hold = false; $('bbBar').classList.add('hidden'); }
+function bbRender() { $('bbFill').style.width = `${Math.round(bb.pow * 100)}%`; $('bbInfo').textContent = `🏀 ${bb.made} / ${bb.shots}골 · ${bb.score}점`; }
+function bbDown() { if (!bb.on || bb.cool > 0) return; bb.hold = true; bb.pow = 0; bb.dir = 1; }
+function bbUp() {
+  if (!bb.on || !bb.hold) return; bb.hold = false; bb.cool = 0.6;
+  const B = GYM2.bb, p = player.pos, sx = p.x, sy = 1.9, sz = p.z, dx = B.x - sx, dz = B.z - sz, dist = Math.hypot(dx, dz);
+  // 알맞은 힘(이 거리에서 골대에 들어가는 속도)을 기준으로, 힘 막대가 0.62~0.78이면 거의 들어가요
+  const ang = 0.95, g = 9.8, dy = B.h - sy, need = Math.sqrt(g * dist * dist / (2 * Math.cos(ang) ** 2 * Math.max(0.3, dist * Math.tan(ang) - dy)));
+  const v = need * (1 + (bb.pow - 0.7) * 0.32 * (3 / Math.max(3, dist))); // 힘 0.7이면 딱 맞아요 (가까우면 초록 칸 안이면 들어가요, 멀수록 더 정확해야 해요)
+  const m = ball(bld.group, 0.24, 0xFF8A3A, sx, sy, sz, { solid: false });
+  bb.balls.push({ m, x: sx, y: sy, z: sz, vx: dx / dist * v * Math.cos(ang), vy: v * Math.sin(ang), vz: dz / dist * v * Math.cos(ang), t: 0, scored: false, three: dist > B.three, prevY: sy });
+  bb.shots++; playSfx('jump'); playAct(player.avatar, 'cheer'); bb.pow = 0; bbRender();
+}
+function updateBB(dt) {
+  if (bb.cool > 0) bb.cool -= dt;
+  if (bb.on && roomNow() !== 'gym') bbStop();
+  if (bb.hold) { bb.pow += bb.dir * dt * 1.1; if (bb.pow >= 1) { bb.pow = 1; bb.dir = -1; } if (bb.pow <= 0) { bb.pow = 0; bb.dir = 1; } bbRender(); }
+  const B = GYM2.bb;
+  const steps = Math.max(1, Math.ceil(dt / (1 / 120))), h = dt / steps; // 화면이 느려도 공이 골대를 건너뛰지 않게 잘게 나눠 계산해요
+  for (const b of bb.balls) for (let st = 0; st < steps; st++) {
+    b.t += h; b.prevY = b.y;
+    b.vy -= 9.8 * h; b.x += b.vx * h; b.y += b.vy * h; b.z += b.vz * h;
+    if (b.z < B.z - 0.45 && b.y > B.h - 0.1 && b.y < B.h + 1.0 && Math.abs(b.x - B.x) < 0.9) { b.z = B.z - 0.45; b.vz = -b.vz * 0.55; } // 백보드
+    const hr = Math.hypot(b.x - B.x, b.z - B.z);
+    if (!b.scored && b.prevY >= B.h && b.y < B.h && hr < B.rim - 0.06) { // 골!
+      b.scored = true; b.vx *= 0.2; b.vz *= 0.2; const pts = b.three ? 3 : 2; bb.score += pts; bb.made++;
+      playSfx('fanfare'); burst(new V3(B.x, B.h, B.z), RAINBOW, 40, 4, 2); toast(b.three ? '🏀 3점 슛 성공!' : '🏀 골인!', 'success');
+      backend.gymAdd('hit', 1);
+      const cap = capNow(), give = cap ? Math.max(0, Math.min(pts, cap - earnToday())) : pts; if (give > 0 && bb.made <= 15) { bag.earn.n += give; earnShell(give); }
+      bbRender();
+    } else if (!b.scored && !b.rimHit && Math.hypot(hr - B.rim, b.y - B.h) < 0.13) { b.rimHit = true; b.vy = Math.abs(b.vy) * 0.4; b.vx = -b.vx * 0.5; b.vz = -b.vz * 0.5; } // 림에 맞고 튕겨요
+    if (b.y < 0.35) { b.y = 0.35; b.vy = Math.abs(b.vy) * 0.5; b.vx *= 0.7; b.vz *= 0.7; }
+    b.m.position.set(b.x, b.y, b.z);
+  }
+  for (const b of bb.balls.filter(b => b.t > 4)) bld.group.remove(b.m);
+  bb.balls = bb.balls.filter(b => b.t <= 4);
+}
+function initBBUI() {
+  const btn = $('bbShoot');
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); bbDown(); });
+  btn.addEventListener('pointerup', e => { e.preventDefault(); bbUp(); });
+  btn.addEventListener('pointerleave', () => { if (bb.hold) bbUp(); });
+  $('bbQuit').onclick = bbStop;
+  addEventListener('keydown', e => { if (bb.on && e.key.toLowerCase() === 'f' && !e.repeat && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); bbDown(); } });
+  addEventListener('keyup', e => { if (bb.on && e.key.toLowerCase() === 'f') { e.preventDefault(); bbUp(); } });
+}
+
+// ---------- (예전) 체육관 그림 창 놀이 — 지금은 쓰지 않아요 ----------
 const gym = { mode: '', t0: 0, run: false, n: 0, lives: 0, raf: 0, last: -1, balls: 0, hits: 0, tx: 0, tv: 0, flash: '', msg: '' };
 function openGym(mode) {
   closeModals(); gym.mode = mode; gym.run = false; gym.n = 0; gym.hits = 0;
@@ -12613,7 +12845,7 @@ function initGymUI() {
 // ---------- 선생님 ----------
 function fillRoomAdmin() {
   const rd = S.read || {}, gy = S.gym || {}, arts = artList(), wait = arts.filter(a => !a.ok);
-  $('tpRoomNow').textContent = `📚 독서 기록 ${rd.n || 0}권 · 🪢 줄넘기 ${gy.rope || 0}번 · 🎯 과녁 ${gy.hit || 0}개 · 🖼️ 전시 ${arts.length - wait.length}점 (확인 기다림 ${wait.length}점)`;
+  $('tpRoomNow').textContent = `📚 독서 기록 ${rd.n || 0}권 · 🌀 회전 막대 함께 버틴 시간 ${gy.rope || 0}초 · 🏀 골 ${gy.hit || 0}개 · 🖼️ 전시 ${arts.length - wait.length}점 (확인 기다림 ${wait.length}점)`;
   const box = $('tpArtList'); box.textContent = '';
   for (const a of arts.slice(0, 30)) {
     const row = el2('div', 'tp-mrow', ''), left = el2('div', '', ''); left.style.cssText = 'display:flex;align-items:center;gap:8px';
@@ -12757,6 +12989,1033 @@ function initHideUI() {
   $('tpHideStop').onclick = () => adminDo({ hide: null }, '🙈 숨바꼭질을 끝냈어요');
 }
 
+
+/* =====================================================================
+   55. 🌿 온실 내 화분 · 🐛 해충 잡기 — 텃밭 창고 문이 온실 입구예요
+   · 온실: 씨앗(🐚)을 심고 하루 한 번 물 주기 → 며칠에 걸쳐 자라요. 다 크면 우리 집 화분 가구로 가져가거나 팔아요
+     하루 넘게 물을 안 주면 시들어요(물 주면 다시 살아나요). 친구들 화분도 온실 선반에 함께 보여요 (이름 없이)
+     저장: state/pots/{기기} = { s 씨앗, d 심은 날, w 마지막 물 준 날, n 물 준 날 수 } — 규칙이 하루 한 번만 물 주게 막아요
+   · 해충: 텃밭 근처에 친구가 있으면 가끔 해충 12마리가 나타나요(60초). 다가가서 E로 잡아요. 다 잡으면 반 작물이 쑥 자라요
+     저장: state/pest = { at 시작 시각, got/{0~11} } — 선생님은 관리 화면에서 바로 부를 수 있어요
+   ===================================================================== */
+const SEEDS = [
+  { icon: '🌻', name: '해바라기', price: 30, days: 4, sell: 60, col: 0xFFD23C, fur: 20 },
+  { icon: '🌷', name: '튤립', price: 40, days: 4, sell: 80, col: 0xFF6A8A, fur: 21 },
+  { icon: '🍅', name: '방울토마토', price: 50, days: 5, sell: 110, col: 0xE63C32, fur: 22 },
+  { icon: '🌵', name: '선인장', price: 20, days: 3, sell: 40, col: 0x4FA04F, fur: 23, tough: true },
+  { icon: '🍓', name: '딸기', price: 60, days: 5, sell: 130, col: 0xE2304A, fur: 24 },
+];
+const potOf = (uid, st = S) => st.pots?.[uid] || null;
+const myPot = () => potOf(backend?.uid);
+const potGrown = (p) => !!p && p.n >= SEEDS[p.s].days;
+const potWilt = (p) => !!p && !potGrown(p) && !SEEDS[p.s].tough && (p.w || p.d) < dayNum() - 1;
+const potWatered = (p) => !!p && p.w === dayNum();
+const potStage = (p) => !p ? 0 : potGrown(p) ? 4 : Math.min(3, Math.floor(p.n / SEEDS[p.s].days * 4));
+const gh = { group: null, pots: null, key: '', mark: null };
+// ---------- 실제와 비슷한 식물 모양 (잎맥이 있는 휜 잎, 꽃잎, 씨앗판, 열매) ----------
+const PL = {};
+function plMat(col, o = {}) { const k = col + JSON.stringify(o); return PL['m' + k] || (PL['m' + k] = new THREE.MeshStandardMaterial({ color: col, roughness: o.r ?? 0.75, side: o.ds ? THREE.DoubleSide : THREE.FrontSide, map: o.map || null, flatShading: !!o.flat })); }
+function bentShape(shape, bend, curl = 0) { // 평면 잎 → 가운데 잎맥을 따라 휘고, 끝으로 갈수록 아래로 처지게
+  const geo = new THREE.ShapeGeometry(shape, 6), pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), y = pos.getY(i); pos.setZ(i, Math.abs(x) * x * 0 + (x * x) * bend - y * y * curl); }
+  geo.computeVertexNormals(); return geo;
+}
+function leafShape(w, l, tipSharp = 0.6, serr = 0) { // 길이 l(위쪽 +y), 폭 w
+  const s = new THREE.Shape(), N = 14; s.moveTo(0, 0);
+  const pts = [];
+  for (let i = 1; i <= N; i++) { const t = i / N, ww = Math.sin(Math.PI * Math.pow(t, tipSharp)) * w / 2 * (1 + (serr && i % 2 ? serr : 0)); pts.push([ww, t * l]); }
+  pts.forEach(([x, y]) => s.lineTo(x, y)); for (let i = pts.length - 2; i >= 0; i--) s.lineTo(-pts[i][0], pts[i][1]); s.lineTo(0, 0);
+  return s;
+}
+const plGeo = (key, make) => PL['g' + key] || (PL['g' + key] = make());
+const LEAF_OVAL = () => plGeo('oval', () => bentShape(leafShape(0.55, 1, 0.75), 0.6, 0.15));
+const LEAF_HEART = () => plGeo('heart', () => { const s = new THREE.Shape(); s.moveTo(0, 0); s.bezierCurveTo(0.55, -0.15, 0.65, 0.55, 0, 1.05); s.bezierCurveTo(-0.65, 0.55, -0.55, -0.15, 0, 0); return bentShape(s, 0.5, 0.18); });
+const LEAF_STRAP = () => plGeo('strap', () => bentShape(leafShape(0.3, 1, 0.5), 2.2, 0.1));
+const LEAF_SERR = () => plGeo('serr', () => bentShape(leafShape(0.62, 1, 0.8, 0.12), 0.5, 0.08));
+const LEAF_TOMATO = () => plGeo('tomleaf', () => bentShape(leafShape(0.5, 1, 0.65, 0.1), 0.7, 0.1));
+const PETAL = () => plGeo('petal', () => bentShape(leafShape(0.32, 1, 0.9), 0.8, -0.1));
+const PETAL_ROUND = () => plGeo('petalR', () => bentShape(leafShape(0.85, 1, 1.2), 0.3, -0.05));
+const TULIP_PETAL = () => plGeo('tulip', () => new THREE.LatheGeometry([[0, 0], [0.32, 0.12], [0.42, 0.42], [0.38, 0.75], [0.26, 0.95]].map(([x, y]) => new THREE.Vector2(x, y)), 10, 0, Math.PI * 0.62));
+const POT_GEO = () => plGeo('pot', () => new THREE.LatheGeometry([[0, 0], [0.22, 0], [0.25, 0.04], [0.31, 0.36], [0.36, 0.37], [0.37, 0.46], [0.33, 0.47], [0.31, 0.43]].map(([x, y]) => new THREE.Vector2(x, y)), 20));
+const CACTUS_GEO = () => plGeo('cactus', () => { const g = new THREE.LatheGeometry([[0, 0], [0.16, 0.01], [0.19, 0.2], [0.19, 0.55], [0.16, 0.8], [0.09, 0.93], [0, 0.97]].map(([x, y]) => new THREE.Vector2(x, y)), 24); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), r = Math.hypot(x, z); if (r < 1e-4) continue; const a = Math.atan2(z, x), k = 1 + 0.1 * Math.cos(a * 8); p.setX(i, x * k); p.setZ(i, z * k); } g.computeVertexNormals(); return g; });
+function seedTex() { return PL.seedTex || (PL.seedTex = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 128; const c = cv.getContext('2d'); c.fillStyle = '#5A3A1E'; c.fillRect(0, 0, 128, 128); for (let i = 0; i < 260; i++) { const r = Math.sqrt(i) * 3.9, a = i * 2.39996; c.fillStyle = i < 30 ? '#8A6A2A' : i % 2 ? '#3E2612' : '#6B4520'; c.beginPath(); c.arc(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, 2.6, 0, 7); c.fill(); } const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t; })()); }
+function berryTex() { return PL.berryTex || (PL.berryTex = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 64; const c = cv.getContext('2d'); c.fillStyle = '#E2304A'; c.fillRect(0, 0, 64, 64); for (let y = 4; y < 64; y += 8) for (let x = (y % 16 ? 4 : 0); x < 64; x += 8) { c.fillStyle = '#F6D35A'; c.beginPath(); c.ellipse(x, y, 1.4, 2, 0, 0, 7); c.fill(); } const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })()); }
+function plMesh(parent, geo, mat, x, y, z, sx = 1, sy = sx, sz = sx, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.rotation.set(rx, ry, rz, 'YXZ'); parent.add(m); return m; }
+function addLeaf(parent, geo, col, x, y, z, len, yaw, pitch, wilt) { // pitch: 0이면 수평, 양수면 위로
+  const m = plMesh(parent, geo, plMat(col, { ds: true, r: 0.6 }), x, y, z, len, len, len, 0, yaw, 0);
+  m.rotation.set(-(Math.PI / 2 - (pitch - (wilt ? 0.9 : 0))), yaw, 0, 'YXZ'); return m;
+}
+function stemCurve(parent, pts, r, col) { const c = new THREE.CatmullRomCurve3(pts.map(p => new V3(...p))); plMesh(parent, new THREE.TubeGeometry(c, 12, r, 6, false), plMat(col), 0, 0, 0); return c; }
+function buildPlantModel(g, s, stage, wilt) { // 화분 + 식물 (stage 0 씨앗 … 4 다 큼)
+  const sd = SEEDS[s] || SEEDS[0], name = sd.name;
+  const leafCol = wilt ? 0x9C9A5A : (name === '선인장' ? 0x4E9A5A : 0x3F8F3A), leafCol2 = wilt ? 0xB0A468 : 0x5DAA4A, stemCol = wilt ? 0x8A8A50 : 0x4E8A3A;
+  plMesh(g, POT_GEO(), plMat(0xC9703F, { r: 0.9 }), 0, 0, 0);
+  plMesh(g, new THREE.CylinderGeometry(0.3, 0.3, 0.02, 20), plMat(0x4A3424, { r: 1 }), 0, 0.43, 0);
+  const top = 0.44, P = new THREE.Group(); P.position.y = top; g.add(P);
+  if (stage <= 0) { plMesh(P, new THREE.SphereGeometry(0.035, 8, 6), plMat(0x8A5A34), 0.04, 0.02, 0, 1, 0.6, 1); plMesh(P, new THREE.SphereGeometry(0.03, 8, 6), plMat(0x7A4A24), -0.05, 0.015, 0.03, 1, 0.6, 1); return g; }
+  if (stage === 1 && name !== '선인장') { // 새싹: 떡잎 두 장
+    cyl(P, 0.012, 0.12, stemCol, 0, 0.06, 0, { solid: false });
+    for (const yaw of [0, Math.PI]) addLeaf(P, LEAF_OVAL(), leafCol2, 0, 0.12, 0, 0.2, yaw, 0.3, wilt);
+    return g;
+  }
+  const k = stage >= 4 ? 1 : stage === 3 ? 0.85 : 0.55; // 크기
+  if (name === '해바라기') {
+    const H = 1.25 * k, bend = wilt ? 0.35 : 0.08;
+    stemCurve(P, [[0, 0, 0], [0.01, H * 0.4, 0], [0.02, H * 0.8, bend * 0.5], [0, H, bend]], 0.03 * k + 0.01, stemCol);
+    const nL = stage >= 3 ? 8 : 4;
+    for (let i = 0; i < nL; i++) { const t = (i + 1) / (nL + 1), y = H * t * 0.9; addLeaf(P, LEAF_HEART(), i % 2 ? leafCol : leafCol2, 0, y, 0, (0.5 - t * 0.22) * (0.6 + k * 0.4), i * 2.4, 0.15 - t * 0.1, wilt); }
+    if (stage >= 3) {
+      const head = new THREE.Group(); head.position.set(0, H, bend); head.rotation.x = wilt ? 1.9 : 1.15; head.scale.setScalar(stage >= 4 ? 1.35 : 1); P.add(head);
+      if (stage === 3) { plMesh(head, new THREE.SphereGeometry(0.09, 12, 8), plMat(0x5DAA4A), 0, 0.03, 0, 1, 0.7, 1); for (let i = 0; i < 10; i++) addLeaf(head, PETAL(), 0x6BB24A, 0, 0.02, 0, 0.1, i * 0.63, 0.9, false); }
+      else {
+        plMesh(head, new THREE.CylinderGeometry(0.15, 0.17, 0.05, 28), [plMat(0x4E8A3A), plMat(0x3E2612, { map: seedTex() }), plMat(0x4E8A3A)], 0, 0.02, 0, 1, 1, 1, Math.PI / 2, 0, 0).rotation.set(0, 0, 0);
+        head.children.at(-1).rotation.x = 0;
+        for (let layer = 0; layer < 2; layer++) for (let i = 0; i < 16; i++) addLeaf(head, PETAL(), layer ? 0xFFC21C : 0xFFD23C, 0, 0.03 + layer * 0.005, 0, 0.17 - layer * 0.02, i / 16 * Math.PI * 2 + layer * 0.2, 0.08 + layer * 0.08, wilt);
+        for (let i = 0; i < 10; i++) addLeaf(head, LEAF_OVAL(), 0x4E8A3A, 0, 0.0, 0, 0.09, i * 0.63, -0.2, false); // 꽃받침
+      }
+    }
+  } else if (name === '튤립') {
+    const H = 0.7 * k;
+    const nL = stage >= 3 ? 3 : 2; for (let i = 0; i < nL; i++) addLeaf(P, LEAF_STRAP(), i % 2 ? leafCol2 : leafCol, 0, 0.02, 0, 0.42 * (0.6 + k * 0.4), i * 2.1, 1.05 - i * 0.12, wilt);
+    if (stage >= 3) {
+      stemCurve(P, [[0, 0, 0], [0, H * 0.5, 0.01], [0, H, wilt ? 0.25 : 0.02]], 0.014, stemCol);
+      const cup = new THREE.Group(); cup.position.set(0, H, wilt ? 0.25 : 0.02); if (wilt) cup.rotation.x = 0.9; P.add(cup);
+      const s3 = stage === 3 ? 0.55 : 1, col = stage === 3 ? 0x8ACB5A : sd.col;
+      for (let i = 0; i < 6; i++) { const m = plMesh(cup, TULIP_PETAL(), plMat(i < 3 ? col : new THREE.Color(col).multiplyScalar(0.88).getHex(), { ds: true, r: 0.5 }), 0, 0, 0, 0.32 * s3, 0.3 * (stage === 3 ? 0.9 : 1), 0.32 * s3); m.rotation.y = i * Math.PI / 3 + (i >= 3 ? Math.PI / 6 : 0); if (i >= 3) m.scale.multiplyScalar(0.96); }
+    }
+  } else if (name === '방울토마토') {
+    const H = 0.95 * k; plMesh(P, new THREE.CylinderGeometry(0.012, 0.012, 1.1, 6), plMat(0xC8A266), 0.14, 0.55, -0.06); // 지지대
+    const c = stemCurve(P, [[0, 0, 0], [0.05, H * 0.3, 0.03], [0.1, H * 0.6, -0.04], [0.13, H, 0]], 0.018, stemCol);
+    const nB = stage >= 3 ? 5 : 3;
+    for (let i = 0; i < nB; i++) { // 겹잎: 잎자루에 작은 잎 5장
+      const t = 0.18 + i / nB * 0.75, p = c.getPoint(t), yaw = i * 2.2, br = new THREE.Group(); br.position.copy(p); br.rotation.y = yaw; P.add(br);
+      const L = 0.26 * (0.6 + k * 0.4); cyl(br, 0.006, L, stemCol, L / 2, 0, 0, { solid: false, rz: Math.PI / 2 - (wilt ? -0.6 : 0.25) });
+      for (let j = 0; j < 5; j++) { const f = (j + 1) / 5 * L; addLeaf(br, LEAF_TOMATO(), j % 2 ? leafCol : leafCol2, f, f * (wilt ? -0.5 : 0.25), 0, 0.18 + (j === 4 ? 0.04 : 0), j === 4 ? -Math.PI / 2 : (j % 2 ? 0 : Math.PI), wilt ? -0.5 : 0.1, wilt); }
+    }
+    if (stage === 3) for (let i = 0; i < 5; i++) { const p = c.getPoint(0.5 + i * 0.08); for (let j = 0; j < 5; j++) addLeaf(P, PETAL(), 0xFFD23C, p.x + 0.05, p.y - 0.03, p.z, 0.035, j * 1.26, -0.4, false); }
+    if (stage >= 4) for (let tr = 0; tr < 2; tr++) { const p = c.getPoint(0.45 + tr * 0.3); for (let j = 0; j < 4; j++) { const a = j * 1.6 + tr, x = p.x + 0.06 + Math.cos(a) * 0.04, y = p.y - 0.06 - j * 0.035, z = p.z + Math.sin(a) * 0.04; plMesh(P, new THREE.SphereGeometry(0.035, 12, 10), plMat(j === 3 ? 0x8ACB5A : j === 2 ? 0xF07A3A : sd.col, { r: 0.35 }), x, y, z); for (let q = 0; q < 5; q++) addLeaf(P, PETAL(), 0x3F8F3A, x, y + 0.03, z, 0.02, q * 1.26, 0.2, false); } }
+  } else if (name === '선인장') {
+    const sc = [0, 0.35, 0.55, 0.75, 0.9][stage];
+    const body = plMesh(P, CACTUS_GEO(), plMat(leafCol, { r: 0.7 }), 0, 0, 0, sc * 0.9, sc * 0.75, sc * 0.9); if (wilt) body.rotation.z = 0.15;
+    if (stage >= 3) { const arm = new THREE.Group(); arm.position.set(0.12 * sc, 0.3 * sc, 0); arm.rotation.z = -0.55; P.add(arm); plMesh(arm, CACTUS_GEO(), plMat(leafCol, { r: 0.7 }), 0, 0, 0, sc * 0.45, sc * 0.35, sc * 0.45); }
+    for (let i = 0; i < 24; i++) { const a = (i % 8) / 8 * Math.PI * 2 + (Math.floor(i / 8) % 2) * 0.4, y = (0.15 + Math.floor(i / 8) * 0.22) * sc * 0.75, r = 0.19 * sc * 0.9 * 1.08; plMesh(P, new THREE.SphereGeometry(0.008, 4, 3), plMat(0xFFFFF0), Math.cos(a) * r, y, Math.sin(a) * r); } // 가시 자리
+    if (stage >= 4) { const fl = new THREE.Group(); fl.position.set(0, 0.95 * sc * 0.75, 0); P.add(fl); for (let i = 0; i < 10; i++) addLeaf(fl, PETAL(), i % 2 ? 0xFF7AA8 : 0xFF9AC0, 0, 0, 0, 0.07, i * 0.63, 0.7, false); plMesh(fl, new THREE.SphereGeometry(0.018, 8, 6), plMat(0xFFE066), 0, 0.02, 0); }
+  } else { // 딸기
+    const nL = stage >= 3 ? 7 : 4;
+    for (let i = 0; i < nL; i++) { // 잎자루 + 세 장 겹잎 (톱니)
+      const yaw = i / nL * Math.PI * 2, L = 0.26 * (0.6 + k * 0.4), br = new THREE.Group(); br.rotation.y = yaw; P.add(br);
+      const lean = wilt ? 1.25 : 0.75 + (i % 2) * 0.2; cyl(br, 0.007, L, stemCol, Math.sin(lean) * L / 2, Math.cos(lean) * L / 2, 0, { solid: false, rz: -lean });
+      const tx = Math.sin(lean) * L, ty = Math.cos(lean) * L;
+      for (const dy of [-0.7, 0, 0.7]) addLeaf(br, LEAF_SERR(), dy ? leafCol : leafCol2, tx, ty, 0, 0.16, -Math.PI / 2 + dy, wilt ? -0.6 : 0.25, wilt);
+    }
+    if (stage === 3) for (let i = 0; i < 3; i++) { const fl = new THREE.Group(); fl.position.set(Math.cos(i * 2.1) * 0.12, 0.16, Math.sin(i * 2.1) * 0.12); P.add(fl); for (let j = 0; j < 5; j++) addLeaf(fl, PETAL_ROUND(), 0xFFFFFF, 0, 0, 0, 0.04, j * 1.26, 0.5, false); plMesh(fl, new THREE.SphereGeometry(0.013, 8, 6), plMat(0xFFD23C), 0, 0.008, 0); }
+    if (stage >= 4) for (let i = 0; i < 4; i++) { const a = i * 1.57 + 0.4, x = Math.cos(a) * 0.2, z = Math.sin(a) * 0.2, y = 0.04 + (i % 2) * 0.04; const b = plMesh(P, new THREE.SphereGeometry(0.05, 14, 10), plMat(i === 3 ? 0xF4F0C8 : 0xE2304A, { r: 0.35, map: i === 3 ? null : berryTex() }), x, y, z, 0.85, 1.15, 0.85); b.rotation.x = Math.PI; for (let q = 0; q < 6; q++) addLeaf(P, LEAF_OVAL(), 0x3F8F3A, x, y + 0.055, z, 0.035, q * 1.05, 0.1, false); }
+  }
+  return g;
+}
+function buildGreenhouse() {
+  const r = ROOMS.gh, g = new THREE.Group(); g.name = 'Greenhouse'; bld.group.add(g); gh.group = g;
+  roomShell(g, r);
+  const { cx, cz, w, d } = r, o = { solid: false };
+  for (let k = -3; k <= 3; k++) box(g, 0.12, 0.12, d, 0xFFFFFF, cx + k * 3, 3.0, cz, o); // 유리 지붕 살
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), new THREE.MeshStandardMaterial({ color: 0xCFF3FF, transparent: true, opacity: 0.25 })); glass.position.set(cx, 3.05, cz); g.add(glass);
+  for (let row = 0; row < 3; row++) { const z = cz - 4.5 + row * 3.2; box(g, 15, 0.8, 1.2, 0x8A5A34, cx - 1, 0.4, z); box(g, 15.2, 0.08, 1.3, 0xB07C50, cx - 1, 0.82, z, o); }
+  for (const [x, z] of [[cx - 9.5, cz - 6], [cx + 9.5, cz - 6], [cx - 9.5, cz + 4], [cx + 9.5, cz + 4]]) { mesh(SPH_MID, g, 0.9, 0.9, 0.9, 0x5DB85F, x, 1.0, z, { solid: false, flat: true }); cyl(g, 0.6, 0.5, 0xD9814A, x, 0.25, z); }
+  box(g, 2.6, 1, 1, 0xB07C50, cx + 8.4, 0.5, cz + 2); for (let k = 0; k < 5; k++) box(g, 0.35, 0.45, 0.2, [0xFFD23C, 0xFF6A8A, 0xE63C32, 0x4FA04F, 0xE2304A][k], cx + 7.5 + k * 0.45, 1.2, cz + 2, o); // 씨앗 가게
+  makeLabel(g, ['🌱 씨앗 · 내 화분'], 0.8, cx + 8.4, 2.4, cz + 2);
+  gh.pots = new THREE.Group(); g.add(gh.pots);
+  gh.mark = makeLabel(g, ['⭐ 내 화분'], 0.6, 0, -99, 0);
+  addInteract({ pos: new V3(cx + 8.4, 1, cz + 3.2), r: 2.4, text: () => roomNow() === 'gh' ? ['내 화분 돌보기 🪴', myPot() ? `${SEEDS[myPot().s].icon} ${SEEDS[myPot().s].name}` : '씨앗 심기'] : null, run: openPot });
+  addInteract({ pos: new V3(0, -99, 0), r: 1.8, dyn2: 'mypot', text: () => roomNow() === 'gh' && myPot() ? [potGrown(myPot()) ? '수확하기 🧺' : potWatered(myPot()) ? '오늘 물 줬어요 💧' : '물 주기 💧', '⭐ 내 화분'] : null, run: () => (potGrown(myPot()) || potWatered(myPot())) ? openPot() : waterPot() });
+  renderPots(true);
+}
+const potSlot = (k) => { const r = ROOMS.gh, row = Math.floor(k / 10) % 3, col = k % 10; return [r.cx - 7.75 + col * 1.5, r.cz - 4.5 + row * 3.2]; };
+function renderPots(force) {
+  if (!gh.pots) return;
+  const list = Object.entries(S.pots || {}).filter(([, p]) => p && SEEDS[p.s]).sort((a, b) => (a[1].d - b[1].d) || a[0].localeCompare(b[0])).slice(0, 30);
+  const key = JSON.stringify(list.map(([u, p]) => [u, p.s, potStage(p), potWilt(p)])) + dayNum();
+  if (!force && key === gh.key) return;
+  gh.key = key;
+  while (gh.pots.children.length) gh.pots.remove(gh.pots.children[0]);
+  let mine = null;
+  list.forEach(([u, p], k) => { const [x, z] = potSlot(k), pg = new THREE.Group(); pg.position.set(x, 0.86, z); buildPlantModel(pg, p.s, potStage(p), potWilt(p)); gh.pots.add(pg); if (u === backend?.uid) mine = [x, z]; });
+  if (mine) gh.mark.position.set(mine[0], 2.6, mine[1]); else gh.mark.position.set(0, -99, 0);
+  const it = interactables.find(i => i.dyn2 === 'mypot'); if (it) { if (mine) it.pos.set(mine[0], 1, mine[1] + 0.9); else it.pos.set(0, -99, 0); }
+}
+function openPot() {
+  openLife('🪴 내 화분', (box) => {
+    box.textContent = '';
+    const p = myPot();
+    if (!p) {
+      box.append(el2('p', 'hint', `씨앗을 골라 심어요. 하루에 한 번 물을 주면 자라요. (내 조개돈 🐚${bag.shell || 0})`));
+      const grid = el2('div', 'lp-grid');
+      SEEDS.forEach((sd, s) => {
+        const c = el2('div', 'lp-card'); c.append(el2('div', 'lp-icon', sd.icon), el2('div', 'lp-name', sd.name), el2('div', 'lp-sub', `🐚 ${sd.price} · ${sd.days}일${sd.tough ? ' · 잘 안 시들어요' : ''}`));
+        const b = el2('button', 'btn lp-btn', '심기'); b.disabled = (bag.shell || 0) < sd.price;
+        b.onclick = async () => { if ((bag.shell || 0) < sd.price) return; const r = await backend.potSet({ s, d: dayNum(), w: 0, n: 0 }); if (r.ok) { bag.shell -= sd.price; saveBag(); playSfx('plop'); toast(`🌱 ${sd.name} 씨앗을 심었어요! 오늘부터 하루에 한 번 물을 줘요`, 'success'); } else if (r.reason !== 'offline') toast('⚠️ 심지 못했어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); refillLife(); };
+        c.append(b); grid.append(c);
+      });
+      box.append(grid); return;
+    }
+    const sd = SEEDS[p.s], grown = potGrown(p);
+    box.append(el2('p', 'lp-big', `${sd.icon} ${sd.name} · ${grown ? '🌟 다 자랐어요!' : `${p.n} / ${sd.days}일`}`));
+    const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, p.n / sd.days * 100)}%`; bar.append(fill); box.append(bar);
+    box.append(el2('p', 'hint', grown ? '수확해서 우리 집 화분 가구로 가져가거나, 팔아서 조개돈으로 바꿔요.' : potWilt(p) ? '🥀 물을 못 받아서 시들었어요… 물을 주면 다시 살아나요!' : potWatered(p) ? '💧 오늘은 물을 줬어요. 내일 또 와요!' : '💧 오늘 아직 물을 안 줬어요.'));
+    if (!grown) { const b = el2('button', 'btn lp-btn', potWatered(p) ? '💧 오늘은 줬어요' : '💧 물 주기'); b.disabled = potWatered(p); b.onclick = waterPot; box.append(el2('div', 'row-center', null)); box.lastChild.append(b); }
+    else {
+      const row = el2('div', 'row-center wrap'), home = el2('button', 'btn lp-btn', `🏠 우리 집 화분으로 (${sd.icon} 가구)`), sell = el2('button', 'btn lp-btn', `🐚 팔기 (+${sd.sell})`);
+      home.onclick = async () => { const r = await backend.potSet(null); if (!r.ok) return; bag.fur[sd.fur] = (bag.fur[sd.fur] || 0) + 1; saveBag(); playSfx('coin'); toast(`🏠 ${sd.icon} ${sd.name} 화분을 내 가구 상자에 넣었어요! 우리 집 꾸미기에서 놓아요`, 'success'); refillLife(); };
+      sell.onclick = async () => { const cap = capNow(), give = cap ? Math.max(0, Math.min(sd.sell, cap - earnToday())) : sd.sell; if (!give) { toast('🏪 오늘 가게 예산을 다 썼어요! 내일 팔거나 집으로 가져가요', 'warn'); return; } const r = await backend.potSet(null); if (!r.ok) return; bag.earn.n += give; earnShell(give); playSfx('coin'); toast(`🐚 ${sd.name}을(를) 팔았어요 +${give}`, 'success'); refillLife(); };
+      row.append(home, sell); box.append(row);
+    }
+    const n = Object.keys(S.pots || {}).length; box.append(el2('p', 'vempty', `🌿 지금 온실에서 자라는 화분 ${n}개`));
+  });
+}
+async function waterPot() {
+  const p = myPot(); if (!p || potGrown(p) || potWatered(p)) return;
+  const r = await backend.potSet({ ...p, w: dayNum(), n: p.n + 1 });
+  if (!r.ok) { if (r.reason !== 'offline') toast('💧 오늘은 이미 물을 줬어요', 'info'); return; }
+  playSfx('plop'); const sd = SEEDS[p.s];
+  const it = interactables.find(i => i.dyn2 === 'mypot'); if (it) burst(it.pos.clone().setY(1.6), [0x6EC1EC, 0xFFFFFF], 24, 3, 2);
+  toast(p.n + 1 >= sd.days ? `🌟 ${sd.name}이(가) 다 자랐어요! 수확해요` : `💧 물을 줬어요! (${p.n + 1}/${sd.days}일) 내일 또 와요`, 'success');
+  refillLife();
+}
+// ---------- 🐛 해충 잡기 ----------
+const PEST = { n: 12, len: 60000, cool: 360000 };
+const pest = { meshes: [], key: '', mine: 0, t0: 0, endShown: '', tryAt: 0 };
+const pestAt = () => S.pest?.at || 0;
+function pestOn() { const at = pestAt(); return !!at && !!backend && backend.now() >= at && backend.now() < at + PEST.len; }
+function pestSpots(at) { // 시작 시각으로 정한 자리 (모두 같은 자리)
+  let s = (at % 100000) + 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const out = []; for (let i = 0; i < PEST.n; i++) { const onBed = i < 8; out.push({ x: onBed ? -5.5 + r() * 11 : -5.5 + r() * 11, z: onBed ? -2.9 + r() * 2.8 : -6 + r() * 2.2, k: Math.floor(r() * 3), ph: r() * 6 }); }
+  return out;
+}
+function pestModel(k) {
+  const g = new THREE.Group(), o = { solid: false };
+  if (k === 0) { for (let j = 0; j < 4; j++) ball(g, 0.13 - j * 0.015, j ? 0x7CC85C : 0x5DB85F, 0, 0.13, -j * 0.17, o); ball(g, 0.03, 0x1E1915, 0.06, 0.2, 0.08, o); ball(g, 0.03, 0x1E1915, -0.06, 0.2, 0.08, o); } // 애벌레
+  else if (k === 1) { mesh(SPH_LO, g, 0.22, 0.2, 0.22, 0xC8A27A, 0, 0.25, -0.05, o); mesh(SPH_LO, g, 0.12, 0.07, 0.3, 0xB5C8A0, 0, 0.07, 0.05, o); for (const sx of [-0.04, 0.04]) cyl(g, 0.01, 0.12, 0x6B6B6B, sx, 0.16, 0.25, o); } // 달팽이
+  else { for (let j = 0; j < 5; j++) ball(g, 0.06, 0x9BD86A, Math.cos(j * 1.3) * 0.12, 0.08 + (j % 2) * 0.05, Math.sin(j * 1.3) * 0.12, o); } // 진딧물 떼
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.32, 0.4, 16), new THREE.MeshBasicMaterial({ color: 0xFF5A5A, transparent: true, opacity: 0.7, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.02; g.add(ring);
+  return g;
+}
+const PEST_NAMES = ['애벌레', '달팽이', '진딧물'];
+function updatePest(dt) {
+  const at = pestAt(), on = pestOn(), model = world.sites?.Garden?.model;
+  if (at !== pest.t0) { pest.t0 = at; pest.mine = 0; pest.meshes.forEach(m => m.parent?.remove(m)); pest.meshes = []; }
+  if (on && model && !pest.meshes.length) { pestSpots(at).forEach((sp, i) => { const m = pestModel(sp.k); m.userData = { ...sp, i }; model.add(m); m.position.set(sp.x, 0.42, sp.z); pest.meshes.push(m); }); }
+  if (!on && pest.meshes.length) { pest.meshes.forEach(m => m.parent?.remove(m)); pest.meshes = []; }
+  const got = S.pest?.got || {};
+  let best = null, bd = 1.9;
+  for (const m of pest.meshes) {
+    const u = m.userData, caught = !!got[u.i]; m.visible = !caught; if (caught) continue;
+    const t = time + u.ph, sp = u.k === 1 ? 0.15 : 0.45; m.position.x = u.x + Math.sin(t * sp) * 0.5; m.position.z = u.z + Math.cos(t * sp * 0.8) * 0.3; m.rotation.y = t * sp; m.children.at(-1).material.opacity = 0.45 + Math.sin(time * 6) * 0.3;
+    const wp = m.getWorldPosition(new V3()), d = Math.hypot(wp.x - player.pos.x, wp.z - player.pos.z); if (d < bd) { bd = d; best = m; }
+  }
+  pest.target = best;
+  const act = interactables.find(i => i.pestAct); if (act) { if (best) act.pos.copy(best.getWorldPosition(new V3())).setY(1); else act.pos.set(0, -99, 0); }
+  // 상태 줄
+  const left = PEST.n - Object.keys(got).length, show = on && left > 0 && joined && inTown(player.pos.x, player.pos.z);
+  $('pestBar').classList.toggle('hidden', !show);
+  if (show) $('pestBar').textContent = `🐛 텃밭에 해충 출동! 남은 해충 ${left}마리 · ${Math.max(0, Math.ceil((at + PEST.len - backend.now()) / 1000))}초`;
+  // 저절로 나타나기: 텃밭 가까이 친구가 있고, 지난번부터 6분 넘게 지났을 때 (10초마다 25%)
+  if (joined && S.built.Garden && model && !on && performance.now() - pest.tryAt > 10000) {
+    pest.tryAt = performance.now();
+    const gp = model.getWorldPosition(new V3());
+    if (Math.hypot(player.pos.x - gp.x, player.pos.z - gp.z) < 16 && (!at || backend.now() > at + PEST.cool) && Math.random() < 0.25) backend.pestStart();
+  }
+}
+async function catchPest() {
+  const m = pest.target; if (!m || !pestOn()) return;
+  const i = m.userData.i, res = await backend.pestGot(i);
+  if (!res.ok) { if (res.reason !== 'offline') toast('앗, 친구가 먼저 잡았어요!', 'info'); return; }
+  pest.mine++; playSfx('pick'); playAct(player.avatar, 'pick');
+  burst(m.getWorldPosition(new V3()).setY(1), [0x9BD86A, 0xFFFFFF, C.gold], 24, 3, 2);
+  const left = PEST.n - Object.keys(S.pest?.got || {}).length - (S.pest?.got?.[i] ? 0 : 1);
+  toast(`🐛 ${PEST_NAMES[m.userData.k]}을(를) 잡았어요! ${left > 0 ? `남은 해충 ${left}마리` : '모두 잡았어요!'}`, 'success');
+}
+function syncPest(prev, first) {
+  if (first) return;
+  const at = pestAt(), pat = prev.pest?.at || 0, got = Object.keys(S.pest?.got || {}).length, pgot = Object.keys(prev.pest?.got || {}).length;
+  if (at && at !== pat && inTown(player.pos.x, player.pos.z)) toast('🐛 텃밭에 해충이 나타났어요! 친구들과 잡으러 가요 (E로 잡기)', 'warn');
+  if (at && at === pat && got >= PEST.n && pgot < PEST.n && pest.endShown !== String(at)) {
+    pest.endShown = String(at);
+    if (inTown(player.pos.x, player.pos.z)) showBanner('🐛 해충을 모두 물리쳤어요!', '반 텃밭 작물이 쑥쑥 자라요', 4500);
+    if (pest.mine > 0) { const sh = pest.mine * 3 + 5, cap = capNow(), give = cap ? Math.max(0, Math.min(sh, cap - earnToday())) : sh; if (give) { bag.earn.n += give; earnShell(give); toast(`🐛 해충 잡기 보상 🐚 +${give}`, 'success'); } }
+    if (pest.mine > 0 && pest.lastCatch === at) for (let i = 0; i < CFG.CROPS.length; i++) if ((S.garden[i] || 0) < 3) backend.garden(i, 'water'); // 마지막으로 잡은 친구 기기가 작물을 키워요
+  }
+}
+function pestTimeoutCheck() {
+  const at = pestAt(); if (!at || !backend) return;
+  if (backend.now() >= at + PEST.len && pest.endShown !== String(at)) {
+    pest.endShown = String(at);
+    const left = PEST.n - Object.keys(S.pest?.got || {}).length;
+    if (left > 0 && backend.now() < at + PEST.len + 5000 && inTown(player.pos.x, player.pos.z)) toast(`🐛 해충 ${left}마리가 도망갔어요… 다음엔 모두 잡아 봐요!`, 'info');
+    if (left > 0 && pest.mine > 0) { const sh = pest.mine * 2, cap = capNow(), give = cap ? Math.max(0, Math.min(sh, cap - earnToday())) : sh; if (give) { bag.earn.n += give; earnShell(give); } }
+  }
+}
+function initGarden2() {
+  addInteract({ pos: new V3(0, -99, 0), r: 2.0, pestAct: true, text: () => pest.target ? ['해충 잡기 🐛', PEST_NAMES[pest.target.userData.k]] : null, run: async () => { await catchPest(); pest.lastCatch = pestAt(); } });
+  $('tpPest').onclick = () => adminDo({ pest: { at: backend.now() + 3000 } }, '🐛 해충을 불렀어요! 3초 뒤 텃밭에 나타나요');
+  setInterval(pestTimeoutCheck, 1000);
+}
+
+/* =====================================================================
+   56. 역사 마을 (예전 한옥 마을) — 역사의 길 · 시대 퀴즈 · 성 공방전
+   · 🏛️ 역사의 길: 마을 북쪽 문으로 나가면 구석기 → 신석기 → 청동기 → 고조선 → 삼국·가야 → 남북국 → 고려 → 조선 순서로 건축물 자리가 있어요
+   · 📜 시대 퀴즈: 사회 학습지(History-worksheet) 빈칸으로 4지선다를 만들어요.
+     처음 고를 때 맞힌 새 문제만 반 전체 시대 점수 +1 (한 기기에서 한 문제는 한 번만) → HIST_GOAL이 되면 그 시대 건축물을 지을 수 있어요
+     틀리면 정답을 보여 주지 않고 다시 고르게 해요 (학습지 정답은 선생님 화면에서만 보이게 한 것과 같은 생각)
+   · 📥 학습지 불러오기: 선생님 기기가 HIST_URL 페이지를 읽어 state/histSrc에 올려요. 학생은 그걸 쓰고, 없으면 아래 HIST_SNAP(넣어 둔 내용)을 써요
+     학습지 앱의 학생 명단·사진은 가져오지 않아요 (SHEETS·ERAS의 글만)
+   · ⚔️ 성 공방전 (마을 남쪽 전쟁터): 선생님이 시대(나라 구성)를 고르고 나라를 정해 시작해요
+     - 우리 성 🏕️ 병영에서 퀴즈를 맞히면 🪨 돌 +3 → 꾹 눌렀다 놓아 던져요 (멀리 갈수록 오래 눌러요)
+     - 상대 성문에 맞히면 성문 -1 · 우리 나라 +1점, 성문을 부수면 +5점 (20초 뒤 다시 세워져요). 성문에서 5m 안에서 던진 돌은 세지 않아요
+     - 우리 성문 앞 🔨에서 퀴즈를 맞히면 성문 +3. 상대 친구를 맞히면 그 친구는 3초 동안 멈춰요
+     - 나라 점수만 보여요. 누가 맞혔는지는 남기지 않고, 끝내면 지워져요 (경제 보상 없음)
+   · 저장: state/hist { n: {시대: {기기: 맞힌 수}}, b: {시대: true} } · state/histSrc { at, j }
+           state/siege { on, r, set, n, at, end, max, team {기기: 나라}, hp {나라}, down {나라: 부서진 시각}, score {나라}, stun {기기: 시각}, shot {기기: {x,z,dx,dz,v,t}}, win }
+   ===================================================================== */
+const HIST_URL = 'https://wooni-teacher.github.io/History-worksheet/'; // 사회 학습지 웹앱 주소 (바뀌면 여기만 고쳐요)
+const HIST_GOAL = 12; // 시대마다 반 전체가 맞혀야 하는 문제 수 (database.rules.json과 상관없어요)
+const HIST_SNAP = {"sheets":[{"id":"s1-1","ch":1,"chip":"구석기","sub":"구석기 시대 사람들의 생활 모습","lines":["## 1. 시대 구분","① 선사시대 : [문자|글자]를 사용하기 이전의 시기","② 역사시대 : [문자|글자]를 사용하여, 기록으로 남아있는 시기","③ 시대의 구분","## 2. 구석기 시대 사람들의 생활 모습","① 한반도에 인류가 처음 살기 시작한 것 : [약 70만 년|약70만년|70만년|약70만|70만] 전으로 추정됨","② [뗀석기] : 돌을 깨뜨리거나 떼어 내어 만들어 사용","> - 대표적인 유물 : [주먹도끼|주먹 도끼]","③ 의생활 : 동물의 [가죽@a] 이나 [풀잎|풀@a]을 사용","④ 식생활 : 나무의 [열매]를 따거나 동물을 직접 [사냥]함","⑤ 주생활 : [추위@b]와 [동물|짐승|맹수@b]의 공격을 피해야 함. → [동굴@c]이나 [바위@c] 아래에서 생활"]},{"id":"s1-2","ch":1,"chip":"신석기","sub":"신석기 시대 사람들의 생활 모습","lines":["## 1. 농사의 시작 → 신석기 시대로!","① [정착] 생활 : [농사|농경]를 시작하게 되면서, 이동생활을 그만두고, 강가나 해안가에 정착하게 됨","## 2. 신석기 시대 사람들의 생활 모습","① [간석기]의 등장 : 돌을 갈고 다듬어 정교하고 날카롭게 만듦.","② 의생활 : 가락바퀴, 뼈바늘 등을 이용하여 [천|옷감@d]이나 [가죽@d]을 꿰어 옷을 만듦.","③ 식생활 : 사냥, 채집은 물론 [농사|농경]를 짓고, [가축]을 기르기 시작함.","> - [빗살무늬 토기|빗살무늬토기]",">> : 진흙을 빚어 불에 구워 만든 토기로, 음식을 보관하거나 조리할 때 사용함.","④ 주생활 : 땅을 파고 그 위에 지붕을 덮은 [움집]을 만들어 생활함."]},{"id":"s1-3","ch":1,"chip":"청동기","sub":"청동기 시대 사람들의 생활 모습","lines":["## 1. 청동기 문화의 등장","① 기원전 2000년경에서 기원전 1500년경 청동기 문화가 퍼지기 시작","② [청동기] : 구리에 주석이나 납을 섞어 만든 도구","> - 주로 지배자와 제사장의 제사 도구, 무기, 장신구로 사용함.",">> : [청동거울|거울@e], [청동검|비파형동검|동검@e], [청동방울|방울@e]","> - 농사를 짓는 데 필요한 도구는 여전히 [돌@f], [나무@f] 로 만듦.","> - [민무늬 토기|민무늬토기] 사용","## 2. 계급의 등장","① 농사기술 발달 → 재산의 차이 발생 → 재산에 따른 계급 발생 → 전쟁을 일으켜 세력을 넓힘","② 마을이 생성되고, 마을의 보호를 위해 도랑을 파고 [울타리|목책] 등을 세우기 시작함.","## 3. 고인돌","① [고인돌] : 청동기 시대에 지배자나 마을 사람이 죽었을 때 만든 무덤","② 수십톤에 달하는 고인돌도 있음. ← 많은 사람을 모을 수 있는 [지배자|족장]가 있었음"]},{"id":"s1-4","ch":1,"chip":"고조선","sub":"고조선 사람들의 생활 모습","lines":["## 1. 고조선의 건국","① [청동기] 문화를 바탕으로 여러 집단이 한반도에 등장함.","② 권력 / 재산이 있는 집단이 다른 집단을 정복하거나 힘을 모아 성장","③ 점차 국가의 모습을 갖추며 우리 역사 최초의 국가인 [고조선] 등장","## 2. 고조선 건국 이야기에 담긴 의미","① 환웅이 비, 바람, 구름을 다스리는 신하들을 데리고 내려옴","> → [농사|농경]가 중요했으며, 하늘을 받드는 환웅 부족이 [농사|농경] 기술을 전해줌","② 환웅과 웅녀의 혼인 → 환웅 부족과 함께 하고 싶은 여러 부족이 있었고, [곰]을 받드는 부족이 승리함.","③ 환웅과 웅녀 사이에서 태어난 [단군왕검|단군]","하늘에 제사 지내는 사람 = [단군] · 정치 지배자 = [왕검]","## 3. 고조선의 생활모습","① [8조법|팔조법|범금8조] : 고조선의 [사회 질서|질서]를 유지하기 위한 법으로 현재 세 개 조항만 전해지고 있음","② [8조법|팔조법|범금8조]을 통해 알 수 있는 고조선 사람들의 생활 모습","> 1) 사람을 죽인 사람은 사형에 처한다",">> → [생명|목숨]을 소중히 하고, 큰 죄를 엄하게 다스림","> 2) 남을 다치게 한 사람은 곡식으로 갚아야 한다.",">> → [농사|농경]를 짓는 사회이며, [개인 재산|재산|사유재산]이 있음","> 3) 도둑질을 하면 노비로 삼고, 죄를 면하려면 50만전을 내야한다.",">> → 노비가 있는 [신분제|신분] 사회였으며, [화폐|돈]를 사용함","## 4. 고조선의 발전","① 우수한 [청동기] 문화를 바탕으로 세력 확장","② 고조선의 유물과 유적 분포로 고조선의 [문화 범위|세력 범위|영역|범위]를 짐작할 수 있음","미송리식 토기 · [비파형] 동검 · 탁자식 고인돌"]},{"id":"s2-1","ch":2,"chip":"삼국과 가야의 발전","sub":"삼국과 가야의 성립과 발전 과정","lines":["## 1. 고조선의 멸망","① 한나라(중국)의 침략으로 고조선이 멸망한 이후, 만주와 한반도 지역에는 [철기] 문화를 바탕으로 여러 나라가 세워짐","② 고구려, 백제, 신라는 [왕|임금]을 중심으로 나라의 체제를 갖추며 발전함.","## 2. 고구려","① 고구려의 건국 이야기","> → [주몽|동명성왕]은 기원전 37년 [졸본]을 수도로 고구려를 건국하였고, 수도를 국내성으로 옮기고 작은 나라를 정복하며 힘을 키움","② 고구려의 발전","> 1) [광개토대왕|광개토왕]",">> - 적극적인 정복 활동을 통해 [북쪽|북방]의 여러 나라를 정복",">> - 남쪽으로는 백제를 공격해 [한강] 북쪽까지 영토를 넓힘",">> - [광개토대왕릉비|광개토왕릉비] : 광개토대왕의 업적을 기념하는 비석","> 2) [장수왕]",">> - 수도를 [평양]으로 옮기고, 백제를 공격하여 [한강] 유역을 차지",">> - 충주고구려비(중원고구려비) : 고구려가 한반도 중부까지 영토를 넓혔음을 보여주는 비석","## 3. 백제","① 백제의 건국 이야기","> → [온조]는 기원전 18년 [위례성]을 수도로 백제를 건국","② 백제의 전성기","> 1) 한강 유역에 건국된 백제",">> - [한강] 유역의 넓은 [평야|들|들판]가 있어 농사에 유리 + [다른 나라|외국|중국]와 교류하는 데 편했음",">> - 삼국 중 가장 먼저 전성기를 맞이함","> 2) [근초고왕]",">> - 남과 북으로 영토를 크게 넓힘",">> - 바다 건너 여러 나라 ([왜|일본@g], [중국|동진@g])와 활발한 교류","## 4. 신라","① 신라의 건국 이야기","> → [박혁거세]는 기원전 57년 [금성(경주)|금성|경주|서라벌]을 수도로 신라를 건국","② 신라의 전성기","> 1) 한반도 동남부에 치우쳐 있던 신라는 고구려, 백제에 비해 발전이 늦음","> 2) [진흥왕]",">> - [화랑도|화랑]를 통해 유능한 인재 기름",">> - 고구려와 백제를 공격해 [한강 유역|한강] 차지",">> - 남아 있던 [가야] 세력을 완전히 정복",">> - 점령한 지역에 [진흥왕 순수비|순수비|진흥왕순수비]를 세움","## 5. 가야","① 가야의 건국과 발전","> → 가야는 낙동강 지역에 있던 여러 나라의 [연합|연맹]으로 시작","> → 풍부한 [철]을 바탕으로 [철기|철제품|철제 도구]를 만들어 백제, 왜 등과 교류","> → 처음에는 금관가야, 5세기 후반에는 대가야가 연맹을 이끔","> → 그러나 삼국의 공격에 결국 [신라]에 통합"]},{"id":"s2-2","ch":2,"chip":"삼국과 가야의 생활","sub":"삼국과 가야 사람들의 생활 모습","lines":["## 1. 삼국시대의 신분제","- 신분에 따라 하는 일, 옷, 음식, 집의 크기와 모양 등이 달랐음.","## 2. 삼국시대의 의식주","① 삼국시대의 의생활","> - [저고리@h]와 [바지@h]를 입음.","> - 여자들은 [치마]를 덧입기도 함.","> - 귀족 : 화려한 [비단]옷 + 금과 은으로 만든 장신구","> - 평민 : [삼베|베]로 지은 옷","② 삼국시대의 식생활","> - [농사|농경]를 지어 곡식을 먹음.","> - 왕과 귀족 : [쌀]","> - 평민 : 보리, 조 등의 [잡곡]을 주로 먹음.","③ 삼국시대의 주생활","> - 왕과 귀족 : [기와집]","> - 평민 : 나무와 갈댓잎, 풀로 지은 [초가집]","## 3. 삼국시대와 불교","불교를 중요시 함 : 백성들의 마음을 하나로 모으고, [왕권|왕의 힘]을 강화하기 위함.","불교와 관련한 많은 유물, 유적들이 남아 있음.","## 4. 가야 사람들의 생활 모습","① 가야의 철기 문화","> - [철]이 많은 지역에 위치했으며, [철]을 다루는 기술이 뛰어남.","> - 무기, 갑옷 등을 제작 → 다른 나라에 [수출]함.","② 다양한 모양의 토기를 통해 생활 모습을 짐작할 수 있음."]},{"id":"s2-3","ch":2,"chip":"신라의 삼국 통일","sub":"신라의 삼국 통일과 통일 신라","lines":["## 1. 신라의 삼국통일 과정","① 7세기 백제는 신라를 공격 → 신라는 여러 성을 빼앗기고, 당나라와의 교통로인 당항성을 공격받음","② 위기에 처한 신라는 고구려에 김춘추를 보내 도움을 요청",">> - 신라 29대 왕 태종무열왕",">> - 선덕여왕의 조카로 신라의 삼국통일에 많은 역할을 함","③ 고구려와의 동맹협상이 실패하고, 김춘추는 [당나라|당]로 건너가 [동맹]을 제안","④ 고구려 정복에 계속 실패하던 당나라는 제안을 받아들이고 [나·당 동맹|나당동맹] 결성","⑤ 나·당 연합군은 백제를 공격했고, [계백]장군 등 여러 장군이 싸웠지만 연합군에 패배","⑥ 백제의 의자왕은 수도(사비)를 떠나 웅진으로 피신했지만 결국 항복하며 [백제] 멸망 (660년)","⑦ 백제 멸망 후 연합군은 [고구려]를 공격","> → 권력 다툼으로 힘이 약해진 고구려는 연합군에 패배","⑧ 668년 평양성이 함락되며 [고구려] 멸망","⑨ 고구려 멸망 후 당나라는 한반도를 차지하려고 함","⑩ 신라는 옛 [고구려@i]와 [백제@i]의 유민들과 힘을 합쳐 당나라를 몰아내려 함","⑪ 나·당 전쟁 시작 후, 신라는 매소성 전투, 기벌포 전투 등 큰 전투에서 승리하며 삼국통일","## 2. 신라 삼국통일의 의미와 한계","① 스스로의 힘이 아닌 [당나라|당]의 힘을 빌림 → 결국 당나라를 몰아내어 자주적 통일을 이룸.","② 통일 후 영토가 축소됨 ← [고구려]가 차지하던 대동강 이북의 땅을 잃음.","## 3. 통일신라의 생활과 문화유산","① 주변 국가인 [당나라|당@j], [일본|왜@j]과 활발히 교류함. → 다른 나라와의 [무역|교역|교류]도 활발해짐.","② [불교]가 발달하며, [불교문화|불교 문화]가 크게 발전함.","③ 대표 문화유산 : [불국사@k], [석굴암@k]"]},{"id":"s2-4","ch":2,"chip":"발해","sub":"발해의 발전과 사람들의 생활 모습","lines":["## 1. 발해의 건국 배경","① 고구려 멸망 후, 당나라는 고구려 [유민|백성]들을 강제 이주","② 고구려 유민들은 그곳에서 [말갈인|말갈|말갈족], 거란인들과 함께 살게 됨","## 2. 발해의 건국 과정","① 거란인의 반란이 일어나 당나라의 힘이 약해짐","② 옛 고구려 장수인 [대조영]은 [고구려인|고구려 유민|고구려@l]과 [말갈인|말갈|말갈족@l]을 이끌고 [동모산] 지역에 [발해] 건국","## 3. 고구려를 계승한 발해","- 발해는 외교문서에 스스로 [고구려]를 계승한 나라임을 내세움","## 4. 발해의 발전","- 발해는 여러 문화를 모두 받아들이며 영토를 확대하고 발전","> ⇒ [해동성국]으로 불림 = 바다 동쪽에서 크게 번성한 나라라는 뜻","## 5. 발해의 문화","① 발해에도 신분제도가 존재함","> - [귀족] : 많은 토지 소유, 기와집에서 생활","> - [평민|백성] : 주로 초가집에서 생활","② 발해는 [고구려] 문화를 계승하고 주변 나라들의 문화에 영향을 받음","③ 발해의 수도에서는 [불교]와 관련된 문화유산도 발견됨","④ 발해와 [고구려]의 유물과 유적에서는 여러 공통점을 찾을 수 있음.","[고구려]의 치미 · 발해의 치미"]},{"id":"s3-1","ch":3,"chip":"고려의 건국","sub":"고려의 건국 과정","lines":["## 1. 통일신라의 혼란","① 8~9세기 신라는 귀족들의 권력 다툼으로 혼란스러워짐","② 혼란스러운 시기가 계속되자, 지방에서 강한 힘을 가진 [호족] 세력이 등장","→ [호족]","> - 신라 말 지방에서 나타난 경제력과 군사력이 강한 세력","> - [왕|임금]이 되지 못한 귀족 + 지방 관리","## 2. 후삼국시대","① 호족 세력이 성장하며 자신들의 나라를 만들고 싶은 욕망이 커짐","② 대표적인 호족 [궁예]와 [견훤]은 후고구려와 후백제를 건국 → [후삼국] 시대","지방 - [호족] 세력 등장 · 견훤 - [후백제] · 궁예 - [후고구려|태봉|마진]","## 3. 고려의 건국","① [궁예]의 신하였던 [왕건]은 여러 전투에서 활약하며 신하들의 믿음을 얻음","② 궁예의 난폭한 정치가 계속되자 신하들은 궁예를 몰아내고 [왕건]을 왕으로 세움","③ 왕건은 [송악|개경|개성]을 수도로 새로운 나라를 건국하고, 국호를 [고려]로 정함","> → 나라 이름을 ‘고려’로 정한 이유는? [고구려를 계승하고자 함|~고구려]","([왕건]) - 궁예를 도와 후고구려 건국함. · 나라의 이름을 ([고려])라고 함.","## 4. 고려의 후삼국 통일","① [신라]는 고려의 힘이 커지자 [고려]에 나라를 넘겨줌 (935년)","② [후백제]는 고려와 전투를 이어갔지만, [견훤]이 투항하며 멸망함 (936년)","## 5. 고려의 발전","○ 태조 왕건의 정책","> (1) 지방 호족과 연합하기 위해 호족들과 [혼인|결혼] 관계를 맺음","> (2) 고구려의 옛 땅을 되찾기 위해 [북진 정책|북진정책|북진]을 펼침","> (3) [훈요 10조|훈요10조|훈요십조] : 후대 왕들이 지켜야 할 열 가지 가르침",">> - 불교를 중요시 할 것 / 고려 고유의 제도, 풍습을 지킬 것",">> - 고구려의 수도인 평양(서경)을 중요시 할 것 / 백성들을 편안하게 할 것"]},{"id":"s3-2","ch":3,"chip":"고려 사회","sub":"고려 사회의 모습","lines":["## 1. 나라의 기틀을 다진 고려의 새로운 정책들","① 노비안검법 : 억울하게 [노비]가 된 백성들의 신분을 되찾아 줌.","> → 호족의 힘이 약해지고, [세금]을 낼 수 있는 백성도 많아짐.","② [과거제|과거|과거제도] 실시 : 시험을 통해 능력 있는 [관리|관료]를 선발함.","> → 개인의 [능력]을 중시하는 사회였음을 알 수 있음.","> → 힘이 센 호족들의 [힘|세력]을 약화시킬 수 있었음.","③ 주요 지방에 [관청]을 두고 [관리|관료]를 보냄","> → 백성의 삶을 가까이서 살핌.","> → 왕권강화 : 왕의 [명령]이 지방까지 잘 전달되어, 체계적 관리가 가능해짐.","## 2. 고려 사회의 모습","① 고려의 신분제도","② 고려 시대의 여성","> - [사회] 활동은 자유롭지 않음. / 가정에서는 남성과 [동등|평등|같은]한 지위","> - 아들 딸이 돌아가며 [제사]를 지냈고, 여성의 [재혼]도 자유로움.","> - 결혼 후 남자가 여자의 집에 살았으며, 여성이 [가장|호주] 인 경우도 있었음.","## 3. 고려 시대의 불교","> - [연등회] : 매년 초 전국에 [등불|등|연등]을 밝히고 행렬을 지어 다니며 소원을 빔.","> - [팔관회] : 11월 온 세상의 평안을 바라며 춤, 노래, 놀이 즐김."]},{"id":"s3-3","ch":3,"chip":"거란과의 관계","sub":"고려와 주변 나라들의 관계(거란)","lines":["## 1. 거란 침입의 배경","① 당나라 멸망 후, 북쪽에서 [거란족|거란]이 성장","② 거란은 [발해]를 멸망시키고, 중국을 통일한 [송나라|송]와 대립함","③ 고려는 [송|송나라]과 교류하며, [거란|거란족]을 멀리함.","([만부교]) 사건","## 2. 거란의 1차 침입","① 거란은 [소손녕]을 보내 고려를 침입(993년)","② [서희]는 소손녕과의 [담판|외교 담판|협상]을 통해 [강동 6주|강동6주|강동육주]를 얻고, 거란의 침입을 막아냄","## 3. 거란의 2차 침입","① 1차 침입 후, 고려는 계속해서 [송|송나라]과의 교류를 유지","② 거란의 2차 침입으로, 수도가 함락되고 현종은 나주로 피신함","③ 현종이 [거란의 황제를 방문하는 것|~방문|~찾아|~만나|~입조]을 조건으로 화친을 맺어 2차 침입 종료","## 4. 거란의 3차 침입","① 현종이 거란을 방문하지 않자 거란은 [강동 6주|강동6주|강동육주] 반환을 요구 → 거부하자 3차 침입","② [강감찬]이 [귀주]에서 거란을 크게 무찌르며, 3차 침입 종료 = [귀주대첩|귀주 대첩]","([강동 6주|강동6주|강동육주])를 요구하며 침략한 거란군을 ([강감찬])을 비롯한 고려군이 ([귀주])에서 크게 물리쳤음 ⇒ ([귀주])대첩","## 5. 거란의 침입 이후","① 전쟁을 치렀으나, 거란과 고려는 전쟁 후 좋은 관계를 유지","② 북쪽 국경에 [천리장성|천리 장성]을 만들어 [북방 민족|북방민족|여진|여진족]의 침략에 대비","③ 송, 거란, 여진, 일본, 아라비아 상인들과 활발히 교류함.","※ [벽란도] : 개경에서 가까운 [항구|무역항]인 벽란도에서 외국 상인과 교류함.","> - 아라비아 상인들에 의해 고려라는 이름이 서양에 알려짐."]},{"id":"s3-4","ch":3,"chip":"몽골과의 관계","sub":"고려와 주변 나라들의 관계(몽골)","lines":["## 1. 몽골 침입의 배경","① 유목민족이던 몽골은 [칭기즈 칸|칭기즈칸|칭기스칸|칭기스 칸|테무친]이 부족을 통합하며 크게 성장하며 고려와 부딪힘.","② 고려와 몽골은 평화적인 관계를 수립했으나, 점차 몽골이 무리한 [조공|공물]을 요구","## 2. 몽골의 1차 침입","① 몽골 [사신]이 귀국길에 피살된 사건을 이유로 고려를 침입(1231년 살리타)","② 몽골군이 개경에 도착하자 [화친|강화]을 요청했지만 몽골군은 물러나지 않음.","## 3. 몽골의 2차 침입","① 당시 정권을 장악한 [최우]는 수도를 [강화도|강화]로 옮기고 저항하고자 함","② [최우]는 고려군과 백성들에게 [산성@m] 이나 [섬@m] 으로 들어가 저항할 것을 요구","③ 몽골은 [수도|도읍]를 옮긴 것을 이유로 2차 침입","## 4. 몽골의 3차 침입","① 2차 침입 3년 후 몽골은 다시 고려를 침입","② 이때 몽골군이 [경주]까지 침입하여 많은 [문화유산|문화재] 파괴","## 5. 고려의 강화","① 최씨 [무신] 정권이 몰락한 후, 고려는 몽골과 [강화|화친]를 맺음","② 강화 후 고려 정부는 [개경|개성]으로 환도하였고, 몽골의 [지배|간섭]를 받기 시작함","③ 최우가 키운 [삼별초]는 끝까지 저항하였지만 몽골군과 고려군에 의해 진압됨","## 6. 전쟁 이후 몽골의 영향","① 고려의 왕은 [몽골|원|원나라] 황실의 여성과 결혼하여야 함","② 몽골의 세력을 이용한 지배층인 [권문세족] 등장","③ 몽골에 금, 은, 매, 인삼 등 [특산물|공물]을 바침","④ 몽골식 [머리] 모양과 [옷차림|옷]이 유행함"]}],"eras":[{"n":"구석기","m":"","d":"약 70만 년 전","s":["s1-1"]},{"n":"신석기","m":"","d":"약 1만 년 전","s":["s1-2"]},{"n":"청동기","m":"","d":"기원전 2000년경","s":["s1-3"]},{"n":"고조선","m":"","d":"","s":["s1-4"]},{"n":"삼국·가야","m":"","d":"기원전 57년","s":["s2-1","s2-2"]},{"n":"남북국","m":"통일 신라·발해","d":"676년","s":["s2-3","s2-4"]},{"n":"고려","m":"","d":"918년","s":["s3-1","s3-2","s3-3","s3-4"]},{"n":"조선","m":"","d":"1392년","s":[]},{"n":"근현대","m":"","d":"","s":[]}]};
+const HIST = { x0: 478, x1: 562, z0: -134, z1: -44, path: 520 };
+const HIST_ERAS = [
+  { k: 'paleo', n: '구석기', icon: '🔥', b: '동굴 집', z: -54, col: 0xB59A72, info: ['뗀석기(주먹도끼)로 사냥하고 열매를 땄어요', '추위와 짐승을 피해 동굴·바위 그늘에서 살았어요'] },
+  { k: 'neo', n: '신석기', icon: '🛖', b: '움집 마을', z: -64, col: 0xC9A66B, info: ['농사를 짓고 강가·바닷가에 정착했어요', '땅을 파고 지붕을 덮은 움집, 빗살무늬 토기'] },
+  { k: 'bronze', n: '청동기', icon: '🪨', b: '고인돌', z: -74, col: 0x9AA08A, info: ['청동 거울·검·방울은 지배자가 썼어요', '많은 사람을 모을 수 있는 지배자가 고인돌을 만들었어요'] },
+  { k: 'gojoseon', n: '고조선', icon: '⛰️', b: '고조선 제단', z: -84, col: 0xB88A5A, info: ['단군왕검이 세운 우리 역사 최초의 나라', '8조법으로 사회 질서를 지켰어요'] },
+  { k: 'three', n: '삼국·가야', icon: '🔭', b: '첨성대', z: -94, col: 0xD9B87A, info: ['신라 선덕 여왕 때 하늘을 살핀 첨성대', '고구려·백제·신라·가야가 힘을 겨뤘어요'] },
+  { k: 'nb', n: '남북국', icon: '🛕', b: '석가탑', z: -104, col: 0xBDB6A8, info: ['통일 신라 불국사의 삼층 석탑', '북쪽에는 대조영이 세운 발해가 있었어요'] },
+  { k: 'goryeo', n: '고려', icon: '📚', b: '장경판전', z: -114, col: 0x8A6A4A, info: ['몽골이 쳐들어왔을 때 만든 팔만대장경', '바람이 잘 통하게 지어 판을 오래 지켰어요'] },
+  { k: 'joseon', n: '조선', icon: '🏯', b: '근정전', z: -124, col: 0xC8B89A, info: ['경복궁의 으뜸 건물, 임금이 나랏일을 봤어요', '조선 학습지가 올라오면 문제가 열려요'] },
+];
+HIST_ERAS.forEach((E, i) => { E.i = i; E.x = i % 2 ? 540 : 500; E.side = i % 2 ? 1 : -1; });
+const HIST_ERA = Object.fromEntries(HIST_ERAS.map(E => [E.k, E]));
+const inHist = (x, z) => x >= HIST.x0 + 0.6 && x <= HIST.x1 - 0.6 && z >= HIST.z0 + 0.6 && z <= HIST.z1 + 0.2;
+const histBuilt = (k, st = S) => !!st.hist?.b?.[k];
+const histBuiltCount = (st = S) => HIST_ERAS.filter(E => st.hist?.b?.[E.k]).length;
+const histCount = (k, st = S) => Object.values(st.hist?.n?.[k] || {}).reduce((a, b) => a + (+b || 0), 0);
+const hist = { group: null, sites: {}, fx: [], label: -1, region: false };
+
+// ---------- 학습지 → 문제 ----------
+const hq = { data: null, j: '', bank: null, cur: null, ctx: null, lock: 0, autoTried: false, loadMsg: '', loading: false };
+function histData() {
+  const j = S.histSrc?.j || '';
+  if (j !== hq.j) { hq.j = j; hq.bank = null; hq.data = null; if (j) try { const d = JSON.parse(j); if (Array.isArray(d.sheets) && d.sheets.length) hq.data = d; } catch { /* 망가지면 넣어 둔 내용 */ } }
+  return hq.data || HIST_SNAP;
+}
+const hNorm = (s) => String(s || '').replace(/[\s()（）·ㆍ.,'"‘’]/g, '');
+const hSpec = (spec) => spec.replace(/@[^@|\]]*$/, '').split('|').map(s => s.trim()).filter(Boolean);
+function hFill(line, skip) { let i = -1; return line.replace(/\[([^\]]+)\]/g, (_, sp) => { i++; return i === skip ? '＿＿＿' : (hSpec(sp)[0] || ''); }); }
+const hClean = (s) => s.replace(/^#+\s*/, '').replace(/^>+\s*/, '').replace(/^[-:]\s*/, '').trim();
+const hShuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function histBank() {
+  if (hq.bank) return hq.bank;
+  const d = histData(), bank = { _all: [] }, sheetEra = {};
+  for (const E of HIST_ERAS) { const e = (d.eras || []).find(x => x.n === E.n); for (const s of e?.s || []) sheetEra[s] = E.k; }
+  for (const sh of d.sheets || []) {
+    const k = sheetEra[sh.id]; if (!k) continue;
+    const lines = (sh.lines || []).filter(l => typeof l === 'string');
+    let head = '';
+    lines.forEach((ln, li) => {
+      if (/^#/.test(ln)) head = hClean(hFill(ln, -1)).replace(/^\d+\.\s*/, '');
+      const blanks = [...ln.matchAll(/\[([^\]]+)\]/g)]; if (!blanks.length) return;
+      const lvl = (ln.match(/^>+/) || [''])[0].length;
+      let ctx = /^#/.test(ln) ? '' : head;
+      if (lvl) for (let j = li - 1; j >= 0; j--) { const p = lines[j]; if (/^#/.test(p)) break; if ((p.match(/^>+/) || [''])[0].length < lvl) { ctx = hClean(hFill(p, -1)); break; } }
+      blanks.forEach((m, bi) => {
+        const alts = hSpec(m[1]); if (!alts.length) return;
+        const q = hClean(hFill(ln, bi)); if (q.replace(/[＿\s]/g, '').length < 3) return;
+        const it = { id: `${sh.id}:${li}:${bi}`, k, sub: sh.sub || sh.chip || '', ctx, q, a: alts[0], alts };
+        (bank[k] ||= []).push(it); bank._all.push(it);
+      });
+    });
+  }
+  return (hq.bank = bank);
+}
+const histPool = (keys) => { const b = histBank(); return keys.flatMap(k => b[k] || []); };
+function histChoices(it) { // 정답 + 같은 시대(모자라면 다른 시대)의 다른 빈칸 답 3개 (글자 수가 비슷한 것부터)
+  const b = histBank(), bad = new Set(it.alts.map(hNorm)), seen = new Set(), out = [], L = it.a.length;
+  const add = (list) => {
+    const c = hShuffle([...list]).map(x => [x, Math.abs(x.a.length - L) + Math.random() * 2]).sort((p, q) => p[1] - q[1]);
+    for (const [x] of c) { const n = hNorm(x.a); if (bad.has(n) || seen.has(n)) continue; seen.add(n); out.push(x.a); if (out.length >= 3) return; }
+  };
+  add(b[it.k] || []); if (out.length < 3) add(b._all);
+  return hShuffle([it.a, ...out]);
+}
+function histGrab(src, name) { // 학습지 페이지에서 const NAME = [ ... ]; 부분만 잘라요 (글자 안의 괄호는 건너뛰어요)
+  const a = src.indexOf('const ' + name + ' = ['); if (a < 0) return null;
+  let d = 0, q = null; const i = src.indexOf('[', a);
+  for (let j = i; j < src.length; j++) {
+    const c = src[j];
+    if (q) { if (c === '\\') { j++; continue; } if (c === q) q = null; continue; }
+    if (c === "'" || c === '"' || c === '`') { q = c; continue; }
+    if (c === '[') d++; else if (c === ']') { d--; if (!d) return src.slice(i, j + 1); }
+  }
+  return null;
+}
+function histParse(html) {
+  const s = histGrab(html, 'SHEETS'), e = histGrab(html, 'ERAS'); if (!s || !e) return null;
+  const SHEETS = Function('"use strict"; return ' + s)(), ERAS = Function('"use strict"; return ' + e)();
+  if (!Array.isArray(SHEETS) || !Array.isArray(ERAS)) return null;
+  const lines = (sh) => { const o = []; for (const it of sh.body || []) { if (typeof it === 'string') o.push(it); else if (it) { (it.l || []).forEach(x => typeof x === 'string' && o.push(x)); (it.f || []).forEach(f => typeof f?.q === 'string' && o.push(f.q)); } } return o; };
+  return { sheets: SHEETS.map(sh => ({ id: String(sh.id), ch: sh.ch, chip: String(sh.chip || ''), sub: String(sh.sub || ''), lines: lines(sh) })), eras: ERAS.map(x => ({ n: String(x.n), m: String(x.m || ''), d: String(x.d || ''), s: (x.s || []).map(String) })) };
+}
+async function histLoad(silent) { // 📥 선생님 기기: 학습지 페이지를 읽어 반 전체에 올려요
+  if (hq.loading) return; hq.loading = true; hq.autoTried = true;
+  try {
+    const res = await fetch(`${HIST_URL}?t=${Date.now()}`, { cache: 'no-store' }); if (!res.ok) throw new Error('http ' + res.status);
+    const d = histParse(await res.text()); if (!d || !d.sheets.length) throw new Error('parse');
+    const j = JSON.stringify(d); if (j.length > 95000) throw new Error('big');
+    const nq = (() => { const keep = hq.j; hq.j = '__'; hq.data = d; hq.bank = null; const n = histBank()._all.length; hq.j = keep; hq.data = null; hq.bank = null; return n; })();
+    if (j === S.histSrc?.j) { hq.loadMsg = `✅ 최신 학습지예요 · 학습지 ${d.sheets.length}장 · 문제 ${nq}개`; if (!silent) toast(hq.loadMsg, 'success'); }
+    else {
+      const r = await backend.adminUpdate({ histSrc: { at: backend.now(), j } });
+      hq.loadMsg = r.ok ? `📥 학습지를 새로 올렸어요 · 학습지 ${d.sheets.length}장 · 문제 ${nq}개${backend.mode === 'firebase' ? '' : ' (이 브라우저에만)'}` : '⚠️ 학습지를 올리지 못했어요. database.rules.json을 다시 게시해 주세요';
+      if (!silent || r.ok) toast(hq.loadMsg, r.ok ? 'success' : 'warn');
+    }
+  } catch (err) {
+    hq.loadMsg = `⚠️ 사회 학습지 페이지를 읽지 못했어요 (${HIST_URL}) · 넣어 둔 내용으로 문제를 내요`;
+    if (!silent) toast(hq.loadMsg, 'warn');
+  } finally { hq.loading = false; fillHistAdmin(); }
+}
+
+// ---------- 퀴즈 창 (시대 퀴즈 · 병영 · 성문 고치기가 같이 써요) ----------
+function openHQ(o) { hq.ctx = o; hq.cur = null; openLife(o.title, fillHQ); }
+function pickHQ() {
+  const pool = histPool(hq.ctx.keys); if (!pool.length) return null;
+  bag.hq ||= {};
+  const prev = hq.lastId, fresh = pool.filter(x => !bag.hq[x.id] && x.id !== prev), rest = pool.filter(x => x.id !== prev);
+  const list = fresh.length ? fresh : rest.length ? rest : pool, it = list[Math.floor(Math.random() * list.length)];
+  hq.lastId = it.id;
+  return { it, ch: histChoices(it), wrong: new Set() };
+}
+function fillHQ(box) {
+  box.textContent = '';
+  const o = hq.ctx; if (!o) return;
+  if (o.head) o.head(box);
+  const wait = Math.ceil((hq.lock - Date.now()) / 1000);
+  if (wait > 0) { box.append(el2('p', 'lp-big', `⏳ ${wait}초 뒤에 다른 문제가 나와요`)); return; }
+  if (!hq.cur) hq.cur = pickHQ();
+  if (!hq.cur) { box.append(el2('p', 'hint', o.empty || '아직 이 시대 학습지가 없어요. 선생님이 사회 학습지에 올리면 문제가 생겨요')); return; }
+  const { it, ch, wrong } = hq.cur, card = el2('div', 'hq-card');
+  card.append(el2('div', 'hq-sub', `📘 ${HIST_ERA[it.k]?.n || ''} · ${it.sub}`));
+  if (it.ctx && it.ctx !== it.sub) card.append(el2('div', 'hq-ctx', it.ctx));
+  card.append(el2('div', 'hq-q', it.q));
+  box.append(card);
+  const grid = el2('div', 'hq-opts');
+  ch.forEach(a => { const b = el2('button', 'btn hq-opt', a); if (wrong.has(a)) { b.disabled = true; b.classList.add('no'); } b.onclick = () => answerHQ(a); grid.append(b); });
+  box.append(grid);
+  box.append(el2('p', 'hint', bag.hq?.[it.id] ? '✅ 전에 맞힌 문제예요 (반 점수는 그대로)' : wrong.size ? '🤔 처음에 틀린 문제는 반 점수에 안 들어가요. 나중에 다시 나와요' : '처음에 맞히면 반 전체 시대 점수 +1'));
+}
+async function answerHQ(a) {
+  const c = hq.cur, o = hq.ctx; if (!c || !o) return;
+  if (!c.it.alts.some(x => hNorm(x) === hNorm(a))) {
+    c.wrong.add(a); playSfx('wrong');
+    if (o.mode === 'era') toast('🤔 다시 생각해 봐요!', 'info');
+    else { hq.lock = Date.now() + 4000; hq.cur = null; toast('❌ 아쉬워요! 4초 뒤에 다른 문제가 나와요', 'warn'); setTimeout(() => { if (hq.ctx === o) refillLife(); }, 4100); }
+    refillLife(); return;
+  }
+  const first = c.wrong.size === 0, fresh = first && !bag.hq?.[c.it.id];
+  playSfx('right'); burst(player.pos.clone().setY(2.4), [0xFFD23C, 0xFFFFFF, 0x7FD36A], 18, 3, 2);
+  if (fresh) { bag.hq[c.it.id] = 1; saveBag(); backend.histRight(c.it.k); }
+  o.onRight?.(first, fresh, c.it);
+  hq.cur = null; refillLife();
+}
+
+// ---------- 모양 도구 ----------
+const histTexCache = {};
+function histTex(key, draw, w = 128, h = 128, rep = [1, 1]) {
+  if (histTexCache[key]) return histTexCache[key];
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; draw(cv.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...rep);
+  return (histTexCache[key] = t);
+}
+function brickMat(base = '#CDBB98', line = '#8A7A60', rows = 8, key = 'brick') { // 돌을 한 줄씩 엇갈려 쌓은 무늬
+  return histTexCache['m' + key] || (histTexCache['m' + key] = new THREE.MeshStandardMaterial({ roughness: 0.95, map: histTex(key, (c, w, h) => {
+    c.fillStyle = base; c.fillRect(0, 0, w, h); c.strokeStyle = line; c.lineWidth = 2;
+    const rh = h / rows; for (let r = 0; r < rows; r++) { c.beginPath(); c.moveTo(0, r * rh); c.lineTo(w, r * rh); c.stroke(); for (let x = (r % 2) * 16; x < w; x += 32) { c.beginPath(); c.moveTo(x, r * rh); c.lineTo(x, (r + 1) * rh); c.stroke(); } }
+    for (let i = 0; i < 160; i++) { c.fillStyle = `rgba(0,0,0,${Math.random() * 0.08})`; c.fillRect(Math.random() * w, Math.random() * h, 3, 3); }
+  }) }));
+}
+function combMat() { // 빗살무늬 토기 겉면
+  return histTexCache.mcomb || (histTexCache.mcomb = new THREE.MeshStandardMaterial({ roughness: 0.9, map: histTex('comb', (c, w, h) => {
+    c.fillStyle = '#9A6A44'; c.fillRect(0, 0, w, h); c.strokeStyle = '#5E3E26'; c.lineWidth = 2;
+    for (let band = 0; band < 4; band++) for (let x = 0; x < w; x += 8) { const y0 = band * 32 + 4; c.beginPath(); c.moveTo(x, y0); c.lineTo(x + (band % 2 ? 6 : -6), y0 + 24); c.stroke(); }
+  }, 128, 128, [3, 1]) }));
+}
+function lathe(parent, pts, col, x, y, z, seg = 20, mat = null) { const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), seg), mat || M(col)); m.position.set(x, y, z); m.castShadow = SHADOWS; parent.add(m); return m; }
+function flame(g, x, y, z, s = 1) { // 흔들리는 불꽃 (이름이 있어서 합치지 않아요)
+  const f = new THREE.Group(); f.name = 'flame'; f.position.set(x, y, z); f.scale.setScalar(s); g.add(f);
+  mesh(CONE, f, 0.5, 1.0, 0.5, 0xFF8A24, 0, 0.5, 0, { solid: false, emissive: 0.9 }); mesh(CONE, f, 0.3, 0.7, 0.3, 0xFFE066, 0, 0.4, 0, { solid: false, emissive: 1 });
+  hist.fx.push(f); return f;
+}
+function eraRoof(parent, w, d, y, col) { const rg = new THREE.Group(); parent.add(rg); giwaRoof(rg, w, d, y, col); return rg; }
+
+// ---------- 시대 건축물 (앞 = +z, 바닥 12×12 안) ----------
+function buildEraModel(k, g) {
+  const o = { solid: false }, st = { solid: true };
+  if (k === 'paleo') { // 🔥 동굴 집: 바위 언덕 + 동굴 입구 + 모닥불 + 가죽 말리기 + 주먹도끼
+    for (const [x, y, z, sx, sy, sz, c] of [[-3.6, 1.4, -3.4, 3.2, 2.8, 2.6, 0x8F8473], [3.4, 1.6, -3.6, 3.4, 3.2, 2.8, 0x9A8E7C], [0, 2.8, -4.2, 5.2, 3.0, 2.6, 0x857A6A], [-1.6, 3.8, -4.6, 2.6, 1.8, 2.0, 0xA39784], [2.2, 3.9, -4.4, 2.2, 1.6, 1.8, 0x7E7364], [-5, 0.8, -1.8, 1.6, 1.6, 1.6, 0x968A78], [5.1, 0.7, -2, 1.5, 1.4, 1.5, 0x8A7F6E]])
+      mesh(SPH_MID, g, sx, sy, sz, c, x, y, z, { solid: false, flat: true });
+    mesh(SPH_MID, g, 1.9, 2.1, 0.9, 0x1E1915, 0, 0.6, -2.2, o);                                            // 어두운 동굴 입구
+    box(g, 11, 4, 3.6, 0x8F8473, 0, 2, -4.4).visible = false;                                             // 바위 언덕 충돌
+    for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; mesh(SPH_LO, g, 0.28, 0.2, 0.28, 0x8A8478, 1.4 + Math.cos(a) * 0.75, 0.1, 1.6 + Math.sin(a) * 0.75, { solid: false, flat: true }); }
+    for (const r of [0.5, 2.1, -1.1]) cyl(g, 0.1, 1.3, 0x6B4A30, 1.4, 0.18, 1.6, { solid: false, rz: Math.PI / 2 - 0.25, ry: r });
+    flame(g, 1.4, 0.2, 1.6, 0.8);
+    for (const sx of [-4.2, -2.2]) cyl(g, 0.08, 2.2, 0x7A5436, sx, 1.1, 1.8, o);                         // 가죽 말리는 틀
+    box(g, 2.3, 0.08, 0.08, 0x7A5436, -3.2, 2.1, 1.8, o); box(g, 1.6, 1.3, 0.05, 0xB0864E, -3.2, 1.4, 1.8, { solid: false, rz: 0.05 });
+    box(g, 0.9, 0.6, 0.9, 0x9A9486, 3.8, 0.3, 2.6); mesh(SPH_LO, g, 0.24, 0.42, 0.12, 0x6E6A60, 3.8, 0.85, 2.6, { solid: false, flat: true, rz: 0.2 }); // 주먹도끼
+    { const sp = new THREE.Group(); sp.position.set(-1.6, 0, -1.3); sp.rotation.z = 0.25; g.add(sp); cyl(sp, 0.05, 2.6, 0x8A6A44, 0, 1.3, 0, o); mesh(CONE, sp, 0.12, 0.35, 0.06, 0x5E5A52, 0, 2.75, 0, { solid: false, flat: true }); } // 창
+  } else if (k === 'neo') { // 🛖 움집 2채 + 빗살무늬 토기 + 갈돌·갈판 + 조 밭
+    for (const [x, z, s] of [[-2.6, -1.6, 1], [3, -2.6, 0.85]]) {
+      cyl(g, 2.7 * s, 0.35, 0x8A6A44, x, 0.17, z);                                                         // 둘레 흙
+      mesh(CONE, g, 2.8 * s, 3.4 * s, 2.8 * s, 0xC9A65E, x, 0.3 + 1.7 * s, z, { solid: false, flat: true });
+      mesh(CONE, g, 2.0 * s, 2.4 * s, 2.0 * s, 0xB8944E, x, 0.3 + 2.4 * s, z, { solid: false, flat: true });
+      for (let i = 0; i < 3; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(1, 0.035, 4, 24), M(0x8A6A3A)); const t = 0.25 + i * 0.22; r.scale.set(2.8 * s * (1 - t) + 0.01, 2.8 * s * (1 - t) + 0.01, 1); r.rotation.x = Math.PI / 2; r.position.set(x, 0.3 + 3.4 * s * t, z); g.add(r); } // 새끼줄 테
+      cyl(g, 0.22 * s, 0.4, 0x5A4430, x, 0.3 + 3.35 * s, z, o);                                              // 연기 구멍
+      const door = new THREE.Group(); door.position.set(x, 0, z + 2.2 * s); g.add(door);
+      mesh(GABLE, door, 1.4 * s, 1.2 * s, 1.4 * s, 0xB8944E, 0, 0.9 * s, 0, { solid: false });
+      box(door, 0.8 * s, 1.0 * s, 0.1, 0x2A2018, 0, 0.6 * s, 0.68 * s, o);
+      box(g, 3.6 * s, 2.6 * s, 3.6 * s, 0xC9A65E, x, 1.3 * s, z).visible = false;
+    }
+    for (const [x, z, s] of [[0.6, 2.8, 1], [1.4, 3.4, 0.8]]) { // 빗살무늬 토기 (뾰족한 밑, 모래에 꽂아요)
+      mesh(SPH_LO, g, 0.6, 0.18, 0.6, 0xE0CFA4, x, 0.05, z, { solid: false, flat: true });
+      lathe(g, [[0, 0], [0.18, 0.18], [0.34, 0.55], [0.4, 0.95], [0.37, 1.15], [0.38, 1.2]], 0x9A6A44, x, -0.05, z, 18, combMat()).scale.setScalar(s);
+    }
+    box(g, 1.3, 0.16, 0.7, 0x8F8A7E, -2.6, 0.08, 3); mesh(SPH_LO, g, 0.5, 0.14, 0.14, 0x6E6A60, -2.6, 0.24, 3, { solid: false, flat: true }); // 갈판·갈돌
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 6; c++) mesh(CONE, g, 0.18, 0.7, 0.18, c % 2 ? 0xC8C060 : 0xA8B850, 3 + c * 0.45, 0.35, 1.6 + r * 0.8, { solid: false, flat: true });
+  } else if (k === 'bronze') { // 🪨 탁자식 고인돌 + 바둑판식 고인돌 + 목책 + 도랑
+    const stone = 0x8E8A80;
+    box(g, 0.5, 2.0, 2.6, shade(stone, 0.95), -1.25, 1.0, -0.6); box(g, 0.5, 2.0, 2.6, shade(stone, 1.05), 1.25, 1.0, -0.6);
+    box(g, 4.6, 0.75, 3.6, stone, 0, 2.38, -0.6, { ry: 0.06 }); mesh(SPH_LO, g, 2.4, 0.5, 1.9, shade(stone, 1.08), 0.1, 2.75, -0.6, { solid: false, flat: true });
+    for (const [x, z] of [[3.4, 2.4], [4.6, 2.6], [3.6, 3.6], [4.7, 3.7]]) mesh(SPH_LO, g, 0.4, 0.35, 0.4, 0x7E7A70, x, 0.2, z, { solid: false, flat: true });
+    box(g, 2.2, 0.5, 2.0, 0x96928A, 4.1, 0.6, 3.1);                                                       // 바둑판식
+    for (let i = 0; i <= 16; i++) { const a = Math.PI * (0.08 + i / 16 * 0.84), x = Math.cos(a) * 5.4, z = -Math.sin(a) * 5.0 + 1; cyl(g, 0.16, 2.2, 0x8A6A44, x, 1.1, z, o); mesh(CONE, g, 0.17, 0.4, 0.17, 0x7A5A36, x, 2.4, z, { solid: false, flat: true }); }
+    box(g, 11, 2.2, 0.6, 0x8A6A44, 0, 1.1, -4.2).visible = false;
+    { const ring = new THREE.Mesh(new THREE.RingGeometry(5.9, 6.4, 40, 1, Math.PI * 0.08, Math.PI * 0.84), M(0x5A9AC0)); ring.rotation.x = -Math.PI / 2; ring.position.set(0, 0.05, 1); g.add(ring); } // 도랑
+    cyl(g, 0.06, 2.4, 0x6B4A30, -3.8, 1.2, 2.8, o); ball(g, 0.16, 0xC9A23A, -3.8, 2.3, 2.8, o); ball(g, 0.12, 0xC9A23A, -3.6, 2.1, 2.9, o); // 청동 방울
+    { const mr = new THREE.Mesh(new THREE.CircleGeometry(0.35, 20), new THREE.MeshStandardMaterial({ color: 0xD9B85A, metalness: 0.7, roughness: 0.3 })); mr.position.set(-3.8, 1.7, 2.87); g.add(mr); } // 청동 거울
+  } else if (k === 'gojoseon') { // ⛰️ 둥근 아래 단 + 네모 위 제단 + 불 그릇 + 신단수
+    const sm = brickMat('#B9A98C', '#7E705A', 6, 'altar');
+    { const m = new THREE.Mesh(new THREE.CylinderGeometry(4.3, 4.6, 1.0, 28), sm); m.position.set(0, 0.5, -0.8); m.userData.solid = true; m.castShadow = SHADOWS; g.add(m); }
+    { const m = new THREE.Mesh(BOX, sm); m.scale.set(4.2, 1.3, 4.2); m.position.set(0, 1.65, -0.8); m.userData.solid = true; g.add(m); }
+    for (let s = 0; s < 3; s++) box(g, 1.8, 0.33, 0.6, 0xA89A80, 0, 0.17 + s * 0.33, 3.6 - s * 0.55);    // 계단
+    box(g, 1.8, 0.4, 1.4, 0xA89A80, 0, 1.15, 1.7);
+    cyl(g, 0.6, 0.5, 0x6A6458, 0, 2.55, -0.8); flame(g, 0, 2.8, -0.8, 1.1);
+    { const x = -4.6, z = -3.6; mesh(TAPER, g, 0.55, 5.4, 0.55, 0x6B4A30, x, 2.7, z); for (const [dx, y, dz, r] of [[0, 6.4, 0, 2.6], [1.4, 5.6, 0.6, 1.8], [-1.3, 5.8, -0.4, 1.8], [0.3, 7.6, 0.2, 1.6]]) mesh(SPH_MID, g, r, r * 0.8, r, 0x4E8E44, x + dx, y, z + dz, { solid: false, flat: true });
+      const rope = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.05, 6, 20), M(0xD9C49A)); rope.rotation.x = Math.PI / 2; rope.position.set(x, 1.8, z); g.add(rope);
+      for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; box(g, 0.12, 0.35, 0.02, 0xFFFFFF, x + Math.cos(a) * 0.64, 1.6, z + Math.sin(a) * 0.64, { solid: false, ry: -a }); } }
+    const sg2 = signPlane(g, ['弘益人間', '홍익인간'], 2.2, 1.1, 4.2, 1.6, 2.6, { font: 44, pad: 6, fg: '#3B2F2A', bg: '#FFF4D6' }); sg2.rotation.y = -0.4; box(g, 0.12, 1.6, 0.12, HANOK.wood, 4.2, 0.8, 2.55, o);
+  } else if (k === 'three') { // 🔭 첨성대
+    box(g, 4.6, 0.45, 4.6, 0xB8AA8C, 0, 0.22, 0); box(g, 3.9, 0.4, 3.9, 0xC4B698, 0, 0.65, 0);
+    const prof = []; for (let i = 0; i <= 14; i++) { const t = i / 14, y = t * 6.4, r = 1.75 - 0.62 * Math.pow(t, 1.35) + 0.08 * Math.sin(t * Math.PI); prof.push([r, y]); }
+    prof.unshift([0, 0]); prof.push([0, 6.4]);
+    const body = lathe(g, prof, 0xCDBB98, 0, 0.85, 0, 28, brickMat('#CDBB98', '#8A7A60', 9, 'cheom')); body.material.map.repeat.set(4, 3);
+    { const ry = 0.85 + 3.0, r = 1.75 - 0.62 * Math.pow(3.0 / 6.4, 1.35) + 0.08 * Math.sin(3.0 / 6.4 * Math.PI); box(g, 0.75, 0.75, 0.3, 0x2A2420, 0, ry, r - 0.08, o); } // 창
+    for (const lay of [0, 1]) for (const s of [-1, 1]) { const y = 7.3 + lay * 0.32, w = 2.5; if (lay) box(g, w, 0.3, 0.3, 0xBDAE90, 0, y, s * 1.0, o); else box(g, 0.3, 0.3, w, 0xBDAE90, s * 1.0, y, 0, o); } // 井 모양 머리
+    cyl(g, 1.7, 7, 0xCDBB98, 0, 3.5, 0).visible = false;
+    for (const [x, z] of [[-4, 3.6], [4, 3.6], [-4.4, -3.8], [4.4, -3.8]]) { mesh(SPH_LO, g, 0.5, 0.3, 0.5, 0x9A9486, x, 0.15, z, { solid: false, flat: true }); }
+  } else if (k === 'nb') { // 🛕 석가탑 (삼층 석탑) + 석등
+    const gr = 0xBDB6A8, gr2 = 0xADA698;
+    box(g, 4.8, 0.9, 4.8, gr2, 0, 0.45, -0.6); box(g, 5.2, 0.18, 5.2, gr, 0, 0.99, -0.6, o);
+    box(g, 3.6, 1.0, 3.6, gr, 0, 1.58, -0.6); box(g, 4.0, 0.18, 4.0, gr2, 0, 2.17, -0.6, o);
+    for (const sx of [-1.8, 1.8]) for (const sz of [-1.8, 1.8]) box(g, 0.14, 0.95, 0.14, gr2, sx, 1.58, -0.6 + sz, o); // 모서리 기둥 무늬
+    let y = 2.26;
+    [[1.9, 1.15, 3.3], [1.55, 0.72, 2.85], [1.25, 0.62, 2.45]].forEach(([w, h, rw]) => {
+      box(g, w, h, w, gr, 0, y + h / 2, -0.6); y += h;
+      for (let s = 0; s < 3; s++) box(g, w + 0.18 + s * 0.2, 0.1, w + 0.18 + s * 0.2, gr2, 0, y + 0.05 + s * 0.1, -0.6, o); // 층급받침
+      y += 0.3; box(g, rw, 0.22, rw, gr, 0, y + 0.11, -0.6, o); mesh(PYR, g, rw * 0.92, 0.25, rw * 0.92, gr2, 0, y + 0.34, -0.6, { solid: false, flat: true }); y += 0.42;
+    });
+    for (const [h, r, c] of [[0.3, 0.45, gr], [0.25, 0.32, gr2], [0.3, 0.38, gr]]) { cyl(g, r, h, c, 0, y + h / 2, -0.6, o); y += h; }
+    cyl(g, 0.07, 1.4, 0x8A8478, 0, y + 0.7, -0.6, o); for (const t of [0.3, 0.7, 1.1]) ball(g, 0.14, 0x9A9486, 0, y + t, -0.6, o);
+    box(g, 2, y, 2, gr, 0, y / 2, -0.6).visible = false;
+    { const x = 0, z = 4; cyl(g, 0.55, 0.3, gr2, x, 0.15, z); cyl(g, 0.16, 1.1, gr, x, 0.85, z); cyl(g, 0.45, 0.2, gr2, x, 1.5, z, o); box(g, 0.6, 0.6, 0.6, gr, x, 1.9, z, o); box(g, 0.3, 0.3, 0.62, 0xFFD27A, x, 1.9, z, { solid: false, emissive: 0.6 }); mesh(PYR, g, 1.0, 0.35, 1.0, gr2, x, 2.38, z, { solid: false, flat: true }); }
+  } else if (k === 'goryeo') { // 📚 장경판전 (살창이 아래위로 있는 긴 나무 건물) + 대장경판
+    const W = 11, D = 4.6, hall = new THREE.Group(); hall.position.set(0, 0, -1.2); g.add(hall);
+    box(hall, W + 1.2, 0.45, D + 1.2, HANOK.stone, 0, 0.22, 0);
+    box(hall, W, 2.8, D, 0xEDE6D4, 0, 1.85, 0);
+    for (let i = 0; i <= 6; i++) { const x = -W / 2 + i * W / 6; for (const sz of [-D / 2, D / 2]) box(hall, 0.3, 3.0, 0.3, 0x7A4A2A, x, 1.95, sz, o); }
+    for (const sz of [-D / 2, D / 2]) box(hall, W + 0.3, 0.28, 0.3, 0x7A4A2A, 0, 3.3, sz, o);
+    const slat = histTexCache.mslat || (histTexCache.mslat = new THREE.MeshStandardMaterial({ roughness: 0.9, map: histTex('slat', (c, w, h) => { c.fillStyle = '#2A2018'; c.fillRect(0, 0, w, h); c.fillStyle = '#9C6A3E'; for (let x = 0; x < w; x += 16) c.fillRect(x, 0, 8, h); c.fillRect(0, 0, w, 8); c.fillRect(0, h - 8, w, 8); }) }));
+    for (let i = 0; i < 6; i++) { const x = -W / 2 + (i + 0.5) * W / 6; for (const [y, h] of [[1.0, 0.7], [2.6, 0.55]]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(1.2, h), slat); m.position.set(x, y, D / 2 + 0.02); hall.add(m); } }
+    eraRoof(hall, W, D, 3.5, 0x4E5864);
+    const sgn = signPlane(hall, ['藏經板殿'], 2.4, 0.7, 0, 3.05, D / 2 + 0.25, { font: 52, pad: 4, fg: '#FFF4D6', bg: '#5A3A22' }); sgn.rotation.y = 0;
+    { const x = 3.2, z = 4.2; box(g, 2, 0.75, 1, 0x8A5A34, x, 0.38, z); for (let i = 0; i < 4; i++) box(g, 1.5, 0.08, 0.7, i % 2 ? 0x4A3424 : 0x5A4030, x, 0.8 + i * 0.09, z, { solid: false, ry: (i - 1.5) * 0.06 }); } // 대장경판
+  } else if (k === 'joseon') { // 🏯 근정전: 두 단 월대 + 두 겹 지붕 + 품계석
+    const stone = 0xC2BAA8;
+    box(g, 11.4, 0.6, 10, shade(stone, 0.95), 0, 0.3, -0.6); box(g, 9.2, 0.6, 8, stone, 0, 0.9, -1.2);
+    for (const [w, d, y, zc] of [[11.4, 10, 0.75, -0.6], [9.2, 8, 1.35, -1.2]]) for (const s of [-1, 1]) { box(g, w, 0.3, 0.12, 0xD8D0BE, 0, y, zc + s * d / 2, o); box(g, 0.12, 0.3, d, 0xD8D0BE, s * w / 2, y, zc, o); } // 난간
+    for (let s = 0; s < 3; s++) box(g, 1.8, 0.2, 0.4, stone, 0, 0.1 + s * 0.2, 4.6 - s * 0.35); for (let s = 0; s < 3; s++) box(g, 1.8, 0.2, 0.4, stone, 0, 0.7 + s * 0.2, 3.0 - s * 0.35);
+    const hall = new THREE.Group(); hall.position.set(0, 1.2, -1.6); g.add(hall);
+    box(hall, 6.8, 2.6, 4.2, 0xA0402A, 0, 1.3, 0);
+    for (const sx of [-3.4, -1.7, 0, 1.7, 3.4]) for (const sz of [-2.1, 2.1]) box(hall, 0.3, 2.8, 0.3, 0xB0382A, sx, 1.4, sz, o);
+    for (let i = 0; i < 4; i++) hanokDoor(hall, 1.4, 2.0, -2.55 + i * 1.7, 1.15, 2.12);
+    box(hall, 7.2, 0.35, 4.6, 0x3E7A6A, 0, 2.8, 0, o);                                                    // 단청 띠
+    eraRoof(hall, 6.8, 4.2, 3.0, 0x4E5864);
+    box(hall, 4.8, 1.2, 2.6, 0xA0402A, 0, 4.4, 0, o); box(hall, 5.0, 0.25, 2.8, 0x3E7A6A, 0, 5.0, 0, o);
+    eraRoof(hall, 4.6, 2.4, 5.1, 0x4E5864);
+    const sgn = signPlane(hall, ['勤政殿'], 1.6, 0.6, 0, 4.4, 1.32, { font: 52, pad: 4, fg: '#FFE7A0', bg: '#2E3E5A' }); sgn.rotation.y = 0;
+    for (const sx of [-2.4, 2.4]) for (let i = 0; i < 3; i++) { box(g, 0.32, 0.55, 0.22, 0xB8B0A0, sx, 0.88, 3.8 - i * 0.9 + 2.2, o); } // 품계석
+  }
+}
+function eraGhost(E, g) {
+  const mat = new THREE.MeshStandardMaterial({ color: E.col, transparent: true, opacity: 0.25, depthWrite: false });
+  const b = new THREE.Mesh(BOX, mat); b.scale.set(6, 2.6, 5); b.position.set(0, 1.3, -1); g.add(b);
+  const r = new THREE.Mesh(PYR, mat); r.scale.set(7.5, 2, 6.5); r.position.set(0, 3.4, -1); g.add(r);
+}
+function histSiteLines(E) {
+  const pool = histPool([E.k]).length, n = histCount(E.k), goal = HIST_GOAL;
+  if (histBuilt(E.k)) return [`${E.icon} ${E.n} · ${E.b} ✅`];
+  if (!pool) return [`${E.icon} ${E.n} · ${E.b}`, '📜 학습지가 올라오면 열려요'];
+  return n >= goal ? [`${E.icon} ${E.n} · ${E.b}`, '🔨 지을 수 있어요!'] : [`${E.icon} ${E.n} · ${E.b}`, `📜 시대 퀴즈 ${n} / ${goal}`];
+}
+
+// ---------- 역사의 길 만들기 ----------
+function buildHistRoad() {
+  const g = new THREE.Group(); g.name = 'HistRoad'; scene.add(g); hist.group = g;
+  const o = { solid: false };
+  box(g, 4, 0.04, HIST.z1 - HIST.z0 + 2, C.path, HIST.path, 0.022, (HIST.z0 + HIST.z1) / 2 - 1, o);   // 가운데 길
+  // 돌담 (남쪽은 마을 북쪽 담과 이어져요)
+  stoneWall(g, HIST.x0, HIST.z1 - 0.5, HIST.x0, HIST.z0); stoneWall(g, HIST.x1, HIST.z1 - 0.5, HIST.x1, HIST.z0); stoneWall(g, HIST.x0, HIST.z0, HIST.x1, HIST.z0);
+  stoneWall(g, HIST.x0, HIST.z1 - 0.5, HV.x0 - 0.5, HIST.z1 - 0.5); stoneWall(g, HIST.x1, HIST.z1 - 0.5, HV.x1 + 0.5, HIST.z1 - 0.5);
+  // 문 (홍살문 느낌의 붉은 문)
+  { const gx = HIST.path, gz = HIST.z1 - 0.8; for (const s of [-1, 1]) cyl(g, 0.2, 5.2, 0xC0392B, gx + s * 3.1, 2.6, gz); box(g, 6.8, 0.3, 0.3, 0xC0392B, gx, 4.8, gz, o); box(g, 6.6, 0.22, 0.22, 0xC0392B, gx, 4.2, gz, o);
+    for (let i = -6; i <= 6; i++) { box(g, 0.08, 1.0, 0.08, 0xC0392B, gx + i * 0.42, 5.4, gz, o); }
+    makeLabel(g, ['🏛️ 역사의 길', '구석기부터 조선까지 · 시대 퀴즈로 함께 지어요'], 1.3, gx, 7.2, gz); }
+  // 길가 연표 돌 (시대 이름·때)
+  for (const E of HIST_ERAS) {
+    const pad = new THREE.Mesh(new THREE.PlaneGeometry(12.5, 9), new THREE.MeshStandardMaterial({ color: E.col, roughness: 1 })); pad.rotation.x = -Math.PI / 2; pad.position.set(E.x, 0.018, E.z); g.add(pad);
+    box(g, 12, 0.05, 2.6, C.path, HIST.path + E.side * 8, 0.02, E.z, o);
+    const px = HIST.path + E.side * 2.6, pz = E.z;
+    box(g, 0.5, 1.1, 0.5, 0xA8A294, px, 0.55, pz - 1.5);
+    const d = (HIST_SNAP.eras.find(x => x.n === E.n) || {}).d || '';
+    const sgE = signPlane(g, [`${E.icon} ${E.n}`, d || ' '], 2.6, 1.0, px, 1.55, pz - 1.5, { font: 46, pad: 4, fg: '#3B2F2A', bg: '#FFF4D6' }); sgE.rotation.y = E.side < 0 ? Math.PI / 2 : -Math.PI / 2;
+  }
+  // 나무·바위
+  for (let z = -60; z >= -128; z -= 9) for (const x of [481.5, 558.5]) { mesh(TAPER, g, 0.3, 2.6, 0.3, 0x7A5436, x, 1.3, z); [[1.8, 2, 2.6], [1.4, 1.8, 3.8], [1.0, 1.6, 4.9]].forEach(([r, h, y], j) => mesh(CONE, g, r, h, r, [0x3E8A45, 0x46994D, 0x52A858][j], x, y, z, { solid: false, flat: true })); }
+  registerSolids(g, 'hist'); batchStatic(g);
+  // 시대 자리
+  for (const E of HIST_ERAS) {
+    const base = new THREE.Group(); base.position.set(E.x, 0, E.z); base.rotation.y = E.side < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(base);
+    const ghost = new THREE.Group(); ghost.name = 'histGhost'; base.add(ghost); eraGhost(E, ghost);
+    const label = makeLabel(scene, [''], 1.2, E.x, 8.2, E.z);
+    const info = { E, base, ghost, label, model: null, built: false };
+    hist.sites[E.k] = info; label.userData.set(histSiteLines(E));
+    const ix = HIST.path + E.side * 6.5;
+    addInteract({ pos: new V3(ix, 1, E.z), r: 3.6, dy: 2.4,
+      text: () => { if (!hvRegion()) return null; const pool = histPool([E.k]).length; return !pool ? ['안내 📜', `${E.icon} ${E.n} · 학습지를 기다려요`] : histBuilt(E.k) ? ['시대 퀴즈 📜', `${E.icon} ${E.n} · ${E.b} 복습`] : histCount(E.k) >= HIST_GOAL ? ['짓기 🔨', `${E.icon} ${E.b}`] : ['시대 퀴즈 📜', `${E.icon} ${E.n}`]; },
+      run: () => { const pool = histPool([E.k]).length; if (!pool) { toast(`📜 ${E.n} 학습지가 아직 없어요. 사회 학습지에 올라오면 문제가 생겨요`, 'info'); return; } if (!histBuilt(E.k) && histCount(E.k) >= HIST_GOAL) histBuild(E.k); else openEraQuiz(E); } });
+  }
+}
+function openEraQuiz(E) {
+  openHQ({ title: `${E.icon} ${E.n} 시대 퀴즈`, keys: [E.k], mode: 'era',
+    head: (box) => {
+      const n = histCount(E.k), built = histBuilt(E.k);
+      box.append(el2('p', 'lp-big', built ? `✅ ${E.b} 완성!` : `🏗️ ${E.b} · 반 전체 ${Math.min(n, HIST_GOAL)} / ${HIST_GOAL}`));
+      if (!built) { const bar = el2('div', 'bar'), f = el2('div'); f.style.width = `${Math.min(100, n / HIST_GOAL * 100)}%`; bar.append(f); box.append(bar); }
+      if (built) box.append(el2('p', 'hint', E.info.join(' · ')));
+      if (!built && n >= HIST_GOAL) { const b = el2('button', 'btn lp-btn', `🔨 ${E.b} 짓기!`); b.style.background = 'var(--leaf)'; b.style.color = '#fff'; b.onclick = () => { closeLife(); histBuild(E.k); }; const r = el2('div', 'row-center'); r.append(b); box.append(r); }
+    },
+    onRight: (first, fresh) => {
+      if (!first) { toast('⭕ 맞았어요! (처음에 틀린 문제라 반 점수는 그대로예요)', 'info'); return; }
+      const cap = capNow(), give = cap ? Math.max(0, Math.min(2, cap - earnToday())) : 2;
+      if (fresh && give > 0) { bag.earn.n += give; earnShell(give); }
+      toast(fresh ? `⭕ 정답! ${E.n} 시대 점수 +1${give && fresh ? ` · 🐚 +${give}` : ''}${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}` : '⭕ 정답! (전에 맞힌 문제예요)', 'success');
+    } });
+}
+async function histBuild(k) {
+  const E = HIST_ERA[k]; if (histBuilt(k)) { toast('이미 지어졌어요!', 'info'); return; }
+  if (histCount(k) < HIST_GOAL) { toast(`📜 ${E.n} 시대 퀴즈를 반 전체가 ${HIST_GOAL - histCount(k)}문제 더 맞혀야 지을 수 있어요`, 'warn'); return; }
+  const r = await backend.histBuild(k);
+  if (r.ok) { playAct(player.avatar, 'cheer'); playSfx('build'); }
+  else if (r.reason === 'built') toast('이미 지어졌어요!', 'info');
+  else if (r.reason !== 'offline') toast('⚠️ 짓지 못했어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요', 'warn');
+}
+function syncHist(prev, first) {
+  for (const E of HIST_ERAS) {
+    const info = hist.sites[E.k]; if (!info) continue;
+    const on = histBuilt(E.k);
+    if (on && !info.built) {
+      info.built = true; info.ghost.visible = false;
+      const m = new THREE.Group(); m.name = ''; info.base.add(m); buildEraModel(E.k, m); info.model = m;
+      info.base.updateMatrixWorld(true); registerSolids(m, 'hist:' + E.k);
+      if (!first) { burst(new V3(E.x, 3, E.z), RAINBOW, 60, 6, 3); if (hvRegion()) showBanner(`${E.icon} ${E.b} 완성!`, `${E.n} · ${E.info[0]}`, 5500); else toast(`🏛️ 역사 마을에 ${E.icon} ${E.b}이(가) 지어졌어요!`, 'success'); }
+    } else if (!on && info.built) {
+      info.built = false; info.ghost.visible = true;
+      if (info.model) { info.base.remove(info.model); removeColliders('hist:' + E.k); info.model = null; }
+    }
+    if (!first && !on && histCount(E.k, prev) < HIST_GOAL && histCount(E.k) >= HIST_GOAL && hvRegion()) toast(`🔨 ${E.icon} ${E.n} 시대 퀴즈 목표 달성! ${E.b}을(를) 지을 수 있어요`, 'success');
+    info.label.userData.set(histSiteLines(E));
+  }
+  if (!first && histBuiltCount() === HIST_ERAS.length && histBuiltCount(prev) < HIST_ERAS.length) showBanner('🏛️ 역사의 길 완성!', '구석기부터 조선까지 모두 함께 지었어요', 6000);
+  if (S.histSrc?.j !== prev.histSrc?.j) { hq.bank = null; for (const info of Object.values(hist.sites)) info.label.userData.set(histSiteLines(info.E)); if (!first && hvRegion()) toast('📥 사회 학습지 문제가 새로 바뀌었어요', 'info'); }
+}
+function updateHist(dt) {
+  if (!hist.group) return;
+  const near = (player.pos.x > 300 && player.pos.x < 600 && player.pos.z < 60) || (camera.position.x > 300 && camera.position.x < 600 && camera.position.z < 60);
+  hist.group.visible = near; for (const info of Object.values(hist.sites)) { info.base.visible = near; info.label.visible = near && Math.abs(player.pos.z - info.E.z) < 45; }
+  if (near) for (const [i, f] of hist.fx.entries()) { f.scale.y = (f.userData.s ||= f.scale.x) * (1 + Math.sin(time * 9 + i) * 0.15); f.rotation.y = time * 2 + i; }
+  if (isTeacher && joined && !hq.autoTried && !hq.loading) histLoad(true); // 선생님으로 들어오면 학습지를 한 번 읽어 와요
+}
+function fillHistAdmin() {
+  if (!$('tpHistNow')) return;
+  const d = histData(), nq = histBank()._all.length;
+  const eras = HIST_ERAS.map(E => `${E.icon}${E.n} ${histBuilt(E.k) ? '✅' : `${Math.min(HIST_GOAL, histCount(E.k))}/${HIST_GOAL}`}`).join(' · ');
+  $('tpHistNow').textContent = `${S.histSrc?.j ? `📥 불러온 학습지 (${new Date(S.histSrc.at || 0).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })})` : '📦 넣어 둔 학습지'} ${d.sheets.length}장 · 문제 ${nq}개 · ${eras}${hq.loadMsg ? `\n${hq.loadMsg}` : ''}`;
+}
+function initHistAdmin() {
+  $('tpHistLoad').onclick = () => histLoad(false);
+  $('tpHistReset').onclick = async () => {
+    if (!(await confirmAction({ title: '🏛️ 역사의 길을 처음으로 되돌릴까요?', body: '지은 시대 건축물과 반 전체 시대 퀴즈 점수가 지워져요.\n불러온 학습지와 학생 가방은 그대로예요.', okText: '되돌리기' }))) return;
+    adminDo({ hist: null }, '🏛️ 역사의 길을 처음으로 되돌렸어요');
+  };
+}
+
+/* ---------- ⚔️ 성 공방전 ---------- */
+const SIEGE_SETS = {
+  tribe: { name: '선사 시대 · 부족', eras: ['paleo', 'neo', 'bronze', 'gojoseon'], wall: 'wood', nat: [{ name: '곰 부족', icon: '🐻', col: 0x8A5A34 }, { name: '호랑이 부족', icon: '🐯', col: 0xF08A24 }, { name: '하늘 부족', icon: '☀️', col: 0x3E9AD8 }] },
+  three: { name: '삼국 시대', eras: ['three'], wall: 'stone', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
+  four: { name: '삼국 + 가야', eras: ['three'], wall: 'stone', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }, { name: '가야', icon: '⚒️', col: 0x3FA060 }] },
+  nb: { name: '남북국 시대', eras: ['nb'], wall: 'stone', nat: [{ name: '통일 신라', icon: '👑', col: 0x3E6AC8 }, { name: '발해', icon: '🐎', col: 0x8A4FC8 }] },
+  late: { name: '후삼국 시대', eras: ['nb', 'goryeo'], wall: 'stone', nat: [{ name: '후고구려', icon: '🐉', col: 0xD24A3A }, { name: '후백제', icon: '🌾', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
+};
+const SG = { cx: 520, cz: 98, x0: 474, x1: 566, z0: 52, z1: 144 };
+const SG_LAYOUT = { // 성 자리: [x, z, 성문 방향(성문이 보는 쪽 각도)]
+  2: [[520, 62, 0], [520, 134, Math.PI]],
+  3: [[520, 62, 0], [556, 112, -Math.PI / 2], [484, 112, Math.PI / 2]],
+  4: [[520, 62, 0], [556, 98, -Math.PI / 2], [520, 134, Math.PI], [484, 98, Math.PI / 2]],
+};
+const SG_FIX = 3, SG_AMMO = 3, SG_AMMO_MAX = 9, SG_STUN = 3000, SG_DOWN = 20000;
+const inSiege = (x, z) => !!S.siege && x >= SG.x0 + 0.8 && x <= SG.x1 - 0.8 && z >= SG.z0 + 0.8 && z <= SG.z1 - 0.8;
+const siegeRegion = () => joined && player.pos.x > SG.x0 - 5 && player.pos.x < SG.x1 + 5 && player.pos.z > SG.z0 - 4;
+const sgSet = () => SIEGE_SETS[S.siege?.set] || SIEGE_SETS.three;
+const sgTeamOf = (u) => S.siege?.team?.[u] || 0;
+const sgMine = () => sgTeamOf(backend?.uid);
+const sgLeft = () => S.siege ? Math.max(0, Math.ceil((S.siege.end - backend.now()) / 1000)) : 0;
+const sgStarted = () => !!S.siege && backend.now() >= S.siege.at;
+const sgStunned = (u) => { const t = S.siege?.stun?.[u]; return !!t && backend.now() - t < SG_STUN; };
+const sgw = { field: null, castles: {}, key: '', lastR: '', ended: '', ammo: SG_AMMO, hold: false, pow: 0, dir: 1, cool: 0, balls: [], mark: null, boxes: [], stunT: 0, stunPos: null, shots: {}, assign: {}, count: 0, hud: '', listKey: '', busy: {}, spots: [] };
+function sgWinner() { // 0 진행 중 · 1~4 이긴 나라 · 9 비김
+  const s = S.siege; if (!s) return 0; if (s.win) return s.win;
+  if (backend.now() < s.end) return 0;
+  let best = -1, w = 9; for (let t = 1; t <= s.n; t++) { const v = s.score?.[t] || 0; if (v > best) { best = v; w = t; } else if (v === best) w = 9; }
+  return w;
+}
+function buildSiegeField() {
+  const g = new THREE.Group(); g.name = 'SiegeField'; scene.add(g); sgw.field = g;
+  const o = { solid: false };
+  box(g, SG.x1 - SG.x0, 0.06, SG.z1 - SG.z0, 0xA8B878, SG.cx, 0.01, SG.cz, o);                       // 전쟁터 풀밭
+  for (let i = 0; i < 40; i++) { const x = SG.x0 + 4 + ((i * 37) % 84), z = SG.z0 + 4 + ((i * 53) % 84); mesh(SPH_LO, g, 1.4, 0.06, 1.0, 0x98A868, x, 0.05, z, { solid: false, flat: true }); }
+  for (const [x0, z0, x1, z1] of [[SG.x0, SG.z0, SG.x1, SG.z0], [SG.x0, SG.z1, SG.x1, SG.z1], [SG.x0, SG.z0, SG.x0, SG.z1], [SG.x1, SG.z0, SG.x1, SG.z1]]) { // 나무 울타리
+    const len = Math.hypot(x1 - x0, z1 - z0), along = x1 !== x0; box(g, along ? len : 0.5, 1.4, along ? 0.5 : len, 0x8A6A44, (x0 + x1) / 2, 0.7, (z0 + z1) / 2);
+    for (let t = 0; t <= len; t += 2) cyl(g, 0.14, 1.9, 0x7A5A36, x0 + (x1 - x0) * t / len, 0.95, z0 + (z1 - z0) * t / len, o);
+  }
+  for (const [x, z, k] of [[520, 98, 0], [506, 88, 1], [534, 108, 1], [534, 88, 2], [506, 108, 2], [498, 74, 1], [542, 122, 1], [496, 124, 2], [544, 74, 2]]) { // 가운데 숨을 곳 (짚단·바위·나무)
+    if (k === 0) { for (const [dx, dz] of [[-1.6, 0], [1.6, 0], [0, 0]]) cyl(g, 0.9, 1.5, 0xE0C068, x + dx, 0.8, z + dz * 1, { rz: Math.PI / 2 }); }
+    else if (k === 1) { mesh(SPH_MID, g, 2.0, 1.6, 1.7, 0x8F8A80, x, 0.7, z, { solid: false, flat: true }); box(g, 2.8, 1.6, 2.4, 0x8F8A80, x, 0.8, z).visible = false; }
+    else { mesh(TAPER, g, 0.4, 3, 0.4, 0x6B4A30, x, 1.5, z); mesh(SPH_MID, g, 2.2, 1.8, 2.2, 0x4E8E44, x, 3.6, z, { solid: false, flat: true }); }
+  }
+  makeLabel(g, ['⚔️ 성 공방전', '선생님이 시작하면 열려요'], 1.4, SG.cx, 6, SG.z0 + 2);
+  registerSolids(g, 'siegeField'); batchStatic(g);
+  g.visible = false;
+  sgw.mark = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.75, 28), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.85, depthWrite: false })); sgw.mark.rotation.x = -Math.PI / 2; sgw.mark.visible = false; scene.add(sgw.mark);
+  // 병영·성문 고치기 자리 (성을 지을 때 위치를 옮겨요)
+  for (let t = 1; t <= 4; t++) {
+    const camp = { pos: new V3(0, -99, 0), r: 2.4, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgStarted() && !sgWinner() ? ['돌 얻기 🏕️', `병영 · 퀴즈 맞히면 🪨 +${SG_AMMO}`] : null, run: () => openSiegeQuiz('ammo') };
+    const fix = { pos: new V3(0, -99, 0), r: 2.4, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgStarted() && !sgWinner() && (S.siege.hp?.[t] || 0) > 0 && (S.siege.hp?.[t] || 0) < S.siege.max ? ['성문 고치기 🔨', `퀴즈 맞히면 성문 +${SG_FIX}`] : null, run: () => openSiegeQuiz('fix') };
+    addInteract(camp); addInteract(fix); sgw.spots[t] = { camp, fix };
+  }
+}
+function castleAt(t) { const L = SG_LAYOUT[S.siege?.n || 2][t - 1]; return L ? { x: L[0], z: L[1], a: L[2] } : null; }
+const castleLocal = (t, lx, lz) => { const c = castleAt(t); return [c.x + Math.sin(c.a) * lz + Math.cos(c.a) * lx, c.z + Math.cos(c.a) * lz - Math.sin(c.a) * lx]; };
+function buildCastles() {
+  for (const c of Object.values(sgw.castles)) { scene.remove(c.g); scene.remove(c.door); scene.remove(c.rubble); removeColliders('sgd' + c.t); }
+  removeColliders('siege'); sgw.castles = {}; sgw.boxes = [];
+  const s = S.siege; if (!s) { sgw.key = ''; return; }
+  const set = sgSet(), wood = set.wall === 'wood', o = { solid: false };
+  for (let t = 1; t <= s.n; t++) {
+    const N = set.nat[t - 1], c = castleAt(t), g = new THREE.Group(); g.position.set(c.x, 0, c.z); g.rotation.y = c.a; scene.add(g);
+    const H = wood ? 2.8 : 3.2, half = 6, wc = wood ? 0x8A6A44 : 0xA8A294, wc2 = wood ? 0x7A5A36 : 0x96907F;
+    const seg = (x0, z0, x1, z1) => { // 벽 한 토막
+      const len = Math.hypot(x1 - x0, z1 - z0), along = x1 !== x0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+      if (wood) { box(g, along ? len : 0.7, H, along ? 0.7 : len, wc, cx, H / 2, cz).visible = false; for (let k = 0; k <= len / 0.5; k++) { const x = x0 + (x1 - x0) * k / (len / 0.5), z = z0 + (z1 - z0) * k / (len / 0.5); cyl(g, 0.24, H, k % 2 ? wc : wc2, x, H / 2, z, o); mesh(CONE, g, 0.25, 0.5, 0.25, wc2, x, H + 0.25, z, { solid: false, flat: true }); } }
+      else { const w = box(g, along ? len : 1, H, along ? 1 : len, wc, cx, H / 2, cz); w.material = brickMat('#B4AE9E', '#7E786A', 6, 'castle'); for (let k = 0.5; k < len; k += 1.2) box(g, along ? 0.6 : 1.1, 0.5, along ? 1.1 : 0.6, wc2, along ? x0 + (x1 - x0) * k / len : cx, H + 0.25, along ? cz : z0 + (z1 - z0) * k / len, o); }
+    };
+    seg(-half, half, -1.8, half); seg(1.8, half, half, half);                                            // 앞 (가운데 성문)
+    seg(-half, -half, half, -half);                                                                     // 뒤
+    for (const sx of [-half, half]) { seg(sx, -half, sx, -1); seg(sx, 1, sx, half); }                    // 옆 (가운데 쪽문)
+    for (const sx of [-half, half]) for (const sz of [-half, half]) { // 망루
+      if (wood) { for (const [dx, dz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) cyl(g, 0.14, 4.2, wc2, sx + dx, 2.1, sz + dz, o); box(g, 2, 0.2, 2, wc, sx, 3.6, sz, o); mesh(CONE, g, 1.6, 1.4, 1.6, 0xC9A65E, sx, 4.9, sz, { solid: false, flat: true }); box(g, 1.8, 4, 1.8, wc, sx, 2, sz).visible = false; }
+      else { box(g, 2.2, H + 1.6, 2.2, wc, sx, (H + 1.6) / 2, sz).material = brickMat('#B4AE9E', '#7E786A', 6, 'castle'); mesh(PYR, g, 2.8, 1.3, 2.8, N.col, sx, H + 2.25, sz, { solid: false, flat: true }); }
+    }
+    for (const s2 of [-1, 1]) box(g, 1.0, H + 1.4, 1.4, wood ? wc2 : 0x9A9486, s2 * 2.3, (H + 1.4) / 2, half);   // 성문 기둥
+    box(g, 5.6, 0.9, 1.6, wood ? wc2 : 0x9A9486, 0, H + 1.0, half, o); mesh(GABLE, g, 5.2, 1.1, 2.0, wood ? 0xC9A65E : N.col, 0, H + 2.0, half, { solid: false, ry: Math.PI / 2 });
+    const sgn = signPlane(g, [`${N.icon} ${N.name}`], 3.4, 0.8, 0, H + 0.95, half + 0.82, { font: 56, pad: 4, fg: '#FFFFFF', bg: '#' + new THREE.Color(N.col).getHexString(), stroke: false }); sgn.rotation.y = 0;
+    // 안쪽: 깃대 · 병영 (돌 무더기)
+    cyl(g, 0.08, 5.2, 0xEEEEEE, 0, 2.6, -2.8, o);
+    const flag = new THREE.Group(); flag.name = 'sgFlag'; flag.position.set(0, 4.6, -2.8); g.add(flag); box(flag, 1.8, 1.1, 0.05, N.col, 0.95, 0, 0, o);
+    box(g, 2.4, 0.8, 1.2, 0x8A5A34, -3, 0.4, -3.2); for (let k = 0; k < 7; k++) mesh(SPH_LO, g, 0.26, 0.22, 0.26, 0x8A8478, -3.9 + (k % 4) * 0.55, 0.95 + Math.floor(k / 4) * 0.22, -3.2 + (k % 2) * 0.2, { solid: false, flat: true });
+    mesh(GABLE, g, 3.4, 1.4, 2.4, 0xE8DCC0, -3, 2.6, -3.2, { solid: false, ry: Math.PI / 2 }); for (const dx of [-1.5, 1.5]) for (const dz of [-1, 1]) cyl(g, 0.06, 2, 0x8A6A44, -3 + dx, 1, -3.2 + dz, o);
+    makeLabel(g, ['🏕️ 병영'], 0.7, -3, 3.8, -3.2, { stroke: false, pad: 4, font: 56 });
+    g.updateMatrixWorld(true);
+    g.traverse(m => { if (m.isMesh && m.userData.solid) sgw.boxes.push(new THREE.Box3().setFromObject(m)); });
+    registerSolids(g, 'siege'); batchStatic(g);
+    // 성문 (부서지면 숨겨요)
+    const door = new THREE.Group(); door.name = 'sgDoor'; door.position.copy(g.position); door.rotation.y = c.a; scene.add(door);
+    for (const s2 of [-1, 1]) { box(door, 1.75, H - 0.1, 0.35, 0x7A4A2A, s2 * 0.9, (H - 0.1) / 2, half, o); for (let r = 0; r < 3; r++) for (let q = 0; q < 2; q++) ball(door, 0.07, 0x3A3530, s2 * 0.9 + (q - 0.5) * 0.8, 0.6 + r * 0.9, half + 0.2, o); box(door, 1.75, 0.16, 0.38, N.col, s2 * 0.9, H * 0.55, half, o); }
+    const col = new THREE.Group(); door.add(col); box(col, 3.6, H, 0.6, 0x7A4A2A, 0, H / 2, half).visible = false;
+    door.updateMatrixWorld(true);
+    const hit = new THREE.Box3().setFromObject(col.children[0]).expandByScalar(0.3);
+    const rubble = new THREE.Group(); rubble.name = 'sgRubble'; rubble.position.copy(g.position); rubble.rotation.y = c.a; scene.add(rubble); rubble.visible = false;
+    for (let k = 0; k < 6; k++) box(rubble, 0.9 + (k % 3) * 0.3, 0.18, 0.4, 0x6A3E22, (k - 2.5) * 0.55, 0.12 + (k % 2) * 0.1, half + 0.6 + (k % 3) * 0.3, { solid: false, ry: k * 0.7, rz: (k % 2 - 0.5) * 0.3 });
+    const hp = makeLabel(scene, [''], 0.8, ...(() => { const [x, z] = castleLocal(t, 0, half + 0.5); return [x, H + 3.4, z]; })(), { bg: '#FFFFFF', fg: '#3B2F2A', font: 48, pad: 8 });
+    sgw.castles[t] = { t, g, door, col, rubble, hit, hpLabel: hp, flag, open: false, N, H };
+    const [cx2, cz2] = castleLocal(t, -3, -1.7), [fx, fz] = castleLocal(t, 0, half - 1.6);
+    sgw.spots[t].camp.pos.set(cx2, 1, cz2); sgw.spots[t].fix.pos.set(fx, 1, fz);
+    setDoor(t, (s.hp?.[t] ?? s.max) > 0);
+  }
+  for (let t = s.n + 1; t <= 4; t++) { sgw.spots[t].camp.pos.set(0, -99, 0); sgw.spots[t].fix.pos.set(0, -99, 0); }
+  sgw.key = `${s.r}|${s.set}|${s.n}`;
+}
+function setDoor(t, closed) {
+  const c = sgw.castles[t]; if (!c) return;
+  if (closed === !c.open && c.inited) return;
+  c.inited = true; c.open = !closed; c.door.visible = closed; c.rubble.visible = !closed;
+  if (closed) registerSolids(c.col, 'sgd' + t); else removeColliders('sgd' + t);
+}
+function setSgLook(a, t, stun) { // 나라 조끼 + 머리 위 나라 표시 (맞으면 💫)
+  const key = t ? `${S.siege?.set}|${t}|${stun ? 1 : 0}` : '';
+  if ((a.sgKey || '') === key) return;
+  if (a.sgObjs) { for (const x of a.sgObjs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } } a.sgObjs = null; }
+  a.sgKey = key; if (!t) return;
+  const N = sgSet().nat[t - 1]; if (!N) return;
+  const o = { solid: false }, objs = [], vest = new THREE.Group(); a.rig.add(vest); objs.push(vest);
+  box(vest, 0.84, 0.5, 0.54, N.col, 0, 0.98, 0, o); box(vest, 0.86, 0.1, 0.56, 0xFFFFFF, 0, 1.2, 0, o);
+  objs.push(makeLabel(a.g, [stun ? '💫' : N.icon], 0.5, 0, a.tcode ? 3.95 : 3.3, 0, { stroke: false, pad: 4, font: 80 }));
+  a.sgObjs = objs;
+}
+function sgSpawn() {
+  const t = sgMine(), s = S.siege;
+  if (!t || !s) { ctfTeleport(SG.x0 + 2.5, SG.cz, Math.PI / 2); return; } // 선생님(구경)은 옆줄
+  const hsh = Math.abs([...String(backend.uid || 'x')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7));
+  const [x, z] = castleLocal(t, ((hsh % 7) - 3) * 0.7, -0.5 + (hsh % 3) * 0.6), c = castleAt(t);
+  ctfTeleport(x, z, c.a);
+}
+function syncSiege(prev, first) {
+  const s = S.siege, p = prev.siege;
+  if (s && `${s.r}|${s.set}|${s.n}` !== sgw.key) buildCastles();
+  if (!s && sgw.key) buildCastles();
+  if (s && s.r !== sgw.lastR) { // 새 전쟁
+    sgw.lastR = s.r; sgw.ended = ''; sgw.ammo = SG_AMMO; sgw.stunT = 0; sgw.shots = { ...(s.shot ? Object.fromEntries(Object.entries(s.shot).map(([u, v]) => [u, v?.t])) : {}) };
+    if (!first || siegeRegion()) {
+      if (!isTeacher && !sgMine() && s.on) { const cnt = {}; for (const v of Object.values(s.team || {})) cnt[v] = (cnt[v] || 0) + 1; let best = 1; for (let t = 1; t <= s.n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; backend.siegeJoin(best); }
+      setTimeout(() => { sgSpawn(); const t = sgMine(), N = sgSet().nat[t - 1]; showBanner(`⚔️ 성 공방전 · ${sgSet().name}`, N ? `나는 ${N.icon} ${N.name}! 🏕️ 병영에서 퀴즈를 맞혀 돌을 얻고, 상대 성문을 맞혀요` : '선생님은 옆줄에서 지켜봐요', 5000); }, first ? 900 : 300);
+    }
+  }
+  if (!s && p) { // 선생님이 끝냄 → 역사 마을로
+    sgw.lastR = ''; endSgHold();
+    if (siegeRegion()) { ctfTeleport(520, 30, Math.PI); toast('🏁 성 공방전이 끝났어요. 역사 마을로 돌아왔어요', 'info'); }
+  }
+  if (s && p && s.r === p.r) {
+    for (let t = 1; t <= s.n; t++) {
+      const hp = s.hp?.[t] ?? s.max, php = p.hp?.[t] ?? s.max;
+      if (hp === 0 && php > 0 && siegeRegion()) { const N = sgSet().nat[t - 1], c = sgw.castles[t]; playSfx('fanfare'); if (c) burst(new V3(...castleLocal(t, 0, 6.5).flatMap((v, i) => i ? [2, v] : [v])), [N.col, 0xFFFFFF, 0x8A6A44], 70, 7, 3); toast(sgMine() === t ? `💥 우리 ${N.name} 성문이 부서졌어요! 20초 뒤 다시 세워져요` : `💥 ${N.icon} ${N.name} 성문이 부서졌어요!`, sgMine() === t ? 'warn' : 'success'); }
+      if (hp > 0 && php === 0 && siegeRegion()) toast(`🛡️ ${sgSet().nat[t - 1].name} 성문을 다시 세웠어요`, 'info');
+    }
+    for (const [u, v] of Object.entries(s.shot || {})) { // 친구가 던진 돌 (보이기만 해요)
+      if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t;
+      if (u !== backend.uid && siegeRegion()) sgLaunch(v.x, v.z, v.dx, v.dz, v.v, false, sgTeamOf(u));
+    }
+  }
+  renderSgHud(true);
+}
+function sgAimDir() { const v = new V3(); camera.getWorldDirection(v); v.y = 0; if (v.lengthSq() < 1e-6) v.set(Math.sin(player.heading), 0, Math.cos(player.heading)); return v.normalize(); }
+const SG_ANG = 0.62;
+const sgSpeed = (pow) => { const range = 5 + pow * 24; return Math.sqrt(9.8 * range / Math.sin(2 * SG_ANG)); };
+function sgCan() { return S.siege?.on && sgMine() && sgStarted() && !sgWinner() && siegeRegion() && !sgStunned(backend.uid); }
+function sgDown() {
+  if (!sgCan() || sgw.cool > 0) return;
+  if (sgw.ammo <= 0) { toast('🪨 돌이 없어요! 우리 성 🏕️ 병영에서 퀴즈를 맞혀 돌을 얻어요', 'warn'); return; }
+  sgw.hold = true; sgw.pow = 0; sgw.dir = 1;
+}
+function endSgHold() { sgw.hold = false; if (sgw.mark) sgw.mark.visible = false; }
+function sgUp() {
+  if (!sgw.hold) return; endSgHold();
+  if (!sgCan() || sgw.ammo <= 0) return;
+  const d = sgAimDir(), v = sgSpeed(sgw.pow), p = player.pos;
+  player.heading = Math.atan2(d.x, d.z); playAct(player.avatar, 'cheer'); playSfx('jump');
+  sgw.ammo--; sgw.cool = 0.5; sgw.pow = 0; renderSgBar();
+  sgLaunch(p.x + d.x * 0.6, p.z + d.z * 0.6, d.x, d.z, v, true, sgMine());
+  backend.siegeShot({ x: +(p.x + d.x * 0.6).toFixed(2), z: +(p.z + d.z * 0.6).toFixed(2), dx: +d.x.toFixed(3), dz: +d.z.toFixed(3), v: +v.toFixed(2) });
+}
+function sgLaunch(x, z, dx, dz, v, mine, t) {
+  const m = mesh(SPH_LO, scene, 0.24, 0.22, 0.24, 0x7A746A, x, 1.7, z, { solid: false, flat: true });
+  sgw.balls.push({ m, x, y: 1.7, z, vx: dx * v * Math.cos(SG_ANG), vy: v * Math.sin(SG_ANG), vz: dz * v * Math.cos(SG_ANG), t: 0, mine, team: t, fx: x, fz: z, dead: false });
+}
+function sgLanding(pow) { // 꾹 누르는 동안 떨어질 자리 표시
+  const d = sgAimDir(), v = sgSpeed(pow), vy = v * Math.sin(SG_ANG), vh = v * Math.cos(SG_ANG), T = (vy + Math.sqrt(vy * vy + 2 * 9.8 * 1.7)) / 9.8;
+  return [player.pos.x + d.x * (0.6 + vh * T), player.pos.z + d.z * (0.6 + vh * T)];
+}
+async function sgHitGate(k, b) {
+  if (Math.hypot(b.fx - sgw.castles[k].hit.getCenter(new V3()).x, b.fz - sgw.castles[k].hit.getCenter(new V3()).z) < 5) { toast('🤏 성문에 너무 가까워요! 5걸음 밖에서 던져야 점수가 돼요', 'info'); return; }
+  const r = await backend.siegeHit(k, sgMine());
+  if (r.ok) { playSfx('pick'); toast(r.left === 0 ? `💥 성문을 부쉈어요! 우리 나라 +5점` : `🎯 명중! ${sgSet().nat[k - 1].name} 성문 ${r.left}/${S.siege.max} · 우리 나라 +1점`, 'success'); }
+}
+function updateSiege(dt) {
+  if (!sgw.field) return;
+  const near = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10 && camera.position.z > SG.z0 - 10);
+  const s = S.siege, show = near && !!s;
+  sgw.field.visible = show; for (const c of Object.values(sgw.castles)) { c.g.visible = show; c.door.visible = show && !c.open; c.rubble.visible = show && c.open; c.hpLabel.visible = show; if (show) c.flag.rotation.y = Math.sin(time * 2 + c.t) * 0.3; }
+  // 나라 표시 (내 캐릭터와 친구)
+  if (player.avatar) setSgLook(player.avatar, s ? sgMine() : 0, s && sgStunned(backend.uid));
+  for (const [uid, r] of remotes) setSgLook(r.a, s ? sgTeamOf(uid) : 0, s && sgStunned(uid));
+  if (s) for (let t = 1; t <= s.n; t++) {
+    const c = sgw.castles[t]; if (!c) continue; const hp = s.hp?.[t] ?? s.max; setDoor(t, hp > 0);
+    const lab = hp > 0 ? `🛡️ ${c.N.icon} 성문 ${hp} / ${s.max}` : `💥 다시 세우는 중 ${Math.max(0, Math.ceil((SG_DOWN - (backend.now() - (s.down?.[t] || backend.now()))) / 1000))}초`;
+    if (c.hpText !== lab) { c.hpText = lab; c.hpLabel.userData.set([lab]); }
+  }
+  // 돌 날아가기 (잘게 나눠 계산)
+  const steps = Math.max(1, Math.ceil(dt / (1 / 120))), h = dt / steps;
+  for (const b of sgw.balls) for (let st = 0; st < steps && !b.dead; st++) {
+    b.t += h; b.vy -= 9.8 * h; b.x += b.vx * h; b.y += b.vy * h; b.z += b.vz * h;
+    const P = new V3(b.x, b.y, b.z);
+    if (s) for (let k = 1; k <= s.n; k++) { const c = sgw.castles[k]; if (!c || c.open || k === b.team) continue; if (c.hit.containsPoint(P)) { b.dead = true; burst(P, [0x8A6A44, 0xFFFFFF, c.N.col], 22, 4, 2); if (b.mine) sgHitGate(k, b); break; } }
+    if (b.dead) break;
+    if (sgw.boxes.some(bx => bx.containsPoint(P))) { b.dead = true; burst(P, [0xBBB4A4, 0x8A8478], 10, 3, 1); break; }
+    if (b.mine && s?.on) for (const [uid, r] of remotes) { // 상대 친구 맞히기 (던진 사람 화면 기준)
+      const tt = sgTeamOf(uid); if (!tt || tt === b.team || sgStunned(uid) || backend.now() - (s.stun?.[uid] || 0) < SG_STUN + 2000) continue;
+      if (Math.hypot(r.pos.x - b.x, r.pos.y + 1 - b.y, r.pos.z - b.z) < 0.8) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); backend.siegeStun(uid); toast(`🎯 ${sgSet().nat[tt - 1].name} 친구를 맞혔어요! 3초 동안 멈춰요`, 'success'); break; }
+    }
+    if (b.dead) break;
+    if (b.y < 0.2) { b.dead = true; burst(P.setY(0.2), [0xC9B08A, 0xA89A80], 10, 2, 1); }
+    b.m.position.set(b.x, b.y, b.z);
+  }
+  for (const b of sgw.balls) if (b.dead || b.t > 6) scene.remove(b.m);
+  sgw.balls = sgw.balls.filter(b => !b.dead && b.t <= 6);
+  // 던지기 힘 모으기
+  if (sgw.cool > 0) sgw.cool -= dt;
+  if (sgw.hold) { if (!sgCan()) endSgHold(); else { sgw.pow += sgw.dir * dt * 0.8; if (sgw.pow >= 1) { sgw.pow = 1; sgw.dir = -1; } if (sgw.pow <= 0) { sgw.pow = 0; sgw.dir = 1; } const [lx, lz] = sgLanding(sgw.pow); sgw.mark.position.set(lx, 0.08, lz); sgw.mark.visible = true; const d = sgAimDir(); player.heading = Math.atan2(d.x, d.z); renderSgBar(); } }
+  renderSgHud(false);
+  if (!s || !joined) return;
+  // 💫 내가 맞았을 때: 3초 멈춤
+  const myStun = s.stun?.[backend.uid];
+  if (myStun && sgStunned(backend.uid)) {
+    if (sgw.stunT !== myStun) { sgw.stunT = myStun; sgw.stunPos = player.pos.clone(); endSgHold(); playSfx('oops'); toast('💫 돌에 맞았어요! 3초 동안 멈춰요', 'warn'); }
+    player.pos.x = sgw.stunPos.x; player.pos.z = sgw.stunPos.z;
+  }
+  // 집안일 (1초마다): 시간 끝 → 결과 · 부서진 성문 20초 뒤 다시 세우기
+  if (performance.now() - sgw.count > 1000) { // 화면이 느려도 실제 1초마다
+    sgw.count = performance.now();
+    const w = sgWinner();
+    const boss = isTeacher || backend.mode !== 'firebase'; // 연습 모드에서는 내 기기가 정리해요
+    if (boss && s.on && w) backend.adminUpdate({ 'siege/on': 0, 'siege/win': w });
+    if (s.on) for (let t = 1; t <= s.n; t++) {
+      if ((s.hp?.[t] ?? 1) !== 0 || sgw.busy[t]) continue;
+      const dn = s.down?.[t];
+      if (!dn && boss) backend.adminUpdate({ [`siege/down/${t}`]: backend.now() });
+      if (dn && backend.now() - dn >= SG_DOWN && (boss || sgMine() === t)) { sgw.busy[t] = true; backend.siegeRebuild(t, s.max).finally(() => { sgw.busy[t] = false; }); }
+    }
+  }
+}
+function openSiegeQuiz(mode) {
+  const set = sgSet(), t = sgMine(), N = set.nat[t - 1]; if (!N) return;
+  let keys = set.eras; if (histPool(keys).length < 4) keys = HIST_ERAS.map(E => E.k);
+  openHQ({ title: mode === 'ammo' ? `🏕️ ${N.name} 병영` : `🔨 ${N.name} 성문 고치기`, keys, mode,
+    head: (box) => box.append(el2('p', 'hint', mode === 'ammo' ? `맞히면 🪨 돌 +${SG_AMMO} (지금 ${sgw.ammo}개 · 최대 ${SG_AMMO_MAX}개)` : `맞히면 우리 성문 +${SG_FIX} (지금 ${S.siege?.hp?.[t] ?? 0} / ${S.siege?.max})`)),
+    onRight: async () => {
+      if (!S.siege?.on || sgWinner()) return;
+      if (mode === 'ammo') { sgw.ammo = Math.min(SG_AMMO_MAX, sgw.ammo + SG_AMMO); renderSgBar(); toast(`🪨 돌 +${SG_AMMO}! 지금 ${sgw.ammo}개 · 꾹 눌렀다 놓아서 던져요 (F)`, 'success'); }
+      else { const r = await backend.siegeFix(t, S.siege.max); toast(r.ok ? `🔨 성문을 고쳤어요! ${r.hp ?? ''} / ${S.siege.max}` : '🔨 지금은 고칠 수 없어요 (부서졌거나 이미 튼튼해요)', r.ok ? 'success' : 'info'); }
+    } });
+}
+function renderSgBar() {
+  const show = !!S.siege && siegeRegion() && !!sgMine();
+  $('sgBar').classList.toggle('hidden', !show); if (!show) return;
+  const k = [Math.round(sgw.pow * 50), sgw.ammo, sgWinner(), sgStunned(backend.uid)].join('|'); if (k === sgw.barKey) return; sgw.barKey = k;
+  $('sgFill').style.width = `${Math.round(sgw.pow * 100)}%`;
+  const w = sgWinner();
+  $('sgAmmo').textContent = w ? '🏁 전쟁이 끝났어요' : sgStunned(backend.uid) ? '💫 맞아서 잠깐 멈췄어요' : `🪨 돌 ${sgw.ammo}개${sgw.ammo ? '' : ' · 🏕️ 병영에서 얻어요'}`;
+  $('sgThrow').disabled = !!w || !sgw.ammo; $('sgThrow').classList.toggle('hidden', !!w);
+  $('sgHome').classList.toggle('hidden', !w);
+}
+function renderSgHud(force) {
+  const s = S.siege, show = !!s && siegeRegion();
+  $('sgHud').classList.toggle('hidden', !show);
+  document.body.classList.toggle('in-siege', show);
+  renderSgBar();
+  if (!show) return;
+  const set = sgSet(), w = sgWinner(), left = sgLeft(), wait = Math.ceil((s.at - backend.now()) / 1000), t = sgMine();
+  const key = [s.r, JSON.stringify(s.hp || {}), JSON.stringify(s.score || {}), w, left, wait > 0 ? wait : 0, t].join('|');
+  if (!force && key === sgw.hud) return; sgw.hud = key;
+  const rows = [];
+  for (let k = 1; k <= s.n; k++) { const N = set.nat[k - 1], hp = s.hp?.[k] ?? s.max; rows.push(`<span class="sg-nat${k === t ? ' me' : ''}" style="--c:#${new THREE.Color(N.col).getHexString()}"><b>${N.icon} ${N.name}</b> ${s.score?.[k] || 0}점<i style="width:${Math.round(hp / s.max * 100)}%"></i></span>`); }
+  $('sgNats').innerHTML = rows.join('');
+  $('sgInfo').textContent = w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} · ${set.name}`;
+  if (w && sgw.ended !== s.r) { sgw.ended = s.r; showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
+}
+// ---------- 선생님 ----------
+function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]); if (backend.mode !== 'firebase' && !list.some(([u]) => u === backend.uid)) list.push([backend.uid, { a: myAnimal, c: myShirt, me: true }]); return list; }
+function sgBalance(n, list) { // 정해 두지 않은 학생을 사람이 적은 나라로
+  const cnt = {}; for (const [u] of list) { const v = sgw.assign[u]; if (v >= 1 && v <= n) cnt[v] = (cnt[v] || 0) + 1; else delete sgw.assign[u]; }
+  for (const [u] of hShuffle([...list])) if (!sgw.assign[u]) { let best = 1; for (let t = 1; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; sgw.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; }
+}
+function fillSiegeAdmin(force) {
+  if (!$('tpSgNow')) return;
+  const s = S.siege, setKey = s ? s.set : $('tpSgSet').value, set = SIEGE_SETS[setKey] || SIEGE_SETS.three, n = s ? s.n : set.nat.length;
+  $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
+  $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on;
+  const list = sgStudents(), key = [setKey, n, list.map(([u]) => u).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
+  if (!force && key === sgw.listKey) return; sgw.listKey = key;
+  const box = $('tpSgList'); box.textContent = '';
+  if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
+  list.forEach(([u, tg], i) => {
+    const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot');
+    dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
+    row.append(el2('span', 'sg-ani', CFG.ANIMALS[tg.a | 0] || '🙂'), dot, el2('span', 'sg-name', tg.me ? '나 (연습)' : `학생 ${i + 1}`));
+    const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 나라`);
+    sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1))));
+    sel.value = String((s ? s.team?.[u] : sgw.assign[u]) || 0);
+    sel.onchange = () => { const v = +sel.value; if (s?.on) { if (v) backend.adminUpdate({ [`siege/team/${u}`]: v }); } else { if (v) sgw.assign[u] = v; else delete sgw.assign[u]; } };
+    const find = el2('button', 'btn', '📍'); find.title = '이 학생 위에 빛기둥 보이기'; find.onclick = () => sgBeam(u);
+    row.append(sel, find); box.append(row);
+  });
+}
+function sgBeam(u) {
+  const r = remotes.get(u), a = r ? r.a : u === backend.uid ? player.avatar : null; if (!a) { toast('지금 보이지 않는 학생이에요', 'info'); return; }
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 14, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
+  m.position.y = 7; a.g.add(m); setTimeout(() => { a.g.remove(m); m.geometry.dispose(); }, 6000);
+  toast('📍 그 학생 위에 노란 빛기둥이 6초 동안 보여요', 'info');
+}
+async function startSiege() {
+  if (!isTeacher && backend.mode === 'firebase') return;
+  if (S.ctf?.on) { toast('🚩 깃발뺏기를 먼저 끝내 주세요', 'warn'); return; }
+  const setKey = $('tpSgSet').value, set = SIEGE_SETS[setKey], n = set.nat.length, min = +$('tpSgMin').value, max = +$('tpSgHp').value;
+  const list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; }
+  sgBalance(n, list);
+  const counts = set.nat.map((N, k) => `${N.icon}${N.name} ${list.filter(([u]) => sgw.assign[u] === k + 1).length}명`).join(' · ');
+  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: `${counts}\n${min}분 동안, 성문 체력 ${max}. 시작하면 모두 역사 마을 남쪽 전쟁터 우리 성으로 옮겨요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
+  const team = Object.fromEntries(list.map(([u]) => [u, sgw.assign[u]])), now = backend.now(), hp = {}, score = {};
+  for (let t = 1; t <= n; t++) { hp[t] = max; score[t] = 0; }
+  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at: now + 5000, end: now + 5000 + min * 60000, max, team, hp, score } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
+  if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400);
+}
+function initSiegeUI() {
+  const sel = $('tpSgSet'); for (const [k, v] of Object.entries(SIEGE_SETS)) sel.append(new Option(`${v.name} (${v.nat.map(N => N.name).join('·')})`, k)); sel.value = 'three';
+  sel.onchange = () => fillSiegeAdmin(true);
+  $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
+  $('tpSgStart').onclick = startSiege;
+  $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 역사 마을로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
+  $('tpSgGo').onclick = () => { if (S.siege) { closeModals(); sgSpawn(); } else toast('진행 중인 전쟁이 없어요', 'info'); };
+  const btn = $('sgThrow');
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); sgDown(); });
+  btn.addEventListener('pointerup', e => { e.preventDefault(); sgUp(); });
+  btn.addEventListener('pointerleave', () => { if (sgw.hold) sgUp(); });
+  $('sgHome').onclick = () => { if (!isTeacher && S.siege?.on && !sgWinner()) return; ctfTeleport(520, 30, Math.PI); };
+  addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && S.siege && siegeRegion() && !(e.target instanceof Element && e.target.matches('input, textarea, select'))) { e.preventDefault(); sgDown(); } });
+  addEventListener('keyup', e => { if (e.key.toLowerCase() === 'f' && sgw.hold) { e.preventDefault(); sgUp(); } });
+}
+
 /* =====================================================================
    45. 시작 & 반복
    ===================================================================== */
@@ -12776,7 +14035,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); setupDoors(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildFundWorld(); initEconUI(); initHomeUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -12795,9 +14054,10 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
-  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateHide(dt); }
+  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateHide(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
+  if (joined) { updateHist(dt); updateSiege(dt); }
   updateFund(dt);
   if (joined) updateHome(dt);
   updateFx(dt); grassWind.value = time;
