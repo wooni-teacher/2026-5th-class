@@ -529,7 +529,8 @@
   .sg-nat { position: relative; padding: 3px 8px 8px; border-radius: 10px; background: #fff; font-size: 14px; box-shadow: inset 0 0 0 2px var(--c); overflow: hidden; white-space: nowrap; }
   .sg-nat.me { background: #FFF3C4; }
   .sg-nat i { position: absolute; left: 0; bottom: 0; height: 5px; background: var(--c); }
-  #sgInfo { font-weight: 800; font-size: 15px; margin-top: 3px; }
+  #sgInfo { font-weight: 800; font-size: 15px; margin-top: 3px; } #sgMine { font-size: 14px; margin-top: 2px; }
+  .lp-card.on { box-shadow: 0 0 0 3px var(--leaf) inset; }
   #sgBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #sgFill { height: 100%; width: 0; background: linear-gradient(90deg, #D9C49A, #8A6A44, #5A3A22); }
   #sgThrow { background: #8A6A44; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
@@ -785,11 +786,10 @@
   <div class="row-center" style="margin-top:6px"><button class="btn" id="bbShoot">🏀 꾹 눌렀다 놓기 (F)</button><button class="btn" id="bbQuit" style="background:#fff">그만</button></div>
 </div>
 <div id="hideBlind" class="hidden"><div>🙈 술래는 눈을 감고 있어요</div><b id="hideBlindT"></b><div style="font-size:18px">친구들이 숨는 동안 기다려요</div></div>
-<div id="sgHud" class="sticker hidden" role="status" aria-live="polite"><div id="sgNats"></div><div id="sgInfo"></div></div>
+<div id="sgHud" class="sticker hidden" role="status" aria-live="polite"><div id="sgNats"></div><div id="sgInfo"></div><div id="sgMine"></div></div>
 <div id="sgBar" class="sticker hidden">
   <div id="sgAmmo" style="font-weight:800"></div>
-  <div class="bb-gauge"><div id="sgFill"></div></div>
-  <div class="row-center" style="margin-top:6px"><button class="btn" id="sgThrow">🪨 꾹 눌렀다 놓기 (F)</button><button class="btn hidden" id="sgHome" style="background:#fff">🏯 역사 마을로</button></div>
+  <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="sgThrow">🏹 쏘기 (F)</button><button class="btn hidden" id="sgBarBtn" style="background:#C9A65E;color:#fff">🪵 목책 세우기</button><button class="btn" id="sgRoleBtn" style="background:#fff">🎭 역할</button><button class="btn hidden" id="sgHome" style="background:#fff">🏯 역사 마을로</button></div>
 </div>
 <div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
@@ -1119,10 +1119,10 @@
 
     <h3>⚔️ 성 공방전 (역사 마을 남쪽 전쟁터)</h3>
     <p class="hint" id="tpSgNow"></p>
-    <p class="hint">시대를 고르면 나라가 정해져요 (선사: 부족 · 삼국 · 남북국 · 후삼국). 학생마다 나라를 고르거나 ⚖️로 고르게 나눠요 (📍를 누르면 그 학생 위에 빛기둥이 보여요). 우리 성 🏕️ 병영에서 퀴즈를 맞히면 🪨 돌 3개, 꾹 눌렀다 놓아 던져 상대 성문을 맞히면 우리 나라 +1점(부수면 +5점, 20초 뒤 다시 세워져요). 우리 성문 🔨에서 퀴즈를 맞히면 성문 +3. 돌에 맞은 친구는 3초 멈춰요. 나라 점수만 보이고 끝내면 지워져요.</p>
+    <p class="hint">시대를 고르면 나라와 무기가 정해져요 (선사: 부족·🪨돌팔매 · 삼국: 🏹활 · 남북국·후삼국: 🎯쇠뇌). 나라를 정하고 시작하면 학생마다 역할(⚔️병사·🔨공병·🌿의원·📜책사)을 골라요. 전쟁터의 거점 5곳(🏯산성·⛏️철광산·🌾곡창·⛵나루터·🔥봉수대)을 차지하면 3초마다 점수와 자원이 쌓이고, 마지막 1분은 점수 두 배예요. 성 안 🏛️ 나라 창고에서 문제를 풀어 보급을 받고, 자원으로 성벽 강화·목책·강철 무기·화공을 해요. 상대 성문을 부수면 +15점과 자원을 빼앗아요. 이 기기(선생님)가 거점 차지를 계산하니 끝날 때까지 이 화면을 켜 두세요. 나라 점수만 보이고 끝내면 지워져요.</p>
     <div class="row-center wrap">
       <label class="sr-only" for="tpSgSet">시대</label><select id="tpSgSet" class="tinput" style="width:auto;max-width:100%"></select>
-      <label class="sr-only" for="tpSgMin">시간</label><select id="tpSgMin" class="tinput" style="width:auto"><option value="5">5분</option><option value="7" selected>7분</option><option value="10">10분</option></select>
+      <label class="sr-only" for="tpSgMin">시간</label><select id="tpSgMin" class="tinput" style="width:auto"><option value="7">7분</option><option value="10" selected>10분</option><option value="15">15분</option></select>
       <label class="sr-only" for="tpSgHp">성문 체력</label><select id="tpSgHp" class="tinput" style="width:auto"><option value="20">성문 20</option><option value="30" selected>성문 30</option><option value="40">성문 40</option></select>
     </div>
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
@@ -1802,7 +1802,7 @@ function normalize(v) {
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null,
-    siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), stun: v.siege.stun || {}, shot: v.siege.shot || {} } : null,
+    siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
     coins: v.coins || 0,
     dex: v.dex || {},
     control: v.control || {},
@@ -1966,12 +1966,25 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async pestGot(i) { if (!st.pest || st.pest.got?.[i]) return { ok: false }; (st.pest.got ||= {})[i] = true; emit(); return { ok: true }; },
     async histRight(k) { st.hist ||= { n: {}, b: {} }; st.hist.n ||= {}; const n = (st.hist.n[k] ||= {}); n.me = (n.me || 0) + 1; emit(); return { ok: true }; },
     async histBuild(k) { st.hist ||= { n: {}, b: {} }; st.hist.b ||= {}; if (st.hist.b[k]) return { ok: false, reason: 'built' }; st.hist.b[k] = true; emit(); return { ok: true }; },
-    async siegeJoin(t) { if (!st.siege) return { ok: false }; st.siege.team ||= {}; if (!st.siege.team.me) st.siege.team.me = t; emit(); return { ok: true }; },
-    async siegeHit(k, t) { const s = st.siege; if (!s?.on || !(s.hp?.[k] > 0)) return { ok: false }; s.hp[k]--; const left = s.hp[k]; if (!left) (s.down ||= {})[k] = Date.now(); (s.score ||= {})[t] = (s.score[t] || 0) + (left ? 1 : 5); emit(); return { ok: true, left }; },
-    async siegeFix(k, max) { const s = st.siege; if (!s?.on || !(s.hp?.[k] > 0) || s.hp[k] >= max) return { ok: false }; s.hp[k] = Math.min(max, s.hp[k] + 3); emit(); return { ok: true, hp: s.hp[k] }; },
-    async siegeRebuild(k, max) { const s = st.siege; if (!s?.on || s.hp?.[k] !== 0) return { ok: false }; s.hp[k] = max; if (s.down) delete s.down[k]; emit(); return { ok: true }; },
-    async siegeStun(u) { if (!st.siege?.on) return { ok: false }; (st.siege.stun ||= {})[u] = Date.now(); emit(); return { ok: true }; },
-    async siegeShot(o) { return { ok: true }; }, // 연습 모드: 내 화면에만 보여요
+    // ⚔️ 성 공방전 2 (연습 모드: 이 브라우저에서만)
+    async sgJoin(t) { if (!st.siege) return { ok: false }; st.siege.team ||= {}; if (!st.siege.team.me) st.siege.team.me = t; emit(); return { ok: true }; },
+    async sgRole(k) { if (!st.siege) return { ok: false }; (st.siege.role ||= {}).me = k; emit(); return { ok: true }; },
+    async sgShot() { return { ok: true }; }, async sgFx() { return { ok: true }; },
+    async sgHit(k, dmg, t) { const s = st.siege; if (!s?.on || !((s.hp ||= {})[k] > 0)) return { ok: false }; s.hp[k] = Math.max(0, s.hp[k] - dmg); const left = s.hp[k]; if (!left) { (s.down ||= {})[k] = Date.now(); (s.score ||= {})[t] = (s.score[t] || 0) + 15; } emit(); return { ok: true, left }; },
+    async sgLoot(k, t, give) { const s = st.siege; if (!s) return { ok: false }; s.res ||= {}; s.res[k] ||= {}; s.res[t] ||= {}; for (const [key, v] of Object.entries(give)) { const g = Math.min(v, s.res[k][key] || 0); s.res[k][key] = (s.res[k][key] || 0) - g; s.res[t][key] = (s.res[t][key] || 0) + g; } emit(); return { ok: true }; },
+    async sgFix(k, n, max) { const s = st.siege; if (!s?.on || !(s.hp?.[k] > 0) || s.hp[k] >= max) return { ok: false }; s.hp[k] = Math.min(max, s.hp[k] + n); emit(); return { ok: true, hp: s.hp[k] }; },
+    async sgRebuild(k, hp) { const s = st.siege; if (!s?.on || s.hp?.[k] !== 0) return { ok: false }; s.hp[k] = hp; if (s.down) delete s.down[k]; emit(); return { ok: true }; },
+    async sgCat(key) { const s = st.siege; if (!s?.on) return { ok: false }; s.cat ||= {}; if (s.cat[key] && Date.now() - s.cat[key] < 19500) return { ok: false }; s.cat[key] = Date.now(); emit(); return { ok: true }; },
+    async sgHurtSet(u) { if (!st.siege?.on) return { ok: false }; (st.siege.hurt ||= {})[u] = Date.now(); emit(); return { ok: true }; },
+    async sgHeal(u) { if (!st.siege?.hurt?.[u]) return { ok: false }; delete st.siege.hurt[u]; (st.siege.safe ||= {})[u] = Date.now(); emit(); return { ok: true }; },
+    async sgRevive() { if (!st.siege) return { ok: false }; if (st.siege.hurt) delete st.siege.hurt.me; (st.siege.safe ||= {}).me = Date.now(); emit(); return { ok: true }; },
+    async sgSpend(t, cost) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; if (Object.entries(cost).some(([k, v]) => (r[k] || 0) < v)) return { ok: false }; for (const [k, v] of Object.entries(cost)) r[k] -= v; emit(); return { ok: true }; },
+    async sgGain(t, give, pts) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; for (const [k, v] of Object.entries(give)) r[k] = (r[k] || 0) + v; (s.score ||= {})[t] = (s.score[t] || 0) + pts; emit(); return { ok: true }; },
+    async sgLevel(t, lv, hp) { const s = st.siege; if (!s?.on) return { ok: false }; (s.lv ||= {})[t] = lv; (s.hp ||= {})[t] = hp; emit(); return { ok: true }; },
+    async sgBuff(t, k, until) { const s = st.siege; if (!s?.on) return { ok: false }; ((s.buff ||= {})[t] ||= {})[k] = until; emit(); return { ok: true }; },
+    async sgBar(id, o) { const s = st.siege; if (!s?.on) return { ok: false }; (s.bar ||= {})[id] = { ...o }; emit(); return { ok: true }; },
+    async sgBarHit(id) { const b = st.siege?.bar?.[id]; if (!b) return { ok: false }; b.hp--; if (b.hp <= 0) delete st.siege.bar[id]; emit(); return { ok: true }; },
+    async sgInc(map) { const s = st.siege; if (!s) return { ok: false }; for (const [path, d] of Object.entries(map)) { const parts = path.split('/'); let o = s; for (const k of parts.slice(0, -1)) o = (o[k] ||= {}); const last = parts.at(-1); o[last] = (o[last] || 0) + d; } emit(); return { ok: true }; },
     async hideSet(o) { if (!st.hide) return { ok: false }; Object.assign(st.hide, o); if (o.ph === 'end') st.hide.t3 = Date.now(); emit(); return { ok: true }; },
     async hideJoin() { if (!st.hide) return { ok: false }; (st.hide.in ||= {}).me = true; emit(); return { ok: true }; },
     async hideFind(u) { if (!st.hide) return { ok: false }; (st.hide.f ||= {})[u] = Date.now(); emit(); return { ok: true }; },
@@ -2277,20 +2290,35 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       try { const r = await D.runTransaction(R(`state/hist/n/${k}/${uid}`), c => (c || 0) + 1); return { ok: r.committed }; } catch (e) { return { ok: false }; }
     },
     async histBuild(k) { try { const r = await D.runTransaction(R(`state/hist/b/${k}`), c => c ? undefined : true); return { ok: r.committed, reason: r.committed ? '' : 'built' }; } catch (e) { return { ok: false }; } },
-    async siegeJoin(t) { try { await D.set(R(`state/siege/team/${uid}`), t); return { ok: true }; } catch (e) { return { ok: false }; } },
-    async siegeHit(k, t) { // ⚔️ 상대 성문 -1 (0이 되면 부서진 시각) → 우리 나라 +1 (부수면 +5)
+    // ⚔️ 성 공방전 2 — 규칙이 나라·자원 범위를 확인해요
+    async sgJoin(t) { try { await D.set(R(`state/siege/team/${uid}`), t); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgRole(k) { try { await D.set(R(`state/siege/role/${uid}`), k); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgShot(o) { try { await D.set(R(`state/siege/shot/${uid}`), { ...o, t: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgFx(v) { try { await D.set(R(`state/siege/fx/${uid}`), { ...v, t: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgHit(k, dmg, t) {
       try {
-        const r = await D.runTransaction(R(`state/siege/hp/${k}`), c => (typeof c === 'number' && c > 0) ? c - 1 : undefined); if (!r.committed) return { ok: false };
+        const r = await D.runTransaction(R(`state/siege/hp/${k}`), c => (typeof c === 'number' && c > 0) ? Math.max(0, c - dmg) : undefined); if (!r.committed) return { ok: false };
         const left = r.snapshot.val();
-        if (left === 0) await D.set(R(`state/siege/down/${k}`), D.serverTimestamp()).catch(() => {});
-        await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + (left === 0 ? 5 : 1));
+        if (left === 0) { await D.set(R(`state/siege/down/${k}`), D.serverTimestamp()).catch(() => {}); await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + 15).catch(() => {}); }
         return { ok: true, left };
       } catch (e) { return { ok: false }; }
     },
-    async siegeFix(k, max) { try { const r = await D.runTransaction(R(`state/siege/hp/${k}`), c => (typeof c === 'number' && c > 0 && c < max) ? Math.min(max, c + 3) : undefined); return { ok: r.committed, hp: r.snapshot.val() }; } catch (e) { return { ok: false }; } },
-    async siegeRebuild(k, max) { try { await D.update(R('state/siege'), { [`hp/${k}`]: max, [`down/${k}`]: null }); return { ok: true }; } catch (e) { return { ok: false }; } },
-    async siegeStun(u) { try { await D.set(R(`state/siege/stun/${u}`), D.serverTimestamp()); return { ok: true }; } catch (e) { return { ok: false }; } },
-    async siegeShot(o) { try { await D.set(R(`state/siege/shot/${uid}`), { ...o, t: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgLoot(k, t, give) {
+      try { for (const [key, v] of Object.entries(give)) { if (!v) continue; let got = 0; const r = await D.runTransaction(R(`state/siege/res/${k}/${key}`), c => { got = Math.min(v, c || 0); return got ? (c || 0) - got : undefined; }); if (r.committed && got) await D.runTransaction(R(`state/siege/res/${t}/${key}`), c => (c || 0) + got); } return { ok: true }; } catch (e) { return { ok: false }; }
+    },
+    async sgFix(k, n, max) { try { const r = await D.runTransaction(R(`state/siege/hp/${k}`), c => (typeof c === 'number' && c > 0 && c < max) ? Math.min(max, c + n) : undefined); return { ok: r.committed, hp: r.snapshot.val() }; } catch (e) { return { ok: false }; } },
+    async sgRebuild(k, hp) { try { await D.update(R('state/siege'), { [`hp/${k}`]: hp, [`down/${k}`]: null }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgCat(key) { try { const r = await D.runTransaction(R(`state/siege/cat/${key}`), c => (!c || now() - c >= 19500) ? now() : undefined); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
+    async sgHurtSet(u) { try { await D.set(R(`state/siege/hurt/${u}`), D.serverTimestamp()); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgHeal(u) { try { await D.set(R(`state/siege/hurt/${u}`), null); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgRevive() { try { await D.update(R('state/siege'), { [`hurt/${uid}`]: null, [`safe/${uid}`]: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgSpend(t, cost) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { if (!c || Object.entries(cost).some(([k, v]) => (c[k] || 0) < v)) return undefined; const n = { ...c }; for (const [k, v] of Object.entries(cost)) n[k] -= v; return n; }); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
+    async sgGain(t, give, pts) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { const n = { ...(c || {}) }; for (const [k, v] of Object.entries(give)) n[k] = (n[k] || 0) + v; return n; }); await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + pts); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
+    async sgLevel(t, lv, hp) { try { await D.update(R('state/siege'), { [`lv/${t}`]: lv, [`hp/${t}`]: hp }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgBuff(t, k, until) { try { await D.set(R(`state/siege/buff/${t}/${k}`), until); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgBar(id, o) { try { await D.set(R(`state/siege/bar/${id}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgBarHit(id) { try { const r = await D.runTransaction(R(`state/siege/bar/${id}`), c => !c ? undefined : c.hp <= 1 ? null : { ...c, hp: c.hp - 1 }); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
+    async sgInc(map) { try { await Promise.all(Object.entries(map).map(([path, d]) => D.runTransaction(R(`state/siege/${path}`), c => (c || 0) + d))); return { ok: true }; } catch (e) { return { ok: false }; } },
     async hideSet(o) { // 🙈 술래·선생님: 단계 넘기기 (찾기 시작 · 끝)
       const upd = {}; for (const [k, v] of Object.entries(o)) upd[`hide/${k}`] = v; if (o.ph === 'end') upd['hide/t3'] = D.serverTimestamp();
       try { await D.update(R('state'), upd); return { ok: true }; } catch (e) { return { ok: false }; }
@@ -2464,7 +2492,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'histRight', 'histBuild', 'siegeJoin', 'siegeHit', 'siegeFix', 'siegeRebuild', 'siegeStun', 'siegeShot', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -2490,7 +2518,7 @@ if (IS_TOUCH) document.body.classList.add('touch');
 const LOW_GFX = matchMedia('(hover: none) and (pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && !matchMedia('(any-pointer: fine)').matches);
 const SHADOWS = !LOW_GFX;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = 1.02;
 renderer.shadowMap.enabled = SHADOWS;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(innerWidth, innerHeight);
@@ -2519,11 +2547,186 @@ const GABLE = (() => { // 삼각 지붕·텐트: 폭 1, 높이 1, 길이 1 (바�
 const PYR = (() => { const g = new THREE.ConeGeometry(Math.SQRT1_2, 1, 4); g.rotateY(Math.PI / 4); g.translate(0, 0.5, 0); return g; })(); // 사각뿔 지붕
 const TAPER = new THREE.CylinderGeometry(0.62, 1, 1, 9); // 위가 가는 줄기·기둥
 const CONE = new THREE.ConeGeometry(1, 1, 8);            // 소나무 잎, 뾰족 장식
-const matCache = new Map(), flatCache = new Map();
-const M = (c) => { if (!matCache.has(c)) matCache.set(c, new THREE.MeshStandardMaterial({ color: c, roughness: 0.82, metalness: 0 })); return matCache.get(c); };
+const matCache = new Map(), flatCache = new Map(), ENV_I = 0.45; // ENV_I: 하늘빛(환경광)이 물체를 비추는 세기
+const M = (c) => { if (!matCache.has(c)) matCache.set(c, new THREE.MeshStandardMaterial({ color: c, roughness: 0.82, metalness: 0, envMapIntensity: ENV_I })); return matCache.get(c); };
 const glowCache = new Map();
 const MG = (c, k) => { const key = c + '_' + k; if (!glowCache.has(key)) glowCache.set(key, new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: k, roughness: 0.6 })); return glowCache.get(key); };
-const ML = (c) => { if (!flatCache.has(c)) flatCache.set(c, new THREE.MeshStandardMaterial({ color: c, roughness: 0.9, metalness: 0, flatShading: true })); return flatCache.get(c); }; // 각진 잎·바위
+const ML = (c) => { if (!flatCache.has(c)) flatCache.set(c, new THREE.MeshStandardMaterial({ color: c, roughness: 0.9, metalness: 0, flatShading: true, envMapIntensity: ENV_I })); return flatCache.get(c); }; // 각진 잎·바위
+// ---------- 실감 나는 겉면 (57. 그래픽 다듬기) ----------
+// 물체 크기와 상관없이 '세상 좌표'로 무늬를 입혀요: 나무결·돌·기와·나뭇잎·나무껍질·흙길·포석·모래·흙·회벽·옷감
+// · 무늬 밝기는 색에 곱해지고, PC에서는 무늬로 빛이 오돌토돌하게 비치고(울퉁불퉁) 넓은 얼룩도 생겨요
+// · 크롬북·태블릿(LOW_GFX)은 무늬 한 장만 써서 가벼워요
+const surfQ = { value: LOW_GFX ? 0 : 1 }; // 화질 단계가 내려가면 0 (setGfxLevel)
+const SURF = { // 종류: 한 장 크기(m) · 무늬 세기 · 울퉁불퉁 세기 · 거칠기
+  plaster: { size: 3.2, amt: 0.7, bump: 0.45, rough: 0.92 },
+  wood: { size: 1.8, amt: 0.85, bump: 0.6, rough: 0.8 },
+  stone: { size: 2.2, amt: 0.9, bump: 1.2, rough: 0.95 },
+  roof: { size: 1.3, amt: 0.85, bump: 1.4, rough: 0.7 },
+  leaf: { size: 2.6, amt: 0.9, bump: 0.9, rough: 0.85 },
+  bark: { size: 1.1, amt: 0.9, bump: 1.6, rough: 1 },
+  gravel: { size: 1.6, amt: 0.75, bump: 0.9, rough: 1 },
+  paving: { size: 2.6, amt: 0.8, bump: 0.8, rough: 0.9 },
+  sand: { size: 2.2, amt: 0.5, bump: 0.5, rough: 1 },
+  soil: { size: 1.4, amt: 0.8, bump: 1.1, rough: 1 },
+  fabric: { size: 0.35, amt: 0.45, bump: 0.25, rough: 0.95 },
+  metal: { size: 1.5, amt: 0.35, bump: 0.15, rough: 0.45 },
+  straw: { size: 1.4, amt: 0.85, bump: 1.4, rough: 1 },
+};
+const surfTexCache = {};
+function surfTex(kind) { // 이어 붙여도 이음새 없는 회색 무늬 (밝기 = 색 · 높이)
+  if (surfTexCache[kind]) return surfTexCache[kind];
+  const N = kind === 'fabric' ? 64 : 256, cv = document.createElement('canvas'); cv.width = cv.height = N; const c = cv.getContext('2d');
+  let seed = [...kind].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) % 2147483646 + 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const wrap = (fn) => { for (const ox of [-N, 0, N]) for (const oy of [-N, 0, N]) fn(ox, oy); };
+  const gray = (v, a = 1) => `rgba(${v},${v},${v},${a})`;
+  const blob = (x, y, r, v, a, sx = 1, sy = 1, rot = 0) => wrap((ox, oy) => { c.save(); c.translate(x + ox, y + oy); c.rotate(rot); c.scale(sx, sy); const g = c.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, gray(v, a)); g.addColorStop(1, gray(v, 0)); c.fillStyle = g; c.fillRect(-r, -r, r * 2, r * 2); c.restore(); });
+  const speck = (n, lo, hi, s0, s1, a = 0.6) => { for (let i = 0; i < n; i++) { const x = rnd() * N, y = rnd() * N, s = s0 + rnd() * (s1 - s0), v = lo + rnd() * (hi - lo); c.fillStyle = gray(v | 0, a); wrap((ox, oy) => c.fillRect(x + ox, y + oy, s, s)); } };
+  const cells = (n, gap, base, vary, round) => { // 돌·자갈: 점마다 가장 가까운 칸 (보로노이)
+    const pts = []; for (let i = 0; i < n; i++) pts.push([rnd() * N, rnd() * N, base + (rnd() - 0.5) * vary]);
+    const img = c.getImageData(0, 0, N, N), d = img.data;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      let d1 = 1e9, d2 = 1e9, v = 0;
+      for (const [px, py, pv] of pts) { let dx = Math.abs(x - px), dy = Math.abs(y - py); dx = Math.min(dx, N - dx); dy = Math.min(dy, N - dy); const dd = dx * dx + dy * dy; if (dd < d1) { d2 = d1; d1 = dd; v = pv; } else if (dd < d2) d2 = dd; }
+      const edge = Math.sqrt(d2) - Math.sqrt(d1), k = Math.min(1, edge / gap), shape = round ? Math.pow(k, 0.5) : k;
+      const val = edge < gap * 0.35 ? 70 : v * (0.72 + 0.28 * shape), i = (y * N + x) * 4; d[i] = d[i + 1] = d[i + 2] = val; d[i + 3] = 255;
+    }
+    c.putImageData(img, 0, 0);
+  };
+  c.fillStyle = gray(200); c.fillRect(0, 0, N, N);
+  if (kind === 'plaster') { c.fillStyle = gray(222); c.fillRect(0, 0, N, N); for (let i = 0; i < 40; i++) blob(rnd() * N, rnd() * N, 20 + rnd() * 50, rnd() < 0.5 ? 240 : 196, 0.35); speck(1800, 190, 245, 1, 2.2, 0.5); }
+  else if (kind === 'wood') { // 판자 + 나뭇결
+    const rows = 8, rh = N / rows;
+    for (let r = 0; r < rows; r++) { const base = 175 + rnd() * 45; c.fillStyle = gray(base | 0); c.fillRect(0, r * rh, N, rh);
+      for (let k = 0; k < 14; k++) { const y = r * rh + rnd() * rh, amp = 0.6 + rnd() * 1.6, ph = rnd() * 6; c.strokeStyle = gray((base - 25 - rnd() * 30) | 0, 0.55); c.lineWidth = 0.6 + rnd(); c.beginPath(); for (let x = 0; x <= N; x += 4) { const yy = y + Math.sin(x / N * Math.PI * 2 * (1 + (k % 3)) + ph) * amp; x ? c.lineTo(x, yy) : c.moveTo(x, yy); } c.stroke(); }
+      if (rnd() < 0.5) { const kx = rnd() * N, ky = r * rh + rh * (0.3 + rnd() * 0.4); blob(kx, ky, 5, 120, 0.8, 1.6, 0.8); }
+      c.fillStyle = gray(95); c.fillRect(0, r * rh, N, 2); const jx = rnd() * N; c.fillRect(jx, r * rh, 2, rh); }
+  }
+  else if (kind === 'stone') cells(26, 7, 205, 70, true);
+  else if (kind === 'gravel') { cells(150, 4, 200, 80, true); speck(900, 120, 240, 1, 2, 0.5); }
+  else if (kind === 'paving') { // 네모 돌판 (줄마다 엇갈리게)
+    const rows = 4, rh = N / rows; for (let r = 0; r < rows; r++) { let x = (r % 2) * rh * 0.5 - rh; while (x < N) { const w = rh * (0.8 + rnd() * 0.6), v = 185 + rnd() * 50; c.fillStyle = gray(v | 0); wrap((ox) => c.fillRect(x + ox + 2, r * rh + 2, w - 4, rh - 4)); x += w; } }
+    speck(1200, 150, 240, 1, 2, 0.45); }
+  else if (kind === 'roof') { // 기와: 줄마다 둥근 비늘
+    const rows = 8, rh = N / rows, cw = N / 8; c.fillStyle = gray(120); c.fillRect(0, 0, N, N);
+    for (let r = 0; r < rows; r++) for (let k = -1; k <= 8; k++) { const x = k * cw + (r % 2) * cw / 2, y = r * rh, v = 185 + rnd() * 40; const g = c.createLinearGradient(0, y, 0, y + rh); g.addColorStop(0, gray(v + 25 | 0)); g.addColorStop(0.75, gray(v | 0)); g.addColorStop(1, gray(v - 70 | 0)); c.fillStyle = g; c.beginPath(); c.moveTo(x + 1, y); c.lineTo(x + cw - 1, y); c.lineTo(x + cw - 1, y + rh * 0.6); c.quadraticCurveTo(x + cw / 2, y + rh * 1.15, x + 1, y + rh * 0.6); c.closePath(); c.fill(); }
+  }
+  else if (kind === 'leaf') { // 잎 뭉치: 뭉치마다 위는 밝고 아래·가장자리는 그늘, 안에 잎이 촘촘
+    c.fillStyle = gray(95); c.fillRect(0, 0, N, N);
+    for (let i = 0; i < 46; i++) { const x = rnd() * N, y = rnd() * N, R = 16 + rnd() * 18;
+      blob(x, y + R * 0.25, R * 1.15, 60, 0.55);
+      for (let j = 0; j < 34; j++) { const a = rnd() * Math.PI * 2, rr = Math.sqrt(rnd()) * R, lx = x + Math.cos(a) * rr, ly = y + Math.sin(a) * rr, L = 4 + rnd() * 5, up = 1 - (ly - y + R) / (2 * R), v = 120 + up * 95 + rnd() * 30;
+        wrap((ox, oy) => { c.save(); c.translate(lx + ox, ly + oy); c.rotate(a + rnd()); c.fillStyle = gray(Math.min(250, v) | 0); c.beginPath(); c.ellipse(0, 0, L, L * 0.45, 0, 0, Math.PI * 2); c.fill(); c.restore(); }); } }
+  }
+  else if (kind === 'bark') { // 세로로 갈라진 껍질
+    c.fillStyle = gray(175); c.fillRect(0, 0, N, N);
+    for (let i = 0; i < 70; i++) { let x = rnd() * N; const w = 1.5 + rnd() * 3; c.strokeStyle = gray(70 + rnd() * 50 | 0, 0.85); c.lineWidth = w; c.beginPath(); c.moveTo(x, -10); for (let y = 0; y <= N + 10; y += 12) { x += (rnd() - 0.5) * 6; c.lineTo(x, y); } c.stroke(); }
+    speck(700, 150, 230, 1, 3, 0.4);
+  }
+  else if (kind === 'sand') { c.fillStyle = gray(215); c.fillRect(0, 0, N, N); for (let i = 0; i < 9; i++) { const y = i * N / 9; c.strokeStyle = gray(185, 0.35); c.lineWidth = 3; c.beginPath(); for (let x = 0; x <= N; x += 8) { const yy = y + Math.sin(x / N * Math.PI * 4 + i) * 4; x ? c.lineTo(x, yy) : c.moveTo(x, yy); } c.stroke(); } speck(3000, 150, 250, 1, 1.6, 0.55); }
+  else if (kind === 'soil') { c.fillStyle = gray(170); c.fillRect(0, 0, N, N); for (let i = 0; i < 260; i++) blob(rnd() * N, rnd() * N, 3 + rnd() * 9, rnd() < 0.5 ? 220 : 110, 0.6); speck(1200, 100, 230, 1, 2.5, 0.6); }
+  else if (kind === 'fabric') { c.fillStyle = gray(215); c.fillRect(0, 0, N, N); for (let i = 0; i < N; i += 2) { c.fillStyle = gray(190, 0.5); c.fillRect(i, 0, 1, N); c.fillStyle = gray(240, 0.4); c.fillRect(0, i, N, 1); } speck(200, 180, 240, 1, 1, 0.4); }
+  else if (kind === 'straw') { c.fillStyle = gray(190); c.fillRect(0, 0, N, N); for (let i = 0; i < 2600; i++) { const x = rnd() * N, y = rnd() * N, L = 10 + rnd() * 26, v = 120 + rnd() * 130; c.strokeStyle = gray(v | 0, 0.75); c.lineWidth = 0.8 + rnd() * 1.4; wrap((ox, oy) => { c.beginPath(); c.moveTo(x + ox, y + oy); c.lineTo(x + ox + (rnd() - 0.5) * 3, y + oy + L); c.stroke(); }); } for (let y = 0; y < N; y += 64) { c.fillStyle = gray(90, 0.5); c.fillRect(0, y, N, 3); } }
+  else if (kind === 'metal') { c.fillStyle = gray(215); c.fillRect(0, 0, N, N); for (let i = 0; i < 300; i++) { c.fillStyle = gray(190 + rnd() * 60 | 0, 0.3); c.fillRect(0, rnd() * N, N, 1); } }
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.NoColorSpace;
+  t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy?.() || 1); t.generateMipmaps = true;
+  // 평균 밝기 (색이 너무 어두워지지 않게 나눠 줘요)
+  { const d = c.getImageData(0, 0, N, N).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i]; t.userData.mean = s / (d.length / 4) / 255; }
+  return (surfTexCache[kind] = t);
+}
+function surfPatch(mat, kind) { // 겉면 무늬를 재질에 입혀요 (세상 좌표 · 물체 방향에 맞는 한 면만 골라 한 번만 읽어요)
+  const S = SURF[kind], tex = surfTex(kind);
+  mat.userData.surf = kind; mat.roughness = S.rough;
+  const tri = ['leaf', 'bark', 'stone', 'soil', 'straw'].includes(kind); if (tri) mat.defines = { ...(mat.defines || {}), SURF_TRI: 1 }; // 둥근 물체는 세 방향을 섞어 이음새 없이
+  mat.customProgramCacheKey = () => 'surf' + (tri ? 't' : '');
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uSurf = { value: tex }; sh.uniforms.uSurfQ = surfQ; sh.uniforms.uSurfK = { value: new THREE.Vector4(1 / S.size, S.amt, 1 / tex.userData.mean, S.bump * 3.0) };
+    sh.vertexShader = 'varying vec3 vSurfP; varying vec3 vSurfN;\n' + sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+  { vec4 sp = vec4(transformed, 1.0); vec3 sn = objectNormal;
+  #ifdef USE_INSTANCING
+    sp = instanceMatrix * sp; sn = mat3(instanceMatrix) * sn;
+  #endif
+    vSurfP = (modelMatrix * sp).xyz; vSurfN = mat3(modelMatrix) * sn; }`);
+    sh.fragmentShader = 'uniform sampler2D uSurf; uniform vec4 uSurfK; uniform float uSurfQ; varying vec3 vSurfP; varying vec3 vSurfN;\n' + sh.fragmentShader
+      .replace('#include <color_fragment>', `#include <color_fragment>
+  vec3 sAn = abs(normalize(vSurfN));
+  #ifdef SURF_TRI
+    vec3 sW = pow(sAn, vec3(4.0)); sW /= (sW.x + sW.y + sW.z);
+    float sH = texture2D(uSurf, vSurfP.zy * uSurfK.x).r * sW.x + texture2D(uSurf, vSurfP.xz * uSurfK.x).r * sW.y + texture2D(uSurf, vSurfP.xy * uSurfK.x).r * sW.z;
+  #else
+    vec2 sUv = (sAn.y > max(sAn.x, sAn.z) ? vSurfP.xz : (sAn.x > sAn.z ? vSurfP.zy : vSurfP.xy)) * uSurfK.x;
+    float sH = texture2D(uSurf, sUv).r;
+  #endif
+  diffuseColor.rgb *= mix(1.0, sH * uSurfK.z, uSurfK.y);
+  diffuseColor.rgb *= mix(1.0, 0.72 + 0.28 * smoothstep(0.0, 0.9, vSurfP.y), (1.0 - sAn.y) * step(vSurfP.y, 0.9) * step(-0.05, vSurfP.y)); // 땅에 닿는 벽 아래는 살짝 그늘
+  if (uSurfQ > 0.5) diffuseColor.rgb *= 0.9 + 0.2 * texture2D(uSurf, vSurfP.xz * 0.021 + vec2(0.37, 0.71)).r;`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+  if (uSurfQ > 0.5) { vec3 sx = normalize(dFdx(-vViewPosition)), sy = normalize(dFdy(-vViewPosition)); vec2 dh = vec2(dFdx(sH), dFdy(sH)) * uSurfK.w * smoothstep(70.0, 12.0, length(vViewPosition));
+    vec3 r1 = cross(sy, normal), r2 = cross(normal, sx); float det = dot(sx, r1);
+    normal = normalize(abs(det) * normal - sign(det) * (dh.x * r1 + dh.y * r2)); }`);
+  };
+  return mat;
+}
+const surfMatCache = new Map();
+function surfMat(kind, color, flat) { // 같은 종류·색은 같은 재질 (한 번에 그리기 합치기가 그대로 돼요)
+  const key = kind + '|' + color + '|' + (flat ? 1 : 0);
+  if (!surfMatCache.has(key)) { const m = surfPatch(new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: kind === 'metal' ? 0.55 : 0, flatShading: !!flat, envMapIntensity: ENV_I }), kind); m.userData.surfColor = color; surfMatCache.set(key, m); }
+  return surfMatCache.get(key);
+}
+// 자주 쓰는 색은 종류를 정해 둬요
+const SURF_BY_COLOR = new Map([
+  [C.path, 'gravel'], [C.plaza, 'paving'], [C.sand, 'sand'], [C.soil, 'soil'], [C.soil2, 'soil'], [C.stone, 'stone'], [C.hedge, 'leaf'],
+  [C.wood, 'wood'], [C.dark, 'wood'], [C.crate, 'wood'], [0xB07C50, 'wood'], [0x8A5A34, 'wood'], [0x7A4A2A, 'wood'], [0x9C6A3E, 'wood'],
+  [0xA8A294, 'stone'], [0xB9AE9E, 'stone'], [0xF3DFA8, 'sand'], [0xE6CC92, 'sand'], [0xB8B2A8, 'stone'], [0x9A9486, 'stone'], [0xD9C49A, 'sand'], [0xE0CFA4, 'gravel'], [0xE8D9B5, 'gravel'], [0xD9B25E, 'straw'], [0xC9A65E, 'straw'], [0xB8944E, 'straw'], [0xC9A65E + 0, 'straw'],
+]);
+function surfKind(geo, color, o) {
+  if (o.surf !== undefined) return o.surf;
+  if (o.emissive || color === C.glass || color === C.water || color === C.gold || color === C.white) return null;
+  if (SURF_BY_COLOR.has(color)) { const k = SURF_BY_COLOR.get(color); return (k === 'leaf' && geo === BOX && color !== C.hedge) ? 'plaster' : k; }
+  const hsl = {}; new THREE.Color(color).getHSL(hsl);
+  const green = hsl.h > 0.16 && hsl.h < 0.46 && hsl.s > 0.18, brown = hsl.h > 0.02 && hsl.h < 0.14 && hsl.s > 0.2 && hsl.l < 0.56, gray = hsl.s < 0.13;
+  if (geo === SPH_MID || geo === SPH_LO || geo === SPH || geo === CONE) return green && hsl.l < 0.72 ? 'leaf' : gray && hsl.l < 0.8 ? 'stone' : brown ? 'bark' : null;
+  if (geo === TAPER) return brown ? 'bark' : gray ? 'stone' : 'plaster';
+  if (geo === GABLE || geo === PYR) return hsl.l > 0.8 ? 'plaster' : green && hsl.l < 0.6 ? 'leaf' : 'roof';
+  if (geo === BOX || geo === CYL) return brown ? 'wood' : gray ? (hsl.l > 0.82 ? 'plaster' : 'stone') : 'plaster';
+  return null;
+}
+// 유리창: 하늘이 비치게 / 물: 잔물결이 반짝이게
+const glassMat = new THREE.MeshStandardMaterial({ color: 0x8FB8D4, roughness: 0.06, metalness: 0.65, envMapIntensity: 1.4 });
+const waterTime = { value: 0 };
+function waterize(mat) { // 물 재질: 세상 좌표 잔물결로 빛이 일렁여요
+  mat.roughness = 0.08; mat.metalness = 0.15; mat.envMapIntensity = 1.3; mat.userData.water = true;
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uWT = waterTime;
+    sh.vertexShader = 'varying vec3 vWP;\n' + sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = 'uniform float uWT; varying vec3 vWP;\n' + sh.fragmentShader.replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+  { vec2 p = vWP.xz; float t = uWT;
+    vec2 g = vec2(cos(p.x * 1.3 + t * 1.7) + 0.6 * cos(p.x * 2.9 - p.y * 1.7 + t * 2.3) + 0.35 * cos((p.x + p.y) * 5.1 + t * 3.1),
+                  cos(p.y * 1.1 - t * 1.3) + 0.6 * cos(p.y * 3.3 + p.x * 1.2 - t * 2.1) + 0.35 * cos((p.y - p.x) * 4.7 - t * 2.7)) * 0.11;
+    vec3 wn = normalize(vec3(-g.x, 1.0, -g.y)); vec3 vn = normalize((viewMatrix * vec4(wn, 0.0)).xyz);
+    normal = normalize(mix(normal, vn, 0.85)); }`);
+  };
+  mat.customProgramCacheKey = () => 'water';
+  return mat;
+}
+const waterMats = new Map(), WATER_COLORS = new Set([C.water, 0x4FA3E8, 0x3E8FD6, 0x2E5F8A]);
+const waterMatFor = (c) => waterMats.get(c) || (waterMats.set(c, waterize(new THREE.MeshStandardMaterial({ color: c }))), waterMats.get(c));
+// 환경광: 하늘 색으로 모든 물체를 은은하게 비추고, 유리·물에 하늘이 비쳐요 (낮·밤 두 장)
+const envMaps = {};
+function makeEnvMap(top, mid, ground, sun) {
+  const pm = new THREE.PMREMGenerator(renderer), sc = new THREE.Scene();
+  const m = new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { top: { value: new THREE.Color(top) }, mid: { value: new THREE.Color(mid) }, gr: { value: new THREE.Color(ground) }, sun: { value: new THREE.Color(sun) } },
+    vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform vec3 top, mid, gr, sun; varying vec3 vD; void main(){ float h = vD.y; vec3 c = h > 0.0 ? mix(mid, top, pow(h, 0.6)) : mix(mid, gr, min(1.0, -h * 3.0)); float s = max(0.0, dot(vD, normalize(vec3(0.4, 0.75, 0.3)))); c += sun * pow(s, 24.0) * 3.0; gl_FragColor = vec4(c, 1.0); }' });
+  sc.add(new THREE.Mesh(new THREE.SphereGeometry(10, 32, 16), m));
+  const t = pm.fromScene(sc, 0.02).texture; pm.dispose(); m.dispose();
+  return t;
+}
+function setEnvMap(night) {
+  envMaps.day ||= makeEnvMap(0x6FB4F0, 0xDDEEFF, 0x6E8F4E, 0xFFF0D0);
+  envMaps.night ||= makeEnvMap(0x10204A, 0x2A3A6A, 0x18221C, 0x8090C0);
+  scene.environment = night ? envMaps.night : envMaps.day;
+  scene.traverse(o => { for (const m of [].concat(o.material || [])) if (m.isMeshStandardMaterial && !m.userData.water && m !== glassMat && !m.userData.envI) { m.userData.envI = 1; if (m.envMapIntensity === 1) m.envMapIntensity = ENV_I; } }); // 직접 만든 재질도 은은하게
+}
 // 잔디 무늬: 짧은 풀잎 결이 촘촘한 밝은 무늬 (땅 색에 곱해져요, 이어 붙여도 이음새 없음)
 function grassTex(rx, ry) {
   if (!grassTex.cv) {
@@ -2585,7 +2788,13 @@ function grassClumpMat() {
 }
 
 function mesh(geo, parent, sx, sy, sz, color, x, y, z, o = {}) {
-  let mat = o.flat ? ML(color) : M(color);
+  let mat;
+  if (!o.emissive && color === C.glass) mat = glassMat;
+  else if (!o.emissive && WATER_COLORS.has(color)) mat = waterMatFor(color);
+  else {
+    let onAvatar = false; for (let q = parent; q; q = q.parent) if (q.userData?.isAvatar) { onAvatar = true; break; } // 캐릭터(옷·모자·도구)는 예전 모습 그대로
+    const k = onAvatar ? null : surfKind(geo, color, o); mat = k ? surfMat(k, color, o.flat) : o.flat ? ML(color) : M(color);
+  }
   if (o.emissive) mat = o.name ? new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: o.emissive, roughness: 0.6 }) : MG(color, o.emissive); // 이름 없는 반짝이는 같은 재질을 함께 써서 합쳐 그려요
   const m = new THREE.Mesh(geo, mat);
   m.receiveShadow = SHADOWS;
@@ -2920,29 +3129,93 @@ function buildSchool() {
   box(g, 1.5, 1, 0.1, C.gold, 0.85, 16.7, -1.5, { solid: false });
 }
 
+// ---------- 나무 모양 (57. 그래픽 다듬기): 울퉁불퉁한 잎 덩이 · 가지 · 뿌리 · 층층 소나무 ----------
+const TREE_GEO = {};
+function indexedGeo(src) { // 같은 자리 꼭짓점을 하나로 (매끈한 빛)
+  const P = src.attributes.position, map = new Map(), pos = [], idx = [];
+  for (let i = 0; i < P.count; i++) { const k = `${P.getX(i).toFixed(4)},${P.getY(i).toFixed(4)},${P.getZ(i).toFixed(4)}`; let j = map.get(k); if (j === undefined) { j = pos.length / 3; map.set(k, j); pos.push(P.getX(i), P.getY(i), P.getZ(i)); } idx.push(j); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); return g;
+}
+function lumpGeo(seed, detail = 3, rough = 0.16) { // 공을 울퉁불퉁하게 (나뭇잎 덩이)
+  const g = indexedGeo(new THREE.IcosahedronGeometry(1, detail)), p = g.attributes.position, v = new V3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const n = Math.sin(v.x * 3.1 + seed) * Math.sin(v.y * 2.7 + seed * 1.7) * Math.sin(v.z * 3.3 + seed * 0.6) + 0.5 * Math.sin(v.x * 7.3 - seed) * Math.sin(v.z * 6.1 + v.y * 5.2);
+    v.multiplyScalar(1 + n * rough - (v.y < -0.3 ? (-0.3 - v.y) * 0.35 : 0)); // 아래는 살짝 납작하게
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  g.computeVertexNormals(); g.userData.batch = true; return g;
+}
+function pineGeo() { // 소나무 한 층: 끝이 들쭉날쭉하고 아래로 처진 치마
+  const g = new THREE.ConeGeometry(1, 1, 18, 4, false), p = g.attributes.position, v = new V3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i); const a = Math.atan2(v.z, v.x), r = Math.hypot(v.x, v.z), t = 0.5 - v.y; // t: 위 0 → 아래 1
+    const jag = 1 + 0.16 * Math.sin(a * 9) * t + 0.06 * Math.sin(a * 23) * t;
+    p.setXYZ(i, Math.cos(a) * r * jag, v.y - t * t * 0.18 * (1 + Math.sin(a * 9)) * 0.6, Math.sin(a) * r * jag);
+  }
+  g.computeVertexNormals(); g.userData.batch = true; return g;
+}
+function trunkGeo() { // 아래가 넓게 퍼진(뿌리) 줄기
+  const pts = []; for (let i = 0; i <= 10; i++) { const t = i / 10; pts.push(new THREE.Vector2(0.62 - 0.3 * t + 0.55 * Math.pow(1 - t, 6), t)); }
+  const g = new THREE.LatheGeometry(pts, 10), p = g.attributes.position, v = new V3();
+  for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const a = Math.atan2(v.z, v.x); const k = 1 + 0.08 * Math.sin(a * 5 + v.y * 3); p.setXYZ(i, v.x * k, v.y, v.z * k); }
+  g.computeVertexNormals(); g.userData.batch = true; return g;
+}
+function peakGeo(seed) { // 먼 산: 가운데가 오목하게 솟고 능선 골이 진 산
+  const g = new THREE.ConeGeometry(1, 1, 48, 14), p = g.attributes.position, v = new V3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i); const t = v.y + 0.5, a = Math.atan2(v.z, v.x);
+    const n = 1 + 0.16 * Math.sin(a * 5 + seed) * (1 - t) + 0.09 * Math.sin(a * 11 + seed * 2.3) + 0.05 * Math.sin(a * 23 + seed);
+    const r = Math.pow(1 - t, 0.9) * (1 + 0.25 * t * (1 - t)) * n;
+    p.setXYZ(i, Math.cos(a) * r * 1.15, (Math.pow(t, 1.15) - 0.5) * 0.8 - 0.1 + 0.05 * Math.sin(a * 3 + seed) * (1 - t), Math.sin(a) * r * 1.15);
+  }
+  g.computeVertexNormals(); g.userData.batch = true; return g;
+}
+const ONGGI = {};
+function onggi(g, x, z, s = 1, y = 0) { // 옹기 장독: 배가 볼록하고 반짝이는 갈색 유약
+  ONGGI.geo ||= new THREE.LatheGeometry([[0, 0], [0.24, 0], [0.33, 0.1], [0.4, 0.3], [0.39, 0.46], [0.3, 0.58], [0.24, 0.61], [0.26, 0.64], [0.2, 0.65]].map(([a, b]) => new THREE.Vector2(a, b)), 22);
+  ONGGI.lid ||= new THREE.SphereGeometry(0.27, 18, 6, 0, Math.PI * 2, 0, Math.PI * 0.35);
+  ONGGI.mat ||= new THREE.MeshStandardMaterial({ color: 0x5A3420, roughness: 0.28, metalness: 0.05, envMapIntensity: 1.1 });
+  const m = new THREE.Mesh(ONGGI.geo, ONGGI.mat); m.position.set(x, y, z); m.scale.setScalar(s); m.castShadow = SHADOWS; g.add(m);
+  const l = new THREE.Mesh(ONGGI.lid, ONGGI.mat); l.position.set(x, y + 0.6 * s, z); l.scale.set(s, s * 0.6, s); g.add(l);
+  return m;
+}
+const treeGeo = (k) => TREE_GEO[k] || (TREE_GEO[k] = k === 'pine' ? pineGeo() : k === 'trunk' ? trunkGeo() : k.startsWith('peak') ? peakGeo(+k.slice(4) * 1.7) : lumpGeo(+k.slice(4) * 2.3 + 1));
 function makeTree(x, z, parent = world.treeGroup || scene) {
   (world.trees ||= []).push({ x, z }); // 흔들 수 있는 나무
-  const P = parent, f = { solid: false, flat: true };
+  const P = parent, leaf = { solid: false, surf: 'leaf' }, bark = { surf: 'bark' }, bark2 = { solid: false, surf: 'bark' };
   const greens = [0x4FA04F, 0x5DB85F, 0x46934A, 0x6BBF5A], k = Math.abs(Math.round(x * 7 + z * 3)) % 4;
   const kind = Math.abs(Math.round(x * 3 - z * 5)) % 3; // 0·1 둥근 나무, 2 소나무
-  if (kind === 2) {
-    mesh(TAPER, P, 0.4, 2, 0.4, 0x7A5436, x, 1, z);
-    [[2.6, 2.4, 2.6], [2.1, 2.2, 4.1], [1.5, 2, 5.5]].forEach(([r, h, y], j) => mesh(CONE, P, r, h, r, [0x3E8A45, 0x46994D, 0x52A858][j], x, y, z, f));
+  const rot = (x * 13.7 + z * 7.1) % (Math.PI * 2), cr = Math.cos(rot), sr = Math.sin(rot), at = (dx, dz) => [x + dx * cr - dz * sr, z + dx * sr + dz * cr];
+  if (kind === 2) { // 🌲 소나무: 줄기 + 들쭉날쭉한 층 5개
+    mesh(treeGeo('trunk'), P, 0.42, 3.4, 0.42, 0x6B4A30, x, 0, z, bark);
+    [[2.9, 2.2, 1.7], [2.5, 2.1, 2.8], [2.05, 2.0, 3.9], [1.6, 1.8, 4.9], [1.05, 1.6, 5.9]].forEach(([r, h, y], j) =>
+      mesh(treeGeo('pine'), P, r, h, r, [0x3E8A45, 0x46994D, 0x3E8A45, 0x52A858, 0x46994D][j], x, y, z, { solid: false, surf: 'leaf', ry: j * 0.7 + rot }));
+    box(P, 1, 3, 1, 0x6B4A30, x, 1.5, z).visible = false; // 줄기 충돌
     return;
   }
-  mesh(TAPER, P, 0.42, 3.6, 0.42, 0x7A5436, x, 1.8, z);
-  for (const [a, len] of [[0.6, 1.3], [-0.7, 1.1]]) mesh(TAPER, P, 0.14, len, 0.14, 0x7A5436, x + Math.sin(a) * 0.5, 3.2, z, { solid: false, rz: a }); // 곁가지
-  mesh(SPH_MID, P, 2.2, 1.9, 2.2, greens[k], x, 4.8, z, f);
-  for (const [r, dx, y, dz, j] of [[1.5, 1.4, 4.3, 0.5, 1], [1.4, -1.3, 4.5, -0.6, 2], [1.3, 0.2, 6.1, -0.2, 3], [1.1, -0.3, 4.2, 1.5, 1]])
-    mesh(SPH_LO, P, r, r * 0.9, r, greens[(k + j) % 4], x + dx, y, z + dz, f);
-  if (kind === 1) [[1.6, 5.2, 0.9], [-1.2, 5.6, -1.1], [0.4, 4.1, -1.9], [-1.9, 4.6, 0.9]].forEach(([dx, y, dz], j) => ball(P, 0.28, [0xFF7A6A, 0xFFD23C][j % 2], x + dx, y, z + dz, { solid: false })); // 열매
+  // 🌳 둥근 나무: 뿌리 퍼진 줄기 + 가지 3개 + 잎 덩이 여러 개 (안쪽은 진하게)
+  mesh(treeGeo('trunk'), P, 0.5, 3.9, 0.5, 0x7A5436, x, 0, z, bark2);
+  box(P, 0.7, 3, 0.7, 0x7A5436, x, 1.5, z).visible = false;
+  for (const [a, tilt, len, y] of [[0.3, 0.75, 1.9, 2.9], [2.4, 0.7, 1.7, 3.2], [4.3, 0.8, 1.6, 2.7]]) {
+    const [bx, bz] = at(Math.cos(a) * 0.45, Math.sin(a) * 0.45), br = mesh(TAPER, P, 0.13, len, 0.13, 0x7A5436, bx, y + len * 0.4, bz, bark2);
+    br.rotation.set(0, 0, 0); br.rotateY(-(a + rot)); br.rotateZ(-tilt); br.position.set(x + Math.cos(a + rot) * (0.2 + Math.sin(tilt) * len * 0.5), y + Math.cos(tilt) * len * 0.5, z + Math.sin(a + rot) * (0.2 + Math.sin(tilt) * len * 0.5));
+  }
+  const dark = shade(greens[k], 0.7);
+  mesh(treeGeo('lump0'), P, 2.1, 1.75, 2.1, dark, x, 4.9, z, leaf); // 안쪽 그늘
+  for (let j = 0; j < 11; j++) { // 잎 뭉치를 둥근 껍질 위에 고르게 (피보나치 배치)
+    const t = (j + 0.5) / 11, el = Math.asin(1 - 1.35 * t), az = j * 2.39996 + rot, r = 0.8 + ((j * 37) % 10) / 22;
+    const px = x + Math.cos(el) * Math.cos(az) * 1.9, py = 5.0 + Math.sin(el) * 1.6, pz = z + Math.cos(el) * Math.sin(az) * 1.9;
+    mesh(treeGeo('lump' + (1 + j % 5)), P, r * 1.08, r * 0.9, r, greens[(k + j) % 4], px, py, pz, { ...leaf, ry: j * 1.3 });
+  }
+  if (kind === 1) [[1.6, 5.2, 0.9], [-1.2, 5.6, -1.1], [0.4, 4.1, -1.9], [-1.9, 4.6, 0.9]].forEach(([dx, y, dz], j) => { const [px, pz] = at(dx * 1.12, dz * 1.12); ball(P, 0.24, [0xFF6A5A, 0xFFC93C][j % 2], px, y, pz, { solid: false }); }); // 열매
 }
 
 function buildWorld() {
   scene.background = new THREE.Color(0xEAF7FF);
   scene.fog = new THREE.Fog(0xE3F4FF, 90, 240);
-  world.hemi = new THREE.HemisphereLight(0xE8F4FF, 0x6E8F4E, 1.25); scene.add(world.hemi);
-  const sun = new THREE.DirectionalLight(0xFFF0D6, 2.6);
+  world.hemi = new THREE.HemisphereLight(0xE8F4FF, 0x6E8F4E, 0.75); scene.add(world.hemi);
+  const sun = new THREE.DirectionalLight(0xFFEBCB, 3.0);
   sun.position.set(30, 60, 20);
   if (SHADOWS) {
     sun.castShadow = true;
@@ -2977,7 +3250,7 @@ function buildWorld() {
   { // 생울타리 위를 둥글게 (한 번에 그리는 방식이라 가벼워요)
     const segs = [[-L, L, -3.5, L], [3.5, L, L, L], [-L, -L, -33.5, -L], [-26.5, -L, L, -L], [-93.5, 60.5, -93.5, 153.5], [-93.5, 153.5, 60, 153.5], [-93.5, 60.5, -L, 60.5], [L, -L, L, 26], [L, 32, L, L], [-L, -L, -L, -17], [-L, -9, -L, L]], pts = [];
     for (const [x1, z1, x2, z2] of segs) { const n = Math.round(Math.hypot(x2 - x1, z2 - z1) / 1.3); for (let i = 0; i <= n; i++) pts.push([x1 + (x2 - x1) * i / n, z1 + (z2 - z1) * i / n]); }
-    const im = new THREE.InstancedMesh(SPH_LO, ML(0x5FA84E), pts.length), o = new THREE.Object3D(), col = new THREE.Color();
+    const im = new THREE.InstancedMesh(treeGeo('lump2'), surfMat('leaf', 0x5FA84E), pts.length), o = new THREE.Object3D(), col = new THREE.Color();
     pts.forEach(([x, z], i) => {
       o.position.set(x, 0.95, z); o.rotation.set(0, i * 1.7, 0); o.scale.set(0.95, 0.55 + (i % 3) * 0.08, 0.95); o.updateMatrix(); im.setMatrixAt(i, o.matrix);
       im.setColorAt(i, col.set([0xFFFFFF, 0xE8F5E0, 0xD8ECCC][i % 3]));
@@ -3071,7 +3344,7 @@ function setSiteLabel(info) {
 const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false });
 const SHADOW = new THREE.CircleGeometry(0.55, 20);
 function makeHair(p, style, col) { // 머리 모양 (모두 기본 도형)
-  const o = { solid: false };
+  const o = { solid: false, surf: null };
   if (style === 4) { // 모자
     box(p, 0.98, 0.3, 0.98, col, 0, 2.2, 0, o);
     box(p, 0.8, 0.06, 0.42, col, 0, 2.08, 0.62, o);
@@ -3099,7 +3372,7 @@ function makeAvatar(animalIdx, shirtIdx, hairIdx = 0, hairColorIdx = 0, parent =
   g.userData.isAvatar = true;
   const shirt = CFG.SHIRTS[shirtIdx] ?? CFG.SHIRTS[0];
   const hairCol = CFG.HAIR_COLORS[hairColorIdx] ?? CFG.HAIR_COLORS[0];
-  const o = { solid: false };
+  const o = { solid: false, surf: null };
   const shadow = new THREE.Mesh(SHADOW, shadowMat);
   shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.03;
   g.add(shadow);
@@ -3360,14 +3633,14 @@ function updatePlayer(dt) {
   const x0 = p.x, z0 = p.z; // 움직이기 전 위치 (경계에서 되돌릴 때 사용)
   let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
-  if (isFrozen() || kite.active || hv.travel || hideBlind()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || sgFrozen()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
   const moving = Math.min(1, Math.hypot(mx, mz));
   if (moving > 0.05) {
-    p.x += mx * SPEED * dt; p.z += mz * SPEED * dt;
+    const spd = SPEED * sgSpeedMul(); p.x += mx * spd * dt; p.z += mz * spd * dt;
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -6956,6 +7229,19 @@ function scatter(count, make) {
   }
   return n;
 }
+function wildFlowerGeo() { // 들꽃: 꽃잎 5장 + 노란 꽃술 + 짧은 줄기·잎 (꽃잎 색은 한 송이마다 달라요)
+  const pos = [], col = [], idx = []; let v = 0;
+  const tri = (a, b, c, ca, cb, cc) => { pos.push(...a, ...b, ...c); col.push(...ca, ...cb, ...cc); idx.push(v, v + 1, v + 2); v += 3; };
+  const W = [1, 1, 1], Wi = [0.85, 0.85, 0.85], Y = [1.6, 1.25, 0.35], G = [0.32, 0.62, 0.26], H = 0.26;
+  for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2, a1 = a - 0.42, a2 = a + 0.42, L = 0.15;
+    const tip = [Math.cos(a) * L, H + 0.03, Math.sin(a) * L], s1 = [Math.cos(a1) * L * 0.62, H + 0.015, Math.sin(a1) * L * 0.62], s2 = [Math.cos(a2) * L * 0.62, H + 0.015, Math.sin(a2) * L * 0.62], c0 = [0, H, 0];
+    tri(c0, s2, tip, Wi, W, W); tri(c0, tip, s1, Wi, W, W); }
+  for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, b = (k + 1) / 6 * Math.PI * 2, r = 0.04; tri([0, H + 0.04, 0], [Math.cos(b) * r, H + 0.02, Math.sin(b) * r], [Math.cos(a) * r, H + 0.02, Math.sin(a) * r], Y, Y, Y); }
+  tri([-0.012, 0, 0], [0.012, 0, 0], [0, H, 0], G, G, G); tri([0, 0, -0.012], [0, 0, 0.012], [0, H, 0], G, G, G);
+  for (const s of [-1, 1]) tri([0, 0.06, 0], [s * 0.1, 0.12, 0.02], [s * 0.03, 0.13, -0.02], G, G, G); // 잎
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
 function buildPretty() {
   // 하늘: 위는 파랗고 아래로 갈수록 밝게
   const skyMat = new THREE.ShaderMaterial({
@@ -6969,7 +7255,7 @@ function buildPretty() {
   scene.add(pretty.sky);
   // 구름
   const cloudMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, emissive: 0xFFFFFF, emissiveIntensity: 0.35, roughness: 1, flatShading: false });
-  const cloudGeo = new THREE.IcosahedronGeometry(1, 1); // 둥글지만 조각이 적은 모양
+  const cloudGeo = treeGeo('lump7'); // 매끈하게 부푼 구름 덩이
   for (let i = 0; i < 10; i++) {
     const g = new THREE.Group();
     const n = 3 + (i % 3);
@@ -6986,9 +7272,9 @@ function buildPretty() {
   // 풀·들꽃·돌 (한 번에 그리는 방식이라 가벼워요)
   const tuftGeo = grassClumpGeo(), tuftMat = grassClumpMat(); // 가느다란 풀잎 포기 (바람에 살랑)
   const tufts = new THREE.InstancedMesh(tuftGeo, tuftMat, LOW_GFX ? 450 : 1300);
-  const flowerGeo = new THREE.IcosahedronGeometry(0.14, 0), flowerMat = new THREE.MeshStandardMaterial({ roughness: 0.7 });
+  const flowerGeo = wildFlowerGeo(), flowerMat = new THREE.MeshStandardMaterial({ roughness: 0.7, vertexColors: true, side: THREE.DoubleSide });
   const flowers = new THREE.InstancedMesh(flowerGeo, flowerMat, LOW_GFX ? 120 : 320);
-  const rockGeo = new THREE.DodecahedronGeometry(0.4), rocks = new THREE.InstancedMesh(rockGeo, new THREE.MeshStandardMaterial({ color: 0xB8B2A8, roughness: 1 }), 30);
+  const rockGeo = new THREE.DodecahedronGeometry(0.4), rocks = new THREE.InstancedMesh(rockGeo, surfMat('stone', 0xB8B2A8, true), 30);
   const o = new THREE.Object3D(), col = new THREE.Color();
   const greens = [0x5FA84A, 0x6FBF55, 0x4E9A40, 0x80C860], petals = [0xFF8FB3, 0xFFE066, 0xFFFFFF, 0xB58CF0, 0xFF9E5E];
   tufts.count = scatter(tufts.count, (i, x, z) => {
@@ -6997,7 +7283,7 @@ function buildPretty() {
     tufts.setColorAt(i, col.set(greens[i % greens.length]));
   });
   flowers.count = scatter(flowers.count, (i, x, z) => {
-    o.position.set(x, 0.22, z); o.rotation.set(0, 0, 0); o.scale.set(1, 0.7, 1); o.updateMatrix(); flowers.setMatrixAt(i, o.matrix);
+    o.position.set(x, 0, z); o.rotation.set((Math.random() - 0.5) * 0.3, Math.random() * 6.3, (Math.random() - 0.5) * 0.3); o.scale.setScalar(1.1 + Math.random() * 0.7); o.updateMatrix(); flowers.setMatrixAt(i, o.matrix);
     flowers.setColorAt(i, col.set(petals[i % petals.length]));
   });
   pretty.rockPos = [];
@@ -7049,6 +7335,7 @@ function setGfxLevel(lv) {
     scene.traverse(o => { if (o.material) [].concat(o.material).forEach(m => { m.needsUpdate = true; }); });
   }
   const extra = lv < 2, winter = seasonNow() === 'wi';
+  surfQ.value = !LOW_GFX && lv < 2 ? 1 : 0; // 오돌토돌 빛·넓은 얼룩은 보통 화질에서만
   (pretty.instanced || []).forEach((m, i) => { m.visible = extra && !(i < 2 && winter); });
   (pretty.mtnGrass || []).forEach(m => { m.visible = extra; });
   pretty.clouds.forEach(c => { c.visible = extra; }); if (pretty.spray) pretty.spray.visible = extra;
@@ -7162,7 +7449,7 @@ function batchStatic(root) {
   const inv = root.matrixWorld.clone().invert(), groups = new Map();
   root.traverse(o => {
     if (!o.isMesh || o === root || o.name || o.children.length || o.userData.keep || !o.visible) return;
-    if (![BOX, CYL, SPH, SPH_LO, SPH_MID, GABLE, PYR, TAPER, CONE].includes(o.geometry)) return;
+    if (![BOX, CYL, SPH, SPH_LO, SPH_MID, GABLE, PYR, TAPER, CONE].includes(o.geometry) && !o.geometry.userData.batch) return;
     for (let p = o.parent; p && p !== root; p = p.parent) if (p.isMesh || p.name || !p.visible) return; // 이름 있는 물체 안쪽은 건드리지 않아요
     if (!groups.has(o.material)) groups.set(o.material, []);
     groups.get(o.material).push(o);
@@ -7605,13 +7892,13 @@ const LEAF_KEYS = [0x4FA04F, 0x5DB85F, 0x46934A, 0x6BBF5A, 0x52A858, 0x3E8A45, 0
 const PINES = new Set([0x3E8A45, 0x46994D, 0x2F7D3B, 0x3A8A45, 0x52A858]);
 const AUTUMN = [0xE8913A, 0xD9662E, 0xF2B640, 0xC9542A, 0xE07A34];
 function applySeasonColors(season, night = false) {
-  LEAF_KEYS.forEach((k, i) => {
-    const m = ML(k), base = new THREE.Color(k);
+  LEAF_KEYS.forEach((k, i) => { for (const m of [ML(k), ...[...surfMatCache.values()].filter(x => x.userData.surfColor === k)]) {
+    const base = new THREE.Color(k);
     if (season === 'au' && !PINES.has(k)) m.color.setHex(AUTUMN[i % AUTUMN.length]);
     else if (season === 'wi') m.color.copy(base).lerp(new THREE.Color(0xEEF4F6), PINES.has(k) ? 0.35 : 0.6);
     else if (season === 'sp' && !PINES.has(k)) m.color.copy(base).lerp(new THREE.Color(i % 3 === 0 ? 0xFFB7CF : 0xA8E08A), 0.45); // 봄: 연두와 벚꽃 분홍
     else m.color.copy(base);
-  });
+  } });
   for (const g of [world.ground?.material, mtn.ground?.material, mtn.outer?.material]) if (g) {
     g.emissive.setHex(season === 'wi' ? 0xE8EEF2 : season === 'au' ? 0x6A4A10 : 0x000000);
     g.emissiveIntensity = (season === 'wi' ? 0.62 : season === 'au' ? 0.22 : 0) * (night ? 0.25 : 1);
@@ -7646,9 +7933,10 @@ function applyEnv(force = false) {
   if (sky) { sky.top.value.setHex(night ? 0x0B1640 : 0x5FB3F0); sky.bottom.value.setHex(night ? 0x2B3F73 : season === 'wi' ? 0xF2F6FA : 0xEAF7FF); }
   scene.background.setHex(night ? 0x1A2650 : 0xEAF7FF);
   scene.fog.color.setHex(night ? 0x1A2650 : 0xE3F4FF);
-  if (world.hemi) { world.hemi.intensity = night ? 0.55 : 1.25; world.hemi.color.setHex(night ? 0x8FA6E0 : 0xE8F4FF); }
-  if (world.sun) { world.sun.intensity = night ? 0.35 : 2.6; world.sun.color.setHex(night ? 0xAFC4FF : 0xFFF0D6); }
-  renderer.toneMappingExposure = night ? 0.95 : 1.12;
+  if (world.hemi) { world.hemi.intensity = night ? 0.35 : 0.75; world.hemi.color.setHex(night ? 0x8FA6E0 : 0xE8F4FF); }
+  if (world.sun) { world.sun.intensity = night ? 0.35 : 3.0; world.sun.color.setHex(night ? 0xAFC4FF : 0xFFF0D6); }
+  renderer.toneMappingExposure = night ? 0.95 : 1.02;
+  setEnvMap(night);
   env.stars.visible = night;
   pretty.clouds.forEach(c => c.children.forEach(m => { m.material.emissiveIntensity = night ? 0.05 : 0.35; }));
   // 밤에는 불빛(가로등·등불·모닥불)이 더 밝게
@@ -8624,9 +8912,9 @@ function buildBeach() {
   box(g, 4.5, 1, len, 0xE3C88E, 76.5, -0.49, cz, o);                 // 젖은 모래
   box(g, 6, 0.05, 6, 0xF3DFA8, 60, 0.02, 29, o);                     // 통로 모래길
   // 바다 (걸어 들어가지는 못해요)
-  beach.sea = new THREE.Mesh(new THREE.PlaneGeometry(260, 420), new THREE.MeshStandardMaterial({ color: 0x3FA7E0, roughness: 0.25, metalness: 0.1, transparent: true, opacity: 0.92 }));
+  beach.sea = new THREE.Mesh(new THREE.PlaneGeometry(260, 420), waterize(new THREE.MeshStandardMaterial({ color: 0x3FA7E0, transparent: true, opacity: 0.94 })));
   beach.sea.rotation.x = -Math.PI / 2; beach.sea.position.set(BEACH.shore + 130, 0.02, cz); beach.sea.receiveShadow = SHADOWS; scene.add(beach.sea);
-  const shallow = new THREE.Mesh(new THREE.PlaneGeometry(8, len), new THREE.MeshStandardMaterial({ color: 0x7FD3F2, roughness: 0.3, transparent: true, opacity: 0.85 }));
+  const shallow = new THREE.Mesh(new THREE.PlaneGeometry(8, len), waterize(new THREE.MeshStandardMaterial({ color: 0x7FD3F2, transparent: true, opacity: 0.85 })));
   shallow.rotation.x = -Math.PI / 2; shallow.position.set(BEACH.shore + 4, 0.03, cz); scene.add(shallow);
   beach.foam = new THREE.Group(); scene.add(beach.foam); // 밀려오는 흰 물결
   for (let k = 0; k < 2; k++) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, len), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.8 - k * 0.3 })); m.position.set(BEACH.shore + k * 1.6, 0.05, cz); beach.foam.add(m); }
@@ -8744,9 +9032,9 @@ function buildMountain() {
       const x = Math.cos(a) * r, z = Math.sin(a) * r * 1.1 + 10;
       if (x > 70) continue; // 바다 쪽은 탁 트이게
       const h = 38 + (k * 53 % 45), w = 34 + (k * 29 % 30);
-      mesh(CONE, far, w, h, w * 0.9, cols[k % 4], x, h / 2 - 2, z, { solid: false, flat: true, ry: k });
-      if (h > 60) mesh(CONE, far, w * 0.33, h * 0.32, w * 0.3, 0xF4F7F8, x, h - 2 - h * 0.16 + 0.2, z, { solid: false, flat: true, ry: k });
-      mesh(CONE, far, w * 0.7, h * 0.6, w * 0.6, cols[(k + 1) % 4], x + w * 0.7, h * 0.3 - 2, z + 8, { solid: false, flat: true, ry: k * 2 });
+      mesh(treeGeo('peak' + (k % 5)), far, w, h, w * 0.9, cols[k % 4], x, h / 2 - 2, z, { solid: false, ry: k });
+      if (h > 60) mesh(treeGeo('peak' + (k % 5)), far, w * 0.3, h * 0.3, w * 0.27, 0xF4F7F8, x, h - 2 - h * 0.15 + 0.6, z, { solid: false, ry: k, surf: null });
+      mesh(treeGeo('peak' + ((k + 2) % 5)), far, w * 0.7, h * 0.6, w * 0.6, cols[(k + 1) % 4], x + w * 0.7, h * 0.3 - 2, z + 8, { solid: false, ry: k * 2 });
     }
     batchStatic(far); }
   // ---- 산 땅 (높이 격자) ----
@@ -8821,7 +9109,7 @@ function buildMountain() {
     pretty.mtnGrass = [tufts, flw]; // 화질 '가볍게'에서 숨겨요
   }
   // ---- 계곡: 연못·폭포·개울·나무다리 ----
-  const wTex = waterTex(), waterMat = new THREE.MeshStandardMaterial({ color: 0x5EC4F0, roughness: 0.2, metalness: 0.05, transparent: true, opacity: 0.85 });
+  const wTex = waterTex(), waterMat = waterize(new THREE.MeshStandardMaterial({ color: 0x5EC4F0, transparent: true, opacity: 0.85 }));
   const [px, pz, pr] = MT.pond;
   { const m = new THREE.Mesh(new THREE.CircleGeometry(pr + 0.6, 32), waterMat); m.rotation.x = -Math.PI / 2; m.position.set(px, -0.12, pz); scene.add(m); }
   for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; if (Math.abs(a - 5.5) < 0.35) continue; const x = px + Math.cos(a) * (pr + 0.5), z = pz + Math.sin(a) * (pr + 0.5); mesh(SPH_LO, g, 0.55, 0.3, 0.45, 0xB8B2A8, x, terrainH(x, z) + 0.05, z, { solid: false, flat: true, ry: a }); }
@@ -9000,7 +9288,7 @@ const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
-function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
+function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}${JSON.stringify(S.siege.own || {})}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
 function drawMapBase() {
   if (MAPB === MAPB_HV) return drawHvMapBase();
   if (MAPB === MAPB_MATH) return drawMathMapBase();
@@ -9049,7 +9337,7 @@ function drawMapBase() {
   mapUI.key = mapKey();
 }
 const MAP_LABELS = () => MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
-  ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['⚔️', SG.cx, SG.cz], ...(S.siege ? Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; }) : []), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
+  ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['⚔️', SG.cx, SG.cz], ...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; }), ...SG_SITES.map(st => [st.icon, st.x, st.z])] : []), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
   ['🏡', -15, 106], ['🏖️', 69, 0], ['🐷', FUND_BOX[0], FUND_BOX[1]], ...FUND.map(f => [f.icon, ...f.pos]), ['⚓', 88, BEACH.pierZ], ['⛰️', -30, -66], ['💦', 30, -80], ['🚩', MT.peak[0], MT.peak[1]], [forestOpen() ? '⛺' : '🔒', -74, -17],
@@ -9109,7 +9397,9 @@ function drawHvMapBase() { // 역사 마을 지도
   rect(HIST.path - 2, HIST.z0, HIST.path + 2, HV.z0 + 2, '#E8D9B5');
   for (const E of HIST_ERAS) { const col = '#' + new THREE.Color(E.col).getHexString(); c.lineWidth = 2; if (histBuilt(E.k)) rect(E.x - 6, E.z - 4.5, E.x + 6, E.z + 4.5, col, '#3B2F2A'); else { c.setLineDash([5, 4]); rect(E.x - 6, E.z - 4.5, E.x + 6, E.z + 4.5, 'rgba(255,255,255,.55)', col); c.setLineDash([]); } }
   rect(SG.x0, SG.z0, SG.x1, SG.z1, S.siege ? '#C2CC8E' : '#B9C4A0'); c.strokeStyle = '#8A6A44'; c.strokeRect(mapX(SG.x0), mapZ(SG.z0), (SG.x1 - SG.x0) * s, (SG.z1 - SG.z0) * s);
-  if (S.siege) for (let t = 1; t <= S.siege.n; t++) { const ca = castleAt(t); if (ca) rect(ca.x - 6, ca.z - 6, ca.x + 6, ca.z + 6, '#' + new THREE.Color(sgSet().nat[t - 1].col).getHexString(), '#3B2F2A'); }
+  if (S.siege) { for (let t = 1; t <= S.siege.n; t++) { const ca = castleAt(t); if (ca) rect(ca.x - 6, ca.z - 6, ca.x + 6, ca.z + 6, '#' + new THREE.Color(sgSet().nat[t - 1].col).getHexString(), '#3B2F2A'); }
+    c.strokeStyle = '#3E8FD6'; c.lineWidth = 2 * s; c.beginPath(); c.arc(mapX(SG.cx), mapZ(SG.cz), 11.2 * s, 0, Math.PI * 2); c.stroke();
+    for (const st of SG_SITES) { const o = S.siege.own?.[st.k] || 0; c.fillStyle = o ? '#' + new THREE.Color(sgSet().nat[o - 1].col).getHexString() : 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(mapX(st.x), mapZ(st.z), SG_ZONE * s, 0, Math.PI * 2); c.fill(); } }
   mapUI.key = mapKey();
 }
 function drawMini() {
@@ -9565,17 +9855,51 @@ function latticeMat() { // 창호지 문 (나무 살)
   return (latticeMatCache = new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 }));
 }
 function hanokDoor(g, w, h, x, y, z) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), latticeMat()); m.position.set(x, y, z); g.add(m); return m; }
-function giwaRoof(g, w, d, y, col = HANOK.giwa) { // 팔작지붕: 넓게 퍼진 아래 지붕 + 위 작은 박공 + 용마루
-  const o = { solid: false, flat: true }, long = Math.max(w, d), short = Math.min(w, d), h1 = short * 0.32 + 0.5, alongX = w >= d;
-  box(g, w + 2.3, 0.14, d + 2.3, 0x9C6A3E, 0, y - 0.05, 0, { solid: false });                     // 처마 밑 (서까래)
-  mesh(PYR, g, w + 2.6, h1, d + 2.6, col, 0, y, 0, o);
-  mesh(GABLE, g, short * 0.62, h1 * 0.62, long * 0.62, col, 0, y + h1 * 0.42, 0, { ...o, ry: alongX ? Math.PI / 2 : 0 });
-  const topY = y + h1 * 0.42 + h1 * 0.62;
-  box(g, alongX ? long * 0.66 : 0.4, 0.3, alongX ? 0.4 : long * 0.66, HANOK.giwaD, 0, topY, 0, { solid: false });   // 용마루
-  for (const s of [-1, 1]) { const e = box(g, 0.34, 0.6, 0.34, HANOK.giwaD, alongX ? s * long * 0.33 : 0, topY + 0.2, alongX ? 0 : s * long * 0.33, { solid: false }); e.rotation[alongX ? 'z' : 'x'] = -s * 0.35; } // 치미
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const tip = box(g, 1.1, 0.16, 0.5, col, sx * (w / 2 + 1.25), y + 0.22, sz * (d / 2 + 1.25), { solid: false, ry: -sx * sz * Math.PI / 4 }); tip.rotation.z = sx * 0.3; } // 들린 추녀
-  for (let k = 1; k < 4; k++) { const t = k / 4; box(g, (w + 2.6) * (1 - t * 0.8), 0.06, 0.08, HANOK.giwaD, 0, y + h1 * t * 0.98, (d / 2 + 1.3) * (1 - t) + 0.02, { solid: false }); box(g, (w + 2.6) * (1 - t * 0.8), 0.06, 0.08, HANOK.giwaD, 0, y + h1 * t * 0.98, -(d / 2 + 1.3) * (1 - t) - 0.02, { solid: false }); } // 기와 줄
-  return topY;
+// ---------- 한옥 기와지붕 (58. 역사 마을 실감 나게): 오목하게 휜 지붕면 · 처마 끝이 들린 추녀 · 기와골 · 용마루·내림마루 · 서까래 ----------
+const GIWA = {};
+function giwaTex() { // 기와골: 비탈 아래로 내려가는 둥근 수키와 줄 + 가로 기와 이음
+  if (GIWA.tex) return GIWA.tex;
+  const N = 256, cv = document.createElement('canvas'); cv.width = cv.height = N; const c = cv.getContext('2d');
+  c.fillStyle = '#7C838C'; c.fillRect(0, 0, N, N);
+  for (let y = 0; y < N; y += 32) { const g = c.createLinearGradient(0, y, 0, y + 32); g.addColorStop(0, '#9AA1AA'); g.addColorStop(0.85, '#7C838C'); g.addColorStop(1, '#4A5058'); c.fillStyle = g; c.fillRect(0, y, N, 32); } // 암키와 겹침
+  for (let x = 0; x < N; x += 32) { const g = c.createLinearGradient(x + 18, 0, x + 32, 0); g.addColorStop(0, '#4A5058'); g.addColorStop(0.3, '#C9CFD6'); g.addColorStop(0.65, '#9AA1AA'); g.addColorStop(1, '#3E444C'); c.fillStyle = g; c.fillRect(x + 18, 0, 14, N); } // 수키와 (둥근 골)
+  for (let i = 0; i < 1600; i++) { c.fillStyle = `rgba(${Math.random() < 0.5 ? '0,0,0' : '255,255,255'},0.06)`; c.fillRect(Math.random() * N, Math.random() * N, 2, 2); }
+  const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy?.() || 1);
+  return (GIWA.tex = t);
+}
+function giwaMat(col) { const k = 'm' + col; return GIWA[k] || (GIWA[k] = new THREE.MeshStandardMaterial({ color: new THREE.Color(col).multiplyScalar(1.35), map: giwaTex(), bumpMap: giwaTex(), bumpScale: 3, roughness: 0.62, envMapIntensity: ENV_I })); }
+function hipRoofGeo(W, D, rh, H, lift) { // 오목한 팔작(모임)지붕 면: 가운데 용마루(길이 2·rh)에서 처마까지, 네 귀는 위로 들려요
+  const nx = 30, nz = 20, pos = [], uv = [], idx = [];
+  for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) {
+    const x = (i / nx - 0.5) * W, z = (j / nz - 0.5) * D;
+    const tx = Math.max(0, Math.abs(x) - rh) / (W / 2 - rh || 1), tz = Math.abs(z) / (D / 2), t = Math.min(1, Math.max(tx, tz));
+    const corner = Math.pow(Math.min(Math.abs(x) / (W / 2), tz), 3);
+    const y = H * Math.pow(1 - t, 1.35) + lift * corner * t + lift * 0.25 * Math.pow(Math.max(Math.abs(x) / (W / 2), tz), 6) * t;
+    pos.push(x, y, z);
+    if (tz >= tx) uv.push(x / 1.15, Math.abs(z) / 1.15); else uv.push(z / 1.15, Math.abs(x) / 1.15);
+  }
+  for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + 1, c2 = a + nx + 1, d2 = c2 + 1; idx.push(a, c2, b, b, c2, d2); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+  g.userData.h = (x, z) => { const tx = Math.max(0, Math.abs(x) - rh) / (W / 2 - rh || 1), tz = Math.abs(z) / (D / 2), t = Math.min(1, Math.max(tx, tz)), corner = Math.pow(Math.min(Math.abs(x) / (W / 2), tz), 3); return H * Math.pow(1 - t, 1.35) + lift * corner * t + lift * 0.25 * Math.pow(Math.max(Math.abs(x) / (W / 2), tz), 6) * t; };
+  return g;
+}
+function giwaRoof(g, w, d, y, col = HANOK.giwa) { // 팔작지붕 (같은 이름·인자 그대로: 기와집·정자·역사의 길 건물이 함께 써요)
+  const alongX = w >= d, W0 = Math.max(w, d) + 2.6, D0 = Math.min(w, d) + 2.6, H = D0 * 0.27 + 0.35, rh = Math.max(0.15, (W0 - D0) / 2 + W0 * 0.08), lift = 0.55;
+  const rg = new THREE.Group(); rg.position.y = y; if (!alongX) rg.rotation.y = Math.PI / 2; g.add(rg);
+  const key = [W0, D0].map(v => v.toFixed(2)).join('x'), geo = GIWA[key] || (GIWA[key] = hipRoofGeo(W0, D0, rh, H, lift));
+  const top = new THREE.Mesh(geo, giwaMat(col)); top.castShadow = SHADOWS; top.receiveShadow = SHADOWS; rg.add(top);
+  const under = new THREE.Mesh(geo, GIWA.under || (GIWA.under = new THREE.MeshStandardMaterial({ color: 0x8A5A3A, roughness: 0.9, side: THREE.BackSide, envMapIntensity: ENV_I }))); under.position.y = -0.16; rg.add(under);
+  const hy = geo.userData.h, dark = HANOK.giwaD, o = { solid: false };
+  const tube = (pts, r, c) => { const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([px, py, pz]) => new V3(px, py, pz))), 16, r, 6, false), M(c)); m.castShadow = SHADOWS; rg.add(m); return m; };
+  tube([[-rh - 0.35, H + 0.32, 0], [-rh * 0.5, H + 0.18, 0], [0, H + 0.15, 0], [rh * 0.5, H + 0.18, 0], [rh + 0.35, H + 0.32, 0]], 0.18, dark); // 용마루 (끝이 살짝 들려요)
+  for (const s of [-1, 1]) { const ch = mesh(CONE, rg, 0.13, 0.45, 0.22, dark, s * (rh + 0.4), H + 0.5, 0, { solid: false, surf: null }); ch.rotation.z = -s * 0.35; } // 치미
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { // 내림마루 (네 귀로)
+    const pts = []; for (let k = 0; k <= 6; k++) { const t = k / 6, px = sx * (rh + (W0 / 2 - rh) * t), pz = sz * (D0 / 2) * t; pts.push([px, hy(px, pz) + 0.1, pz]); }
+    tube(pts, 0.11, dark);
+    ball(rg, 0.16, dark, pts[6][0], pts[6][1] + 0.05, pts[6][2], o); // 추녀 끝 장식
+  }
+  for (let x = -W0 / 2 + 1.2; x <= W0 / 2 - 1.2; x += 0.42) for (const s of [-1, 1]) { const z = s * (D0 / 2 - 0.3); cyl(rg, 0.05, 0.55, 0x6E4528, x, hy(x, z) - 0.24, z, { solid: false, rx: Math.PI / 2 + s * 0.12, surf: null }); } // 서까래 끝 (처마 밑)
+  return y + H + 0.6;
 }
 function giwaHouse(parent, x, z, ry, w = 9, d = 6, sign = null) { // 기와집 (앞은 +z)
   const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; parent.add(g);
@@ -9602,10 +9926,11 @@ function thatchHouse(parent, x, z, ry, w = 7, d = 5) { // 초가집
   for (const sx of [-w / 2, 0, w / 2]) for (const sz of [-d / 2, d / 2]) box(g, 0.26, 2.4, 0.26, 0x8A6A44, sx, 1.5, sz, o);
   box(g, w + 0.2, 0.24, 0.28, 0x8A6A44, 0, 2.6, d / 2, o);
   hanokDoor(g, 1.3, 1.8, -w / 4, 1.2, d / 2 + 0.02); hanokDoor(g, 1.0, 0.8, w / 4, 1.7, d / 2 + 0.02);
-  mesh(SPH_MID, g, w * 0.78, 1.7, d * 0.95, HANOK.thatch, 0, 2.55, 0, o);                               // 둥근 짚 지붕
-  mesh(SPH_MID, g, w * 0.8, 0.5, d * 0.98, shade(HANOK.thatch, 0.85), 0, 2.6, 0, o);
+  mesh(SPH, g, w * 0.76, 1.75, d * 0.93, HANOK.thatch, 0, 2.5, 0, { solid: false, surf: 'straw' });     // 둥근 짚 지붕 (볏짚 결)
+  mesh(SPH, g, w * 0.8, 0.42, d * 0.97, shade(HANOK.thatch, 0.78), 0, 2.58, 0, { solid: false, surf: 'straw' }); // 두툼한 처마 끝
+  mesh(SPH_MID, g, w * 0.16, 0.22, d * 0.86, shade(HANOK.thatch, 0.7), 0, 4.2, 0, { solid: false, surf: 'straw' }); // 용마름 (꼭대기 짚)
   for (const t of [-0.3, 0, 0.3]) { const r = new THREE.Mesh(new THREE.TorusGeometry(1, 0.03, 4, 24, Math.PI), M(0x8A6A3A)); r.scale.set(d * 0.98, 1.72, 1); r.position.set(t * w, 2.55, 0); r.rotation.y = Math.PI / 2; g.add(r); } // 새끼줄
-  for (const k of [0, 1, 2]) cyl(g, 0.32 - k * 0.04, 0.55, 0x6B4A30, -w / 2 - 1.1 + k * 0.7, 0.28, d / 2 + 0.2, o);                    // 장독
+  for (const k of [0, 1, 2]) onggi(g, -w / 2 - 1.1 + k * 0.7, d / 2 + 0.2, 0.85 - k * 0.1);                    // 장독
   return g;
 }
 function stoneWall(g, x0, z0, x1, z1) { // 돌담 + 기와 얹기
@@ -9694,7 +10019,7 @@ function buildHanok() {
   const g = new THREE.Group(); g.name = 'Hanok'; scene.add(g); hv.group = g;
   const o = { solid: false };
   lawnPlane(g, 420, 360, HV.x + 40, 0, 0x8ACB64, 0);                                                    // 둘레 잔디
-  { const w = new THREE.Mesh(new THREE.PlaneGeometry(90, 300), new THREE.MeshStandardMaterial({ color: 0x3FA7E0, roughness: 0.25, transparent: true, opacity: 0.92 })); w.rotation.x = -Math.PI / 2; w.position.set(HV.x0 - 45.5, 0.03, 0); scene.add(w); hv.river = w; } // 강
+  { const w = new THREE.Mesh(new THREE.PlaneGeometry(90, 300), waterize(new THREE.MeshStandardMaterial({ color: 0x3FA7E0, transparent: true, opacity: 0.94 }))); w.rotation.x = -Math.PI / 2; w.position.set(HV.x0 - 45.5, 0.03, 0); scene.add(w); hv.river = w; } // 강
   box(g, 3, 1, 300, 0xD9C49A, HV.x0 - 1.5, -0.47, 0, o);                                                // 강둑
   // 마당 흙길
   box(g, HV.x1 - HV.x0 + 6, 0.04, 5, C.path, (HV.x0 + HV.x1) / 2 - 3, 0.02, 0, o);
@@ -9719,7 +10044,7 @@ function buildHanok() {
   thatchHouse(g, 481, 37, Math.PI); giwaHouse(g, 527, 37, Math.PI, 8, 5.5); thatchHouse(g, 561, 37, Math.PI, 6, 4.5);
   // 우물·빨랫줄·장독대
   { const x = 527, z = -9; cyl(g, 1.1, 0.9, HANOK.stone, x, 0.45, z); cyl(g, 0.8, 0.05, 0x2E5F8A, x, 0.9, z, o); for (const s of [-1, 1]) box(g, 0.15, 2.4, 0.15, HANOK.wood, x + s * 1, 1.2, z, o); mesh(GABLE, g, 2.8, 0.7, 1.4, HANOK.giwa, x, 2.4, z, { solid: false, ry: Math.PI / 2 }); }
-  for (const [x, z] of [[544, 32], [548, 33.5], [540, 34], [494, -33], [498, -34.5]]) for (let k = 0; k < 2; k++) { cyl(g, 0.36 - k * 0.1, 0.62 - k * 0.2, 0x5A3A26, x + k * 0.9, 0.31 - k * 0.1, z, o); cyl(g, 0.22 - k * 0.06, 0.08, 0x3B2A1E, x + k * 0.9, 0.64 - k * 0.3, z, o); }
+  for (const [x, z] of [[544, 32], [548, 33.5], [540, 34], [494, -33], [498, -34.5]]) for (let k = 0; k < 2; k++) onggi(g, x + k * 0.9, z, 1 - k * 0.3);
   // 대나무·소나무·감나무
   for (let z = -30; z <= 28; z += 4.5) if (Math.abs(z) > 6) bamboo(g, 563, z);
   for (let z = -22; z <= -8; z += 4) bamboo(g, 477.5, z);
@@ -9728,7 +10053,7 @@ function buildHanok() {
   // 먼 산 (역사 마을 둘레)
   { const far = new THREE.Group(); scene.add(far);
     for (let k = 0; k < 14; k++) { const a = -Math.PI * 0.35 + k / 13 * Math.PI * 1.7, r = 160 + (k * 29 % 40), x = HV.x + 30 + Math.cos(a) * r, z = Math.sin(a) * r * 1.1, h = 40 + (k * 37 % 40), w = 36 + (k * 23 % 26);
-      mesh(CONE, far, w, h, w * 0.9, [0x6E9E6A, 0x7FA88A, 0x5F8F6E][k % 3], x, h / 2 - 2, z, { solid: false, flat: true, ry: k }); }
+      mesh(treeGeo('peak' + (k % 5)), far, w, h, w * 0.9, [0x6E9E6A, 0x7FA88A, 0x5F8F6E][k % 3], x, h / 2 - 2, z, { solid: false, ry: k }); }
     batchStatic(far); hv.far = far; }
   // 건축 재료 상자 (지게에 얹은 기와·통나무)
   HV_CRATES.forEach(([x, z], i) => {
@@ -9756,7 +10081,7 @@ function buildHanok() {
   // 나루터: 돌아가는 배
   addInteract({ pos: new V3(HV.dock[0] + 1.5, 1, 0), r: 2.6, text: () => hvRegion() ? ['배 타기 ⛵', '우리 마을로 돌아가기'] : null, run: () => travelTo('home') });
   { const [px, pz, pr] = HV.pond; // 연꽃 연못
-    const w = new THREE.Mesh(new THREE.CircleGeometry(pr + 0.4, 32), new THREE.MeshStandardMaterial({ color: 0x4FA3C8, roughness: 0.2, transparent: true, opacity: 0.9 })); w.rotation.x = -Math.PI / 2; w.position.set(px, 0.04, pz); g.add(w);
+    const w = new THREE.Mesh(new THREE.CircleGeometry(pr + 0.4, 32), waterize(new THREE.MeshStandardMaterial({ color: 0x4FA3C8, transparent: true, opacity: 0.92 }))); w.rotation.x = -Math.PI / 2; w.position.set(px, 0.04, pz); g.add(w);
     for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2; mesh(SPH_LO, g, 0.55, 0.3, 0.45, [0xB8B2A8, 0xA39D94, 0xC8C2B8][k % 3], px + Math.cos(a) * (pr + 0.4), 0.12, pz + Math.sin(a) * (pr + 0.4), { solid: false, flat: true, ry: a }); }
     for (const [dx, dz] of [[-2, 2], [1.5, -2.5], [3, 2], [-3.5, -1], [0, 4]]) { cyl(g, 0.6, 0.03, 0x4FA04F, px + dx, 0.07, pz + dz, o); ball(g, 0.2, 0xFFB3D0, px + dx + 0.2, 0.22, pz + dz, o); }
     box(g, pr * 1.4, 1, pr * 1.4, 0x4FA3C8, px, 0.5, pz).visible = false; }
@@ -13672,271 +13997,529 @@ function initHistAdmin() {
   };
 }
 
-/* ---------- ⚔️ 성 공방전 ---------- */
+/* ---------- ⚔️ 성 공방전 2 — 삼국 쟁탈전 (거점 · 자원 · 역할 · 성벽 공사) ----------
+   · 전쟁터 가운데 🏯 산성과 둘레 ⛏️ 철광산 · 🌾 곡창 · ⛵ 나루터 · 🔥 봉수대 — 우리 나라 사람이 동그라미 안에 서 있으면 깃발이 올라가 차지해요 (상대가 같이 있으면 멈춰요)
+   · 차지한 거점은 3초마다 나라 점수와 자원(🪵 목재 · ⛓️ 철 · 🍚 군량)을 줘요. 마지막 1분은 '결전' — 점수 두 배
+   · 역할: ⚔️ 병사(시대 무기, 성문 피해 2배) · 🔨 공병(성문 수리·성벽 강화·목책) · 🌿 의원(다친 친구 바로 치료) · 📜 책사(문제 보급 2배·화공·진격 나팔)
+   · 시대 무기: 선사 🪨 돌팔매 · 삼국 🏹 활 · 남북국/후삼국 🎯 쇠뇌 · 각 성과 산성에 🪨 투석기
+   · 돌·화살에 맞으면 🤕 8초 쓰러져요 (곡창을 가진 나라는 4.5초) — 의원이 오면 바로 일어나요. 일어난 뒤 3초는 안 맞아요
+   · 상대 성문을 부수면 +15점 · 그 나라 자원을 조금 빼앗아요 (25초 뒤 다시 세워져요). 꼴찌 나라는 거점을 1.5배 빨리 차지하고 보급도 1.5배
+   · 🏛️ 나라 창고(성 안): 문제 풀고 보급 받기(+자원 +1점), 역할 바꾸기, 역할별 공사·계책
+   · 선생님 기기(연습 모드는 내 기기)가 1초마다 거점 차지와 점수·자원을 계산해요
+   · 저장: state/siege { on, r, set, n, at, end, max, team, score, hp, lv, down, own, cap, res, role, hurt, safe, buff, bar, cat, shot, fx, win }
+   · 나라 점수만 보여요. 누가 했는지는 남기지 않고, 끝내면 지워져요 */
+const WEAPONS = {
+  sling: { name: '돌팔매', icon: '🪨', ang: 0.55, v: 0, cd: 0.8, dmg: 1, col: 0x7A746A },
+  bow: { name: '활', icon: '🏹', ang: 0.16, v: 27, cd: 0.9, dmg: 1, col: 0x8A5A34 },
+  xbow: { name: '쇠뇌', icon: '🎯', ang: 0.08, v: 33, cd: 1.3, dmg: 2, col: 0x5A4A3A },
+};
 const SIEGE_SETS = {
-  tribe: { name: '선사 시대 · 부족', eras: ['paleo', 'neo', 'bronze', 'gojoseon'], wall: 'wood', nat: [{ name: '곰 부족', icon: '🐻', col: 0x8A5A34 }, { name: '호랑이 부족', icon: '🐯', col: 0xF08A24 }, { name: '하늘 부족', icon: '☀️', col: 0x3E9AD8 }] },
-  three: { name: '삼국 시대', eras: ['three'], wall: 'stone', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
-  four: { name: '삼국 + 가야', eras: ['three'], wall: 'stone', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }, { name: '가야', icon: '⚒️', col: 0x3FA060 }] },
-  nb: { name: '남북국 시대', eras: ['nb'], wall: 'stone', nat: [{ name: '통일 신라', icon: '👑', col: 0x3E6AC8 }, { name: '발해', icon: '🐎', col: 0x8A4FC8 }] },
-  late: { name: '후삼국 시대', eras: ['nb', 'goryeo'], wall: 'stone', nat: [{ name: '후고구려', icon: '🐉', col: 0xD24A3A }, { name: '후백제', icon: '🌾', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
+  tribe: { name: '선사 시대 · 부족', eras: ['paleo', 'neo', 'bronze', 'gojoseon'], weap: 'sling', nat: [{ name: '곰 부족', icon: '🐻', col: 0x8A5A34 }, { name: '호랑이 부족', icon: '🐯', col: 0xF08A24 }, { name: '하늘 부족', icon: '☀️', col: 0x3E9AD8 }] },
+  three: { name: '삼국 시대', eras: ['three'], weap: 'bow', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
+  four: { name: '삼국 + 가야', eras: ['three'], weap: 'bow', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }, { name: '가야', icon: '⚒️', col: 0x3FA060 }] },
+  nb: { name: '남북국 시대', eras: ['nb'], weap: 'xbow', nat: [{ name: '통일 신라', icon: '👑', col: 0x3E6AC8 }, { name: '발해', icon: '🐎', col: 0x8A4FC8 }] },
+  late: { name: '후삼국 시대', eras: ['nb', 'goryeo'], weap: 'xbow', nat: [{ name: '후고구려', icon: '🐉', col: 0xD24A3A }, { name: '후백제', icon: '🌾', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
+};
+const SG_ROLES = {
+  sol: { icon: '⚔️', name: '병사', desc: '시대 무기를 빨리 쏘고 성문에 2배 피해 · 창고: 강철 무기(⛓️10, 60초 동안 우리 나라 피해 2배)' },
+  eng: { icon: '🔨', name: '공병', desc: '우리 성문 수리(+4) · 창고: 성벽 강화(🪵12) · 목책 세우기(🪵4, 길을 막아요)' },
+  med: { icon: '🌿', name: '의원', desc: '쓰러진 우리 친구 곁에서 E로 바로 치료 · 다친 친구가 있으면 화면에 알려 줘요' },
+  sch: { icon: '📜', name: '책사', desc: '문제 보급 2배 · 창고: 🔥 화공(⛓️6 🍚6, 상대 성문 -8) · 📯 진격 나팔(🍚8, 30초 빨리 달리고 빨리 차지)' },
 };
 const SG = { cx: 520, cz: 98, x0: 474, x1: 566, z0: 52, z1: 144 };
-const SG_LAYOUT = { // 성 자리: [x, z, 성문 방향(성문이 보는 쪽 각도)]
+const SG_LAYOUT = { // 성 자리: [x, z, 성문 방향]
   2: [[520, 62, 0], [520, 134, Math.PI]],
-  3: [[520, 62, 0], [556, 112, -Math.PI / 2], [484, 112, Math.PI / 2]],
+  3: [[520, 62, 0], [556, 110, -Math.PI / 2], [484, 110, Math.PI / 2]],
   4: [[520, 62, 0], [556, 98, -Math.PI / 2], [520, 134, Math.PI], [484, 98, Math.PI / 2]],
 };
-const SG_FIX = 3, SG_AMMO = 3, SG_AMMO_MAX = 9, SG_STUN = 3000, SG_DOWN = 20000;
-const inSiege = (x, z) => !!S.siege && x >= SG.x0 + 0.8 && x <= SG.x1 - 0.8 && z >= SG.z0 + 0.8 && z <= SG.z1 - 0.8;
+const SG_SITES = [
+  { k: 'fort', name: '산성', icon: '🏯', x: 520, z: 98, pts: 2, res: null, desc: '3초마다 2점 · 투석기' },
+  { k: 'mine', name: '철광산', icon: '⛏️', x: 544, z: 76, pts: 1, res: 'i', desc: '⛓️ 철 +2' },
+  { k: 'farm', name: '곡창', icon: '🌾', x: 496, z: 76, pts: 1, res: 'f', desc: '🍚 군량 +2 · 다쳐도 빨리 일어나요' },
+  { k: 'ferry', name: '나루터', icon: '⛵', x: 544, z: 122, pts: 1, res: 'w', desc: '🪵 목재 +2 · 빨리 달려요' },
+  { k: 'beacon', name: '봉수대', icon: '🔥', x: 496, z: 122, pts: 1, res: null, desc: '1점 · 거점을 빨리 차지해요' },
+];
+const SG_SITE = Object.fromEntries(SG_SITES.map(s => [s.k, s]));
+const SG_ZONE = 5.5, SG_HURT = 8000, SG_HURT_FAST = 4500, SG_SAFE = 3000, SG_DOWN = 25000, SG_CAT_CD = 20000, SG_FINAL = 60000;
+const SG_LV_HP = (max, lv) => max + (lv - 1) * 25;
+const RES_ICON = { w: '🪵', i: '⛓️', f: '🍚' }, RES_NAME = { w: '목재', i: '철', f: '군량' };
+const inSiege = (x, z) => !!S.siege && x >= SG.x0 + 0.8 && x <= SG.x1 - 0.8 && z >= SG.z0 + 0.8 && z <= SG.z1 - 0.8 && !sgInStream(x, z);
+const sgInStream = (x, z) => { const d = Math.hypot(x - SG.cx, z - SG.cz); if (d < 10.2 || d > 12.2) return false; const a = Math.abs(Math.atan2(z - SG.cz, x - SG.cx)) % (Math.PI / 2); return !(a < 0.2 || a > Math.PI / 2 - 0.2); }; // 산성 둘레 개울 (다리 4개만 건너요)
 const siegeRegion = () => joined && player.pos.x > SG.x0 - 5 && player.pos.x < SG.x1 + 5 && player.pos.z > SG.z0 - 4;
 const sgSet = () => SIEGE_SETS[S.siege?.set] || SIEGE_SETS.three;
+const sgWeap = () => WEAPONS[sgSet().weap] || WEAPONS.bow;
 const sgTeamOf = (u) => S.siege?.team?.[u] || 0;
 const sgMine = () => sgTeamOf(backend?.uid);
+const sgRoleOf = (u) => S.siege?.role?.[u] || 'sol';
+const sgMyRole = () => sgRoleOf(backend?.uid);
 const sgLeft = () => S.siege ? Math.max(0, Math.ceil((S.siege.end - backend.now()) / 1000)) : 0;
 const sgStarted = () => !!S.siege && backend.now() >= S.siege.at;
-const sgStunned = (u) => { const t = S.siege?.stun?.[u]; return !!t && backend.now() - t < SG_STUN; };
-const sgw = { field: null, castles: {}, key: '', lastR: '', ended: '', ammo: SG_AMMO, hold: false, pow: 0, dir: 1, cool: 0, balls: [], mark: null, boxes: [], stunT: 0, stunPos: null, shots: {}, assign: {}, count: 0, hud: '', listKey: '', busy: {}, spots: [] };
+const sgFinal = () => !!S.siege?.on && S.siege.end - backend.now() < SG_FINAL && backend.now() < S.siege.end;
+const sgOwns = (t, k) => (S.siege?.own?.[k] || 0) === t;
+const sgHurtDur = (u) => sgOwns(sgTeamOf(u), 'farm') ? SG_HURT_FAST : SG_HURT;
+const sgHurt = (u) => { const t = S.siege?.hurt?.[u]; return !!t && backend.now() - t < sgHurtDur(u) + 1500; };
+const sgSafe = (u) => backend.now() - (S.siege?.safe?.[u] || 0) < SG_SAFE;
+const sgBuff = (t, k) => (S.siege?.buff?.[t]?.[k] || 0) > backend.now();
+const sgRes = (t) => S.siege?.res?.[t] || {};
+const sgLv = (t) => S.siege?.lv?.[t] || 1;
+const sgMax = (t) => SG_LV_HP(S.siege?.max || 30, sgLv(t));
+const sgHp = (t) => S.siege?.hp?.[t] ?? sgMax(t);
+const sgSpeedMul = () => (S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? 0.15 : 0) + (sgBuff(sgMine(), 'horn') ? 0.2 : 0) : 1;
+const sgFrozen = () => !!S.siege && siegeRegion() && sgMine() && sgHurt(backend.uid);
+const sgw = { field: null, castles: {}, key: '', lastR: '', ended: '', cool: 0, balls: [], boxes: [], sites: {}, bars: {}, barKey: '', shots: {}, fxSeen: {}, assign: {}, tick: 0, slow: 0, hud: '', listKey: '', busy: {}, spots: [], hurtT: 0, hurtPos: null, wasHurt: false, catObjs: {}, roleAsked: '', finalTold: '' };
 function sgWinner() { // 0 진행 중 · 1~4 이긴 나라 · 9 비김
   const s = S.siege; if (!s) return 0; if (s.win) return s.win;
   if (backend.now() < s.end) return 0;
   let best = -1, w = 9; for (let t = 1; t <= s.n; t++) { const v = s.score?.[t] || 0; if (v > best) { best = v; w = t; } else if (v === best) w = 9; }
   return w;
 }
+function sgLagging() { const s = S.siege; if (!s) return 0; let lo = Infinity, who = 0, tie = false; for (let t = 1; t <= s.n; t++) { const v = s.score?.[t] || 0; if (v < lo) { lo = v; who = t; tie = false; } else if (v === lo) tie = true; } return tie ? 0 : who; }
+function castleAt(t) { const L = SG_LAYOUT[S.siege?.n || 2]?.[t - 1]; return L ? { x: L[0], z: L[1], a: L[2] } : null; }
+const castleLocal = (t, lx, lz) => { const c = castleAt(t); return [c.x + Math.sin(c.a) * lz + Math.cos(c.a) * lx, c.z + Math.cos(c.a) * lz - Math.sin(c.a) * lx]; };
+
+// ---------- 전쟁터 · 거점 만들기 ----------
+function catapultModel(parent, col) { // 투석기: 나무 틀 + 흔들리는 팔(이름 있는 무리)
+  const g = new THREE.Group(); parent.add(g); const o = { solid: false };
+  for (const s of [-1, 1]) { box(g, 0.25, 0.3, 3.2, 0x7A5436, s * 0.9, 0.35, 0, o); box(g, 0.22, 1.9, 0.22, 0x7A5436, s * 0.9, 1.3, -0.3, { solid: false, rx: 0.15 }); }
+  for (const z of [-1.2, 1.2]) box(g, 2.0, 0.22, 0.22, 0x7A5436, 0, 0.45, z, o);
+  for (const [x, z] of [[-1, -1.2], [1, -1.2], [-1, 1.2], [1, 1.2]]) cyl(g, 0.32, 0.18, 0x5A3E26, x * 1.05, 0.32, z, { solid: false, rz: Math.PI / 2 });
+  cyl(g, 0.1, 2.0, 0x6B4A30, 0, 2.15, -0.3, { solid: false, rz: Math.PI / 2 });
+  const arm = new THREE.Group(); arm.name = 'catArm'; arm.position.set(0, 2.15, -0.3); arm.rotation.x = 0.9; g.add(arm);
+  box(arm, 0.18, 0.18, 3.4, 0x8A5A34, 0, 0, 0.6, o); box(arm, 0.6, 0.25, 0.6, 0x5A3E26, 0, 0.1, 2.2, o); mesh(SPH_LO, arm, 0.28, 0.25, 0.28, 0x8A8478, 0, 0.35, 2.2, { solid: false, flat: true });
+  box(arm, 0.8, 0.8, 0.8, 0x6E6A60, 0, -0.3, -1.0, o); // 무게 돌
+  if (col) box(g, 2.1, 0.08, 0.5, col, 0, 0.62, 1.45, o);
+  box(g, 2.2, 1.0, 3.2, 0x7A5436, 0, 0.5, 0).visible = false;
+  return { g, arm };
+}
 function buildSiegeField() {
   const g = new THREE.Group(); g.name = 'SiegeField'; scene.add(g); sgw.field = g;
   const o = { solid: false };
-  box(g, SG.x1 - SG.x0, 0.06, SG.z1 - SG.z0, 0xA8B878, SG.cx, 0.01, SG.cz, o);                       // 전쟁터 풀밭
-  for (let i = 0; i < 40; i++) { const x = SG.x0 + 4 + ((i * 37) % 84), z = SG.z0 + 4 + ((i * 53) % 84); mesh(SPH_LO, g, 1.4, 0.06, 1.0, 0x98A868, x, 0.05, z, { solid: false, flat: true }); }
+  box(g, SG.x1 - SG.x0, 0.06, SG.z1 - SG.z0, 0x9FB872, SG.cx, 0.01, SG.cz, { solid: false, surf: 'soil' });   // 전쟁터 땅
+  lawnPlane(g, SG.x1 - SG.x0 - 2, SG.z1 - SG.z0 - 2, SG.cx, SG.cz, 0x9AC46A, 0.045);
   for (const [x0, z0, x1, z1] of [[SG.x0, SG.z0, SG.x1, SG.z0], [SG.x0, SG.z1, SG.x1, SG.z1], [SG.x0, SG.z0, SG.x0, SG.z1], [SG.x1, SG.z0, SG.x1, SG.z1]]) { // 나무 울타리
-    const len = Math.hypot(x1 - x0, z1 - z0), along = x1 !== x0; box(g, along ? len : 0.5, 1.4, along ? 0.5 : len, 0x8A6A44, (x0 + x1) / 2, 0.7, (z0 + z1) / 2);
-    for (let t = 0; t <= len; t += 2) cyl(g, 0.14, 1.9, 0x7A5A36, x0 + (x1 - x0) * t / len, 0.95, z0 + (z1 - z0) * t / len, o);
+    const len = Math.hypot(x1 - x0, z1 - z0), along = x1 !== x0; box(g, along ? len : 0.5, 1.4, along ? 0.5 : len, 0x8A6A44, (x0 + x1) / 2, 0.7, (z0 + z1) / 2).visible = false;
+    for (let t = 0; t <= len; t += 1.1) { cyl(g, 0.14, 1.7, 0x7A5A36, x0 + (x1 - x0) * t / len, 0.85, z0 + (z1 - z0) * t / len, o); }
+    box(g, along ? len : 0.12, 0.12, along ? 0.12 : len, 0x7A5A36, (x0 + x1) / 2, 1.2, (z0 + z1) / 2, o);
   }
-  for (const [x, z, k] of [[520, 98, 0], [506, 88, 1], [534, 108, 1], [534, 88, 2], [506, 108, 2], [498, 74, 1], [542, 122, 1], [496, 124, 2], [544, 74, 2]]) { // 가운데 숨을 곳 (짚단·바위·나무)
-    if (k === 0) { for (const [dx, dz] of [[-1.6, 0], [1.6, 0], [0, 0]]) cyl(g, 0.9, 1.5, 0xE0C068, x + dx, 0.8, z + dz * 1, { rz: Math.PI / 2 }); }
-    else if (k === 1) { mesh(SPH_MID, g, 2.0, 1.6, 1.7, 0x8F8A80, x, 0.7, z, { solid: false, flat: true }); box(g, 2.8, 1.6, 2.4, 0x8F8A80, x, 0.8, z).visible = false; }
-    else { mesh(TAPER, g, 0.4, 3, 0.4, 0x6B4A30, x, 1.5, z); mesh(SPH_MID, g, 2.2, 1.8, 2.2, 0x4E8E44, x, 3.6, z, { solid: false, flat: true }); }
+  // 🏯 산성: 두 단 언덕 + 돌담 + 개울과 다리 4개
+  { const { cx, cz } = SG;
+    cyl(g, 8.6, 0.42, 0x9A8A6A, cx, 0.21, cz, { surf: 'soil' }); cyl(g, 6.2, 0.42, 0xA89A7A, cx, 0.63, cz, { surf: 'soil' });
+    for (let k = 0; k < 28; k++) { const a = k / 28 * Math.PI * 2; if (Math.abs(Math.sin(a * 2)) < 0.22) continue; box(g, 1.5, 1.1, 0.9, 0xA8A294, cx + Math.cos(a) * 5.7, 1.39, cz + Math.sin(a) * 5.7, { solid: false, ry: -a + Math.PI / 2 }); }
+    const water = new THREE.Mesh(new THREE.RingGeometry(10.2, 12.2, 64), waterize(new THREE.MeshStandardMaterial({ color: 0x3E8FD6 }))); water.rotation.x = -Math.PI / 2; water.position.set(cx, 0.06, cz); g.add(water);
+    for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2; for (const r of [9.9, 12.5]) mesh(SPH_LO, g, 0.45, 0.25, 0.45, 0xA8A294, cx + Math.cos(a) * r, 0.1, cz + Math.sin(a) * r, { solid: false, flat: true }); }
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2, bx = cx + Math.cos(a) * 11.2, bz = cz + Math.sin(a) * 11.2, along = k % 2 === 0; // 나무다리
+      box(g, along ? 3.4 : 2.6, 0.18, along ? 2.6 : 3.4, 0x9C6A3E, bx, 0.18, bz, o); for (const s of [-1, 1]) box(g, along ? 3.4 : 0.12, 0.6, along ? 0.12 : 3.4, 0x7A5436, bx + (along ? 0 : s * 1.3), 0.55, bz + (along ? s * 1.3 : 0), o); }
   }
-  makeLabel(g, ['⚔️ 성 공방전', '선생님이 시작하면 열려요'], 1.4, SG.cx, 6, SG.z0 + 2);
+  // ⛏️ 철광산: 바위 언덕 + 굴 + 광석 더미 + 수레
+  { const s = SG_SITE.mine; for (const [dx, dz, r] of [[0, -3.6, 3.2], [-2.8, -2.6, 2.2], [2.9, -2.8, 2.4], [1.2, -4.8, 2]]) mesh(SPH_MID, g, r, r * 0.8, r * 0.9, 0x8A8274, s.x + dx, r * 0.35, s.z + dz, { solid: false, flat: true });
+    box(g, 7, 2.6, 3.6, 0x8A8274, s.x, 1.3, s.z - 4).visible = false; mesh(SPH_MID, g, 1.1, 1.3, 0.5, 0x1E1915, s.x, 0.7, s.z - 2.2, { solid: false });
+    for (let k = 0; k < 7; k++) mesh(SPH_LO, g, 0.3, 0.25, 0.3, k % 2 ? 0x5A6878 : 0x9AA8B8, s.x + 2.5 + (k % 3) * 0.4, 0.2 + Math.floor(k / 3) * 0.2, s.z + 0.5 + (k % 2) * 0.4, { solid: false, flat: true });
+    box(g, 1.2, 0.6, 0.8, 0x7A5436, s.x - 2.6, 0.55, s.z + 0.6, o); for (const dz of [0.2, 1]) cyl(g, 0.25, 0.12, 0x3B3530, s.x - 2.6, 0.25, s.z + dz, { solid: false, rx: 0, rz: Math.PI / 2 }); }
+  // 🌾 곡창: 논 + 높은 곳간
+  { const s = SG_SITE.farm; for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { const px = s.x - 3.5 + c * 7, pz = s.z - 4 + r * 3; if (Math.hypot(px - s.x, pz - s.z) < 3) continue; box(g, 3, 0.05, 2.4, 0x6AA0C0, px, 0.04, pz, { solid: false, surf: null }); for (let k = 0; k < 18; k++) mesh(CONE, g, 0.07, 0.5, 0.07, 0x9AC050, px - 1.2 + (k % 6) * 0.48, 0.28, pz - 0.8 + Math.floor(k / 6) * 0.8, o); }
+    const gx = s.x, gz = s.z - 4.5; for (const [dx, dz] of [[-1.2, -0.9], [1.2, -0.9], [-1.2, 0.9], [1.2, 0.9]]) box(g, 0.25, 1.2, 0.25, 0x7A5436, gx + dx, 0.6, gz + dz); box(g, 3, 1.6, 2.2, 0xC8A878, gx, 2.0, gz, { surf: 'wood' }); mesh(SPH, g, 2.2, 1.0, 1.7, HANOK.thatch, gx, 2.8, gz, { solid: false, surf: 'straw' }); }
+  // ⛵ 나루터: 짧은 강 + 나루 + 배
+  { const s = SG_SITE.ferry, w = new THREE.Mesh(new THREE.PlaneGeometry(12, 4), waterize(new THREE.MeshStandardMaterial({ color: 0x3E8FD6 }))); w.rotation.x = -Math.PI / 2; w.position.set(s.x + 1, 0.06, s.z + 5.5); g.add(w);
+    box(g, 12, 1, 4, 0x3E8FD6, s.x + 1, 0.5, s.z + 5.5).visible = false; box(g, 2.2, 0.2, 3, 0x9C6A3E, s.x - 1, 0.25, s.z + 4.6, { surf: 'wood' });
+    { const b = new THREE.Group(); b.position.set(s.x + 3, 0.1, s.z + 5.6); b.rotation.y = 0.3; g.add(b); mesh(SPH_LO, b, 0.9, 0.35, 2.4, 0x8A5A34, 0, 0.1, 0, { solid: false }); box(b, 1.4, 0.08, 4, 0x6B4A30, 0, 0.35, 0, o); cyl(b, 0.05, 2.2, 0x8A5A34, 0, 1.4, 0.4, o); } }
+  // 🔥 봉수대: 돌탑 + 불 그릇
+  { const s = SG_SITE.beacon, bx = s.x - 3, bz = s.z + 3; cyl(g, 1.3, 1.2, 0xA8A294, bx, 0.6, bz); cyl(g, 1.0, 1.2, 0xB0AA9C, bx, 1.8, bz); cyl(g, 0.8, 0.5, 0x6E6A60, bx, 2.65, bz, o);
+    const f = flame(g, bx, 2.9, bz, 1.2); f.visible = false; sgw.beaconFire = f; }
   registerSolids(g, 'siegeField'); batchStatic(g);
-  g.visible = false;
-  sgw.mark = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.75, 28), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.85, depthWrite: false })); sgw.mark.rotation.x = -Math.PI / 2; sgw.mark.visible = false; scene.add(sgw.mark);
-  // 병영·성문 고치기 자리 (성을 지을 때 위치를 옮겨요)
-  for (let t = 1; t <= 4; t++) {
-    const camp = { pos: new V3(0, -99, 0), r: 2.4, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgStarted() && !sgWinner() ? ['돌 얻기 🏕️', `병영 · 퀴즈 맞히면 🪨 +${SG_AMMO}`] : null, run: () => openSiegeQuiz('ammo') };
-    const fix = { pos: new V3(0, -99, 0), r: 2.4, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgStarted() && !sgWinner() && (S.siege.hp?.[t] || 0) > 0 && (S.siege.hp?.[t] || 0) < S.siege.max ? ['성문 고치기 🔨', `퀴즈 맞히면 성문 +${SG_FIX}`] : null, run: () => openSiegeQuiz('fix') };
-    addInteract(camp); addInteract(fix); sgw.spots[t] = { camp, fix };
+  // 산성 투석기 (주인 나라만 써요)
+  { const c = catapultModel(scene, null); c.g.position.set(SG.cx + 2.6, 0.84, SG.cz - 1.5); c.g.rotation.y = 0; sgw.catObjs.fort = c; registerSolids(c.g, 'siegeField'); }
+  // 거점 깃발 + 동그라미 + 이름
+  for (const s of SG_SITES) {
+    const y0 = s.k === 'fort' ? 0.86 : 0.06;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(SG_ZONE - 0.35, SG_ZONE, 48), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.7, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(s.x, y0 + 0.03, s.z); scene.add(ring);
+    const pole = cyl(scene, 0.07, 5, 0xEEEEEE, s.x, y0 + 2.5, s.z, { solid: false, surf: null });
+    const flag = new THREE.Group(); flag.name = 'sgSiteFlag'; flag.position.set(s.x, y0 + 1, s.z); scene.add(flag);
+    const cloth = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.0), new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, roughness: 0.8 })); cloth.position.x = 0.82; flag.add(cloth);
+    const label = makeLabel(scene, [''], 0.9, s.x, y0 + 6.2, s.z, { bg: '#FFFFFF', fg: '#3B2F2A', font: 46, pad: 8 });
+    sgw.sites[s.k] = { s, ring, pole, flag, cloth, label, y0, txt: '' };
   }
+  for (let t = 1; t <= 4; t++) { // 성마다: 창고 · 성문 수리 · 투석기 자리 (성을 지을 때 위치를 옮겨요)
+    const camp = { pos: new V3(0, -99, 0), r: 2.6, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgStarted() && !sgWinner() ? ['나라 창고 🏛️', '문제 보급 · 역할 · 공사·계책'] : null, run: () => openSgStore() };
+    const fix = { pos: new V3(0, -99, 0), r: 2.6, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgMyRole() === 'eng' && sgStarted() && !sgWinner() && sgHp(t) > 0 && sgHp(t) < sgMax(t) ? ['성문 고치기 🔨', `공병 · 성문 +4 (${sgHp(t)}/${sgMax(t)})`] : null, run: () => sgRepair(t) };
+    const cat = { pos: new V3(0, -99, 0), r: 2.8, dy: 3, text: () => sgCatText('c' + t, t), run: () => sgFireCat('c' + t) };
+    addInteract(camp); addInteract(fix); addInteract(cat); sgw.spots[t] = { camp, fix, cat };
+  }
+  addInteract({ pos: new V3(SG.cx + 2.6, 1.8, SG.cz - 1.5), r: 3, dy: 3, text: () => sgCatText('fort', S.siege?.own?.fort || 0), run: () => sgFireCat('fort') });
+  sgw.healIt = addInteract({ pos: new V3(0, -99, 0), r: 2.4, dy: 3, text: () => sgw.healTarget ? ['치료하기 🌿', '쓰러진 우리 친구를 일으켜요'] : null, run: () => sgHeal() });
+  g.visible = false;
 }
-function castleAt(t) { const L = SG_LAYOUT[S.siege?.n || 2][t - 1]; return L ? { x: L[0], z: L[1], a: L[2] } : null; }
-const castleLocal = (t, lx, lz) => { const c = castleAt(t); return [c.x + Math.sin(c.a) * lz + Math.cos(c.a) * lx, c.z + Math.cos(c.a) * lz - Math.sin(c.a) * lx]; };
 function buildCastles() {
-  for (const c of Object.values(sgw.castles)) { scene.remove(c.g); scene.remove(c.door); scene.remove(c.rubble); removeColliders('sgd' + c.t); }
+  for (const c of Object.values(sgw.castles)) { scene.remove(c.g); scene.remove(c.door); scene.remove(c.rubble); scene.remove(c.hpLabel); scene.remove(c.cat.g); removeColliders('sgd' + c.t); }
   removeColliders('siege'); sgw.castles = {}; sgw.boxes = [];
   const s = S.siege; if (!s) { sgw.key = ''; return; }
-  const set = sgSet(), wood = set.wall === 'wood', o = { solid: false };
+  const set = sgSet(), o = { solid: false };
   for (let t = 1; t <= s.n; t++) {
-    const N = set.nat[t - 1], c = castleAt(t), g = new THREE.Group(); g.position.set(c.x, 0, c.z); g.rotation.y = c.a; scene.add(g);
-    const H = wood ? 2.8 : 3.2, half = 6, wc = wood ? 0x8A6A44 : 0xA8A294, wc2 = wood ? 0x7A5A36 : 0x96907F;
-    const seg = (x0, z0, x1, z1) => { // 벽 한 토막
+    const N = set.nat[t - 1], c = castleAt(t), lv = sgLv(t), g = new THREE.Group(); g.position.set(c.x, 0, c.z); g.rotation.y = c.a; scene.add(g);
+    const wood = lv === 1, earth = lv === 2, H = wood ? 2.8 : earth ? 3.1 : 3.6, half = 6;
+    const wc = wood ? 0x8A6A44 : earth ? 0xB89A6E : 0xA8A294, wc2 = wood ? 0x7A5A36 : earth ? 0xA08458 : 0x96907F;
+    const seg = (x0, z0, x1, z1) => {
       const len = Math.hypot(x1 - x0, z1 - z0), along = x1 !== x0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-      if (wood) { box(g, along ? len : 0.7, H, along ? 0.7 : len, wc, cx, H / 2, cz).visible = false; for (let k = 0; k <= len / 0.5; k++) { const x = x0 + (x1 - x0) * k / (len / 0.5), z = z0 + (z1 - z0) * k / (len / 0.5); cyl(g, 0.24, H, k % 2 ? wc : wc2, x, H / 2, z, o); mesh(CONE, g, 0.25, 0.5, 0.25, wc2, x, H + 0.25, z, { solid: false, flat: true }); } }
-      else { const w = box(g, along ? len : 1, H, along ? 1 : len, wc, cx, H / 2, cz); w.material = brickMat('#B4AE9E', '#7E786A', 6, 'castle'); for (let k = 0.5; k < len; k += 1.2) box(g, along ? 0.6 : 1.1, 0.5, along ? 1.1 : 0.6, wc2, along ? x0 + (x1 - x0) * k / len : cx, H + 0.25, along ? cz : z0 + (z1 - z0) * k / len, o); }
+      if (wood) { box(g, along ? len : 0.7, H, along ? 0.7 : len, wc, cx, H / 2, cz).visible = false; for (let k = 0; k <= len / 0.5; k++) { const x = x0 + (x1 - x0) * k / (len / 0.5), z = z0 + (z1 - z0) * k / (len / 0.5); cyl(g, 0.24, H, k % 2 ? wc : wc2, x, H / 2, z, { solid: false, surf: 'bark' }); mesh(CONE, g, 0.25, 0.5, 0.25, wc2, x, H + 0.25, z, { solid: false, surf: 'bark' }); } }
+      else { box(g, along ? len : 1.1, H, along ? 1.1 : len, wc, cx, H / 2, cz, { surf: earth ? 'soil' : 'stone' }); if (!earth) for (let k = 0.5; k < len; k += 1.2) box(g, along ? 0.6 : 1.2, 0.5, along ? 1.2 : 0.6, wc2, along ? x0 + (x1 - x0) * k / len : cx, H + 0.25, along ? cz : z0 + (z1 - z0) * k / len, { solid: false, surf: 'stone' }); else box(g, along ? len : 1.3, 0.25, along ? 1.3 : len, 0x8A6A44, cx, H + 0.12, cz, { solid: false, surf: 'wood' }); }
     };
-    seg(-half, half, -1.8, half); seg(1.8, half, half, half);                                            // 앞 (가운데 성문)
-    seg(-half, -half, half, -half);                                                                     // 뒤
-    for (const sx of [-half, half]) { seg(sx, -half, sx, -1); seg(sx, 1, sx, half); }                    // 옆 (가운데 쪽문)
+    seg(-half, half, -1.8, half); seg(1.8, half, half, half); seg(-half, -half, half, -half);
+    for (const sx of [-half, half]) { seg(sx, -half, sx, -1); seg(sx, 1, sx, half); }
     for (const sx of [-half, half]) for (const sz of [-half, half]) { // 망루
-      if (wood) { for (const [dx, dz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) cyl(g, 0.14, 4.2, wc2, sx + dx, 2.1, sz + dz, o); box(g, 2, 0.2, 2, wc, sx, 3.6, sz, o); mesh(CONE, g, 1.6, 1.4, 1.6, 0xC9A65E, sx, 4.9, sz, { solid: false, flat: true }); box(g, 1.8, 4, 1.8, wc, sx, 2, sz).visible = false; }
-      else { box(g, 2.2, H + 1.6, 2.2, wc, sx, (H + 1.6) / 2, sz).material = brickMat('#B4AE9E', '#7E786A', 6, 'castle'); mesh(PYR, g, 2.8, 1.3, 2.8, N.col, sx, H + 2.25, sz, { solid: false, flat: true }); }
+      if (wood) { for (const [dx, dz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) cyl(g, 0.14, 4.2, wc2, sx + dx, 2.1, sz + dz, { solid: false, surf: 'bark' }); box(g, 2, 0.2, 2, wc, sx, 3.6, sz, { solid: false, surf: 'wood' }); mesh(CONE, g, 1.6, 1.4, 1.6, 0xC9A65E, sx, 4.9, sz, { solid: false, surf: 'straw' }); box(g, 1.8, 4, 1.8, wc, sx, 2, sz).visible = false; }
+      else { box(g, 2.3, H + 1.6, 2.3, wc, sx, (H + 1.6) / 2, sz, { surf: earth ? 'soil' : 'stone' }); const rg = new THREE.Group(); rg.position.set(sx, 0, sz); g.add(rg); giwaRoof(rg, 1.4, 1.4, H + 1.7, earth ? 0x6A5A4A : 0x4E5864); }
     }
-    for (const s2 of [-1, 1]) box(g, 1.0, H + 1.4, 1.4, wood ? wc2 : 0x9A9486, s2 * 2.3, (H + 1.4) / 2, half);   // 성문 기둥
-    box(g, 5.6, 0.9, 1.6, wood ? wc2 : 0x9A9486, 0, H + 1.0, half, o); mesh(GABLE, g, 5.2, 1.1, 2.0, wood ? 0xC9A65E : N.col, 0, H + 2.0, half, { solid: false, ry: Math.PI / 2 });
+    for (const s2 of [-1, 1]) box(g, 1.0, H + 1.4, 1.4, wood ? wc2 : 0x9A9486, s2 * 2.3, (H + 1.4) / 2, half, { surf: wood ? 'bark' : 'stone' });   // 성문 기둥
+    box(g, 5.6, 0.9, 1.6, wood ? wc2 : 0x9A9486, 0, H + 1.0, half, { solid: false, surf: wood ? 'wood' : 'stone' });
+    if (wood) mesh(GABLE, g, 5.2, 1.1, 2.0, 0xC9A65E, 0, H + 1.45, half, { solid: false, ry: Math.PI / 2, surf: 'straw' }); else { const rg = new THREE.Group(); rg.position.set(0, 0, half); g.add(rg); giwaRoof(rg, 4.2, 1.2, H + 1.45, 0x4E5864); } // 문루
     const sgn = signPlane(g, [`${N.icon} ${N.name}`], 3.4, 0.8, 0, H + 0.95, half + 0.82, { font: 56, pad: 4, fg: '#FFFFFF', bg: '#' + new THREE.Color(N.col).getHexString(), stroke: false }); sgn.rotation.y = 0;
-    // 안쪽: 깃대 · 병영 (돌 무더기)
-    cyl(g, 0.08, 5.2, 0xEEEEEE, 0, 2.6, -2.8, o);
-    const flag = new THREE.Group(); flag.name = 'sgFlag'; flag.position.set(0, 4.6, -2.8); g.add(flag); box(flag, 1.8, 1.1, 0.05, N.col, 0.95, 0, 0, o);
-    box(g, 2.4, 0.8, 1.2, 0x8A5A34, -3, 0.4, -3.2); for (let k = 0; k < 7; k++) mesh(SPH_LO, g, 0.26, 0.22, 0.26, 0x8A8478, -3.9 + (k % 4) * 0.55, 0.95 + Math.floor(k / 4) * 0.22, -3.2 + (k % 2) * 0.2, { solid: false, flat: true });
-    mesh(GABLE, g, 3.4, 1.4, 2.4, 0xE8DCC0, -3, 2.6, -3.2, { solid: false, ry: Math.PI / 2 }); for (const dx of [-1.5, 1.5]) for (const dz of [-1, 1]) cyl(g, 0.06, 2, 0x8A6A44, -3 + dx, 1, -3.2 + dz, o);
-    makeLabel(g, ['🏕️ 병영'], 0.7, -3, 3.8, -3.2, { stroke: false, pad: 4, font: 56 });
+    for (const sx of [-2.3, 2.3]) { const bn = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 1.8), new THREE.MeshStandardMaterial({ color: N.col, side: THREE.DoubleSide })); bn.position.set(sx, H + 2.4, half + 0.75); g.add(bn); cyl(g, 0.04, 2.4, 0xEEEEEE, sx - 0.38, H + 2.4, half + 0.75, { solid: false, surf: null }); } // 깃발
+    cyl(g, 0.08, 5.2, 0xEEEEEE, 0, 2.6, -2.8, { solid: false, surf: null });
+    const flag = new THREE.Group(); flag.name = 'sgFlag'; flag.position.set(0, 4.6, -2.8); g.add(flag); box(flag, 1.8, 1.1, 0.05, N.col, 0.95, 0, 0, { solid: false, surf: null });
+    // 창고 (곳간)
+    box(g, 2.6, 1.4, 1.8, 0xC8A878, -3, 0.7, -3.4, { surf: 'wood' }); mesh(GABLE, g, 3.2, 1.0, 2.2, 0x6A5A4A, -3, 1.4, -3.4, { solid: false, ry: Math.PI / 2 });
+    for (let k = 0; k < 3; k++) cyl(g, 0.28, 0.5, 0xC9A65E, -4 + k * 0.7, 0.25, -2.2, { solid: false, surf: 'straw' });
+    makeLabel(g, ['🏛️ 나라 창고'], 0.7, -3, 3.3, -3.4, { stroke: false, pad: 4, font: 56 });
     g.updateMatrixWorld(true);
     g.traverse(m => { if (m.isMesh && m.userData.solid) sgw.boxes.push(new THREE.Box3().setFromObject(m)); });
     registerSolids(g, 'siege'); batchStatic(g);
     // 성문 (부서지면 숨겨요)
     const door = new THREE.Group(); door.name = 'sgDoor'; door.position.copy(g.position); door.rotation.y = c.a; scene.add(door);
-    for (const s2 of [-1, 1]) { box(door, 1.75, H - 0.1, 0.35, 0x7A4A2A, s2 * 0.9, (H - 0.1) / 2, half, o); for (let r = 0; r < 3; r++) for (let q = 0; q < 2; q++) ball(door, 0.07, 0x3A3530, s2 * 0.9 + (q - 0.5) * 0.8, 0.6 + r * 0.9, half + 0.2, o); box(door, 1.75, 0.16, 0.38, N.col, s2 * 0.9, H * 0.55, half, o); }
+    for (const s2 of [-1, 1]) { box(door, 1.75, H - 0.1, 0.35, 0x7A4A2A, s2 * 0.9, (H - 0.1) / 2, half, { solid: false, surf: 'wood' }); for (let r = 0; r < 3; r++) for (let q = 0; q < 2; q++) ball(door, 0.07, 0x3A3530, s2 * 0.9 + (q - 0.5) * 0.8, 0.6 + r * 0.9, half + 0.2, { solid: false, surf: null }); box(door, 1.75, 0.16, 0.38, N.col, s2 * 0.9, H * 0.55, half, { solid: false, surf: null }); }
     const col = new THREE.Group(); door.add(col); box(col, 3.6, H, 0.6, 0x7A4A2A, 0, H / 2, half).visible = false;
     door.updateMatrixWorld(true);
     const hit = new THREE.Box3().setFromObject(col.children[0]).expandByScalar(0.3);
     const rubble = new THREE.Group(); rubble.name = 'sgRubble'; rubble.position.copy(g.position); rubble.rotation.y = c.a; scene.add(rubble); rubble.visible = false;
     for (let k = 0; k < 6; k++) box(rubble, 0.9 + (k % 3) * 0.3, 0.18, 0.4, 0x6A3E22, (k - 2.5) * 0.55, 0.12 + (k % 2) * 0.1, half + 0.6 + (k % 3) * 0.3, { solid: false, ry: k * 0.7, rz: (k % 2 - 0.5) * 0.3 });
-    const hp = makeLabel(scene, [''], 0.8, ...(() => { const [x, z] = castleLocal(t, 0, half + 0.5); return [x, H + 3.4, z]; })(), { bg: '#FFFFFF', fg: '#3B2F2A', font: 48, pad: 8 });
-    sgw.castles[t] = { t, g, door, col, rubble, hit, hpLabel: hp, flag, open: false, N, H };
-    const [cx2, cz2] = castleLocal(t, -3, -1.7), [fx, fz] = castleLocal(t, 0, half - 1.6);
-    sgw.spots[t].camp.pos.set(cx2, 1, cz2); sgw.spots[t].fix.pos.set(fx, 1, fz);
-    setDoor(t, (s.hp?.[t] ?? s.max) > 0);
+    const [hx, hz] = castleLocal(t, 0, half + 0.5), hp = makeLabel(scene, [''], 0.8, hx, H + 3.6, hz, { bg: '#FFFFFF', fg: '#3B2F2A', font: 48, pad: 8 });
+    // 성 안 투석기
+    const cat = catapultModel(scene, N.col), [qx, qz] = castleLocal(t, 3, -1.5); cat.g.position.set(qx, 0, qz); cat.g.rotation.y = c.a; registerSolids(cat.g, 'siege');
+    sgw.castles[t] = { t, g, door, col, rubble, hit, hpLabel: hp, flag, open: false, N, H, cat };
+    const [cx2, cz2] = castleLocal(t, -3, -1.8), [fx, fz] = castleLocal(t, 0, half - 1.6);
+    sgw.spots[t].camp.pos.set(cx2, 1, cz2); sgw.spots[t].fix.pos.set(fx, 1, fz); sgw.spots[t].cat.pos.set(qx, 1.6, qz);
+    setDoor(t, sgHp(t) > 0);
   }
-  for (let t = s.n + 1; t <= 4; t++) { sgw.spots[t].camp.pos.set(0, -99, 0); sgw.spots[t].fix.pos.set(0, -99, 0); }
-  sgw.key = `${s.r}|${s.set}|${s.n}`;
+  for (let t = s.n + 1; t <= 4; t++) for (const k of ['camp', 'fix', 'cat']) sgw.spots[t][k].pos.set(0, -99, 0);
+  sgw.key = sgCastleKey();
 }
+const sgCastleKey = () => { const s = S.siege; return s ? `${s.r}|${s.set}|${s.n}|${[1, 2, 3, 4].map(t => s.lv?.[t] || 1).join('')}` : ''; };
 function setDoor(t, closed) {
   const c = sgw.castles[t]; if (!c) return;
   if (closed === !c.open && c.inited) return;
   c.inited = true; c.open = !closed; c.door.visible = closed; c.rubble.visible = !closed;
   if (closed) registerSolids(c.col, 'sgd' + t); else removeColliders('sgd' + t);
 }
-function setSgLook(a, t, stun) { // 나라 조끼 + 머리 위 나라 표시 (맞으면 💫)
-  const key = t ? `${S.siege?.set}|${t}|${stun ? 1 : 0}` : '';
+function syncBars() { // 🪵 목책 (공병이 세워요)
+  const bars = S.siege?.bar || {}, key = JSON.stringify(Object.entries(bars).map(([k, b]) => [k, b?.x, b?.z, b?.hp > 0]));
+  if (key === sgw.barKey) return; sgw.barKey = key;
+  for (const [k, b] of Object.entries(sgw.bars)) { if (bars[k]?.hp > 0 && bars[k].x === b.x && bars[k].z === b.z) continue; scene.remove(b.g); removeColliders('sgbar' + k); delete sgw.bars[k]; }
+  for (const [k, b] of Object.entries(bars)) {
+    if (!b || !(b.hp > 0) || sgw.bars[k]) continue;
+    const t = +k[0], N = sgSet().nat[t - 1], g = new THREE.Group(); g.position.set(b.x, 0, b.z); g.rotation.y = b.r || 0; scene.add(g);
+    for (let i = -3; i <= 3; i++) { cyl(g, 0.16, 1.7, 0x7A5A36, i * 0.42, 0.85, 0, { solid: false, surf: 'bark' }); mesh(CONE, g, 0.17, 0.4, 0.17, 0x6B4A30, i * 0.42, 1.9, 0, { solid: false, surf: 'bark' }); }
+    for (const y of [0.5, 1.3]) box(g, 3.1, 0.12, 0.12, 0x6B4A30, 0, y, 0.18, { solid: false, surf: 'wood' });
+    if (N) box(g, 0.6, 0.4, 0.04, N.col, 0, 1.1, 0.26, { solid: false, surf: null });
+    const col = box(g, 3.1, 1.7, 0.5, 0x7A5A36, 0, 0.85, 0); col.visible = false;
+    g.updateMatrixWorld(true); registerSolids(g, 'sgbar' + k);
+    sgw.bars[k] = { g, x: b.x, z: b.z, box: new THREE.Box3().setFromObject(col).expandByScalar(0.2), t };
+  }
+}
+function setSgLook(a, t, hurt, role) { // 나라 조끼 + 머리 위 나라·역할 (쓰러지면 🤕)
+  const key = t ? `${S.siege?.set}|${t}|${hurt ? 1 : 0}|${role}` : '';
   if ((a.sgKey || '') === key) return;
   if (a.sgObjs) { for (const x of a.sgObjs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } } a.sgObjs = null; }
   a.sgKey = key; if (!t) return;
   const N = sgSet().nat[t - 1]; if (!N) return;
   const o = { solid: false }, objs = [], vest = new THREE.Group(); a.rig.add(vest); objs.push(vest);
   box(vest, 0.84, 0.5, 0.54, N.col, 0, 0.98, 0, o); box(vest, 0.86, 0.1, 0.56, 0xFFFFFF, 0, 1.2, 0, o);
-  objs.push(makeLabel(a.g, [stun ? '💫' : N.icon], 0.5, 0, a.tcode ? 3.95 : 3.3, 0, { stroke: false, pad: 4, font: 80 }));
+  objs.push(makeLabel(a.g, [hurt ? '🤕' : `${N.icon}${SG_ROLES[role]?.icon || ''}`], 0.5, 0, a.tcode ? 3.95 : 3.3, 0, { stroke: false, pad: 4, font: 80 }));
   a.sgObjs = objs;
 }
 function sgSpawn() {
   const t = sgMine(), s = S.siege;
   if (!t || !s) { ctfTeleport(SG.x0 + 2.5, SG.cz, Math.PI / 2); return; } // 선생님(구경)은 옆줄
   const hsh = Math.abs([...String(backend.uid || 'x')].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7));
-  const [x, z] = castleLocal(t, ((hsh % 7) - 3) * 0.7, -0.5 + (hsh % 3) * 0.6), c = castleAt(t);
+  const [x, z] = castleLocal(t, ((hsh % 7) - 3) * 0.7, -0.3 + (hsh % 3) * 0.6), c = castleAt(t);
   ctfTeleport(x, z, c.a);
 }
+// ---------- 맞춰 보기 (상태가 바뀔 때) ----------
 function syncSiege(prev, first) {
   const s = S.siege, p = prev.siege;
-  if (s && `${s.r}|${s.set}|${s.n}` !== sgw.key) buildCastles();
+  if (s && sgCastleKey() !== sgw.key) { const lvUp = p && s.r === p.r && sgw.key; buildCastles(); if (lvUp && siegeRegion()) toast('🧱 성벽을 강화했어요!', 'success'); }
   if (!s && sgw.key) buildCastles();
+  syncBars();
   if (s && s.r !== sgw.lastR) { // 새 전쟁
-    sgw.lastR = s.r; sgw.ended = ''; sgw.ammo = SG_AMMO; sgw.stunT = 0; sgw.shots = { ...(s.shot ? Object.fromEntries(Object.entries(s.shot).map(([u, v]) => [u, v?.t])) : {}) };
+    sgw.lastR = s.r; sgw.ended = ''; sgw.finalTold = ''; sgw.wasHurt = false; sgw.shots = Object.fromEntries(Object.entries(s.shot || {}).map(([u, v]) => [u, v?.t])); sgw.fxSeen = Object.fromEntries(Object.entries(s.fx || {}).map(([u, v]) => [u, v?.t]));
     if (!first || siegeRegion()) {
-      if (!isTeacher && !sgMine() && s.on) { const cnt = {}; for (const v of Object.values(s.team || {})) cnt[v] = (cnt[v] || 0) + 1; let best = 1; for (let t = 1; t <= s.n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; backend.siegeJoin(best); }
-      setTimeout(() => { sgSpawn(); const t = sgMine(), N = sgSet().nat[t - 1]; showBanner(`⚔️ 성 공방전 · ${sgSet().name}`, N ? `나는 ${N.icon} ${N.name}! 🏕️ 병영에서 퀴즈를 맞혀 돌을 얻고, 상대 성문을 맞혀요` : '선생님은 옆줄에서 지켜봐요', 5000); }, first ? 900 : 300);
+      if (!isTeacher && !sgMine() && s.on) { const cnt = {}; for (const v of Object.values(s.team || {})) cnt[v] = (cnt[v] || 0) + 1; let best = 1; for (let t = 1; t <= s.n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; backend.sgJoin(best); }
+      setTimeout(() => { sgSpawn(); const t = sgMine(), N = sgSet().nat[t - 1]; showBanner(`⚔️ 성 공방전 · ${sgSet().name}`, N ? `나는 ${N.icon} ${N.name}! 거점을 차지하고, 상대 성문을 부숴요` : '선생님은 옆줄에서 지켜봐요', 5000); if (N && sgw.roleAsked !== s.r) { sgw.roleAsked = s.r; setTimeout(openSgRole, 1200); } }, first ? 900 : 300);
     }
   }
-  if (!s && p) { // 선생님이 끝냄 → 역사 마을로
-    sgw.lastR = ''; endSgHold();
-    if (siegeRegion()) { ctfTeleport(520, 30, Math.PI); toast('🏁 성 공방전이 끝났어요. 역사 마을로 돌아왔어요', 'info'); }
-  }
-  if (s && p && s.r === p.r) {
+  if (!s && p) { sgw.lastR = ''; if (siegeRegion()) { ctfTeleport(520, 30, Math.PI); toast('🏁 성 공방전이 끝났어요. 역사 마을로 돌아왔어요', 'info'); } }
+  if (s && p && s.r === p.r && siegeRegion()) {
+    const set = sgSet(), me = sgMine();
     for (let t = 1; t <= s.n; t++) {
-      const hp = s.hp?.[t] ?? s.max, php = p.hp?.[t] ?? s.max;
-      if (hp === 0 && php > 0 && siegeRegion()) { const N = sgSet().nat[t - 1], c = sgw.castles[t]; playSfx('fanfare'); if (c) burst(new V3(...castleLocal(t, 0, 6.5).flatMap((v, i) => i ? [2, v] : [v])), [N.col, 0xFFFFFF, 0x8A6A44], 70, 7, 3); toast(sgMine() === t ? `💥 우리 ${N.name} 성문이 부서졌어요! 20초 뒤 다시 세워져요` : `💥 ${N.icon} ${N.name} 성문이 부서졌어요!`, sgMine() === t ? 'warn' : 'success'); }
-      if (hp > 0 && php === 0 && siegeRegion()) toast(`🛡️ ${sgSet().nat[t - 1].name} 성문을 다시 세웠어요`, 'info');
+      const hp = sgHp(t), php = p.hp?.[t] ?? hp, N = set.nat[t - 1];
+      if (hp === 0 && php > 0) { playSfx('fanfare'); const [bx, bz] = castleLocal(t, 0, 6.5); burst(new V3(bx, 2, bz), [N.col, 0xFFFFFF, 0x8A6A44], 70, 7, 3); toast(me === t ? `💥 우리 ${N.name} 성문이 부서졌어요! 25초 뒤 다시 세워져요` : `💥 ${N.icon} ${N.name} 성문이 부서졌어요!`, me === t ? 'warn' : 'success'); }
+      if (hp > 0 && php === 0) toast(`🛡️ ${N.name} 성문을 다시 세웠어요`, 'info');
     }
-    for (const [u, v] of Object.entries(s.shot || {})) { // 친구가 던진 돌 (보이기만 해요)
-      if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t;
-      if (u !== backend.uid && siegeRegion()) sgLaunch(v.x, v.z, v.dx, v.dz, v.v, false, sgTeamOf(u));
-    }
+    for (const st of SG_SITES) { const o = s.own?.[st.k] || 0, po = p.own?.[st.k] || 0; if (o !== po) { const N = set.nat[o - 1]; toast(o ? `${st.icon} ${N.icon} ${N.name}이(가) ${st.name}을(를) 차지했어요!` : `${st.icon} ${st.name}이(가) 주인 없는 땅이 됐어요`, o === me ? 'success' : 'info'); if (o === me) playSfx('right'); } }
+    for (const [u, v] of Object.entries(s.shot || {})) { if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t; if (u !== backend.uid) sgLaunch(v.x, v.z, v.dx, v.dz, v.v, v.a ?? sgWeap().ang, false, sgTeamOf(u), 0); }
+    for (const [u, v] of Object.entries(s.fx || {})) { if (!v || sgw.fxSeen[u] === v.t) continue; sgw.fxSeen[u] = v.t; if (u !== backend.uid) sgPlayFx(v, false); }
+    for (const t of [1, 2, 3, 4]) for (const k of ['steel', 'horn']) if (sgBuff(t, k) && !(p.buff?.[t]?.[k] > backend.now() - 1000)) { const N = set.nat[t - 1]; if (N) toast(k === 'steel' ? `⛓️ ${N.name}이(가) 강철 무기를 들었어요! (60초 피해 2배)` : `📯 ${N.name}이(가) 진격 나팔을 불었어요! (30초)`, t === me ? 'success' : 'warn'); }
   }
   renderSgHud(true);
 }
+// ---------- 쏘기 (톡 누르면 앞쪽 가장 가까운 상대를 자동으로 겨눠요) ----------
 function sgAimDir() { const v = new V3(); camera.getWorldDirection(v); v.y = 0; if (v.lengthSq() < 1e-6) v.set(Math.sin(player.heading), 0, Math.cos(player.heading)); return v.normalize(); }
-const SG_ANG = 0.62;
-const sgSpeed = (pow) => { const range = 5 + pow * 24; return Math.sqrt(9.8 * range / Math.sin(2 * SG_ANG)); };
-function sgCan() { return S.siege?.on && sgMine() && sgStarted() && !sgWinner() && siegeRegion() && !sgStunned(backend.uid); }
-function sgDown() {
-  if (!sgCan() || sgw.cool > 0) return;
-  if (sgw.ammo <= 0) { toast('🪨 돌이 없어요! 우리 성 🏕️ 병영에서 퀴즈를 맞혀 돌을 얻어요', 'warn'); return; }
-  sgw.hold = true; sgw.pow = 0; sgw.dir = 1;
+function sgCan() { return S.siege?.on && sgMine() && sgStarted() && !sgWinner() && siegeRegion() && !sgHurt(backend.uid); }
+function sgFindTarget() {
+  const p = player.pos, f = sgAimDir(), me = sgMine(), out = [];
+  const consider = (x, y, z, kind, ref, maxD) => { const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d < 1.5 || d > maxD) return; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (ang > 1.0) return; out.push({ x, y, z, d, ang, kind, ref, score: ang * 12 + d * 0.15 + (kind === 'p' ? 0 : 1.5) }); };
+  for (const [uid, r] of remotes) { const t = sgTeamOf(uid); if (t && t !== me && !sgHurt(uid) && !sgSafe(uid)) consider(r.pos.x, r.pos.y + 1.1, r.pos.z, 'p', uid, 30); }
+  for (const c of Object.values(sgw.castles)) if (c.t !== me && !c.open) { const m = c.hit.getCenter(new V3()); consider(m.x, 1.4, m.z, 'g', c.t, 42); }
+  for (const [k, b] of Object.entries(sgw.bars)) if (b.t !== me) { const m = b.box.getCenter(new V3()); consider(m.x, 0.9, m.z, 'b', k, 30); }
+  out.sort((a, b) => a.score - b.score); return out[0] || null;
 }
-function endSgHold() { sgw.hold = false; if (sgw.mark) sgw.mark.visible = false; }
-function sgUp() {
-  if (!sgw.hold) return; endSgHold();
-  if (!sgCan() || sgw.ammo <= 0) return;
-  const d = sgAimDir(), v = sgSpeed(sgw.pow), p = player.pos;
-  player.heading = Math.atan2(d.x, d.z); playAct(player.avatar, 'cheer'); playSfx('jump');
-  sgw.ammo--; sgw.cool = 0.5; sgw.pow = 0; renderSgBar();
-  sgLaunch(p.x + d.x * 0.6, p.z + d.z * 0.6, d.x, d.z, v, true, sgMine());
-  backend.siegeShot({ x: +(p.x + d.x * 0.6).toFixed(2), z: +(p.z + d.z * 0.6).toFixed(2), dx: +d.x.toFixed(3), dz: +d.z.toFixed(3), v: +v.toFixed(2) });
+function sgSolve(W, dx, dy, dz) { // 목표에 닿는 쏘는 각·속도 (활·쇠뇌는 속도 고정, 돌팔매는 각 고정)
+  const g = 9.8, d = Math.hypot(dx, dz);
+  if (!W.v) { const th = W.ang, den = 2 * Math.cos(th) ** 2 * (d * Math.tan(th) - dy); const v = den > 0 ? Math.sqrt(g * d * d / den) : 18; return { v: Math.min(30, v), a: th }; }
+  const v = W.v, disc = v ** 4 - g * (g * d * d + 2 * dy * v * v); if (disc < 0) return { v, a: Math.PI / 4 };
+  return { v, a: Math.atan((v * v - Math.sqrt(disc)) / (g * d)) };
 }
-function sgLaunch(x, z, dx, dz, v, mine, t) {
-  const m = mesh(SPH_LO, scene, 0.24, 0.22, 0.24, 0x7A746A, x, 1.7, z, { solid: false, flat: true });
-  sgw.balls.push({ m, x, y: 1.7, z, vx: dx * v * Math.cos(SG_ANG), vy: v * Math.sin(SG_ANG), vz: dz * v * Math.cos(SG_ANG), t: 0, mine, team: t, fx: x, fz: z, dead: false });
+function sgShoot() {
+  if (!sgCan()) { if (S.siege && sgMine() && sgHurt(backend.uid)) toast('🤕 다쳐서 쏠 수 없어요. 의원을 기다려요', 'info'); return; }
+  if (sgw.cool > 0) return;
+  const W = sgWeap(), role = sgMyRole(), p = player.pos, tg = sgFindTarget(), f = sgAimDir();
+  let dx = f.x, dz = f.z, v = W.v || 17, a = W.ang;
+  if (tg) { const ex = tg.x - p.x, ez = tg.z - p.z, d = Math.hypot(ex, ez); dx = ex / d; dz = ez / d; const sol = sgSolve(W, d - 0.6, tg.y - 1.7, 0); v = sol.v; a = sol.a; }
+  player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'cheer'); playSfx('jump');
+  sgw.cool = W.cd * (role === 'sol' ? 1 : 1.8); renderSgBar(true);
+  const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6;
+  sgLaunch(sx, sz, dx, dz, v, a, true, sgMine(), (role === 'sol' ? 2 : 1) * W.dmg * (sgBuff(sgMine(), 'steel') ? 2 : 1));
+  backend.sgShot({ x: +sx.toFixed(2), z: +sz.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: +v.toFixed(2), a: +a.toFixed(3) });
 }
-function sgLanding(pow) { // 꾹 누르는 동안 떨어질 자리 표시
-  const d = sgAimDir(), v = sgSpeed(pow), vy = v * Math.sin(SG_ANG), vh = v * Math.cos(SG_ANG), T = (vy + Math.sqrt(vy * vy + 2 * 9.8 * 1.7)) / 9.8;
-  return [player.pos.x + d.x * (0.6 + vh * T), player.pos.z + d.z * (0.6 + vh * T)];
+function sgLaunch(x, z, dx, dz, v, a, mine, t, dmg) {
+  const W = sgWeap(), arrow = W !== WEAPONS.sling;
+  const m = arrow ? new THREE.Group() : mesh(SPH_LO, scene, 0.22, 0.2, 0.22, W.col, x, 1.7, z, { solid: false, flat: true, surf: null });
+  if (arrow) { const sh = cyl(m, 0.03, 0.9, 0x8A5A34, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); sh.castShadow = false; mesh(CONE, m, 0.06, 0.16, 0.06, 0x5A5A5A, 0, 0, 0.5, { solid: false, rx: Math.PI / 2, surf: null }); box(m, 0.12, 0.01, 0.16, 0xFFFFFF, 0, 0, -0.42, { solid: false, surf: null }); m.position.set(x, 1.7, z); scene.add(m); }
+  sgw.balls.push({ m, x, y: 1.7, z, vx: dx * v * Math.cos(a), vy: v * Math.sin(a), vz: dz * v * Math.cos(a), t: 0, mine, team: t, dmg, fx: x, fz: z, dead: false, arrow });
 }
-async function sgHitGate(k, b) {
-  if (Math.hypot(b.fx - sgw.castles[k].hit.getCenter(new V3()).x, b.fz - sgw.castles[k].hit.getCenter(new V3()).z) < 5) { toast('🤏 성문에 너무 가까워요! 5걸음 밖에서 던져야 점수가 돼요', 'info'); return; }
-  const r = await backend.siegeHit(k, sgMine());
-  if (r.ok) { playSfx('pick'); toast(r.left === 0 ? `💥 성문을 부쉈어요! 우리 나라 +5점` : `🎯 명중! ${sgSet().nat[k - 1].name} 성문 ${r.left}/${S.siege.max} · 우리 나라 +1점`, 'success'); }
+function sgPlayFx(v, mine) { // 투석기 돌 · 화공 화살비 (모두에게 보여요)
+  const c = sgw.castles[v.to]; if (!c) return; const tgt = c.hit.getCenter(new V3());
+  if (v.k === 'cat') {
+    const cat = v.from === 'fort' ? sgw.catObjs.fort : sgw.castles[+v.from.slice(1)]?.cat; if (cat) { cat.arm.rotation.x = -0.6; setTimeout(() => { cat.arm.rotation.x = 0.9; }, 900); }
+    const from = cat ? cat.g.position.clone().setY(4) : tgt.clone().setY(20), rock = mesh(SPH_MID, scene, 0.6, 0.55, 0.6, 0x7E786C, from.x, from.y, from.z, { solid: false, flat: true, surf: null });
+    const t0 = performance.now(), T = 2200; playSfx('cast');
+    const step = () => { const u = (performance.now() - t0) / T; if (u >= 1) { scene.remove(rock); burst(tgt, [0xBBB4A4, 0x8A6A44, 0xFFE066], 60, 7, 3); playSfx('oops'); if (mine) sgHitGate(v.to, 6, true); return; } rock.position.lerpVectors(from, tgt, u); rock.position.y += Math.sin(Math.PI * u) * 14; rock.rotation.x += 0.1; requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  } else if (v.k === 'fire') {
+    playSfx('cast'); let n = 0; const iv = setInterval(() => { n++; burst(tgt.clone().add(new V3(rand(-3, 3), rand(2, 6), rand(-3, 3))), [0xFF8A24, 0xFFE066, 0xE2584A], 26, 4, 1); if (n >= 8) { clearInterval(iv); if (mine) sgHitGate(v.to, 8, true); } }, 300);
+  }
 }
+async function sgHitGate(k, dmg, quiet) {
+  const c = sgw.castles[k]; if (!c || c.open) return;
+  const r = await backend.sgHit(k, Math.min(8, dmg), sgMine());
+  if (!r.ok) return;
+  if (r.left === 0) { toast(`💥 ${sgSet().nat[k - 1].name} 성문을 부쉈어요! 우리 나라 +15점 · 자원을 빼앗았어요`, 'success'); sgLoot(k); }
+  else if (!quiet) toast(`🎯 명중! ${sgSet().nat[k - 1].name} 성문 ${r.left}/${sgMax(k)}`, 'success');
+}
+async function sgLoot(k) { const res = sgRes(k), give = {}; for (const key of ['w', 'i', 'f']) give[key] = Math.min(8, Math.floor((res[key] || 0) / 2)); await backend.sgLoot(k, sgMine(), give); }
+// ---------- 역할 행동 ----------
+async function sgRepair(t) {
+  if (sgw.busy.fix) return; sgw.busy.fix = true; setTimeout(() => { sgw.busy.fix = false; }, 2500);
+  const r = await backend.sgFix(t, 4, sgMax(t)); if (r.ok) { playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
+}
+function sgCatText(key, owner) {
+  if (!S.siege?.on || !sgStarted() || sgWinner() || !sgMine() || owner !== sgMine()) return null;
+  const left = Math.ceil((SG_CAT_CD - (backend.now() - (S.siege.cat?.[key] || 0))) / 1000);
+  return left > 0 ? ['투석기 장전 중 ⏳', `${left}초 뒤에 쏠 수 있어요`] : ['투석기 쏘기 🪨', '가장 가까운 상대 성문을 겨눠요 (성문 -6)'];
+}
+async function sgFireCat(key) {
+  const me = sgMine(); if (!S.siege?.on || !me) return;
+  if ((key === 'fort' && !sgOwns(me, 'fort')) || (key !== 'fort' && +key.slice(1) !== me)) return;
+  const from = key === 'fort' ? sgw.catObjs.fort.g.position : sgw.castles[me]?.cat.g.position; if (!from) return;
+  let best = 0, bd = Infinity; for (const c of Object.values(sgw.castles)) { if (c.t === me) continue; const m = c.hit.getCenter(new V3()), d = from.distanceTo(m) + (c.open ? 50 : 0); if (d < bd) { bd = d; best = c.t; } }
+  if (!best) return;
+  const r = await backend.sgCat(key); if (!r.ok) { toast('⏳ 투석기를 장전하는 중이에요', 'info'); return; }
+  const v = { k: 'cat', from: key, to: best }; backend.sgFx(v); sgPlayFx(v, true);
+  toast(`🪨 투석기 발사! ${sgSet().nat[best - 1].name} 성으로 날아가요`, 'success');
+}
+function sgFindHeal() { // 의원: 가까이 쓰러진 우리 친구
+  if (!S.siege?.on || sgMyRole() !== 'med' || !sgMine() || sgHurt(backend.uid)) return null;
+  let best = null, bd = 2.4; for (const [uid, r] of remotes) { if (sgTeamOf(uid) !== sgMine() || !sgHurt(uid)) continue; const d = Math.hypot(r.pos.x - player.pos.x, r.pos.z - player.pos.z); if (d < bd) { bd = d; best = uid; } }
+  return best;
+}
+async function sgHeal() { const u = sgw.healTarget; if (!u) return; const r = await backend.sgHeal(u); if (r.ok) { playAct(player.avatar, 'clap'); playSfx('right'); toast('🌿 친구를 치료했어요!', 'success'); const rr = remotes.get(u); if (rr) burst(rr.pos.clone().setY(1.5), [0x7FD36A, 0xFFFFFF], 30, 3, 2); } }
+async function sgPlaceBar() {
+  const me = sgMine(), p = player.pos; if (!S.siege?.on || !me || sgMyRole() !== 'eng' || sgHurt(backend.uid)) return;
+  if ((sgRes(me).w || 0) < 4) { toast('🪵 목재가 4개 필요해요 (나루터를 차지하거나 창고에서 문제를 풀어요)', 'warn'); return; }
+  const nearSomething = Object.values(sgw.castles).some(c => Math.hypot(c.g.position.x - p.x, c.g.position.z - p.z) < 8.5) || SG_SITES.some(s => Math.hypot(s.x - p.x, s.z - p.z) < SG_ZONE + 0.5) || sgInStream(p.x, p.z) || Math.hypot(p.x - SG.cx, p.z - SG.cz) < 12.5;
+  if (nearSomething) { toast('🪵 성·거점·산성 가까이에는 목책을 세울 수 없어요', 'info'); return; }
+  let slot = -1; for (let i = 0; i < 4; i++) if (!(S.siege.bar?.[`${me}_${i}`]?.hp > 0)) { slot = i; break; }
+  if (slot < 0) { toast('🪵 목책은 나라마다 4개까지예요. 부서지면 다시 세울 수 있어요', 'info'); return; }
+  const f = sgAimDir(), x = +(p.x + f.x * 1.6).toFixed(2), z = +(p.z + f.z * 1.6).toFixed(2), r = +Math.atan2(f.x, f.z).toFixed(2);
+  const res = await backend.sgSpend(me, { w: 4 }); if (!res.ok) return;
+  const ok = await backend.sgBar(`${me}_${slot}`, { x, z, r, hp: 6 });
+  if (ok.ok) { playAct(player.avatar, 'mine'); playSfx('build'); toast('🪵 목책을 세웠어요! 상대가 지나가지 못해요', 'success'); }
+}
+// ---------- 창고 · 역할 고르기 ----------
+function openSgRole() {
+  if (!S.siege?.on || !sgMine()) return;
+  openLife('🎭 역할 고르기', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', '우리 나라를 위해 할 일을 골라요. 나라 창고에서 언제든 바꿀 수 있어요.'));
+    const grid = el2('div', 'lp-grid');
+    for (const [k, R] of Object.entries(SG_ROLES)) {
+      const n = Object.entries(S.siege.role || {}).filter(([u, v]) => v === k && sgTeamOf(u) === sgMine()).length;
+      const c = el2('div', 'lp-card' + (sgMyRole() === k ? ' on' : '')); c.append(el2('div', 'lp-icon', R.icon), el2('div', 'lp-name', `${R.name}${k === 'sol' ? ` · ${sgWeap().icon} ${sgWeap().name}` : ''}`), el2('div', 'lp-sub', R.desc), el2('div', 'lp-sub', `우리 나라 ${n}명`));
+      const b = el2('button', 'btn lp-btn', sgMyRole() === k ? '✅ 지금 역할' : '고르기'); b.onclick = async () => { await backend.sgRole(k); playSfx('pick'); toast(`${R.icon} ${R.name}이(가) 됐어요!`, 'success'); closeLife(); renderSgBar(true); };
+      c.append(b); grid.append(c);
+    }
+    box.append(grid);
+  });
+}
+function openSgStore() {
+  const me = sgMine(), N = sgSet().nat[me - 1]; if (!N) return;
+  const keys = histPool(sgSet().eras).length >= 4 ? sgSet().eras : HIST_ERAS.map(E => E.k);
+  openHQ({ title: `🏛️ ${N.name} 나라 창고`, keys, mode: 'sg',
+    head: (box) => {
+      const res = sgRes(me), role = sgMyRole(), R = SG_ROLES[role];
+      box.append(el2('p', 'lp-big', `🪵 ${res.w || 0} · ⛓️ ${res.i || 0} · 🍚 ${res.f || 0}`));
+      const row = el2('div', 'row-center wrap'); const rb = el2('button', 'btn', `${R.icon} ${R.name} · 역할 바꾸기`); rb.style.background = '#fff'; rb.onclick = openSgRole; row.append(rb); box.append(row);
+      const acts = el2('div', 'row-center wrap'); acts.style.marginTop = '6px';
+      const act = (label, need, ok, fn) => { const b = el2('button', 'btn', label); const enough = Object.entries(need).every(([k2, v]) => (res[k2] || 0) >= v); b.disabled = !ok || !enough; b.onclick = fn; acts.append(b); };
+      if (role === 'eng') act(`🧱 성벽 강화 (🪵12) · ${['목책', '토성', '석성'][sgLv(me) - 1]} → ${['토성', '석성', '최고'][sgLv(me) - 1]}`, { w: 12 }, sgLv(me) < 3, async () => { const r = await backend.sgSpend(me, { w: 12 }); if (r.ok) { await backend.sgLevel(me, sgLv(me) + 1, Math.min(SG_LV_HP(S.siege.max, sgLv(me) + 1), sgHp(me) + 25)); playSfx('build'); } refillLife(); });
+      if (role === 'sol') act('⛓️ 강철 무기 (⛓️10 · 60초 피해 2배)', { i: 10 }, !sgBuff(me, 'steel'), async () => { const r = await backend.sgSpend(me, { i: 10 }); if (r.ok) await backend.sgBuff(me, 'steel', backend.now() + 60000); refillLife(); });
+      if (role === 'sch') {
+        act('📯 진격 나팔 (🍚8 · 30초)', { f: 8 }, !sgBuff(me, 'horn'), async () => { const r = await backend.sgSpend(me, { f: 8 }); if (r.ok) await backend.sgBuff(me, 'horn', backend.now() + 30000); refillLife(); });
+        const fireReady = !sgBuff(me, 'fire');
+        for (let t = 1; t <= S.siege.n; t++) if (t !== me) { const E = sgSet().nat[t - 1]; act(`🔥 화공 → ${E.icon}${E.name} (⛓️6 🍚6)`, { i: 6, f: 6 }, fireReady && !sgw.castles[t]?.open, async () => { const r = await backend.sgSpend(me, { i: 6, f: 6 }); if (r.ok) { await backend.sgBuff(me, 'fire', backend.now() + 45000); const v = { k: 'fire', to: t }; backend.sgFx(v); sgPlayFx(v, true); toast(`🔥 화공! ${E.name} 성문에 불화살이 쏟아져요`, 'success'); } closeLife(); }); }
+        if (!fireReady) acts.append(el2('span', 'hint', ' 🔥 화공은 45초에 한 번'));
+      }
+      if (role === 'med') acts.append(el2('p', 'hint', '🌿 의원은 쓰러진 우리 친구 곁에서 E(치료하기)를 눌러요'));
+      box.append(acts);
+      const lag = sgLagging() === me;
+      box.append(el2('p', 'hint', `📜 문제를 맞히면 🪵+${role === 'sch' ? 6 : 3} ⛓️+${role === 'sch' ? 4 : 2} 🍚+${role === 'sch' ? 4 : 2} · 나라 +1점${lag ? ' (약소국 단결: 1.5배!)' : ''}`));
+    },
+    onRight: async (first) => {
+      if (!S.siege?.on || sgWinner()) return;
+      const k = (sgMyRole() === 'sch' ? 2 : 1) * (sgLagging() === me ? 1.5 : 1), give = { w: Math.round(3 * k), i: Math.round(2 * k), f: Math.round(2 * k) };
+      const r = await backend.sgGain(me, give, 1);
+      toast(r.ok ? `📦 보급 도착! 🪵+${give.w} ⛓️+${give.i} 🍚+${give.f} · 나라 +1점` : '⚠️ 보급을 받지 못했어요', r.ok ? 'success' : 'warn');
+    } });
+}
+// ---------- 매 화면 ----------
 function updateSiege(dt) {
   if (!sgw.field) return;
   const near = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10 && camera.position.z > SG.z0 - 10);
-  const s = S.siege, show = near && !!s;
-  sgw.field.visible = show; for (const c of Object.values(sgw.castles)) { c.g.visible = show; c.door.visible = show && !c.open; c.rubble.visible = show && c.open; c.hpLabel.visible = show; if (show) c.flag.rotation.y = Math.sin(time * 2 + c.t) * 0.3; }
-  // 나라 표시 (내 캐릭터와 친구)
-  if (player.avatar) setSgLook(player.avatar, s ? sgMine() : 0, s && sgStunned(backend.uid));
-  for (const [uid, r] of remotes) setSgLook(r.a, s ? sgTeamOf(uid) : 0, s && sgStunned(uid));
-  if (s) for (let t = 1; t <= s.n; t++) {
-    const c = sgw.castles[t]; if (!c) continue; const hp = s.hp?.[t] ?? s.max; setDoor(t, hp > 0);
-    const lab = hp > 0 ? `🛡️ ${c.N.icon} 성문 ${hp} / ${s.max}` : `💥 다시 세우는 중 ${Math.max(0, Math.ceil((SG_DOWN - (backend.now() - (s.down?.[t] || backend.now()))) / 1000))}초`;
-    if (c.hpText !== lab) { c.hpText = lab; c.hpLabel.userData.set([lab]); }
+  const s = S.siege, show = near && !!s, set = sgSet();
+  sgw.field.visible = show;
+  for (const c of Object.values(sgw.castles)) { c.g.visible = show; c.door.visible = show && !c.open; c.rubble.visible = show && c.open; c.hpLabel.visible = show; c.cat.g.visible = show; if (show) c.flag.rotation.y = Math.sin(time * 2 + c.t) * 0.3; }
+  if (sgw.catObjs.fort) sgw.catObjs.fort.g.visible = show;
+  for (const b of Object.values(sgw.bars)) b.g.visible = show;
+  for (const st of Object.values(sgw.sites)) { // 거점 깃발: 차지 중인 나라 색으로 올라가요
+    const vis = show; st.ring.visible = st.pole.visible = st.flag.visible = st.label.visible = vis; if (!vis) continue;
+    const own = s.own?.[st.s.k] || 0, cap = s.cap?.[st.s.k] || { t: 0, p: 0 }, ct = cap.t || own, N = set.nat[ct - 1], ON = set.nat[own - 1];
+    st.flag.position.y = st.y0 + 1 + 3.6 * ((own && cap.t === own) ? 1 : (cap.p || 0) / 100); st.flag.rotation.y = Math.sin(time * 2.2 + st.s.x) * 0.35;
+    st.cloth.material.color.setHex(N ? N.col : 0xFFFFFF); st.ring.material.color.setHex(ON ? ON.col : 0xFFFFFF);
+    const txt = `${st.s.icon} ${st.s.name}${ON ? ` · ${ON.icon}${ON.name}` : ''}${cap.t && cap.t !== own && cap.p > 0 ? ` (${N?.icon || ''} ${Math.round(cap.p)}%)` : ''}`;
+    if (txt !== st.txt) { st.txt = txt; st.label.userData.set([txt, st.s.desc]); }
   }
-  // 돌 날아가기 (잘게 나눠 계산)
+  if (sgw.beaconFire) sgw.beaconFire.visible = show && !!s?.own?.beacon;
+  // 나라 표시·쓰러진 모습
+  const lie = (a, on) => { a.g.rotation.z = on ? 1.45 : 0; };
+  if (player.avatar) { const h = !!s && sgMine() && sgHurt(backend.uid); setSgLook(player.avatar, s ? sgMine() : 0, h, sgMyRole()); lie(player.avatar, h); }
+  for (const [uid, r] of remotes) { const t = s ? sgTeamOf(uid) : 0, h = !!t && sgHurt(uid); setSgLook(r.a, t, h, sgRoleOf(uid)); lie(r.a, h); }
+  if (s) for (let t = 1; t <= s.n; t++) {
+    const c = sgw.castles[t]; if (!c) continue; const hp = sgHp(t); setDoor(t, hp > 0);
+    const lab = hp > 0 ? `🛡️ ${c.N.icon} ${['목책', '토성', '석성'][sgLv(t) - 1]} · 성문 ${hp}/${sgMax(t)}` : `💥 다시 세우는 중 ${Math.max(0, Math.ceil((SG_DOWN - (backend.now() - (s.down?.[t] || backend.now()))) / 1000))}초`;
+    if (c.hpText !== lab) { c.hpText = lab; c.hpLabel.userData.set([lab]); }
+    if (c.cat) c.cat.arm.rotation.x += (0.9 - c.cat.arm.rotation.x) * Math.min(1, dt * 2);
+  }
+  // 날아가는 돌·화살
   const steps = Math.max(1, Math.ceil(dt / (1 / 120))), h = dt / steps;
   for (const b of sgw.balls) for (let st = 0; st < steps && !b.dead; st++) {
     b.t += h; b.vy -= 9.8 * h; b.x += b.vx * h; b.y += b.vy * h; b.z += b.vz * h;
     const P = new V3(b.x, b.y, b.z);
-    if (s) for (let k = 1; k <= s.n; k++) { const c = sgw.castles[k]; if (!c || c.open || k === b.team) continue; if (c.hit.containsPoint(P)) { b.dead = true; burst(P, [0x8A6A44, 0xFFFFFF, c.N.col], 22, 4, 2); if (b.mine) sgHitGate(k, b); break; } }
+    if (s) for (let k = 1; k <= s.n; k++) { const c = sgw.castles[k]; if (!c || c.open || k === b.team) continue; if (c.hit.containsPoint(P)) { b.dead = true; burst(P, [0x8A6A44, 0xFFFFFF, c.N.col], 22, 4, 2); if (b.mine) { if (Math.hypot(b.fx - P.x, b.fz - P.z) < 5) toast('🤏 성문에 너무 가까워요! 5걸음 밖에서 쏴야 해요', 'info'); else sgHitGate(k, b.dmg); } break; } }
+    if (b.dead) break;
+    for (const [k, bar] of Object.entries(sgw.bars)) if (bar.box.containsPoint(P)) { b.dead = true; burst(P, [0x8A6A44, 0xC9A65E], 16, 3, 1); if (b.mine && bar.t !== b.team) backend.sgBarHit(k); break; }
     if (b.dead) break;
     if (sgw.boxes.some(bx => bx.containsPoint(P))) { b.dead = true; burst(P, [0xBBB4A4, 0x8A8478], 10, 3, 1); break; }
-    if (b.mine && s?.on) for (const [uid, r] of remotes) { // 상대 친구 맞히기 (던진 사람 화면 기준)
-      const tt = sgTeamOf(uid); if (!tt || tt === b.team || sgStunned(uid) || backend.now() - (s.stun?.[uid] || 0) < SG_STUN + 2000) continue;
-      if (Math.hypot(r.pos.x - b.x, r.pos.y + 1 - b.y, r.pos.z - b.z) < 0.8) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); backend.siegeStun(uid); toast(`🎯 ${sgSet().nat[tt - 1].name} 친구를 맞혔어요! 3초 동안 멈춰요`, 'success'); break; }
+    if (b.mine && s?.on) for (const [uid, r] of remotes) {
+      const tt = sgTeamOf(uid); if (!tt || tt === b.team || sgHurt(uid) || sgSafe(uid)) continue;
+      if (Math.hypot(r.pos.x - b.x, r.pos.y + 1 - b.y, r.pos.z - b.z) < 0.85) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); backend.sgHurtSet(uid); toast(`🎯 ${set.nat[tt - 1].name} 친구를 맞혔어요! 의원이 오기 전까지 쓰러져 있어요`, 'success'); break; }
     }
     if (b.dead) break;
-    if (b.y < 0.2) { b.dead = true; burst(P.setY(0.2), [0xC9B08A, 0xA89A80], 10, 2, 1); }
-    b.m.position.set(b.x, b.y, b.z);
+    if (b.y < 0.15) { b.dead = true; burst(P.setY(0.2), [0xC9B08A, 0xA89A80], 8, 2, 1); }
+    b.m.position.set(b.x, b.y, b.z); if (b.arrow) b.m.lookAt(b.x + b.vx, b.y + b.vy, b.z + b.vz);
   }
-  for (const b of sgw.balls) if (b.dead || b.t > 6) scene.remove(b.m);
-  sgw.balls = sgw.balls.filter(b => !b.dead && b.t <= 6);
-  // 던지기 힘 모으기
-  if (sgw.cool > 0) sgw.cool -= dt;
-  if (sgw.hold) { if (!sgCan()) endSgHold(); else { sgw.pow += sgw.dir * dt * 0.8; if (sgw.pow >= 1) { sgw.pow = 1; sgw.dir = -1; } if (sgw.pow <= 0) { sgw.pow = 0; sgw.dir = 1; } const [lx, lz] = sgLanding(sgw.pow); sgw.mark.position.set(lx, 0.08, lz); sgw.mark.visible = true; const d = sgAimDir(); player.heading = Math.atan2(d.x, d.z); renderSgBar(); } }
+  for (const b of sgw.balls) if (b.dead || b.t > 5) scene.remove(b.m);
+  sgw.balls = sgw.balls.filter(b => !b.dead && b.t <= 5);
+  if (sgw.cool > 0) { sgw.cool -= dt; renderSgBar(); }
+  sgw.healTarget = sgFindHeal(); if (sgw.healTarget) { const r = remotes.get(sgw.healTarget); sgw.healIt.pos.set(r.pos.x, r.pos.y + 1, r.pos.z); } else sgw.healIt.pos.set(0, -99, 0);
   renderSgHud(false);
   if (!s || !joined) return;
-  // 💫 내가 맞았을 때: 3초 멈춤
-  const myStun = s.stun?.[backend.uid];
-  if (myStun && sgStunned(backend.uid)) {
-    if (sgw.stunT !== myStun) { sgw.stunT = myStun; sgw.stunPos = player.pos.clone(); endSgHold(); playSfx('oops'); toast('💫 돌에 맞았어요! 3초 동안 멈춰요', 'warn'); }
-    player.pos.x = sgw.stunPos.x; player.pos.z = sgw.stunPos.z;
-  }
-  // 집안일 (1초마다): 시간 끝 → 결과 · 부서진 성문 20초 뒤 다시 세우기
-  if (performance.now() - sgw.count > 1000) { // 화면이 느려도 실제 1초마다
-    sgw.count = performance.now();
-    const w = sgWinner();
-    const boss = isTeacher || backend.mode !== 'firebase'; // 연습 모드에서는 내 기기가 정리해요
-    if (boss && s.on && w) backend.adminUpdate({ 'siege/on': 0, 'siege/win': w });
-    if (s.on) for (let t = 1; t <= s.n; t++) {
-      if ((s.hp?.[t] ?? 1) !== 0 || sgw.busy[t]) continue;
-      const dn = s.down?.[t];
-      if (!dn && boss) backend.adminUpdate({ [`siege/down/${t}`]: backend.now() });
-      if (dn && backend.now() - dn >= SG_DOWN && (boss || sgMine() === t)) { sgw.busy[t] = true; backend.siegeRebuild(t, s.max).finally(() => { sgw.busy[t] = false; }); }
-    }
-  }
+  // 🤕 내가 쓰러졌을 때
+  const myHurt = s.hurt?.[backend.uid], me = sgMine();
+  if (me && myHurt && sgHurt(backend.uid)) {
+    if (sgw.hurtT !== myHurt) { sgw.hurtT = myHurt; sgw.hurtPos = player.pos.clone(); sgw.wasHurt = true; playSfx('oops'); toast(`🤕 맞아서 쓰러졌어요! 🌿 의원이 오면 바로 일어나요 (${Math.round(sgHurtDur(backend.uid) / 1000)}초 뒤엔 성에서 다시 시작)`, 'warn'); }
+    player.pos.x = sgw.hurtPos.x; player.pos.z = sgw.hurtPos.z;
+    if (backend.now() - myHurt >= sgHurtDur(backend.uid) && !sgw.busy.rev) { sgw.busy.rev = true; backend.sgRevive(true).finally(() => { sgw.busy.rev = false; }); sgSpawn(); }
+  } else if (sgw.wasHurt && me) { sgw.wasHurt = false; if (!myHurt) { backend.sgRevive(false); toast('💪 다시 일어났어요! 3초 동안은 안 맞아요', 'success'); } }
+  if (sgFinal() && sgw.finalTold !== s.r && siegeRegion()) { sgw.finalTold = s.r; showBanner('⚔️ 결전의 시간!', '마지막 1분 — 거점 점수가 두 배예요', 4500); playSfx('fanfare'); }
+  // 1초마다 (선생님 기기 · 연습 모드는 내 기기): 거점 차지 · 점수·자원 · 성문 다시 세우기 · 끝
+  if (performance.now() - sgw.tick > 1000) { sgw.tick = performance.now(); sgTickHost(); }
 }
-function openSiegeQuiz(mode) {
-  const set = sgSet(), t = sgMine(), N = set.nat[t - 1]; if (!N) return;
-  let keys = set.eras; if (histPool(keys).length < 4) keys = HIST_ERAS.map(E => E.k);
-  openHQ({ title: mode === 'ammo' ? `🏕️ ${N.name} 병영` : `🔨 ${N.name} 성문 고치기`, keys, mode,
-    head: (box) => box.append(el2('p', 'hint', mode === 'ammo' ? `맞히면 🪨 돌 +${SG_AMMO} (지금 ${sgw.ammo}개 · 최대 ${SG_AMMO_MAX}개)` : `맞히면 우리 성문 +${SG_FIX} (지금 ${S.siege?.hp?.[t] ?? 0} / ${S.siege?.max})`)),
-    onRight: async () => {
-      if (!S.siege?.on || sgWinner()) return;
-      if (mode === 'ammo') { sgw.ammo = Math.min(SG_AMMO_MAX, sgw.ammo + SG_AMMO); renderSgBar(); toast(`🪨 돌 +${SG_AMMO}! 지금 ${sgw.ammo}개 · 꾹 눌렀다 놓아서 던져요 (F)`, 'success'); }
-      else { const r = await backend.siegeFix(t, S.siege.max); toast(r.ok ? `🔨 성문을 고쳤어요! ${r.hp ?? ''} / ${S.siege.max}` : '🔨 지금은 고칠 수 없어요 (부서졌거나 이미 튼튼해요)', r.ok ? 'success' : 'info'); }
-    } });
+function sgTickHost() {
+  const s = S.siege; if (!s) return;
+  const boss = isTeacher || backend.mode !== 'firebase', w = sgWinner();
+  if (boss && s.on && w) { backend.adminUpdate({ 'siege/on': 0, 'siege/win': w }); return; }
+  if (s.on) for (let t = 1; t <= s.n; t++) { // 부서진 성문: 25초 뒤 반쯤 세워요
+    if (sgHp(t) !== 0 || sgw.busy['r' + t]) continue; const dn = s.down?.[t];
+    if (!dn && boss) backend.adminUpdate({ [`siege/down/${t}`]: backend.now() });
+    if (dn && backend.now() - dn >= SG_DOWN && (boss || sgMine() === t)) { sgw.busy['r' + t] = true; backend.sgRebuild(t, Math.ceil(sgMax(t) / 2)).finally(() => { sgw.busy['r' + t] = false; }); }
+  }
+  if (!boss || !s.on || !sgStarted()) return;
+  // 거점 안 사람 수 (쓰러진 친구는 빼요)
+  const people = [...remotes.entries()].filter(([u]) => sgTeamOf(u) && !sgHurt(u)).map(([u, r]) => [sgTeamOf(u), r.pos.x, r.pos.z]);
+  if (sgMine() && !sgHurt(backend.uid)) people.push([sgMine(), player.pos.x, player.pos.z]);
+  const upd = {}, lag = sgLagging();
+  for (const st of SG_SITES) {
+    const cnt = {}; for (const [t, x, z] of people) if (Math.hypot(x - st.x, z - st.z) < SG_ZONE) cnt[t] = (cnt[t] || 0) + 1;
+    const ts = Object.keys(cnt).map(Number), own = s.own?.[st.k] || 0, cap = { t: s.cap?.[st.k]?.t || own, p: s.cap?.[st.k]?.p ?? (own ? 100 : 0) };
+    let { t: ct, p } = cap, nOwn = own;
+    if (ts.length === 1) {
+      const t = ts[0], rate = 12 * Math.min(3, cnt[t]) * (t === lag ? 1.5 : 1) * (sgOwns(t, 'beacon') ? 1.3 : 1) * (sgBuff(t, 'horn') ? 2 : 1);
+      if (ct && ct !== t) { p -= rate; if (p <= 0) { p = 0; ct = t; if (own && own !== t) nOwn = 0; } }
+      else { ct = t; p = Math.min(100, p + rate); if (p >= 100) nOwn = t; }
+    } else if (!ts.length) { if (own && ct === own) p = Math.min(100, p + 5); else if (p > 0) { p = Math.max(0, p - 4); if (!p) ct = own; } }
+    p = Math.round(p);
+    if (ct !== (s.cap?.[st.k]?.t || 0) || p !== (s.cap?.[st.k]?.p ?? -1)) upd[`siege/cap/${st.k}`] = { t: ct, p };
+    if (nOwn !== own) upd[`siege/own/${st.k}`] = nOwn;
+  }
+  if (Object.keys(upd).length) backend.adminUpdate(upd);
+  // 3초마다 점수·자원
+  if ((sgw.slow = (sgw.slow + 1) % 3) !== 0) return;
+  const inc = {}, mul = sgFinal() ? 2 : 1;
+  for (let t = 1; t <= s.n; t++) {
+    let pts = 0; const g = { w: 0, i: 0, f: 0 };
+    for (const st of SG_SITES) if (sgOwns(t, st.k)) { pts += st.pts; if (st.res) g[st.res] += 2; }
+    if (sgw.slow2 = !sgw.slow2) { g.w += 1; g.i += 1; g.f += 1; } // 성에서 조금씩 (6초마다)
+    if (pts) inc[`score/${t}`] = pts * mul;
+    for (const k of ['w', 'i', 'f']) if (g[k]) inc[`res/${t}/${k}`] = g[k];
+  }
+  if (Object.keys(inc).length) backend.sgInc(inc);
 }
-function renderSgBar() {
+function renderSgBar(force) {
   const show = !!S.siege && siegeRegion() && !!sgMine();
   $('sgBar').classList.toggle('hidden', !show); if (!show) return;
-  const k = [Math.round(sgw.pow * 50), sgw.ammo, sgWinner(), sgStunned(backend.uid)].join('|'); if (k === sgw.barKey) return; sgw.barKey = k;
-  $('sgFill').style.width = `${Math.round(sgw.pow * 100)}%`;
-  const w = sgWinner();
-  $('sgAmmo').textContent = w ? '🏁 전쟁이 끝났어요' : sgStunned(backend.uid) ? '💫 맞아서 잠깐 멈췄어요' : `🪨 돌 ${sgw.ammo}개${sgw.ammo ? '' : ' · 🏕️ 병영에서 얻어요'}`;
-  $('sgThrow').disabled = !!w || !sgw.ammo; $('sgThrow').classList.toggle('hidden', !!w);
+  const W = sgWeap(), role = sgMyRole(), w = sgWinner(), hurt = sgHurt(backend.uid), cd = Math.max(0, sgw.cool);
+  const k = [Math.ceil(cd * 10), w, hurt, role, (sgRes(sgMine()).w || 0) >= 4].join('|'); if (!force && k === sgw.barKey2) return; sgw.barKey2 = k;
+  $('sgAmmo').textContent = w ? '🏁 전쟁이 끝났어요' : hurt ? '🤕 쓰러졌어요 · 의원을 기다려요' : `${SG_ROLES[role].icon} ${SG_ROLES[role].name} · ${W.icon} ${W.name}${role === 'sol' ? ' (빠르게·성문 2배)' : ''}`;
+  $('sgThrow').textContent = cd > 0 ? `${W.icon} ${cd.toFixed(1)}` : `${W.icon} 쏘기 (F)`; $('sgThrow').disabled = !!w || hurt || cd > 0;
+  $('sgThrow').classList.toggle('hidden', !!w);
+  $('sgBarBtn').classList.toggle('hidden', !!w || role !== 'eng'); $('sgBarBtn').disabled = hurt;
+  $('sgRoleBtn').classList.toggle('hidden', !!w);
   $('sgHome').classList.toggle('hidden', !w);
 }
 function renderSgHud(force) {
@@ -13945,25 +14528,27 @@ function renderSgHud(force) {
   document.body.classList.toggle('in-siege', show);
   renderSgBar();
   if (!show) return;
-  const set = sgSet(), w = sgWinner(), left = sgLeft(), wait = Math.ceil((s.at - backend.now()) / 1000), t = sgMine();
-  const key = [s.r, JSON.stringify(s.hp || {}), JSON.stringify(s.score || {}), w, left, wait > 0 ? wait : 0, t].join('|');
+  const set = sgSet(), w = sgWinner(), left = sgLeft(), wait = Math.ceil((s.at - backend.now()) / 1000), t = sgMine(), res = sgRes(t);
+  const key = [s.r, JSON.stringify(s.hp || {}), JSON.stringify(s.lv || {}), JSON.stringify(s.score || {}), JSON.stringify(s.own || {}), JSON.stringify(res), w, left, wait > 0 ? wait : 0, t, sgMyRole()].join('|');
   if (!force && key === sgw.hud) return; sgw.hud = key;
   const rows = [];
-  for (let k = 1; k <= s.n; k++) { const N = set.nat[k - 1], hp = s.hp?.[k] ?? s.max; rows.push(`<span class="sg-nat${k === t ? ' me' : ''}" style="--c:#${new THREE.Color(N.col).getHexString()}"><b>${N.icon} ${N.name}</b> ${s.score?.[k] || 0}점<i style="width:${Math.round(hp / s.max * 100)}%"></i></span>`); }
+  for (let k = 1; k <= s.n; k++) { const N = set.nat[k - 1], hp = sgHp(k), owned = SG_SITES.filter(st => sgOwns(k, st.k)).map(st => st.icon).join(''); rows.push(`<span class="sg-nat${k === t ? ' me' : ''}" style="--c:#${new THREE.Color(N.col).getHexString()}"><b>${N.icon} ${N.name}</b> ${s.score?.[k] || 0}점 ${owned}<i style="width:${Math.round(hp / sgMax(k) * 100)}%"></i></span>`); }
   $('sgNats').innerHTML = rows.join('');
-  $('sgInfo').textContent = w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} · ${set.name}`;
+  $('sgInfo').textContent = w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${sgFinal() ? ' · ⚔️ 결전! 점수 2배' : ` · ${set.name}`}`;
+  $('sgMine').textContent = t ? `🪵 ${res.w || 0} · ⛓️ ${res.i || 0} · 🍚 ${res.f || 0}${sgLagging() === t ? ' · 💪 약소국 단결 (차지·보급 1.5배)' : ''}` : '👀 선생님은 옆줄에서 지켜봐요';
   if (w && sgw.ended !== s.r) { sgw.ended = s.r; showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
 // ---------- 선생님 ----------
 function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]); if (backend.mode !== 'firebase' && !list.some(([u]) => u === backend.uid)) list.push([backend.uid, { a: myAnimal, c: myShirt, me: true }]); return list; }
-function sgBalance(n, list) { // 정해 두지 않은 학생을 사람이 적은 나라로
+function sgBalance(n, list) {
   const cnt = {}; for (const [u] of list) { const v = sgw.assign[u]; if (v >= 1 && v <= n) cnt[v] = (cnt[v] || 0) + 1; else delete sgw.assign[u]; }
   for (const [u] of hShuffle([...list])) if (!sgw.assign[u]) { let best = 1; for (let t = 1; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; sgw.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; }
 }
 function fillSiegeAdmin(force) {
   if (!$('tpSgNow')) return;
   const s = S.siege, setKey = s ? s.set : $('tpSgSet').value, set = SIEGE_SETS[setKey] || SIEGE_SETS.three, n = s ? s.n : set.nat.length;
-  $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
+  const roles = s ? Object.entries(SG_ROLES).map(([k, R]) => `${R.icon}${Object.values(s.role || {}).filter(v => v === k).length}`).join(' ') : '';
+  $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초 · 역할 ${roles}` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
   $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on;
   const list = sgStudents(), key = [setKey, n, list.map(([u]) => u).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
   if (!force && key === sgw.listKey) return; sgw.listKey = key;
@@ -13994,10 +14579,10 @@ async function startSiege() {
   const list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; }
   sgBalance(n, list);
   const counts = set.nat.map((N, k) => `${N.icon}${N.name} ${list.filter(([u]) => sgw.assign[u] === k + 1).length}명`).join(' · ');
-  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: `${counts}\n${min}분 동안, 성문 체력 ${max}. 시작하면 모두 역사 마을 남쪽 전쟁터 우리 성으로 옮겨요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
-  const team = Object.fromEntries(list.map(([u]) => [u, sgw.assign[u]])), now = backend.now(), hp = {}, score = {};
-  for (let t = 1; t <= n; t++) { hp[t] = max; score[t] = 0; }
-  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at: now + 5000, end: now + 5000 + min * 60000, max, team, hp, score } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
+  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: `${counts}\n${min}분 · 성문 체력 ${max}. 시작하면 모두 남쪽 전쟁터 우리 성으로 옮기고, 각자 역할을 골라요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
+  const team = Object.fromEntries(list.map(([u]) => [u, sgw.assign[u]])), now = backend.now(), hp = {}, score = {}, lv = {}, res = {};
+  for (let t = 1; t <= n; t++) { hp[t] = max; score[t] = 0; lv[t] = 1; res[t] = { w: 6, i: 4, f: 4 }; }
+  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at: now + 6000, end: now + 6000 + min * 60000, max, team, hp, score, lv, res } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
   if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400);
 }
 function initSiegeUI() {
@@ -14007,14 +14592,12 @@ function initSiegeUI() {
   $('tpSgStart').onclick = startSiege;
   $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 역사 마을로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
   $('tpSgGo').onclick = () => { if (S.siege) { closeModals(); sgSpawn(); } else toast('진행 중인 전쟁이 없어요', 'info'); };
-  const btn = $('sgThrow');
-  btn.addEventListener('pointerdown', e => { e.preventDefault(); sgDown(); });
-  btn.addEventListener('pointerup', e => { e.preventDefault(); sgUp(); });
-  btn.addEventListener('pointerleave', () => { if (sgw.hold) sgUp(); });
+  $('sgThrow').addEventListener('pointerdown', e => { e.preventDefault(); sgShoot(); });
+  $('sgBarBtn').onclick = sgPlaceBar; $('sgRoleBtn').onclick = openSgRole;
   $('sgHome').onclick = () => { if (!isTeacher && S.siege?.on && !sgWinner()) return; ctfTeleport(520, 30, Math.PI); };
-  addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && S.siege && siegeRegion() && !(e.target instanceof Element && e.target.matches('input, textarea, select'))) { e.preventDefault(); sgDown(); } });
-  addEventListener('keyup', e => { if (e.key.toLowerCase() === 'f' && sgw.hold) { e.preventDefault(); sgUp(); } });
+  addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && S.siege && siegeRegion() && !(e.target instanceof Element && e.target.matches('input, textarea, select'))) { e.preventDefault(); sgShoot(); } });
 }
+
 
 /* =====================================================================
    45. 시작 & 반복
@@ -14060,7 +14643,7 @@ function loop() {
   if (joined) { updateHist(dt); updateSiege(dt); }
   updateFund(dt);
   if (joined) updateHome(dt);
-  updateFx(dt); grassWind.value = time;
+  updateFx(dt); grassWind.value = time; waterTime.value = time;
   updateControl(); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
   if (!joined) renderPreview(dt);
