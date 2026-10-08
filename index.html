@@ -507,6 +507,17 @@
   .hide-prop { font-size: 24px; padding: 4px 10px; background: #fff; }
   .hide-prop.on { background: #FFF3C4; box-shadow: 0 0 0 3px var(--ink) inset; }
   #pestBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(84px + var(--safe-top)); padding: 8px 16px; font-weight: 800; font-size: 16px; background: #FFF4D6; z-index: 3; white-space: nowrap; }
+  #evBar { position: fixed; left: 50%; top: calc(76px + var(--safe-top, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; width: min(560px, calc(100vw - 32px)); z-index: 3; }
+  #evBarT { font-weight: 800; } #evBarS { font-size: 18px; font-weight: 700; color: #1F3A68; margin-top: 4px; }
+  .ev-q { text-align: center; margin: 8px 0 10px; } .ev-ask { font-weight: 700; color: #5A4A3E; } .ev-big { font-size: 24px; font-weight: 800; margin-top: 6px; color: #1F3A68; } .ev-q .ko { display: block; color: #7A6B5D; margin-top: 4px; }
+  .ev-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ev-opts .btn { font-size: 18px; padding: 12px 8px; white-space: normal; line-height: 1.3; }
+  .ev-opts.ev-chips { display: flex; flex-wrap: wrap; justify-content: center; } .ev-chip { font-size: 18px; padding: 8px 12px; } .ev-chip.on { background: #E8F1FF; }
+  .ev-opts .btn.ok { background: #5FBE5A; color: #fff; } .ev-opts .btn.no { background: #F2B8B0; }
+  .ev-line { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 50px; padding: 8px; border: 2px dashed #E0D3BE; border-radius: 12px; margin-top: 8px; }
+  .ev-peek { margin-top: 6px; font-size: 14px; }
+  @media (max-width: 520px) { .ev-opts { grid-template-columns: 1fr; } }
+  #bdmBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 300px; z-index: 3; }
+  #bdmInfo { font-weight: 800; font-size: 18px; } #bdmMsg { min-height: 22px; font-weight: 700; color: #2F5E9E; }
   #bbBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #bbInfo { font-weight: 800; font-size: 16px; }
   .bb-gauge { position: relative; height: 18px; border-radius: 10px; background: #EEE6D8; overflow: hidden; margin-top: 6px; }
@@ -737,8 +748,8 @@
     <div class="choices five" id="hairs"></div>
     <div class="field">머리 색</div>
     <div class="choices five" id="hairColors"></div>
-    <div class="field">내 동물 배지</div>
-    <div class="choices" id="animals"></div>
+    <div class="field">닉네임 (8글자까지 · 머리 위에 보여요)</div>
+    <input id="nickIn" class="tinput" maxlength="8" autocomplete="off" placeholder="예: 반짝별" style="font-size:20px;text-align:center">
     <div class="field">옷 색깔</div>
     <div class="choices" id="shirts"></div>
     <button class="btn" id="joinBtn">마을로 들어가기</button>
@@ -780,6 +791,16 @@
   <div id="hideProps" class="hide-props hidden" aria-label="변신할 물건"></div>
 </div>
 <div id="pestBar" class="sticker hidden" role="status"></div>
+<div id="evBar" class="sticker hidden">
+  <div id="evBarT"></div>
+  <div id="evBarS" role="status"></div>
+  <div class="row-center" style="margin-top:6px"><button class="btn" id="evBarSay" style="background:#FFD23C">🔊 듣기</button><button class="btn" id="evBarShow">👀 글자</button><button class="btn" id="evBarQuit" style="background:#fff">그만</button></div>
+</div>
+<div id="bdmBar" class="sticker hidden">
+  <div id="bdmInfo"></div>
+  <div id="bdmMsg" role="status"></div>
+  <div class="row-center" style="margin-top:6px"><button class="btn" id="bdmHit" style="background:#FFD23C;font-size:22px;min-width:150px">🏸 치기 (F)</button><button class="btn" id="bdmQuit" style="background:#fff">그만</button></div>
+</div>
 <div id="bbBar" class="sticker hidden">
   <div id="bbInfo"></div>
   <div class="bb-gauge"><div id="bbFill"></div><i style="left:62%"></i><i style="left:78%"></i></div>
@@ -871,6 +892,15 @@
   <p class="hint" id="artMyShow"></p>
   <div class="row-center"><button class="btn" id="artClose" style="background:#E6DED2">닫기</button></div>
 </section>
+<section id="evPanel" class="modal sticker hidden" role="dialog" aria-modal="true" aria-labelledby="evTitle">
+  <h2 id="evTitle"></h2>
+  <p class="hint" id="evStep"></p>
+  <div id="evQ" class="ev-q"></div>
+  <div id="evOpts" class="ev-opts"></div>
+  <p id="evFb" class="qz-fb" role="status"></p>
+  <div class="row-center wrap"><button class="btn" id="evSay">🔊 다시 듣기</button><button class="btn" id="evNext" style="background:var(--leaf);color:#fff">다음 ▶</button><button class="btn" id="evClose" style="background:#E6DED2">닫기</button></div>
+  <p class="hint" style="text-align:center">🔊 소리가 안 나면 👀 글자로 보기를 눌러요 · 개인 기록은 남지 않고 반 전체 영어 별에 보태요</p>
+</section>
 <section id="gymPanel" class="modal sticker hidden" role="dialog" aria-modal="true" aria-labelledby="gymTitle">
   <h2 id="gymTitle"></h2>
   <p class="hint" id="gymHelp"></p>
@@ -918,7 +948,7 @@
 <section id="tip" class="modal sticker hidden">
   <h2>이렇게 놀아요</h2>
   <ol>
-    <li><span class="em">🧱</span>반짝이는 상자를 주워 마을 재료를 모아요</li>
+    <li><span class="em">🧱</span>공동 미션·놀이·퀴즈를 성공하면 마을 재료가 생겨요 (하루 20개까지)</li>
     <li><span class="em">🏗️</span>빛나는 동그라미에서 지어요. 네 곳을 지으면 마을 완성 🎉</li>
     <li><span class="em">🗺️</span>왼쪽 위 지도를 누르면 갈 곳이 한눈에 보여요</li>
   </ol>
@@ -934,6 +964,8 @@
       <li><span class="em">😊</span>😊 버튼(또는 Q)으로 인사·만세·춤 몸짓을 해요</li>
       <li><span class="em">💌</span>광장 오른쪽 감사 게시판에 오늘 고마웠던 일을 적으면 하루 한 번 🐚 보상을 받아요</li>
       <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 역사 마을에 가요. 북쪽 🏛️ 역사의 길에서 시대 퀴즈를 풀어 시대 건축물을 함께 지어요</li>
+      <li><span class="em">🏸</span>체육관(광장 동쪽): 회전 막대 점프 · 농구 · 배드민턴! 배드민턴은 1인칭으로 콕 아래로 가서 F·화면 톡·🏸 버튼으로 쳐요 (🤖 컴퓨터 또는 👫 친구와 1:1)</li>
+      <li><span class="em">🚌</span>체육관 옆 버스 정류장에서 버스를 타면 🗽 영어 마을에 가요. 구역 6곳(Lesson 7~12) 주민에게 E를 눌러 듣고·고르고·문장을 만들어요</li>
     </ol>
   </details>
   <p class="keys">움직이기: WASD 또는 방향키 / 점프: 스페이스 / 누르기: E / 공동 미션: B / 몸짓: Q / 지도: M</p>
@@ -1147,6 +1179,10 @@
     <div class="field">🖼️ 미술 공방 전시 신청 (✅ 전시를 눌러야 걸려요)</div>
     <div id="tpArtList"></div>
     <div class="row-center wrap"><button class="btn danger" id="tpRoomReset">🏫 독서·체육관 기록 처음으로</button></div>
+
+    <h3>🏷️ 닉네임 관리</h3>
+    <p class="hint">학생 머리 위에 보이는 닉네임이에요. 나쁜 말은 미리 막지만, 어울리지 않는 닉네임은 여기서 바꾸거나 지울 수 있어요. 지우면 "친구"로 보여요.</p>
+    <div id="tpNickList"></div>
 
     <h3>💌 감사 게시판</h3>
     <p class="hint">학생이 쓴 감사 글은 선생님이 ✅ 보이기를 눌러야 광장 게시판에 보여요. 이름은 남지 않아요.</p>
@@ -1490,11 +1526,11 @@ const CFG = {
   TEACHER_PIN: '126758',
   SITES: [
     { id: 'Library',    name: '도서관',    icon: '📚', cost: 5, color: 0x568CEB, pos: [-40, 0],  front: [1, 0] },
-    { id: 'Playground', name: '놀이터',    icon: '🎈', cost: 5, color: 0xFFA032, pos: [40, 0],   front: [-1, 0] },
+    { id: 'Playground', name: '체육관',    icon: '🏸', cost: 5, color: 0x3F7FD0, pos: [40, 0],   front: [-1, 0] },
     { id: 'Garden',     name: '텃밭',      icon: '🌱', cost: 4, color: 0x5FBE5A, pos: [-28, 40], front: [0, -1] },
     { id: 'Art',        name: '미술 공방', icon: '🎨', cost: 5, color: 0xE16EC8, pos: [28, 40],  front: [0, -1] },
   ],
-  CRATES: [[-16, -15], [16, -15], [-22, 11], [22, 11], [-9, 24], [9, 24], [0, 35], [0, -28], [-48, -21], [48, -21]],
+  CRATES: [], // 떠다니는 재료 상자는 없앴어요 (재료는 게임·미션 성공으로 얻어요: earnMat)
   CROPS: [
     { name: '토마토', icon: '🍅', fruit: 0xE63C32 },
     { name: '당근', icon: '🥕', fruit: 0xF58C28 },
@@ -1527,7 +1563,7 @@ const CFG = {
     { id: 'gar_weed', place: '🌱 텃밭', title: '텃밭 잡초 뽑기', desc: '작물이 잘 자라게 잡초를 뽑아요', reward: 'sunflower' },
     { id: 'plz_clean', place: '🏫 광장', title: '광장 쓰레기 줍기', desc: '광장을 깨끗하게 만들어요', reward: 'plaza' },
     { id: 'plz_deco', place: '🏫 광장', title: '광장 꾸미기', desc: '광장을 알록달록하게 꾸며요', reward: 'plaza' },
-    { id: 'pg_turn', place: '🎈 놀이터', title: '놀이터 차례 지키기', desc: '줄을 서서 차례대로 놀아요', reward: 'carousel' },
+    { id: 'pg_turn', place: '🏸 체육관', title: '체육관 차례 지키기', desc: '줄을 서서 차례대로 운동해요', reward: 'carousel' },
     { id: 'art_tidy', place: '🎨 미술 공방', title: '미술 공방 정리하기', desc: '쓴 물감과 붓을 제자리에 둬요', reward: 'stage' },
   ],
   // 게시판 공지 (선생님이 이 중에서만 골라요, 순서를 바꾸면 저장된 번호의 뜻이 바뀌어요)
@@ -1800,6 +1836,7 @@ function normalize(v) {
     thx: v.thx || {},
     read: v.read || {}, art: v.art || {}, gym: v.gym || {},
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
+    nick: toObj(v.nick), badm: v.badm || null, eng: toObj(v.eng),
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null,
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
@@ -1911,6 +1948,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async hvPick(i) { const t = st.hv.crates[i]; if (t && Date.now() - t < HV_CRATE_MS) return { ok: false }; st.hv.crates[i] = Date.now(); st.hv.picks = (st.hv.picks || 0) + 1; emit(); return { ok: true }; },
     async hvBuild(id) { if (st.hv.built[id]) return { ok: false, reason: 'built' }; if (hvMaterials(st) < HV_SITE[id].cost) return { ok: false, reason: 'materials' }; st.hv.built[id] = true; emit(); return { ok: true }; },
     async kiteFinish() { if (st.hv.kite.me) return { ok: false, reason: 'done' }; st.hv.kite.me = true; emit(); return { ok: true }; },
+    async matEarn() { st.picks = (st.picks || 0) + 1; emit(); return { ok: true }; },
+    async hvEarn() { st.hv.picks = (st.hv.picks || 0) + 1; emit(); return { ok: true }; },
     async pickCrate(i) {
       const t = st.crates[i];
       if (t && Date.now() - t < CFG.CRATE_RESPAWN_MS) return { ok: false };
@@ -1992,6 +2031,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async artPost(p) { (st.art ||= {})[`me_${Date.now().toString(36)}`] = { p, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async gymJc() { st.gym ||= {}; if (st.gym.jc && Date.now() < st.gym.jc + GYM2.jc.len) return { ok: false }; st.gym.jc = Date.now() + GYM2.jc.wait; emit(); return { ok: true }; },
     async gymAdd(k, n) { st.gym ||= {}; st.gym[k] = (st.gym[k] || 0) + n; emit(); return { ok: true }; },
+    async engStar(n) { st.eng ||= {}; st.eng[n] = (st.eng[n] || 0) + 1; emit(); return { ok: true }; },
+    async badSet() { return { ok: false }; }, async badOpen() { return { ok: false }; }, async badJoin() { return { ok: false }; }, // 🏸 친구와 1:1은 Firebase에서만
     async thxPost(t, d) { st.thx ||= {}; st.thx[`me_${Date.now().toString(36)}`] = { t, d, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async mathOre(id) { st.math ||= {}; st.math[id] = (st.math[id] || 0) + 1; emit(); return { ok: true }; },
     async mathBlock(id) { st.math ||= {}; st.math.blk ||= {}; const t = st.math.blk[id]; if (t && Date.now() - t < BM.respawn) return { ok: false, reason: 'taken' }; st.math.blk[id] = Date.now(); emit(); return { ok: true }; },
@@ -2198,6 +2239,14 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       }
       return { ok: false };
     },
+    async matEarn() { // 🧱 게임·미션 성공 보상: 마을 재료 +1 (규칙: 한 번에 +1, 0.25초 간격)
+      for (let attempt = 0; attempt < 4; attempt++) { try { await D.update(R('state'), { picks: (cache.picks || 0) + 1, lastPick: D.serverTimestamp() }); return { ok: true }; } catch (e) { await sleep(300 + Math.random() * 300); } }
+      return { ok: false };
+    },
+    async hvEarn() { // 🪵 역사 마을 건축 재료 +1
+      for (let attempt = 0; attempt < 4; attempt++) { try { await D.update(R('state'), { 'hv/picks': (cache.hv?.picks || 0) + 1, 'hv/lastPick': D.serverTimestamp() }); return { ok: true }; } catch (e) { await sleep(300 + Math.random() * 300); } }
+      return { ok: false };
+    },
     async pickCrate(i) {
       for (let attempt = 0; attempt < 4; attempt++) {
         const t = cache.crates[i];
@@ -2339,6 +2388,20 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
     async gymAdd(k, n) { // 🏀 체육관: 반 전체 기록에 보태기 (한 번에 200까지)
       try { const r = await D.runTransaction(R(`state/gym/${k}`), c => (c || 0) + n); return { ok: r.committed }; }
+      catch (e) { return { ok: false }; }
+    },
+    async badSet(upd) { // 🏸 배드민턴 친구 경기: 친 순간(hit)·점수(sc)만 적어요
+      try { await D.update(R('state/badm'), upd); return { ok: true }; } catch (e) { return { ok: false }; }
+    },
+    async engStar(n) { // 🗽 영어 마을: 반 전체 영어 별 +1
+      try { const r = await D.runTransaction(R(`state/eng/${n}`), c => (c || 0) + 1); return { ok: r.committed }; } catch (e) { return { ok: false }; }
+    },
+    async badOpen(nick) {
+      try { const r = await D.runTransaction(R('state/badm'), c => (!c || c.ph === 'end' || now() - (c.at || 0) > 45000) ? { id: Date.now().toString(36), a: uid, an: nick, ph: 'wait', sc: { a: 0, b: 0 }, srv: 'a', pt: 0, at: now() } : undefined); return { ok: r.committed }; }
+      catch (e) { return { ok: false }; }
+    },
+    async badJoin(nick) {
+      try { const r = await D.runTransaction(R('state/badm'), c => (c && c.ph === 'wait' && c.a !== uid && now() - (c.at || 0) < 45000) ? { ...c, b: uid, bn: nick, ph: 'play', at: now() } : undefined); return { ok: r.committed }; }
       catch (e) { return { ok: false }; }
     },
     async thxPost(t, d) { // 💌 감사 글: 열쇠 = 내 기기 번호_시각 (내 글 표시용), 선생님이 ok를 켜야 게시판에 보여요
@@ -2492,7 +2555,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -2844,31 +2907,28 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
 const CANVAS_FONT = "Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif"; // 3D 표지판·칠판 글꼴
-function paintText(lines, o = {}) {
-  const font = o.font || 64, pad = o.pad ?? 22, lh = font * 1.18;
-  const cv = document.createElement('canvas');
-  let ctx = cv.getContext('2d');
-  ctx.font = `800 ${font}px ${CANVAS_FONT}`;
-  const w = Math.ceil(Math.max(...lines.map(l => ctx.measureText(l).width), 10) + pad * 2);
-  const h = Math.ceil(lh * lines.length + pad * 1.2);
-  cv.width = o.w || w; cv.height = o.h || h;
-  ctx = cv.getContext('2d');
-  ctx.font = `800 ${font}px ${CANVAS_FONT}`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-  if (o.bg) {
-    ctx.fillStyle = o.bg; roundRect(ctx, 4, 4, cv.width - 8, cv.height - 8, 28); ctx.fill();
-    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(47,42,38,.55)'; ctx.stroke();
-  }
+function paintText(lines, o = {}) { // 글자 그림: 정해진 판(o.w·o.h)에 넘치면 글씨를 줄이고, 한글 모양에 맞춰 위아래 가운데에 놓아요 (테두리 없음)
+  lines = lines.map(l => String(l ?? ''));
+  let font = o.font || 64; const pad = o.pad ?? 22;
+  const cv = document.createElement('canvas'); let ctx = cv.getContext('2d');
+  const setF = () => { ctx.font = `800 ${font}px ${CANVAS_FONT}`; };
+  setF();
+  const widest = () => Math.max(...lines.map(l => ctx.measureText(l).width), 10);
+  if (o.w && o.h) { const k = Math.min(1, (o.w - pad * 2) / widest(), (o.h - pad * 1.1) / (font * 1.2 * lines.length)); if (k < 1) { font = Math.max(10, Math.floor(font * k)); setF(); } }
+  const lh = font * 1.2;
+  cv.width = o.w || Math.ceil(widest() + pad * 2); cv.height = o.h || Math.ceil(lh * lines.length + pad * 1.2);
+  ctx = cv.getContext('2d'); setF();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round';
+  if (o.bg) { ctx.fillStyle = o.bg; roundRect(ctx, 2, 2, cv.width - 4, cv.height - 4, Math.min(28, cv.height * 0.32)); ctx.fill(); }
+  const mt = ctx.measureText('가나Ag'), asc = mt.actualBoundingBoxAscent || font * 0.8, desc = mt.actualBoundingBoxDescent || font * 0.15;
   const top = (cv.height - lh * lines.length) / 2;
   lines.forEach((l, i) => {
-    const y = top + lh * (i + 0.5);
-    if (!o.bg && o.stroke !== false) {
-      ctx.lineWidth = font * 0.16; ctx.strokeStyle = '#3B2F2A'; ctx.strokeText(l, cv.width / 2, y);
-    }
+    const y = top + lh * (i + 0.5) + (asc - desc) / 2;
+    if (!o.bg && o.stroke !== false) { ctx.lineWidth = font * 0.16; ctx.strokeStyle = '#3B2F2A'; ctx.strokeText(l, cv.width / 2, y); }
     ctx.fillStyle = o.fg || '#fff'; ctx.fillText(l, cv.width / 2, y);
   });
   const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return { tex, aspect: cv.width / cv.height };
 }
 function makeLabel(parent, lines, height, x, y, z, o = {}) {
@@ -2887,7 +2947,7 @@ function makeLabel(parent, lines, height, x, y, z, o = {}) {
   return sp;
 }
 function signPlane(parent, lines, w, h, x, y, z, o = {}) {
-  const { tex } = paintText(lines, { ...o, w: Math.round(w * 100), h: Math.round(h * 100) });
+  const K = 1.6, { tex } = paintText(lines, { ...o, font: (o.font || 64) * K, pad: (o.pad ?? 22) * K, w: Math.round(w * 100 * K), h: Math.round(h * 100 * K) }); // 선명하게 1.6배로 그려요
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false }));
   m.position.set(x, y, z); m.rotation.y = Math.PI; // 앞(-Z)을 보도록
   parent.add(m); return m;
@@ -2981,65 +3041,38 @@ function bLibrary(g, c) {
   for (const x of [-1.6, 1.6]) box(g, 0.4, 0.6, 1.2, C.dark, x, 0.3, -4.5, { solid: false });
 }
 
-function bPlayground(g, c) {
-  box(g, 16, 0.15, 15, C.sand, 0, 0.075, 0, { solid: false });
-  const cols = [0xFF6E6E, 0xFFB446, 0xFAE150, 0x78D26E, 0x5AAAF0, 0xAA78E6];
-  const steps = [[-6, 3.5], [-4, 1], [-2, 3.5], [0, 1], [2, 3.5], [4, 1]];
-  steps.forEach(([x, z], i) => {
-    const top = 1.0 + i * 1.2;
-    box(g, 2.4, 0.4, 2.4, cols[i], x, top - 0.2, z);
-    box(g, 2.55, 0.12, 2.55, C.white, x, top - 0.42, z, { solid: false }); // 발판 아래 흰 테두리
-    cyl(g, 0.17, top - 0.4, C.white, x, (top - 0.4) / 2, z, { solid: false });
-  });
-  { // 미끄럼틀: 세 번째 발판에서 모래밭 쪽으로 (보기 전용)
-    const top = 1.0 + 2 * 1.2, len = Math.hypot(top, 4.2), a = Math.atan2(top, 4.2);
-    const sl = new THREE.Group(); sl.position.set(-2, 0, 3.5 + 1.2 + 2.1); g.add(sl);
-    box(sl, 1.1, 0.12, len, 0x5AAAF0, 0, top / 2 - 0.1, 0, { solid: false, rx: a });
-    for (const sx of [-0.6, 0.6]) box(sl, 0.12, 0.35, len, 0x3F86D6, sx, top / 2 + 0.05, 0, { solid: false, rx: a });
-    box(sl, 1.3, 0.1, 0.8, 0x3F86D6, 0, 0.12, 2.3, { solid: false });
-  }
-  { // 그네 (보기 전용)
-    const sw = new THREE.Group(); sw.position.set(5.2, 0, -3.3); g.add(sw);
-    for (const sx of [-1.8, 1.8]) for (const sz of [-0.8, 0.8]) box(sw, 0.2, 3.3, 0.2, 0xFF6E6E, sx, 1.55, sz * 0.55, { solid: false, rx: -sz * 0.3 });
-    cyl(sw, 0.12, 3.9, 0xFFB446, 0, 3.15, 0, { solid: false, rz: Math.PI / 2 });
-    for (const sx of [-0.8, 0.8]) {
-      for (const dz of [-0.25, 0.25]) box(sw, 0.04, 2.3, 0.04, 0xCCCCCC, sx, 2.0, dz, { solid: false });
-      box(sw, 0.8, 0.1, 0.6, 0xFAE150, sx, 0.85, 0, { solid: false });
-    }
-  }
-  const topY = 1.0 + 6 * 1.2;
-  box(g, 3.5, 0.4, 3.5, c, 6.8, topY - 0.2, 4.2);
-  box(g, 3.65, 0.12, 3.65, C.white, 6.8, topY - 0.42, 4.2, { solid: false });
-  for (const sx of [-1.4, 1.4]) for (const sz of [-1.4, 1.4]) cyl(g, 0.16, topY - 0.4, C.white, 6.8 + sx, (topY - 0.4) / 2, 4.2 + sz, { solid: false }); // 네 다리
-  box(g, 0.25, 2.4, 0.25, C.wood, 8.2, topY + 1.2, 5.6, { solid: false });
-  box(g, 1.4, 0.2, 0.2, C.wood, 7.5, topY + 2.3, 5.6, { solid: false });
-  ball(g, 0.5, C.gold, 6.9, topY + 1.6, 5.6, { name: 'Bell', emissive: 0.25 });
-  // 입구 아치
-  cyl(g, 0.3, 4.5, c, -2.5, 2.25, -6);
-  cyl(g, 0.3, 4.5, c, 2.5, 2.25, -6);
-  for (const x of [-2.5, 2.5]) ball(g, 0.42, C.white, x, 4.7, -6, { solid: false });
-  box(g, 5.5, 0.6, 0.6, c, 0, 4.7, -6);
-  for (let k = 0; k < 5; k++) ball(g, 0.2, [0xFF6E6E, 0xFAE150, 0x5AAAF0, 0x78D26E, 0xAA78E6][k], -1.6 + k * 0.8, 4.25, -6.25, { solid: false }); // 아치 방울 장식
-  ball(g, 0.6, C.gold, 0, 5.6, -6, { emissive: 0.6 });
-  // 점프맵 (놀이터 뒤편): 두 줄로 된 짧은 코스. 발판은 넓고(3.6) 간격은 점프 한 번 거리(4.2)라
-  // 앞으로 누른 채 점프해도 다음 발판에 내려앉아요. 한 칸씩 1만큼 높아져요 (점프 높이 약 1.7)
-  const JP = [ // [이름, x, z, 윗면 높이, 색]
-    ['JStart', -7.2, 11.8, 0.1, 0x5FBE5A], ['JP1', -3.0, 11.8, 1.1, 0xFF6E6E], ['JCp1', 1.2, 11.8, 2.1, 0xFAE150], ['JP2', 5.4, 11.8, 3.1, 0x5AAAF0],
-    ['JP3', 5.4, 16.3, 4.1, 0xAA78E6], ['JCp2', 1.2, 16.3, 5.1, 0xFAE150], ['JP4', -3.0, 16.3, 6.1, 0xFFB446], ['JGoal', -7.2, 16.3, 7.1, C.gold],
-  ];
-  for (const [name, x, z, top, col] of JP) {
-    box(g, 3.6, 0.4, 3.6, col, x, top - 0.2, z, { name });
-    if (top > 0.5) box(g, 0.3, top - 0.1, 0.3, C.white, x, (top - 0.4) / 2 - 0.15, z, { solid: false, name: 'Jpost' });
-  }
-  for (const [x, z, top] of [[1.2, 11.8, 2.1], [1.2, 16.3, 5.1]]) { // 체크포인트 깃발
-    box(g, 0.12, 1.6, 0.12, C.white, x + 1.5, top + 0.8, z + 1.5, { solid: false, name: 'Jflag' });
-    box(g, 0.7, 0.45, 0.05, C.red, x + 1.86, top + 1.35, z + 1.5, { solid: false, name: 'Jflag' });
-  }
-  for (const dx of [-1.4, 1.4]) box(g, 0.3, 2.6, 0.3, C.red, -7.2 + dx, 7.1 + 1.3, 17.8, { solid: false, name: 'Jarch' });
-  box(g, 3.1, 0.35, 0.35, C.red, -7.2, 7.1 + 2.6, 17.8, { solid: false, name: 'Jarch' });
-  ball(g, 0.4, C.gold, -7.2, 7.1 + 3.1, 17.8, { emissive: 0.8, name: 'Jarch' });
+function bPlayground(g, c) { // 🏸 체육관 (예전 놀이터 자리 · 부지 id는 그대로 'Playground'): 둥근 지붕 강당, 앞(-z)에 큰 유리문
+  const W = 15, D = 13, H = 4.2, B = 0.3, o = { solid: false }, wall = 0xEDE6DA, trim = c, roofC = 0x8A97A4, rib = 0x66727E;
+  box(g, W + 1.8, B, D + 1.8, C.stone, 0, B / 2, 0, o); // 기단
+  box(g, W, H, D, wall, 0, B + H / 2, 0); // 몸체 (부딪힘)
+  box(g, W + 0.1, 0.55, D + 0.1, 0xB3A898, 0, B + 0.27, 0, o); // 아래 돌 띠
+  box(g, W + 0.16, 0.32, D + 0.16, trim, 0, B + H - 0.05, 0, o); // 위 파란 띠
+  const vault = new THREE.CylinderGeometry(1, 1, 1, 28, 1, true, Math.PI / 2, Math.PI);
+  mesh(vault, g, W / 2 + 0.45, D + 0.9, 3.0, roofC, 0, B + H + 0.1, 0, { solid: false, rx: Math.PI / 2 }); // 둥근 지붕
+  for (let k = -2; k <= 2; k++) mesh(vault, g, W / 2 + 0.5, 0.16, 3.05, rib, 0, B + H + 0.1, k * (D / 4.4), { solid: false, rx: Math.PI / 2 }); // 지붕 갈비
+  const half = new THREE.CircleGeometry(1, 28, 0, Math.PI);
+  mesh(half, g, W / 2, 3.0, 1, wall, 0, B + H + 0.1, -D / 2 - 0.02, { solid: false, ry: Math.PI }); // 앞 반달 벽
+  mesh(half, g, W / 2, 3.0, 1, wall, 0, B + H + 0.1, D / 2 + 0.02, o); // 뒤 반달 벽
+  mesh(half, g, 3.4, 2.1, 1, C.glass, 0, B + H + 0.2, -D / 2 - 0.06, { solid: false, ry: Math.PI }); // 반달 유리창
+  for (const a of [-0.5, 0, 0.5]) box(g, 0.1, 2.1, 0.06, 0xFFFFFF, Math.sin(a) * 1.7, B + H + 0.2 + 1.05 * Math.cos(a), -D / 2 - 0.1, { solid: false, rz: a });
+  box(g, 6.8, 0.12, 0.08, 0xFFFFFF, 0, B + H + 0.25, -D / 2 - 0.1, o);
+  // 정문: 파란 문틀 + 유리문 두 짝 + 차양
+  box(g, 3.6, 3.1, 0.12, 0x2F5E9E, 0, B + 1.55, -D / 2 - 0.06, o);
+  for (const x of [-0.82, 0.82]) { box(g, 1.5, 2.75, 0.08, C.glass, x, B + 1.42, -D / 2 - 0.13, o); box(g, 0.08, 0.6, 0.1, 0xD8DDE4, x * 0.15, B + 1.4, -D / 2 - 0.2, o); }
+  box(g, 5.6, 0.25, 2.4, trim, 0, B + 3.55, -D / 2 - 1.2, o);
+  for (const x of [-2.5, 2.5]) cyl(g, 0.13, 3.4, 0xDCDCDC, x, B + 1.7, -D / 2 - 2.2, o);
+  signPlane(g, ['🏸 반월 체육관'], 4.8, 0.62, 0, B + 3.55, -D / 2 - 2.42, { font: 48, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = Math.PI;
+  box(g, 6, 0.16, 1.4, 0xD9D4CC, 0, 0.08, -D / 2 - 1.6, o); // 계단
+  // 창문: 앞·옆·뒤
+  for (const x of [-5.1, 5.1]) { box(g, 2.8, 1.9, 0.08, C.glass, x, B + 2.4, -D / 2 - 0.04, o); box(g, 3.0, 0.14, 0.16, 0xFFFFFF, x, B + 1.4, -D / 2 - 0.08, o); }
+  for (const s2 of [-1, 1]) for (const z of [-4.2, -1.4, 1.4, 4.2]) { box(g, 0.08, 2.3, 1.9, C.glass, s2 * (W / 2 + 0.03), B + 2.5, z, o); box(g, 0.16, 0.14, 2.1, 0xFFFFFF, s2 * (W / 2 + 0.06), B + 1.3, z, o); }
+  for (const x of [-4.6, 0, 4.6]) box(g, 2.4, 1.6, 0.08, C.glass, x, B + 2.6, D / 2 + 0.03, o);
+  // 앞마당: 화분과 벤치
+  for (const x of [-4.4, 4.4]) { box(g, 1.8, 0.6, 0.9, 0x9A7A5A, x, 0.3, -D / 2 - 1.3, o); ball(g, 0.55, 0x5E9E4A, x - 0.4, 0.85, -D / 2 - 1.3, o); ball(g, 0.5, 0x6DAF55, x + 0.45, 0.82, -D / 2 - 1.3, o); }
+  for (const z of [-2.5, 2.5]) { box(g, 0.6, 0.12, 2.2, C.wood, -W / 2 - 1.3, 0.55, z, o); for (const dz of [-0.9, 0.9]) box(g, 0.5, 0.5, 0.12, 0x6B5A48, -W / 2 - 1.3, 0.25, z + dz, o); }
+  ball(g, 0.3, 0xFFFFFF, 0, B + H + 3.4, 0, o); // 지붕 꼭대기 콕 장식
+  { const sk = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.7, 10, 1, true), new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, roughness: 0.8 })); sk.position.set(0, B + H + 3.95, 0); sk.rotation.x = Math.PI; g.add(sk); }
 }
-
 function picketFence(g, x1, z1, x2, z2) { // 뾰족 말뚝 울타리 (보기 전용)
   const len = Math.hypot(x2 - x1, z2 - z1), n = Math.max(2, Math.round(len / 0.55)), ry = Math.atan2(x2 - x1, z2 - z1), o = { solid: false };
   for (const y of [0.35, 0.8]) box(g, 0.08, 0.12, len, 0xF3EEE4, (x1 + x2) / 2, y, (z1 + z2) / 2, { solid: false, ry });
@@ -3405,7 +3438,7 @@ function makeAvatar(animalIdx, shirtIdx, hairIdx = 0, hairColorIdx = 0, parent =
   box(book, 0.54, 0.38, 0.04, C.white, 0, 0, 0.05, o);
   book.position.set(0, 1.0, 0.5); book.rotation.x = -0.5; book.visible = false;
   rig.add(book);
-  const badge = makeLabel(g, [CFG.ANIMALS[animalIdx] ?? '🐶'], 0.6, 0, 2.75, 0, { stroke: false, pad: 4, font: 80 }); // 동물 배지
+  const badge = makeLabel(g, [''], 0.48, 0, 2.75, 0, { font: 60, pad: 6, fg: '#FFFFFF' }); // 🏷️ 닉네임 (예전 동물 배지 자리)
   parent.add(g);
   for (const e of eyes) e.userData.sy = e.scale.y;
   const av = { g, rig, head, legL, legR, armL, armR, book, eyes, badge, phase: 0, idle: Math.random() * 6, blink: 1 + Math.random() * 3, still: 0, squash: 0, air: 0, act: null };
@@ -3699,6 +3732,7 @@ function updateCamera(dt) {
       camera.lookAt(look); return;
     }
   }
+  if (bdmCamera(dt)) return; // 🏸 배드민턴: 1인칭
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
   const inCls = (player.pos.x > 600 && player.pos.x < 700 && player.pos.z < 30) || (player.pos.x > 740 && player.pos.x < 1000) || (player.pos.x > 1410 && player.pos.x < 1610), cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
   const want = new V3(
@@ -3735,6 +3769,7 @@ function onPlayers(type, uid, data) {
     refreshSyncStatus();
   }
   r.target = data;
+  { const nm = nickOf(uid, data); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
   const now = performance.now(), last = r.buf[r.buf.length - 1];
   if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
@@ -3784,7 +3819,7 @@ let lastSent = '', lastSentAt = 0;
 function sendPresence(time) {
   if (!joined || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
   const p = player.pos;
-  const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
+  const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
@@ -3801,7 +3836,12 @@ function sendPresence(time) {
 let S = emptyState();
 let stateLoaded = false;
 let backend = null, joined = false;
-let myAnimal = 0, myShirt = 0, myHair = 0, myHairColor = 0, myBookUntil = 0;
+let myAnimal = 0, myShirt = 0, myHair = 0, myHairColor = 0, myBookUntil = 0, myNick = '';
+// 🏷️ 닉네임: 8글자까지, 나쁜 말은 막아요 (선생님이 관리 화면에서 바꾸거나 지울 수 있어요: state/nick/{기기})
+const cleanNick = (v) => String(v || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 8);
+const NICK_BAD = ['시발', '씨발', '씨빨', '시바', '씨바', 'ㅅㅂ', 'ㅆㅂ', '병신', 'ㅂㅅ', '븅신', '개새', '개색', '새끼', '쌔끼', 'ㅅㄲ', '좆', '존나', '졸라', 'ㅈㄴ', '지랄', 'ㅈㄹ', '미친', '미쳤', 'ㅁㅊ', '닥쳐', '꺼져', '죽어', '죽을', '엿먹', '찐따', '장애', '바보', '멍청', '돼지', '뚱땡', '못생', '섹스', '야동', '변태', '애미', '애비', '느금', '니미', 'fuck', 'shit', 'bitch', 'sex', 'damn', 'stupid', 'idiot', 'dick', 'ass'];
+function nickBad(v) { const t = String(v || '').toLowerCase().replace(/[\s\d_.\-~!@#$%^&*()+=\[\]{}|\\:;"',.?/]/g, ''); return NICK_BAD.some(w => t.includes(w)); }
+const nickOf = (uid, target) => { const o = S.nick?.[uid]; return o !== undefined ? (o || '친구') : (cleanNick(target?.n) || ''); };
 const cooldown = {};
 const onCooldown = (key, sec) => {
   const t = performance.now() / 1000;
@@ -3873,12 +3913,12 @@ async function actPick(c) {
 }
 async function actBuild(s) {
   const have = computeMaterials(S);
-  if (have < s.cost) { toast(`🧱 재료가 ${s.cost - have}개 더 필요해요! 친구들과 상자를 모아요`, 'warn'); return; }
+  if (have < s.cost) { toast(`🧱 재료가 ${s.cost - have}개 더 필요해요! 공동 미션·놀이·퀴즈를 성공하면 재료가 생겨요`, 'warn'); return; }
   const res = await backend.build(s.id);
   if (res.ok) { playAct(player.avatar, 'cheer'); guideDone('build'); playSfx('build'); }
   if (!res.ok) {
     if (res.reason === 'built') toast('이미 지어졌어요!', 'info');
-    else toast('🧱 재료가 부족해요! 친구들과 상자를 모아요', 'warn');
+    else toast('🧱 재료가 부족해요! 공동 미션·놀이·퀴즈로 더 모아요', 'warn');
   }
   // 성공하면 모두의 화면에서 상태 변화로 완성 연출이 나와요
 }
@@ -3955,11 +3995,7 @@ function setupActivity(id, model) {
     addInteract({ pos: wp('ReadSpot'), r: 3, text: () => ['책 읽기 📖', '도서관'], run: actRead });
     addInteract({ pos: wp('ShelfR'), r: 2.6, text: () => ['책 짝 맞추기 🃏', '도서관 책장'], run: openMemGame });
     setTimeout(applyLibGlow, 0); // 이미 성공한 친구가 있으면 새로 지은 책장도 반짝여요
-  } else if (id === 'Playground') {
-    world.bell = model.getObjectByName('Bell');
-    world.bellT = 1;
-    addInteract({ pos: wp('Bell'), r: 2.8, dy: 2.2, text: () => ['종 울리기 🔔', '놀이터 꼭대기'], run: actBell });
-    setupJumpMap(model);
+  } else if (id === 'Playground') { // 🏸 체육관: 문은 setupDoors가 맡아요 (예전 종·점프맵은 없어졌어요)
   } else if (id === 'Garden') {
     CFG.CROPS.forEach((crop, i) => {
       const spot = model.getObjectByName('CropSpot' + i);
@@ -4118,6 +4154,7 @@ function applyState(st) {
     world.bellT = 0;
     burst(world.bell.getWorldPosition(new V3()), [C.gold, 0xFFFFFF], 40, 5, 1);
   }
+  syncNick(prev);
   syncDecor(first);
   syncPlots(first);
   syncLife(prev, first);
@@ -4195,7 +4232,7 @@ function updateHUD(prev) {
 
 function initUI() {
   // 입장 화면
-  const animals = $('animals'), shirts = $('shirts');
+  const shirts = $('shirts');
   myAnimal = clamp(parseInt(store.get('sv-animal') ?? '0', 10) || 0, 0, 5);
   myShirt = clamp(parseInt(store.get('sv-shirt') ?? '4', 10) || 0, 0, 5);
   myHair = clamp(parseInt(store.get('sv-hair') ?? '0', 10) || 0, 0, CFG.HAIRS.length - 1);
@@ -4215,13 +4252,8 @@ function initUI() {
     b.onclick = () => { myHairColor = i; pick($('hairColors'), i); updatePreview(); };
     $('hairColors').appendChild(b);
   });
-  CFG.ANIMALS.forEach((a, i) => {
-    const b = document.createElement('button');
-    b.className = 'choice'; b.textContent = a; b.setAttribute('aria-label', `동물 ${i + 1}`);
-    b.setAttribute('aria-pressed', String(i === myAnimal));
-    b.onclick = () => { myAnimal = i; [...animals.children].forEach((c, k) => c.setAttribute('aria-pressed', String(k === i))); updatePreview(); };
-    animals.appendChild(b);
-  });
+  myNick = cleanNick(store.get('sv-nick') || ''); $('nickIn').value = myNick; // 닉네임 (동물 배지 대신)
+  $('nickIn').oninput = () => { if (pv.av?.badge) pv.av.badge.userData.set([cleanNick($('nickIn').value)]); };
   CFG.SHIRTS.forEach((c, i) => {
     const b = document.createElement('button');
     b.className = 'choice swatch'; b.style.background = hexStr(c); b.setAttribute('aria-label', `옷 색깔 ${i + 1}`);
@@ -4273,6 +4305,10 @@ async function join(practice, asTeacher = false) {
   if (joined) return;
   const err = $('joinErr');
   err.textContent = '';
+  { const nk = cleanNick($('nickIn').value); // 닉네임 확인
+    if (!nk && !asTeacher) { err.textContent = '닉네임을 적어 주세요 (8글자까지)'; $('nickIn').focus(); return; }
+    if (nickBad(nk)) { err.textContent = '친구가 기분 나쁠 수 있는 말은 닉네임으로 쓸 수 없어요'; $('nickIn').focus(); return; }
+    myNick = nk; store.set('sv-nick', nk); }
   store.set('sv-animal', String(myAnimal));
   store.set('sv-shirt', String(myShirt));
   store.set('sv-hair', String(myHair));
@@ -4310,7 +4346,7 @@ async function join(practice, asTeacher = false) {
   renderRoleBtn();
   refreshSyncStatus();
   stopPreview();
-  player.avatar = makeAvatar(myAnimal, myShirt, myHair, myHairColor);
+  player.avatar = makeAvatar(myAnimal, myShirt, myHair, myHairColor); player.avatar.badge.userData.set([myNick]);
   player.avatar.g.position.copy(player.pos);
   camYaw = 0;
   joined = true;
@@ -4866,7 +4902,7 @@ function syncMission(prev, first) {
 }
 
 function closeModals() {
-  for (const id of ['tip', 'picker', 'decorMenu', 'missionPanel', 'teacherPanel', 'votePanel', 'activityPanel', 'memGame', 'dropGame', 'patGame', 'lifePanel', 'quizPanel', 'mapPanel', 'meetVotePanel', 'minePanel', 'thxPanel', 'artPanel', 'gymPanel']) $(id).classList.add('hidden');
+  for (const id of ['tip', 'picker', 'decorMenu', 'missionPanel', 'teacherPanel', 'votePanel', 'activityPanel', 'memGame', 'dropGame', 'patGame', 'lifePanel', 'quizPanel', 'mapPanel', 'meetVotePanel', 'minePanel', 'thxPanel', 'artPanel', 'gymPanel', 'evPanel']) $(id).classList.add('hidden');
 }
 function openMissionPanel() { closeModals(); $('missionPanel').classList.remove('hidden'); fillMissionPanel(); }
 const openMissionHub = openMissionPanel; // 예전 이름 (마을 미션 탭은 없어졌어요)
@@ -4905,7 +4941,7 @@ async function contributeMission(key) {
   missionBusy = key; fillMissionPanel();
   try {
     const res = m.legacy ? await backend.contribute(m.id) : await backend.joinMission(m.id);
-    if (res.ok) toast(`🙌 고마워요! "${m.title}" 미션에 힘을 보탰어요`, 'success');
+    if (res.ok) { toast(`🙌 고마워요! "${m.title}" 미션에 힘을 보탰어요`, 'success'); earnMat('공동 미션 참여'); }
     else if (res.reason === 'done') toast(m.daily ? '👍 오늘은 이미 보탰어요. 내일 또 눌러 주세요!' : '👍 이미 함께했어요!', 'info');
     else if (res.reason === 'full') toast('🎉 벌써 목표를 달성했어요!', 'info');
     else if (res.reason !== 'offline') toast('앗, 잘 안 됐어요. 한 번 더 눌러 주세요', 'warn');
@@ -4926,7 +4962,7 @@ async function copyText(text, what) {
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
 function fillTeacherPanel() {
-  fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
+  fillNickAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -5158,7 +5194,7 @@ function unbuildSite(info) { // 지은 건물을 다시 빈 부지로
   setSiteLabel(info);
   if (id === 'Garden') world.crops = [];
   if (id === 'Art') { world.decoGroup = null; world.decoArea = null; world.decos = {}; world.easelPos = null; mural.wall = null; }
-  if (id === 'Playground') { world.bell = null; removeJumpMap(); }
+  if (id === 'Playground') { world.bell = null; removeJumpMap(); bld.gymTempOn = undefined; }
 }
 function lockReward(id) { // 열린 보상 장소를 다시 잠그기
   const s = rewardSpots[id];
@@ -5770,7 +5806,7 @@ function startPreview() {
 function updatePreview() {
   if (!pv.on) return;
   if (pv.av) pv.scene.remove(pv.av.g);
-  pv.av = makeAvatar(myAnimal, myShirt, myHair, myHairColor, pv.scene);
+  pv.av = makeAvatar(myAnimal, myShirt, myHair, myHairColor, pv.scene); pv.av.badge.userData.set([cleanNick($('nickIn')?.value || myNick)]);
 }
 function renderPreview(dt) {
   if (!pv.on || !pv.av) return;
@@ -6517,7 +6553,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -6716,6 +6752,7 @@ async function finishStarGame() {
   setTimeout(clearStars, 1500);
   const already = !!S.starDone?.[backend.uid];
   const res = already ? { ok: false, reason: 'done' } : await backend.starFinish(); // 서버에는 이때 한 번만
+  earnMat('별자리 찾기 성공');
   const local = backend.mode !== 'firebase' ? ' (이 브라우저에서만 기록돼요)' : '';
   if (res.ok) toast(`🌌 별자리 완성! 캠프 하늘에 별자리가 떴어요. 우리 반 완성 ${starCount()}명${local}`, 'success');
   else if (res.reason === 'done') toast(`🌌 또 완성했어요! 완성 인원은 한 사람당 한 번만 세요 (지금 ${starCount()}명)`, 'info');
@@ -6827,6 +6864,7 @@ async function winMemGame() {
   if (lib) burst(lib.getWorldPosition(new V3()).add(new V3(4, 3, 0)), [0xFFE680, 0xFFFFFF, 0x9FD3FF], 60, 6, 2);
   const already = !!S.libDone?.[backend.uid];
   const res = already ? { ok: false, reason: 'done' } : await backend.memFinish(); // 서버에는 이때 한 번만
+  earnMat('책 짝 맞추기 성공');
   const local = backend.mode !== 'firebase' ? ' (이 브라우저에서만 기록돼요)' : '';
   $('mgLive').textContent = '성공! 도서관 책장이 반짝여요.';
   if (res.ok) toast(`📚 성공! 도서관 책장이 반짝이기 시작했어요. 성공한 친구 ${libCount()}명${local}`, 'success');
@@ -6976,6 +7014,7 @@ async function winDropGame() {
   if (g) g.traverse(o => { if (o.name?.startsWith('Plant')) { const s = o.scale.clone(); o.scale.multiplyScalar(0.3); growing.push({ obj: o, t: 0, dur: 0.8, to: s }); } });
   const already = !!S.gardenDone?.[backend.uid];
   const res = already ? { ok: false, reason: 'done' } : await backend.dropFinish(); // 서버에는 이때 한 번만
+  earnMat('물방울 순서 성공');
   const local = backend.mode !== 'firebase' ? ' (이 브라우저에서만 기록돼요)' : '';
   if (res.ok) toast(`🌼 성공! 텃밭 울타리에 꽃이 피었어요. 성공한 친구 ${gardenCount()}명${local}`, 'success');
   else if (res.reason === 'done') toast(`🌼 또 성공했어요! 성공 인원은 한 사람당 한 번만 세요 (지금 ${gardenCount()}명)`, 'info');
@@ -7118,6 +7157,7 @@ async function winPatGame() {
   showBanner('🖼️ 공동 작품 완성!', '미술 공방 게시판에 우리 반 무늬가 하나 늘었어요', 4500);
   const already = !!S.artDone?.[backend.uid];
   const res = already ? { ok: false, reason: 'done' } : await backend.patFinish(code); // 서버에는 이때 한 번만
+  earnMat('무늬 완성 성공');
   const local = backend.mode !== 'firebase' ? ' (이 브라우저에서만 기록돼요)' : '';
   if (res.ok) toast(`🖼️ 성공! 미술 공방 게시판에 작품이 하나 걸렸어요 (모두 ${artCount()}점)${local}`, 'success');
   else if (res.reason === 'done') toast(`🖼️ 또 완성했어요! 작품은 한 사람당 한 점만 걸려요 (지금 ${artCount()}점)`, 'info');
@@ -7213,7 +7253,8 @@ function busyAt(x, z) {
   for (const [x0, z0, x1, z1] of CFG.DECOR_ZONES) if (x > x0 - 1 && x < x1 + 1 && z > z0 - 1 && z < z1 + 1) return true;
   for (const r of CFG.REWARDS) if (Math.hypot(x - r.pos[0], z - r.pos[1]) < 5.5) return true;
   for (const [cx, cz] of CFG.CRATES) if (Math.hypot(x - cx, z - cz) < 2.2) return true;
-  if (x > 47 && Math.abs(z) < 12) return true;                       // 점프맵
+  if (x > 47 && Math.abs(z) < 12) return true;                       // 체육관 뒤 (예전 점프맵 자리)
+  if (Math.hypot(x - 54, z - 12.5) < 4.5) return true;               // 🚌 영어 마을 버스 정류장
   if (Math.hypot(x + 10, z - 5) < 3.5) return true;                  // 미션 게시판
   if (segDist(x, z, -26, -3, -30, -13) < 3.5 || segDist(x, z, -30, -13, -60, -13) < 3.5) return true; // 숲길
   if (Math.hypot(x - 7, z + 7) < 2.2 || Math.hypot(x + 7, z + 7) < 2.2) return true;                   // 광장 화분
@@ -7685,7 +7726,7 @@ function renderLot(id, first) {
     it.position.set(pos.x, 0.06, pos.z); it.rotation.y = ((d.r | 0) % 4) * Math.PI / 2;
     if (!first && !before[cell]) burst(new V3(pos.x, 1, pos.z), [0x9BE36B, 0xFFFFFF, 0xFFD23C], 20, 4, 2);
   }
-  makeLabel(g, [mine ? '⭐ 내 집' : `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집`], 1.0, cx, pl.h ? (pl.h.s === 1 ? 9.6 : 7) : 3.2, cz + (pl.h ? 3 : 0));
+  makeLabel(g, [mine ? '⭐ 내 집' : `🏡 친구 집`], 1.0, cx, pl.h ? (pl.h.s === 1 ? 9.6 : 7) : 3.2, cz + (pl.h ? 3 : 0));
   registerSolids(g, `lot:${id}`);
   batchStatic(g);
   v.g = g; g.visible = v.near = lotNear(id);
@@ -7851,7 +7892,7 @@ function fillPlotAdmin() {
   const sel = $('tpPlotSel'), keep = sel.value; sel.textContent = '';
   for (const id of ids) {
     const pl = S.plots[id], opt = document.createElement('option'); opt.value = id;
-    opt.textContent = `${lotName(id)} ${CFG.ANIMALS[pl.a] ?? ''} (물건 ${Object.keys(pl.items || {}).length}개${pl.h ? ', 집 있음' : ''})`;
+    opt.textContent = `${lotName(id)} (물건 ${Object.keys(pl.items || {}).length}개${pl.h ? ', 집 있음' : ''})`;
     sel.appendChild(opt);
   }
   if ([...sel.options].some(x => x.value === keep)) sel.value = keep;
@@ -8095,6 +8136,16 @@ const bag = (() => {
 })();
 function saveBag() { store.set(BAG_KEY, JSON.stringify(bag)); renderCoinChip(); }
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+// 🧱 재료는 게임·미션·퀴즈를 성공하면 얻어요 (떠다니는 상자 대신) · 한 기기에서 하루 MAT_DAY_CAP번까지
+const MAT_DAY_CAP = 20;
+async function earnMat(why, hvMat = false) {
+  if (!joined || !backend) return false;
+  bag.mat ||= {}; if (bag.mat.day !== todayKey()) bag.mat = { day: todayKey(), n: 0 };
+  if (bag.mat.n >= MAT_DAY_CAP) return false;
+  const r = hvMat ? await backend.hvEarn() : await backend.matEarn();
+  if (r.ok) { bag.mat.n++; saveBag(); guideDone('crate'); toast(`${hvMat ? '🪵 건축' : '🧱 마을'} 재료 +1 · ${why}${backend.mode === 'firebase' ? '' : ' (이 브라우저에만)'}`, 'success'); playSfx('pick'); }
+  return r.ok;
+}
 function rollDay() { if (bag.day !== todayKey()) { bag.day = todayKey(); bag.req = {}; saveBag(); } }
 const critCount = () => Object.values(bag.c).reduce((a, b) => a + b, 0);
 const KIND_CH = { bug: 'b', fish: 'f', shell: 's', hv: 'h' };
@@ -8767,7 +8818,7 @@ function openBag() {
       `🌳 나무 흔들기 (마을·들판·바닷가 야자수): 나뭇가지, 과일${seasonNow() === 'wi' ? ' (겨울엔 과일 없음)' : ''}`,
       '🪨 돌 캐기 (들판에 흩어진 돌): 돌',
       `🦋 풀밭 어디서나 (내 주변에 나타나요): ${availNow(BUGS).map(c => c.name).join(', ') || '없음'}`,
-      `🎣 연못 (놀이터·미술 공방 사이): ${availNow(FISH.filter(f => f.w === 'pond')).map(c => c.name).join(', ')}`,
+      `🎣 연못 (체육관·미술 공방 사이): ${availNow(FISH.filter(f => f.w === 'pond')).map(c => c.name).join(', ')}`,
       `🌊 바다 (동쪽 바닷가 물가·부두): ${availNow(FISH.filter(f => f.w === 'sea')).map(c => c.name).join(', ')}`,
       `🐚 모래사장 (동쪽 바닷가): ${availNow(SHELLS).map(c => c.name).join(', ')}`,
     ]) box.lastChild.append(el2('div', '', line));
@@ -9284,14 +9335,15 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 };
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1816, z0: -52, z1: 52, s: 2.4 };
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
-function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}${JSON.stringify(S.siege.own || {})}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
+function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, MAPB === MAPB_EV, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}${JSON.stringify(S.siege.own || {})}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
 function drawMapBase() {
   if (MAPB === MAPB_HV) return drawHvMapBase();
   if (MAPB === MAPB_MATH) return drawMathMapBase();
+  if (MAPB === MAPB_EV) return drawEvMapBase();
   const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s;
   const cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H;
   const c = cv.getContext('2d'), s = MAPB.s;
@@ -9336,9 +9388,9 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
+const MAP_LABELS = () => MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['⚔️', SG.cx, SG.cz], ...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; }), ...SG_SITES.map(st => [st.icon, st.x, st.z])] : []), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
-] : [['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], 
+] : [['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
   ['🏡', -15, 106], ['🏖️', 69, 0], ['🐷', FUND_BOX[0], FUND_BOX[1]], ...FUND.map(f => [f.icon, ...f.pos]), ['⚓', 88, BEACH.pierZ], ['⛰️', -30, -66], ['💦', 30, -80], ['🚩', MT.peak[0], MT.peak[1]], [forestOpen() ? '⛺' : '🔒', -74, -17],
   ...CFG.REWARDS.filter(r => S.unlocks[r.id]).map(r => [r.icon, ...r.pos]),
@@ -9361,6 +9413,20 @@ function drawMarks(c, toPx, scale, big) { // 친구(점) · 나(화살표) · �
   c.fillStyle = '#E2584A'; c.strokeStyle = '#fff'; c.lineWidth = 2.5;
   c.beginPath(); c.moveTo(0, -9); c.lineTo(7, 7); c.lineTo(0, 3); c.lineTo(-7, 7); c.closePath(); c.fill(); c.stroke();
   c.restore();
+}
+function drawEvMapBase() { // 영어 마을 지도
+  const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s;
+  const cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H;
+  const c = cv.getContext('2d'), s = MAPB.s;
+  const rect = (x0, z0, x1, z1, fill) => { c.fillStyle = fill; c.fillRect(mapX(x0), mapZ(z0), (x1 - x0) * s, (z1 - z0) * s); };
+  c.fillStyle = '#8ACB64'; c.fillRect(0, 0, W, H);
+  rect(EV.x0, EV.z0, EV.x1, EV.z1, '#A9D18A'); rect(EV.x0, -3, EV.x1, 3, '#E3D6BC');
+  for (const Z of EV_Z) { rect(Z.npc[0] - 2, Math.min(0, Math.sign(Z.z) * 14), Z.npc[0] + 2, Math.max(0, Math.sign(Z.z) * 14), '#E3D6BC'); rect(Z.x - 11, Z.z - 9, Z.x + 11, Z.z + 9, '#C9E3A8'); }
+  rect(EV_POOL[0] - EV_POOL[2], EV_POOL[1] - EV_POOL[3], EV_POOL[0] + EV_POOL[2], EV_POOL[1] + EV_POOL[3], '#5AB4E6');
+  rect(EV_ST.cx - 2.2, -45, EV_ST.cx + 2.2, -14, '#8A9098'); rect(EV_ST.cx - 15, EV_ST.cz - 2.2, EV_ST.cx + 15, EV_ST.cz + 2.2, '#8A9098');
+  for (const [, , [x, z]] of EV_PLACES) rect(x - 2.5, z - 2.5, x + 2.5, z + 2.5, '#D8C7B0');
+  c.fillStyle = '#EFE6D2'; c.beginPath(); c.arc(mapX(EV.cx), mapZ(0), 6.5 * s, 0, Math.PI * 2); c.fill();
+  mapUI.key = mapKey();
 }
 function drawMathMapBase() { // 수학 광산 마을 지도
   const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s;
@@ -9427,7 +9493,7 @@ function openMap() {
   const panel = $('mapPanel'); panel.classList.remove('hidden');
   const aspect = (MAPB.x1 - MAPB.x0) / (MAPB.z1 - MAPB.z0), dpr = Math.min(2, devicePixelRatio || 1);
   const h = Math.max(220, Math.min(innerHeight - 230, 620)), w = Math.min(h * aspect, Math.min(520, innerWidth * 0.92) - 48);
-  panel.querySelector('h2').textContent = MAPB === MAPB_HV ? '🗺️ 역사 마을 지도' : MAPB === MAPB_MATH ? '🗺️ 수학 광산 마을 지도' : '🗺️ 우리 마을 지도';
+  panel.querySelector('h2').textContent = MAPB === MAPB_EV ? '🗺️ 영어 마을 지도' : MAPB === MAPB_HV ? '🗺️ 역사 마을 지도' : MAPB === MAPB_MATH ? '🗺️ 수학 광산 마을 지도' : '🗺️ 우리 마을 지도';
   const cv = $('bigMap'); cv.style.width = `${w}px`; cv.style.height = `${w / aspect}px`; cv.width = Math.round(w * dpr); cv.height = Math.round(w / aspect * dpr);
   $('miniToggle').checked = mapUI.show;
   drawBig(); $('mapClose').focus();
@@ -9436,7 +9502,7 @@ function closeMap() { $('mapPanel').classList.add('hidden'); $('miniBtn').focus(
 function updateMap(dt) {
   if (!joined) return;
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
-  const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
+  const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : evRegion() ? MAPB_EV : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
   const inCls = classRegion() || arenaRegion() || homeRegion() || bldRegion(); // 교실·운동장·집 안·건물 안에서는 작은 지도를 숨겨요
   $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
@@ -9460,7 +9526,7 @@ function initMapUI() {
 // ---------- 첫걸음 안내 ----------
 const GUIDE_KEY = 'sv-guide-v1';
 const GUIDE = [
-  { id: 'crate', text: '🧱 반짝이는 상자를 찾아가서 E(누르기)로 주워요' },
+  { id: 'crate', text: '🧱 공동 미션·놀이·퀴즈를 성공하면 마을 재료를 얻어요' },
   { id: 'build', text: '🏗️ 재료가 모이면 빛나는 동그라미(건축 부지)에서 지어요' },
   { id: 'gather', text: '🌳 나무 흔들기·곤충 잡기·낚시로 모아 봐요. 🎒 가방에 들어가요' },
   { id: 'sell', text: '🏪 광장 오른쪽 위 가게에 팔면 반 동전과 🐚 조개돈이 생겨요' },
@@ -9831,7 +9897,7 @@ const HV_SITES = [
   { id: 'kite', name: '연날리기 언덕', icon: '🪁', cost: 3, pos: [546, 24], color: 0x4F8FE8, after: '언덕에서 연을 날릴 수 있어요' },
 ];
 const HV_SITE = Object.fromEntries(HV_SITES.map(s => [s.id, s]));
-const HV_CRATES = [[486, -8], [490, 12], [507, -6], [514, 11], [528, -9], [533, 9], [553, -7], [556, 9]];
+const HV_CRATES = []; // 떠다니는 건축 재료 지게는 없앴어요 (시대 퀴즈·마을 놀이 성공으로 얻어요: earnMat)
 const inHV = (x, z) => (x >= HV.x0 && x <= HV.x1 && z >= HV.z0 && z <= HV.z1 && Math.hypot(x - HV.pond[0], z - HV.pond[1]) > HV.pond[2] + 0.2)
   || (x >= HV.dock[0] && x <= HV.x0 && Math.abs(z) <= 1.3); // 나루터
 const hvRegion = () => joined && player.pos.x > 400 && player.pos.x < 600;
@@ -10101,17 +10167,18 @@ async function travelTo(dest) {
   hv.travel = true;
   if (life.fishing) endFishing(); if (placing.active) stopPlacing(); if (kite.active) endKite(false);
   closeModals(); mtn.view = null;
-  const boat = document.querySelector('#travelFx .tv-boat'), cartTrip = dest === 'math' || dest === 'fromMath';
-  if (boat) boat.textContent = cartTrip ? '🚃' : '⛵';
-  $('travelText').textContent = dest === 'hv' ? '⛵ 배를 타고 역사 마을로 가는 중…' : dest === 'math' ? '🚃 광차를 타고 수학 광산 마을로 가는 중…' : dest === 'fromMath' ? '🚃 광차를 타고 우리 마을로 돌아가는 중…' : '⛵ 우리 마을로 돌아가는 중…';
+  const boat = document.querySelector('#travelFx .tv-boat'), cartTrip = dest === 'math' || dest === 'fromMath', busTrip = dest === 'ev' || dest === 'fromEv';
+  if (boat) boat.textContent = cartTrip ? '🚃' : busTrip ? '🚌' : '⛵'; if (busTrip) stopEvGame();
+  $('travelText').textContent = dest === 'ev' ? '🚌 버스를 타고 영어 마을로 가는 중…' : dest === 'fromEv' ? '🚌 버스를 타고 우리 마을로 돌아가는 중…' : dest === 'hv' ? '⛵ 배를 타고 역사 마을로 가는 중…' : dest === 'math' ? '🚃 광차를 타고 수학 광산 마을로 가는 중…' : dest === 'fromMath' ? '🚃 광차를 타고 우리 마을로 돌아가는 중…' : '⛵ 우리 마을로 돌아가는 중…';
   $('travelFx').classList.remove('hidden'); playSfx('cast');
   await sleep(1000);
-  const [x, z, h] = dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' ? [MV.back[0] + 3, MV.back[1], Math.PI / 2] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2];
+  const [x, z, h] = dest === 'ev' ? [EV.bus[0] + 3, 0, Math.PI / 2] : dest === 'fromEv' ? [EV.stop[0] - 3, EV.stop[1], -Math.PI / 2] : dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' ? [MV.back[0] + 3, MV.back[1], Math.PI / 2] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2];
   player.pos.set(x, 0.35, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.35;
   camera.position.set(x - Math.sin(h) * 10, 5, z - Math.cos(h) * 10);
   await sleep(700);
   $('travelFx').classList.add('hidden'); playSfx('plop'); if (boat) setTimeout(() => { boat.textContent = '⛵'; }, 300);
   hv.travel = false;
+  if (dest === 'ev' && !ev.seen) { ev.seen = true; toast('🗽 Welcome to English Village! 구역 6곳의 주민에게 E를 눌러 영어 놀이를 해요 (🔊 소리를 켜 주세요)', 'info'); sayEn('Welcome to English Village!'); }
   if (dest === 'hv' && !hv.seen) { hv.seen = true; toast(`🏯 역사 마을에 도착했어요! 🪵 건축 재료를 모아 서당·장터·정자·연날리기 언덕을 함께 지어요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
   updateHUD(null);
 }
@@ -10127,7 +10194,7 @@ async function hvPick(i) {
 async function hvBuild(id) {
   const s = HV_SITE[id], have = hvMaterials();
   if (hvBuilt(id)) { toast('이미 지어졌어요!', 'info'); return; }
-  if (have < s.cost) { toast(`🪵 건축 재료가 ${s.cost - have}개 더 필요해요! 마을 곳곳의 재료 지게를 찾아봐요`, 'warn'); return; }
+  if (have < s.cost) { toast(`🪵 건축 재료가 ${s.cost - have}개 더 필요해요! 역사의 길 시대 퀴즈나 연날리기를 성공하면 생겨요`, 'warn'); return; }
   const res = await backend.hvBuild(id);
   if (res.ok) { playAct(player.avatar, 'cheer'); playSfx('build'); }
   else if (res.reason === 'built') toast('이미 지어졌어요!', 'info');
@@ -10217,7 +10284,7 @@ async function endKite(success) {
   if (player.avatar.act?.k === 'look') playAct(player.avatar, null);
   if (success) {
     playAct(player.avatar, 'cheer'); playSfx('fanfare');
-    const res = await backend.kiteFinish();
+    const res = await backend.kiteFinish(); earnMat('연날리기 성공', true);
     const n = Object.keys(S.hv?.kite || {}).length, local = backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)';
     toast(res.ok ? `🪁 연이 하늘 높이 날아올랐어요! 우리 반 연날리기 성공 ${n}명${local}` : `🪁 또 성공했어요! 성공 인원은 한 사람당 한 번만 세요 (지금 ${n}명)`, 'success');
     setTimeout(() => { if (!kite.active && kite.obj) kite.obj.visible = kite.line.visible = false; }, 4000); // 잠깐 하늘에 떠 있다가
@@ -11965,7 +12032,7 @@ function buildRoom(id) { // 지금 들어가 있는 집 안만 그려요
   for (const x of [-3.5, 3.5]) { box(g, 1.8, 1.2, 0.1, 0xBFE6FF, cx + x, 1.8, cz - D / 2 + 0.2, o); box(g, 1.9, 0.08, 0.14, trim, cx + x, 1.18, cz - D / 2 + 0.24, o); } // 창문
   box(g, 1.8, 0.02, 1.0, 0xE2584A, cx, 0.115, cz + D / 2 - 0.9, o);                                   // 현관 매트
   const mine = pl.o === backend?.uid;
-  signPlane(g, [mine ? '⭐ 우리 집' : `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집`], 2.4, 0.5, cx, H - 0.5, cz - D / 2 + 0.2, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = 0;
+  signPlane(g, [mine ? '⭐ 우리 집' : `🏡 친구 집`], 2.4, 0.5, cx, H - 0.5, cz - D / 2 + 0.2, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = 0;
   for (const [cell, d] of Object.entries(inn.c || {})) {
     if (!/^[0-5]_[0-4]$/.test(cell)) continue;
     const [x, z] = roomCellPos(id, cell), it = new THREE.Group(); it.position.set(x, 0.1, z); it.rotation.y = ((d.r | 0) % 4) * Math.PI / 2;
@@ -12006,7 +12073,7 @@ function renderHomeBar() {
   const id = homeRegion() ? roomAt(player.pos.x, player.pos.z) || home.id : '', pl = id && S.plots[id], mine = pl && pl.o === backend?.uid;
   $('homeBar').classList.toggle('hidden', !pl);
   if (!pl) return;
-  $('hbTitle').textContent = mine ? '⭐ 우리 집' : `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집 구경 중`;
+  $('hbTitle').textContent = mine ? '⭐ 우리 집' : `🏡 친구 집 구경 중`;
   $('hbEdit').classList.toggle('hidden', !mine || !!home.edit); $('hbHouse').classList.toggle('hidden', !mine || !!home.edit);
   $('hbPlace').classList.toggle('hidden', !home.edit); $('hbRot').classList.toggle('hidden', !home.edit); $('hbCancel').classList.toggle('hidden', !home.edit);
   if (home.edit) $('hbPlace').textContent = `✅ ${FURN[home.edit.t].icon} 여기에 놓기`;
@@ -12130,7 +12197,7 @@ function updateHome(dt) {
   if ((home.t = (home.t || 0) - dt) <= 0) { home.t = 0.3; renderHomeBar(); }
 }
 function initHomeUI() {
-  home.doorI = addInteract({ pos: new V3(0, -99, 0), r: 2.2, text: () => { const pl = S.plots[home.doorId]; if (!pl) return null; return pl.o === backend?.uid ? ['우리 집 들어가기 🚪', '집 안을 꾸밀 수 있어요'] : ['친구 집 놀러 가기 🏠', `${CFG.ANIMALS[pl.a] ?? '🐾'} 친구 집 · 구경만 해요`]; }, run: () => goHome(home.doorId, true) });
+  home.doorI = addInteract({ pos: new V3(0, -99, 0), r: 2.2, text: () => { const pl = S.plots[home.doorId]; if (!pl) return null; return pl.o === backend?.uid ? ['우리 집 들어가기 🚪', '집 안을 꾸밀 수 있어요'] : ['친구 집 놀러 가기 🏠', `🏡 친구 집 · 구경만 해요`]; }, run: () => goHome(home.doorId, true) });
   home.exitI = addInteract({ pos: new V3(0, -99, 0), r: 1.8, text: () => home.id ? ['밖으로 나가기 🚪', '마당으로'] : null, run: () => goHome(home.id, false) });
   home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => home.inCell ? ['가구 치우기 📦', `${FURN[S.plots[home.id]?.in?.c?.[home.inCell]?.t | 0]?.name} → 내 가구 상자`] : null, run: () => homeRemove(home.inCell) });
   $('hbEdit').onclick = openHomeDecor;
@@ -12557,7 +12624,7 @@ async function digMine() {
   const res = await backend.mathOre(m.id);
   mv.busy = false;
   if (!res.ok && res.reason !== 'offline') { say('⚠️ 저장되지 않았어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요'); return; }
-  bag.ore[m.id] = (bag.ore[m.id] || 0) + 1; saveBag(); updateHUD(null);
+  bag.ore[m.id] = (bag.ore[m.id] || 0) + 1; saveBag(); updateHUD(null); earnMat('광산 문제 성공');
   fb.textContent = `⛏️ ${m.frac ? mv.expr.map(t => t.k === 'n' ? frText(t.v) : t.v).join(' ') : exprText(mv.expr)} = ${frText(p.target)} 정답! ${m.oreIcon} ${m.ore} +1`; fb.className = 'qz-fb good';
   playSfx('pick'); playAct(player.avatar, 'cheer');
   burst(new V3(m.x, 2.5, MV.z0 + 3), [m.color, 0xFFFFFF, C.gold], 40, 5, 2);
@@ -12733,13 +12800,13 @@ function initThxUI() {
    53. 🏫 건물 안 활동 — 도서관·미술 공방·실내 체육관 문에서 E로 들어가요 (방은 월드 x 1430~1590에 따로 있어요)
    · 📚 도서관: 독서 기록장 (장르·별점·느낌을 골라 기록 → 반 전체 독서 나무가 자라요. 책 제목은 이 기기에만)
    · 🎨 미술 공방: 내 그림 작업실 (16×16 픽셀 그림 → 내 작품 저장, 전시 신청 → 선생님 확인 후 전시 벽·우리 집 액자)
-   · 🏀 실내 체육관(놀이터 옆 작은 건물): 🌀 회전 막대 점프(친구들과 함께 버티기) · 🏀 농구 슛 → 반 전체 기록에 보태요 (개인 기록·순위 없음)
+   · 🏸 체육관(예전 놀이터 자리): 🌀 회전 막대 점프(친구들과 함께 버티기) · 🏀 농구 슛 · 🏸 배드민턴(컴퓨터·친구 1:1) → 반 전체 기록에 보태요 (개인 기록·순위 없음)
    · 저장: state/read {n, g/{장르}} · state/art/{기기번호_시각} {p 그림, ok, at} · state/gym {rope, hit}
    ===================================================================== */
 const ROOMS = {
   lib: { name: '도서관', icon: '📚', cx: 1450, cz: 0, w: 22, d: 16, wall: 0xF3E6CF, floor: 0xB9875A, site: 'Library' },
   art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
-  gym: { name: '실내 체육관', icon: '🏀', cx: 1570, cz: 0, w: 24, d: 18, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
+  gym: { name: '체육관', icon: '🏸', cx: 1580, cz: 0, w: 46, d: 18, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
   gh: { name: '온실', icon: '🌿', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
@@ -12816,33 +12883,47 @@ function buildInteriors() {
     for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; box(g, 0.02, 0.45, 0.02, 0xFFFFFF, B.x + Math.cos(a) * B.rim * 0.85, B.h - 0.22, B.z + Math.sin(a) * B.rim * 0.85, { solid: false, rx: Math.sin(a) * 0.25, rz: -Math.cos(a) * 0.25 }); }
     const arc = new THREE.Mesh(new THREE.RingGeometry(B.three - 0.06, B.three + 0.06, 40, 1, 0, Math.PI), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide })); arc.rotation.x = -Math.PI / 2; arc.position.set(B.x, 0.12, B.z); g.add(arc);
     cyl(g, 1.0, 0.02, 0xFFFFFF, B.x, 0.115, B.z + 2.6, o); cyl(g, 0.92, 0.03, r.floor, B.x, 0.12, B.z + 2.6, o);
-    for (let k = 0; k < 6; k++) ball(g, 0.25, 0xFF8A3A, cx + 10.5, 0.35 + (k % 2) * 0.45, cz + 3 + Math.floor(k / 2) * 0.5, o);
+    for (let k = 0; k < 6; k++) ball(g, 0.25, 0xFF8A3A, B.x + 4, 0.35 + (k % 2) * 0.45, cz + 3 + Math.floor(k / 2) * 0.5, o);
     bld.gymLabel = makeLabel(g, [''], 0.8, B.x, 4.2, B.z + 1);
     addInteract({ pos: new V3(B.x, 1, B.z + 3.6), r: 3.2, text: () => roomNow() === 'gym' && !bb.on ? ['농구 하기 🏀', '꾹 눌러 힘을 모아 던져요'] : null, run: bbStart });
+    // 🏸 배드민턴 코트 (오른쪽): 초록 바닥 + 흰 선 + 네트
+    const L = (w2, d2, x, z) => box(g, w2, 0.02, d2, 0xFFFFFF, x, 0.125, z, o);
+    box(g, BDM.x1 - BDM.x0 + 1.6, 0.02, BDM.hz * 2 + 1.6, 0x3E8E6A, (BDM.x0 + BDM.x1) / 2, 0.112, 0, o);
+    L(BDM.x1 - BDM.x0, 0.08, (BDM.x0 + BDM.x1) / 2, -BDM.hz); L(BDM.x1 - BDM.x0, 0.08, (BDM.x0 + BDM.x1) / 2, BDM.hz); L(0.08, BDM.hz * 2, BDM.x0, 0); L(0.08, BDM.hz * 2, BDM.x1, 0);
+    for (const sx of [-1, 1]) { L(0.08, BDM.hz * 2, BDM.nx + sx * 2.0, 0); L(BDM.x1 - BDM.nx - 2.0, 0.08, BDM.nx + sx * (2.0 + (BDM.x1 - BDM.nx - 2.0) / 2), 0); }
+    for (const sz of [-1, 1]) cyl(g, 0.07, BDM.netH + 0.1, 0xD8DDE4, BDM.nx, (BDM.netH + 0.1) / 2, sz * (BDM.hz + 0.35), o);
+    const netM = new THREE.Mesh(new THREE.PlaneGeometry(BDM.hz * 2 + 0.7, 0.75), new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
+    netM.position.set(BDM.nx, BDM.netH - 0.375, 0); netM.rotation.y = Math.PI / 2; g.add(netM);
+    box(g, 0.04, 0.07, BDM.hz * 2 + 0.7, 0xFFFFFF, BDM.nx, BDM.netH, 0, o);
+    bld.bdmLabel = makeLabel(g, [''], 0.8, BDM.nx, 3.6, -BDM.hz - 1.2);
+    addInteract({ pos: new V3(BDM.x0 - 1.2, 1, 0), r: 2.6, text: () => roomNow() === 'gym' && !bdm.on ? ['배드민턴 하기 🏸', S.badm?.ph === 'wait' && backend.now() - (S.badm.at || 0) < 45000 ? `${S.badm.an || '친구'}이(가) 기다려요` : '컴퓨터 · 친구와 1:1'] : null, run: openBmMenu });
+    addInteract({ pos: new V3(BDM.x1 + 1.2, 1, 0), r: 2.6, text: () => roomNow() === 'gym' && !bdm.on ? ['배드민턴 하기 🏸', '컴퓨터 · 친구와 1:1'] : null, run: openBmMenu });
   }
   // 나가는 문
   for (const [id, r] of Object.entries(ROOMS)) addInteract({ pos: new V3(r.cx, 1, r.cz + r.d / 2 - 0.8), r: 2.2, text: () => roomNow() === id ? ['밖으로 나가기 🚪', r.name] : null, run: () => exitRoom(id) });
   registerSolids(g, 'rooms');
-  // 체육관 입구 (놀이터 앞 작은 건물 — 놀이터가 없어도 보여요)
-  const gb = new THREE.Group(); gb.position.set(GYM_DOOR[0], 0, GYM_DOOR[1]); gb.rotation.y = Math.PI / 2; scene.add(gb);
+  // 임시 체육관 입구 (체육관 건물을 짓기 전까지만 보여요)
+  const gb = new THREE.Group(); gb.position.set(GYM_DOOR[0], 0, GYM_DOOR[1]); gb.rotation.y = Math.PI / 2; scene.add(gb); bld.gymTemp = gb;
   box(gb, 4.4, 3.4, 3.2, 0xE3F0FF, 0, 1.7, 0); mesh(GABLE, gb, 4.9, 1.4, 3.6, 0x4F8FE8, 0, 3.4, 0, { solid: false });
-  box(gb, 1.6, 2.4, 0.1, C.dark, 0, 1.2, -1.62, o); signPlane(gb, ['🏀 실내 체육관'], 2.8, 0.6, 0, 2.9, -1.68, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false });
-  registerSolids(gb, 'static');
+  box(gb, 1.6, 2.4, 0.1, C.dark, 0, 1.2, -1.62, o); signPlane(gb, ['🏸 임시 체육관'], 2.8, 0.6, 0, 2.9, -1.68, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false });
   renderRooms(true);
 }
-const GYM_DOOR = [52, -14]; // 놀이터(40,0) 북동쪽 · 문은 서쪽(-x)을 봐요
+const GYM_DOOR = [52, -14]; // 체육관 부지(40,0) 북동쪽 · 문은 서쪽(-x)을 봐요 (체육관을 짓기 전 임시 입구)
 function buildingDoor(id) { // 도서관·미술 공방: 건물 문 앞 (세워진 다음에)
   const info = world.sites?.[id]; if (!info?.model) return null;
   info.model.updateMatrixWorld(true);
-  return info.model.localToWorld(new V3(0, 0, id === 'Art' ? 0.3 : id === 'Garden' ? 1.0 : -1.6)); // 텃밭: 창고 문(온실 입구)
+  return info.model.localToWorld(new V3(0, 0, id === 'Art' ? 0.3 : id === 'Garden' ? 1.0 : id === 'Playground' ? -7.0 : -1.6)); // 텃밭: 창고 문(온실 입구) · 체육관: 큰 유리문
 }
 function setupDoors() {
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '📚 도서관 안'] : null, run: () => enterRoom('lib') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'art', text: () => S.built.Art ? ['들어가기 🚪', '🎨 미술 공방 안'] : null, run: () => enterRoom('art') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.0, dyn: 'gh', text: () => S.built.Garden ? ['온실 들어가기 🌿', '내 화분 키우기'] : null, run: () => enterRoom('gh') });
-  addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() ? null : ['들어가기 🚪', '🏀 실내 체육관'], run: () => enterRoom('gym') });
+  addInteract({ pos: new V3(0, -99, 0), r: 2.6, dyn: 'gym', text: () => S.built.Playground ? ['들어가기 🚪', '🏸 체육관 안'] : null, run: () => enterRoom('gym') });
+  addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() || S.built.Playground ? null : ['들어가기 🚪', '🏸 임시 체육관'], run: () => enterRoom('gym') });
 }
 function updateDoors() {
+  const tempOn = !S.built?.Playground; // 체육관을 지으면 임시 입구는 사라져요
+  if (bld.gymTemp && bld.gymTempOn !== tempOn) { bld.gymTempOn = tempOn; bld.gymTemp.visible = tempOn; removeColliders('gymTemp'); if (tempOn) registerSolids(bld.gymTemp, 'gymTemp'); }
   for (const it of interactables) if (it.dyn) { const p = buildingDoor(ROOMS[it.dyn].site); if (p) it.pos.set(p.x, 1, p.z); else it.pos.set(0, -99, 0); }
 }
 async function enterRoom(id) {
@@ -12854,7 +12935,7 @@ async function enterRoom(id) {
   player.pos.set(r.cx, 0.12, r.cz + r.d / 2 - 3.2); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
-  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏀 실내 체육관이에요! 왼쪽은 🌀 회전 막대 점프(친구들과 함께), 오른쪽은 🏀 농구예요' }[id], 'info');
+  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 왼쪽 🌀 회전 막대 점프 · 가운데 🏀 농구 · 오른쪽 🏸 배드민턴 코트' }[id], 'info');
 }
 async function exitRoom(id) {
   if (hv.travel) return;
@@ -12862,7 +12943,7 @@ async function exitRoom(id) {
   $('travelText').textContent = '🌳 밖으로 나가는 중…'; $('travelFx').classList.remove('hidden');
   await sleep(350);
   let x, z, h;
-  if (id === 'gym') { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
+  if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
   else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
   player.pos.set(x, 0.15, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.45;
   camera.position.set(x - Math.sin(h) * 8, 6, z - Math.cos(h) * 8);
@@ -12896,12 +12977,14 @@ function renderRooms(force) {
   }
   const gy = S.gym || {};
   bld.gymLabel?.userData.set(['🏀 우리 반 농구', `함께 넣은 골 ${gy.hit || 0}개`]);
+  bld.bdmLabel?.userData.set(['🏸 우리 반 배드민턴', `함께 주고받은 횟수 ${gy.rally || 0}번`]);
 }
 function updateRooms(dt) {
   if (!bld.group) return;
   const near = (player.pos.x > 1400 && player.pos.x < 1620) || (camera.position.x > 1400 && camera.position.x < 1620);
   bld.group.visible = near;
   if (near) { updateJc(dt); updateBB(dt); }
+  updateBm(dt);
   bld.dt = (bld.dt || 0) - dt; if (bld.dt <= 0) { bld.dt = 0.25; updateDoors(); }
 }
 // ---------- 📒 독서 기록장 ----------
@@ -12925,7 +13008,7 @@ function openReadLog() {
     const go = el2('button', 'btn lp-btn', '📒 기록하기'); go.disabled = pick.g < 0 || !pick.s || pick.f < 0 || bld.readBusy;
     go.onclick = async () => {
       bld.readBusy = true; refillLife();
-      const res = await backend.readLog(pick.g); bld.readBusy = false;
+      const res = await backend.readLog(pick.g); bld.readBusy = false; if (res.ok) earnMat('독서 기록');
       if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
       bag.reads.unshift({ t: (pick.t || '').trim().slice(0, 30), g: pick.g, s: pick.s, f: pick.f, at: Date.now() }); bag.reads = bag.reads.slice(0, 60);
       let msg = `📒 기록했어요! 독서 나무가 자라요`;
@@ -13042,6 +13125,7 @@ function updateJc(dt) {
 }
 function jcReward(win, s) {
   if (jc.rewarded === jc.t0) return; jc.rewarded = jc.t0;
+  if (win || s >= 45) earnMat('회전 막대 오래 버티기');
   const sh = win ? 12 : Math.min(6, 1 + Math.floor(s / 15)), cap = capNow(), give = cap ? Math.max(0, Math.min(sh, cap - earnToday())) : sh;
   if (give > 0) { bag.earn.n += give; earnShell(give); toast(`🌀 회전 막대 점프 🐚 +${give}`, 'success'); }
   backend.gymAdd('rope', Math.max(1, Math.floor(s))); // 반 전체 '버틴 시간(초)'에 보태요
@@ -13076,7 +13160,7 @@ function updateBB(dt) {
     if (!b.scored && b.prevY >= B.h && b.y < B.h && hr < B.rim - 0.06) { // 골!
       b.scored = true; b.vx *= 0.2; b.vz *= 0.2; const pts = b.three ? 3 : 2; bb.score += pts; bb.made++;
       playSfx('fanfare'); burst(new V3(B.x, B.h, B.z), RAINBOW, 40, 4, 2); toast(b.three ? '🏀 3점 슛 성공!' : '🏀 골인!', 'success');
-      backend.gymAdd('hit', 1);
+      backend.gymAdd('hit', 1); if (bb.made % 3 === 0) earnMat('농구 3골');
       const cap = capNow(), give = cap ? Math.max(0, Math.min(pts, cap - earnToday())) : pts; if (give > 0 && bb.made <= 15) { bag.earn.n += give; earnShell(give); }
       bbRender();
     } else if (!b.scored && !b.rimHit && Math.hypot(hr - B.rim, b.y - B.h) < 0.13) { b.rimHit = true; b.vy = Math.abs(b.vy) * 0.4; b.vx = -b.vx * 0.5; b.vz = -b.vz * 0.5; } // 림에 맞고 튕겨요
@@ -13094,6 +13178,676 @@ function initBBUI() {
   $('bbQuit').onclick = bbStop;
   addEventListener('keydown', e => { if (bb.on && e.key.toLowerCase() === 'f' && !e.repeat && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); bbDown(); } });
   addEventListener('keyup', e => { if (bb.on && e.key.toLowerCase() === 'f') { e.preventDefault(); bbUp(); } });
+}
+
+// ---------- 🗽 영어 마을 (English Village · 5학년 영어 Lesson 7~12 핵심 표현) ----------
+// 🚌 우리 마을 체육관 옆 버스 정류장 ↔ 영어 마을. 구역 6곳에서 듣고(🔊) 고르고, 문장을 만들고, 3D로 찾아가요
+// 성공하면 마을 재료 + 🐚 조개돈, 반 전체 '영어 별'(state/eng/{레슨})이 하나씩 늘어요 (개인 기록·순위 없음)
+const EV = { x0: 1690, x1: 1810, z0: -46, z1: 46, cx: 1750, bus: [1697, 4], stop: [54, 14] };
+const EV_POOL = [1714, -27, 9.5, 6.5]; // 독도 항구 바다 (x, z, 반너비, 반깊이) — 걸어 들어갈 수 없어요
+const inEV = (x, z) => x >= EV.x0 + 0.6 && x <= EV.x1 - 0.6 && z >= EV.z0 + 0.6 && z <= EV.z1 - 0.6 && !(Math.abs(x - EV_POOL[0]) < EV_POOL[2] && Math.abs(z - EV_POOL[1]) < EV_POOL[3]);
+const evRegion = () => joined && player.pos.x > 1680 && player.pos.x < 1820;
+const EV_Z = [
+  { n: 7, key: 'port', name: 'Dokdo Port', ko: '독도 항구', icon: '⚓', title: 'I Went to Dokdo', x: 1714, z: -27, npc: [1714, -16.5], who: 'Captain Dami', shirt: 4, hair: 4, hc: 0, col: 0x4FB3E8, how: '방학에 한 일 말하기 · 과거형 고르기 · 문장 만들기' },
+  { n: 8, key: 'shop', name: 'Fashion Shop', ko: '멋쟁이 옷 가게', icon: '👕', title: 'What Does He Look Like?', x: 1750, z: -27, npc: [1743, -15.5], who: 'Designer Leo', shirt: 5, hair: 1, hc: 2, col: 0xFF8FB1, how: '설명을 듣고 무대 위 친구를 찾아 E (3번)' },
+  { n: 9, key: 'street', name: 'Baseball Street', ko: '야구장 거리', icon: '⚾', title: 'Where Is the Baseball Park?', x: 1790, z: -28, npc: [1794, -15.5], who: 'Officer Max', shirt: 4, hair: 0, hc: 1, col: 0xD9954F, how: '길 안내를 듣고 그 건물까지 걸어가서 E (3번)' },
+  { n: 10, key: 'market', name: 'Flea Market', ko: '알뜰 시장', icon: '🛒', title: 'How Much Are These Socks?', x: 1714, z: 28, npc: [1714, 15.5], who: 'Seller Amy', shirt: 1, hair: 3, hc: 3, col: 0xFFB347, how: '값 듣기 · 사이즈 고르기 · 알맞은 대답' },
+  { n: 11, key: 'house', name: 'My House', ko: '우리 집', icon: '🏠', title: "What's in the Kitchen?", x: 1750, z: 28, npc: [1750, 15.5], who: 'Host Jenny', shirt: 2, hair: 2, hc: 1, col: 0x9B8CFF, how: '어느 방에 무엇이 있는지 듣고 고르기' },
+  { n: 12, key: 'camp', name: 'Camping Ground', ko: '캠핑장', icon: '⛺', title: 'What Do You Want to Do?', x: 1786, z: 28, npc: [1786, 15.5], who: 'Ranger Sam', shirt: 3, hair: 0, hc: 0, col: 0x2E9E6A, how: '하고 싶은 일 듣고 고르기 · 제안에 대답하기' },
+];
+const evZone = (n) => EV_Z.find(z => z.n === n);
+const ev = { group: null, dyn: null, signs: {}, flags: {}, npcs: [], manq: [], bld: [], q: null, game: null, seen: false, starT: 0, key: '' };
+// ---- 말하기 (기기 목소리) ----
+function sayEn(t) {
+  try {
+    speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.85;
+    const vs = speechSynthesis.getVoices(), v = vs.find(v => /en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)); if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+const evShuffle = (a) => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const evPick = (a) => a[Math.floor(Math.random() * a.length)];
+const evWon = (n) => n.toLocaleString('en-US');
+// ---- 문제 만들기 (교과서 핵심 표현) ----
+const EV_ORDER = {
+  7: [['What did you do during the vacation?', '너는 방학 동안 무엇을 했니?'], ['I rode in a boat. It was fun.', '나는 보트를 탔어. 재미있었어.'], ['I went camping and saw many stars.', '나는 캠핑을 가서 많은 별을 보았어.'], ['I went to a music festival.', '나는 음악 축제에 갔었어.'], ['I visited Dokdo last summer.', '나는 지난여름에 독도에 갔어.']],
+  10: [['How much are these gloves?', '이 장갑은 얼마인가요?'], ["They're 10,000 won.", '10,000원입니다.'], ['What size do you want?', '어떤 사이즈를 원하시나요?'], ['Small, please.', '작은 것을 주세요.'], ['How much is this cap?', '이 모자는 얼마인가요?']],
+  11: [["What's in the kitchen?", '부엌에는 무엇이 있니?'], ['There is a pot in the kitchen.', '부엌에 냄비가 하나 있어.'], ['There are many books in the bedroom.', '침실에 책이 많이 있어.'], ['Can you see me?', '내가 보이니?']],
+  12: [['What do you want to do?', '너는 무엇을 하고 싶니?'], ['I want to go hiking.', '나는 하이킹하러 가고 싶어.'], ["Let's go camping.", '캠핑하러 가자.'], ["That's a good idea.", '좋은 생각이야.']],
+};
+const EV_PAST = [['I ___ in a boat.', 'rode', ['ride', 'rided'], '나는 보트를 탔어.'], ['I ___ many stars.', 'saw', ['see', 'seed'], '나는 별을 많이 보았어.'], ['I ___ to a music festival.', 'went', ['go', 'goed'], '나는 음악 축제에 갔어.'], ['I ___ in the sea.', 'swam', ['swim', 'swimed'], '나는 바다에서 수영했어.'], ['I ___ a watermelon.', 'ate', ['eat', 'eated'], '나는 수박을 먹었어.'], ['I ___ my grandma.', 'visited', ['visit', 'visitted'], '나는 할머니 댁에 갔어.'], ['I ___ many pictures.', 'took', ['take', 'taked'], '나는 사진을 많이 찍었어.'], ['I ___ my friends.', 'met', ['meet', 'meeted'], '나는 친구들을 만났어.'], ['I ___ a nice cap.', 'bought', ['buy', 'buyed'], '나는 멋진 모자를 샀어.'], ['I ___ my mom.', 'helped', ['help', 'helpt'], '나는 엄마를 도와 드렸어.'], ['I ___ apples.', 'picked', ['pick', 'pickt'], '나는 사과를 땄어.']];
+const EV_VAC = [['I rode in a boat.', '🚤', '보트를 탔어요'], ['I went camping and saw many stars.', '🏕️', '캠핑 가서 별을 봤어요'], ['I went to a music festival.', '🎪', '음악 축제에 갔어요'], ['I swam in the sea.', '🏊', '바다에서 수영했어요'], ['I ate a watermelon.', '🍉', '수박을 먹었어요'], ['I took many pictures.', '📸', '사진을 많이 찍었어요'], ['I watched a movie.', '🎬', '영화를 봤어요']];
+const EV_ITEMS = [['socks', '🧦', '양말', true], ['gloves', '🧤', '장갑', true], ['sunglasses', '🕶️', '선글라스', true], ['pants', '👖', '바지', true], ['cap', '🧢', '모자', false], ['T-shirt', '👕', '티셔츠', false], ['watermelon', '🍉', '수박', false], ['bag', '🎒', '가방', false]];
+const EV_PRICES = [1000, 2000, 2500, 3000, 4000, 5000, 6000, 7500, 8000, 9000, 10000, 12000, 15000, 20000];
+const EV_THINGS = [['a pot', '🍲', '냄비', 'kitchen'], ['a toothbrush', '🪥', '칫솔', 'bathroom'], ['a hairdryer', '💨', '헤어드라이어', 'bathroom'], ['an album', '📔', '앨범', 'living room'], ['a sofa', '🛋️', '소파', 'living room'], ['a bed', '🛏️', '침대', 'bedroom'], ['a cat', '🐱', '고양이', 'garden'], ['many books', '📚', '책이 많이', 'bedroom'], ['many flowers', '🌷', '꽃이 많이', 'garden'], ['two spoons', '🥄', '숟가락 두 개', 'kitchen']];
+const EV_ROOMS = { kitchen: ['🍳', '부엌'], bedroom: ['🛌', '침실'], 'living room': ['📺', '거실'], bathroom: ['🛁', '욕실'], garden: ['🌳', '정원'] };
+const EV_ACTS = [['go camping', '⛺', '캠핑하러 가기'], ['go fishing', '🎣', '낚시하러 가기'], ['go hiking', '🥾', '하이킹 가기'], ['go ice-skating', '⛸️', '스케이트 타러 가기'], ['learn the guitar', '🎸', '기타 배우기'], ['make a video', '🎬', '영상 만들기'], ['take a walk', '🚶', '산책하기']];
+const EV_WRONG = ["I'm eleven years old.", "It's on your left.", 'He has blue eyes.', "They're 5,000 won.", 'I went to a music festival.', 'There is a pot in the kitchen.', 'I want to go fishing.', 'Go straight and turn right.'];
+const thereBe = (t) => (/^(many|two)/.test(t[0]) ? 'There are' : 'There is');
+function evOrderQ(n) { const [en, ko] = evPick(EV_ORDER[n]); return { type: 'order', en, ko, words: en.split(' ') }; }
+function evQuestions(n) {
+  const qs = [];
+  if (n === 7) {
+    { const v = evPick(EV_VAC), opts = evShuffle([v, ...evShuffle(EV_VAC.filter(x => x !== v)).slice(0, 3)]); qs.push({ type: 'pick', ask: '🔊 What did you do during the vacation? 대답을 듣고 그림을 골라요', say: `What did you do during the vacation? ${v[0]} It was fun.`, en: v[0], opts: opts.map(o => ({ t: `${o[1]} ${o[2]}`, ok: o === v })) }); }
+    for (const p of evShuffle(EV_PAST).slice(0, 2)) qs.push({ type: 'pick', ask: '알맞은 말을 골라 문장을 완성해요 (지난 일)', show: p[0], ko: p[3], say: p[0].replace('___', p[1]), sayAfter: true, opts: evShuffle([p[1], ...p[2]]).map(t => ({ t, ok: t === p[1] })) });
+    qs.splice(2, 0, evOrderQ(7)); qs.push(evOrderQ(7));
+  } else if (n === 10) {
+    const price = () => { const it = evPick(EV_ITEMS), pr = evPick(EV_PRICES), q = it[3] ? `How much are these ${it[0]}?` : `How much is this ${it[0]}?`, a = it[3] ? `They're ${evWon(pr)} won.` : `It's ${evWon(pr)} won.`;
+      const wrong = evShuffle(EV_PRICES.filter(x => x !== pr)).slice(0, 3);
+      return { type: 'pick', ask: `${it[1]} ${q} — 🔊 값을 듣고 골라요`, say: `${q} ${a}`, en: a, opts: evShuffle([pr, ...wrong]).map(x => ({ t: `${evWon(x)}원`, ok: x === pr })) }; };
+    qs.push(price());
+    { const sz = evPick([['Small', 'S'], ['Medium', 'M'], ['Large', 'L']]); qs.push({ type: 'pick', ask: '🔊 What size do you want? 손님이 원하는 사이즈를 골라요', say: `What size do you want? ${sz[0]}, please.`, en: `${sz[0]}, please.`, opts: [['Small', 'S'], ['Medium', 'M'], ['Large', 'L']].map(o => ({ t: `${o[1]} (${o[0]})`, ok: o[0] === sz[0] })) }); }
+    { const it = evPick(EV_ITEMS.filter(i => i[3])), pr = evPick(EV_PRICES), right = `They're ${evWon(pr)} won.`; qs.push({ type: 'pick', ask: '알맞은 대답을 골라요', show: `How much are these ${it[0]}? ${it[1]}`, say: `How much are these ${it[0]}?`, opts: evShuffle([right, ...evShuffle(EV_WRONG.filter(w => !/won/.test(w))).slice(0, 3)]).map(t => ({ t, ok: t === right })) }); }
+    qs.push(price()); qs.push(evOrderQ(10));
+  } else if (n === 11) {
+    const listen = () => { const th = evPick(EV_THINGS), s = `${thereBe(th)} ${th[0]} in the ${th[3]}.`;
+      const others = evShuffle(EV_THINGS.filter(x => x !== th)).slice(0, 2), rooms = evShuffle(Object.keys(EV_ROOMS).filter(r => r !== th[3]));
+      const opts = [[th, th[3]], [th, rooms[0]], [others[0], th[3]], [others[1], rooms[1]]];
+      return { type: 'pick', ask: '🔊 듣고 알맞은 그림을 골라요', say: s, en: s, opts: evShuffle(opts).map(([x, r]) => ({ t: `${x[1]} ${x[2]} · ${EV_ROOMS[r][0]} ${EV_ROOMS[r][1]}`, ok: x === th && r === th[3] })) }; };
+    qs.push(listen(), listen());
+    { const room = evPick(['kitchen', 'bedroom', 'bathroom', 'living room', 'garden']), th = evPick(EV_THINGS.filter(x => x[3] === room)), right = `${thereBe(th)} ${th[0]} in the ${room}.`;
+      const wrong = evShuffle(EV_THINGS.filter(x => x[3] !== room)).slice(0, 2).map(x => `${thereBe(x)} ${x[0]} in the ${x[3]}.`).concat(["It's on your left."]);
+      qs.push({ type: 'pick', ask: '알맞은 대답을 골라요', show: `What's in the ${room}? ${EV_ROOMS[room][0]}`, say: `What's in the ${room}?`, opts: evShuffle([right, ...wrong]).map(t => ({ t, ok: t === right })) }); }
+    qs.push(evOrderQ(11), listen());
+  } else if (n === 12) {
+    const listen = () => { const a = evPick(EV_ACTS), opts = evShuffle([a, ...evShuffle(EV_ACTS.filter(x => x !== a)).slice(0, 3)]); return { type: 'pick', ask: '🔊 What do you want to do? 대답을 듣고 그림을 골라요', say: `What do you want to do? I want to ${a[0]}.`, en: `I want to ${a[0]}.`, opts: opts.map(o => ({ t: `${o[1]} ${o[2]}`, ok: o === a })) }; };
+    qs.push(listen());
+    { const a = evPick(EV_ACTS), opts = evShuffle([a, ...evShuffle(EV_ACTS.filter(x => x !== a)).slice(0, 3)]); qs.push({ type: 'pick', ask: '그림을 보고 알맞은 문장을 골라요', show: `What do you want to do? ${a[1]}`, say: 'What do you want to do?', opts: opts.map(o => ({ t: `I want to ${o[0]}.`, ok: o === a })) }); }
+    { const lets = evPick(["Let's go camping.", "Let's go fishing.", "Let's take a walk.", "Let's go hiking."]), right = "That's a good idea."; qs.push({ type: 'pick', ask: '친구의 제안에 알맞게 대답해요', show: lets, say: lets, opts: evShuffle([right, ...evShuffle(EV_WRONG).slice(0, 3)]).map(t => ({ t, ok: t === right })) }); }
+    qs.push(listen(), evOrderQ(12));
+  }
+  return qs;
+}
+// ---- 문제 창 ----
+function openEvZone(n) {
+  if (!evRegion()) return;
+  const Z = evZone(n);
+  if (n === 8) return startEvFind();
+  if (n === 9) return startEvDir();
+  closeModals(); stopEvGame();
+  ev.q = { n, qs: evQuestions(n), i: 0, right: 0, done: false, answered: false };
+  $('evTitle').textContent = `${Z.icon} ${Z.name} · Lesson ${n}`; $('evPanel').classList.remove('hidden');
+  sayEn(`Welcome to ${Z.name}!`); renderEvQ();
+}
+function renderEvQ() {
+  const q = ev.q, Z = evZone(q.n); if (!q) return;
+  const box = $('evQ'), opts = $('evOpts'); box.textContent = ''; opts.textContent = ''; $('evFb').textContent = ''; $('evFb').className = 'qz-fb';
+  if (q.done) {
+    const pass = q.right >= 4;
+    $('evStep').textContent = `끝! ${q.qs.length}문제 중 ${q.right}개 맞혔어요`;
+    box.append(el2('div', 'ev-big', pass ? '🎉 Great job!' : '💪 Nice try!'), el2('span', 'ko', pass ? '영어 별 ⭐을 하나 달았어요. 다른 구역도 가 봐요!' : '4개 이상 맞히면 영어 별을 달 수 있어요. 다시 해 볼까요?'));
+    $('evNext').textContent = pass ? '한 번 더' : '다시 하기'; $('evNext').disabled = false; $('evSay').disabled = true;
+    return;
+  }
+  const it = q.qs[q.i]; q.answered = false; $('evSay').disabled = !it.say; $('evNext').disabled = true; $('evNext').textContent = q.i === q.qs.length - 1 ? '결과 보기 ▶' : '다음 ▶';
+  $('evStep').textContent = `${Z.ko} · ${q.i + 1} / ${q.qs.length}`;
+  box.append(el2('div', 'ev-ask', it.type === 'order' ? '🧩 단어를 차례대로 눌러 문장을 만들어요' : it.ask));
+  if (it.show) box.append(el2('div', 'ev-big', it.show));
+  if (it.ko) box.append(el2('span', 'ko', it.ko));
+  if (it.type === 'order') {
+    const line = el2('div', 'ev-line'), picked = [], words = evShuffle(it.words.map((w, k) => ({ w, k })));
+    box.append(line);
+    const redraw = () => { line.textContent = ''; picked.forEach((p, idx) => { const c = el2('button', 'btn ev-chip on', p.w); c.onclick = () => { if (q.answered) return; picked.splice(idx, 1); redraw(); }; line.append(c); }); [...opts.children].forEach(b => b.disabled = picked.some(p => p.k === +b.dataset.k) || q.answered); };
+    for (const p of words) { const b = el2('button', 'btn ev-chip', p.w); b.dataset.k = p.k; b.onclick = () => { if (q.answered) return; picked.push(p); redraw(); if (picked.length === it.words.length) evAnswer(picked.map(x => x.w).join(' ') === it.en); }; opts.append(b); }
+    opts.classList.add('ev-chips');
+    if (!it.played) { it.played = true; setTimeout(() => sayEn(it.en), 250); }
+  } else {
+    opts.classList.remove('ev-chips');
+    for (const o of it.opts) { const b = el2('button', 'btn', o.t); b.onclick = () => { if (q.answered) return; b.classList.add(o.ok ? 'ok' : 'no'); if (!o.ok) [...opts.children].forEach((x, k) => { if (it.opts[k].ok) x.classList.add('ok'); }); evAnswer(o.ok); }; opts.append(b); }
+    if (it.say && !it.sayAfter && !it.played) { it.played = true; setTimeout(() => sayEn(it.say), 250); }
+    if (it.en && !it.show) { const peek = el2('button', 'btn ev-peek', '👀 글자로 보기'); peek.onclick = () => { peek.replaceWith(el2('div', 'ev-big', `“${it.en}”`)); }; box.append(peek); }
+  }
+}
+function evAnswer(ok) {
+  const q = ev.q, it = q.qs[q.i]; q.answered = true; if (ok) q.right++;
+  $('evFb').textContent = ok ? '⭕ Good job! 맞았어요' : `❌ 정답: ${it.type === 'order' ? it.en : (it.opts.find(o => o.ok)?.t || '')}`; $('evFb').className = 'qz-fb ' + (ok ? 'ok' : 'no');
+  playSfx(ok ? 'pick' : 'drop'); if (it.say && (it.sayAfter || it.type !== 'order')) setTimeout(() => sayEn(it.say), 200); else if (it.type === 'order') setTimeout(() => sayEn(it.en), 200);
+  $('evNext').disabled = false; $('evNext').focus();
+  [...$('evOpts').children].forEach(b => b.disabled = true);
+}
+function evNext() {
+  const q = ev.q; if (!q) return;
+  if (q.done) { openEvZone(q.n); return; }
+  q.i++; if (q.i >= q.qs.length) { q.done = true; if (q.right >= 4) evReward(q.n); }
+  renderEvQ();
+}
+async function evReward(n) {
+  const Z = evZone(n); bag.ev ||= {}; if (bag.ev.day !== todayKey()) bag.ev = { day: todayKey() };
+  bag.ev[n] = (bag.ev[n] || 0) + 1; saveBag();
+  earnMat(`영어 마을 ${Z.ko}`);
+  const cap = capNow(), give = cap ? Math.max(0, Math.min(5, cap - earnToday())) : 5; if (give > 0) { bag.earn.n += give; earnShell(give); toast(`🐚 +${give} · ${Z.icon} ${Z.name}`, 'success'); }
+  if (bag.ev[n] <= 3) await backend.engStar(n); // 반 전체 영어 별 (한 구역에서 하루 3개까지)
+  burst(player.pos.clone().add(new V3(0, 2.4, 0)), RAINBOW, 36, 4, 2); playSfx('fanfare');
+}
+// ---- 👕 무대 위 친구 찾기 (Lesson 8) ----
+const EV_HAIR = [['short', 'straight'], ['short', 'curly'], ['long', 'straight'], ['long', 'curly']];
+const EV_SHIRT = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']; // CFG.SHIRTS 차례와 같아요
+const EV_MANQ = (k) => new V3(1741 + k * 6, 0.52, -33.5);
+function evDressUp(k, f) { // 마네킹 한 명을 특징대로 다시 만들어요
+  const old = ev.manq[k]; if (old) ev.dyn.remove(old.g);
+  const a = makeAvatar(0, f.shirt, 0, f.hc, ev.dyn), o = { solid: false, surf: null }, col = CFG.HAIR_COLORS[f.hc];
+  a.g.position.copy(EV_MANQ(k)); a.badge.userData.set([`${k + 1}`]);
+  if (f.hair[0] === 'long') { box(a.head, 0.98, 1.05, 0.18, col, 0, 1.45, -0.44, o); for (const x of [-0.49, 0.49]) box(a.head, 0.1, 0.95, 0.5, col, x, 1.5, -0.18, o); }
+  if (f.hair[1] === 'curly') {
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) ball(a.head, 0.17, col, -0.32 + i * 0.32, 2.3, -0.32 + j * 0.32, o);
+    for (const x of [-0.5, 0.5]) for (const y of [1.95, 1.7]) ball(a.head, 0.14, col, x, y, -0.1, o);
+    if (f.hair[0] === 'long') for (const x of [-0.3, 0, 0.3]) for (const y of [1.3, 1.05]) ball(a.head, 0.15, col, x, y, -0.52, o);
+  }
+  if (f.glasses) { for (const x of [-0.19, 0.19]) { box(a.head, 0.26, 0.04, 0.03, 0x222222, x, 1.84, 0.49, o); box(a.head, 0.26, 0.04, 0.03, 0x222222, x, 1.64, 0.49, o); box(a.head, 0.04, 0.22, 0.03, 0x222222, x - 0.13, 1.74, 0.49, o); box(a.head, 0.04, 0.22, 0.03, 0x222222, x + 0.13, 1.74, 0.49, o); } box(a.head, 0.12, 0.04, 0.03, 0x222222, 0, 1.78, 0.49, o); }
+  if (f.eyes === 'blue') for (const e of a.eyes.filter((_, i) => i % 2 === 0)) e.material = M(0x2E6FD8);
+  ev.manq[k] = { g: a.g, a, f };
+}
+function evFindRound() {
+  const g = ev.game, hairs = evShuffle(EV_HAIR), shirts = evShuffle([0, 1, 2, 3, 4, 5]).slice(0, 4), glasses = evShuffle([1, 1, 0, 0]), eyes = evShuffle(['blue', 'blue', 'brown', 'brown']);
+  const fs = [0, 1, 2, 3].map(k => ({ hair: hairs[k], shirt: shirts[k], hc: (k + g.round) % 4, glasses: !!glasses[k], eyes: eyes[k] }));
+  fs.forEach((f, k) => evDressUp(k, f));
+  const t = Math.floor(Math.random() * 4), T = fs[t], he = Math.random() < 0.5 ? ['He', 'he', 'him'] : ['She', 'she', 'her'];
+  const facts = [
+    { s: `${he[0]} has ${T.hair[0]} ${T.hair[1]} hair.`, m: (f) => f.hair === T.hair },
+    { s: `${he[0]}'s wearing a ${EV_SHIRT[T.shirt]} T-shirt.`, m: (f) => f.shirt === T.shirt },
+    { s: T.glasses ? `${he[0]}'s wearing glasses.` : `${he[0]} doesn't wear glasses.`, m: (f) => f.glasses === T.glasses },
+    { s: `${he[0]} has ${T.eyes} eyes.`, m: (f) => f.eyes === T.eyes },
+  ];
+  // 두 문장으로 딱 한 명이 정해지게 골라요 (세 번째 판은 혼자로는 모자란 특징끼리)
+  const pairs = []; for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) if (fs.filter(f => facts[i].m(f) && facts[j].m(f)).length === 1) pairs.push([i, j]);
+  const hard = pairs.filter(([i, j]) => i >= 2 && j >= 2), use = g.round === 2 && hard.length ? evPick(hard) : evPick(pairs.filter(([i]) => i < 2));
+  g.target = t; g.lines = [`What does ${he[1]} look like?`, ...use.map(i => facts[i].s)]; g.first = true; g.show = false;
+  evBar(); setTimeout(() => sayEn(g.lines.join(' ')), 300);
+}
+function startEvFind() {
+  closeModals(); stopEvGame();
+  ev.game = { kind: 'find', n: 8, round: 0, right: 0 };
+  toast('👕 Designer Leo의 설명을 잘 듣고, 무대 위에서 그 친구 앞에 가서 E를 눌러요!', 'info');
+  evFindRound();
+}
+function evPickManq(k) {
+  const g = ev.game; if (!g || g.kind !== 'find') return;
+  const ok = k === g.target; burst(EV_MANQ(k).clone().setY(2.6), ok ? RAINBOW : [0xCCCCCC], ok ? 30 : 8, 3, 1.5);
+  if (!ok) { g.first = false; playSfx('drop'); toast('❌ 이 친구가 아니에요. 다시 듣고 찾아봐요 (🔊)', 'warn'); sayEn(g.lines.slice(1).join(' ')); return; }
+  if (g.first) g.right++; playSfx('pick'); sayEn('Yes! That\'s right.'); toast(`⭕ 맞아요! (${g.round + 1}/3)`, 'success');
+  g.round++; if (g.round >= 3) return evGameEnd(); setTimeout(() => { if (ev.game === g) evFindRound(); }, 1200);
+}
+// ---- ⚾ 길 찾기 (Lesson 9) ----
+const EV_ST = { cx: 1790, cz: -36, sz: -17 }; // 네거리 · 출발점
+const EV_PLACES = [ // [이름, 아이콘, 위치, 길 안내]
+  ['donut shop', '🍩', [1785, -24.5], 'Go straight. It\'s on your left.'],
+  ['bus stop', '🚏', [1795, -24.5], 'Go straight. It\'s on your right.'],
+  ['market', '🏪', [1780, -31], 'Go straight and turn left. It\'s on your left.'],
+  ['baseball park', '⚾', [1780, -41], 'Go straight and turn left. It\'s on your right.'],
+  ['bookstore', '📚', [1800, -41], 'Go straight and turn right. It\'s on your left.'],
+  ['flower shop', '🌻', [1800, -31], 'Go straight and turn right. It\'s on your right.'],
+];
+function evDirRound() {
+  const g = ev.game, i = evPick([0, 1, 2, 3, 4, 5].filter(k => k !== g.last)); g.last = i; g.target = i; g.first = true; g.show = false;
+  g.lines = ['', EV_PLACES[i][3]];
+  evBar(); setTimeout(() => sayEn(g.lines[1]), 300);
+}
+function startEvDir() {
+  closeModals(); stopEvGame();
+  ev.game = { kind: 'dir', n: 9, round: 0, right: 0, last: -1 };
+  player.pos.set(EV_ST.cx, 0.15, EV_ST.sz + 0.5); player.heading = Math.PI; camYaw = 0; camPitch = 0.5; // 🟡 출발점에서 네거리(북쪽)를 봐요
+  toast('⚾ 🟡 출발점에서 북쪽(네거리 쪽)을 보고 시작해요. 안내대로 걸어가서 그 건물 앞에서 E!', 'info');
+  evDirRound();
+}
+function evPickPlace(i) {
+  const g = ev.game; if (!g || g.kind !== 'dir') return;
+  const ok = i === g.target, P = EV_PLACES[i];
+  if (!ok) { g.first = false; playSfx('drop'); toast(`❌ 여기는 ${P[1]} ${P[0]}예요. 🟡 출발점에서 다시 들어 봐요`, 'warn'); sayEn(`This is the ${P[0]}. ${EV_PLACES[g.target][3]}`); return; }
+  if (g.first) g.right++; playSfx('pick'); sayEn(`Yes! This is the ${P[0]}.`); toast(`⭕ ${P[1]} ${P[0]} 도착! (${g.round + 1}/3)`, 'success');
+  g.round++; if (g.round >= 3) return evGameEnd();
+  setTimeout(() => { if (ev.game === g) { player.pos.set(EV_ST.cx, 0.15, EV_ST.sz + 0.5); player.heading = Math.PI; camYaw = 0; evDirRound(); } }, 1400);
+}
+// ---- 3D 놀이 공통 ----
+function evBar() {
+  const g = ev.game; if (!g) { $('evBar').classList.add('hidden'); return; }
+  const Z = evZone(g.n); $('evBar').classList.remove('hidden');
+  $('evBarT').textContent = `${Z.icon} ${Z.name} · ${Math.min(3, g.round + 1)} / 3 ${g.kind === 'find' ? '· 설명에 맞는 친구 앞에서 E' : '· 🟡 출발점에서 북쪽을 보고 출발'}`;
+  $('evBarS').textContent = g.show ? (g.kind === 'find' ? g.lines.join(' ') : `${g.lines[1]}  (어디일까요?)`) : '🔊 듣기를 눌러 다시 들어요 · 👀 글자로도 볼 수 있어요';
+}
+function evGameEnd() {
+  const g = ev.game, pass = g.right >= 2; stopEvGame();
+  if (pass) { toast(`🎉 Great job! 3판 중 ${g.right}번 한 번에 맞혔어요`, 'success'); evReward(g.n); }
+  else toast(`💪 Nice try! 3판 중 ${g.right}번 한 번에 맞혔어요. 2번 이상이면 영어 별을 달아요`, 'info');
+}
+function stopEvGame() { ev.game = null; $('evBar').classList.add('hidden'); }
+// ---- 우리 마을 ↔ 영어 마을 버스 ----
+function evStars(n) { return S.eng?.[n] || 0; }
+function syncEv() {
+  if (!ev.group) return;
+  const key = JSON.stringify(S.eng || {}); if (key === ev.key) return; ev.key = key;
+  let total = 0;
+  for (const Z of EV_Z) { const s = evStars(Z.n); total += s; ev.signs[Z.n]?.userData.set([`${Z.icon} ${Z.name}`, `Lesson ${Z.n} · ${Z.ko} · ⭐ ${s}`]); if (ev.flags[Z.n]) ev.flags[Z.n].visible = s >= 5; }
+  ev.board?.userData.set(['🗽 Welcome to English Village!', `우리 반 영어 별 ⭐ ${total}개 · 구역마다 별 5개면 깃발 장식`]);
+}
+function buildEnglishVillage() {
+  const g = new THREE.Group(); g.name = 'EnglishVillage'; scene.add(g); ev.group = g;
+  const dyn = new THREE.Group(); scene.add(dyn); ev.dyn = dyn;
+  const o = { solid: false }, W = EV.x1 - EV.x0, D = EV.z1 - EV.z0, road = 0xD8CDB8, side = 0xE9E2D4;
+  lawnPlane(g, W + 60, D + 60, EV.cx, 0, 0x8ACB64, 0);
+  // 길: 가운데 큰길(동서) + 구역마다 들어가는 작은 길
+  box(g, W, 0.04, 6, road, EV.cx, 0.02, 0, o); for (const s of [-1, 1]) box(g, W, 0.05, 1.2, side, EV.cx, 0.025, s * 3.6, o);
+  for (const Z of EV_Z) box(g, 4, 0.035, 10, road, Z.npc[0], 0.018, Math.sign(Z.z) * 9, o);
+  // 울타리 (낮은 나무 울타리)
+  for (const [x0, z0, x1, z1] of [[EV.x0, EV.z0, EV.x1, EV.z0], [EV.x0, EV.z1, EV.x1, EV.z1], [EV.x1, EV.z0, EV.x1, EV.z1], [EV.x0, EV.z0, EV.x0, -2.5], [EV.x0, 6.5, EV.x0, EV.z1]]) {
+    const len = Math.hypot(x1 - x0, z1 - z0), n = Math.ceil(len / 2.5), ry = Math.atan2(x1 - x0, z1 - z0);
+    box(g, 0.12, 0.12, len, C.wood, (x0 + x1) / 2, 0.75, (z0 + z1) / 2, { solid: false, ry }); box(g, 0.12, 0.12, len, C.wood, (x0 + x1) / 2, 0.4, (z0 + z1) / 2, { solid: false, ry });
+    for (let k = 0; k <= n; k++) box(g, 0.2, 1.0, 0.2, 0x8A6A48, x0 + (x1 - x0) * k / n, 0.5, z0 + (z1 - z0) * k / n, o);
+  }
+  // 입구 문 + 버스 정류장
+  for (const z of [-3.6, 3.6]) { box(g, 0.7, 7, 0.7, 0xC0392B, EV.x0 + 1, 3.5, z); box(g, 0.9, 0.3, 0.9, 0xF4F1EA, EV.x0 + 1, 7.1, z, o); }
+  box(g, 0.6, 1.0, 8.6, 0x1F3A68, EV.x0 + 1, 7.6, 0, o);
+  signPlane(g, ['ENGLISH VILLAGE'], 7.6, 0.9, EV.x0 + 1.32, 7.6, 0, { font: 60, pad: 4, fg: '#FFFFFF', bg: '#1F3A68', stroke: false }).rotation.y = Math.PI / 2;
+  { const [bx, bz] = EV.bus; box(g, 7.5, 2.6, 2.8, 0xF5C531, bx - 1, 1.6, bz + 3.4, o); box(g, 7.6, 0.7, 2.9, 0x2B2B2B, bx - 1, 0.55, bz + 3.4, o); for (const x of [-3.2, -1.4, 0.4, 2.2]) box(g, 1.4, 0.9, 2.92, C.glass, bx - 1 + x, 2.2, bz + 3.4, o); for (const x of [-3.3, 1.3]) for (const s of [-1, 1]) { const w = cyl(g, 0.45, 0.3, 0x222222, bx - 1 + x, 0.45, bz + 3.4 + s * 1.45, { solid: false, rx: Math.PI / 2 }); }
+    box(g, 7.5, 2.6, 2.8, 0xF5C531, bx - 1, 1.6, bz + 3.4).visible = false; // 버스 부딪힘
+    box(g, 0.15, 2.6, 0.15, 0x7A8A99, bx + 2.5, 1.3, bz + 1.2, o); signPlane(g, ['🚌 BUS STOP'], 1.8, 0.5, bx + 2.5, 2.7, bz + 1.27, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = Math.PI / 2; }
+  addInteract({ pos: new V3(EV.bus[0] + 1.5, 1, EV.bus[1] + 1), r: 2.8, text: () => evRegion() ? ['버스 타기 🚌', '우리 마을로 돌아가기'] : null, run: () => travelTo('fromEv') });
+  // 가운데 광장: 알파벳 블록 탑 + 환영 게시판
+  { const px = EV.cx; box(g, 13, 0.06, 13, 0xEFE6D2, px, 0.03, 0, o); cyl(g, 3.2, 0.5, 0xC8C4BE, px, 0.25, 0);
+    const cols = [0xE2584A, 0xF5C531, 0x4F8FE8, 0x5FBE5A, 0xA06EE0, 0xFF8A3A];
+    const spots = [[-1.5, 1.25], [0, 1.25], [1.5, 1.25], [-0.75, 2.75], [0.75, 2.75], [0, 4.25]];
+    'ABCDEF'.split('').forEach((ch, i) => { const [dx, y] = spots[i], x = px + dx; const c = new THREE.Group(); c.position.set(x, y, 0); c.rotation.y = i * 0.25; g.add(c); box(c, 1.4, 1.4, 1.4, cols[i], 0, 0, 0); for (const r of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { const s = signPlane(c, [ch], 1.1, 1.1, Math.sin(r) * 0.71, 0, Math.cos(r) * 0.71, { font: 90, pad: 2, fg: '#FFFFFF', stroke: false }); s.rotation.y = r; } });
+    ev.board = makeLabel(g, [''], 1.2, px, 6.2, 0); }
+  for (const [x, z] of [[1700, -12], [1700, 12], [1732, -10], [1768, -10], [1732, 10], [1768, 10], [1806, -12], [1806, 12], [1696, -40], [1696, 40], [1804, 42], [1730, 42], [1768, 42]]) makeTree(x, z, g);
+  for (let x = EV.x0 + 8; x < EV.x1 - 4; x += 16) for (const s of [-1, 1]) { cyl(g, 0.09, 3.4, 0x3B3F46, x, 1.7, s * 4.4, o); ball(g, 0.3, 0xFFF3C4, x, 3.5, s * 4.4, { solid: false, emissive: 0.5 }); } // 가로등
+  // 구역 공통: 간판 + 별 깃발
+  for (const Z of EV_Z) {
+    const sz = Math.sign(Z.z), sx = Z.npc[0], sgz = sz * 7.5;
+    box(g, 0.2, 2.6, 0.2, C.wood, sx - 2.6, 1.3, sgz, o); box(g, 0.2, 2.6, 0.2, C.wood, sx + 2.6, 1.3, sgz, o);
+    ev.signs[Z.n] = makeLabel(g, [''], 1.0, sx, 3.3, sgz);
+    const fl = new THREE.Group(); fl.name = 'evFlags'; g.add(fl); ev.flags[Z.n] = fl; fl.visible = false;
+    const cs = [0xE2584A, 0xF5C531, 0x4F8FE8, 0x5FBE5A, 0xA06EE0];
+    for (let k = 0; k < 9; k++) box(fl, 0.5, 0.6, 0.04, cs[k % 5], sx - 2.4 + k * 0.6, 2.25 - Math.sin(k / 8 * Math.PI) * 0.35, sgz, { solid: false, rz: Math.PI / 4 });
+  }
+  // ⚓ 독도 항구 (L7): 바다 + 나무 부두 + 배 + 독도 두 섬 + 등대
+  { const [px, pz, hw, hd] = EV_POOL;
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(hw * 2, hd * 2), waterize(new THREE.MeshStandardMaterial({ color: 0x3FA7E0, transparent: true, opacity: 0.94 }))); w.rotation.x = -Math.PI / 2; w.position.set(px, 0.05, pz); g.add(w);
+    box(g, hw * 2 + 0.8, 0.3, 0.4, 0xC8C0B0, px, 0.15, pz + hd + 0.2, o); box(g, hw * 2 + 0.8, 0.3, 0.4, 0xC8C0B0, px, 0.15, pz - hd - 0.2, o); box(g, 0.4, 0.3, hd * 2, 0xC8C0B0, px - hw - 0.2, 0.15, pz, o); box(g, 0.4, 0.3, hd * 2, 0xC8C0B0, px + hw + 0.2, 0.15, pz, o);
+    box(g, hw * 2, 1.2, hd * 2, 0x3FA7E0, px, 0.6, pz).visible = false; // 바다 부딪힘
+    box(g, 2.4, 0.3, 6, 0x9A6A44, px + 3, 0.35, pz + hd - 2.6, o); for (const dz of [-2.6, 0, 2.6]) for (const dx of [-1, 1]) cyl(g, 0.12, 0.9, 0x6B4A30, px + 3 + dx, 0.2, pz + hd - 2.6 + dz, o);
+    { const bt = new THREE.Group(); bt.position.set(px + 6.5, 0.2, pz + 1.5); bt.rotation.y = 0.3; g.add(bt); box(bt, 1.6, 0.6, 3.6, 0xFFFFFF, 0, 0.3, 0, o); box(bt, 1.7, 0.15, 3.7, 0xE2584A, 0, 0.62, 0, o); box(bt, 1.0, 0.8, 1.2, 0x4F8FE8, 0, 1.0, -0.4, o); cyl(bt, 0.05, 2.2, 0xDDDDDD, 0, 1.6, 0.8, o); }
+    for (const [dx, dz, s] of [[-4.5, -2.5, 1.0], [-1.2, -3.2, 0.8]]) { mesh(SPH_MID, g, 2.2 * s, 2.6 * s, 2.0 * s, 0x8E8678, px + dx, 0.2, pz + dz, { solid: false, flat: true }); mesh(SPH_LO, g, 1.6 * s, 1.0 * s, 1.5 * s, 0x5E9E4A, px + dx, 2.2 * s, pz + dz, { solid: false, flat: true }); }
+    cyl(g, 0.45, 3.2, 0xFFFFFF, px - 4.5, 3.6, pz - 2.5, o); for (const y of [2.6, 3.6, 4.6]) cyl(g, 0.47, 0.3, 0xE2584A, px - 4.5, y, pz - 2.5, o); ball(g, 0.35, 0xFFF3A0, px - 4.5, 5.4, pz - 2.5, { solid: false, emissive: 0.7 });
+    signPlane(g, ['DOKDO'], 2.2, 0.5, px - 2.8, 0.9, pz + 0.2, { font: 48, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }); }
+  // 👕 멋쟁이 옷 가게 (L8): 분홍 가게 + 마네킹 무대
+  { const x = 1750, z = -27;
+    box(g, 22, 6, 0.4, 0xFBE3EC, x, 3, z - 10.5); box(g, 22, 0.6, 1.2, 0xFF8FB1, x, 6.2, z - 10, o);
+    for (let k = 0; k < 6; k++) box(g, 22 / 6 - 0.1, 0.12, 2.2, k % 2 ? 0xFFFFFF : 0xFF8FB1, x - 11 + 22 / 12 + k * 22 / 6, 4.6, z - 9.2, { solid: false, rx: 0.35 });
+    signPlane(g, ['FASHION SHOP'], 6, 0.9, x, 5.4, z - 10.2, { font: 60, pad: 4, fg: '#C2185B', bg: '#FFFFFF', stroke: false });
+    for (const dx of [-8.5, 8.5]) { box(g, 3.2, 2.6, 0.1, C.glass, x + dx, 2.2, z - 10.25, o); for (let k = 0; k < 3; k++) box(g, 0.5, 1.2, 0.5, [0xF26B6B, 0x4F8FE8, 0xF5CF3B][k], x + dx - 1 + k, 1.2, z - 10.6, o); }
+    box(g, 22, 0.42, 5, 0xE9D9C8, x, 0.21, z - 6.5); box(g, 22.2, 0.08, 5.2, 0xFF8FB1, x, 0.46, z - 6.5, o); // 무대 (낮아서 걸어 올라가요)
+    for (let k = 0; k < 4; k++) { const p = EV_MANQ(k); cyl(g, 0.7, 0.06, 0xFFFFFF, p.x, 0.5, p.z, o); signPlane(g, [`${k + 1}`], 0.6, 0.45, p.x, 0.36, z - 3.98, { font: 44, pad: 2, fg: '#C2185B', bg: '#FFFFFF', stroke: false }); }
+    for (const dx of [-10.5, 10.5]) { box(g, 1.2, 0.05, 2, 0xFFFFFF, x + dx, 0.5, z - 6.5, o); }
+  }
+  // ⚾ 야구장 거리 (L9): 네거리 + 건물 6곳 + 출발점
+  { const { cx, cz, sz } = EV_ST;
+    box(g, 4.4, 0.05, Math.abs(cz - sz) + 12, 0x5E6670, cx, 0.03, (cz + sz) / 2 - 3, o); box(g, 30, 0.05, 4.4, 0x5E6670, cx, 0.031, cz, o);
+    for (let k = 0; k < 7; k++) box(g, 0.2, 0.06, 1.2, 0xFFFFFF, cx, 0.035, sz - 2 - k * 2.6, o);
+    for (let k = 0; k < 10; k++) box(g, 1.2, 0.06, 0.2, 0xFFFFFF, cx - 14 + k * 3, 0.036, cz, o);
+    cyl(g, 1.1, 0.06, 0xF5C531, cx, 0.04, sz + 0.5, o); signPlane(g, ['START'], 1.6, 0.42, cx, 0.6, sz + 1.8, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#F5C531', stroke: false }).rotation.y = 0;
+    { const ar = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 3), new THREE.MeshBasicMaterial({ color: 0xF5C531 })); ar.rotation.x = -Math.PI / 2; ar.position.set(cx, 0.08, sz - 1.4); g.add(ar); } // 북쪽 화살표
+    const cols = [0xF2A0B5, 0x7AB8E8, 0xF5C531, 0x5FBE5A, 0xA06EE0, 0xFF9A3C];
+    EV_PLACES.forEach(([name, icon, [x, z]], i) => {
+      box(g, 5, 4 + (i % 2), 5, [0xF5EDE0, 0xEDE6DA, 0xF2E8DC][i % 3], x, (4 + (i % 2)) / 2, z); box(g, 5.3, 0.4, 5.3, cols[i], x, 4.2 + (i % 2), z, o);
+      const toStreet = Math.abs(x - cx) < 6 ? Math.sign(cx - x) : 0, front = toStreet ? [toStreet, 0] : [0, Math.sign(cz - z)];
+      const fx = x + front[0] * 2.56, fz = z + front[1] * 2.56, ry = Math.atan2(front[0], front[1]);
+      const d = box(g, 1.3, 2.2, 0.1, 0x6B4A30, fx, 1.1, fz, { solid: false, ry }); d.rotation.y = ry;
+      for (const sd of [-1, 1]) { const wx = fx + (front[1] ? sd * 1.6 : 0), wz = fz + (front[0] ? sd * 1.6 : 0); box(g, front[0] ? 0.08 : 1.0, 1.0, front[0] ? 1.0 : 0.08, C.glass, wx + front[0] * 0.02, 2.0, wz + front[1] * 0.02, o); }
+      signPlane(g, [`${icon} ${name}`], 3.6, 0.7, x + front[0] * 2.62, 3.2, z + front[1] * 2.62, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = ry;
+      ev.bld.push([fx + front[0] * 1.2, fz + front[1] * 1.2]);
+      addInteract({ pos: new V3(fx + front[0] * 1.2, 1, fz + front[1] * 1.2), r: 2.2, text: () => evRegion() && ev.game?.kind === 'dir' ? ['여기예요! 🏁', `${icon} ${name}`] : null, run: () => evPickPlace(i) });
+    });
+    { const bx = 1780, bz = -44.2; box(g, 8, 0.04, 2.2, 0x6DBE5A, bx, 0.02, bz, o); } // 야구장 앞 잔디
+  }
+  // 🛒 알뜰 시장 (L10): 노점 세 개
+  { const x = 1714, z = 28, items = [[0xF26B6B, 0xFFFFFF], [0xF5C531, 0x4F8FE8], [0x5FBE5A, 0xFF8A3A]];
+    items.forEach(([c1, c2], k) => { const sx = x - 8 + k * 8, sz = z + 2;
+      box(g, 6, 1.0, 2.2, 0xB08050, sx, 0.5, sz); for (const dx of [-2.8, 2.8]) box(g, 0.15, 3.2, 0.15, 0x8A6A48, sx + dx, 1.6, sz - 1, o);
+      for (let s = 0; s < 6; s++) box(g, 1.0, 0.1, 2.8, s % 2 ? c1 : 0xFFFFFF, sx - 2.5 + s, 3.2, sz - 0.3, { solid: false, rx: -0.3 });
+      const icons = [['🧦', '🧤'], ['🕶️', '🧢'], ['👕', '🍉']][k]; icons.forEach((ic, j) => { const p = signPlane(g, [ic], 1.1, 1.1, sx - 1.4 + j * 2.8, 1.65, sz - 1.12, { font: 80, pad: 2, stroke: false }); p.rotation.y = Math.PI; });
+      box(g, 1.3, 0.8, 0.1, 0xFFFFFF, sx, 1.8, sz - 1.15, o); signPlane(g, ['? won'], 1.2, 0.6, sx, 1.8, sz - 1.22, { font: 40, pad: 2, fg: '#C0392B', stroke: false }).rotation.y = Math.PI;
+      for (let j = 0; j < 3; j++) box(g, 0.6, 0.25, 0.5, [c1, c2, 0xFFFFFF][j], sx - 1.2 + j * 1.2, 1.12, sz - 0.3, o);
+    });
+    signPlane(g, ['FLEA MARKET · SALE!'], 6, 0.9, x, 4.6, z + 8.6, { font: 52, pad: 4, fg: '#FFFFFF', bg: '#E67E22', stroke: false }).rotation.y = Math.PI; box(g, 0.2, 4.6, 0.2, C.wood, x - 3.2, 2.3, z + 8.7, o); box(g, 0.2, 4.6, 0.2, C.wood, x + 3.2, 2.3, z + 8.7, o);
+  }
+  // 🏠 우리 집 (L11): 앞이 트인 집 — 부엌·거실·침실·욕실 + 정원
+  { const x = 1750, z = 31, w = 18, d = 9, H = 3.2, wall = 0xF4ECDD;
+    box(g, w, 0.25, d, 0xC9A878, x, 0.12, z); box(g, w, H, 0.3, wall, x, H / 2, z + d / 2); for (const s of [-1, 1]) box(g, 0.3, H, d, wall, x + s * w / 2, H / 2, z);
+    for (const dx of [-4.5, 0, 4.5]) box(g, 0.2, H, d, wall, x + dx, H / 2, z, o);
+    mesh(GABLE, g, d + 1.4, 3.2, w + 1.4, 0x8E5B9E, x, H, z, { solid: false, ry: Math.PI / 2 });
+    const room = (rx, name, ko) => signPlane(g, [`${name}`], 3.2, 0.55, rx, H - 0.45, z + d / 2 - 0.17, { font: 40, pad: 4, fg: '#3B2F2A', bg: '#FFFFFF', stroke: false }).rotation.y = Math.PI;
+    room(x - 6.75, 'kitchen'); room(x - 2.25, 'living room'); room(x + 2.25, 'bedroom'); room(x + 6.75, 'bathroom');
+    // 부엌: 싱크대·가스레인지·냄비·숟가락
+    box(g, 3.6, 1.0, 1.0, 0xFFFFFF, x - 6.75, 0.75, z + 3.6, o); cyl(g, 0.35, 0.4, 0x8A8F96, x - 7.6, 1.45, z + 3.6, o); box(g, 0.6, 0.06, 0.15, 0xBFC4CC, x - 6.2, 1.28, z + 3.5, o);
+    // 거실: 소파·텔레비전·앨범
+    box(g, 2.8, 0.6, 1.0, 0x6FA0D8, x - 2.25, 0.55, z + 1.2, o); box(g, 2.8, 0.7, 0.3, 0x5B8CC4, x - 2.25, 1.0, z + 1.6, o); box(g, 1.8, 1.1, 0.12, 0x222222, x - 2.25, 1.6, z + 4.1, o); box(g, 0.5, 0.08, 0.4, 0xC0392B, x - 1.4, 0.9, z + 1.0, o);
+    // 침실: 침대·책장(책 많이)
+    box(g, 2.0, 0.5, 3.0, 0xFFFFFF, x + 2.8, 0.5, z + 2.4, o); box(g, 2.0, 0.2, 2.0, 0xA06EE0, x + 2.8, 0.82, z + 2.0, o); box(g, 1.2, 2.2, 0.5, 0x8A6A48, x + 1.0, 1.35, z + 4.0, o); for (let k = 0; k < 6; k++) box(g, 0.15, 0.45, 0.35, [0xE2584A, 0x4F8FE8, 0x5FBE5A, 0xF5C531][k % 4], x + 0.6 + k * 0.16, 1.9 - (k % 2) * 0.8, z + 3.9, o);
+    // 욕실: 욕조·칫솔·헤어드라이어
+    box(g, 2.8, 0.7, 1.4, 0xFFFFFF, x + 6.75, 0.6, z + 3.3, o); box(g, 2.5, 0.1, 1.1, 0x9ED8F0, x + 6.75, 0.92, z + 3.3, o); box(g, 0.8, 0.9, 0.5, 0xFFFFFF, x + 5.8, 0.7, z + 1.0, o); box(g, 0.05, 0.3, 0.05, 0x3FA7E0, x + 5.7, 1.3, z + 1.0, o);
+    // 정원: 꽃
+    for (let k = 0; k < 10; k++) { const fx = x - 8 + k * 1.8, fz = z - d / 2 - 1.2; cyl(g, 0.04, 0.5, 0x4FA04F, fx, 0.4, fz, o); ball(g, 0.18, [0xFF7AA8, 0xF5C531, 0xFFFFFF, 0xA06EE0][k % 4], fx, 0.7, fz, o); }
+  }
+  // ⛺ 캠핑장 (L12): 텐트·모닥불·작은 연못·기타·등산로 표지판
+  { const x = 1786, z = 28;
+    for (const [dx, dz, c] of [[-6, 4, 0xFF8A3A], [0, 6, 0x4F8FE8], [6, 3.5, 0x5FBE5A]]) { mesh(GABLE, g, 3.2, 2.4, 3.6, c, x + dx, 0, z + dz, { solid: false, ry: 0.2 }); box(g, 3.2, 2.4, 3.6, c, x + dx, 1.2, z + dz).visible = false; }
+    for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; box(g, 0.18, 0.18, 1.0, 0x6B4A30, x + Math.cos(a) * 0.35, 0.12, z - 1 + Math.sin(a) * 0.35, { solid: false, ry: -a }); }
+    for (const [h, c] of [[0.9, 0xFF8A3A], [0.6, 0xF5C531]]) mesh(CONE, g, 0.45 * h, h, 0.45 * h, c, x, 0.2 + h / 2, z - 1, { emissive: 0.8, solid: false });
+    for (const dx of [-1.8, 1.8]) box(g, 1.2, 0.4, 0.4, 0x8A6A48, x + dx, 0.2, z - 1, o);
+    { const w = new THREE.Mesh(new THREE.CircleGeometry(2.6, 24), waterize(new THREE.MeshStandardMaterial({ color: 0x4FA3C8, transparent: true, opacity: 0.92 }))); w.rotation.x = -Math.PI / 2; w.position.set(x + 9.5, 0.05, z - 2); g.add(w); cyl(g, 2.6, 1, 0x4FA3C8, x + 9.5, 0.5, z - 2).visible = false; cyl(g, 0.04, 2.2, 0x6B4A30, x + 7.4, 1.0, z - 0.6, { solid: false, rz: 0.5 }); }
+    box(g, 0.15, 2.4, 0.15, C.wood, x - 10, 1.2, z + 9); signPlane(g, ['🥾 Hiking Trail →'], 2.6, 0.5, x - 10, 2.1, z + 8.9, { font: 40, pad: 4, fg: '#FFFFFF', bg: '#2E7D4F', stroke: false }).rotation.y = Math.PI;
+    box(g, 0.35, 0.9, 0.12, 0xC0803A, x + 2.2, 0.5, z - 2.6, { solid: false, rz: 0.3 }); box(g, 0.08, 0.9, 0.06, 0x3B2A22, x + 2.0, 1.2, z - 2.6, { solid: false, rz: 0.3 }); // 기타
+  }
+  registerSolids(g, 'ev'); batchStatic(g);
+  // 주민(NPC) + 마네킹
+  for (const Z of EV_Z) {
+    const a = makeAvatar(0, Z.shirt, Z.hair, Z.hc, dyn); a.g.position.set(Z.npc[0], 0.12, Z.npc[1]); a.g.rotation.y = Z.z < 0 ? 0 : Math.PI; a.badge.userData.set([`${Z.icon} ${Z.who}`]);
+    ev.npcs.push(a);
+    addInteract({ pos: new V3(Z.npc[0], 1, Z.npc[1] + (Z.z < 0 ? 1.2 : -1.2)), r: 2.4, text: () => evRegion() ? (ev.game?.n === Z.n ? ['다시 듣기 🔊', Z.ko] : [`${Z.icon} ${Z.name} 놀이 ▶`, Z.how]) : null, run: () => { if (ev.game?.n === Z.n) evSayAgain(); else openEvZone(Z.n); } });
+  }
+  for (let k = 0; k < 4; k++) {
+    evDressUp(k, { hair: EV_HAIR[k], shirt: k + 1, hc: k, glasses: k % 2 === 1, eyes: k < 2 ? 'blue' : 'brown' });
+    const p = EV_MANQ(k); addInteract({ pos: new V3(p.x, 1, p.z + 1.7), r: 1.9, text: () => evRegion() && ev.game?.kind === 'find' ? ['이 친구예요! 👉', `${k + 1}번`] : null, run: () => evPickManq(k) });
+  }
+  // 우리 마을 쪽 버스 정류장 (체육관 동쪽)
+  { const bg = new THREE.Group(); scene.add(bg); const [x, z] = EV.stop;
+    box(bg, 0.15, 2.8, 0.15, 0x7A8A99, x, 1.4, z); signPlane(bg, ['🚌 English Village'], 2.6, 0.6, x - 0.09, 2.6, z, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = -Math.PI / 2;
+    box(bg, 2.6, 0.12, 0.8, C.wood, x + 0.4, 0.55, z - 2.2, o); for (const dz of [-1.1, 1.1]) box(bg, 0.12, 0.5, 0.6, 0x6B5A48, x + 0.4, 0.27, z - 2.2 + dz * 0.9, { solid: false });
+    box(bg, 0.1, 2.4, 2.8, C.glass, x + 1.0, 1.4, z - 2.2, o); box(bg, 1.4, 0.12, 3.0, 0x2F5E9E, x + 0.5, 2.65, z - 2.2, o);
+    registerSolids(bg, 'static');
+    addInteract({ pos: new V3(x - 1.2, 1, z), r: 2.6, text: () => evRegion() || bldRegion() ? null : ['버스 타기 🚌', 'English Village 가기'], run: () => travelTo('ev') }); }
+  syncEv();
+}
+function evSayAgain() { const g = ev.game; if (!g) return; sayEn(g.kind === 'find' ? g.lines.join(' ') : g.lines[1]); }
+function updateEv(dt) {
+  if (!ev.dyn) return;
+  const near = (player.pos.x > 1660 && player.pos.x < 1840) || (camera.position.x > 1660 && camera.position.x < 1840);
+  ev.group.visible = ev.dyn.visible = near;
+  if (!near) { if (ev.game) stopEvGame(); return; }
+  for (const a of ev.npcs) animateAvatar(a, 0, dt, true, false);
+  for (const m of ev.manq) if (m) animateAvatar(m.a, 0, dt, true, false);
+  syncEv();
+}
+function initEvUI() {
+  $('evNext').onclick = evNext; $('evClose').onclick = () => { $('evPanel').classList.add('hidden'); speechSynthesis?.cancel?.(); };
+  $('evSay').onclick = () => { const it = ev.q?.qs[ev.q.i]; if (it) sayEn(it.type === 'order' ? it.en : it.say); };
+  $('evBarSay').onclick = evSayAgain;
+  $('evBarShow').onclick = () => { if (ev.game) { ev.game.show = !ev.game.show; evBar(); } };
+  $('evBarQuit').onclick = stopEvGame;
+}
+
+// ---------- 🏸 배드민턴 (체육관 오른쪽 코트) ----------
+// 1인칭으로 콕을 보고 움직여서 쳐요. 🤖 컴퓨터와(이 기기에서만) 또는 👫 친구와 1:1 (state/badm: 친 순간의 위치·속도만 보내고, 두 기기가 같은 식으로 날아가는 길을 계산해요)
+// 점수는 그 판에서만 보여요 (개인 기록·순위 없음). 판을 끝내면 마을 재료를 얻어요
+const BDM = { x0: 1585, x1: 1599, nx: 1592, hz: 3.2, netH: 1.9, floor: 0.1, reach: 2.0, g: 13, k: 0.11, win: 7, h: 1 / 120 };
+const bdm = { on: false, mode: '', lv: 1, side: -1, sh: null, serve: 0, sc: [0, 0], cool: 0, swing: 0, rally: 0, hits: 0, msg: '', msgT: 0, ai: null, mesh: null, racket: null, lastHit: '', pt: -1, done: false, aimYaw: 0, wait: 0, oppSwing: 0, rk: {} };
+// side: -1 = 서쪽(x가 작은 쪽), +1 = 동쪽. 내 쪽 → 상대 쪽으로 칠 때 방향은 -side
+const bdmSideOf = (x) => x < BDM.nx ? -1 : 1;
+const bdmClock = () => bdm.mode === 'friend' ? backend.now() : performance.now();
+function bdmStepSim(s, h) {
+  const sp = Math.hypot(s.v.x, s.v.y, s.v.z), px = s.p.x;
+  s.v.x -= BDM.k * sp * s.v.x * h; s.v.y -= (BDM.g + BDM.k * sp * s.v.y) * h; s.v.z -= BDM.k * sp * s.v.z * h;
+  s.p.x += s.v.x * h; s.p.y += s.v.y * h; s.p.z += s.v.z * h;
+  if (!s.net && (px - BDM.nx) * (s.p.x - BDM.nx) <= 0 && px !== s.p.x && s.p.y < BDM.netH && s.p.y > BDM.floor && Math.abs(s.p.z) < BDM.hz + 0.3) { // 네트에 걸렸어요 → 친 쪽으로 툭 떨어져요
+    s.net = true; s.p.x = BDM.nx + Math.sign(px - BDM.nx) * 0.12; s.v.set(Math.sign(px - BDM.nx) * 0.6, 0, 0);
+  }
+}
+function bdmSimTo(p0, v0, T) { const s = { p: p0.clone(), v: v0.clone() }; for (let t = 0; t < T; t += BDM.h) { bdmStepSim(s, BDM.h); if (s.p.y <= BDM.floor) break; } return s; }
+function bdmNetY(p0, v0) { const s = { p: p0.clone(), v: v0.clone() }; for (let t = 0; t < 4; t += BDM.h) { const px = s.p.x; bdmStepSim(s, BDM.h); if ((px - BDM.nx) * (s.p.x - BDM.nx) <= 0) return s.net ? -1 : s.p.y; if (s.p.y <= BDM.floor) return -1; } return -1; }
+function bdmSolve(p0, tgt, T) { // 시간 T 뒤에 tgt(바닥)에 떨어지는 처음 속도를 찾아요
+  let v = new V3((tgt.x - p0.x) / T, (tgt.y - p0.y) / T + BDM.g * T / 2, (tgt.z - p0.z) / T);
+  for (let tries = 0; tries < 5; tries++) {
+    for (let i = 0; i < 14; i++) {
+      const s = { p: p0.clone(), v: v.clone() }; let t = 0; for (; t < T - 1e-6; t += BDM.h) bdmStepSim(s, BDM.h);
+      v.x += (tgt.x - s.p.x) / T * 1.15; v.y += (tgt.y - s.p.y) / T * 1.15; v.z += (tgt.z - s.p.z) / T * 1.15;
+    }
+    const ny = bdmNetY(p0, v); if (ny > BDM.netH + 0.3) return v;
+    T *= 1.18; v.y += 2.2;
+  }
+  return v;
+}
+// 칠 때: 높이·거리에 따라 스매시 / 드라이브 / 높게 넘기기가 저절로 골라져요. 보는 방향(좌우)으로 겨눠요
+function bdmShot(p, dir, aimZ, soft = 1) {
+  const d = Math.abs(p.x - BDM.nx); let T, depth;
+  if (p.y > 2.5 && d < 4.5) { T = 0.6; depth = 2.6 + Math.random() * 1.8; bdm.msg = '💥 스매시!'; }
+  else if (p.y < 1.0) { T = 1.55; depth = 4.5 + Math.random() * 2; bdm.msg = '⤴️ 높게 넘기기'; }
+  else if (d < 2.2 && Math.random() < 0.4) { T = 1.0; depth = 1.4 + Math.random() * 1.2; bdm.msg = '🪶 살짝 넘기기'; }
+  else { T = 1.05; depth = 3.4 + Math.random() * 2.6; bdm.msg = '🏸 좋아요!'; }
+  bdm.msgT = 1.1;
+  const tgt = new V3(BDM.nx + dir * depth, BDM.floor, clamp(aimZ, -BDM.hz + 0.5, BDM.hz - 0.5));
+  return bdmSolve(p, tgt, T * soft);
+}
+function makeRacket(parent) {
+  const r = new THREE.Group(), o = { solid: false };
+  cyl(r, 0.045, 0.5, 0x2A2A33, 0, 0.25, 0, o); cyl(r, 0.03, 0.42, 0xC8CCD4, 0, 0.71, 0, o);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.025, 6, 20), M(0x3F7FD0)); rim.scale.set(1, 1.3, 1); rim.position.y = 1.15; r.add(rim);
+  const net = new THREE.Mesh(new THREE.CircleGeometry(0.21, 16), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.35, side: THREE.DoubleSide })); net.scale.set(1, 1.3, 1); net.position.y = 1.15; r.add(net);
+  parent.add(r); return r;
+}
+function bdmHandRacket(a) { if (a.racket) return a.racket; const r = makeRacket(a.armR); r.position.set(0, -0.55, 0.12); r.rotation.x = Math.PI / 2; r.scale.setScalar(0.8); a.racket = r; return r; }
+function bdmDropRacket(a) { if (a?.racket) { a.racket.parent?.remove(a.racket); a.racket = null; } }
+function bdmShuttleMesh() {
+  if (bdm.mesh) return bdm.mesh;
+  const g = new THREE.Group(), o = { solid: false };
+  ball(g, 0.09, 0xF4F1EA, 0, 0, 0, o);
+  const sk = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.3, 10, 1, true), new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, roughness: 0.8 })); sk.rotation.x = Math.PI; sk.position.y = 0.17; g.add(sk);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.18, 14), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; bld.group.add(shadow); g.userData.shadow = shadow;
+  bld.group.add(g); bdm.mesh = g; return g;
+}
+// ---- 판 시작·끝 ----
+function bdmAllowed() { return joined && roomNow() === 'gym' && !bb.on && !hv.travel; }
+function openBmMenu() {
+  if (!bdmAllowed()) return;
+  const f = S.badm, me = backend.uid, live = f && f.ph !== 'end' && backend.now() - (f.at || 0) < 45000;
+  const rows = [
+    { t: '🤖 컴퓨터와 하기 · 쉬움', d: '천천히 넘어와요', run: () => bdmStart('ai', 0) },
+    { t: '🤖 컴퓨터와 하기 · 보통', d: '조금 더 빨라요', run: () => bdmStart('ai', 1) },
+  ];
+  if (live && f.ph === 'wait' && f.a !== me) rows.unshift({ t: `👫 ${f.an || '친구'}와 하기`, d: '기다리는 친구와 1:1 시작', run: bdmJoinFriend });
+  else if (live && f.ph === 'wait' && f.a === me) rows.unshift({ t: '⏳ 친구를 기다리는 중', d: '누르면 기다리기를 그만해요', run: () => backend.badSet({ ph: 'end', at: backend.now() }) });
+  else if (live && f.ph === 'play') rows.unshift({ t: '👀 친구들이 경기 중', d: `${f.an || '친구'} ${f.sc?.a || 0} : ${f.sc?.b || 0} ${f.bn || '친구'}`, run: () => toast('🏸 지금 친구들이 경기 중이에요. 끝나면 할 수 있어요', 'info') });
+  else rows.unshift({ t: '👫 친구와 하기', d: '친구가 와서 누르면 시작해요', run: bdmOpenFriend });
+  openLife('🏸 배드민턴', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', `콕이 날아오면 그 아래로 움직여서 F·화면 톡·🏸 버튼으로 쳐요. 화면을 좌우로 끌면 겨누는 방향이 바뀌어요. ${BDM.win}점을 먼저 내면 끝나요 (점수는 그 판에서만 보여요)`));
+    for (const r of rows) { const row = el2('div', 'lp-row'), b = el2('button', 'btn lp-btn', '시작'); row.append(el2('span', 'lp-name', r.t), el2('span', 'lp-sub', r.d)); b.textContent = r.btn || '고르기'; b.onclick = () => { closeLife(); r.run(); }; row.append(b); box.append(row); }
+  });
+}
+function bdmStart(mode, lv) {
+  bdm.on = true; bdm.mode = mode; bdm.lv = lv; bdm.sc = [0, 0]; bdm.rally = 0; bdm.hits = 0; bdm.done = false; bdm.sh = null; bdm.pt = -1; bdm.wait = 0;
+  bdm.side = mode === 'friend' ? (S.badm?.a === backend.uid ? -1 : 1) : -1;
+  if (mode === 'ai') {
+    if (!bdm.ai) { const av = makeAvatar(0, 3, 1, 2, bld.group); av.badge.userData.set(['🤖 컴퓨터']); bdmHandRacket(av); bdm.ai = { av, p: new V3(), tgt: new V3(), miss: false, react: 0, swing: 0 }; }
+    bdm.ai.av.g.visible = true; bdm.ai.p.set(BDM.nx + 4, 0.12, 0); bdm.ai.tgt.copy(bdm.ai.p); bdm.serve = -1;
+  }
+  player.pos.set(BDM.nx + bdm.side * 4.5, 0.12, 0); player.vy = 0; player.heading = bdm.side < 0 ? Math.PI / 2 : -Math.PI / 2;
+  camYaw = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; bdm.aimYaw = camYaw;
+  if (!bdm.racket) { bdm.racket = makeRacket(scene); bdm.racket.scale.setScalar(0.3); }
+  bdm.racket.visible = true; player.avatar.g.visible = false;
+  bdmShuttleMesh().visible = true; bdm.mesh.userData.shadow.visible = true;
+  $('bdmBar').classList.remove('hidden'); bdmRender();
+  toast(mode === 'ai' ? '🏸 콕 아래로 움직여서 F·클릭·🏸 버튼으로 쳐요! 화면을 끌면 겨누는 방향이 바뀌어요' : '🏸 친구와 경기 시작! 먼저 7점을 내면 끝나요', 'info');
+}
+function bdmStop(silent) {
+  if (!bdm.on) return;
+  if (bdm.mode === 'friend' && S.badm && S.badm.ph !== 'end' && (S.badm.a === backend.uid || S.badm.b === backend.uid)) backend.badSet({ ph: 'end', at: backend.now() });
+  bdm.on = false; bdm.sh = null; $('bdmBar').classList.add('hidden');
+  if (bdm.racket) bdm.racket.visible = false; if (bdm.mesh) { bdm.mesh.visible = false; bdm.mesh.userData.shadow.visible = false; }
+  if (bdm.ai) bdm.ai.av.g.visible = false;
+  player.avatar.g.visible = true; camPitch = 0.6;
+  if (!silent && bdm.hits >= 10 && !bdm.done) earnMat('배드민턴 열심히 하기');
+}
+async function bdmOpenFriend() {
+  if (backend.mode !== 'firebase') { toast('👫 친구와 하기는 반 친구들과 함께 접속했을 때 할 수 있어요 (연습 모드는 🤖 컴퓨터와 해요)', 'info'); return; }
+  const r = await backend.badOpen(myNick || '친구');
+  if (r.ok) toast('⏳ 친구를 기다려요! 친구가 코트에서 E를 눌러 참가하면 시작해요', 'info'); else toast('지금은 열 수 없어요. 잠시 뒤 다시 해 봐요', 'warn');
+}
+async function bdmJoinFriend() { const r = await backend.badJoin(myNick || '친구'); if (!r.ok) toast('앗, 다른 친구가 먼저 참가했어요', 'warn'); }
+// ---- 치기 ----
+function bdmMyHitPos() { return new V3(player.pos.x, player.pos.y + 1.7, player.pos.z); }
+function bdmSwing() {
+  if (!bdm.on || bdm.cool > 0) return; bdm.cool = 0.32; bdm.swing = 1; playSfx('jump');
+  const f = S.badm, dir = -bdm.side, myRole = bdm.side < 0 ? 'a' : 'b';
+  const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), aimZ = player.pos.z + fz / Math.max(0.3, Math.abs(fx)) * 5; // 보는 방향으로 겨눠요
+  // 서브
+  const serving = bdm.mode === 'ai' ? (!bdm.sh?.live && bdm.serve === bdm.side && bdm.wait <= 0 && !bdm.done) : (f?.ph === 'play' && !f.hit && f.srv === myRole && !bdm.sh?.live);
+  if (serving) { const p = bdmMyHitPos().add(new V3(dir * 1.0, -0.3, 0)); bdmLaunch(p, bdmSolve(p, new V3(BDM.nx + dir * (3.5 + Math.random() * 2.5), BDM.floor, clamp(aimZ, -BDM.hz + 0.6, BDM.hz - 0.6)), 1.5), myRole); bdm.msg = '🏸 서브!'; bdm.msgT = 1; return; }
+  const s = bdm.sh; if (!s || !s.live || s.who === myRole) return;
+  if (bdmSideOf(s.p.x) !== bdm.side) return;
+  const hp = bdmMyHitPos(), dh = Math.hypot(s.p.x - hp.x, s.p.z - hp.z), dy = s.p.y - player.pos.y;
+  if (dh > BDM.reach || dy < 0.2 || dy > 3.9) { bdm.msg = dh > BDM.reach ? '조금 더 가까이!' : dy >= 3.9 ? '아직 높아요, 기다려요' : '너무 낮아요'; bdm.msgT = 0.8; return; }
+  const p = s.p.clone(); p.x = BDM.nx + Math.sign(p.x - BDM.nx) * Math.max(0.25, Math.abs(p.x - BDM.nx));
+  bdmLaunch(p, bdmShot(p, dir, aimZ), myRole); bdm.hits++;
+}
+function bdmLaunch(p, v, who) {
+  const t = bdmClock(), n = (bdm.sh?.n || 0) + 1;
+  bdm.sh = { p: p.clone(), v: v.clone(), p0: p.clone(), v0: v.clone(), t, who, live: true, simT: 0, n, net: false };
+  bdm.rally++;
+  if (bdm.mode === 'friend') { bdm.lastN = n; backend.badSet({ hit: { n, w: who, p: [p.x, p.y, p.z].map(q => Math.round(q * 1000) / 1000), v: [v.x, v.y, v.z].map(q => Math.round(q * 1000) / 1000), t }, at: t }); }
+  burst(p, [0xFFFFFF, 0xFFE58A], 6, 1.2, 0.4);
+}
+// ---- 점수 ----
+function bdmPoint(winSide, why) {
+  if (bdm.mode === 'ai') {
+    bdm.sc[winSide < 0 ? 0 : 1]++; bdm.serve = winSide; bdm.wait = 1.3; bdm.sh.live = false;
+    const mine = winSide === bdm.side; bdm.msg = (mine ? '🎉 점수! ' : '😮 ') + why; bdm.msgT = 1.6; playSfx(mine ? 'pick' : 'drop');
+    const won = bdm.sc.findIndex(v => v >= BDM.win);
+    if (won >= 0) bdmEnd((won === 0 ? -1 : 1) === bdm.side);
+    bdmRender(); return;
+  }
+  const f = S.badm; if (!f) return; bdm.sh.live = false;
+  const myRole = bdm.side < 0 ? 'a' : 'b'; if (bdm.sh.who === myRole) return; // 받는 쪽 기기만 점수를 적어요 (두 번 적히지 않게)
+  const w = winSide < 0 ? 'a' : 'b', sc = { a: f.sc?.a || 0, b: f.sc?.b || 0 }; sc[w]++;
+  backend.badSet({ sc, srv: w, hit: null, pt: (f.pt || 0) + 1, why, ...(sc[w] >= BDM.win ? { ph: 'end', win: w } : {}), at: backend.now() });
+}
+function bdmEnd(won) {
+  bdm.done = true; bdm.msg = won ? '🏆 이겼어요! 멋진 경기!' : '👏 좋은 경기였어요!'; bdm.msgT = 4;
+  if (bdm.mode === 'ai' ? (won || bdm.hits >= 10) : true) earnMat(bdm.mode === 'ai' ? (won ? '배드민턴 승리' : '배드민턴 끝까지 하기') : '친구와 배드민턴 한 판');
+  if (bdm.mode === 'ai' || bdm.side < 0) backend.gymAdd('rally', Math.min(200, Math.max(1, bdm.rally))); // 반 전체 '주고받은 횟수'에 보태요
+  burst(player.pos.clone().add(new V3(0, 2, 0)), RAINBOW, 40, 4, 2); playSfx('fanfare');
+  setTimeout(() => { if (bdm.on && bdm.done) bdmStop(true); }, 4200);
+}
+function bdmRender() {
+  const f = S.badm, fr = bdm.mode === 'friend';
+  const meN = fr ? (bdm.side < 0 ? f?.an : f?.bn) || '나' : '나', opN = fr ? (bdm.side < 0 ? f?.bn : f?.an) || '친구' : '🤖 컴퓨터';
+  const sc = fr ? [f?.sc?.a || 0, f?.sc?.b || 0] : bdm.sc, mine = sc[bdm.side < 0 ? 0 : 1], theirs = sc[bdm.side < 0 ? 1 : 0];
+  $('bdmInfo').textContent = `🏸 ${meN} ${mine} : ${theirs} ${opN} · ${BDM.win}점 먼저`;
+  $('bdmMsg').textContent = bdm.msgT > 0 ? bdm.msg : bdmServeHint();
+}
+function bdmServeHint() {
+  const f = S.badm, myRole = bdm.side < 0 ? 'a' : 'b';
+  if (bdm.done) return '';
+  if (bdm.mode === 'ai') return !bdm.sh?.live ? (bdm.serve === bdm.side ? (bdm.wait > 0 ? '' : '내 서브! F·클릭·🏸') : '컴퓨터 서브를 기다려요') : '';
+  if (f?.ph === 'wait') return '⏳ 친구를 기다려요';
+  return f?.ph === 'play' && !f.hit ? (f.srv === myRole ? '내 서브! F·클릭·🏸' : '친구 서브를 기다려요') : '';
+}
+// ---- 매 프레임 ----
+function bdmFollowState() { // 친구 경기: state의 마지막 친 정보를 따라 콕을 날려요
+  const f = S.badm; if (!f) return;
+  if (f.hit && f.hit.t !== bdm.sh?.t) {
+    const p = new V3(...f.hit.p), v = new V3(...f.hit.v);
+    bdm.sh = { p: p.clone(), v: v.clone(), p0: p, v0: v, t: f.hit.t, who: f.hit.w, live: true, simT: 0, n: f.hit.n, net: false };
+    const myRole = bdm.side < 0 ? 'a' : 'b'; if (f.hit.w !== myRole) { bdm.oppSwing = 1; playSfx('jump'); }
+  }
+  if (!f.hit && bdm.sh?.live && (f.pt || 0) !== bdm.pt) bdm.sh.live = false;
+  if ((f.pt || 0) !== bdm.pt) { if (bdm.pt >= 0 && f.why) { const myRole = bdm.side < 0 ? 'a' : 'b'; bdm.msg = (f.srv === myRole ? '🎉 점수! ' : '😮 ') + f.why; bdm.msgT = 1.6; } bdm.pt = f.pt || 0; bdm.sh = f.hit ? bdm.sh : null; }
+  if (f.ph === 'end' && !bdm.done && bdm.on) { bdmEnd(f.win === (bdm.side < 0 ? 'a' : 'b')); }
+}
+function updateBm(dt) {
+  // 친구 경기가 시작되면 (내가 a나 b) 저절로 코트에 들어가요
+  const f = S.badm, me = backend?.uid;
+  if (!bdm.on && f?.ph === 'play' && (f.a === me || f.b === me) && roomNow() === 'gym' && backend.now() - (f.at || 0) < 20000 && bdm.endedId !== f.id) { bdm.endedId = f.id; bdmStart('friend', 1); }
+  if (f?.ph === 'wait' && f.a === me && joined) { // 기다리는 동안: 체육관에 있으면 15초마다 '아직 있어요', 나가면 그만
+    if (roomNow() !== 'gym') { if (!bdm.leaving) { bdm.leaving = true; backend.badSet({ ph: 'end', at: backend.now() }).then(() => bdm.leaving = false); } }
+    else if (backend.now() - (f.at || 0) > 15000 && !bdm.beat) { bdm.beat = true; backend.badSet({ at: backend.now() }).then(() => bdm.beat = false); }
+  }
+  // 친구 경기 중인 두 친구 손에 라켓을 보여 줘요
+  for (const [u, r] of remotes) { const playing = f?.ph === 'play' && (f.a === u || f.b === u); if (playing) bdmHandRacket(r.a); else if (r.a.racket) bdmDropRacket(r.a); if (playing && bdm.oppSwing > 0 && bdm.on && (bdm.side < 0 ? f.b : f.a) === u) r.a.armR.rotation.x = -2.4 * bdm.oppSwing; }
+  if (!bdm.on) return;
+  if (roomNow() !== 'gym' || hv.travel) { bdmStop(); return; }
+  if (bdm.mode === 'friend') { if (!f || (f.a !== me && f.b !== me)) { bdmStop(true); return; } bdmFollowState(); }
+  bdm.cool -= dt; bdm.msgT -= dt; bdm.wait -= dt; bdm.swing = Math.max(0, bdm.swing - dt * 4); bdm.oppSwing = Math.max(0, bdm.oppSwing - dt * 4);
+  // 내 쪽 코트 안에서만 움직여요
+  const p = player.pos, lo = bdm.side < 0 ? BDM.x0 - 1.5 : BDM.nx + 0.5, hi = bdm.side < 0 ? BDM.nx - 0.5 : BDM.x1 + 1.5;
+  p.x = clamp(p.x, lo, hi); p.z = clamp(p.z, -BDM.hz - 1.2, BDM.hz + 1.2);
+  // 서브 기다리는 콕은 서브하는 사람 앞에
+  const myRole = bdm.side < 0 ? 'a' : 'b';
+  const sh = bdm.sh, mesh = bdm.mesh;
+  if (bdm.mode === 'ai' && (!sh || !sh.live) && !bdm.done) {
+    if (bdm.serve === -bdm.side && bdm.wait <= 0) { const ap = bdm.ai.p.clone().add(new V3(0, 1.3, 0)).add(new V3(bdm.side * 0.6, 0, 0)); bdmLaunch(ap, bdmSolve(ap, new V3(BDM.nx + bdm.side * (3.8 + Math.random() * 2), BDM.floor, (Math.random() - 0.5) * 3.6), bdm.lv ? 1.45 : 1.75), 'ai'); bdm.ai.swing = 1; }
+  }
+  let show = null;
+  if (sh && sh.live) {
+    const target = (bdmClock() - sh.t) / 1000;
+    while (sh.simT < target && sh.live) {
+      const px = sh.p.x; bdmStepSim(sh, BDM.h); sh.simT += BDM.h;
+      if (sh.p.y <= BDM.floor) { sh.p.y = BDM.floor; const inC = sh.p.x >= BDM.x0 && sh.p.x <= BDM.x1 && Math.abs(sh.p.z) <= BDM.hz, land = bdmSideOf(sh.p.x); const hitterSide = sh.who === 'a' ? -1 : sh.who === 'b' ? 1 : (sh.who === 'ai' ? 1 : -1);
+        const why = sh.net ? '네트에 걸렸어요' : inC ? '콕이 떨어졌어요' : '밖으로 나갔어요';
+        if (bdm.mode === 'ai') { const hs = sh.who === 'ai' ? -bdm.side : bdm.side; bdmPoint(inC && land !== hs ? hs : -hs, why); }
+        else bdmPoint(inC && land !== hitterSide ? hitterSide : -hitterSide, why);
+        break; }
+      if (sh.p.x < BDM.x0 - 8 || sh.p.x > BDM.x1 + 8) { sh.p.y = BDM.floor; }
+    }
+    show = sh.p;
+  } else if (sh && !sh.live) show = sh.p;
+  if (!show || (bdm.mode === 'ai' && !sh?.live && bdm.wait <= 0) || (bdm.mode === 'friend' && !f?.hit)) { // 서브 자리
+    const srvSide = bdm.mode === 'ai' ? bdm.serve : (f?.srv === 'a' ? -1 : 1);
+    if (srvSide === bdm.side) show = bdmMyHitPos().add(new V3(-bdm.side * 1.7, -0.3, -bdm.side * 0.5)); // 서브: 눈앞 조금 오른쪽
+    else if (bdm.mode === 'ai') show = bdm.ai.p.clone().add(new V3(bdm.side * 0.6, 1.3, 0));
+    else { const ou = bdm.side < 0 ? f?.b : f?.a, r = remotes.get(ou); show = r ? r.a.g.position.clone().add(new V3(bdm.side * 0.6, 1.3, 0)) : new V3(BDM.nx - bdm.side * 4.5, 1.3, 0); }
+  }
+  if (show) { mesh.position.copy(show); const v = sh?.live ? sh.v : null; if (v && v.lengthSq() > 0.01) { mesh.lookAt(show.clone().sub(v)); mesh.rotateX(Math.PI / 2); } mesh.userData.shadow.position.set(show.x, BDM.floor + 0.02, show.z); }
+  // 🤖 컴퓨터
+  if (bdm.mode === 'ai') updateBmAi(dt);
+  bdm.rk.t = (bdm.rk.t || 0) - dt; if (bdm.rk.t <= 0) { bdm.rk.t = 0.2; bdmRender(); }
+}
+function updateBmAi(dt) {
+  const ai = bdm.ai, sh = bdm.sh, home = new V3(BDM.nx - bdm.side * 4.2, 0.12, 0);
+  ai.swing = Math.max(0, ai.swing - dt * 4);
+  if (sh?.live && sh.who !== 'ai') {
+    if (!ai.planned || ai.planned !== sh.n) { // 콕이 어디로 올지 미리 계산해요 (가끔 일부러 놓쳐요)
+      ai.planned = sh.n; ai.react = bdm.lv ? 0.18 : 0.32;
+      const s = { p: sh.p.clone(), v: sh.v.clone() }; let best = null;
+      for (let t = 0; t < 4; t += BDM.h) { bdmStepSim(s, BDM.h); if (bdmSideOf(s.p.x) === -bdm.side && s.p.y < 2.4 && s.v.y < 0) { best = s.p.clone(); break; } if (s.p.y <= BDM.floor) { best = s.p.clone(); break; } }
+      const out = best && (best.x < BDM.x0 || best.x > BDM.x1 || Math.abs(best.z) > BDM.hz);
+      ai.miss = !out && Math.random() > (bdm.lv ? 0.86 : 0.74) + Math.min(0.1, bdm.rally * 0.004);
+      ai.letGo = out && Math.random() < 0.85; // 밖으로 나갈 콕은 대부분 그냥 둬요
+      ai.tgt.copy(best || home); ai.tgt.y = 0.12; ai.tgt.x = clamp(ai.tgt.x - bdm.side * 0.4, BDM.nx + 0.6, BDM.x1 + 1); if (bdm.side > 0) ai.tgt.x = clamp(ai.tgt.x, BDM.x0 - 1, BDM.nx - 0.6);
+      if (ai.miss || ai.letGo) ai.tgt.lerp(home, 0.55);
+    }
+  } else if (!sh?.live || sh.who === 'ai') ai.tgt.lerp(home, 1 - Math.exp(-dt * 1.5));
+  ai.react -= dt;
+  const spd = (bdm.lv ? 6.6 : 5.0) * (ai.react > 0 ? 0 : 1), d = new V3(ai.tgt.x - ai.p.x, 0, ai.tgt.z - ai.p.z), dl = d.length(), mv = Math.min(dl, spd * dt);
+  if (dl > 0.05) ai.p.addScaledVector(d.normalize(), mv); ai.av.g.rotation.y = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; // 늘 네트 쪽(나)을 봐요
+  ai.av.g.position.copy(ai.p); animateAvatar(ai.av, dl > 0.1 ? 1 : 0, dt, true, false);
+  ai.av.armR.rotation.x = ai.swing > 0 ? -2.6 * ai.swing : -0.6;
+  if (sh?.live && sh.who !== 'ai' && !ai.miss && !ai.letGo && bdmSideOf(sh.p.x) === -bdm.side) {
+    const dh = Math.hypot(sh.p.x - ai.p.x, sh.p.z - ai.p.z), dy = sh.p.y - ai.p.y;
+    if (dh < 1.7 && dy > 0.4 && dy < 3.2) {
+      const p = sh.p.clone(); p.x = BDM.nx + Math.sign(p.x - BDM.nx) * Math.max(0.25, Math.abs(p.x - BDM.nx));
+      const keep = bdm.msg, kt = bdm.msgT; const v = bdmShot(p, bdm.side, (Math.random() - 0.5) * (bdm.lv ? 5 : 3.4) + player.pos.z * 0.3, bdm.lv ? 1 : 1.18); bdm.msg = keep; bdm.msgT = kt;
+      bdmLaunch(p, v, 'ai'); ai.swing = 1;
+    }
+  }
+}
+function bdmCamera(dt) { // 1인칭: 눈높이에서 네트 쪽을 봐요. 콕이 높이 뜨면 고개를 들어요
+  if (!bdm.on) return false;
+  const base = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; camYaw = base + clamp(Math.atan2(Math.sin(camYaw - base), Math.cos(camYaw - base)), -0.75, 0.75);
+  const eye = new V3(player.pos.x, player.pos.y + 1.95, player.pos.z), f = new V3(-Math.sin(camYaw), 0, -Math.cos(camYaw));
+  const look = eye.clone().addScaledVector(f, 6); look.y = 1.6;
+  if (bdm.mesh?.visible) { const s = bdm.mesh.position, ahead = (s.x - eye.x) * f.x + (s.z - eye.z) * f.z; if (ahead > -1) { const w = clamp(1 - ahead / 14, 0.25, 0.75); look.y = THREE.MathUtils.lerp(look.y, s.y, w); look.z = THREE.MathUtils.lerp(look.z, s.z, 0.35); look.x += (s.x - look.x) * 0.15; } else look.y = Math.max(look.y, s.y + 2); }
+  camera.position.lerp(eye, 1 - Math.exp(-dt * 18)); bdm.look = bdm.look ? bdm.look.lerp(look, 1 - Math.exp(-dt * 8)) : look.clone(); camera.lookAt(bdm.look);
+  if (bdm.racket) { // 화면 오른쪽 아래 라켓 (휘두르면 위로 크게)
+    const sw = bdm.swing; bdm.racket.position.copy(camera.localToWorld(new V3(0.36 - sw * 0.2, -0.36 + sw * 0.3, -0.85)));
+    bdm.racket.quaternion.copy(camera.quaternion); bdm.racket.rotateZ(-0.5 + sw * 1.4); bdm.racket.rotateX(-0.4 - sw * 0.9);
+  }
+  return true;
+}
+function initBmUI() {
+  $('bdmHit').addEventListener('pointerdown', e => { e.preventDefault(); bdmSwing(); });
+  $('bdmQuit').onclick = () => bdmStop();
+  addEventListener('keydown', e => { if (bdm.on && e.key.toLowerCase() === 'f' && !e.repeat && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); bdmSwing(); } });
+  canvas.addEventListener('pointerdown', () => { if (bdm.on) bdmSwing(); });
 }
 
 // ---------- (예전) 체육관 그림 창 놀이 — 지금은 쓰지 않아요 ----------
@@ -13276,7 +14030,7 @@ function renderHideBar() {
 async function hideFindNow() {
   const uid = hide.target; if (!uid || !iAmSeeker()) return;
   const res = await backend.hideFind(uid);
-  if (res.ok) { playSfx('right'); const r = remotes.get(uid); if (r) burst(r.pos.clone().setY(1.5), RAINBOW, 50, 5, 3); toast('🔍 찾았다! 한 명 찾았어요', 'success'); }
+  if (res.ok) { playSfx('right'); const r = remotes.get(uid); if (r) burst(r.pos.clone().setY(1.5), RAINBOW, 50, 5, 3); toast('🔍 찾았다! 한 명 찾았어요', 'success'); earnMat('숨바꼭질 찾기'); }
 }
 function syncHide(prev, first) {
   const h = S.hide, ph = prev.hide, me = backend?.uid;
@@ -13295,6 +14049,30 @@ function syncHide(prev, first) {
   if (!$('teacherPanel').classList.contains('hidden')) fillHideAdmin();
 }
 // ---------- 선생님 ----------
+// 🏷️ 닉네임: 선생님이 바꾼 이름(state/nick/{기기})이 있으면 그걸 써요
+function syncNick(prev) {
+  const uid = backend?.uid; if (!uid) return;
+  const o = S.nick?.[uid], was = prev?.nick?.[uid];
+  if (o !== undefined && o !== was) { myNick = cleanNick(o); store.set('sv-nick', myNick); player.avatar?.badge.userData.set([myNick || '친구']); if ($('nickIn')) $('nickIn').value = myNick; toast(`🏷️ 선생님이 닉네임을 ${myNick ? `"${myNick}"(으)로 바꿨어요` : '지웠어요'}`, 'info'); }
+  for (const [u, r] of remotes) { const nm = nickOf(u, r.target); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
+}
+let nickListKey = '';
+function fillNickAdmin(force) {
+  const box = $('tpNickList'); if (!box) return;
+  const list = [...remotes.entries()].filter(([, r]) => !r.target.t);
+  const key = list.map(([u, r]) => u + ':' + (r.target.n || '') + ':' + (S.nick?.[u] ?? '~')).join('|');
+  if (!force && key === nickListKey) return; nickListKey = key; box.textContent = '';
+  if (!list.length) { box.append(el2('p', 'vempty', '지금 접속한 학생이 없어요')); return; }
+  list.forEach(([u, r]) => {
+    const row = el2('div', 'sg-row'), cur = nickOf(u, r.target), inp = document.createElement('input');
+    inp.className = 'tinput'; inp.maxLength = 8; inp.value = cur; inp.style.width = '9em'; inp.setAttribute('aria-label', '닉네임');
+    const save = el2('button', 'btn', '💾'); save.title = '이 닉네임으로 바꾸기';
+    save.onclick = () => { const v = cleanNick(inp.value); if (!v) return toast('닉네임을 적어 주세요', 'warn'); adminDo({ [`nick/${u}`]: v }, `🏷️ "${v}"(으)로 바꿨어요`); };
+    const del = el2('button', 'btn danger', '🗑️'); del.title = '닉네임 지우기 ("친구"로 보여요)'; del.onclick = () => adminDo({ [`nick/${u}`]: '' }, '🏷️ 닉네임을 지웠어요');
+    const back = el2('button', 'btn', '↩️'); back.title = '학생이 정한 닉네임으로 되돌리기'; back.disabled = S.nick?.[u] === undefined; back.onclick = () => adminDo({ [`nick/${u}`]: null }, '🏷️ 학생이 정한 닉네임으로 되돌렸어요');
+    row.append(el2('span', 'sg-name', `${S.nick?.[u] !== undefined ? '✏️ ' : ''}${cleanNick(r.target.n) || '(없음)'}`), inp, save, del, back); box.append(row);
+  });
+}
 function fillHideAdmin() {
   const h = S.hide, n = Object.keys(h?.in || {}).length;
   $('tpHideNow').textContent = !h ? '지금 숨바꼭질을 하고 있지 않아요' : h.ph === 'join' ? `참가자 모집 중 (${n}명)` : h.ph === 'end' ? `끝났어요 (${h.win === 'seek' ? '술래 승리' : '숨은 친구 승리'})` : `${h.ph === 'hide' ? '숨는 중' : '찾는 중'} · 참가 ${n}명`;
@@ -13553,7 +14331,7 @@ async function catchPest() {
   const m = pest.target; if (!m || !pestOn()) return;
   const i = m.userData.i, res = await backend.pestGot(i);
   if (!res.ok) { if (res.reason !== 'offline') toast('앗, 친구가 먼저 잡았어요!', 'info'); return; }
-  pest.mine++; playSfx('pick'); playAct(player.avatar, 'pick');
+  pest.mine++; playSfx('pick'); playAct(player.avatar, 'pick'); if (pest.mine % 3 === 1) earnMat('해충 잡기');
   burst(m.getWorldPosition(new V3()).setY(1), [0x9BD86A, 0xFFFFFF, C.gold], 24, 3, 2);
   const left = PEST.n - Object.keys(S.pest?.got || {}).length - (S.pest?.got?.[i] ? 0 : 1);
   toast(`🐛 ${PEST_NAMES[m.userData.k]}을(를) 잡았어요! ${left > 0 ? `남은 해충 ${left}마리` : '모두 잡았어요!'}`, 'success');
@@ -13743,7 +14521,7 @@ async function answerHQ(a) {
   }
   const first = c.wrong.size === 0, fresh = first && !bag.hq?.[c.it.id];
   playSfx('right'); burst(player.pos.clone().setY(2.4), [0xFFD23C, 0xFFFFFF, 0x7FD36A], 18, 3, 2);
-  if (fresh) { bag.hq[c.it.id] = 1; saveBag(); backend.histRight(c.it.k); }
+  if (fresh) { bag.hq[c.it.id] = 1; saveBag(); backend.histRight(c.it.k); if (o.mode === 'era') earnMat('시대 퀴즈 정답', true); }
   o.onRight?.(first, fresh, c.it);
   hq.cur = null; refillLife();
 }
@@ -14539,7 +15317,7 @@ function renderSgHud(force) {
   if (w && sgw.ended !== s.r) { sgw.ended = s.r; showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
 // ---------- 선생님 ----------
-function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]); if (backend.mode !== 'firebase' && !list.some(([u]) => u === backend.uid)) list.push([backend.uid, { a: myAnimal, c: myShirt, me: true }]); return list; }
+function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]); if (backend.mode !== 'firebase' && !list.some(([u]) => u === backend.uid)) list.push([backend.uid, { a: myAnimal, c: myShirt, n: myNick, me: true }]); return list; }
 function sgBalance(n, list) {
   const cnt = {}; for (const [u] of list) { const v = sgw.assign[u]; if (v >= 1 && v <= n) cnt[v] = (cnt[v] || 0) + 1; else delete sgw.assign[u]; }
   for (const [u] of hShuffle([...list])) if (!sgw.assign[u]) { let best = 1; for (let t = 1; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; sgw.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; }
@@ -14557,7 +15335,7 @@ function fillSiegeAdmin(force) {
   list.forEach(([u, tg], i) => {
     const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot');
     dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
-    row.append(el2('span', 'sg-ani', CFG.ANIMALS[tg.a | 0] || '🙂'), dot, el2('span', 'sg-name', tg.me ? '나 (연습)' : `학생 ${i + 1}`));
+    row.append(dot, el2('span', 'sg-name', tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1))));
     sel.value = String((s ? s.team?.[u] : sgw.assign[u]) || 0);
@@ -14618,7 +15396,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildFundWorld(); initEconUI(); initHomeUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); buildEnglishVillage(); initEvUI(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -14637,7 +15415,7 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
-  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateHide(dt); updatePest(dt); }
+  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updateHide(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { updateHist(dt); updateSiege(dt); }
