@@ -509,8 +509,9 @@
   .hide-prop { font-size: 24px; padding: 4px 10px; background: #fff; }
   .hide-prop.on { background: #FFF3C4; box-shadow: 0 0 0 3px var(--ink) inset; }
   #pestBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(84px + var(--safe-top)); padding: 8px 16px; font-weight: 800; font-size: 16px; background: #FFF4D6; z-index: 3; white-space: nowrap; }
-  #evBar { position: fixed; left: 50%; top: calc(76px + var(--safe-top, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; width: min(560px, calc(100vw - 32px)); z-index: 3; }
-  #evBarT { font-weight: 800; } #evBarS { font-size: 18px; font-weight: 700; color: #1F3A68; margin-top: 4px; }
+  #evBar { position: fixed; left: 50%; top: calc(76px + var(--safe-top, 0px)); transform: translateX(-50%); padding: 5px 12px; text-align: center; width: min(520px, calc(100vw - 32px)); z-index: 3; }
+  #evBarT { font-weight: 800; font-size: 13px; color: #6B5A48; } #evBarS { font-size: 16px; font-weight: 700; color: #1F3A68; margin-top: 2px; }
+  .ev-bar-btns { display: flex; gap: 6px; justify-content: center; margin-top: 4px; } .ev-bar-btns .btn { font-size: 14px; padding: 4px 12px; min-height: 34px; }
   .ev-q { text-align: center; margin: 8px 0 10px; } .ev-ask { font-weight: 700; color: #5A4A3E; } .ev-big { font-size: 24px; font-weight: 800; margin-top: 6px; color: #1F3A68; } .ev-q .ko { display: block; color: #7A6B5D; margin-top: 4px; }
   .ev-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .ev-opts .btn { font-size: 18px; padding: 12px 8px; white-space: normal; line-height: 1.3; }
   .ev-opts.ev-chips { display: flex; flex-wrap: wrap; justify-content: center; } .ev-chip { font-size: 18px; padding: 8px 12px; } .ev-chip.on { background: #E8F1FF; }
@@ -518,10 +519,19 @@
   .ev-line { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 50px; padding: 8px; border: 2px dashed #E0D3BE; border-radius: 12px; margin-top: 8px; }
   .ev-peek { margin-top: 6px; font-size: 14px; }
   @media (max-width: 520px) { .ev-opts { grid-template-columns: 1fr; } }
-  #bdmBar { position: fixed; left: 50%; top: calc(76px + var(--safe-top, 0px)); transform: translateX(-50%); padding: 6px 12px; text-align: center; width: min(560px, calc(100vw - 32px)); z-index: 3; }
+  /* 🎮 놀이 중 화면: 가운데 위쪽을 비워 콕·친구가 잘 보이게 — 점수는 얇은 띠, 버튼은 오른쪽 아래에 모아요 */
+  #bdmBar { position: fixed; left: 50%; top: calc(76px + var(--safe-top, 0px)); transform: translateX(-50%); padding: 4px 14px; display: flex; gap: 10px; align-items: center; justify-content: center; max-width: calc(100vw - 340px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 3; pointer-events: none; opacity: .94; }
+  #bdmTools { position: fixed; right: calc(30px + var(--safe-right, 0px)); bottom: calc(286px + var(--safe-bottom, 0px)); display: flex; gap: 8px; z-index: 4; }
+  #bdmTools.hidden { display: none; }
+  .play-tool { width: 60px; height: 60px; border-radius: 50%; padding: 0; background: #fff; font-size: 20px; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .play-tool small { font-size: 11px; font-weight: 800; }
+  body.in-play #toast { top: calc(118px + var(--safe-top)); }
+  body.in-play.ev-play #toast { top: calc(186px + var(--safe-top)); } /* 영어 마을 안내 띠 아래로 */
+  body.in-play #missionDock, body.in-play #guideChip, body.in-play #controls, body.in-play #decorBtn, body.in-play #decorMenu { display: none !important; } /* 놀이 중에는 미션 카드·첫걸음·조작 안내를 잠깐 숨겨요 */
+  @media (max-width: 700px) { #bdmBar { max-width: calc(100vw - 24px); top: calc(120px + var(--safe-top, 0px)); } }
   #bdmHit { position: fixed; right: calc(18px + var(--safe-right, 0px)); bottom: calc(170px + var(--safe-bottom, 0px)); width: 104px; height: 104px; border-radius: 50%; background: #FFD23C; font-size: 40px; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; z-index: 4; touch-action: none; }
   #bdmHit small { font-size: 14px; font-weight: 800; } #bdmHit.hidden { display: none; }
-  #bdmInfo { font-weight: 800; font-size: 18px; } #bdmMsg { min-height: 22px; font-weight: 700; color: #2F5E9E; }
+  #bdmInfo { font-weight: 800; font-size: 15px; } #bdmMsg { font-weight: 700; font-size: 14px; color: #2F5E9E; } #bdmMsg:empty { display: none; }
   #bbBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #bbInfo { font-weight: 800; font-size: 16px; }
   .bb-gauge { position: relative; height: 18px; border-radius: 10px; background: #EEE6D8; overflow: hidden; margin-top: 6px; }
@@ -808,14 +818,11 @@
 <div id="evBar" class="sticker hidden">
   <div id="evBarT"></div>
   <div id="evBarS" role="status"></div>
-  <div class="row-center" style="margin-top:6px"><button class="btn" id="evBarSay" style="background:#FFD23C">🔊 듣기</button><button class="btn" id="evBarShow">👀 글자</button><button class="btn" id="evBarQuit" style="background:#fff">그만</button></div>
+  <div class="ev-bar-btns"><button class="btn" id="evBarSay" style="background:#FFD23C">🔊 듣기</button><button class="btn" id="evBarShow">👀 글자</button><button class="btn" id="evBarQuit" style="background:#fff">✖ 그만</button></div>
 </div>
 <button id="bdmHit" class="btn hidden" aria-label="치기 (F)">🏸<small>치기 F</small></button>
-<div id="bdmBar" class="sticker hidden">
-  <div id="bdmInfo"></div>
-  <div id="bdmMsg" role="status"></div>
-  <div class="row-center" style="margin-top:6px"><button class="btn" id="bdmView" style="background:#fff">👁️ 1인칭으로</button><button class="btn" id="bdmQuit" style="background:#fff">그만</button></div>
-</div>
+<div id="bdmBar" class="sticker hidden"><span id="bdmInfo"></span><span id="bdmMsg" role="status"></span></div>
+<div id="bdmTools" class="hidden"><button class="btn play-tool" id="bdmView" aria-label="시점 바꾸기">👁️<small>1인칭</small></button><button class="btn play-tool" id="bdmQuit" aria-label="그만하기">✖<small>그만</small></button></div>
 <div id="bbBar" class="sticker hidden">
   <div id="bbInfo"></div>
   <div class="bb-gauge"><div id="bbFill"></div><i style="left:62%"></i><i style="left:78%"></i></div>
@@ -13705,8 +13712,8 @@ function bdmStart(c, slot) {
   const cz = BDM_C[c], home = bdmHome(m, c, slot);
   player.pos.set(home.x, 0.12, home.z); player.vy = 0; player.heading = bdm.side < 0 ? Math.PI / 2 : -Math.PI / 2;
   camYaw = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2;
-  if (!bdm.racket) { bdm.racket = makeRacket(scene); bdm.racket.scale.setScalar(0.3); }
-  bdmApplyView(); $('bdmBar').classList.remove('hidden'); $('bdmHit').classList.remove('hidden'); bdmRender();
+  if (!bdm.racket) { bdm.racket = makeRacket(scene); bdm.racket.scale.setScalar(0.24); }
+  bdmApplyView(); $('bdmBar').classList.remove('hidden'); $('bdmHit').classList.remove('hidden'); $('bdmTools').classList.remove('hidden'); bdmRender();
   const vsAi = BDM_SLOTS.filter(k => m.s?.[k] && bdmTeam(k) !== bdmTeam(slot)).every(k => m.s[k].u === 'ai');
   toast(`🏸 ${m.n === 4 ? '복식' : '단식'} 시작! 콕 아래로 움직여서 F·화면 톡·🏸 버튼으로 쳐요${m.n === 4 ? ' · 우리 팀 누구든 칠 수 있어요' : ''}${vsAi ? '' : ' · 친구와 경기'}`, 'info');
 }
@@ -13715,14 +13722,14 @@ function bdmApplyView() {
   player.avatar.g.visible = !fp; player.avatar.badge.visible = !bdm.on; if (bdm.racket) bdm.racket.visible = fp; // 경기 중에는 내 닉네임을 숨겨 앞이 잘 보이게
   if (bdm.on && !fp) bdmHandRacket(player.avatar); else bdmDropRacket(player.avatar);
   const fov = !bdm.on ? 55 : fp ? 80 : 66; if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
-  $('bdmView').textContent = bdm.view === '1' ? '👁️ 3인칭으로' : '👁️ 1인칭으로';
+  $('bdmView').innerHTML = bdm.view === '1' ? '👁️<small>3인칭</small>' : '👁️<small>1인칭</small>';
 }
 function bdmStop(silent) {
   if (!bdm.on) return;
   const m = bdmMatch(bdm.c);
   if (!silent && m && m.id === bdm.id && m.ph !== 'end') bdmLeave(bdm.c);
   if (!silent && bdm.hits >= 10 && !bdm.done) earnMat('배드민턴 열심히 하기');
-  bdm.on = false; $('bdmBar').classList.add('hidden'); $('bdmHit').classList.add('hidden'); bdmApplyView(); camPitch = 0.6;
+  bdm.on = false; $('bdmBar').classList.add('hidden'); $('bdmHit').classList.add('hidden'); $('bdmTools').classList.add('hidden'); bdmApplyView(); camPitch = 0.6;
 }
 function bdmEnd(won, m) {
   bdm.done = true; bdm.msg = won ? '🏆 이겼어요! 멋진 경기!' : '👏 좋은 경기였어요!'; bdm.msgT = 4;
@@ -13737,7 +13744,7 @@ function bdmLaunch(c, p, v, who, msg) {
   V.sh = { p: p.clone(), v: v.clone(), t, w: who, live: true, simT: 0, net: false };
   V.rally++; if (msg && who === bdm.slot) { bdm.msg = msg; bdm.msgT = 1.1; }
   backend.badSet(c, { hit: { n: V.rally, w: who, p: [p.x, p.y, p.z].map(q => Math.round(q * 1000) / 1000), v: [v.x, v.y, v.z].map(q => Math.round(q * 1000) / 1000), t, pt: m?.pt || 0 }, at: t });
-  burst(p, [0xFFFFFF, 0xFFE58A], 6, 1.2, 0.4);
+  if (!(who === bdm.slot && bdm.view === '1')) burst(p, [0xFFFFFF, 0xFFE58A], 6, 1.2, 0.4); // 1인칭으로 내가 칠 때는 눈앞을 가리지 않게 생략
 }
 function bdmSwing() {
   if (!bdm.on || bdm.cool > 0 || bdm.done) return; bdm.cool = 0.32; bdm.swing = 1; playSfx('jump');
@@ -13806,7 +13813,7 @@ function bdmCourt(c, dt) {
   let show = sh ? sh.p : null;
   if (!h || !sh) {
     const sp = bdmSlotPos(m, c, m.srv), dir = -bdmSide(bdmTeam(m.srv));
-    show = sp ? new V3(sp.x + dir * (m.srv === bdm.slot && bdm.view === '1' && bdm.c === c ? 1.7 : 1.0), sp.y + (m.srv === bdm.slot && bdm.c === c ? 1.6 : 1.3), sp.z + dir * 0.6) /* 서브할 사람 앞 오른쪽 */ : new V3(BDM.nx + dir * 4, 1.3, cz);
+    const fpMe = m.srv === bdm.slot && bdm.view === '1' && bdm.c === c; show = sp ? new V3(sp.x + dir * (fpMe ? 2.6 : 1.0), sp.y + (fpMe ? 1.15 : m.srv === bdm.slot && bdm.c === c ? 1.6 : 1.3), sp.z + dir * (fpMe ? 0.9 : 0.6)) /* 서브할 사람 앞 오른쪽 */ : new V3(BDM.nx + dir * 4, 1.3, cz);
   }
   mesh.position.copy(show); if (sh?.live && sh.v.lengthSq() > 0.01) { mesh.lookAt(show.clone().sub(sh.v)); mesh.rotateX(Math.PI / 2); } else mesh.rotation.set(0, 0, 0);
   mesh.userData.shadow.position.set(show.x, BDM.floor + 0.02, show.z);
@@ -13855,7 +13862,7 @@ function bdmRender() {
   if (!bdm.on) return;
   const m = bdmMatch(bdm.c); if (!m) return;
   const myT = bdmTeam(bdm.slot), opT = bdmOther(myT), names = (t) => (m.n === 4 ? [t + '1', t + '2'] : [t + '1']).map(k => { const x = m.s?.[k]; return !x ? '?' : x.u === 'ai' ? '🤖' : x.nm; }).join('·');
-  $('bdmInfo').textContent = `🏸 우리 팀(${names(myT)}) ${m.sc?.[myT] || 0} : ${m.sc?.[opT] || 0} 상대(${names(opT)}) · ${BDM.win}점 먼저`;
+  $('bdmInfo').textContent = `🏸 우리 ${m.sc?.[myT] || 0} : ${m.sc?.[opT] || 0} 상대`; $('bdmInfo').title = `우리 팀(${names(myT)}) · 상대(${names(opT)}) · ${BDM.win}점 먼저`;
   const V = bdc[bdm.c], hint = bdm.done ? '' : !m.hit && !V.sh?.live ? (m.srv === bdm.slot ? '내 서브! F·화면 톡·🏸' : `${bdmTeam(m.srv) === myT ? '우리 팀' : '상대'} 서브를 기다려요`) : '';
   $('bdmMsg').textContent = bdm.msgT > 0 ? bdm.msg : hint;
 }
@@ -13889,7 +13896,7 @@ function updateBm(dt) {
 }
 function bdmCourtLabels() { // 코트 위 안내: 비었는지·모으는 중·점수
   bdm.labT = (bdm.labT || 0) - 1; if (bdm.labT > 0) return; bdm.labT = 15;
-  for (const c of ['c0', 'c1']) { const m = bdmMatch(c), L = bld['bdmLab_' + c]; if (!L) continue;
+  for (const c of ['c0', 'c1']) { const m = bdmMatch(c), L = bld['bdmLab_' + c]; if (!L) continue; L.visible = !(bdm.on && bdm.c === c); // 내가 뛰는 코트는 위쪽 점수 띠로 봐요
     L.userData.set(!bdmLive(m) ? [`🏸 ${c === 'c0' ? '1번' : '2번'} 코트`, '비어 있어요 · 옆에서 E'] : m.ph === 'wait' ? [`⏳ ${m.n === 4 ? '복식' : '단식'} 친구 모으는 중`, `${Object.values(m.s || {}).filter(Boolean).length} / ${m.n}명 · 옆에서 E로 참가`] : [`🔵 A팀 ${m.sc?.a || 0} : ${m.sc?.b || 0} B팀 🟠`, m.n === 4 ? '복식 2:2' : '단식 1:1']); }
 }
 function bdmCamera(dt) { // 3인칭(기본): 내 뒤 조금 위에서 · 1인칭: 눈높이에서 넓게. 콕이 높이 뜨면 고개를 들어요
@@ -13900,7 +13907,7 @@ function bdmCamera(dt) { // 3인칭(기본): 내 뒤 조금 위에서 · 1인칭
   const look = new V3(pp.x + f.x * 6.5, 0.9, pp.z + f.z * 6.5), V = bdc[bdm.c];
   if (V?.mesh?.visible) { const s = V.mesh.position, ahead = (s.x - pp.x) * f.x + (s.z - pp.z) * f.z; if (ahead > -1.5) { const w = clamp(1 - ahead / 14, 0.2, fp ? 0.7 : 0.55); look.y = THREE.MathUtils.lerp(look.y, s.y, w); look.z = THREE.MathUtils.lerp(look.z, s.z, 0.3); } else look.y = Math.max(look.y, s.y + 1.5); }
   camera.position.lerp(eye, 1 - Math.exp(-dt * (fp ? 18 : 9))); bdm.look = bdm.look ? bdm.look.lerp(look, 1 - Math.exp(-dt * 7)) : look.clone(); camera.lookAt(bdm.look);
-  if (fp && bdm.racket) { const sw = bdm.swing; bdm.racket.position.copy(camera.localToWorld(new V3(0.42 - sw * 0.2, -0.4 + sw * 0.3, -0.9))); bdm.racket.quaternion.copy(camera.quaternion); bdm.racket.rotateZ(-0.5 + sw * 1.4); bdm.racket.rotateX(-0.4 - sw * 0.9); }
+  if (fp && bdm.racket) { const sw = bdm.swing; bdm.racket.position.copy(camera.localToWorld(new V3(0.55 - sw * 0.25, -0.52 + sw * 0.35, -0.95))); /* 화면 오른쪽 아래 구석 */ bdm.racket.quaternion.copy(camera.quaternion); bdm.racket.rotateZ(-0.5 + sw * 1.4); bdm.racket.rotateX(-0.4 - sw * 0.9); }
   return true;
 }
 function initBmUI() {
@@ -15483,6 +15490,7 @@ function loop() {
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { updateHist(dt); updateSiege(dt); }
+  { const ip = joined && (bdm.on || !!ev.game || (!!S.siege?.on && siegeRegion() && !!sgMine())); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
   updateFund(dt);
   if (joined) updateHome(dt);
   updateFx(dt); grassWind.value = time; waterTime.value = time;
