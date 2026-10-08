@@ -351,6 +351,8 @@
 
   /* 창 */
   .modal { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, 92vw); padding: 24px; }
+  .modal { z-index: 8; } /* 창은 공성전 점수판·쏘기 띠 같은 화면 띠보다 위에 (띠가 창을 가리지 않게) */
+  #toast { z-index: 35; }
   .modal { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; } /* 작은 화면에서도 닫기 버튼까지 스크롤로 닿아요 */
   @media (max-height: 700px) { #tip li { font-size: 18px; } #tip li .em { font-size: 26px; width: 36px; } #tip ol { gap: 7px; } .modal h2 { font-size: 24px; margin-bottom: 10px; } }
   .modal h2 { margin: 0 0 16px; font-size: 30px; font-weight: 700; text-align: center; }
@@ -516,7 +518,9 @@
   .ev-line { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 50px; padding: 8px; border: 2px dashed #E0D3BE; border-radius: 12px; margin-top: 8px; }
   .ev-peek { margin-top: 6px; font-size: 14px; }
   @media (max-width: 520px) { .ev-opts { grid-template-columns: 1fr; } }
-  #bdmBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 300px; z-index: 3; }
+  #bdmBar { position: fixed; left: 50%; top: calc(76px + var(--safe-top, 0px)); transform: translateX(-50%); padding: 6px 12px; text-align: center; width: min(560px, calc(100vw - 32px)); z-index: 3; }
+  #bdmHit { position: fixed; right: calc(18px + var(--safe-right, 0px)); bottom: calc(170px + var(--safe-bottom, 0px)); width: 104px; height: 104px; border-radius: 50%; background: #FFD23C; font-size: 40px; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; z-index: 4; touch-action: none; }
+  #bdmHit small { font-size: 14px; font-weight: 800; } #bdmHit.hidden { display: none; }
   #bdmInfo { font-weight: 800; font-size: 18px; } #bdmMsg { min-height: 22px; font-weight: 700; color: #2F5E9E; }
   #bbBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #bbInfo { font-weight: 800; font-size: 16px; }
@@ -542,6 +546,16 @@
   .sg-nat i { position: absolute; left: 0; bottom: 0; height: 5px; background: var(--c); }
   #sgInfo { font-weight: 800; font-size: 15px; margin-top: 3px; } #sgMine { font-size: 14px; margin-top: 2px; }
   .lp-card.on { box-shadow: 0 0 0 3px var(--leaf) inset; }
+  .sg-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+  .sg-role { display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: start; text-align: left; padding: 10px 12px; background: #fff; border: 1.5px solid var(--line-2); border-radius: 14px; font: inherit; color: inherit; cursor: pointer; min-height: 64px; }
+  .sg-role:hover { background: #FFFBF0; } .sg-role:focus-visible { outline: 3px solid var(--sky, #5AAAF0); outline-offset: 2px; }
+  .sg-role.on { background: #EEF8E8; box-shadow: 0 0 0 3px var(--leaf) inset; border-color: transparent; }
+  .sg-role-ic { font-size: 30px; line-height: 1; grid-row: 1 / span 2; padding-top: 2px; }
+  .sg-role-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .sg-role-txt b { font-size: 18px; }
+  .sg-role-tag { font-size: 14px; font-weight: 700; color: #8A6A44; } .sg-role-can { font-size: 13.5px; line-height: 1.35; color: #5A4A3E; word-break: keep-all; }
+  .sg-role-n { grid-column: 2; margin-top: 6px; font-size: 13px; font-weight: 800; color: #6B5A48; }
+  .sg-role.on .sg-role-n { color: #3E8E3E; }
+  @media (max-width: 560px) { .sg-roles { grid-template-columns: 1fr; } }
   #sgBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #sgFill { height: 100%; width: 0; background: linear-gradient(90deg, #D9C49A, #8A6A44, #5A3A22); }
   #sgThrow { background: #8A6A44; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
@@ -796,10 +810,11 @@
   <div id="evBarS" role="status"></div>
   <div class="row-center" style="margin-top:6px"><button class="btn" id="evBarSay" style="background:#FFD23C">🔊 듣기</button><button class="btn" id="evBarShow">👀 글자</button><button class="btn" id="evBarQuit" style="background:#fff">그만</button></div>
 </div>
+<button id="bdmHit" class="btn hidden" aria-label="치기 (F)">🏸<small>치기 F</small></button>
 <div id="bdmBar" class="sticker hidden">
   <div id="bdmInfo"></div>
   <div id="bdmMsg" role="status"></div>
-  <div class="row-center" style="margin-top:6px"><button class="btn" id="bdmHit" style="background:#FFD23C;font-size:22px;min-width:150px">🏸 치기 (F)</button><button class="btn" id="bdmQuit" style="background:#fff">그만</button></div>
+  <div class="row-center" style="margin-top:6px"><button class="btn" id="bdmView" style="background:#fff">👁️ 1인칭으로</button><button class="btn" id="bdmQuit" style="background:#fff">그만</button></div>
 </div>
 <div id="bbBar" class="sticker hidden">
   <div id="bbInfo"></div>
@@ -964,7 +979,7 @@
       <li><span class="em">😊</span>😊 버튼(또는 Q)으로 인사·만세·춤 몸짓을 해요</li>
       <li><span class="em">💌</span>광장 오른쪽 감사 게시판에 오늘 고마웠던 일을 적으면 하루 한 번 🐚 보상을 받아요</li>
       <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 역사 마을에 가요. 북쪽 🏛️ 역사의 길에서 시대 퀴즈를 풀어 시대 건축물을 함께 지어요</li>
-      <li><span class="em">🏸</span>체육관(광장 동쪽): 회전 막대 점프 · 농구 · 배드민턴! 배드민턴은 1인칭으로 콕 아래로 가서 F·화면 톡·🏸 버튼으로 쳐요 (🤖 컴퓨터 또는 👫 친구와 1:1)</li>
+      <li><span class="em">🏸</span>체육관(광장 동쪽): 배드민턴 코트 2면! 코트 옆에서 E → 단식·복식 (🤖 컴퓨터 또는 👫 친구). 콕 아래로 가서 F·화면 톡·🏸 버튼으로 쳐요 (👁️ 3인칭·1인칭 바꾸기)</li>
       <li><span class="em">🚌</span>체육관 옆 버스 정류장에서 버스를 타면 🗽 영어 마을에 가요. 구역 6곳(Lesson 7~12) 주민에게 E를 눌러 듣고·고르고·문장을 만들어요</li>
     </ol>
   </details>
@@ -1836,7 +1851,7 @@ function normalize(v) {
     thx: v.thx || {},
     read: v.read || {}, art: v.art || {}, gym: v.gym || {},
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
-    nick: toObj(v.nick), badm: v.badm || null, eng: toObj(v.eng),
+    nick: toObj(v.nick), badm: Object.fromEntries(['c0', 'c1'].filter(k => plainObj(v.badm)[k]?.s).map(k => [k, v.badm[k]])), eng: toObj(v.eng),
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null,
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
@@ -2032,7 +2047,13 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async gymJc() { st.gym ||= {}; if (st.gym.jc && Date.now() < st.gym.jc + GYM2.jc.len) return { ok: false }; st.gym.jc = Date.now() + GYM2.jc.wait; emit(); return { ok: true }; },
     async gymAdd(k, n) { st.gym ||= {}; st.gym[k] = (st.gym[k] || 0) + n; emit(); return { ok: true }; },
     async engStar(n) { st.eng ||= {}; st.eng[n] = (st.eng[n] || 0) + 1; emit(); return { ok: true }; },
-    async badSet() { return { ok: false }; }, async badOpen() { return { ok: false }; }, async badJoin() { return { ok: false }; }, // 🏸 친구와 1:1은 Firebase에서만
+    async badSet(c, upd) { // 🏸 배드민턴 (연습 모드: 이 브라우저에서만 · 🤖와 함께)
+      const o = st.badm?.[c]; if (!o) return { ok: false };
+      for (const [path, val] of Object.entries(upd)) { const parts = path.split('/'); let x = o; for (const k of parts.slice(0, -1)) { if (!x[k] || typeof x[k] !== 'object') x[k] = {}; x = x[k]; } const last = parts[parts.length - 1]; if (val === null) delete x[last]; else x[last] = JSON.parse(JSON.stringify(val)); }
+      emit(); return { ok: true };
+    },
+    async badOpen(c, obj) { st.badm ||= {}; const cur = st.badm[c]; if (cur && cur.ph !== 'end' && Date.now() - (cur.at || 0) < 45000) return { ok: false }; st.badm[c] = JSON.parse(JSON.stringify(obj)); emit(); return { ok: true }; },
+    async badJoin(c, k, nm) { const cur = st.badm?.[c]; if (!cur || cur.ph !== 'wait' || cur.s?.[k] || Object.values(cur.s || {}).some(x => x?.u === 'me')) return { ok: false }; (cur.s ||= {})[k] = { u: 'me', nm }; emit(); return { ok: true }; },
     async thxPost(t, d) { st.thx ||= {}; st.thx[`me_${Date.now().toString(36)}`] = { t, d, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async mathOre(id) { st.math ||= {}; st.math[id] = (st.math[id] || 0) + 1; emit(); return { ok: true }; },
     async mathBlock(id) { st.math ||= {}; st.math.blk ||= {}; const t = st.math.blk[id]; if (t && Date.now() - t < BM.respawn) return { ok: false, reason: 'taken' }; st.math.blk[id] = Date.now(); emit(); return { ok: true }; },
@@ -2390,18 +2411,18 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       try { const r = await D.runTransaction(R(`state/gym/${k}`), c => (c || 0) + n); return { ok: r.committed }; }
       catch (e) { return { ok: false }; }
     },
-    async badSet(upd) { // 🏸 배드민턴 친구 경기: 친 순간(hit)·점수(sc)만 적어요
-      try { await D.update(R('state/badm'), upd); return { ok: true }; } catch (e) { return { ok: false }; }
+    async badSet(c, upd) { // 🏸 배드민턴: 친 순간(hit)·점수(sc)·자리(s)만 적어요
+      try { await D.update(R(`state/badm/${c}`), upd); return { ok: true }; } catch (e) { return { ok: false }; }
     },
     async engStar(n) { // 🗽 영어 마을: 반 전체 영어 별 +1
       try { const r = await D.runTransaction(R(`state/eng/${n}`), c => (c || 0) + 1); return { ok: r.committed }; } catch (e) { return { ok: false }; }
     },
-    async badOpen(nick) {
-      try { const r = await D.runTransaction(R('state/badm'), c => (!c || c.ph === 'end' || now() - (c.at || 0) > 45000) ? { id: Date.now().toString(36), a: uid, an: nick, ph: 'wait', sc: { a: 0, b: 0 }, srv: 'a', pt: 0, at: now() } : undefined); return { ok: r.committed }; }
+    async badOpen(c, obj) { // 코트가 비었거나(끝남·45초 동안 소식 없음) 처음일 때만 열어요
+      try { const r = await D.runTransaction(R(`state/badm/${c}`), cur => (!cur || cur.ph === 'end' || now() - (cur.at || 0) > 45000) ? obj : undefined); return { ok: r.committed }; }
       catch (e) { return { ok: false }; }
     },
-    async badJoin(nick) {
-      try { const r = await D.runTransaction(R('state/badm'), c => (c && c.ph === 'wait' && c.a !== uid && now() - (c.at || 0) < 45000) ? { ...c, b: uid, bn: nick, ph: 'play', at: now() } : undefined); return { ok: r.committed }; }
+    async badJoin(c, k, nm) {
+      try { const r = await D.runTransaction(R(`state/badm/${c}`), cur => (cur && cur.ph === 'wait' && !cur.s?.[k] && !Object.values(cur.s || {}).some(x => x?.u === uid) && now() - (cur.at || 0) < 45000) ? { ...cur, s: { ...(cur.s || {}), [k]: { u: uid, nm } }, at: now() } : undefined); return { ok: r.committed }; }
       catch (e) { return { ok: false }; }
     },
     async thxPost(t, d) { // 💌 감사 글: 열쇠 = 내 기기 번호_시각 (내 글 표시용), 선생님이 ok를 켜야 게시판에 보여요
@@ -12806,7 +12827,7 @@ function initThxUI() {
 const ROOMS = {
   lib: { name: '도서관', icon: '📚', cx: 1450, cz: 0, w: 22, d: 16, wall: 0xF3E6CF, floor: 0xB9875A, site: 'Library' },
   art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
-  gym: { name: '체육관', icon: '🏸', cx: 1580, cz: 0, w: 46, d: 18, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
+  gym: { name: '체육관', icon: '🏸', cx: 1580, cz: 0, w: 30, d: 30, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
   gh: { name: '온실', icon: '🌿', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
@@ -12859,45 +12880,24 @@ function buildInteriors() {
     box(g, 3, 1, 1, 0xC8D2DC, cx + 8, 0.5, cz - 4); for (let k = 0; k < 6; k++) cyl(g, 0.18, 0.3, [0xE2584A, 0xFFD23C, 0x4A9AE8, 0x5FBE5A, 0x9A5AD8, 0xFF9AC0][k], cx + 6.9 + k * 0.45, 1.15, cz - 4, o);
     bld.artLabel = makeLabel(g, [''], 0.8, cx + 6, 4.4, cz - d / 2 + 1);
   }
-  // ---------- 🏀 실내 체육관 ----------
+  // ---------- 🏸 체육관: 배드민턴 코트 2면 ----------
   { const r = ROOMS.gym, { cx, cz, w, d } = r; roomShell(g, r);
-    // 🌀 회전 막대 점프 링 (왼쪽)
-    const J = GYM2.jc;
-    cyl(g, J.r + 0.3, 0.04, 0xFFFFFF, J.x, 0.115, J.z, o); cyl(g, J.r + 0.1, 0.05, 0x5FBE5A, J.x, 0.12, J.z, o);
-    for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; box(g, 0.25, 0.02, J.r - 0.8, 0x4FA04F, J.x + Math.cos(a) * J.r / 2, 0.15, J.z + Math.sin(a) * J.r / 2, { solid: false, ry: -a + Math.PI / 2 }); }
-    cyl(g, 0.55, 1.0, 0xE2584A, J.x, 0.5, J.z); cyl(g, 0.65, 0.12, 0xFFD23C, J.x, 1.05, J.z, o);
-    bld.bars = [];
-    for (let k = 0; k < 2; k++) { // 막대 2개 (두 번째는 30초 뒤부터)
-      const bar = new THREE.Group(); bar.position.set(J.x, 0, J.z); g.add(bar);
-      const arm = cyl(bar, 0.14, J.r, k ? 0x9A5AD8 : 0xFF9628, J.r / 2, J.h, 0, { solid: false, rz: Math.PI / 2 });
-      ball(bar, 0.22, 0xFFFFFF, J.r, J.h, 0, { solid: false });
-      bar.visible = k === 0; bld.bars.push(bar);
+    for (const [c, ccz] of Object.entries(BDM_C)) {
+      const L = (w2, d2, x, z) => box(g, w2, 0.02, d2, 0xFFFFFF, x, 0.125, z, o), X0 = BDM.x0, X1 = BDM.x1, NX = BDM.nx, HZ = BDM.hz;
+      box(g, X1 - X0 + 3, 0.02, HZ * 2 + 2, 0x3E8E6A, (X0 + X1) / 2, 0.112, ccz, o);
+      L(X1 - X0, 0.08, (X0 + X1) / 2, ccz - HZ); L(X1 - X0, 0.08, (X0 + X1) / 2, ccz + HZ); L(0.08, HZ * 2, X0, ccz); L(0.08, HZ * 2, X1, ccz);
+      L(X1 - X0, 0.06, (X0 + X1) / 2, ccz - HZ + 0.5); L(X1 - X0, 0.06, (X0 + X1) / 2, ccz + HZ - 0.5); // 단식 옆줄
+      for (const sx of [-1, 1]) { L(0.08, HZ * 2, NX + sx * 2.0, ccz); L(0.08, HZ * 2, NX + sx * (X1 - NX - 0.8), ccz); L(X1 - NX - 2.0, 0.08, NX + sx * (2.0 + (X1 - NX - 2.0) / 2), ccz); }
+      for (const sz of [-1, 1]) cyl(g, 0.07, BDM.netH + 0.1, 0xD8DDE4, NX, (BDM.netH + 0.1) / 2, ccz + sz * (HZ + 0.35), o);
+      const netM = new THREE.Mesh(new THREE.PlaneGeometry(HZ * 2 + 0.7, 0.75), new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
+      netM.position.set(NX, BDM.netH - 0.375, ccz); netM.rotation.y = Math.PI / 2; g.add(netM);
+      box(g, 0.04, 0.07, HZ * 2 + 0.7, 0xFFFFFF, NX, BDM.netH, ccz, o);
+      bld['bdmLab_' + c] = makeLabel(g, [''], 0.6, NX, 4.6, ccz);
+      for (const sx of [-1, 1]) addInteract({ pos: new V3(NX + sx * (X1 - NX + 2.6), 1, ccz), r: 2.6, text: () => { if (roomNow() !== 'gym' || bdm.on) return null; const m = bdmMatch(c); return ['배드민턴 🏸', !bdmLive(m) ? `${c === 'c0' ? '1번' : '2번'} 코트 · 단식·복식` : m.ph === 'wait' ? '친구 모으는 중 · 참가하기' : '경기 중 · 구경하기']; }, run: () => openBmMenu(c) });
     }
-    bld.jcLabel = makeLabel(g, [''], 0.85, J.x, 3.2, J.z);
-    addInteract({ pos: new V3(J.x, 1, J.z + J.r + 1.2), r: 2.4, text: () => roomNow() === 'gym' ? (jcState() === 'idle' ? ['게임 시작 🌀', '회전 막대 점프'] : ['🌀 게임 중', jcState() === 'ready' ? '곧 시작해요! 링 안으로' : '링 안에서 점프!']) : null, run: jcStart });
-    // 🏀 농구 (오른쪽)
-    const B = GYM2.bb;
-    box(g, 0.25, B.h + 0.5, 0.25, 0x5E6670, B.x, (B.h + 0.5) / 2, cz - d / 2 + 0.5);
-    box(g, 1.8, 1.1, 0.08, 0xFFFFFF, B.x, B.h + 0.45, B.z - 0.45, o); box(g, 0.6, 0.45, 0.09, 0xE2584A, B.x, B.h + 0.2, B.z - 0.44, o); box(g, 0.5, 0.35, 0.1, 0xFFFFFF, B.x, B.h + 0.2, B.z - 0.43, o);
-    const hoop = new THREE.Mesh(new THREE.TorusGeometry(B.rim, 0.035, 6, 20), M(0xFF6A2A)); hoop.position.set(B.x, B.h, B.z); hoop.rotation.x = Math.PI / 2; g.add(hoop);
-    for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; box(g, 0.02, 0.45, 0.02, 0xFFFFFF, B.x + Math.cos(a) * B.rim * 0.85, B.h - 0.22, B.z + Math.sin(a) * B.rim * 0.85, { solid: false, rx: Math.sin(a) * 0.25, rz: -Math.cos(a) * 0.25 }); }
-    const arc = new THREE.Mesh(new THREE.RingGeometry(B.three - 0.06, B.three + 0.06, 40, 1, 0, Math.PI), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide })); arc.rotation.x = -Math.PI / 2; arc.position.set(B.x, 0.12, B.z); g.add(arc);
-    cyl(g, 1.0, 0.02, 0xFFFFFF, B.x, 0.115, B.z + 2.6, o); cyl(g, 0.92, 0.03, r.floor, B.x, 0.12, B.z + 2.6, o);
-    for (let k = 0; k < 6; k++) ball(g, 0.25, 0xFF8A3A, B.x + 4, 0.35 + (k % 2) * 0.45, cz + 3 + Math.floor(k / 2) * 0.5, o);
-    bld.gymLabel = makeLabel(g, [''], 0.8, B.x, 4.2, B.z + 1);
-    addInteract({ pos: new V3(B.x, 1, B.z + 3.6), r: 3.2, text: () => roomNow() === 'gym' && !bb.on ? ['농구 하기 🏀', '꾹 눌러 힘을 모아 던져요'] : null, run: bbStart });
-    // 🏸 배드민턴 코트 (오른쪽): 초록 바닥 + 흰 선 + 네트
-    const L = (w2, d2, x, z) => box(g, w2, 0.02, d2, 0xFFFFFF, x, 0.125, z, o);
-    box(g, BDM.x1 - BDM.x0 + 1.6, 0.02, BDM.hz * 2 + 1.6, 0x3E8E6A, (BDM.x0 + BDM.x1) / 2, 0.112, 0, o);
-    L(BDM.x1 - BDM.x0, 0.08, (BDM.x0 + BDM.x1) / 2, -BDM.hz); L(BDM.x1 - BDM.x0, 0.08, (BDM.x0 + BDM.x1) / 2, BDM.hz); L(0.08, BDM.hz * 2, BDM.x0, 0); L(0.08, BDM.hz * 2, BDM.x1, 0);
-    for (const sx of [-1, 1]) { L(0.08, BDM.hz * 2, BDM.nx + sx * 2.0, 0); L(BDM.x1 - BDM.nx - 2.0, 0.08, BDM.nx + sx * (2.0 + (BDM.x1 - BDM.nx - 2.0) / 2), 0); }
-    for (const sz of [-1, 1]) cyl(g, 0.07, BDM.netH + 0.1, 0xD8DDE4, BDM.nx, (BDM.netH + 0.1) / 2, sz * (BDM.hz + 0.35), o);
-    const netM = new THREE.Mesh(new THREE.PlaneGeometry(BDM.hz * 2 + 0.7, 0.75), new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
-    netM.position.set(BDM.nx, BDM.netH - 0.375, 0); netM.rotation.y = Math.PI / 2; g.add(netM);
-    box(g, 0.04, 0.07, BDM.hz * 2 + 0.7, 0xFFFFFF, BDM.nx, BDM.netH, 0, o);
-    bld.bdmLabel = makeLabel(g, [''], 0.8, BDM.nx, 3.6, -BDM.hz - 1.2);
-    addInteract({ pos: new V3(BDM.x0 - 1.2, 1, 0), r: 2.6, text: () => roomNow() === 'gym' && !bdm.on ? ['배드민턴 하기 🏸', S.badm?.ph === 'wait' && backend.now() - (S.badm.at || 0) < 45000 ? `${S.badm.an || '친구'}이(가) 기다려요` : '컴퓨터 · 친구와 1:1'] : null, run: openBmMenu });
-    addInteract({ pos: new V3(BDM.x1 + 1.2, 1, 0), r: 2.6, text: () => roomNow() === 'gym' && !bdm.on ? ['배드민턴 하기 🏸', '컴퓨터 · 친구와 1:1'] : null, run: openBmMenu });
+    // 벤치 (가운데 통로 양 끝)
+    box(g, 0.6, 0.45, 2.6, 0x8FA7C4, cx - w / 2 + 1.0, 0.25, 0, o); box(g, 0.6, 0.45, 2.6, 0x8FA7C4, cx + w / 2 - 1.0, 0.25, 0, o);
+    bld.gymLabel = makeLabel(g, [''], 0.8, cx, 4.0, cz - d / 2 + 1);
   }
   // 나가는 문
   for (const [id, r] of Object.entries(ROOMS)) addInteract({ pos: new V3(r.cx, 1, r.cz + r.d / 2 - 0.8), r: 2.2, text: () => roomNow() === id ? ['밖으로 나가기 🚪', r.name] : null, run: () => exitRoom(id) });
@@ -12935,7 +12935,7 @@ async function enterRoom(id) {
   player.pos.set(r.cx, 0.12, r.cz + r.d / 2 - 3.2); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
-  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 왼쪽 🌀 회전 막대 점프 · 가운데 🏀 농구 · 오른쪽 🏸 배드민턴 코트' }[id], 'info');
+  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요' }[id], 'info');
 }
 async function exitRoom(id) {
   if (hv.travel) return;
@@ -12976,15 +12976,13 @@ function renderRooms(force) {
     bld.artLabel?.userData.set(['🖼️ 우리 반 전시 벽', arts.length ? `작품 ${arts.length}점` : '선생님이 확인한 작품이 걸려요']);
   }
   const gy = S.gym || {};
-  bld.gymLabel?.userData.set(['🏀 우리 반 농구', `함께 넣은 골 ${gy.hit || 0}개`]);
-  bld.bdmLabel?.userData.set(['🏸 우리 반 배드민턴', `함께 주고받은 횟수 ${gy.rally || 0}번`]);
+  bld.gymLabel?.userData.set(['🏸 우리 반 배드민턴', `함께 주고받은 횟수 ${gy.rally || 0}번`]);
 }
 function updateRooms(dt) {
   if (!bld.group) return;
   const near = (player.pos.x > 1400 && player.pos.x < 1620) || (camera.position.x > 1400 && camera.position.x < 1620);
   bld.group.visible = near;
-  if (near) { updateJc(dt); updateBB(dt); }
-  updateBm(dt);
+  updateBm(dt); if (near) bdmCourtLabels();
   bld.dt = (bld.dt || 0) - dt; if (bld.dt <= 0) { bld.dt = 0.25; updateDoors(); }
 }
 // ---------- 📒 독서 기록장 ----------
@@ -13575,47 +13573,52 @@ function initEvUI() {
   $('evBarQuit').onclick = stopEvGame;
 }
 
-// ---------- 🏸 배드민턴 (체육관 오른쪽 코트) ----------
-// 1인칭으로 콕을 보고 움직여서 쳐요. 🤖 컴퓨터와(이 기기에서만) 또는 👫 친구와 1:1 (state/badm: 친 순간의 위치·속도만 보내고, 두 기기가 같은 식으로 날아가는 길을 계산해요)
+// ---------- 🏸 배드민턴 (체육관 코트 2면 · 단식 1:1 / 복식 2:2) ----------
+// 모든 경기는 state/badm/{c0|c1}에 있어요: 자리(s.a1·a2·b1·b2 = 학생 또는 🤖), 점수(sc), 서브(srv), 친 순간(hit {w,p,v,t,pt})
+// 친 순간의 위치·속도만 보내고 모든 기기가 같은 식으로 콕 길을 계산해요. 🤖 컴퓨터가 치기·서브·점수 판정은 경기를 연 기기(host)가 맡아요
 // 점수는 그 판에서만 보여요 (개인 기록·순위 없음). 판을 끝내면 마을 재료를 얻어요
-const BDM = { x0: 1585, x1: 1599, nx: 1592, hz: 3.2, netH: 1.9, floor: 0.1, reach: 2.0, g: 13, k: 0.11, win: 7, h: 1 / 120 };
-const bdm = { on: false, mode: '', lv: 1, side: -1, sh: null, serve: 0, sc: [0, 0], cool: 0, swing: 0, rally: 0, hits: 0, msg: '', msgT: 0, ai: null, mesh: null, racket: null, lastHit: '', pt: -1, done: false, aimYaw: 0, wait: 0, oppSwing: 0, rk: {} };
-// side: -1 = 서쪽(x가 작은 쪽), +1 = 동쪽. 내 쪽 → 상대 쪽으로 칠 때 방향은 -side
-const bdmSideOf = (x) => x < BDM.nx ? -1 : 1;
-const bdmClock = () => bdm.mode === 'friend' ? backend.now() : performance.now();
-function bdmStepSim(s, h) {
+const BDM = { x0: 1573, x1: 1587, nx: 1580, hz: 3.6, netH: 1.9, floor: 0.1, reach: 2.1, g: 13, k: 0.11, win: 7, h: 1 / 120 };
+const BDM_C = { c0: -6.5, c1: 6.5 }; // 코트 가운데 z (x 방향이 코트 길이)
+const BDM_SLOTS = ['a1', 'a2', 'b1', 'b2'];
+const bdmTeam = (k) => k[0], bdmSide = (t) => (t === 'a' ? -1 : 1), bdmOther = (t) => (t === 'a' ? 'b' : 'a');
+const bdmSideOf = (x) => (x < BDM.nx ? -1 : 1);
+const bdm = { on: false, c: '', slot: '', side: -1, cool: 0, swing: 0, hits: 0, msg: '', msgT: 0, racket: null, done: false, id: '', endedId: '', view: store.get('sv-bmview') === '1' ? '1' : '3', look: null, rk: 0, menuC: '', menuKey: '', leaving: false };
+const bdc = { c0: { sh: null, mesh: null, ais: {}, pt: -1, ptAt: 0, rally: 0, judged: 0, swing: {}, id: '' }, c1: { sh: null, mesh: null, ais: {}, pt: -1, ptAt: 0, rally: 0, judged: 0, swing: {}, id: '' } };
+const bdmMatch = (c) => S.badm?.[c] || null;
+const bdmLive = (m) => !!m && m.ph !== 'end' && backend.now() - (m.at || 0) < 45000;
+const bdmSlotOf = (m, u = backend?.uid) => m ? BDM_SLOTS.find(k => m.s?.[k]?.u === u) || '' : '';
+const bdmRnd = (seed) => { let a = Math.floor(seed) | 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+// ---- 콕 날아가는 길 ----
+function bdmStepSim(s, h, cz) {
   const sp = Math.hypot(s.v.x, s.v.y, s.v.z), px = s.p.x;
   s.v.x -= BDM.k * sp * s.v.x * h; s.v.y -= (BDM.g + BDM.k * sp * s.v.y) * h; s.v.z -= BDM.k * sp * s.v.z * h;
   s.p.x += s.v.x * h; s.p.y += s.v.y * h; s.p.z += s.v.z * h;
-  if (!s.net && (px - BDM.nx) * (s.p.x - BDM.nx) <= 0 && px !== s.p.x && s.p.y < BDM.netH && s.p.y > BDM.floor && Math.abs(s.p.z) < BDM.hz + 0.3) { // 네트에 걸렸어요 → 친 쪽으로 툭 떨어져요
+  if (!s.net && (px - BDM.nx) * (s.p.x - BDM.nx) <= 0 && px !== s.p.x && s.p.y < BDM.netH && s.p.y > BDM.floor && Math.abs(s.p.z - cz) < BDM.hz + 0.3) { // 네트에 걸렸어요 → 친 쪽으로 툭
     s.net = true; s.p.x = BDM.nx + Math.sign(px - BDM.nx) * 0.12; s.v.set(Math.sign(px - BDM.nx) * 0.6, 0, 0);
   }
 }
-function bdmSimTo(p0, v0, T) { const s = { p: p0.clone(), v: v0.clone() }; for (let t = 0; t < T; t += BDM.h) { bdmStepSim(s, BDM.h); if (s.p.y <= BDM.floor) break; } return s; }
-function bdmNetY(p0, v0) { const s = { p: p0.clone(), v: v0.clone() }; for (let t = 0; t < 4; t += BDM.h) { const px = s.p.x; bdmStepSim(s, BDM.h); if ((px - BDM.nx) * (s.p.x - BDM.nx) <= 0) return s.net ? -1 : s.p.y; if (s.p.y <= BDM.floor) return -1; } return -1; }
-function bdmSolve(p0, tgt, T) { // 시간 T 뒤에 tgt(바닥)에 떨어지는 처음 속도를 찾아요
+function bdmNetY(p0, v0, cz) { const s = { p: p0.clone(), v: v0.clone() }; for (let t = 0; t < 4; t += BDM.h) { const px = s.p.x; bdmStepSim(s, BDM.h, cz); if ((px - BDM.nx) * (s.p.x - BDM.nx) <= 0) return s.net ? -1 : s.p.y; if (s.p.y <= BDM.floor) return -1; } return -1; }
+function bdmSolve(p0, tgt, T, cz) { // 시간 T 뒤에 tgt(바닥)에 떨어지는 처음 속도
   let v = new V3((tgt.x - p0.x) / T, (tgt.y - p0.y) / T + BDM.g * T / 2, (tgt.z - p0.z) / T);
   for (let tries = 0; tries < 5; tries++) {
     for (let i = 0; i < 14; i++) {
-      const s = { p: p0.clone(), v: v.clone() }; let t = 0; for (; t < T - 1e-6; t += BDM.h) bdmStepSim(s, BDM.h);
+      const s = { p: p0.clone(), v: v.clone() }; for (let t = 0; t < T - 1e-6; t += BDM.h) bdmStepSim(s, BDM.h, 9999);
       v.x += (tgt.x - s.p.x) / T * 1.15; v.y += (tgt.y - s.p.y) / T * 1.15; v.z += (tgt.z - s.p.z) / T * 1.15;
     }
-    const ny = bdmNetY(p0, v); if (ny > BDM.netH + 0.3) return v;
+    if (bdmNetY(p0, v, cz) > BDM.netH + 0.3) return v;
     T *= 1.18; v.y += 2.2;
   }
   return v;
 }
-// 칠 때: 높이·거리에 따라 스매시 / 드라이브 / 높게 넘기기가 저절로 골라져요. 보는 방향(좌우)으로 겨눠요
-function bdmShot(p, dir, aimZ, soft = 1) {
-  const d = Math.abs(p.x - BDM.nx); let T, depth;
-  if (p.y > 2.5 && d < 4.5) { T = 0.6; depth = 2.6 + Math.random() * 1.8; bdm.msg = '💥 스매시!'; }
-  else if (p.y < 1.0) { T = 1.55; depth = 4.5 + Math.random() * 2; bdm.msg = '⤴️ 높게 넘기기'; }
-  else if (d < 2.2 && Math.random() < 0.4) { T = 1.0; depth = 1.4 + Math.random() * 1.2; bdm.msg = '🪶 살짝 넘기기'; }
-  else { T = 1.05; depth = 3.4 + Math.random() * 2.6; bdm.msg = '🏸 좋아요!'; }
-  bdm.msgT = 1.1;
-  const tgt = new V3(BDM.nx + dir * depth, BDM.floor, clamp(aimZ, -BDM.hz + 0.5, BDM.hz - 0.5));
-  return bdmSolve(p, tgt, T * soft);
+function bdmShot(p, dir, aimZ, cz, soft = 1, rnd = Math.random) { // 높이·거리에 따라 스매시 / 드라이브 / 높게 / 살짝
+  const d = Math.abs(p.x - BDM.nx); let T, depth, msg;
+  if (p.y > 2.5 && d < 4.5) { T = 0.6; depth = 2.6 + rnd() * 1.8; msg = '💥 스매시!'; }
+  else if (p.y < 1.0) { T = 1.55; depth = 4.5 + rnd() * 2; msg = '⤴️ 높게 넘기기'; }
+  else if (d < 2.2 && rnd() < 0.4) { T = 1.0; depth = 1.4 + rnd() * 1.2; msg = '🪶 살짝 넘기기'; }
+  else { T = 1.05; depth = 3.4 + rnd() * 2.6; msg = '🏸 좋아요!'; }
+  return { v: bdmSolve(p, new V3(BDM.nx + dir * depth, BDM.floor, clamp(aimZ, cz - BDM.hz + 0.5, cz + BDM.hz - 0.5)), T * soft, cz), msg };
 }
+// ---- 모양 ----
 function makeRacket(parent) {
   const r = new THREE.Group(), o = { solid: false };
   cyl(r, 0.045, 0.5, 0x2A2A33, 0, 0.25, 0, o); cyl(r, 0.03, 0.42, 0xC8CCD4, 0, 0.71, 0, o);
@@ -13625,227 +13628,285 @@ function makeRacket(parent) {
 }
 function bdmHandRacket(a) { if (a.racket) return a.racket; const r = makeRacket(a.armR); r.position.set(0, -0.55, 0.12); r.rotation.x = Math.PI / 2; r.scale.setScalar(0.8); a.racket = r; return r; }
 function bdmDropRacket(a) { if (a?.racket) { a.racket.parent?.remove(a.racket); a.racket = null; } }
-function bdmShuttleMesh() {
-  if (bdm.mesh) return bdm.mesh;
+function bdmShuttleMesh(V) {
+  if (V.mesh) return V.mesh;
   const g = new THREE.Group(), o = { solid: false };
   ball(g, 0.09, 0xF4F1EA, 0, 0, 0, o);
   const sk = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.3, 10, 1, true), new THREE.MeshStandardMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, roughness: 0.8 })); sk.rotation.x = Math.PI; sk.position.y = 0.17; g.add(sk);
   const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.18, 14), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2; bld.group.add(shadow); g.userData.shadow = shadow;
-  bld.group.add(g); bdm.mesh = g; return g;
+  bld.group.add(g); V.mesh = g; return g;
 }
-// ---- 판 시작·끝 ----
-function bdmAllowed() { return joined && roomNow() === 'gym' && !bb.on && !hv.travel; }
-function openBmMenu() {
-  if (!bdmAllowed()) return;
-  const f = S.badm, me = backend.uid, live = f && f.ph !== 'end' && backend.now() - (f.at || 0) < 45000;
-  const rows = [
-    { t: '🤖 컴퓨터와 하기 · 쉬움', d: '천천히 넘어와요', run: () => bdmStart('ai', 0) },
-    { t: '🤖 컴퓨터와 하기 · 보통', d: '조금 더 빨라요', run: () => bdmStart('ai', 1) },
-  ];
-  if (live && f.ph === 'wait' && f.a !== me) rows.unshift({ t: `👫 ${f.an || '친구'}와 하기`, d: '기다리는 친구와 1:1 시작', run: bdmJoinFriend });
-  else if (live && f.ph === 'wait' && f.a === me) rows.unshift({ t: '⏳ 친구를 기다리는 중', d: '누르면 기다리기를 그만해요', run: () => backend.badSet({ ph: 'end', at: backend.now() }) });
-  else if (live && f.ph === 'play') rows.unshift({ t: '👀 친구들이 경기 중', d: `${f.an || '친구'} ${f.sc?.a || 0} : ${f.sc?.b || 0} ${f.bn || '친구'}`, run: () => toast('🏸 지금 친구들이 경기 중이에요. 끝나면 할 수 있어요', 'info') });
-  else rows.unshift({ t: '👫 친구와 하기', d: '친구가 와서 누르면 시작해요', run: bdmOpenFriend });
-  openLife('🏸 배드민턴', (box) => {
-    box.textContent = '';
-    box.append(el2('p', 'hint', `콕이 날아오면 그 아래로 움직여서 F·화면 톡·🏸 버튼으로 쳐요. 화면을 좌우로 끌면 겨누는 방향이 바뀌어요. ${BDM.win}점을 먼저 내면 끝나요 (점수는 그 판에서만 보여요)`));
-    for (const r of rows) { const row = el2('div', 'lp-row'), b = el2('button', 'btn lp-btn', '시작'); row.append(el2('span', 'lp-name', r.t), el2('span', 'lp-sub', r.d)); b.textContent = r.btn || '고르기'; b.onclick = () => { closeLife(); r.run(); }; row.append(b); box.append(row); }
+// ---- 자리 위치 ----
+function bdmSlotPos(m, c, k) {
+  const u = m?.s?.[k]?.u; if (!u) return null;
+  if (u === 'ai') return bdc[c].ais[k]?.p || null;
+  if (u === backend.uid) return player.pos;
+  return remotes.get(u)?.a.g.position || null;
+}
+function bdmHome(m, c, k) { const t = bdmTeam(k), cz = BDM_C[c]; return new V3(BDM.nx + bdmSide(t) * (m.n === 4 ? 3.8 : 4.2), 0.12, cz + (m.n === 4 ? (k[1] === '1' ? -1.8 : 1.8) : 0)); }
+// ---- 메뉴 (코트 옆에서 E) ----
+const bdmNm = () => (myNick || '친구').slice(0, 8);
+function bdmFree(m) { return !bdmLive(m); }
+function openBmMenu(c) {
+  if (!joined || roomNow() !== 'gym' || hv.travel) return;
+  bdm.menuC = c;
+  openLife(`🏸 배드민턴 · ${c === 'c0' ? '1번' : '2번'} 코트`, (box) => {
+    box.textContent = ''; const m = bdmMatch(c), me = backend.uid, mine = bdmSlotOf(m);
+    bdm.menuKey = JSON.stringify(m || {});
+    box.append(el2('p', 'hint', `콕 아래로 움직여서 F·화면 톡·🏸 버튼으로 쳐요. ${BDM.win}점을 먼저 내면 끝나요. 점수는 그 판에서만 보여요`));
+    const row = (t, d, label, fn, dis) => { const r = el2('div', 'lp-row'), b = el2('button', 'btn lp-btn', label); b.disabled = !!dis; r.append(el2('span', 'lp-name', t), el2('span', 'lp-sub', d), b); b.onclick = fn; box.append(r); };
+    if (bdmFree(m)) {
+      box.append(el2('h3', 'lp-sec', '🤖 컴퓨터와'));
+      row('단식 1:1 · 쉬움', '천천히 넘어와요', '시작', () => bdmCreate(c, 2, 0, { a1: 'me', b1: 'ai' }, 'play'));
+      row('단식 1:1 · 보통', '조금 더 빨라요', '시작', () => bdmCreate(c, 2, 1, { a1: 'me', b1: 'ai' }, 'play'));
+      row('복식 2:2 연습', '나 + 🤖 vs 🤖 + 🤖', '시작', () => bdmCreate(c, 4, 0, { a1: 'me', a2: 'ai', b1: 'ai', b2: 'ai' }, 'play'));
+      box.append(el2('h3', 'lp-sec', '👫 친구와'));
+      row('단식 친구 모으기', '친구 1명이 참가하면 시작해요', '모으기', () => bdmCreate(c, 2, 0, { a1: 'me' }, 'wait'));
+      row('복식 친구 모으기', '2명씩 두 팀 · 빈자리는 🤖가 채울 수 있어요', '모으기', () => bdmCreate(c, 4, 0, { a1: 'me' }, 'wait'));
+      return;
+    }
+    const nm = (k) => { const x = m.s?.[k]; return !x ? '(빈자리)' : x.u === 'ai' ? '🤖 컴퓨터' : (x.u === me ? `⭐ ${x.nm}` : x.nm); };
+    const teamLine = (t) => (m.n === 4 ? [t + '1', t + '2'] : [t + '1']).map(nm).join(' · ');
+    box.append(el2('p', 'lp-big', `${m.n === 4 ? '복식 2:2' : '단식 1:1'} · ${m.ph === 'wait' ? '⏳ 친구 모으는 중' : `경기 중 ${m.sc?.a || 0} : ${m.sc?.b || 0}`}`));
+    box.append(el2('p', '', `🔵 A팀: ${teamLine('a')}`), el2('p', '', `🟠 B팀: ${teamLine('b')}`));
+    if (m.ph === 'wait') {
+      const empty = (m.n === 4 ? BDM_SLOTS : ['a1', 'b1']).filter(k => !m.s?.[k]);
+      if (!mine) for (const t of ['a', 'b']) { const k = empty.find(x => bdmTeam(x) === t); if (k) row(`${t === 'a' ? '🔵 A팀' : '🟠 B팀'}으로 참가`, '자리가 있어요', '참가', () => bdmJoin(c, k)); }
+      if (mine && m.host === me) row('▶ 지금 시작', empty.length ? `빈자리 ${empty.length}곳은 🤖 컴퓨터가 채워요` : '모두 모였어요!', '시작', () => bdmBegin(c));
+      if (mine) row(m.host === me ? '그만 모으기' : '나가기', m.host === me ? '모으기를 그만해요' : '자리에서 나가요', '확인', () => bdmLeave(c));
+    } else row('👀 구경하기', '경기가 끝나면 할 수 있어요', '닫기', () => closeLife());
   });
 }
-function bdmStart(mode, lv) {
-  bdm.on = true; bdm.mode = mode; bdm.lv = lv; bdm.sc = [0, 0]; bdm.rally = 0; bdm.hits = 0; bdm.done = false; bdm.sh = null; bdm.pt = -1; bdm.wait = 0;
-  bdm.side = mode === 'friend' ? (S.badm?.a === backend.uid ? -1 : 1) : -1;
-  if (mode === 'ai') {
-    if (!bdm.ai) { const av = makeAvatar(0, 3, 1, 2, bld.group); av.badge.userData.set(['🤖 컴퓨터']); bdmHandRacket(av); bdm.ai = { av, p: new V3(), tgt: new V3(), miss: false, react: 0, swing: 0 }; }
-    bdm.ai.av.g.visible = true; bdm.ai.p.set(BDM.nx + 4, 0.12, 0); bdm.ai.tgt.copy(bdm.ai.p); bdm.serve = -1;
-  }
-  player.pos.set(BDM.nx + bdm.side * 4.5, 0.12, 0); player.vy = 0; player.heading = bdm.side < 0 ? Math.PI / 2 : -Math.PI / 2;
-  camYaw = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; bdm.aimYaw = camYaw;
+async function bdmCreate(c, n, lv, slots, ph) {
+  closeLife(); const me = backend.uid, s = {};
+  for (const [k, v] of Object.entries(slots)) s[k] = v === 'me' ? { u: me, nm: bdmNm() } : { u: 'ai', nm: '🤖' };
+  const now = backend.now(), obj = { id: Date.now().toString(36), n, lv, ph, host: me, s, sc: { a: 0, b: 0 }, srv: 'a1', ls: { a: 'a1', b: 'b1' }, pt: 0, at: now };
+  const r = await backend.badOpen(c, obj);
+  if (!r.ok) { toast('앗, 다른 친구가 먼저 이 코트를 쓰고 있어요', 'warn'); return; }
+  if (ph === 'wait') toast(backend.mode === 'firebase' ? '⏳ 친구를 모아요! 친구가 코트 옆에서 E를 눌러 참가해요. 다 모이면 ▶ 지금 시작' : '⏳ 연습 모드라 친구가 올 수 없어요. 코트 옆에서 E → ▶ 지금 시작하면 🤖가 빈자리를 채워요', 'info');
+}
+async function bdmJoin(c, k) { closeLife(); const r = await backend.badJoin(c, k, bdmNm()); if (!r.ok) toast('앗, 그 자리는 방금 다른 친구가 들어갔어요', 'warn'); else toast('🙋 참가했어요! 경기를 연 친구가 시작하면 바로 코트로 들어가요', 'info'); }
+async function bdmBegin(c) {
+  closeLife(); const m = bdmMatch(c); if (!m) return;
+  const upd = { ph: 'play', at: backend.now(), pt: 0, sc: { a: 0, b: 0 }, srv: 'a1' };
+  for (const k of (m.n === 4 ? BDM_SLOTS : ['a1', 'b1'])) if (!m.s?.[k]) upd[`s/${k}`] = { u: 'ai', nm: '🤖' };
+  await backend.badSet(c, upd);
+}
+async function bdmLeave(c) {
+  closeLife(); const m = bdmMatch(c), k = bdmSlotOf(m); if (!m || !k) return;
+  if (m.host === backend.uid) await backend.badSet(c, { ph: 'end', at: backend.now() });
+  else if (m.ph === 'play') await backend.badSet(c, { [`s/${k}`]: { u: 'ai', nm: '🤖' }, at: backend.now() }); // 경기 중에 나가면 🤖가 대신해요
+  else await backend.badSet(c, { [`s/${k}`]: null });
+}
+// ---- 내 경기 시작·끝 ----
+function bdmStart(c, slot) {
+  const m = bdmMatch(c); bdm.on = true; bdm.c = c; bdm.slot = slot; bdm.id = m.id; bdm.endedId = m.id; bdm.side = bdmSide(bdmTeam(slot)); bdm.hits = 0; bdm.done = false; bdm.msg = ''; bdm.msgT = 0; bdm.look = null;
+  const cz = BDM_C[c], home = bdmHome(m, c, slot);
+  player.pos.set(home.x, 0.12, home.z); player.vy = 0; player.heading = bdm.side < 0 ? Math.PI / 2 : -Math.PI / 2;
+  camYaw = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2;
   if (!bdm.racket) { bdm.racket = makeRacket(scene); bdm.racket.scale.setScalar(0.3); }
-  bdm.racket.visible = true; player.avatar.g.visible = false;
-  bdmShuttleMesh().visible = true; bdm.mesh.userData.shadow.visible = true;
-  $('bdmBar').classList.remove('hidden'); bdmRender();
-  toast(mode === 'ai' ? '🏸 콕 아래로 움직여서 F·클릭·🏸 버튼으로 쳐요! 화면을 끌면 겨누는 방향이 바뀌어요' : '🏸 친구와 경기 시작! 먼저 7점을 내면 끝나요', 'info');
+  bdmApplyView(); $('bdmBar').classList.remove('hidden'); $('bdmHit').classList.remove('hidden'); bdmRender();
+  const vsAi = BDM_SLOTS.filter(k => m.s?.[k] && bdmTeam(k) !== bdmTeam(slot)).every(k => m.s[k].u === 'ai');
+  toast(`🏸 ${m.n === 4 ? '복식' : '단식'} 시작! 콕 아래로 움직여서 F·화면 톡·🏸 버튼으로 쳐요${m.n === 4 ? ' · 우리 팀 누구든 칠 수 있어요' : ''}${vsAi ? '' : ' · 친구와 경기'}`, 'info');
+}
+function bdmApplyView() {
+  const fp = bdm.on && bdm.view === '1';
+  player.avatar.g.visible = !fp; player.avatar.badge.visible = !bdm.on; if (bdm.racket) bdm.racket.visible = fp; // 경기 중에는 내 닉네임을 숨겨 앞이 잘 보이게
+  if (bdm.on && !fp) bdmHandRacket(player.avatar); else bdmDropRacket(player.avatar);
+  const fov = !bdm.on ? 55 : fp ? 80 : 66; if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  $('bdmView').textContent = bdm.view === '1' ? '👁️ 3인칭으로' : '👁️ 1인칭으로';
 }
 function bdmStop(silent) {
   if (!bdm.on) return;
-  if (bdm.mode === 'friend' && S.badm && S.badm.ph !== 'end' && (S.badm.a === backend.uid || S.badm.b === backend.uid)) backend.badSet({ ph: 'end', at: backend.now() });
-  bdm.on = false; bdm.sh = null; $('bdmBar').classList.add('hidden');
-  if (bdm.racket) bdm.racket.visible = false; if (bdm.mesh) { bdm.mesh.visible = false; bdm.mesh.userData.shadow.visible = false; }
-  if (bdm.ai) bdm.ai.av.g.visible = false;
-  player.avatar.g.visible = true; camPitch = 0.6;
+  const m = bdmMatch(bdm.c);
+  if (!silent && m && m.id === bdm.id && m.ph !== 'end') bdmLeave(bdm.c);
   if (!silent && bdm.hits >= 10 && !bdm.done) earnMat('배드민턴 열심히 하기');
+  bdm.on = false; $('bdmBar').classList.add('hidden'); $('bdmHit').classList.add('hidden'); bdmApplyView(); camPitch = 0.6;
 }
-async function bdmOpenFriend() {
-  if (backend.mode !== 'firebase') { toast('👫 친구와 하기는 반 친구들과 함께 접속했을 때 할 수 있어요 (연습 모드는 🤖 컴퓨터와 해요)', 'info'); return; }
-  const r = await backend.badOpen(myNick || '친구');
-  if (r.ok) toast('⏳ 친구를 기다려요! 친구가 코트에서 E를 눌러 참가하면 시작해요', 'info'); else toast('지금은 열 수 없어요. 잠시 뒤 다시 해 봐요', 'warn');
-}
-async function bdmJoinFriend() { const r = await backend.badJoin(myNick || '친구'); if (!r.ok) toast('앗, 다른 친구가 먼저 참가했어요', 'warn'); }
-// ---- 치기 ----
-function bdmMyHitPos() { return new V3(player.pos.x, player.pos.y + 1.7, player.pos.z); }
-function bdmSwing() {
-  if (!bdm.on || bdm.cool > 0) return; bdm.cool = 0.32; bdm.swing = 1; playSfx('jump');
-  const f = S.badm, dir = -bdm.side, myRole = bdm.side < 0 ? 'a' : 'b';
-  const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), aimZ = player.pos.z + fz / Math.max(0.3, Math.abs(fx)) * 5; // 보는 방향으로 겨눠요
-  // 서브
-  const serving = bdm.mode === 'ai' ? (!bdm.sh?.live && bdm.serve === bdm.side && bdm.wait <= 0 && !bdm.done) : (f?.ph === 'play' && !f.hit && f.srv === myRole && !bdm.sh?.live);
-  if (serving) { const p = bdmMyHitPos().add(new V3(dir * 1.0, -0.3, 0)); bdmLaunch(p, bdmSolve(p, new V3(BDM.nx + dir * (3.5 + Math.random() * 2.5), BDM.floor, clamp(aimZ, -BDM.hz + 0.6, BDM.hz - 0.6)), 1.5), myRole); bdm.msg = '🏸 서브!'; bdm.msgT = 1; return; }
-  const s = bdm.sh; if (!s || !s.live || s.who === myRole) return;
-  if (bdmSideOf(s.p.x) !== bdm.side) return;
-  const hp = bdmMyHitPos(), dh = Math.hypot(s.p.x - hp.x, s.p.z - hp.z), dy = s.p.y - player.pos.y;
-  if (dh > BDM.reach || dy < 0.2 || dy > 3.9) { bdm.msg = dh > BDM.reach ? '조금 더 가까이!' : dy >= 3.9 ? '아직 높아요, 기다려요' : '너무 낮아요'; bdm.msgT = 0.8; return; }
-  const p = s.p.clone(); p.x = BDM.nx + Math.sign(p.x - BDM.nx) * Math.max(0.25, Math.abs(p.x - BDM.nx));
-  bdmLaunch(p, bdmShot(p, dir, aimZ), myRole); bdm.hits++;
-}
-function bdmLaunch(p, v, who) {
-  const t = bdmClock(), n = (bdm.sh?.n || 0) + 1;
-  bdm.sh = { p: p.clone(), v: v.clone(), p0: p.clone(), v0: v.clone(), t, who, live: true, simT: 0, n, net: false };
-  bdm.rally++;
-  if (bdm.mode === 'friend') { bdm.lastN = n; backend.badSet({ hit: { n, w: who, p: [p.x, p.y, p.z].map(q => Math.round(q * 1000) / 1000), v: [v.x, v.y, v.z].map(q => Math.round(q * 1000) / 1000), t }, at: t }); }
-  burst(p, [0xFFFFFF, 0xFFE58A], 6, 1.2, 0.4);
-}
-// ---- 점수 ----
-function bdmPoint(winSide, why) {
-  if (bdm.mode === 'ai') {
-    bdm.sc[winSide < 0 ? 0 : 1]++; bdm.serve = winSide; bdm.wait = 1.3; bdm.sh.live = false;
-    const mine = winSide === bdm.side; bdm.msg = (mine ? '🎉 점수! ' : '😮 ') + why; bdm.msgT = 1.6; playSfx(mine ? 'pick' : 'drop');
-    const won = bdm.sc.findIndex(v => v >= BDM.win);
-    if (won >= 0) bdmEnd((won === 0 ? -1 : 1) === bdm.side);
-    bdmRender(); return;
-  }
-  const f = S.badm; if (!f) return; bdm.sh.live = false;
-  const myRole = bdm.side < 0 ? 'a' : 'b'; if (bdm.sh.who === myRole) return; // 받는 쪽 기기만 점수를 적어요 (두 번 적히지 않게)
-  const w = winSide < 0 ? 'a' : 'b', sc = { a: f.sc?.a || 0, b: f.sc?.b || 0 }; sc[w]++;
-  backend.badSet({ sc, srv: w, hit: null, pt: (f.pt || 0) + 1, why, ...(sc[w] >= BDM.win ? { ph: 'end', win: w } : {}), at: backend.now() });
-}
-function bdmEnd(won) {
+function bdmEnd(won, m) {
   bdm.done = true; bdm.msg = won ? '🏆 이겼어요! 멋진 경기!' : '👏 좋은 경기였어요!'; bdm.msgT = 4;
-  if (bdm.mode === 'ai' ? (won || bdm.hits >= 10) : true) earnMat(bdm.mode === 'ai' ? (won ? '배드민턴 승리' : '배드민턴 끝까지 하기') : '친구와 배드민턴 한 판');
-  if (bdm.mode === 'ai' || bdm.side < 0) backend.gymAdd('rally', Math.min(200, Math.max(1, bdm.rally))); // 반 전체 '주고받은 횟수'에 보태요
-  burst(player.pos.clone().add(new V3(0, 2, 0)), RAINBOW, 40, 4, 2); playSfx('fanfare');
+  const myT = bdmTeam(bdm.slot), vsAi = BDM_SLOTS.filter(k => m.s?.[k] && bdmTeam(k) !== myT).every(k => m.s[k].u === 'ai');
+  if (!vsAi || won || bdm.hits >= 10) earnMat(vsAi ? (won ? '배드민턴 승리' : '배드민턴 끝까지 하기') : `친구와 배드민턴 ${m.n === 4 ? '복식' : '단식'}`);
+  burst(player.pos.clone().add(new V3(0, 2, 0)), RAINBOW, 40, 4, 2); playSfx('fanfare'); bdmRender();
   setTimeout(() => { if (bdm.on && bdm.done) bdmStop(true); }, 4200);
 }
-function bdmRender() {
-  const f = S.badm, fr = bdm.mode === 'friend';
-  const meN = fr ? (bdm.side < 0 ? f?.an : f?.bn) || '나' : '나', opN = fr ? (bdm.side < 0 ? f?.bn : f?.an) || '친구' : '🤖 컴퓨터';
-  const sc = fr ? [f?.sc?.a || 0, f?.sc?.b || 0] : bdm.sc, mine = sc[bdm.side < 0 ? 0 : 1], theirs = sc[bdm.side < 0 ? 1 : 0];
-  $('bdmInfo').textContent = `🏸 ${meN} ${mine} : ${theirs} ${opN} · ${BDM.win}점 먼저`;
-  $('bdmMsg').textContent = bdm.msgT > 0 ? bdm.msg : bdmServeHint();
+// ---- 치기 ----
+function bdmLaunch(c, p, v, who, msg) {
+  const V = bdc[c], m = bdmMatch(c), t = backend.now();
+  V.sh = { p: p.clone(), v: v.clone(), t, w: who, live: true, simT: 0, net: false };
+  V.rally++; if (msg && who === bdm.slot) { bdm.msg = msg; bdm.msgT = 1.1; }
+  backend.badSet(c, { hit: { n: V.rally, w: who, p: [p.x, p.y, p.z].map(q => Math.round(q * 1000) / 1000), v: [v.x, v.y, v.z].map(q => Math.round(q * 1000) / 1000), t, pt: m?.pt || 0 }, at: t });
+  burst(p, [0xFFFFFF, 0xFFE58A], 6, 1.2, 0.4);
 }
-function bdmServeHint() {
-  const f = S.badm, myRole = bdm.side < 0 ? 'a' : 'b';
-  if (bdm.done) return '';
-  if (bdm.mode === 'ai') return !bdm.sh?.live ? (bdm.serve === bdm.side ? (bdm.wait > 0 ? '' : '내 서브! F·클릭·🏸') : '컴퓨터 서브를 기다려요') : '';
-  if (f?.ph === 'wait') return '⏳ 친구를 기다려요';
-  return f?.ph === 'play' && !f.hit ? (f.srv === myRole ? '내 서브! F·클릭·🏸' : '친구 서브를 기다려요') : '';
-}
-// ---- 매 프레임 ----
-function bdmFollowState() { // 친구 경기: state의 마지막 친 정보를 따라 콕을 날려요
-  const f = S.badm; if (!f) return;
-  if (f.hit && f.hit.t !== bdm.sh?.t) {
-    const p = new V3(...f.hit.p), v = new V3(...f.hit.v);
-    bdm.sh = { p: p.clone(), v: v.clone(), p0: p, v0: v, t: f.hit.t, who: f.hit.w, live: true, simT: 0, n: f.hit.n, net: false };
-    const myRole = bdm.side < 0 ? 'a' : 'b'; if (f.hit.w !== myRole) { bdm.oppSwing = 1; playSfx('jump'); }
+function bdmSwing() {
+  if (!bdm.on || bdm.cool > 0 || bdm.done) return; bdm.cool = 0.32; bdm.swing = 1; playSfx('jump');
+  const c = bdm.c, m = bdmMatch(c), V = bdc[c], cz = BDM_C[c]; if (!m || m.ph !== 'play') return;
+  const dir = -bdm.side, fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), aimZ = player.pos.z + fz / Math.max(0.3, Math.abs(fx)) * 5; // 보는 방향으로 겨눠요
+  if (!m.hit && m.srv === bdm.slot && !V.sh?.live) { // 서브
+    const p = new V3(player.pos.x + dir * 1.0, player.pos.y + 1.4, player.pos.z);
+    bdmLaunch(c, p, bdmSolve(p, new V3(BDM.nx + dir * (3.5 + Math.random() * 2.5), BDM.floor, clamp(aimZ, cz - BDM.hz + 0.6, cz + BDM.hz - 0.6)), 1.5, cz), bdm.slot, '🏸 서브!'); return;
   }
-  if (!f.hit && bdm.sh?.live && (f.pt || 0) !== bdm.pt) bdm.sh.live = false;
-  if ((f.pt || 0) !== bdm.pt) { if (bdm.pt >= 0 && f.why) { const myRole = bdm.side < 0 ? 'a' : 'b'; bdm.msg = (f.srv === myRole ? '🎉 점수! ' : '😮 ') + f.why; bdm.msgT = 1.6; } bdm.pt = f.pt || 0; bdm.sh = f.hit ? bdm.sh : null; }
-  if (f.ph === 'end' && !bdm.done && bdm.on) { bdmEnd(f.win === (bdm.side < 0 ? 'a' : 'b')); }
+  const s = V.sh; if (!s || !s.live || bdmTeam(s.w) === bdmTeam(bdm.slot) || bdmSideOf(s.p.x) !== bdm.side) return;
+  const dh = Math.hypot(s.p.x - player.pos.x, s.p.z - player.pos.z), dy = s.p.y - player.pos.y;
+  if (dh > BDM.reach || dy < 0.2 || dy > 3.9) { bdm.msg = dh > BDM.reach ? '조금 더 가까이!' : dy >= 3.9 ? '아직 높아요, 기다려요' : '너무 낮아요'; bdm.msgT = 0.8; return; }
+  const p = s.p.clone(); p.x = BDM.nx + Math.sign(p.x - BDM.nx) * Math.max(0.25, Math.abs(p.x - BDM.nx));
+  const sh = bdmShot(p, dir, aimZ, cz); bdmLaunch(c, p, sh.v, bdm.slot, sh.msg); bdm.hits++;
+}
+// ---- 점수 (host 기기만) ----
+function bdmJudge(c, m, sh) {
+  const cz = BDM_C[c], inC = sh.p.x >= BDM.x0 && sh.p.x <= BDM.x1 && Math.abs(sh.p.z - cz) <= BDM.hz, ht = bdmTeam(sh.w), land = bdmSideOf(sh.p.x);
+  const win = inC && land !== bdmSide(ht) ? ht : bdmOther(ht), why = sh.net ? '네트에 걸렸어요' : inC ? '콕이 떨어졌어요' : '밖으로 나갔어요';
+  const sc = { a: m.sc?.a || 0, b: m.sc?.b || 0 }; sc[win]++;
+  let srv = m.srv, ls = { a: m.ls?.a || 'a1', b: m.ls?.b || 'b1' };
+  if (bdmTeam(srv) !== win) { srv = m.n === 4 ? (ls[win] === win + '1' ? win + '2' : win + '1') : win + '1'; ls[win] = srv; } // 서브권이 넘어오면 우리 팀에서 번갈아 서브해요
+  const end = sc[win] >= BDM.win;
+  backend.badSet(c, { sc, srv, ls, hit: null, pt: (m.pt || 0) + 1, why, ...(end ? { ph: 'end', win } : {}), at: backend.now() });
+  if (end) backend.gymAdd('rally', Math.min(200, Math.max(1, bdc[c].rally))); // 반 전체 '주고받은 횟수'
+}
+// ---- 매 프레임: 코트마다 (구경하는 친구도 같은 콕을 봐요) ----
+function bdmCourt(c, dt) {
+  const V = bdc[c], m = bdmMatch(c), me = backend.uid, host = m?.host === me, cz = BDM_C[c];
+  const play = m && m.ph === 'play' && bdmLive(m);
+  if (host && bdmLive(m) && performance.now() - (V.beat || 0) > 15000) { V.beat = performance.now(); backend.badSet(c, { at: backend.now() }); } // 경기를 연 기기: '아직 있어요'
+  if (!play) {
+    if (V.mesh) { V.mesh.visible = false; V.mesh.userData.shadow.visible = false; }
+    for (const k of Object.keys(V.ais)) { bld.group.remove(V.ais[k].av.g); delete V.ais[k]; }
+    V.sh = null; V.pt = -1; if (m?.id !== V.id) V.rally = 0;
+    return;
+  }
+  if (m.id !== V.id) { V.id = m.id; V.rally = 0; V.sh = null; V.pt = -1; }
+  // 🤖 자리
+  for (const k of BDM_SLOTS) {
+    const isAi = m.s?.[k]?.u === 'ai';
+    if (isAi && !V.ais[k]) { const av = makeAvatar(0, bdmTeam(k) === 'a' ? 4 : 1, k[1] === '1' ? 1 : 3, k[1] === '1' ? 2 : 1, bld.group); av.badge.userData.set(['🤖 컴퓨터']); bdmHandRacket(av); const h = bdmHome(m, c, k); V.ais[k] = { av, p: h.clone(), tgt: h.clone(), swing: 0 }; av.g.position.copy(h); }
+    if (!isAi && V.ais[k]) { bld.group.remove(V.ais[k].av.g); delete V.ais[k]; }
+  }
+  // 친 순간 따라가기
+  const h = m.hit;
+  if (h && (h.pt || 0) === (m.pt || 0) && h.t !== V.sh?.t) {
+    V.sh = { p: new V3(...h.p), v: new V3(...h.v), t: h.t, w: h.w, live: true, simT: 0, net: false }; V.rally = Math.max(V.rally, h.n || 0);
+    if (h.w !== bdm.slot || bdm.c !== c) { if (V.ais[h.w]) V.ais[h.w].swing = 1; else V.swing[m.s?.[h.w]?.u] = 1; playSfx('jump'); }
+  }
+  if ((m.pt || 0) !== V.pt) {
+    if (V.pt >= 0 && bdm.on && bdm.c === c && m.why) { const won = bdmTeam(m.srv) === bdmTeam(bdm.slot); bdm.msg = (won ? '🎉 점수! ' : '😮 ') + m.why; bdm.msgT = 1.6; playSfx(won ? 'pick' : 'drop'); }
+    V.pt = m.pt || 0; V.ptAt = performance.now(); if (!h) V.sh = null;
+  }
+  // 콕 날리기
+  const sh = V.sh;
+  if (sh?.live) {
+    const target = (backend.now() - sh.t) / 1000; let n = 0;
+    while (sh.simT < target && sh.live && n++ < 800) {
+      bdmStepSim(sh, BDM.h, cz); sh.simT += BDM.h;
+      if (sh.p.y <= BDM.floor) { sh.p.y = BDM.floor; sh.live = false; if (host && V.judged !== sh.t) { V.judged = sh.t; bdmJudge(c, m, sh); } }
+    }
+  }
+  // 콕 그리기: 날거나 떨어진 자리, 아니면 서브할 사람 앞
+  const mesh = bdmShuttleMesh(V); mesh.visible = true; mesh.userData.shadow.visible = true;
+  let show = sh ? sh.p : null;
+  if (!h || !sh) {
+    const sp = bdmSlotPos(m, c, m.srv), dir = -bdmSide(bdmTeam(m.srv));
+    show = sp ? new V3(sp.x + dir * (m.srv === bdm.slot && bdm.view === '1' && bdm.c === c ? 1.7 : 1.0), sp.y + (m.srv === bdm.slot && bdm.c === c ? 1.6 : 1.3), sp.z + dir * 0.6) /* 서브할 사람 앞 오른쪽 */ : new V3(BDM.nx + dir * 4, 1.3, cz);
+  }
+  mesh.position.copy(show); if (sh?.live && sh.v.lengthSq() > 0.01) { mesh.lookAt(show.clone().sub(sh.v)); mesh.rotateX(Math.PI / 2); } else mesh.rotation.set(0, 0, 0);
+  mesh.userData.shadow.position.set(show.x, BDM.floor + 0.02, show.z);
+  // 🤖 움직이기 (모든 기기가 같은 방법으로 계산해요) · 치기와 서브는 host만
+  bdmAi(c, m, dt, host);
+  if (host && !h && m.s?.[m.srv]?.u === 'ai' && performance.now() - V.ptAt > 1400 && !V.sh?.live) {
+    const A = V.ais[m.srv]; if (A) { const t = bdmTeam(m.srv), dir = -bdmSide(t), p = new V3(A.p.x + dir * 0.8, 1.4, A.p.z), rnd = Math.random;
+      bdmLaunch(c, p, bdmSolve(p, new V3(BDM.nx + dir * (3.8 + rnd() * 2), BDM.floor, cz + (rnd() - 0.5) * 3.6), m.lv ? 1.45 : 1.75, cz), m.srv); A.swing = 1; V.ptAt = performance.now() + 9e9; }
+  }
+}
+function bdmAi(c, m, dt, host) {
+  const V = bdc[c], sh = V.sh, cz = BDM_C[c];
+  // 콕이 오는 팀에서 가장 가까운 사람이 받으러 가요 (그 사람이 🤖일 때만 움직여요)
+  if (sh?.live && V.plan !== sh.t) {
+    V.plan = sh.t; const rnd = bdmRnd(sh.t), t = bdmOther(bdmTeam(sh.w)), side = bdmSide(t);
+    const s = { p: sh.p.clone(), v: sh.v.clone() }; let P = null;
+    for (let q = 0; q < 4; q += BDM.h) { bdmStepSim(s, BDM.h, cz); if (bdmSideOf(s.p.x) === side && s.p.y < 2.4 && s.v.y < 0) { P = s.p.clone(); break; } if (s.p.y <= BDM.floor) { P = s.p.clone(); break; } }
+    const out = P && (P.x < BDM.x0 || P.x > BDM.x1 || Math.abs(P.z - cz) > BDM.hz);
+    let best = '', bd = 1e9; for (const k of BDM_SLOTS) if (m.s?.[k] && bdmTeam(k) === t) { const sp = bdmSlotPos(m, c, k); if (sp && P) { const d = Math.hypot(sp.x - P.x, sp.z - P.z); if (d < bd) { bd = d; best = k; } } }
+    V.resp = best; V.P = P; V.miss = !out && rnd() > (m.lv ? 0.88 : 0.76) + Math.min(0.08, V.rally * 0.004); V.letGo = out && rnd() < 0.85;
+  }
+  if (!sh?.live) V.resp = '';
+  for (const [k, A] of Object.entries(V.ais)) {
+    const t = bdmTeam(k), side = bdmSide(t), home = bdmHome(m, c, k);
+    if (V.resp === k && V.P) { A.tgt.copy(V.P); A.tgt.y = 0.12; A.tgt.x -= side * 0.4; if (V.miss || V.letGo) A.tgt.lerp(home, 0.55); }
+    else A.tgt.lerp(home, 1 - Math.exp(-dt * 1.5));
+    A.tgt.x = side < 0 ? clamp(A.tgt.x, BDM.x0 - 1, BDM.nx - 0.6) : clamp(A.tgt.x, BDM.nx + 0.6, BDM.x1 + 1);
+    const react = sh?.live ? (backend.now() - sh.t) / 1000 > (m.lv ? 0.18 : 0.32) : true;
+    const spd = (m.lv ? 6.6 : 5.0) * (react ? 1 : 0), d = new V3(A.tgt.x - A.p.x, 0, A.tgt.z - A.p.z), dl = d.length();
+    if (dl > 0.05) A.p.addScaledVector(d.normalize(), Math.min(dl, spd * dt));
+    A.av.g.position.copy(A.p); A.av.g.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2; // 늘 네트 쪽을 봐요
+    animateAvatar(A.av, dl > 0.1 ? 1 : 0, dt, true, false);
+    A.swing = Math.max(0, A.swing - dt * 4); A.av.armR.rotation.x = A.swing > 0 ? -2.6 * A.swing : -0.6;
+    if (host && sh?.live && V.resp === k && !V.miss && !V.letGo && bdmTeam(sh.w) !== t && bdmSideOf(sh.p.x) === side) {
+      const dh = Math.hypot(sh.p.x - A.p.x, sh.p.z - A.p.z), dy = sh.p.y - A.p.y;
+      if (dh < 1.7 && dy > 0.4 && dy < 3.2) {
+        const p = sh.p.clone(); p.x = BDM.nx + Math.sign(p.x - BDM.nx) * Math.max(0.25, Math.abs(p.x - BDM.nx));
+        const opp = BDM_SLOTS.filter(x => m.s?.[x] && bdmTeam(x) !== t).map(x => bdmSlotPos(m, c, x)).filter(Boolean), oz = opp.length ? opp.reduce((a, q) => a + q.z, 0) / opp.length : cz;
+        const shot = bdmShot(p, -side, cz + (Math.random() - 0.5) * (m.lv ? 5 : 3.4) + (oz - cz) * 0.3, cz, m.lv ? 1 : 1.18);
+        bdmLaunch(c, p, shot.v, k); A.swing = 1; V.resp = '';
+      }
+    }
+  }
+}
+function bdmRender() {
+  if (!bdm.on) return;
+  const m = bdmMatch(bdm.c); if (!m) return;
+  const myT = bdmTeam(bdm.slot), opT = bdmOther(myT), names = (t) => (m.n === 4 ? [t + '1', t + '2'] : [t + '1']).map(k => { const x = m.s?.[k]; return !x ? '?' : x.u === 'ai' ? '🤖' : x.nm; }).join('·');
+  $('bdmInfo').textContent = `🏸 우리 팀(${names(myT)}) ${m.sc?.[myT] || 0} : ${m.sc?.[opT] || 0} 상대(${names(opT)}) · ${BDM.win}점 먼저`;
+  const V = bdc[bdm.c], hint = bdm.done ? '' : !m.hit && !V.sh?.live ? (m.srv === bdm.slot ? '내 서브! F·화면 톡·🏸' : `${bdmTeam(m.srv) === myT ? '우리 팀' : '상대'} 서브를 기다려요`) : '';
+  $('bdmMsg').textContent = bdm.msgT > 0 ? bdm.msg : hint;
 }
 function updateBm(dt) {
-  // 친구 경기가 시작되면 (내가 a나 b) 저절로 코트에 들어가요
-  const f = S.badm, me = backend?.uid;
-  if (!bdm.on && f?.ph === 'play' && (f.a === me || f.b === me) && roomNow() === 'gym' && backend.now() - (f.at || 0) < 20000 && bdm.endedId !== f.id) { bdm.endedId = f.id; bdmStart('friend', 1); }
-  if (f?.ph === 'wait' && f.a === me && joined) { // 기다리는 동안: 체육관에 있으면 15초마다 '아직 있어요', 나가면 그만
-    if (roomNow() !== 'gym') { if (!bdm.leaving) { bdm.leaving = true; backend.badSet({ ph: 'end', at: backend.now() }).then(() => bdm.leaving = false); } }
-    else if (backend.now() - (f.at || 0) > 15000 && !bdm.beat) { bdm.beat = true; backend.badSet({ at: backend.now() }).then(() => bdm.beat = false); }
+  if (!bld.group) return;
+  const me = backend?.uid;
+  if (roomNow() === 'gym' || bdm.on) for (const c of ['c0', 'c1']) bdmCourt(c, dt);
+  // 경기에 들어간 친구 손에 라켓
+  const inMatch = new Set(); for (const c of ['c0', 'c1']) { const m = bdmMatch(c); if (m?.ph === 'play' && bdmLive(m)) for (const k of BDM_SLOTS) if (m.s?.[k]) inMatch.add(m.s[k].u); }
+  for (const [u, r] of remotes) {
+    if (inMatch.has(u)) { bdmHandRacket(r.a); for (const c of ['c0', 'c1']) { const sw = bdc[c].swing[u]; if (sw > 0) { r.a.armR.rotation.x = -2.4 * sw; bdc[c].swing[u] = Math.max(0, sw - dt * 4); } } }
+    else if (r.a.racket) bdmDropRacket(r.a);
   }
-  // 친구 경기 중인 두 친구 손에 라켓을 보여 줘요
-  for (const [u, r] of remotes) { const playing = f?.ph === 'play' && (f.a === u || f.b === u); if (playing) bdmHandRacket(r.a); else if (r.a.racket) bdmDropRacket(r.a); if (playing && bdm.oppSwing > 0 && bdm.on && (bdm.side < 0 ? f.b : f.a) === u) r.a.armR.rotation.x = -2.4 * bdm.oppSwing; }
+  // 내 자리가 있는 경기가 시작되면 저절로 코트로 들어가요
+  if (!bdm.on && joined && roomNow() === 'gym') for (const c of ['c0', 'c1']) { const m = bdmMatch(c), k = bdmSlotOf(m); if (k && m.ph === 'play' && bdmLive(m) && bdm.endedId !== m.id) { bdmStart(c, k); break; } }
+  // 모으는 중: 체육관을 나가면 자리를 비워요
+  if (!bdm.on && joined && roomNow() !== 'gym' && !bdm.leaving) for (const c of ['c0', 'c1']) { const m = bdmMatch(c); if (m?.ph === 'wait' && bdmSlotOf(m) && bdmLive(m)) { bdm.leaving = true; bdmLeave(c).finally(() => { bdm.leaving = false; }); } }
+  if (bdm.menuC && !$('lifePanel').classList.contains('hidden') && JSON.stringify(bdmMatch(bdm.menuC) || {}) !== bdm.menuKey && $('lpTitle').textContent.startsWith('🏸')) refillLife();
   if (!bdm.on) return;
+  const m = bdmMatch(bdm.c);
   if (roomNow() !== 'gym' || hv.travel) { bdmStop(); return; }
-  if (bdm.mode === 'friend') { if (!f || (f.a !== me && f.b !== me)) { bdmStop(true); return; } bdmFollowState(); }
-  bdm.cool -= dt; bdm.msgT -= dt; bdm.wait -= dt; bdm.swing = Math.max(0, bdm.swing - dt * 4); bdm.oppSwing = Math.max(0, bdm.oppSwing - dt * 4);
-  // 내 쪽 코트 안에서만 움직여요
-  const p = player.pos, lo = bdm.side < 0 ? BDM.x0 - 1.5 : BDM.nx + 0.5, hi = bdm.side < 0 ? BDM.nx - 0.5 : BDM.x1 + 1.5;
-  p.x = clamp(p.x, lo, hi); p.z = clamp(p.z, -BDM.hz - 1.2, BDM.hz + 1.2);
-  // 서브 기다리는 콕은 서브하는 사람 앞에
-  const myRole = bdm.side < 0 ? 'a' : 'b';
-  const sh = bdm.sh, mesh = bdm.mesh;
-  if (bdm.mode === 'ai' && (!sh || !sh.live) && !bdm.done) {
-    if (bdm.serve === -bdm.side && bdm.wait <= 0) { const ap = bdm.ai.p.clone().add(new V3(0, 1.3, 0)).add(new V3(bdm.side * 0.6, 0, 0)); bdmLaunch(ap, bdmSolve(ap, new V3(BDM.nx + bdm.side * (3.8 + Math.random() * 2), BDM.floor, (Math.random() - 0.5) * 3.6), bdm.lv ? 1.45 : 1.75), 'ai'); bdm.ai.swing = 1; }
-  }
-  let show = null;
-  if (sh && sh.live) {
-    const target = (bdmClock() - sh.t) / 1000;
-    while (sh.simT < target && sh.live) {
-      const px = sh.p.x; bdmStepSim(sh, BDM.h); sh.simT += BDM.h;
-      if (sh.p.y <= BDM.floor) { sh.p.y = BDM.floor; const inC = sh.p.x >= BDM.x0 && sh.p.x <= BDM.x1 && Math.abs(sh.p.z) <= BDM.hz, land = bdmSideOf(sh.p.x); const hitterSide = sh.who === 'a' ? -1 : sh.who === 'b' ? 1 : (sh.who === 'ai' ? 1 : -1);
-        const why = sh.net ? '네트에 걸렸어요' : inC ? '콕이 떨어졌어요' : '밖으로 나갔어요';
-        if (bdm.mode === 'ai') { const hs = sh.who === 'ai' ? -bdm.side : bdm.side; bdmPoint(inC && land !== hs ? hs : -hs, why); }
-        else bdmPoint(inC && land !== hitterSide ? hitterSide : -hitterSide, why);
-        break; }
-      if (sh.p.x < BDM.x0 - 8 || sh.p.x > BDM.x1 + 8) { sh.p.y = BDM.floor; }
-    }
-    show = sh.p;
-  } else if (sh && !sh.live) show = sh.p;
-  if (!show || (bdm.mode === 'ai' && !sh?.live && bdm.wait <= 0) || (bdm.mode === 'friend' && !f?.hit)) { // 서브 자리
-    const srvSide = bdm.mode === 'ai' ? bdm.serve : (f?.srv === 'a' ? -1 : 1);
-    if (srvSide === bdm.side) show = bdmMyHitPos().add(new V3(-bdm.side * 1.7, -0.3, -bdm.side * 0.5)); // 서브: 눈앞 조금 오른쪽
-    else if (bdm.mode === 'ai') show = bdm.ai.p.clone().add(new V3(bdm.side * 0.6, 1.3, 0));
-    else { const ou = bdm.side < 0 ? f?.b : f?.a, r = remotes.get(ou); show = r ? r.a.g.position.clone().add(new V3(bdm.side * 0.6, 1.3, 0)) : new V3(BDM.nx - bdm.side * 4.5, 1.3, 0); }
-  }
-  if (show) { mesh.position.copy(show); const v = sh?.live ? sh.v : null; if (v && v.lengthSq() > 0.01) { mesh.lookAt(show.clone().sub(v)); mesh.rotateX(Math.PI / 2); } mesh.userData.shadow.position.set(show.x, BDM.floor + 0.02, show.z); }
-  // 🤖 컴퓨터
-  if (bdm.mode === 'ai') updateBmAi(dt);
-  bdm.rk.t = (bdm.rk.t || 0) - dt; if (bdm.rk.t <= 0) { bdm.rk.t = 0.2; bdmRender(); }
+  if (!m || m.id !== bdm.id || bdmSlotOf(m) !== bdm.slot || (m.ph !== 'play' && m.ph !== 'end')) { bdmStop(true); return; }
+  if (m.ph === 'end' && !bdm.done) bdmEnd(m.win === bdmTeam(bdm.slot), m);
+  bdm.cool -= dt; bdm.msgT -= dt; bdm.swing = Math.max(0, bdm.swing - dt * 4);
+  // 우리 코트 반쪽 안에서만 움직여요 · 늘 네트 쪽을 봐요
+  const p = player.pos, cz = BDM_C[bdm.c], lo = bdm.side < 0 ? BDM.x0 - 1.5 : BDM.nx + 0.5, hi = bdm.side < 0 ? BDM.nx - 0.5 : BDM.x1 + 1.5;
+  p.x = clamp(p.x, lo, hi); p.z = clamp(p.z, cz - BDM.hz - 1.2, cz + BDM.hz + 1.2);
+  player.heading = bdm.side < 0 ? Math.PI / 2 : -Math.PI / 2;
+  const a = player.avatar; a.g.position.copy(p); a.g.rotation.y = player.heading; if (bdm.swing > 0) a.armR.rotation.x = -2.6 * bdm.swing;
+  bdm.rk -= dt; if (bdm.rk <= 0) { bdm.rk = 0.2; bdmRender(); }
 }
-function updateBmAi(dt) {
-  const ai = bdm.ai, sh = bdm.sh, home = new V3(BDM.nx - bdm.side * 4.2, 0.12, 0);
-  ai.swing = Math.max(0, ai.swing - dt * 4);
-  if (sh?.live && sh.who !== 'ai') {
-    if (!ai.planned || ai.planned !== sh.n) { // 콕이 어디로 올지 미리 계산해요 (가끔 일부러 놓쳐요)
-      ai.planned = sh.n; ai.react = bdm.lv ? 0.18 : 0.32;
-      const s = { p: sh.p.clone(), v: sh.v.clone() }; let best = null;
-      for (let t = 0; t < 4; t += BDM.h) { bdmStepSim(s, BDM.h); if (bdmSideOf(s.p.x) === -bdm.side && s.p.y < 2.4 && s.v.y < 0) { best = s.p.clone(); break; } if (s.p.y <= BDM.floor) { best = s.p.clone(); break; } }
-      const out = best && (best.x < BDM.x0 || best.x > BDM.x1 || Math.abs(best.z) > BDM.hz);
-      ai.miss = !out && Math.random() > (bdm.lv ? 0.86 : 0.74) + Math.min(0.1, bdm.rally * 0.004);
-      ai.letGo = out && Math.random() < 0.85; // 밖으로 나갈 콕은 대부분 그냥 둬요
-      ai.tgt.copy(best || home); ai.tgt.y = 0.12; ai.tgt.x = clamp(ai.tgt.x - bdm.side * 0.4, BDM.nx + 0.6, BDM.x1 + 1); if (bdm.side > 0) ai.tgt.x = clamp(ai.tgt.x, BDM.x0 - 1, BDM.nx - 0.6);
-      if (ai.miss || ai.letGo) ai.tgt.lerp(home, 0.55);
-    }
-  } else if (!sh?.live || sh.who === 'ai') ai.tgt.lerp(home, 1 - Math.exp(-dt * 1.5));
-  ai.react -= dt;
-  const spd = (bdm.lv ? 6.6 : 5.0) * (ai.react > 0 ? 0 : 1), d = new V3(ai.tgt.x - ai.p.x, 0, ai.tgt.z - ai.p.z), dl = d.length(), mv = Math.min(dl, spd * dt);
-  if (dl > 0.05) ai.p.addScaledVector(d.normalize(), mv); ai.av.g.rotation.y = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; // 늘 네트 쪽(나)을 봐요
-  ai.av.g.position.copy(ai.p); animateAvatar(ai.av, dl > 0.1 ? 1 : 0, dt, true, false);
-  ai.av.armR.rotation.x = ai.swing > 0 ? -2.6 * ai.swing : -0.6;
-  if (sh?.live && sh.who !== 'ai' && !ai.miss && !ai.letGo && bdmSideOf(sh.p.x) === -bdm.side) {
-    const dh = Math.hypot(sh.p.x - ai.p.x, sh.p.z - ai.p.z), dy = sh.p.y - ai.p.y;
-    if (dh < 1.7 && dy > 0.4 && dy < 3.2) {
-      const p = sh.p.clone(); p.x = BDM.nx + Math.sign(p.x - BDM.nx) * Math.max(0.25, Math.abs(p.x - BDM.nx));
-      const keep = bdm.msg, kt = bdm.msgT; const v = bdmShot(p, bdm.side, (Math.random() - 0.5) * (bdm.lv ? 5 : 3.4) + player.pos.z * 0.3, bdm.lv ? 1 : 1.18); bdm.msg = keep; bdm.msgT = kt;
-      bdmLaunch(p, v, 'ai'); ai.swing = 1;
-    }
-  }
+function bdmCourtLabels() { // 코트 위 안내: 비었는지·모으는 중·점수
+  bdm.labT = (bdm.labT || 0) - 1; if (bdm.labT > 0) return; bdm.labT = 15;
+  for (const c of ['c0', 'c1']) { const m = bdmMatch(c), L = bld['bdmLab_' + c]; if (!L) continue;
+    L.userData.set(!bdmLive(m) ? [`🏸 ${c === 'c0' ? '1번' : '2번'} 코트`, '비어 있어요 · 옆에서 E'] : m.ph === 'wait' ? [`⏳ ${m.n === 4 ? '복식' : '단식'} 친구 모으는 중`, `${Object.values(m.s || {}).filter(Boolean).length} / ${m.n}명 · 옆에서 E로 참가`] : [`🔵 A팀 ${m.sc?.a || 0} : ${m.sc?.b || 0} B팀 🟠`, m.n === 4 ? '복식 2:2' : '단식 1:1']); }
 }
-function bdmCamera(dt) { // 1인칭: 눈높이에서 네트 쪽을 봐요. 콕이 높이 뜨면 고개를 들어요
+function bdmCamera(dt) { // 3인칭(기본): 내 뒤 조금 위에서 · 1인칭: 눈높이에서 넓게. 콕이 높이 뜨면 고개를 들어요
   if (!bdm.on) return false;
-  const base = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; camYaw = base + clamp(Math.atan2(Math.sin(camYaw - base), Math.cos(camYaw - base)), -0.75, 0.75);
-  const eye = new V3(player.pos.x, player.pos.y + 1.95, player.pos.z), f = new V3(-Math.sin(camYaw), 0, -Math.cos(camYaw));
-  const look = eye.clone().addScaledVector(f, 6); look.y = 1.6;
-  if (bdm.mesh?.visible) { const s = bdm.mesh.position, ahead = (s.x - eye.x) * f.x + (s.z - eye.z) * f.z; if (ahead > -1) { const w = clamp(1 - ahead / 14, 0.25, 0.75); look.y = THREE.MathUtils.lerp(look.y, s.y, w); look.z = THREE.MathUtils.lerp(look.z, s.z, 0.35); look.x += (s.x - look.x) * 0.15; } else look.y = Math.max(look.y, s.y + 2); }
-  camera.position.lerp(eye, 1 - Math.exp(-dt * 18)); bdm.look = bdm.look ? bdm.look.lerp(look, 1 - Math.exp(-dt * 8)) : look.clone(); camera.lookAt(bdm.look);
-  if (bdm.racket) { // 화면 오른쪽 아래 라켓 (휘두르면 위로 크게)
-    const sw = bdm.swing; bdm.racket.position.copy(camera.localToWorld(new V3(0.36 - sw * 0.2, -0.36 + sw * 0.3, -0.85)));
-    bdm.racket.quaternion.copy(camera.quaternion); bdm.racket.rotateZ(-0.5 + sw * 1.4); bdm.racket.rotateX(-0.4 - sw * 0.9);
-  }
+  const base = bdm.side < 0 ? -Math.PI / 2 : Math.PI / 2; camYaw = base + clamp(Math.atan2(Math.sin(camYaw - base), Math.cos(camYaw - base)), -0.6, 0.6);
+  const fp = bdm.view === '1', f = new V3(-Math.sin(camYaw), 0, -Math.cos(camYaw)), pp = player.pos;
+  const eye = fp ? new V3(pp.x, pp.y + 1.95, pp.z) : new V3(pp.x - f.x * 6.2, pp.y + 5.3, pp.z - f.z * 6.2); // 3인칭: 내 뒤 높은 곳에서 코트 전체를
+  const look = new V3(pp.x + f.x * 6.5, 0.9, pp.z + f.z * 6.5), V = bdc[bdm.c];
+  if (V?.mesh?.visible) { const s = V.mesh.position, ahead = (s.x - pp.x) * f.x + (s.z - pp.z) * f.z; if (ahead > -1.5) { const w = clamp(1 - ahead / 14, 0.2, fp ? 0.7 : 0.55); look.y = THREE.MathUtils.lerp(look.y, s.y, w); look.z = THREE.MathUtils.lerp(look.z, s.z, 0.3); } else look.y = Math.max(look.y, s.y + 1.5); }
+  camera.position.lerp(eye, 1 - Math.exp(-dt * (fp ? 18 : 9))); bdm.look = bdm.look ? bdm.look.lerp(look, 1 - Math.exp(-dt * 7)) : look.clone(); camera.lookAt(bdm.look);
+  if (fp && bdm.racket) { const sw = bdm.swing; bdm.racket.position.copy(camera.localToWorld(new V3(0.42 - sw * 0.2, -0.4 + sw * 0.3, -0.9))); bdm.racket.quaternion.copy(camera.quaternion); bdm.racket.rotateZ(-0.5 + sw * 1.4); bdm.racket.rotateX(-0.4 - sw * 0.9); }
   return true;
 }
 function initBmUI() {
   $('bdmHit').addEventListener('pointerdown', e => { e.preventDefault(); bdmSwing(); });
   $('bdmQuit').onclick = () => bdmStop();
+  $('bdmView').onclick = () => { bdm.view = bdm.view === '1' ? '3' : '1'; store.set('sv-bmview', bdm.view); bdm.look = null; bdmApplyView(); };
   addEventListener('keydown', e => { if (bdm.on && e.key.toLowerCase() === 'f' && !e.repeat && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); bdmSwing(); } });
   canvas.addEventListener('pointerdown', () => { if (bdm.on) bdmSwing(); });
 }
@@ -13939,7 +14000,7 @@ function fillRoomAdmin() {
 function initRoomAdmin() {
   $('tpRoomReset').onclick = async () => {
     if (!(await confirmAction({ title: '🏫 건물 안 기록을 처음부터 할까요?', body: '독서 나무(반 전체 독서 기록 수)와 체육관 기록이 0이 돼요.\n전시 작품과 학생 기기의 내 기록장은 그대로예요.', okText: '처음부터' }))) return;
-    adminDo({ read: null, gym: null }, '🏫 독서·체육관 기록을 처음부터 시작해요');
+    adminDo({ read: null, gym: null, badm: null }, '🏫 독서·체육관 기록을 처음부터 시작해요');
   };
 }
 
@@ -14799,10 +14860,10 @@ const SIEGE_SETS = {
   late: { name: '후삼국 시대', eras: ['nb', 'goryeo'], weap: 'xbow', nat: [{ name: '후고구려', icon: '🐉', col: 0xD24A3A }, { name: '후백제', icon: '🌾', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
 };
 const SG_ROLES = {
-  sol: { icon: '⚔️', name: '병사', desc: '시대 무기를 빨리 쏘고 성문에 2배 피해 · 창고: 강철 무기(⛓️10, 60초 동안 우리 나라 피해 2배)' },
-  eng: { icon: '🔨', name: '공병', desc: '우리 성문 수리(+4) · 창고: 성벽 강화(🪵12) · 목책 세우기(🪵4, 길을 막아요)' },
-  med: { icon: '🌿', name: '의원', desc: '쓰러진 우리 친구 곁에서 E로 바로 치료 · 다친 친구가 있으면 화면에 알려 줘요' },
-  sch: { icon: '📜', name: '책사', desc: '문제 보급 2배 · 창고: 🔥 화공(⛓️6 🍚6, 상대 성문 -8) · 📯 진격 나팔(🍚8, 30초 빨리 달리고 빨리 차지)' },
+  sol: { icon: '⚔️', name: '병사', tag: '앞에서 싸워요', can: ['🏹 빨리 쏘고, 성문에 2배 피해', '창고: ⛓️ 강철 무기 (⛓️10 · 60초 동안 피해 2배)'], desc: '시대 무기를 빨리 쏘고 성문에 2배 피해 · 창고: 강철 무기(⛓️10, 60초 동안 우리 나라 피해 2배)' },
+  eng: { icon: '🔨', name: '공병', tag: '우리 성을 지켜요', can: ['🔧 우리 성문 앞에서 E: 수리 +4', '창고: 🧱 성벽 강화 (🪵12) · 🪵 목책 세우기 (🪵4)'], desc: '우리 성문 수리(+4) · 창고: 성벽 강화(🪵12) · 목책 세우기(🪵4, 길을 막아요)' },
+  med: { icon: '🌿', name: '의원', tag: '친구를 살려요', can: ['🩹 쓰러진 우리 친구 곁에서 E: 바로 치료', '🔔 다친 친구가 있으면 화면에 알려 줘요'], desc: '쓰러진 우리 친구 곁에서 E로 바로 치료 · 다친 친구가 있으면 화면에 알려 줘요' },
+  sch: { icon: '📜', name: '책사', tag: '나라 살림을 맡아요', can: ['📦 창고 문제를 맞히면 보급 2배', '창고: 🔥 화공 (상대 성문 -8) · 📯 진격 나팔 (30초 빠르게)'], desc: '문제 보급 2배 · 창고: 🔥 화공(⛓️6 🍚6, 상대 성문 -8) · 📯 진격 나팔(🍚8, 30초 빨리 달리고 빨리 차지)' },
 };
 const SG = { cx: 520, cz: 98, x0: 474, x1: 566, z0: 52, z1: 144 };
 const SG_LAYOUT = { // 성 자리: [x, z, 성문 방향]
@@ -15144,15 +15205,18 @@ async function sgPlaceBar() {
 function openSgRole() {
   if (!S.siege?.on || !sgMine()) return;
   openLife('🎭 역할 고르기', (box) => {
-    box.textContent = ''; box.append(el2('p', 'hint', '우리 나라를 위해 할 일을 골라요. 나라 창고에서 언제든 바꿀 수 있어요.'));
-    const grid = el2('div', 'lp-grid');
+    box.textContent = ''; box.append(el2('p', 'hint', '우리 나라를 위해 할 일을 하나 골라요. 줄을 톡 누르면 바로 바뀌어요. (🎭 역할 버튼이나 나라 창고에서 언제든 다시 바꿀 수 있어요)'));
+    const list = el2('div', 'sg-roles');
     for (const [k, R] of Object.entries(SG_ROLES)) {
-      const n = Object.entries(S.siege.role || {}).filter(([u, v]) => v === k && sgTeamOf(u) === sgMine()).length;
-      const c = el2('div', 'lp-card' + (sgMyRole() === k ? ' on' : '')); c.append(el2('div', 'lp-icon', R.icon), el2('div', 'lp-name', `${R.name}${k === 'sol' ? ` · ${sgWeap().icon} ${sgWeap().name}` : ''}`), el2('div', 'lp-sub', R.desc), el2('div', 'lp-sub', `우리 나라 ${n}명`));
-      const b = el2('button', 'btn lp-btn', sgMyRole() === k ? '✅ 지금 역할' : '고르기'); b.onclick = async () => { await backend.sgRole(k); playSfx('pick'); toast(`${R.icon} ${R.name}이(가) 됐어요!`, 'success'); closeLife(); renderSgBar(true); };
-      c.append(b); grid.append(c);
+      const n = Object.entries(S.siege.role || {}).filter(([u, v]) => v === k && sgTeamOf(u) === sgMine()).length, on = sgMyRole() === k;
+      const b = el2('button', 'sg-role' + (on ? ' on' : '')); b.setAttribute('aria-pressed', String(on));
+      const txt = el2('span', 'sg-role-txt'); txt.append(el2('b', '', `${R.name}${k === 'sol' ? ` · ${sgWeap().icon} ${sgWeap().name}` : ''}`), el2('span', 'sg-role-tag', R.tag));
+      for (const c of R.can) txt.append(el2('span', 'sg-role-can', c));
+      b.append(el2('span', 'sg-role-ic', R.icon), txt, el2('span', 'sg-role-n', on ? '✅ 지금 역할' : `우리 나라 ${n}명`));
+      b.onclick = async () => { if (on) { closeLife(); return; } await backend.sgRole(k); playSfx('pick'); toast(`${R.icon} ${R.name}이(가) 됐어요!`, 'success'); closeLife(); renderSgBar(true); };
+      list.append(b);
     }
-    box.append(grid);
+    box.append(list);
   });
 }
 function openSgStore() {
