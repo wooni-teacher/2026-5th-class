@@ -987,7 +987,7 @@
       <li><span class="em">💌</span>광장 오른쪽 감사 게시판에 오늘 고마웠던 일을 적으면 하루 한 번 🐚 보상을 받아요</li>
       <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 역사 마을에 가요. 북쪽 🏛️ 역사의 길에서 시대 퀴즈를 풀어 시대 건축물을 함께 지어요</li>
       <li><span class="em">🏸</span>체육관(광장 동쪽): 배드민턴 코트 2면! 코트 옆에서 E → 단식·복식 (🤖 컴퓨터 또는 👫 친구). 콕 아래로 가서 F·화면 톡·🏸 버튼으로 쳐요 (👁️ 3인칭·1인칭 바꾸기)</li>
-      <li><span class="em">🌀</span>학교 앞 길의 마을 포털에서 E를 누르면 역사·수학·영어 마을, 체육관, 교실로 한 번에 가요. 돌아올 때도 포털 앞으로 와요</li>
+      <li><span class="em">🌀</span>학교 앞 길의 마을 포털에서 E를 누르면 역사·수학·영어 마을로 한 번에 가요. 각 마을의 🌀 광장 포털을 타면 우리 마을 광장으로 돌아와요</li>
       <li><span class="em">🚌</span>체육관 옆 버스 정류장에서 버스를 타면 🗽 영어 마을에 가요. 구역 6곳(Lesson 7~12) 주민에게 E를 눌러 듣고·고르고·문장을 만들어요</li>
     </ol>
   </details>
@@ -9417,8 +9417,8 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
-  ['⛵', HV.dock[0] + 2, 0], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['⚔️', SG.cx, SG.cz], ...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; }), ...SG_SITES.map(st => [st.icon, st.x, st.z])] : []), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
+const MAP_LABELS = () => MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
+  ['⛵', HV.dock[0] + 2, 0], ['🌀', HV.x0 + 11, -8.5], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['⚔️', SG.cx, SG.cz], ...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; }), ...SG_SITES.map(st => [st.icon, st.x, st.z])] : []), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['🌀', PORTAL.x, PORTAL.z], ['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
   ['🏡', -15, 106], ['🏖️', 69, 0], ['🐷', FUND_BOX[0], FUND_BOX[1]], ...FUND.map(f => [f.icon, ...f.pos]), ['⚓', 88, BEACH.pierZ], ['⛰️', -30, -66], ['💦', 30, -80], ['🚩', MT.peak[0], MT.peak[1]], [forestOpen() ? '⛺' : '🔒', -74, -17],
@@ -10190,18 +10190,19 @@ function buildHanok() {
 }
 
 // ---------- 오가기 ----------
-async function travelTo(dest) {
+async function travelTo(dest, viaPortal = false) {
   if (hv.travel || !joined) return;
   if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
   hv.travel = true;
   if (life.fishing) endFishing(); if (placing.active) stopPlacing(); if (kite.active) endKite(false);
   closeModals(); mtn.view = null;
   const boat = document.querySelector('#travelFx .tv-boat'), cartTrip = dest === 'math' || dest === 'fromMath', busTrip = dest === 'ev' || dest === 'fromEv';
-  if (boat) boat.textContent = cartTrip ? '🚃' : busTrip ? '🚌' : '⛵'; if (busTrip) stopEvGame();
+  if (boat) boat.textContent = viaPortal ? '🌀' : cartTrip ? '🚃' : busTrip ? '🚌' : '⛵'; if (busTrip) stopEvGame();
   $('travelText').textContent = dest === 'ev' ? '🚌 버스를 타고 영어 마을로 가는 중…' : dest === 'fromEv' ? '🚌 버스를 타고 우리 마을로 돌아가는 중…' : dest === 'hv' ? '⛵ 배를 타고 역사 마을로 가는 중…' : dest === 'math' ? '🚃 광차를 타고 수학 광산 마을로 가는 중…' : dest === 'fromMath' ? '🚃 광차를 타고 우리 마을로 돌아가는 중…' : '⛵ 우리 마을로 돌아가는 중…';
+  if (viaPortal) $('travelText').textContent = { hv: '🌀 포털을 지나 역사 마을로 가는 중…', math: '🌀 포털을 지나 수학 광산 마을로 가는 중…', ev: '🌀 포털을 지나 영어 마을로 가는 중…' }[dest] || '🌀 포털을 지나 우리 마을 광장으로 가는 중…';
   $('travelFx').classList.remove('hidden'); playSfx('cast');
   await sleep(1000);
-  const [x, z, h] = dest === 'ev' ? [EV.bus[0] + 3, 0, Math.PI / 2] : dest === 'fromEv' ? [PORTAL.x, PORTAL.z + 3.2, 0] : dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' || dest === 'home' ? [PORTAL.x, PORTAL.z + 3.2, 0] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2]; // 돌아오면 학교 앞 🌀 포털 앞으로
+  const [x, z, h] = dest === 'ev' ? [EV.bus[0] + 3, 0, Math.PI / 2] : dest === 'fromEv' ? [PLAZA_BACK[0], PLAZA_BACK[1], 0] : dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' || dest === 'home' ? [PLAZA_BACK[0], PLAZA_BACK[1], 0] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2]; // 돌아오면 학교 앞 🌀 포털 앞으로
   player.pos.set(x, 0.35, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.35;
   camera.position.set(x - Math.sin(h) * 10, 5, z - Math.cos(h) * 10);
   await sleep(700);
@@ -13189,7 +13190,8 @@ function initBBUI() {
 
 // ---------- 🌀 마을 포털 (학교 앞 길) — 다른 마을·교실·체육관으로 한 번에 ----------
 const PORTAL = { x: 0, z: -29.5 };
-const portal = { g: null, disk: null, ring: null };
+const PLAZA_BACK = [0, -9]; // 다른 마을에서 돌아오면 광장 분수 앞 (학교 앞 포털이 바로 보여요)
+const portals = []; // { g, disk, ring }
 function portalTex() {
   const cv = document.createElement('canvas'); cv.width = cv.height = 256; const c = cv.getContext('2d');
   const gr = c.createRadialGradient(128, 128, 10, 128, 128, 128); gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(0.35, 'rgba(150,200,255,0.75)'); gr.addColorStop(0.75, 'rgba(140,90,240,0.55)'); gr.addColorStop(1, 'rgba(90,60,200,0)');
@@ -13198,37 +13200,41 @@ function portalTex() {
   for (let k = 0; k < 4; k++) { c.beginPath(); for (let t = 0; t < 1; t += 0.01) { const a = k * Math.PI / 2 + t * 5, r = 12 + t * 110; c.lineTo(128 + Math.cos(a) * r, 128 + Math.sin(a) * r); } c.stroke(); }
   const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace; return tx;
 }
-function buildPortal() {
-  const g = new THREE.Group(); g.position.set(PORTAL.x, 0, PORTAL.z); scene.add(g); portal.g = g;
+function makePortal(x, z, lines, col, prompt, run, here) { // 돌기둥 두 개 + 빙글빙글 고리 (앞·뒤 어디서나 E)
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
   const o = { solid: false }, R = 2.5;
-  for (const sx of [-1, 1]) { box(g, 0.9, 0.5, 0.9, 0xB8B2A8, sx * (R + 0.35), 0.25, 0); cyl(g, 0.32, 4.6, 0xD8D2C8, sx * (R + 0.35), 2.3, 0); ball(g, 0.42, 0x8C6CF0, sx * (R + 0.35), 4.85, 0, { solid: false, emissive: 0.6 }); }
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(R, 0.22, 10, 48), new THREE.MeshStandardMaterial({ color: 0x7C5CE8, emissive: 0x6A4AE0, emissiveIntensity: 0.55, roughness: 0.4 })); ring.position.y = R + 0.35; g.add(ring); portal.ring = ring;
-  const disk = new THREE.Mesh(new THREE.CircleGeometry(R - 0.1, 40), new THREE.MeshBasicMaterial({ map: portalTex(), transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, toneMapped: false })); disk.position.y = R + 0.35; g.add(disk); portal.disk = disk;
+  for (const sx of [-1, 1]) { box(g, 0.9, 0.5, 0.9, 0xB8B2A8, sx * (R + 0.35), 0.25, 0); cyl(g, 0.32, 4.6, 0xD8D2C8, sx * (R + 0.35), 2.3, 0); ball(g, 0.42, col, sx * (R + 0.35), 4.85, 0, { solid: false, emissive: 0.6 }); }
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(R, 0.22, 10, 48), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.55, roughness: 0.4 })); ring.position.y = R + 0.35; g.add(ring);
+  const disk = new THREE.Mesh(new THREE.CircleGeometry(R - 0.1, 40), new THREE.MeshBasicMaterial({ map: portalTex(), transparent: true, opacity: 0.8, depthWrite: false, side: THREE.DoubleSide, toneMapped: false })); disk.position.y = R + 0.35; g.add(disk);
   cyl(g, R + 0.6, 0.06, 0xCFC3F5, 0, 0.04, 0, o);
-  makeLabel(g, ['🌀 마을 포털', '다른 마을로 한 번에 · E'], 0.85, 0, 5.9, 0);
+  makeLabel(g, lines, 0.85, 0, 5.9, 0);
   registerSolids(g, 'static');
-  for (const dz of [-1.6, 1.6]) addInteract({ pos: new V3(PORTAL.x, 1, PORTAL.z + dz), r: 2.4, text: () => ['포털 타기 🌀', '역사·수학·영어 마을 · 교실 · 체육관'], run: openPortal });
+  for (const dz of [-1.6, 1.6]) addInteract({ pos: new V3(x, 1, z + dz), r: 2.4, text: () => here() ? prompt : null, run: () => { burst(new V3(x, 2.8, z), [col, 0xFFFFFF, 0x9ED8FF], 30, 4, 1.5); playSfx('plop'); run(); } });
+  portals.push({ g, disk, ring });
+}
+const inMainVillage = () => joined && Math.abs(player.pos.x) < 120 && player.pos.z > -140 && player.pos.z < 160;
+function buildPortal() {
+  // 🌀 학교 앞: 다른 마을로 (맵을 옮겨야 하는 곳만)
+  makePortal(PORTAL.x, PORTAL.z, ['🌀 마을 포털', '역사·수학·영어 마을 · E'], 0x7C5CE8, ['포털 타기 🌀', '역사·수학·영어 마을로'], openPortal, inMainVillage);
+  // 각 마을: 우리 마을 광장으로 돌아가는 포털
+  const back = ['🌀 광장 포털', '우리 마을 광장으로 · E'], bp = ['포털 타기 🌀', '우리 마을 광장으로'];
+  makePortal(HV.x0 + 11, -8.5, back, 0x3FB6A8, bp, () => travelTo('home', true), () => hvRegion());
+  makePortal(MV.station[0] + 9, -6.5, back, 0x3FB6A8, bp, () => travelTo('fromMath', true), () => mathRegion());
+  makePortal(EV.x0 + 16, -7.5, back, 0x3FB6A8, bp, () => travelTo('fromEv', true), () => evRegion());
 }
 function openPortal() {
   if (!joined || hv.travel) return;
   openLife('🌀 마을 포털', (box) => {
-    box.textContent = ''; box.append(el2('p', 'hint', '어디로 갈까요? 갔다가 배·광차·버스를 타고 돌아오면 이 포털 앞으로 와요.'));
+    box.textContent = ''; box.append(el2('p', 'hint', '어느 마을로 갈까요? 마을에 있는 🌀 광장 포털을 타면 우리 마을 광장으로 돌아와요.'));
     const list = el2('div', 'sg-roles');
-    const dest = [
-      ['🏯', '역사 마을', '시대 퀴즈 · 건축 · 성 공방전', () => travelTo('hv')],
-      ['⛏️', '수학 광산 마을', '수학 문제로 광석 캐기', () => travelTo('math')],
-      ['🗽', '영어 마을', 'Lesson 7~12 영어 놀이', () => travelTo('ev')],
-      ['🏸', '체육관', '배드민턴 단식·복식', () => enterRoom('gym')],
-      ['🏫', '우리 반 교실', '학급회의 · 자리', () => goClass(true)],
-    ];
-    for (const [ic, name, sub, go] of dest) {
+    for (const [ic, name, sub, d] of [['🏯', '역사 마을', '시대 퀴즈 · 건축 · 성 공방전', 'hv'], ['⛏️', '수학 광산 마을', '수학 문제로 광석 캐기', 'math'], ['🗽', '영어 마을', 'Lesson 7~12 영어 놀이', 'ev']]) {
       const b = el2('button', 'sg-role'), t = el2('span', 'sg-role-txt'); t.append(el2('b', '', name), el2('span', 'sg-role-tag', sub));
-      b.append(el2('span', 'sg-role-ic', ic), t); b.onclick = () => { closeLife(); burst(new V3(PORTAL.x, 2.8, PORTAL.z), [0x8C6CF0, 0xFFFFFF, 0x9ED8FF], 30, 4, 1.5); playSfx('plop'); setTimeout(go, 150); }; list.append(b);
+      b.append(el2('span', 'sg-role-ic', ic), t); b.onclick = () => { closeLife(); setTimeout(() => travelTo(d, true), 150); }; list.append(b);
     }
     box.append(list);
   });
 }
-function updatePortal(dt) { if (!portal.disk) return; portal.disk.rotation.z -= dt * 1.6; portal.ring.material.emissiveIntensity = 0.45 + Math.sin(time * 3) * 0.15; }
+function updatePortal(dt) { for (const P of portals) { P.disk.rotation.z -= dt * 1.6; P.ring.material.emissiveIntensity = 0.45 + Math.sin(time * 3) * 0.15; } }
 
 // ---------- 🗽 영어 마을 (English Village · 5학년 영어 Lesson 7~12 핵심 표현) ----------
 // 🚌 우리 마을 체육관 옆 버스 정류장 ↔ 영어 마을. 구역 6곳에서 듣고(🔊) 고르고, 문장을 만들고, 3D로 찾아가요
