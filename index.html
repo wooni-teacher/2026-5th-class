@@ -321,6 +321,12 @@
     background: var(--ink); color: #fff; border-radius: 16px 16px 0 0;
   }
   .admin-note { margin: 10px 0 4px; font-size: 15px; text-align: center; opacity: .75; }
+  #tpTabs { position: sticky; top: 52px; z-index: 1; display: flex; gap: 6px; overflow-x: auto; margin: 0 -24px 6px; padding: 8px 16px; background: #F6EFE3; border-bottom: 1px solid var(--line, #E0D3BE); scrollbar-width: thin; }
+  .tp-tab { flex: none; border: 0; border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 16px; font-weight: 800; background: #fff; color: var(--ink); cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,.08); white-space: nowrap; }
+  .tp-tab[aria-selected="true"] { background: var(--ink); color: #fff; }
+  .tp-tab:focus-visible { outline: 3px solid var(--sky, #5AAAF0); outline-offset: 2px; }
+  .tp-sec[hidden] { display: none !important; }
+  #tpForm .tp-sec h3.first { border-top: 0; padding-top: 4px; margin-top: 8px; }
   .modal.admin h3 { margin: 18px 0 8px; padding-top: 14px; border-top: 2px dashed #D8CDBB; font-size: 22px; font-weight: 700; }
   .admin .btn { font-size: 18px; padding: 8px 14px; }
   .admin .btn:disabled { opacity: .45; }
@@ -4992,7 +4998,7 @@ async function copyText(text, what) {
 }
 function fillTeacherPanel() {
   fillNickAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
-  $('tpForm').classList.toggle('hidden', !isTeacher);
+  $('tpForm').classList.toggle('hidden', !isTeacher); $('tpTabs')?.classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
   renderUid(backend?.uid || '');
@@ -5193,7 +5199,7 @@ function initVoteUI() {
     tpReward = t.winners[0]; tpFromVote = true;
     fillTeacherPanel();
     $('tpErr').textContent = t.winners.length > 1 ? '동점이에요. 보상을 하나 골라 주세요' : '미션 제목을 적고 🎯 미션 추가하기를 눌러 주세요';
-    $('tpTitle').scrollIntoView({ block: 'center' });
+    tpShowFor($('tpTitle')); $('tpTitle').scrollIntoView({ block: 'center' });
     if (!$('tpTitle').value.trim()) $('tpTitle').focus();
   };
 }
@@ -11402,7 +11408,36 @@ function printRecord(id) {
   w.document.open(); w.document.write(recordHTML(e)); w.document.close();
 }
 // ---------- 선생님 관리 화면 — 🏫 학급회의 ----------
-function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hidden'); fillTeacherPanel(); setTimeout(() => $('tpMeetSec')?.scrollIntoView({ block: 'start' }), 80); }
+function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hidden'); fillTeacherPanel(); tpShowFor($('tpMeetSec')); setTimeout(() => $('tpMeetSec')?.scrollIntoView({ block: 'start' }), 80); }
+// 🗂️ 선생님 관리 화면 탭: 제목(h3)마다 묶어서 카테고리 탭으로 보여요 (고른 탭은 이 기기에 기억)
+const TP_TABS = [
+  ['class', '🧑‍🏫 수업', /수업 도구|학급회의|선생님 모습|게시판 공지|닉네임|감사 게시판/],
+  ['mission', '🎯 미션·투표', /공동 미션|완료한 마을 미션|보상 투표|제안 투표/],
+  ['play', '🎮 놀이', /깃발뺏기|숨바꼭질|벽화|건물 안 활동|온실/],
+  ['village', '🏯 마을', /역사 마을|성 공방전|서당 문제|수학 광산|가게와 반 기부|우리 집 마을/],
+  ['setup', '⚙️ 설정', /상태 파일|초기화|계절·시간/],
+];
+function initTpTabs() {
+  const form = $('tpForm'); if (!form || $('tpTabs')) return;
+  const secs = []; let cur = null;
+  for (const el of [...form.childNodes]) {
+    if (el.nodeType === 1 && el.tagName === 'H3') { const t = el.textContent; cur = document.createElement('div'); cur.className = 'tp-sec'; cur.dataset.tab = (TP_TABS.find(([, , re]) => re.test(t)) || TP_TABS[0])[0]; form.insertBefore(cur, el); secs.push(cur); }
+    if (cur) cur.appendChild(el);
+  }
+  const bar = document.createElement('div'); bar.id = 'tpTabs'; bar.setAttribute('role', 'tablist'); bar.setAttribute('aria-label', '관리 화면 카테고리');
+  for (const [k, label] of TP_TABS) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tp-tab'; b.dataset.tab = k; b.setAttribute('role', 'tab'); b.textContent = label; b.onclick = () => tpTab(k, true); bar.appendChild(b); }
+  form.parentNode.insertBefore(bar, form);
+  { const setup = secs.find(x => x.dataset.tab === 'setup'), row = $('tpRuleCheck')?.parentNode, res = $('tpRuleResult'); if (setup && row) { const sec = document.createElement('div'); sec.className = 'tp-sec'; sec.dataset.tab = 'setup'; const h = document.createElement('h3'); h.textContent = '🔎 Firebase 규칙 점검'; sec.append(h, row, res); form.insertBefore(sec, setup); } } // 규칙 점검은 ⚙️ 설정 탭으로
+  tpTab(store.get('sv-tptab') || 'class');
+}
+function tpTab(k, user) {
+  if (!TP_TABS.some(([x]) => x === k)) k = 'class';
+  for (const b of document.querySelectorAll('#tpTabs .tp-tab')) b.setAttribute('aria-selected', String(b.dataset.tab === k));
+  let first = true;
+  for (const sec of document.querySelectorAll('#tpForm .tp-sec')) { const on = sec.dataset.tab === k; sec.hidden = !on; const h = sec.querySelector('h3'); if (h) h.classList.toggle('first', on && first); if (on) first = false; }
+  if (user) { store.set('sv-tptab', k); const p = $('teacherPanel'); const bar = $('tpTabs'); if (p && bar) p.scrollTop = Math.min(p.scrollTop, bar.offsetTop - 52); }
+}
+function tpShowFor(el) { const sec = el?.closest?.('.tp-sec'); if (sec) tpTab(sec.dataset.tab); }
 function fillMeetAdmin() {
   const m = S.meeting;
   $('tpMeetNow').textContent = m ? `지금: ${m.mo}월 학급회의 · ${m.step + 1}. ${MEET_STEPS[m.step]}` : '지금 열린 회의가 없어요';
@@ -15518,7 +15553,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); buildEnglishVillage(); initEvUI(); buildPortal(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildFundWorld(); initEconUI(); initHomeUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
