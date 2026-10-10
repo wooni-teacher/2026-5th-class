@@ -582,6 +582,7 @@
   .sg-role-n { grid-column: 2; margin-top: 6px; font-size: 13px; font-weight: 800; color: #6B5A48; }
   .sg-role.on .sg-role-n { color: #3E8E3E; }
   @media (max-width: 560px) { .sg-roles { grid-template-columns: 1fr; } }
+  #trBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; width: min(620px, calc(100vw - 32px)); z-index: 3; }
   #sgBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #sgFill { height: 100%; width: 0; background: linear-gradient(90deg, #D9C49A, #8A6A44, #5A3A22); }
   #sgThrow { background: #8A6A44; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
@@ -847,6 +848,10 @@
 </div>
 <div id="hideBlind" class="hidden"><div>🙈 술래는 눈을 감고 있어요</div><b id="hideBlindT"></b><div style="font-size:18px">친구들이 숨는 동안 기다려요</div></div>
 <div id="sgHud" class="sticker hidden" role="status" aria-live="polite"><div id="sgNats"></div><div id="sgInfo"></div><div id="sgMine"></div></div>
+<div id="trBar" class="sticker hidden">
+  <div id="trInfo" style="font-weight:800"></div>
+  <div class="row-center wrap" style="margin-top:6px"><button class="btn hidden" id="trShoot" style="background:#8A6A44;color:#fff;font-size:18px;touch-action:none">🏹 쏘기 (F)</button><button class="btn hidden" id="trWeap" style="background:#fff">무기 바꾸기</button><button class="btn hidden" id="trFire" style="background:#FFD2C2">🔥 화공</button><button class="btn hidden" id="trHorn" style="background:#FFE9A8">📯 나팔</button><button class="btn hidden" id="trShield" style="background:#DDEBFF">🛡️ 방패진</button><button class="btn" id="trQuit" style="background:#fff">✖ 그만</button></div>
+</div>
 <div id="sgBar" class="sticker hidden">
   <div id="sgAmmo" style="font-weight:800"></div>
   <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="sgThrow">🏹 쏘기 (F)</button><button class="btn hidden" id="sgBarBtn" style="background:#C9A65E;color:#fff">🪵 목책 세우기</button><button class="btn hidden" id="sgSkHorn" style="background:#FFE9A8">📯 나팔</button><button class="btn hidden" id="sgSkShield" style="background:#DDEBFF">🛡️ 방패진</button><button class="btn hidden" id="sgSkFire" style="background:#FFD2C2">🔥 화공</button><button class="btn hidden" id="sgArmBtn" style="background:#E8E4DC">🛡️ 내 갑옷</button><button class="btn" id="sgRoleBtn" style="background:#fff">🎭 역할</button><button class="btn hidden" id="sgHome" style="background:#fff">⛲ 광장으로</button></div>
@@ -1198,11 +1203,12 @@
 
     <h3>⚔️ 성 공방전 (따로 된 큰 전쟁터)</h3>
     <p class="hint" id="tpSgNow"></p>
-    <p class="hint">시대를 고르면 나라와 무기가 정해져요 (선사: 부족·🪨돌팔매 · 삼국: 🏹활 · 남북국·후삼국: 🎯쇠뇌). 나라를 정하고 시작하면 학생마다 역할(⚔️병사·🔨공병·🌿의원·📜책사)을 골라요. 전쟁터의 거점 5곳(🏯산성·⛏️철광산·🌾곡창·⛵나루터·🔥봉수대)을 차지하면 3초마다 점수와 자원이 쌓이고, 마지막 1분은 점수 두 배예요. 성 안 🏛️ 나라 창고에서 문제를 풀어 보급을 받고, 자원으로 성벽 강화·목책·강철 무기·화공을 해요. 상대 성문을 부수면 +15점과 자원을 빼앗아요. 이 기기(선생님)가 거점 차지를 계산하니 끝날 때까지 이 화면을 켜 두세요. 나라 점수만 보이고 끝내면 지워져요.</p>
+    <p class="hint">시대를 고르면 나라와 무기가 정해져요 (선사: 부족·🪨돌팔매 · 삼국: 🏹활 · 남북국·후삼국: 🎯쇠뇌). 나라를 정하고 시작하면 학생마다 역할(⚔️병사·🔨공병·🌿의원·📜책사)을 골라요. 전쟁터의 거점 5곳(🏯산성·⛏️철광산·🌾곡창·⛵나루터·🔥봉수대)을 차지하면 3초마다 점수와 자원이 쌓이고, 마지막 1분은 점수 두 배예요. 성 안 🏛️ 나라 창고에서 문제를 풀어 보급을 받고, 자원으로 성벽 강화·목책·강철 무기·화공을 해요. 상대 성문을 부수면 +15점과 자원을 빼앗아요. 이 기기(선생님)가 거점 차지를 계산하니 끝날 때까지 이 화면을 켜 두세요. 나라 점수만 보이고 끝내면 지워져요. 🤖 컴퓨터 병사를 넣으면 사람이 적어도 전쟁을 할 수 있어요 (컴퓨터 병사도 이 기기가 움직여요).</p>
     <div class="row-center wrap">
       <label class="sr-only" for="tpSgSet">시대</label><select id="tpSgSet" class="tinput" style="width:auto;max-width:100%"></select>
       <label class="sr-only" for="tpSgMin">시간</label><select id="tpSgMin" class="tinput" style="width:auto"><option value="7">7분</option><option value="10" selected>10분</option><option value="15">15분</option></select>
       <label class="sr-only" for="tpSgHp">성문 체력</label><select id="tpSgHp" class="tinput" style="width:auto"><option value="20">성문 20</option><option value="30" selected>성문 30</option><option value="40">성문 40</option></select>
+      <label class="sr-only" for="tpSgBots">컴퓨터 병사</label><select id="tpSgBots" class="tinput" style="width:auto" title="나라마다 컴퓨터(🤖) 병사 수"><option value="0" selected>🤖 없음</option><option value="1">🤖 나라마다 1</option><option value="2">🤖 나라마다 2</option><option value="3">🤖 나라마다 3</option><option value="4">🤖 나라마다 4</option></select>
     </div>
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
     <div id="tpSgList"></div>
@@ -2063,6 +2069,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async sgHeal(u) { if (!st.siege?.hurt?.[u]) return { ok: false }; delete st.siege.hurt[u]; if (st.siege.php) delete st.siege.php[u]; (st.siege.safe ||= {})[u] = Date.now(); emit(); return { ok: true }; },
     async sgRevive() { if (!st.siege) return { ok: false }; if (st.siege.hurt) delete st.siege.hurt.me; if (st.siege.php) delete st.siege.php.me; (st.siege.safe ||= {}).me = Date.now(); emit(); return { ok: true }; },
     async sgDamage(u, d, max) { const s2 = st.siege; if (!s2?.on) return { ok: false }; s2.php ||= {}; const hp = Math.max(0, (s2.php[u] ?? max) - d); s2.php[u] = hp; emit(); return { ok: true, hp }; },
+    async sgBotsPush() { return { ok: true }; }, async sgBotHit() { return { ok: false }; },
     async sgHpSet(u, v) { const s2 = st.siege; if (!s2?.on) return { ok: false }; s2.php ||= {}; if (v == null) delete s2.php[u]; else s2.php[u] = v; emit(); return { ok: true }; },
     async sgArmSet(u, lv, hp) { const s2 = st.siege; if (!s2?.on) return { ok: false }; (s2.arm ||= {})[u] = lv; (s2.php ||= {})[u] = hp; emit(); return { ok: true }; },
     async sgSpend(t, cost) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; if (Object.entries(cost).some(([k, v]) => (r[k] || 0) < v)) return { ok: false }; for (const [k, v] of Object.entries(cost)) r[k] -= v; emit(); return { ok: true }; },
@@ -2237,6 +2244,8 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     subscribe(onState, onPlayers, onError) {
       // 친구들이 한꺼번에 바꿔도 짧은 순간(0.08초)의 변화는 모아서 한 번만 화면에 반영해요 (잔렉 줄이기)
       let timer = 0;
+      D.onValue(R('sgbots'), s => sgBotsRemote(s.val()), () => {}); // 🤖 컴퓨터 병사 위치 (선생님 기기가 올려요)
+      D.onValue(R('sgbotdmg'), s => sgBotDmgRemote(s.val()), () => {}); // 학생이 🤖를 맞힌 기록 (선생님 기기만 반영)
       D.onValue(R('state'), s => {
         cache = normalize(s.val());
         if (!timer) timer = setTimeout(() => { timer = 0; onState(cache); }, 80);
@@ -2420,6 +2429,8 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       try { const r = await D.runTransaction(R(`state/siege/php/${u}`), c => Math.max(0, (c ?? max) - d)); return { ok: r.committed, hp: r.snapshot.val() }; } catch (e) { return { ok: false }; }
     },
     async sgHpSet(u, v) { try { await D.set(R(`state/siege/php/${u}`), v); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgBotsPush(v) { try { await D.set(R('sgbots'), v); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgBotHit(id, d) { try { await D.set(R(`sgbotdmg/${uid}`), { id, d: Math.max(1, Math.min(10, d | 0)), t: Date.now() }); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgArmSet(u, lv, hp) { try { await D.update(R('state/siege'), { [`arm/${u}`]: lv, [`php/${u}`]: hp }); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgSpend(t, cost) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { if (!c || Object.entries(cost).some(([k, v]) => (c[k] || 0) < v)) return undefined; const n = { ...c }; for (const [k, v] of Object.entries(cost)) n[k] -= v; return n; }); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
     async sgGain(t, give, pts) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { const n = { ...(c || {}) }; for (const [k, v] of Object.entries(give)) n[k] = (n[k] || 0) + v; return n; }); await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + pts); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
@@ -6618,7 +6629,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -9400,16 +9411,17 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1816, z0: -52, z1: 52, s: 2.4 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 };
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1816, z0: -52, z1: 52, s: 2.4 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 };
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
-function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, MAPB === MAPB_EV, MAPB === MAPB_SG, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}${JSON.stringify(S.siege.own || {})}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
+function mapKey() { return [MAPB === MAPB_HV, MAPB === MAPB_MATH, MAPB === MAPB_EV, MAPB === MAPB_SG, MAPB === MAPB_TR, JSON.stringify(S.hv?.built || {}), JSON.stringify(S.hist?.b || {}), S.siege ? `${S.siege.set}${S.siege.n}${JSON.stringify(S.siege.own || {})}` : '', Object.keys(S.built).sort().join(), Object.keys(S.unlocks).sort().join(), forestOpen(), Object.keys(S.plots).sort().join(), myLots().join()].join('|'); }
 function drawMapBase() {
   if (MAPB === MAPB_HV) return drawHvMapBase();
   if (MAPB === MAPB_MATH) return drawMathMapBase();
   if (MAPB === MAPB_EV) return drawEvMapBase();
   if (MAPB === MAPB_SG) return drawSgMapBase();
+  if (MAPB === MAPB_TR) { const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s, cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.fillStyle = '#8ACB64'; c.fillRect(0, 0, W, H); c.fillStyle = '#CDB98E'; c.fillRect(mapX(TR.x0), mapZ(TR.z0), (TR.x1 - TR.x0) * MAPB.s, (TR.z1 - TR.z0) * MAPB.s); mapUI.key = mapKey(); return; }
   const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s;
   const cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H;
   const c = cv.getContext('2d'), s = MAPB.s;
@@ -9454,7 +9466,7 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z])] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
+const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z])] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ['🌀', HV.x0 + 11, -8.5], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['🌀', PORTAL.x, PORTAL.z], ['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
@@ -9568,7 +9580,7 @@ function openMap() {
   const panel = $('mapPanel'); panel.classList.remove('hidden');
   const aspect = (MAPB.x1 - MAPB.x0) / (MAPB.z1 - MAPB.z0), dpr = Math.min(2, devicePixelRatio || 1);
   const h = Math.max(220, Math.min(innerHeight - 230, 620)), w = Math.min(h * aspect, Math.min(520, innerWidth * 0.92) - 48);
-  panel.querySelector('h2').textContent = MAPB === MAPB_SG ? '🗺️ 전쟁터 지도' : MAPB === MAPB_EV ? '🗺️ 영어 마을 지도' : MAPB === MAPB_HV ? '🗺️ 역사 마을 지도' : MAPB === MAPB_MATH ? '🗺️ 수학 광산 마을 지도' : '🗺️ 우리 마을 지도';
+  panel.querySelector('h2').textContent = MAPB === MAPB_TR ? '🗺️ 역할 체험장 지도' : MAPB === MAPB_SG ? '🗺️ 전쟁터 지도' : MAPB === MAPB_EV ? '🗺️ 영어 마을 지도' : MAPB === MAPB_HV ? '🗺️ 역사 마을 지도' : MAPB === MAPB_MATH ? '🗺️ 수학 광산 마을 지도' : '🗺️ 우리 마을 지도';
   const cv = $('bigMap'); cv.style.width = `${w}px`; cv.style.height = `${w / aspect}px`; cv.width = Math.round(w * dpr); cv.height = Math.round(w / aspect * dpr);
   $('miniToggle').checked = mapUI.show;
   drawBig(); $('mapClose').focus();
@@ -9577,7 +9589,7 @@ function closeMap() { $('mapPanel').classList.add('hidden'); $('miniBtn').focus(
 function updateMap(dt) {
   if (!joined) return;
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
-  const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : evRegion() ? MAPB_EV : siegeRegion() ? MAPB_SG : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
+  const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : evRegion() ? MAPB_EV : siegeRegion() ? MAPB_SG : trRegion() ? MAPB_TR : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
   const inCls = classRegion() || arenaRegion() || homeRegion() || bldRegion(); // 교실·운동장·집 안·건물 안에서는 작은 지도를 숨겨요
   $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
@@ -10245,10 +10257,10 @@ async function travelTo(dest, viaPortal = false) {
   const boat = document.querySelector('#travelFx .tv-boat'), cartTrip = dest === 'math' || dest === 'fromMath', busTrip = dest === 'ev' || dest === 'fromEv';
   if (boat) boat.textContent = viaPortal ? '🌀' : cartTrip ? '🚃' : busTrip ? '🚌' : '⛵'; if (busTrip) stopEvGame();
   $('travelText').textContent = dest === 'ev' ? '🚌 버스를 타고 영어 마을로 가는 중…' : dest === 'fromEv' ? '🚌 버스를 타고 우리 마을로 돌아가는 중…' : dest === 'hv' ? '⛵ 배를 타고 역사 마을로 가는 중…' : dest === 'math' ? '🚃 광차를 타고 수학 광산 마을로 가는 중…' : dest === 'fromMath' ? '🚃 광차를 타고 우리 마을로 돌아가는 중…' : '⛵ 우리 마을로 돌아가는 중…';
-  if (viaPortal) $('travelText').textContent = { hv: '🌀 포털을 지나 역사 마을로 가는 중…', math: '🌀 포털을 지나 수학 광산 마을로 가는 중…', ev: '🌀 포털을 지나 영어 마을로 가는 중…' }[dest] || '🌀 포털을 지나 우리 마을 광장으로 가는 중…';
+  if (viaPortal) $('travelText').textContent = { hv: '🌀 포털을 지나 역사 마을로 가는 중…', math: '🌀 포털을 지나 수학 광산 마을로 가는 중…', ev: '🌀 포털을 지나 영어 마을로 가는 중…', tr: '🌀 포털을 지나 역할 체험장으로 가는 중…' }[dest] || '🌀 포털을 지나 우리 마을 광장으로 가는 중…';
   $('travelFx').classList.remove('hidden'); playSfx('cast');
   await sleep(1000);
-  const [x, z, h] = dest === 'ev' ? [EV.bus[0] + 3, 0, Math.PI / 2] : dest === 'fromEv' ? [PLAZA_BACK[0], PLAZA_BACK[1], 0] : dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' || dest === 'home' ? [PLAZA_BACK[0], PLAZA_BACK[1], 0] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2]; // 돌아오면 학교 앞 🌀 포털 앞으로
+  const [x, z, h] = dest === 'tr' ? [TR.cx, TR.cz - 2, Math.PI] : dest === 'ev' ? [EV.bus[0] + 3, 0, Math.PI / 2] : dest === 'fromEv' ? [PLAZA_BACK[0], PLAZA_BACK[1], 0] : dest === 'hv' ? [HV.x0 + 3, 0, Math.PI / 2] : dest === 'math' ? [MV.station[0] + 4, MV.station[1] + 1, Math.PI / 2] : dest === 'fromMath' || dest === 'home' ? [PLAZA_BACK[0], PLAZA_BACK[1], 0] : [BEACH.pierX1 - 3, BEACH.pierZ, -Math.PI / 2]; // 돌아오면 학교 앞 🌀 포털 앞으로
   player.pos.set(x, 0.35, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.35;
   camera.position.set(x - Math.sin(h) * 10, 5, z - Math.cos(h) * 10);
   await sleep(700);
@@ -13309,6 +13321,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1010d', d: '10월 10일 (한밤)', items: ['🤖 성 공방전에 컴퓨터 병사가 함께 싸워요! 선생님이 나라마다 0~4명을 정해요 · 거점을 차지하고, 활을 쏘고, 성문을 공격해요 (🤖 공병은 우리 성문을 고쳐요)', '🎯 컴퓨터 병사도 맞히면 체력이 줄고, 쓰러지면 잠시 뒤 성에서 다시 나와요'] },
+  { id: '1010c', d: '10월 10일 (밤 늦게)', items: ['🎯 역할 체험장이 생겼어요! 학교 앞 포털에서 가요 · 병사·공병·의원·책사·대장장이를 혼자 미리 연습해요 (처음 끝내면 🐚 +5)'] },
   { id: '1010b', d: '10월 10일 (밤)', items: ['⚔️ 성 공방전이 따로 된 큰 전쟁터에서 열려요 · 숲과 바위 뒤에 숨을 수 있어요', '❤️ 머리 위에 체력 막대! 무기마다 피해가 달라요 (돌팔매 2 · 활 3 · 쇠뇌 4)', '⚒️ 새 역할 대장장이: 갑옷을 만들어 친구에게 입혀 줘요 · 📜 책사는 스킬(나팔·방패진·화공)로 싸워요', '📊 내 능력치(영어력·사회력·수학력·독서력)가 생겼어요 · 공성전 역할이 강해져요', '📜 서당 안으로 들어가 방석에 앉으면 사회 학습지로 공부해요 · 🏛️ 지은 시대 건축물 안에서 시대 퀴즈', '🏋️ 영어 훈련소: 단어·문장 학습지와 쓰기 연습 · 영어 퀴즈에 ✍️ 쓰기 문제(보상 2배)', '⚾ 야구장 거리가 미로로! 길 안내를 순서대로 따라가요'] },
   { id: '1010', d: '10월 10일', items: ['💡 광장 분수를 눌러 동전을 던지듯 게임 건의를 보낼 수 있어요', '📖 역사 마을 서당에서 사회 학습지로 바로 공부해요', '📰 이렇게 업데이트 소식을 볼 수 있어요', '🧹 분수 위 큰 글씨와 도서관 책 짝 맞추기를 정리했어요'] },
   { id: '1009', d: '10월 9일', items: ['🌀 학교 앞 마을 포털로 역사·수학·영어 마을에 한 번에 가요', '🌀 마을마다 광장 포털이 생겨서 바로 광장으로 돌아와요'] },
@@ -13408,7 +13422,7 @@ function makePortal(x, z, lines, col, prompt, run, here) { // 돌기둥 두 개 
 const inMainVillage = () => joined && Math.abs(player.pos.x) < 120 && player.pos.z > -140 && player.pos.z < 160;
 function buildPortal() {
   // 🌀 학교 앞: 다른 마을로 (맵을 옮겨야 하는 곳만)
-  makePortal(PORTAL.x, PORTAL.z, ['🌀 마을 포털', '역사·수학·영어 마을 · E'], 0x7C5CE8, ['포털 타기 🌀', '역사·수학·영어 마을로'], openPortal, inMainVillage);
+  makePortal(PORTAL.x, PORTAL.z, ['🌀 마을 포털', '역사·수학·영어 마을 · 체험장 · E'], 0x7C5CE8, ['포털 타기 🌀', '역사·수학·영어 마을 · 역할 체험장'], openPortal, inMainVillage);
   // 각 마을: 우리 마을 광장으로 돌아가는 포털
   const back = ['🌀 광장 포털', '우리 마을 광장으로 · E'], bp = ['포털 타기 🌀', '우리 마을 광장으로'];
   makePortal(HV.x0 + 11, -8.5, back, 0x3FB6A8, bp, () => travelTo('home', true), () => hvRegion());
@@ -13423,6 +13437,7 @@ function openPortal() {
     box.textContent = ''; box.append(el2('p', 'hint', '어느 마을로 갈까요? 마을에 있는 🌀 광장 포털을 타면 우리 마을 광장으로 돌아와요.'));
     const list = el2('div', 'sg-roles');
     const dests = [['🏯', '역사 마을', '시대 퀴즈 · 서당 · 역사의 길', 'hv'], ['⛏️', '수학 광산 마을', '수학 문제로 광석 캐기', 'math'], ['🗽', '영어 마을', 'Lesson 7~12 영어 놀이 · 훈련소', 'ev']];
+    dests.push(['🎯', '역할 체험장', '병사·공병·의원·책사·대장장이 미리 연습', 'tr']);
     if (S.siege?.on) dests.unshift(['⚔️', '전쟁터', '성 공방전 중! 우리 성으로 가요', 'sg']);
     for (const [ic, name, sub, d] of dests) {
       const b = el2('button', 'sg-role'), t = el2('span', 'sg-role-txt'); t.append(el2('b', '', name), el2('span', 'sg-role-tag', sub));
@@ -15312,7 +15327,7 @@ const sgRes = (t) => S.siege?.res?.[t] || {};
 const sgLv = (t) => S.siege?.lv?.[t] || 1;
 const sgMax = (t) => SG_LV_HP(S.siege?.max || 30, sgLv(t));
 const sgHp = (t) => S.siege?.hp?.[t] ?? sgMax(t);
-const sgSpeedMul = () => (S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? 0.15 : 0) + (sgBuff(sgMine(), 'horn') ? 0.2 : 0) : 1;
+const sgSpeedMul = () => (trw.horn > performance.now() ? 1.4 : 1) * ((S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? 0.15 : 0) + (sgBuff(sgMine(), 'horn') ? 0.2 : 0) : 1); // 🎯 체험장 나팔도 빨라져요
 const sgFrozen = () => !!S.siege && siegeRegion() && sgMine() && sgHurt(backend.uid);
 const sgw = { cover: [], field: null, castles: {}, key: '', lastR: '', ended: '', cool: 0, balls: [], boxes: [], sites: {}, bars: {}, barKey: '', shots: {}, fxSeen: {}, assign: {}, tick: 0, slow: 0, hud: '', listKey: '', busy: {}, spots: [], hurtT: 0, hurtPos: null, wasHurt: false, catObjs: {}, roleAsked: '', finalTold: '' };
 function sgWinner() { // 0 진행 중 · 1~4 이긴 나라 · 9 비김
@@ -15543,6 +15558,7 @@ function sgFindTarget() {
   const p = player.pos, f = sgAimDir(), me = sgMine(), out = [];
   const consider = (x, y, z, kind, ref, maxD) => { const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d < 1.5 || d > maxD) return; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (ang > 1.0) return; out.push({ x, y, z, d, ang, kind, ref, score: ang * 12 + d * 0.15 + (kind === 'p' ? 0 : 1.5) }); };
   for (const [uid, r] of remotes) { const t = sgTeamOf(uid); if (t && t !== me && !sgHurt(uid) && !sgSafe(uid)) consider(r.pos.x, r.pos.y + 1.1, r.pos.z, 'p', uid, 30); }
+  for (const [id, b] of Object.entries(sgb.list)) if (b.t !== me && !b.down) { const a = sgb.av[id]?.g.position || b; consider(a.x, 1.2, a.z, 'p', 'bot:' + id, 30); }
   for (const c of Object.values(sgw.castles)) if (c.t !== me && !c.open) { const m = c.hit.getCenter(new V3()); consider(m.x, 1.4, m.z, 'g', c.t, 42); }
   for (const [k, b] of Object.entries(sgw.bars)) if (b.t !== me) { const m = b.box.getCenter(new V3()); consider(m.x, 0.9, m.z, 'b', k, 30); }
   out.sort((a, b) => a.score - b.score); return out[0] || null;
@@ -15670,6 +15686,7 @@ function openSgRole() {
       const txt = el2('span', 'sg-role-txt'); txt.append(el2('b', '', `${R.name}${k === 'sol' ? ` · ${sgWeap().icon} ${sgWeap().name}` : ''}`), el2('span', 'sg-role-tag', R.tag));
       for (const c of R.can) txt.append(el2('span', 'sg-role-can', c));
       if (R.st) txt.append(el2('span', 'sg-role-tag', `${STATS[R.st].icon} 내 ${STATS[R.st].name} Lv${statLv(R.st)} → 강화 +${statTier(R.st)}`));
+      txt.append(el2('span', 'sg-role-can', bag.trial?.[k] ? '🎯 체험장에서 연습해 봤어요 ✅' : '🎯 학교 앞 포털 → 역할 체험장에서 미리 연습할 수 있어요'));
       b.append(el2('span', 'sg-role-ic', R.icon), txt, el2('span', 'sg-role-n', on ? '✅ 지금 역할' : `우리 나라 ${n}명`));
       b.onclick = async () => { if (on) { closeLife(); return; } await backend.sgRole(k); playSfx('pick'); toast(`${R.icon} ${R.name}이(가) 됐어요!`, 'success'); closeLife(); renderSgBar(true); };
       list.append(b);
@@ -15747,6 +15764,10 @@ function updateSiege(dt) {
       const tt = sgTeamOf(uid); if (!tt || tt === b.team || sgHurt(uid) || sgSafe(uid)) continue;
       if (Math.hypot(r.pos.x - b.x, r.pos.y + 1 - b.y, r.pos.z - b.z) < 0.85) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); sgHitPlayer(uid, b.pd || 2, tt); break; }
     }
+    if (!b.dead && b.mine && s?.on) for (const [id, bt] of Object.entries(sgb.list)) { // 🤖 컴퓨터 병사
+      if (bt.t === b.team || bt.down) continue; const a = sgb.av[id]?.g.position || bt;
+      if (Math.hypot(a.x - b.x, 1.1 - b.y, a.z - b.z) < 0.9) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); sgHitBot(id, b.pd || 2); break; }
+    }
     if (b.dead) break;
     if (b.y < 0.15) { b.dead = true; burst(P.setY(0.2), [0xC9B08A, 0xA89A80], 8, 2, 1); }
     b.m.position.set(b.x, b.y, b.z); if (b.arrow) b.m.lookAt(b.x + b.vx, b.y + b.vy, b.z + b.vz);
@@ -15768,6 +15789,133 @@ function updateSiege(dt) {
   // 1초마다 (선생님 기기 · 연습 모드는 내 기기): 거점 차지 · 점수·자원 · 성문 다시 세우기 · 끝
   if (performance.now() - sgw.tick > 1000) { sgw.tick = performance.now(); sgTickHost(); }
 }
+/* ---------- 🤖 컴퓨터 병사 (성 공방전 AI) ----------
+   · 선생님이 시작할 때 '나라마다 🤖 0~4명'을 고르면 (state/siege/bots), 선생님 기기(연습 모드는 내 기기)가 움직임을 계산해요
+   · 컴퓨터 병사는 거점을 차지하러 가고, 가까운 상대(학생·컴퓨터)를 쏘고, 상대 성문을 공격해요. 공병 🤖는 우리 성문을 고쳐요
+   · 위치는 0.4초마다 rooms/{방}/sgbots 에 올려 모두가 같은 컴퓨터 병사를 봐요 (state와 따로라서 화면이 버벅이지 않아요)
+   · 학생이 컴퓨터 병사를 맞히면 rooms/{방}/sgbotdmg/{기기} 에 '누구·얼마'를 적고, 선생님 기기가 체력을 줄여요 */
+const sgb = { list: {}, av: {}, sim: {}, r: '', pushT: 0, dmgSeen: {}, shotSeen: {} };
+const sgBotHost = () => isTeacher || backend?.mode !== 'firebase';
+const SGB_ROLE = (i) => (i % 3 === 2 ? 'eng' : 'sol');
+const sgBotName = (b) => `🤖 ${SG_ROLES[b.role]?.name || '병사'}`;
+function sgBotsRemote(v) { if (sgBotHost()) return; sgb.list = v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => /^b\d+$/.test(k))) : {}; }
+function sgBotDmgRemote(v) { // 선생님 기기: 학생이 맞힌 기록을 체력에 반영해요
+  if (!sgBotHost() || !v) return;
+  for (const [u, e] of Object.entries(v)) { if (!e || sgb.dmgSeen[u] === e.t) continue; sgb.dmgSeen[u] = e.t; const b = sgb.sim[e.id]; if (b && !b.down) sgBotHurt(b, e.d); }
+}
+function sgBotHurt(b, d) { if (sgBuff(b.t, 'shield')) d = Math.max(1, d - 1); b.hp = Math.max(0, b.hp - d); if (b.hp <= 0) { b.down = backend.now(); burst(new V3(b.x, 1.4, b.z), [0xFFFFFF, 0xFFE066], 24, 4, 2); } }
+function sgBotsSpawn() { // 새 전쟁: 나라마다 컴퓨터 병사를 성 안에 세워요
+  const s = S.siege; sgb.sim = {}; if (!s?.bots) return;
+  for (let t = 1; t <= s.n; t++) for (let i = 0; i < s.bots; i++) {
+    const role = SGB_ROLE(i), [x, z] = castleLocal(t, (i - 1.5) * 1.6, -1.2), id = `b${t}${i}`;
+    sgb.sim[id] = { id, t, role, x, z, hp: SG_ROLES[role].hp, mx: SG_ROLES[role].hp, down: 0, cool: 1 + Math.random() * 2, think: 0, tx: x, tz: z, aim: null, s: null, fixT: 0 };
+  }
+}
+function sgBotEnemies(t) { // 상대: [x, z, 종류, 누구]
+  const out = [];
+  for (const [u, r] of remotes) { const tt = sgTeamOf(u); if (tt && tt !== t && !sgHurt(u) && !sgSafe(u)) out.push([r.pos.x, r.pos.z, 'p', u, tt]); }
+  if (sgMine() && sgMine() !== t && !sgHurt(backend.uid) && !sgSafe(backend.uid) && siegeRegion()) out.push([player.pos.x, player.pos.z, 'p', backend.uid, sgMine()]);
+  for (const b of Object.values(sgb.sim)) if (b.t !== t && !b.down) out.push([b.x, b.z, 'b', b.id, b.t]);
+  return out;
+}
+const sgBotBlocked = (x, z) => !inSiege(x, z) || sgw.cover.some(bx => x > bx.min.x - 0.4 && x < bx.max.x + 0.4 && z > bx.min.z - 0.4 && z < bx.max.z + 0.4) || sgw.boxes.some(bx => x > bx.min.x - 0.4 && x < bx.max.x + 0.4 && z > bx.min.z - 0.4 && z < bx.max.z + 0.4 && bx.max.y > 0.6) || Object.values(sgw.castles).some(c => !c.open && c.hit.containsPoint(new V3(x, 1, z)));
+const sgToLocal = (t, x, z) => { const c = castleAt(t), dx = x - c.x, dz = z - c.z; return [Math.cos(c.a) * dx - Math.sin(c.a) * dz, Math.sin(c.a) * dx + Math.cos(c.a) * dz]; };
+const sgInCastle = (x, z) => { for (let t = 1; t <= (S.siege?.n || 0); t++) { const [lx, lz] = sgToLocal(t, x, z); if (Math.abs(lx) < 6.4 && Math.abs(lz) < 6.4) return t; } return 0; };
+function sgBotWay(b) { // 성 안 ↔ 밖은 옆문(가운데 틈)으로 다녀요
+  const kb = sgInCastle(b.x, b.z), kt = sgInCastle(b.tx, b.tz);
+  if (kb === kt) return [b.tx, b.tz];
+  const k = kb || kt, [lx, lz] = sgToLocal(k, b.x, b.z), side = (kb ? sgToLocal(k, b.tx, b.tz)[0] : lx) >= 0 ? 1 : -1;
+  if (kb) return Math.abs(lz) > 0.7 && Math.abs(lx) < 5.2 ? castleLocal(k, side * 4.6, 0) : castleLocal(k, side * 9, 0);
+  return Math.abs(lz) > 0.7 || Math.abs(lx) > 8 ? castleLocal(k, side * 8.5, 0) : castleLocal(k, side * 4.6, 0);
+}
+function sgBotMove(b, dt) {
+  if (b.det > 0) { b.det -= dt; } const [wx, wz] = b.det > 0 ? [b.dx2, b.dz2] : sgBotWay(b);
+  const dx = wx - b.x, dz = wz - b.z, d = Math.hypot(dx, dz); if (d < 0.6) return false;
+  const spd = 5.2 * (sgBuff(b.t, 'horn') ? 1.2 : 1) * (sgOwns(b.t, 'ferry') ? 1.15 : 1) * dt, ux = dx / d, uz = dz / d;
+  for (const a of [0, 0.6, -0.6, 1.2, -1.2, 1.8, -1.8]) { const c = Math.cos(a), s2 = Math.sin(a), vx = ux * c - uz * s2, vz = ux * s2 + uz * c, nx = b.x + vx * spd, nz = b.z + vz * spd; if (!sgBotBlocked(nx, nz)) { b.x = nx; b.z = nz; b.h = Math.atan2(vx, vz); return true; } }
+  b.det = 1.2; b.dx2 = b.x + (Math.random() - 0.5) * 10; b.dz2 = b.z + (Math.random() - 0.5) * 10; return false; // 막혔어요 → 잠깐 옆으로 돌아가요
+}
+function sgBotShoot(b, tx, tz, kind, ref) {
+  const W = sgWeap(), dx = tx - b.x, dz = tz - b.z, d = Math.hypot(dx, dz); if (d < 1) return;
+  const sol = sgSolve(W, d - 0.6, 0, 0), ux = dx / d, uz = dz / d;
+  b.s = { t: backend.now(), x: +b.x.toFixed(2), z: +b.z.toFixed(2), dx: +ux.toFixed(3), dz: +uz.toFixed(3), v: +sol.v.toFixed(2), a: +sol.a.toFixed(3) };
+  sgLaunch(b.x + ux * 0.6, b.z + uz * 0.6, ux, uz, sol.v, sol.a, false, b.t, 0); b.h = Math.atan2(ux, uz);
+  const hit = kind === 'g' ? Math.random() < 0.8 : Math.random() < Math.max(0.3, 0.7 - d / 40); // 멀수록 잘 안 맞아요
+  setTimeout(() => {
+    if (!S.siege?.on || !hit) return;
+    if (kind === 'g') { if (sgHp(ref) > 0) backend.sgHit(ref, (b.role === 'sol' ? 2 : 1) * W.dmg, b.t); return; }
+    const dmg = W.pd + (b.role === 'sol' ? 1 : 0);
+    if (kind === 'b') { const e = sgb.sim[ref]; if (e && !e.down) sgBotHurt(e, dmg); return; }
+    if (sgHurt(ref) || sgSafe(ref)) return; const tt = sgTeamOf(ref); const dd = sgBuff(tt, 'shield') ? Math.max(1, dmg - 1) : dmg;
+    backend.sgDamage(ref, dd, sgMaxHp(ref)).then(r => { if (r.ok && r.hp <= 0) backend.sgHurtSet(ref); if (ref === backend.uid && r.ok) toast(r.hp > 0 ? `🤖 컴퓨터 병사에게 맞았어요! ❤️ ${r.hp}/${sgMaxHp(ref)}` : '🤖 컴퓨터 병사에게 쓰러졌어요!', 'warn'); });
+  }, Math.min(900, d * 30));
+}
+const SGB_P = new V3();
+function sgBotSees(x0, z0, x1, z1) { // 벽·바위 너머는 안 쏴요
+  const d = Math.hypot(x1 - x0, z1 - z0), n = Math.ceil(d / 0.8);
+  for (let i = 1; i < n; i++) { SGB_P.set(x0 + (x1 - x0) * i / n, 1.5, z0 + (z1 - z0) * i / n); if (sgw.boxes.some(bx => bx.containsPoint(SGB_P)) || sgw.cover.some(bx => bx.containsPoint(SGB_P))) return false; }
+  return true;
+}
+function sgBotThink(b) { // 1초마다 할 일 고르기
+  const s = S.siege, c = castleAt(b.t);
+  if (b.role === 'eng' && sgHp(b.t) > 0 && sgHp(b.t) < sgMax(b.t)) { const [fx, fz] = castleLocal(b.t, 0, 4.4); b.tx = fx; b.tz = fz; b.goal = 'fix'; return; }
+  const en = sgBotEnemies(b.t).map(e => [...e, Math.hypot(e[0] - b.x, e[1] - b.z)]).filter(e => e[5] < 16 && sgBotSees(b.x, b.z, e[0], e[1])).sort((a, z) => a[5] - z[5]);
+  if (en[0] && en[0][5] < 16) { const e = en[0]; b.aim = e; b.goal = 'fight'; const back = e[5] < 8 ? -1 : e[5] > 12 ? 1 : 0; b.tx = b.x + (e[0] - b.x) / e[5] * back * 3; b.tz = b.z + (e[1] - b.z) / e[5] * back * 3; return; }
+  b.aim = null;
+  if (b.role === 'eng') { const [gx, gz] = castleLocal(b.t, (b.id.charCodeAt(2) % 3 - 1) * 2, 8); b.tx = gx; b.tz = gz; b.goal = 'guard'; return; }
+  // 거점: 우리 것이 아닌 가장 가까운 곳 (같은 나라 컴퓨터끼리 조금 나눠 가요)
+  const sites = SG_SITES.filter(st => !sgOwns(b.t, st.k)).map(st => [st, Math.hypot(st.x - b.x, st.z - b.z) + (b.id.charCodeAt(2) % 2) * 25 * (st.k === 'fort' ? 0 : 1)]).sort((a, z) => a[1] - z[1]);
+  if (sites.length) { const st = sites[0][0], a = (b.id.charCodeAt(2) * 1.7) % (Math.PI * 2); b.tx = st.x + Math.cos(a) * 2; b.tz = st.z + Math.sin(a) * 2; b.goal = 'cap'; return; }
+  // 다 차지했으면 가장 가까운 상대 성문으로
+  let best = 0, bd = 1e9; for (let t = 1; t <= s.n; t++) { if (t === b.t || sgHp(t) <= 0) continue; const k = castleAt(t), d = Math.hypot(k.x - b.x, k.z - b.z); if (d < bd) { bd = d; best = t; } }
+  if (best) { const [gx, gz] = castleLocal(best, 0, 13); b.tx = gx; b.tz = gz; b.goal = 'gate'; b.gateT = best; }
+}
+function sgBotsHost(dt) {
+  const s = S.siege; if (!s?.on || !sgStarted() || sgWinner()) return;
+  for (const b of Object.values(sgb.sim)) {
+    if (b.down) { if (backend.now() - b.down > sgHurtDur('') + 1000) { const [x, z] = castleLocal(b.t, (Math.random() - 0.5) * 4, -1.2); Object.assign(b, { x, z, hp: b.mx, down: 0, think: 0 }); } continue; }
+    b.think -= dt; b.cool -= dt; if (b.think <= 0) { b.think = 0.8 + Math.random() * 0.5; sgBotThink(b); }
+    sgBotMove(b, dt);
+    if (b.cool <= 0) {
+      if (b.aim) { const e = b.aim, cur = e[2] === 'b' ? sgb.sim[e[3]] : e[3] === backend.uid ? player.pos : remotes.get(e[3])?.pos; if (cur && !(e[2] === 'b' && cur.down)) { sgBotShoot(b, cur.x, cur.z, e[2], e[3]); b.cool = 2.2 + Math.random(); } }
+      else if (b.goal === 'gate' && b.gateT && Math.hypot(b.x - b.tx, b.z - b.tz) < 3) { const c = sgw.castles[b.gateT]; if (c && !c.open) { const m = c.hit.getCenter(new V3()); sgBotShoot(b, m.x, m.z, 'g', b.gateT); b.cool = 2.6; } }
+      else if (b.goal === 'fix' && Math.hypot(b.x - b.tx, b.z - b.tz) < 2 && backend.now() > b.fixT) { b.fixT = backend.now() + 4000; backend.sgFix(b.t, 4, sgMax(b.t)); b.cool = 1; }
+    }
+  }
+  if (performance.now() - sgb.pushT > 400) { // 모두에게 위치 알려 주기
+    sgb.pushT = performance.now();
+    const out = {}; for (const b of Object.values(sgb.sim)) out[b.id] = { x: +b.x.toFixed(2), z: +b.z.toFixed(2), h: +(b.h || 0).toFixed(2), t: b.t, role: b.role, hp: b.hp, mx: b.mx, down: b.down ? 1 : 0, ...(b.s ? { s: b.s } : {}) };
+    sgb.list = out; if (backend.mode === 'firebase') backend.sgBotsPush(out);
+  }
+}
+function updateSgBots(dt) {
+  const s = S.siege;
+  if (!s || s.r !== sgb.r) { // 전쟁이 바뀌었거나 끝났어요
+    sgb.r = s?.r || ''; for (const a of Object.values(sgb.av)) scene.remove(a.g); sgb.av = {}; sgb.shotSeen = {};
+    if (sgBotHost()) { sgBotsSpawn(); sgb.list = {}; if (backend.mode === 'firebase') backend.sgBotsPush(s?.bots ? {} : null); }
+    if (!s) { sgb.sim = {}; sgb.list = {}; }
+  }
+  if (!s) return;
+  if (sgBotHost()) sgBotsHost(dt);
+  const vis = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10);
+  for (const [id, b] of Object.entries(sgb.list)) {
+    let a = sgb.av[id];
+    if (!a) { a = makeAvatar(0, b.t - 1, b.role === 'eng' ? 4 : 1, 1, scene); a.badge.userData.set([sgBotName(b)]); a.g.position.set(b.x, 0.12, b.z); sgb.av[id] = a; }
+    a.g.visible = vis; if (!vis) continue;
+    const host = sgBotHost(), sim = host ? sgb.sim[id] : null, tx = sim ? sim.x : b.x, tz = sim ? sim.z : b.z, down = sim ? !!sim.down : !!b.down;
+    const px = a.g.position.x, pz = a.g.position.z; a.g.position.x += (tx - px) * Math.min(1, dt * (host ? 30 : 6)); a.g.position.z += (tz - pz) * Math.min(1, dt * (host ? 30 : 6));
+    const mv = Math.hypot(a.g.position.x - px, a.g.position.z - pz) / Math.max(dt, 1e-3); a.g.rotation.y = sim ? (sim.h || 0) : (b.h || 0);
+    setSgLook(a, b.t, down, b.role); a.g.rotation.z = down ? 1.45 : 0; animateAvatar(a, down ? 0 : Math.min(1, mv / 5), dt, true, false);
+    const hp = down ? 0 : (sim ? sim.hp : b.hp), mx = sim ? sim.mx : b.mx, k = `${hp}/${mx}`; if (a.sgBar && a.sgBarKey !== k) { a.sgBarKey = k; a.sgBar.userData.draw(hp, mx, 0); }
+    if (!host && b.s && sgb.shotSeen[id] !== b.s.t) { sgb.shotSeen[id] = b.s.t; sgLaunch(b.s.x, b.s.z, b.s.dx, b.s.dz, b.s.v, b.s.a, false, b.t, 0); }
+  }
+  for (const id of Object.keys(sgb.av)) if (!sgb.list[id]) { scene.remove(sgb.av[id].g); delete sgb.av[id]; }
+}
+async function sgHitBot(id, dmg) { // 학생이 컴퓨터 병사를 맞혔어요
+  const b = sgb.list[id]; if (!b) return;
+  if (sgBotHost()) { const sim = sgb.sim[id]; if (sim && !sim.down) { sgBotHurt(sim, dmg); toast(sim.down ? '🎯 컴퓨터 병사를 쓰러뜨렸어요!' : `🎯 명중! 컴퓨터 병사 ❤️ ${sim.hp}/${sim.mx}`, 'success'); } return; }
+  const r = await backend.sgBotHit(id, dmg); if (r.ok) toast(`🎯 명중! 컴퓨터 병사 ❤️ -${dmg}`, 'success');
+}
 function sgTickHost() {
   const s = S.siege; if (!s) return;
   const boss = isTeacher || backend.mode !== 'firebase', w = sgWinner();
@@ -15781,6 +15929,7 @@ function sgTickHost() {
   // 거점 안 사람 수 (쓰러진 친구는 빼요)
   const people = [...remotes.entries()].filter(([u]) => sgTeamOf(u) && !sgHurt(u)).map(([u, r]) => [sgTeamOf(u), r.pos.x, r.pos.z]);
   if (sgMine() && !sgHurt(backend.uid)) people.push([sgMine(), player.pos.x, player.pos.z]);
+  for (const b of Object.values(sgb.sim)) if (!b.down) people.push([b.t, b.x, b.z]); // 🤖도 거점을 차지해요
   const upd = {}, lag = sgLagging();
   for (const st of SG_SITES) {
     const cnt = {}; for (const [t, x, z] of people) if (Math.hypot(x - st.x, z - st.z) < SG_ZONE) cnt[t] = (cnt[t] || 0) + 1;
@@ -15876,14 +16025,14 @@ function sgBeam(u) {
 async function startSiege() {
   if (!isTeacher && backend.mode === 'firebase') return;
   if (S.ctf?.on) { toast('🚩 깃발뺏기를 먼저 끝내 주세요', 'warn'); return; }
-  const setKey = $('tpSgSet').value, set = SIEGE_SETS[setKey], n = set.nat.length, min = +$('tpSgMin').value, max = +$('tpSgHp').value;
-  const list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; }
+  const setKey = $('tpSgSet').value, set = SIEGE_SETS[setKey], n = set.nat.length, min = +$('tpSgMin').value, max = +$('tpSgHp').value, bots = +($('tpSgBots')?.value || 0);
+  const list = sgStudents(); if (!list.length && !bots) { toast('접속한 학생이 없어요 (🤖 컴퓨터 병사만으로도 시작할 수 있어요)', 'warn'); return; }
   sgBalance(n, list);
   const counts = set.nat.map((N, k) => `${N.icon}${N.name} ${list.filter(([u]) => sgw.assign[u] === k + 1).length}명`).join(' · ');
-  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: `${counts}\n${min}분 · 성문 체력 ${max}. 시작하면 모두 ⚔️ 전쟁터(따로 된 큰 땅)의 우리 성으로 옮기고, 각자 역할을 골라요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
+  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: `${counts}${bots ? ` (+ 나라마다 🤖 ${bots})` : ''}\n${min}분 · 성문 체력 ${max}. 시작하면 모두 ⚔️ 전쟁터(따로 된 큰 땅)의 우리 성으로 옮기고, 각자 역할을 골라요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
   const team = Object.fromEntries(list.map(([u]) => [u, sgw.assign[u]])), now = backend.now(), hp = {}, score = {}, lv = {}, res = {};
   for (let t = 1; t <= n; t++) { hp[t] = max; score[t] = 0; lv[t] = 1; res[t] = { w: 6, i: 4, f: 4 }; }
-  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at: now + 6000, end: now + 6000 + min * 60000, max, team, hp, score, lv, res } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
+  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at: now + 6000, end: now + 6000 + min * 60000, max, team, hp, score, lv, res, ...(bots ? { bots } : {}) } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
   if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400);
 }
 function initSiegeUI() {
@@ -15898,6 +16047,169 @@ function initSiegeUI() {
   $('sgSkHorn').onclick = () => sgSkill('horn'); $('sgSkShield').onclick = () => sgSkill('shield'); $('sgSkFire').onclick = () => sgSkill('fire'); $('sgArmBtn').onclick = () => sgArmor(backend.uid);
   $('sgHome').onclick = () => { if (!isTeacher && S.siege?.on && !sgWinner()) return; ctfTeleport(PLAZA_BACK[0], PLAZA_BACK[1], 0); };
   addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && S.siege && siegeRegion() && !(e.target instanceof Element && e.target.matches('input, textarea, select'))) { e.preventDefault(); sgShoot(); } });
+}
+
+
+/* ---------- 🎯 역할 체험장 — 성 공방전 전에 병사·공병·의원·책사·대장장이를 혼자 연습해요 (이 기기에서만 · 저장 없음) ----------
+   학교 앞 🌀 포털 → 🎯 역할 체험장. 체험대 앞에서 E를 누르면 그 역할 연습이 시작돼요. 처음 끝낼 때마다 🐚 +5 · 마을 재료 */
+const TR = { cx: 2270, cz: 0, x0: 2238, x1: 2302, z0: -30, z1: 30 };
+const inTrain = (x, z) => x >= TR.x0 + 0.6 && x <= TR.x1 - 0.6 && z >= TR.z0 + 0.6 && z <= TR.z1 - 0.6;
+const trRegion = () => joined && player.pos.x > TR.x0 - 6 && player.pos.x < TR.x1 + 6 && Math.abs(player.pos.z - TR.cz) < 40;
+const TR_ST = { // 체험대 자리
+  sol: { x: 2250, z: -10, title: '⚔️ 병사 체험 · 허수아비 쓰러뜨리기', goal: '허수아비 5개를 쓰러뜨려요. 무기를 바꿔 가며 피해를 비교해 봐요' },
+  eng: { x: 2270, z: -10, title: '🔨 공병 체험 · 성문 지키기', goal: '도깨비가 성문을 두드려요! 성문 앞에서 E를 눌러 성문을 가득 고쳐요' },
+  med: { x: 2290, z: -10, title: '🌿 의원 체험 · 다친 친구 치료', goal: '다친 친구 곁에서 E! 쓰러진 친구는 일으키고, 다친 친구는 체력을 채워요' },
+  sch: { x: 2256, z: 10, title: '📜 책사 체험 · 스킬 세 가지', goal: '🔥 화공으로 성문을 맞히고 · 📯 나팔로 깃발까지 달리고 · 🛡️ 방패진으로 화살을 막아요' },
+  smith: { x: 2284, z: 10, title: '⚒️ 대장장이 체험 · 갑옷 입히기', goal: '친구 두 명 곁에서 E를 눌러 가죽 갑옷 → 철 갑옷을 입혀 줘요' },
+};
+const trw = { group: null, role: '', dummies: [], gate: null, mates: [], balls: [], weap: 'bow', cool: 0, horn: 0, shield: 0, flag: null, done: {}, gateHp: 0, gateT: 0, goblin: null, arrows: 0, arrowT: 0, myHp: 5, key: '', fireGate: null };
+function trDummy(g, x, z) { // 짚 허수아비
+  const d = new THREE.Group(); d.position.set(x, 0, z); g.add(d); const o = { solid: false };
+  cyl(d, 0.08, 1.8, 0x7A5436, 0, 0.9, 0, o); mesh(SPH_LO, d, 0.45, 0.6, 0.35, 0xD9B86A, 0, 1.45, 0, { solid: false, flat: true }); ball(d, 0.3, 0xE8CC80, 0, 2.15, 0, o); box(d, 1.3, 0.12, 0.12, 0x7A5436, 0, 1.6, 0, o);
+  const bar = sgHpBar(); bar.position.y = 2.8; d.add(bar); return { g: d, bar, hp: 6, max: 6, x, z };
+}
+function trMate(g, x, z, shirt) { const a = makeAvatar(0, shirt, (shirt + 1) % 4, shirt % 4, g); a.g.position.set(x, 0.12, z); const bar = sgHpBar(); bar.position.y = 3.2; a.g.add(bar); a.badge.userData.set(['🙂 연습 친구']); return { a, bar, x, z }; }
+function buildTrainCamp() {
+  const g = new THREE.Group(); g.name = 'TrainCamp'; scene.add(g); trw.group = g; const o = { solid: false };
+  lawnPlane(g, TR.x1 - TR.x0 + 80, TR.z1 - TR.z0 + 80, TR.cx, TR.cz, 0x86C95E, -0.02);
+  box(g, TR.x1 - TR.x0, 0.05, TR.z1 - TR.z0, 0xCDB98E, TR.cx, 0.02, TR.cz, { solid: false, surf: 'soil' });
+  for (const [x0, z0, x1, z1] of [[TR.x0, TR.z0, TR.x1, TR.z0], [TR.x0, TR.z1, TR.x1, TR.z1], [TR.x0, TR.z0, TR.x0, TR.z1], [TR.x1, TR.z0, TR.x1, TR.z1]]) { const len = Math.hypot(x1 - x0, z1 - z0); for (let t = 0; t <= len; t += 1.2) cyl(g, 0.13, 1.6, 0x7A5A36, x0 + (x1 - x0) * t / len, 0.8, z0 + (z1 - z0) * t / len, o); box(g, x1 !== x0 ? len : 0.12, 0.12, x1 !== x0 ? 0.12 : len, 0x7A5A36, (x0 + x1) / 2, 1.2, (z0 + z1) / 2, o); }
+  makeLabel(g, ['🎯 역할 체험장', '체험대 앞에서 E · 성 공방전 전에 연습해요'], 1.3, TR.cx, 7, TR.cz - 3);
+  for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; makeTree(TR.cx + Math.cos(a) * 52, TR.cz + Math.sin(a) * 46, g); }
+  // 체험대: 깃발 + 간판
+  for (const [k, st] of Object.entries(TR_ST)) {
+    const R = SG_ROLES[k]; cyl(g, 1.3, 0.1, 0xE8DCC0, st.x, 0.06, st.z, o); box(g, 0.15, 2.4, 0.15, C.wood, st.x - 1.4, 1.2, st.z, o);
+    signPlane(g, [`${R.icon} ${R.name}`], 2.4, 0.7, st.x, 2.2, st.z + (st.z < 0 ? 0.1 : -0.1), { font: 52, pad: 4, fg: '#FFFFFF', bg: '#8A5A34', stroke: false }).rotation.y = st.z < 0 ? 0 : Math.PI;
+    addInteract({ pos: new V3(st.x, 1, st.z + (st.z < 0 ? 1.4 : -1.4)), r: 2.4, text: () => trRegion() ? (trw.role === k ? ['체험 그만 ✖', R.name] : [`${R.name} 체험 ▶`, `${trw.done[k] || bag.trial?.[k] ? '✅ 해 봤어요 · ' : ''}${st.goal.slice(0, 26)}…`]) : null, run: () => trw.role === k ? trStop() : trStart(k) });
+  }
+  // ⚔️ 허수아비 줄
+  for (let i = 0; i < 5; i++) trw.dummies.push(trDummy(g, 2242 + i * 4, -24));
+  // 🔨 연습 성문 + 도깨비
+  { const gx = 2270, gz = -22, gg = new THREE.Group(); gg.position.set(gx, 0, gz); g.add(gg);
+    for (const s of [-1, 1]) { box(gg, 2.6, 3.2, 1.0, 0xA8A294, s * 3.1, 1.6, 0, { surf: 'stone' }); }
+    box(gg, 3.6, 2.8, 0.35, 0x7A4A2A, 0, 1.4, 0, { surf: 'wood' }); box(gg, 8.8, 0.6, 1.2, 0x9A9486, 0, 3.4, 0, { solid: false, surf: 'stone' });
+    const bar = sgHpBar(); bar.position.set(0, 4.4, 0); bar.scale.set(2.6, 0.55, 1); gg.add(bar); trw.gate = { g: gg, bar, x: gx, z: gz };
+    const gob = makeAvatar(0, 5, 1, 4, g); gob.g.position.set(gx, 0.12, gz - 3); gob.badge.userData.set(['👹 도깨비']); gob.g.visible = false; trw.goblin = gob;
+    addInteract({ pos: new V3(gx, 1, gz + 1.6), r: 2.4, text: () => trw.role === 'eng' ? ['성문 고치기 🔨', `+${4 + 2 * statTier('eng')} · ${trw.gateHp}/30`] : null, run: trRepair }); }
+  // 🌿 다친 친구 · ⚒️ 갑옷 받을 친구
+  for (const [i, x] of [2286, 2290, 2294].entries()) trw.mates.push({ ...trMate(g, x, -20, i + 1), role: 'med' });
+  for (const [i, x] of [2280, 2288].entries()) trw.mates.push({ ...trMate(g, x, 20, i + 3), role: 'smith' });
+  trw.mates.forEach((m, i) => addInteract({ pos: new V3(m.x, 1, m.z + (m.z < 0 ? 1.2 : -1.2)), r: 1.9, text: () => trw.role === m.role ? (m.role === 'med' ? (m.down ? ['일으키기 🌿', '쓰러진 친구'] : m.hp < m.max ? ['상처 치료 🩹', `❤️ +${2 + statTier('read')} (${m.hp}/${m.max})`] : null) : (m.arm < 2 ? ['갑옷 입혀 주기 ⚒️', SG_ARM[m.arm + 1].name] : null)) : null, run: () => trCare(i) }));
+  // 📜 책사: 과녁 성문 + 깃발
+  { const gx = 2256, gz = 24, gg = new THREE.Group(); gg.position.set(gx, 0, gz); g.add(gg); box(gg, 5, 3, 0.8, 0x9A9486, 0, 1.5, 0, { surf: 'stone' }); box(gg, 2.4, 2.4, 0.3, 0x7A4A2A, 0, 1.2, -0.5, o);
+    const bar = sgHpBar(); bar.position.set(0, 4, 0); bar.scale.set(2.2, 0.47, 1); gg.add(bar); trw.fireGate = { g: gg, bar, hp: 30 };
+    const fl = new THREE.Group(); fl.position.set(2242, 0, 6); g.add(fl); cyl(fl, 0.06, 3, 0xEEEEEE, 0, 1.5, 0, o); box(fl, 1.2, 0.7, 0.05, 0xE2584A, 0.6, 2.6, 0, o); fl.visible = false; trw.flag = fl; }
+  registerSolids(g, 'train');
+  makePortal(TR.cx, TR.z1 - 4, ['🌀 광장 포털', '우리 마을 광장으로 · E'], 0x3FB6A8, ['포털 타기 🌀', '우리 마을 광장으로'], () => travelTo('home', true), () => trRegion());
+  trReset();
+}
+function trReset() { // 모두 처음 모습으로
+  for (const d of trw.dummies) { d.hp = d.max; d.g.rotation.x = 0; d.bar.userData.draw(d.hp, d.max, 0); }
+  trw.gateHp = 8; trw.gate.bar.userData.draw(trw.gateHp, 30, 0); trw.goblin.g.visible = false;
+  const med = trw.mates.filter(m => m.role === 'med'); [[0, 5, true], [2, 5, false], [3, 6, false]].forEach(([hp, max, down], i) => Object.assign(med[i], { hp, max, down }));
+  for (const m of trw.mates.filter(m => m.role === 'smith')) Object.assign(m, { arm: 0, hp: 6, max: 6, down: false });
+  for (const m of trw.mates) { m.a.g.rotation.z = m.down ? 1.45 : 0; m.bar.userData.draw(m.down ? 0 : m.hp, m.max, m.arm || 0); }
+  trw.fireGate.hp = 30; trw.fireGate.bar.userData.draw(30, 30, 0); trw.flag.visible = false; trw.horn = 0; trw.shield = 0; trw.arrows = 0; trw.myHp = 5; trw.sch = {};
+}
+function trStart(k) {
+  trStop(true); trReset(); trw.role = k; trw.score = 0;
+  const st = TR_ST[k]; showBanner(st.title, st.goal, 4500);
+  if (k === 'eng') { trw.goblin.g.visible = true; trw.gateT = performance.now(); }
+  trBar(true);
+}
+function trStop(quiet) { if (!trw.role) return; trw.role = ''; trw.goblin.g.visible = false; trw.flag.visible = false; $('trBar').classList.add('hidden'); if (!quiet) toast('🎯 체험을 그만했어요. 다른 체험대도 해 봐요!', 'info'); }
+function trDone(k, msg) {
+  const first = !bag.trial?.[k]; bag.trial ||= {}; bag.trial[k] = true; trw.done[k] = true; saveBag();
+  playSfx('fanfare'); burst(player.pos.clone().setY(2.6), RAINBOW, 50, 5, 2.5);
+  showBanner(`🎉 ${SG_ROLES[k].icon} ${SG_ROLES[k].name} 체험 완료!`, msg, 4500);
+  if (first) { const cap = capNow(), give = cap ? Math.max(0, Math.min(5, cap - earnToday())) : 5; if (give > 0) { bag.earn.n += give; earnShell(give); } earnMat(`${SG_ROLES[k].name} 체험`); }
+  setTimeout(() => { if (trw.role === k) trStop(true); }, 1500);
+}
+function trBar(force) {
+  const k = trw.role; $('trBar').classList.toggle('hidden', !k || !trRegion()); if (!k) return;
+  const W = WEAPONS[trw.weap], med = trw.mates.filter(m => m.role === 'med'), smith = trw.mates.filter(m => m.role === 'smith');
+  const info = k === 'sol' ? `⚔️ 허수아비 ${trw.dummies.filter(d => d.hp <= 0).length}/5 · ${W.icon} ${W.name} 피해 ${W.pd + 1 + statTier('math')} (무기 ${W.pd} + 병사 1${statTier('math') ? ` + 수학력 ${statTier('math')}` : ''})`
+    : k === 'eng' ? `🔨 성문 ${trw.gateHp}/30 · 도깨비가 3초마다 -2 · 성문 앞 E로 +${4 + 2 * statTier('eng')}`
+    : k === 'med' ? `🌿 치료한 친구 ${med.filter(m => !m.down && m.hp >= m.max).length}/3 · 치료량 ❤️ +${2 + statTier('read')}`
+    : k === 'sch' ? `📜 ${trw.sch.fire ? '✅' : '⬜'} 화공 · ${trw.sch.horn ? '✅' : '⬜'} 나팔 달리기 · ${trw.sch.shield ? '✅' : '⬜'} 방패진 · 내 ❤️ ${trw.myHp}/5`
+    : `⚒️ 철 갑옷 ${smith.filter(m => m.arm >= 2).length}/2 · 친구 곁에서 E`;
+  const key = info + trw.cool.toFixed(1) + trw.horn + trw.shield; if (!force && key === trw.key) return; trw.key = key;
+  $('trInfo').textContent = info;
+  $('trShoot').classList.toggle('hidden', k !== 'sol'); $('trWeap').classList.toggle('hidden', k !== 'sol'); $('trWeap').textContent = `${W.icon} 무기 바꾸기`;
+  $('trShoot').textContent = trw.cool > 0 ? `${W.icon} ${trw.cool.toFixed(1)}` : `${W.icon} 쏘기 (F)`;
+  for (const [id, s] of [['trFire', 'fire'], ['trHorn', 'horn'], ['trShield', 'shield']]) { $(id).classList.toggle('hidden', k !== 'sch'); $(id).disabled = !!trw.sch[s] && s !== 'horn'; }
+}
+// ⚔️ 병사: 앞쪽 허수아비를 겨눠 쏘기
+function trShoot() {
+  if (trw.role !== 'sol' || trw.cool > 0) return;
+  const W = WEAPONS[trw.weap], p = player.pos, f = sgAimDir(); let best = null, bs = 1e9;
+  for (const d of trw.dummies) { if (d.hp <= 0) continue; const dx = d.x - p.x, dz = d.z - p.z, dist = Math.hypot(dx, dz); if (dist > 32 || dist < 1.2) continue; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / dist))); if (ang > 1.1) continue; const sc = ang * 12 + dist; if (sc < bs) { bs = sc; best = d; } }
+  let dx = f.x, dz = f.z, v = W.v || 17, a = W.ang;
+  if (best) { const ex = best.x - p.x, ez = best.z - p.z, d = Math.hypot(ex, ez); dx = ex / d; dz = ez / d; const sol = sgSolve(W, d - 0.4, 1.4 - 1.7, 0); v = sol.v; a = sol.a; }
+  player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'cheer'); playSfx('jump'); trw.cool = W.cd;
+  const m = W === WEAPONS.sling ? mesh(SPH_LO, scene, 0.22, 0.2, 0.22, W.col, p.x, 1.7, p.z, { solid: false, flat: true, surf: null }) : (() => { const g = new THREE.Group(); cyl(g, 0.03, 0.9, 0x8A5A34, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); scene.add(g); return g; })();
+  trw.balls.push({ m, x: p.x + dx * 0.6, y: 1.7, z: p.z + dz * 0.6, vx: dx * v * Math.cos(a), vy: v * Math.sin(a), vz: dz * v * Math.cos(a), t: 0, dmg: W.pd + 1 + statTier('math') });
+}
+// 🔨 공병
+function trRepair() {
+  if (trw.role !== 'eng' || (trw.fixT || 0) > performance.now()) return; trw.fixT = performance.now() + 1100;
+  trw.gateHp = Math.min(30, trw.gateHp + 4 + 2 * statTier('eng')); trw.gate.bar.userData.draw(trw.gateHp, 30, 0); playAct(player.avatar, 'mine'); playSfx('build');
+  burst(new V3(trw.gate.x, 1.6, trw.gate.z + 0.6), [0xC9A65E, 0xFFFFFF], 14, 3, 1);
+  if (trw.gateHp >= 30) trDone('eng', '성문을 지켜 냈어요! 공병은 영어력이 오를수록 더 많이 고쳐요'); else trBar(true);
+}
+// 🌿 의원 · ⚒️ 대장장이
+function trCare(i) {
+  const m = trw.mates[i]; if (trw.role !== m.role) return;
+  if (m.role === 'med') {
+    if (m.down) { m.down = false; m.hp = m.max; m.a.g.rotation.z = 0; toast('🌿 쓰러진 친구를 일으켰어요! 체력이 가득 찼어요', 'success'); }
+    else { m.hp = Math.min(m.max, m.hp + 2 + statTier('read')); toast(`🩹 상처를 치료했어요! ❤️ ${m.hp}/${m.max}`, 'success'); }
+    playAct(player.avatar, 'clap'); playSfx('right'); burst(m.a.g.position.clone().setY(1.6), [0x7FD36A, 0xFFFFFF], 18, 3, 1.4);
+    m.bar.userData.draw(m.hp, m.max, 0);
+    if (trw.mates.filter(x => x.role === 'med').every(x => !x.down && x.hp >= x.max)) trDone('med', '모두 건강해졌어요! 의원은 독서력이 오를수록 더 많이 치료해요');
+  } else {
+    if (m.arm >= 2) return; m.arm++; m.max += 2; m.hp += 2; m.bar.userData.draw(m.hp, m.max, m.arm); playAct(player.avatar, 'mine'); playSfx('build');
+    toast(`⚒️ ${SG_ARM[m.arm].icon} ${SG_ARM[m.arm].name}! 체력이 ${m.max}이 됐어요 (실제 전쟁에서는 ⛓️ ${SG_ARM[m.arm].cost}이 들어요)`, 'success');
+    if (trw.mates.filter(x => x.role === 'smith').every(x => x.arm >= 2)) trDone('smith', '두 친구 모두 철 갑옷! 갑옷을 입으면 체력이 2씩 늘어요');
+  }
+  trBar(true);
+}
+// 📜 책사 스킬
+function trSkill(k) {
+  if (trw.role !== 'sch') return; const t = statTier('soc');
+  if (k === 'fire') { if (trw.sch.fire) return; const tgt = trw.fireGate; playSfx('cast'); let n = 0; const iv = setInterval(() => { n++; burst(tgt.g.position.clone().add(new V3(rand(-2.5, 2.5), rand(2, 5), rand(-1, 1))), [0xFF8A24, 0xFFE066, 0xE2584A], 22, 4, 1); if (n >= 6) { clearInterval(iv); tgt.hp = Math.max(0, tgt.hp - (8 + 2 * t)); tgt.bar.userData.draw(tgt.hp, 30, 0); trw.sch.fire = 1; toast(`🔥 화공! 성문 -${8 + 2 * t} (실제 전쟁에서는 ⛓️6 🍚6 · 45초에 한 번)`, 'success'); trSchCheck(); } }, 260); }
+  if (k === 'horn') { trw.horn = performance.now() + (10 + 2 * t) * 1000; trw.flag.visible = true; playSfx('fanfare'); toast(`📯 진격 나팔! ${10 + 2 * t}초 안에 빨간 깃발까지 달려가요 (발이 빨라져요)`, 'info'); }
+  if (k === 'shield') { if (trw.sch.shield) return; trw.shield = performance.now() + 12000; trw.arrows = 3; trw.arrowT = performance.now() + 800; playSfx('pick'); toast('🛡️ 방패진! 화살 3발이 날아와요 — 방패진 덕분에 피해가 1씩 줄어요', 'info'); }
+  trBar(true);
+}
+function trSchCheck() { if (trw.sch.fire && trw.sch.horn && trw.sch.shield) trDone('sch', '책사는 직접 쏘지 않고 꾀로 나라를 도와요! 사회력이 오를수록 스킬이 세져요'); else trBar(true); }
+function updateTrain(dt) {
+  if (!trw.group) return;
+  const near = trRegion() || (camera.position.x > TR.x0 - 30 && camera.position.x < TR.x1 + 30);
+  trw.group.visible = near; if (!near) { if (trw.role) trStop(true); return; }
+  for (const m of trw.mates) animateAvatar(m.a, 0, dt, true, false);
+  if (trw.goblin.g.visible) { animateAvatar(trw.goblin, 0.4, dt, true, false); trw.goblin.armR.rotation.x = -1.5 + Math.sin(time * 6) * 1.2; }
+  if (trw.cool > 0) trw.cool = Math.max(0, trw.cool - dt);
+  // 날아가는 돌·화살
+  for (const b of trw.balls) { b.t += dt; b.vy -= 9.8 * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.m.position.set(b.x, b.y, b.z); if (b.m.isGroup) b.m.lookAt(b.x + b.vx, b.y + b.vy, b.z + b.vz);
+    for (const d of trw.dummies) if (d.hp > 0 && Math.hypot(d.x - b.x, d.z - b.z) < 0.7 && b.y < 2.6) { b.dead = true; d.hp = Math.max(0, d.hp - b.dmg); d.bar.userData.draw(d.hp, d.max, 0); burst(new V3(b.x, b.y, b.z), [0xE8CC80, 0xFFFFFF], 16, 3, 1); toast(d.hp > 0 ? `🎯 명중! 피해 ${b.dmg} · 허수아비 ❤️ ${d.hp}/${d.max}` : '💥 허수아비를 쓰러뜨렸어요!', 'success'); if (d.hp <= 0) d.g.rotation.x = -1.4; break; }
+    if (b.y < 0.1) b.dead = true; }
+  for (const b of trw.balls.filter(b => b.dead || b.t > 4)) scene.remove(b.m); trw.balls = trw.balls.filter(b => !b.dead && b.t <= 4);
+  if (trw.role === 'sol' && trw.dummies.every(d => d.hp <= 0) && !trw.solDone) { trw.solDone = true; trDone('sol', '허수아비를 모두 쓰러뜨렸어요! 쇠뇌 > 활 > 돌팔매 순서로 세요'); }
+  if (trw.role !== 'sol') trw.solDone = false;
+  // 🔨 도깨비가 성문을 두드려요
+  if (trw.role === 'eng' && performance.now() - trw.gateT > 3000) { trw.gateT = performance.now(); if (trw.gateHp > 2) { trw.gateHp -= 2; trw.gate.bar.userData.draw(trw.gateHp, 30, 0); burst(new V3(trw.gate.x, 1.5, trw.gate.z - 0.4), [0x8A6A44, 0xFFFFFF], 10, 2, 1); playSfx('oops'); } }
+  // 📯 나팔 깃발
+  if (trw.role === 'sch' && trw.flag.visible) { if (Math.hypot(player.pos.x - 2242, player.pos.z - 6) < 2) { trw.flag.visible = false; trw.horn = 0; trw.sch.horn = 1; toast('📯 깃발 도착! 나팔을 불면 우리 나라가 빨리 달리고 거점도 빨리 차지해요', 'success'); trSchCheck(); } else if (trw.horn && performance.now() > trw.horn) { trw.flag.visible = false; trw.horn = 0; toast('⏱ 시간이 다 됐어요. 📯 나팔을 다시 불어 봐요!', 'warn'); trBar(true); } }
+  // 🛡️ 방패진 화살
+  if (trw.role === 'sch' && trw.arrows > 0 && performance.now() > trw.arrowT) { trw.arrowT = performance.now() + 900; trw.arrows--; const dmg = Math.max(1, 2 - 1); trw.myHp = Math.max(1, trw.myHp - dmg); burst(player.pos.clone().setY(1.6), [0xFFFFFF, 0x9ED8FF], 12, 2, 1); playSfx('oops'); toast(`🏹 화살! 🛡️ 방패진 덕분에 피해 2 → ${dmg}`, 'info'); if (!trw.arrows) { trw.sch.shield = 1; trSchCheck(); } }
+  trBar();
+}
+function initTrainUI() {
+  $('trShoot').addEventListener('pointerdown', e => { e.preventDefault(); trShoot(); });
+  $('trWeap').onclick = () => { const ks = Object.keys(WEAPONS); trw.weap = ks[(ks.indexOf(trw.weap) + 1) % ks.length]; trBar(true); };
+  $('trFire').onclick = () => trSkill('fire'); $('trHorn').onclick = () => trSkill('horn'); $('trShield').onclick = () => trSkill('shield');
+  $('trQuit').onclick = () => trStop();
+  addEventListener('keydown', e => { if (trw.role === 'sol' && e.key.toLowerCase() === 'f' && !e.repeat && !(e.target instanceof Element && e.target.matches('input, textarea, select'))) { e.preventDefault(); trShoot(); } });
 }
 
 
@@ -15920,7 +16232,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildFundWorld(); initEconUI(); initHomeUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
@@ -15939,11 +16251,11 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
-  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateHide(dt); updatePest(dt); }
+  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
-  if (joined) { updateHist(dt); updateSiege(dt); }
-  { const ip = joined && (bdm.on || !!ev.game || (!!S.siege?.on && siegeRegion() && !!sgMine())); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
+  if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); }
+  { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine())); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
   updateFund(dt);
   if (joined) updateHome(dt);
   updateFx(dt); grassWind.value = time; waterTime.value = time;
