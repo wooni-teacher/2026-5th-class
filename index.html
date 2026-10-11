@@ -510,6 +510,12 @@
   #teachBar { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; padding: 8px; }
   #teachBar .btn { font-size: 17px; padding: 8px 12px; background: #fff; }
   #teachBar #tbGather { background: var(--leaf); color: #fff; }
+  #teachBar #tbSpec[aria-pressed="true"] { background: #5AB4FF; color: #fff; }
+  #specBtn { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); z-index: 6; padding: 10px 14px; }
+  #specBar { position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 7; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; align-items: center; max-width: calc(100vw - 24px); }
+  #specBar .spec-head { font-size: 15px; } #specBar #specWho { color: #2F6FB0; font-weight: 800; margin-left: 4px; }
+  #specBar .btn { padding: 6px 12px; min-width: 44px; } #specBar .spec-tip { font-size: 12px; color: #6B5E55; text-align: center; }
+  body.spec-on #sgBar, body.spec-on #missionDock, body.spec-on #guideChip, body.spec-on #controls, body.spec-on #decorBtn, body.spec-on #bdmBar, body.spec-on #trBar { display: none !important; }
   #teachBar #tbFreeze[aria-pressed="true"] { background: var(--sun); }
   #bigMap { border: 1.5px solid var(--line-2); border-radius: 12px; display: block; }
   .map-legend { margin: 10px 0; font-size: 15px; }
@@ -864,6 +870,13 @@
 <div id="teachBar" class="sticker hidden" role="group" aria-label="선생님 수업 도구">
   <button class="btn" id="tbGather">📣 모두 모여</button>
   <button class="btn" id="tbFreeze" aria-pressed="false">✋ 잠깐 멈춤</button>
+  <button class="btn" id="tbSpec" aria-pressed="false">👁️ 관전</button>
+</div>
+<button class="btn sticker hidden" id="specBtn">👁️ 하늘에서 관전하기</button>
+<div id="specBar" class="sticker hidden" role="group" aria-label="관전 모드">
+  <div class="spec-head"><b>👁️ 관전 중</b> <span id="specWho">전체 보기</span></div>
+  <div class="row-center wrap" style="gap:6px"><button class="btn" id="specPrev" aria-label="앞 사람 따라가기">◀</button><button class="btn" id="specNext" aria-label="다음 사람 따라가기">▶</button><button class="btn" id="specAll">🗺️ 전체</button><button class="btn" id="specIn" aria-label="가까이">➕</button><button class="btn" id="specOut" aria-label="멀리">➖</button><button class="btn danger" id="specExit">✖ 나가기</button></div>
+  <div class="spec-tip">이동 WASD·조이스틱 · 돌리기 끌기 · 높이 휠/➕➖ · ◀▶ 친구 따라가기</div>
 </div>
 <div id="travelFx" class="hidden" role="status" aria-live="polite"><div class="tv-sea"><span class="tv-boat">⛵</span></div><b id="travelText"></b></div>
 <div id="kiteBar" class="sticker hidden" role="group" aria-label="연날리기">
@@ -1203,17 +1216,18 @@
 
     <h3>⚔️ 성 공방전 (따로 된 큰 전쟁터)</h3>
     <p class="hint" id="tpSgNow"></p>
-    <p class="hint">시대를 고르면 나라와 무기가 정해져요 (선사: 부족·🪨돌팔매 · 삼국: 🏹활 · 남북국·후삼국: 🎯쇠뇌). 나라를 정하고 시작하면 학생마다 역할(⚔️병사·🔨공병·🌿의원·📜책사)을 골라요. 전쟁터의 거점 5곳(🏯산성·⛏️철광산·🌾곡창·⛵나루터·🔥봉수대)을 차지하면 3초마다 점수와 자원이 쌓이고, 마지막 1분은 점수 두 배예요. 성 안 🏛️ 나라 창고에서 문제를 풀어 보급을 받고, 자원으로 성벽 강화·목책·강철 무기·화공을 해요. 상대 성문을 부수면 +15점과 자원을 빼앗아요. 이 기기(선생님)가 거점 차지를 계산하니 끝날 때까지 이 화면을 켜 두세요. 나라 점수만 보이고 끝내면 지워져요. 🤖 컴퓨터 병사를 넣으면 사람이 적어도 전쟁을 할 수 있어요 (컴퓨터 병사도 이 기기가 움직여요).</p>
+    <p class="hint">시대를 고르면 나라와 무기가 정해져요 (선사: 부족·🪨돌팔매 · 삼국: 🏹활 · 남북국·후삼국: 🎯쇠뇌). 나라를 정하고 시작하면 학생마다 역할(⚔️병사·🔨공병·🌿의원·📜책사)을 골라요. 전쟁터의 거점 6곳(🏯산성·⛏️철광산 두 곳·🌾곡창·⛵나루터·🔥봉수대)을 차지하면 3초마다 점수와 자원이 쌓이고, 마지막 1분은 점수 두 배예요. 성 안 🏛️ 나라 창고에서 문제를 풀어 보급을 받고, 자원으로 성벽 강화·목책·강철 무기·화공을 해요. 상대 성문을 부수면 +15점과 자원을 빼앗아요. 이 기기(선생님)가 거점 차지를 계산하니 끝날 때까지 이 화면을 켜 두세요. 나라 점수만 보이고 끝내면 지워져요. 🤖 컴퓨터 병사를 넣으면 사람이 적어도 전쟁을 할 수 있어요 (컴퓨터 병사도 이 기기가 움직여요).</p>
     <div class="row-center wrap">
       <label class="sr-only" for="tpSgSet">시대</label><select id="tpSgSet" class="tinput" style="width:auto;max-width:100%"></select>
       <label class="sr-only" for="tpSgMin">시간</label><select id="tpSgMin" class="tinput" style="width:auto"><option value="7">7분</option><option value="10" selected>10분</option><option value="15">15분</option></select>
       <label class="sr-only" for="tpSgHp">성문 체력</label><select id="tpSgHp" class="tinput" style="width:auto"><option value="20">성문 20</option><option value="30" selected>성문 30</option><option value="40">성문 40</option></select>
       <label class="sr-only" for="tpSgBots">컴퓨터 병사</label><select id="tpSgBots" class="tinput" style="width:auto" title="나라마다 컴퓨터(🤖) 병사 수"><option value="0" selected>🤖 없음</option><option value="1">🤖 나라마다 1</option><option value="2">🤖 나라마다 2</option><option value="3">🤖 나라마다 3</option><option value="4">🤖 나라마다 4</option></select>
     </div>
+    <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpSgMe"> 🧑‍🏫 선생님도 한 나라로 참여하기 (학생·🤖와 함께 싸워요)</label>
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
     <div id="tpSgList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
-    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn" id="tpSgWatch" style="background:#fff">👁️ 하늘에서 관전</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpBlkRefill" style="background:#fff">⛰️ 블록 산 다시 채우기</button><button class="btn danger" id="tpMathReset">⛏️ 광산 마을 처음으로</button></div>
@@ -3740,6 +3754,7 @@ function updatePlayer(dt) {
   const x0 = p.x, z0 = p.z; // 움직이기 전 위치 (경계에서 되돌릴 때 사용)
   let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
+  if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (isFrozen() || kite.active || hv.travel || hideBlind() || sgFrozen()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
@@ -3806,6 +3821,7 @@ function updateCamera(dt) {
       camera.lookAt(look); return;
     }
   }
+  if (spec.on) { specCamera(dt); return; } // 👁️ 관전 모드: 하늘에서
   if (bdmCamera(dt)) return; // 🏸 배드민턴: 1인칭
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
   const inCls = (player.pos.x > 600 && player.pos.x < 700 && player.pos.z < 30) || (player.pos.x > 740 && player.pos.x < 1000) || (player.pos.x > 1410 && player.pos.x < 1610), cd = inCls ? Math.min(camDist, 9) : camDist, cp = inCls ? Math.max(camPitch, 0.62) : camPitch; // 교실: 벽 위에서 내려다봐요
@@ -3815,8 +3831,59 @@ function updateCamera(dt) {
     t.z + Math.cos(camYaw) * Math.cos(cp) * cd,
   );
   want.y = Math.max(want.y, terrainH(want.x, want.z) + 0.9); // 산비탈 속으로 들어가지 않게
+  // 🎯 전쟁터·체험장에서 겨눌 때: 어깨 너머로 살짝 비켜서 봐요 (머리·이름표가 겨눈 곳을 가리지 않게, 쏘는 방향은 그대로)
+  camShoulder += ((typeof sgw !== 'undefined' && sgw.aimMark?.g.visible ? 1.5 : 0) - camShoulder) * Math.min(1, dt * 6);
+  if (camShoulder > 0.01) { const fw = camShoulder * 1.1, rx = Math.cos(camYaw) * camShoulder - Math.sin(camYaw) * fw, rz = -Math.sin(camYaw) * camShoulder - Math.cos(camYaw) * fw; want.x += rx; want.z += rz; t.x += rx; t.z += rz; }
   camera.position.lerp(want, 1 - Math.exp(-dt * 10));
   camera.lookAt(t);
+}
+let camShoulder = 0;
+/* 👁️ 관전 모드: 하늘에서 내려다보는 카메라예요. 몸은 그 자리에 그대로 있고, 화면만 날아다녀요.
+   · 선생님: 왼쪽 '👁️ 관전' 버튼(언제든) · 관리화면 성 공방전 '👁️ 하늘에서 관전'
+   · 학생: 성 공방전 중 나라가 없을 때(늦게 들어온 친구) '👁️ 하늘에서 관전하기'
+   · WASD·조이스틱으로 날아다니고, 끌어서 돌리고, 휠·➕➖로 높이, ◀▶로 친구(🤖 포함)를 따라가요 */
+const spec = { on: false, x: 0, z: 0, h: 42, follow: null };
+function specPeople() { // 따라가 볼 사람: 전쟁 중이면 나라가 정해진 사람과 🤖, 아니면 접속한 친구 모두
+  const war = !!S.siege?.on, out = [];
+  if (war ? sgMine() : true) out.push({ id: 'me', nm: `나 (${myNick || '나'})`, t: war ? sgMine() : 0 });
+  for (const [u, r] of remotes) if (!war || sgTeamOf(u)) out.push({ id: u, nm: nickOf(u, r.target) || '친구', t: war ? sgTeamOf(u) : 0 });
+  if (war) for (const [id, b] of Object.entries(sgb.list)) out.push({ id: 'bot:' + id, nm: sgBotName(b), t: b.t });
+  return out;
+}
+function specPos(id) { if (id === 'me') return player.pos; if (id?.startsWith('bot:')) return sgb.av[id.slice(4)]?.g.position || null; return remotes.get(id)?.pos || null; }
+function specStart() {
+  if (!joined) return; closeModals?.();
+  const sg = S.siege && (isTeacher || !sgMine()) && !siegeRegion();
+  Object.assign(spec, { on: true, follow: null, h: sg ? 108 : 42, x: sg ? SG.cx : player.pos.x, z: sg ? SG.cz : player.pos.z });
+  document.body.classList.add('spec-on'); renderSpec(); toast('👁️ 관전 모드예요. 몸은 그 자리에 그대로 있어요', 'info');
+}
+function specStop() { if (!spec.on) return; spec.on = false; spec.follow = null; document.body.classList.remove('spec-on'); renderSpec(); }
+function specCycle(d) {
+  const L = specPeople(); if (!L.length) { toast('따라갈 친구가 없어요', 'info'); return; }
+  let i = L.findIndex(p => p.id === spec.follow); i = i < 0 ? (d > 0 ? 0 : L.length - 1) : (i + d + L.length) % L.length;
+  spec.follow = L[i].id; if (spec.h > 40) spec.h = 26; renderSpec();
+}
+function renderSpec() {
+  $('specBar').classList.toggle('hidden', !spec.on); $('tbSpec')?.setAttribute('aria-pressed', String(spec.on));
+  if (!spec.on) return; const p = spec.follow && specPeople().find(q => q.id === spec.follow);
+  const N = p?.t && S.siege ? sgSet().nat[p.t - 1] : null; $('specWho').textContent = p ? `${N ? N.icon + ' ' : ''}${p.nm} 따라가는 중` : '전체 보기';
+}
+function specPan(ix, iz, dt) {
+  if (!ix && !iz) return; if (spec.follow) { spec.follow = null; renderSpec(); }
+  const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw), v = (10 + spec.h * 0.7) * dt;
+  spec.x += (fx * iz + rx * ix) * v; spec.z += (fz * iz + rz * ix) * v;
+}
+function specCamera(dt) {
+  if (spec.follow) { const p = specPos(spec.follow); if (p) { spec.x += (p.x - spec.x) * Math.min(1, dt * 6); spec.z += (p.z - spec.z) * Math.min(1, dt * 6); } else { spec.follow = null; renderSpec(); } }
+  const t = new V3(spec.x, 0.5, spec.z), cp = clamp(0.7 + camPitch * 0.55, 0.78, 1.45), h = spec.h;
+  const want = new V3(t.x + Math.sin(camYaw) * Math.cos(cp) * h, t.y + Math.sin(cp) * h, t.z + Math.cos(camYaw) * Math.cos(cp) * h);
+  camera.position.lerp(want, 1 - Math.exp(-dt * 5)); camera.lookAt(t);
+}
+function specUi() { // 버튼 보이기 (매 프레임 가볍게)
+  const show = !isTeacher && !spec.on && !!S.siege?.on && !sgMine();
+  if (specUi.last !== show) { specUi.last = show; $('specBtn').classList.toggle('hidden', !show); }
+  if (spec.on && !isTeacher && S.siege?.on && sgMine() && !specUi.told) { specUi.told = true; specStop(); toast('⚔️ 나라가 정해졌어요! 관전을 마치고 싸우러 가요', 'success'); sgSpawn(); }
+  if (!S.siege?.on) specUi.told = false;
 }
 
 /* =====================================================================
@@ -4494,7 +4561,7 @@ const endDrag = e => {
 };
 canvas.addEventListener('pointerup', endDrag);
 canvas.addEventListener('pointercancel', endDrag);
-canvas.addEventListener('wheel', e => { camDist = clamp(camDist + e.deltaY * 0.01, 5, 20); }, { passive: true });
+canvas.addEventListener('wheel', e => { if (spec.on) spec.h = clamp(spec.h + e.deltaY * 0.05, 12, 120); else camDist = clamp(camDist + e.deltaY * 0.01, 5, 20); }, { passive: true });
 
 const stick = $('stick'), knob = $('knob');
 let joyId = null;
@@ -13321,6 +13388,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1011b', d: '10월 11일 (저녁)', items: ['⛏️ 전쟁터에 철광산이 하나 더 생겼어요 (철광산①·②) · 🔥 봉수대는 조금 옆으로 옮겼어요', '🧑‍🏫 선생님도 한 나라에 들어가 함께 싸울 수 있어요', '👁️ 관전 모드: 하늘에서 전쟁터를 내려다봐요 · 나라가 없을 때 \'하늘에서 관전하기\' 버튼 · ◀▶로 친구를 따라가요'] },
+  { id: '1011a', d: '10월 11일', items: ['🏹 병사·공병·의원은 화면이 보는 방향으로 쏴요 · 바닥의 🎯 표시(빛기둥)가 떨어질 곳이에요 · 화면을 낮게 눕히면 멀리, 내려다보면 가까이 · 표시 가까이에 상대가 있으면 빨갛게 바뀌며 맞춰 줘요', '📜 책사 스킬 효과: 📯 나팔 = 우리 나라 발밑 금빛 고리 · 🛡️ 방패진 = 파란 방패 막 · 🔥 화공 = 하늘에서 불화살 비', '🔨 공병 성문 고치기는 한 번 고치면 5초 쉬어요'] },
   { id: '1010d', d: '10월 10일 (한밤)', items: ['🤖 성 공방전에 컴퓨터 병사가 함께 싸워요! 선생님이 나라마다 0~4명을 정해요 · 거점을 차지하고, 활을 쏘고, 성문을 공격해요 (🤖 공병은 우리 성문을 고쳐요)', '🎯 컴퓨터 병사도 맞히면 체력이 줄고, 쓰러지면 잠시 뒤 성에서 다시 나와요'] },
   { id: '1010c', d: '10월 10일 (밤 늦게)', items: ['🎯 역할 체험장이 생겼어요! 학교 앞 포털에서 가요 · 병사·공병·의원·책사·대장장이를 혼자 미리 연습해요 (처음 끝내면 🐚 +5)'] },
   { id: '1010b', d: '10월 10일 (밤)', items: ['⚔️ 성 공방전이 따로 된 큰 전쟁터에서 열려요 · 숲과 바위 뒤에 숨을 수 있어요', '❤️ 머리 위에 체력 막대! 무기마다 피해가 달라요 (돌팔매 2 · 활 3 · 쇠뇌 4)', '⚒️ 새 역할 대장장이: 갑옷을 만들어 친구에게 입혀 줘요 · 📜 책사는 스킬(나팔·방패진·화공)로 싸워요', '📊 내 능력치(영어력·사회력·수학력·독서력)가 생겼어요 · 공성전 역할이 강해져요', '📜 서당 안으로 들어가 방석에 앉으면 사회 학습지로 공부해요 · 🏛️ 지은 시대 건축물 안에서 시대 퀴즈', '🏋️ 영어 훈련소: 단어·문장 학습지와 쓰기 연습 · 영어 퀴즈에 ✍️ 쓰기 문제(보상 2배)', '⚾ 야구장 거리가 미로로! 길 안내를 순서대로 따라가요'] },
@@ -15247,7 +15316,7 @@ function openStats() {
 }
 
 /* ---------- ⚔️ 성 공방전 2 — 삼국 쟁탈전 (거점 · 자원 · 역할 · 성벽 공사) ----------
-   · 전쟁터 가운데 🏯 산성과 둘레 ⛏️ 철광산 · 🌾 곡창 · ⛵ 나루터 · 🔥 봉수대 — 우리 나라 사람이 동그라미 안에 서 있으면 깃발이 올라가 차지해요 (상대가 같이 있으면 멈춰요)
+   · 전쟁터 가운데 🏯 산성과 둘레 ⛏️ 철광산 두 곳 · 🌾 곡창 · ⛵ 나루터 · 🔥 봉수대 — 우리 나라 사람이 동그라미 안에 서 있으면 깃발이 올라가 차지해요 (상대가 같이 있으면 멈춰요)
    · 차지한 거점은 3초마다 나라 점수와 자원(🪵 목재 · ⛓️ 철 · 🍚 군량)을 줘요. 마지막 1분은 '결전' — 점수 두 배
    · 역할: ⚔️ 병사(시대 무기, 성문 피해 2배) · 🔨 공병(성문 수리·성벽 강화·목책) · 🌿 의원(다친 친구 바로 치료) · 📜 책사(문제 보급 2배·화공·진격 나팔)
    · 시대 무기: 선사 🪨 돌팔매 · 삼국 🏹 활 · 남북국/후삼국 🎯 쇠뇌 · 각 성과 산성에 🪨 투석기
@@ -15291,10 +15360,11 @@ const SG_LAYOUT = { // 성 자리: [x, z, 성문 방향]
 };
 const SG_SITES = [
   { k: 'fort', name: '산성', icon: '🏯', x: sgP(520, 98)[0], z: sgP(520, 98)[1], pts: 2, res: null, desc: '3초마다 2점 · 투석기' },
-  { k: 'mine', name: '철광산', icon: '⛏️', x: sgP(544, 76)[0], z: sgP(544, 76)[1], pts: 1, res: 'i', desc: '⛓️ 철 +2' },
+  { k: 'mine', name: '철광산①', icon: '⛏️', x: sgP(544, 76)[0], z: sgP(544, 76)[1], pts: 1, res: 'i', desc: '⛓️ 철 +2' },
+  { k: 'mine2', name: '철광산②', icon: '⛏️', x: sgP(496, 122)[0], z: sgP(496, 122)[1], pts: 1, res: 'i', desc: '⛓️ 철 +2', flip: true }, // 철이 많이 들어서 반대쪽에 하나 더
   { k: 'farm', name: '곡창', icon: '🌾', x: sgP(496, 76)[0], z: sgP(496, 76)[1], pts: 1, res: 'f', desc: '🍚 군량 +2 · 다쳐도 빨리 일어나요' },
   { k: 'ferry', name: '나루터', icon: '⛵', x: sgP(544, 122)[0], z: sgP(544, 122)[1], pts: 1, res: 'w', desc: '🪵 목재 +2 · 빨리 달려요' },
-  { k: 'beacon', name: '봉수대', icon: '🔥', x: sgP(496, 122)[0], z: sgP(496, 122)[1], pts: 1, res: null, desc: '1점 · 거점을 빨리 차지해요' },
+  { k: 'beacon', name: '봉수대', icon: '🔥', x: sgP(508, 131)[0], z: sgP(508, 131)[1], pts: 1, res: null, desc: '1점 · 거점을 빨리 차지해요' },
 ];
 // 🌲 지형지물: 숲(나무 무리)·바위 언덕 — 몸도 막고, 돌·화살도 막아요 (숨어서 싸우기)
 const SG_COVER = [
@@ -15376,10 +15446,10 @@ function buildSiegeField() {
       box(g, along ? 3.4 : 2.6, 0.18, along ? 2.6 : 3.4, 0x9C6A3E, bx, 0.18, bz, o); for (const s of [-1, 1]) box(g, along ? 3.4 : 0.12, 0.6, along ? 0.12 : 3.4, 0x7A5436, bx + (along ? 0 : s * 1.3), 0.55, bz + (along ? s * 1.3 : 0), o); }
   }
   // ⛏️ 철광산: 바위 언덕 + 굴 + 광석 더미 + 수레
-  { const s = SG_SITE.mine; for (const [dx, dz, r] of [[0, -3.6, 3.2], [-2.8, -2.6, 2.2], [2.9, -2.8, 2.4], [1.2, -4.8, 2]]) mesh(SPH_MID, g, r, r * 0.8, r * 0.9, 0x8A8274, s.x + dx, r * 0.35, s.z + dz, { solid: false, flat: true });
-    box(g, 7, 2.6, 3.6, 0x8A8274, s.x, 1.3, s.z - 4).visible = false; mesh(SPH_MID, g, 1.1, 1.3, 0.5, 0x1E1915, s.x, 0.7, s.z - 2.2, { solid: false });
-    for (let k = 0; k < 7; k++) mesh(SPH_LO, g, 0.3, 0.25, 0.3, k % 2 ? 0x5A6878 : 0x9AA8B8, s.x + 2.5 + (k % 3) * 0.4, 0.2 + Math.floor(k / 3) * 0.2, s.z + 0.5 + (k % 2) * 0.4, { solid: false, flat: true });
-    box(g, 1.2, 0.6, 0.8, 0x7A5436, s.x - 2.6, 0.55, s.z + 0.6, o); for (const dz of [0.2, 1]) cyl(g, 0.25, 0.12, 0x3B3530, s.x - 2.6, 0.25, s.z + dz, { solid: false, rx: 0, rz: Math.PI / 2 }); }
+  for (const s of [SG_SITE.mine, SG_SITE.mine2]) { const f = s.flip ? -1 : 1; for (const [dx, dz, r] of [[0, -3.6, 3.2], [-2.8, -2.6, 2.2], [2.9, -2.8, 2.4], [1.2, -4.8, 2]]) mesh(SPH_MID, g, r, r * 0.8, r * 0.9, 0x8A8274, s.x + dx, r * 0.35, s.z + dz * f, { solid: false, flat: true });
+    box(g, 7, 2.6, 3.6, 0x8A8274, s.x, 1.3, s.z - 4 * f).visible = false; mesh(SPH_MID, g, 1.1, 1.3, 0.5, 0x1E1915, s.x, 0.7, s.z - 2.2 * f, { solid: false });
+    for (let k = 0; k < 7; k++) mesh(SPH_LO, g, 0.3, 0.25, 0.3, k % 2 ? 0x5A6878 : 0x9AA8B8, s.x + 2.5 + (k % 3) * 0.4, 0.2 + Math.floor(k / 3) * 0.2, s.z + (0.5 + (k % 2) * 0.4) * f, { solid: false, flat: true });
+    box(g, 1.2, 0.6, 0.8, 0x7A5436, s.x - 2.6, 0.55, s.z + 0.6 * f, o); for (const dz of [0.2, 1]) cyl(g, 0.25, 0.12, 0x3B3530, s.x - 2.6, 0.25, s.z + dz * f, { solid: false, rx: 0, rz: Math.PI / 2 }); }
   // 🌾 곡창: 논 + 높은 곳간
   { const s = SG_SITE.farm; for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { const px = s.x - 3.5 + c * 7, pz = s.z - 4 + r * 3; if (Math.hypot(px - s.x, pz - s.z) < 3) continue; box(g, 3, 0.05, 2.4, 0x6AA0C0, px, 0.04, pz, { solid: false, surf: null }); for (let k = 0; k < 18; k++) mesh(CONE, g, 0.07, 0.5, 0.07, 0x9AC050, px - 1.2 + (k % 6) * 0.48, 0.28, pz - 0.8 + Math.floor(k / 6) * 0.8, o); }
     const gx = s.x, gz = s.z - 4.5; for (const [dx, dz] of [[-1.2, -0.9], [1.2, -0.9], [-1.2, 0.9], [1.2, 0.9]]) box(g, 0.25, 1.2, 0.25, 0x7A5436, gx + dx, 0.6, gz + dz); box(g, 3, 1.6, 2.2, 0xC8A878, gx, 2.0, gz, { surf: 'wood' }); mesh(SPH, g, 2.2, 1.0, 1.7, HANOK.thatch, gx, 2.8, gz, { solid: false, surf: 'straw' }); }
@@ -15412,7 +15482,7 @@ function buildSiegeField() {
   }
   for (let t = 1; t <= 4; t++) { // 성마다: 창고 · 성문 수리 · 투석기 자리 (성을 지을 때 위치를 옮겨요)
     const camp = { pos: new V3(0, -99, 0), r: 2.6, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgStarted() && !sgWinner() ? ['나라 창고 🏛️', '문제 보급 · 역할 · 공사·계책'] : null, run: () => openSgStore() };
-    const fix = { pos: new V3(0, -99, 0), r: 2.6, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgMyRole() === 'eng' && sgStarted() && !sgWinner() && sgHp(t) > 0 && sgHp(t) < sgMax(t) ? ['성문 고치기 🔨', `공병 · 성문 +${4 + 2 * statTier('eng')} (${sgHp(t)}/${sgMax(t)})`] : null, run: () => sgRepair(t) };
+    const fix = { pos: new V3(0, -99, 0), r: 2.6, dy: 2.6, text: () => S.siege?.on && sgMine() === t && sgMyRole() === 'eng' && sgStarted() && !sgWinner() && sgHp(t) > 0 && sgHp(t) < sgMax(t) ? (sgFixLeft() ? ['성문 고치기 ⏳', `${sgFixLeft()}초 뒤에 다시 고칠 수 있어요 (${sgHp(t)}/${sgMax(t)})`] : ['성문 고치기 🔨', `공병 · 성문 +${4 + 2 * statTier('eng')} (${sgHp(t)}/${sgMax(t)}) · 고친 뒤 5초 쉬어요`]) : null, run: () => sgRepair(t) };
     const cat = { pos: new V3(0, -99, 0), r: 2.8, dy: 3, text: () => sgCatText('c' + t, t), run: () => sgFireCat('c' + t) };
     addInteract(camp); addInteract(fix); addInteract(cat); sgw.spots[t] = { camp, fix, cat };
   }
@@ -15554,14 +15624,34 @@ function syncSiege(prev, first) {
 // ---------- 쏘기 (톡 누르면 앞쪽 가장 가까운 상대를 자동으로 겨눠요) ----------
 function sgAimDir() { const v = new V3(); camera.getWorldDirection(v); v.y = 0; if (v.lengthSq() < 1e-6) v.set(Math.sin(player.heading), 0, Math.cos(player.heading)); return v.normalize(); }
 function sgCan() { return S.siege?.on && sgMine() && sgStarted() && !sgWinner() && siegeRegion() && !sgHurt(backend.uid); }
-function sgFindTarget() {
+function sgFindTarget(maxAng = 1.0, lim = 99) {
   const p = player.pos, f = sgAimDir(), me = sgMine(), out = [];
-  const consider = (x, y, z, kind, ref, maxD) => { const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d < 1.5 || d > maxD) return; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (ang > 1.0) return; out.push({ x, y, z, d, ang, kind, ref, score: ang * 12 + d * 0.15 + (kind === 'p' ? 0 : 1.5) }); };
+  const consider = (x, y, z, kind, ref, maxD) => { const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d < 1.5 || d > Math.min(maxD, lim)) return; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (ang > maxAng) return; out.push({ x, y, z, d, ang, kind, ref, score: ang * 12 + d * 0.15 + (kind === 'p' ? 0 : 1.5) }); };
   for (const [uid, r] of remotes) { const t = sgTeamOf(uid); if (t && t !== me && !sgHurt(uid) && !sgSafe(uid)) consider(r.pos.x, r.pos.y + 1.1, r.pos.z, 'p', uid, 30); }
   for (const [id, b] of Object.entries(sgb.list)) if (b.t !== me && !b.down) { const a = sgb.av[id]?.g.position || b; consider(a.x, 1.2, a.z, 'p', 'bot:' + id, 30); }
   for (const c of Object.values(sgw.castles)) if (c.t !== me && !c.open) { const m = c.hit.getCenter(new V3()); consider(m.x, 1.4, m.z, 'g', c.t, 42); }
   for (const [k, b] of Object.entries(sgw.bars)) if (b.t !== me) { const m = b.box.getCenter(new V3()); consider(m.x, 0.9, m.z, 'b', k, 30); }
   out.sort((a, b) => a.score - b.score); return out[0] || null;
+}
+/* 🎯 보는 방향으로 쏘기: 화면(카메라)이 보는 쪽으로 날아가요. 화면을 낮게 눕힐수록 멀리, 내려다볼수록 가까이 떨어져요.
+   그 방향 바로 위(약 8°)에 상대가 있으면 그쪽으로 살짝 맞춰 줘요. 떨어질 곳은 바닥의 🎯 표시로 보여요 */
+const sgAimDist = () => clamp(24 - (camPitch - 0.2) * 28, 6, 30);
+function sgAimPoint(cands) { // cands: [{x, y, z}] 또는 null(전쟁터 상대 자동)
+  const p = player.pos, f = sgAimDir(), D = sgAimDist();
+  let tg = null;
+  if (cands) { let ba = 0.14; for (const c of cands) { const dx = c.x - p.x, dz = c.z - p.z, d = Math.hypot(dx, dz); if (d < 1.2 || d > D + 4) continue; const a = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (a < ba) { ba = a; tg = c; } } }
+  else tg = sgFindTarget(0.14, D + 4);
+  return tg ? { x: tg.x, y: tg.y, z: tg.z, lock: true } : { x: p.x + f.x * D, y: 0.2, z: p.z + f.z * D, lock: false };
+}
+function sgAimShot(W, aim) { const p = player.pos, ex = aim.x - p.x, ez = aim.z - p.z, d = Math.max(0.5, Math.hypot(ex, ez)), sol = sgSolve(W, Math.max(1, d - 0.6), aim.y - 1.7, 0); return { dx: ex / d, dz: ez / d, v: sol.v, a: sol.a }; }
+function sgAimMark(aim) { // 바닥의 🎯 떨어질 곳 표시 (null이면 숨겨요)
+  if (!sgw.aimMark) { const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.85, depthWrite: false, side: THREE.DoubleSide }); const r1 = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.56, 28), mat); r1.rotation.x = -Math.PI / 2; g.add(r1); const r2 = new THREE.Mesh(new THREE.CircleGeometry(0.1, 12), mat); r2.rotation.x = -Math.PI / 2; g.add(r2); const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.6, 8), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.55, depthWrite: false })); beam.position.y = 1.3; g.add(beam); g.renderOrder = 5; scene.add(g); /* 빛기둥: 멀어도 머리 위로 보여요 */
+    const lg = new THREE.BufferGeometry().setFromPoints([new V3(), new V3()]), line = new THREE.Line(lg, new THREE.LineDashedMaterial({ color: 0xFFFFFF, dashSize: 0.6, gapSize: 0.45, transparent: true, opacity: 0.7, depthWrite: false })); scene.add(line);
+    sgw.aimMark = { g, mat, line }; }
+  const m = sgw.aimMark; m.g.visible = m.line.visible = !!aim; if (!aim) return;
+  const p = player.pos, d = Math.hypot(aim.x - p.x, aim.z - p.z), y = aim.lock ? Math.max(0.08, aim.y - 1.05) : 0.08;
+  m.g.position.set(aim.x, y, aim.z); m.g.rotation.y += 0.04; m.mat.color.setHex(aim.lock ? 0xFF4A3D : 0xFFFFFF); m.g.children[2]?.material.color.setHex(aim.lock ? 0xFF4A3D : 0xFFFFFF); const k = (aim.lock ? 1.3 : 1) * (1 + d / 14); m.g.scale.set(k, 1, k);
+  const pa = m.line.geometry.attributes.position; pa.setXYZ(0, p.x, 0.1, p.z); pa.setXYZ(1, aim.x, y, aim.z); pa.needsUpdate = true; m.line.computeLineDistances(); m.line.material.color.setHex(aim.lock ? 0xFF4A3D : 0xFFFFFF);
 }
 function sgSolve(W, dx, dy, dz) { // 목표에 닿는 쏘는 각·속도 (활·쇠뇌는 속도 고정, 돌팔매는 각 고정)
   const g = 9.8, d = Math.hypot(dx, dz);
@@ -15570,12 +15660,12 @@ function sgSolve(W, dx, dy, dz) { // 목표에 닿는 쏘는 각·속도 (활·�
   return { v, a: Math.atan((v * v - Math.sqrt(disc)) / (g * d)) };
 }
 function sgShoot() {
+  if (spec.on) return;
   if (!sgCan()) { if (S.siege && sgMine() && sgHurt(backend.uid)) toast('🤕 다쳐서 쏠 수 없어요. 의원을 기다려요', 'info'); return; }
   if (sgw.cool > 0) return;
   if (sgMyRole() === 'sch') { toast('📜 책사는 직접 공격하지 않아요. 아래 스킬 버튼을 써요!', 'info'); return; }
-  const W = sgWeap(), role = sgMyRole(), p = player.pos, tg = sgFindTarget(), f = sgAimDir();
-  let dx = f.x, dz = f.z, v = W.v || 17, a = W.ang;
-  if (tg) { const ex = tg.x - p.x, ez = tg.z - p.z, d = Math.hypot(ex, ez); dx = ex / d; dz = ez / d; const sol = sgSolve(W, d - 0.6, tg.y - 1.7, 0); v = sol.v; a = sol.a; }
+  const W = sgWeap(), role = sgMyRole(), p = player.pos;
+  const { dx, dz, v, a } = sgAimShot(W, sgAimPoint(null)); // 🎯 보는 방향으로
   player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'cheer'); playSfx('jump');
   sgw.cool = W.cd * (role === 'sol' ? 1 : 1.8); renderSgBar(true);
   const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6;
@@ -15588,6 +15678,54 @@ function sgLaunch(x, z, dx, dz, v, a, mine, t, dmg) {
   if (arrow) { const sh = cyl(m, 0.03, 0.9, 0x8A5A34, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); sh.castShadow = false; mesh(CONE, m, 0.06, 0.16, 0.06, 0x5A5A5A, 0, 0, 0.5, { solid: false, rx: Math.PI / 2, surf: null }); box(m, 0.12, 0.01, 0.16, 0xFFFFFF, 0, 0, -0.42, { solid: false, surf: null }); m.position.set(x, 1.7, z); scene.add(m); }
   sgw.balls.push({ m, x, y: 1.7, z, vx: dx * v * Math.cos(a), vy: v * Math.sin(a), vz: dz * v * Math.cos(a), t: 0, mine, team: t, dmg, pd: mine ? sgPlayerDmg() : 0, fx: x, fz: z, dead: false, arrow });
 }
+/* 📜 책사 스킬 효과: 📯 나팔 = 우리 나라 친구 발밑에 금빛 고리 · 🛡️ 방패진 = 파란 방패 막 · 🔥 화공 = 불화살 비
+   스킬을 쓰는 순간 우리 나라 모두에게 퍼지는 물결이 보여요 (모든 기기에서 보여요) */
+function sgWave(x, z, col, big = 6) {
+  const m = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.05, 40), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.9, depthWrite: false, side: THREE.DoubleSide }));
+  m.rotation.x = -Math.PI / 2; m.position.set(x, 0.15, z); scene.add(m); const t0 = performance.now();
+  const step = () => { const u = (performance.now() - t0) / 900; if (u >= 1) { scene.remove(m); m.geometry.dispose(); m.material.dispose(); return; } const k = 0.5 + u * big; m.scale.set(k, k, 1); m.material.opacity = 0.9 * (1 - u); requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function sgAura(a, horn, shield) { // 아바타 하나에 나팔·방패 효과 켜고 끄기
+  if (!a?.g) return;
+  if ((horn || shield) && !a.sgAura) {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.86, 6), new THREE.MeshBasicMaterial({ color: 0xFFC83D, transparent: true, opacity: 0.85, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
+    const dome = new THREE.Mesh(new THREE.IcosahedronGeometry(1.05, 1), new THREE.MeshBasicMaterial({ color: 0x5AB4FF, transparent: true, opacity: 0.2, depthWrite: false, wireframe: false })); dome.position.y = 1.0;
+    const wire = new THREE.Mesh(dome.geometry, new THREE.MeshBasicMaterial({ color: 0xBFE4FF, transparent: true, opacity: 0.55, wireframe: true, depthWrite: false })); dome.add(wire);
+    a.g.add(ring, dome); a.sgAura = { ring, dome };
+  }
+  const A = a.sgAura; if (!A) return;
+  A.ring.visible = !!horn; A.dome.visible = !!shield;
+  if (horn) { A.ring.rotation.z += 0.06; const k = 1 + Math.sin(time * 8) * 0.08; A.ring.scale.set(k, k, 1); if (Math.random() < 0.04) burst(a.g.position.clone().setY(0.3), [0xFFE066, 0xFFC83D], 4, 2, 2, 0.6); }
+  if (shield) { A.dome.rotation.y += 0.01; const k = 1 + Math.sin(time * 3) * 0.03; A.dome.scale.set(k, k, k); }
+}
+function sgAuraAll(s) { // 매 프레임: 나팔·방패 효과 + 스킬 시작 물결
+  const on = !!s?.on, B = (t, k) => on && t && sgBuff(t, k);
+  const trOn = trw.role === 'sch' && trRegion(), pn = performance.now(); // 🎯 체험장 책사 연습도 같은 효과
+  sgAura(player.avatar, B(sgMine(), 'horn') || (trOn && trw.horn > pn), B(sgMine(), 'shield') || (trOn && trw.shield > pn));
+  for (const [uid, r] of remotes) { const t = sgTeamOf(uid); sgAura(r.a, B(t, 'horn'), B(t, 'shield')); }
+  for (const [id, a] of Object.entries(sgb.av)) { const t = sgb.list[id]?.t; sgAura(a, B(t, 'horn'), B(t, 'shield')); }
+  if (!on) return; sgw.buffSeen ||= {};
+  for (let t = 1; t <= s.n; t++) for (const k of ['horn', 'shield']) {
+    const v = s.buff?.[t]?.[k] || 0, key = s.r + t + k; if (sgw.buffSeen[key] === v) continue;
+    const fresh = sgw.buffSeen[key] !== undefined || v - backend.now() > 15000; sgw.buffSeen[key] = v; if (!fresh || v <= backend.now() || !siegeRegion()) continue;
+    const col = k === 'horn' ? 0xFFC83D : 0x5AB4FF, pos = [];
+    if (sgMine() === t) pos.push(player.pos); for (const [uid, r] of remotes) if (sgTeamOf(uid) === t) pos.push(r.pos); for (const [id, b] of Object.entries(sgb.list)) if (b.t === t && sgb.av[id]) pos.push(sgb.av[id].g.position);
+    for (const p of pos) { sgWave(p.x, p.z, col, k === 'horn' ? 7 : 4); burst(new V3(p.x, 1.4, p.z), k === 'horn' ? [0xFFE066, 0xFFC83D, 0xFFFFFF] : [0x5AB4FF, 0xBFE4FF, 0xFFFFFF], 18, 3, 2); }
+    if (sgMine() === t && sgMyRole() !== 'sch') { toast(k === 'horn' ? '📯 우리 책사가 진격 나팔을 불었어요! 발이 빨라지고 거점을 빨리 차지해요' : '🛡️ 우리 책사가 방패진을 폈어요! 맞아도 덜 아파요', 'success'); playSfx(k === 'horn' ? 'fanfare' : 'pick'); }
+  }
+}
+function sgFireRain(tgt, n = 10, from = null) { // 🔥 불화살 비: 하늘에서 성문으로 불붙은 화살이 쏟아져요
+  for (let i = 0; i < n; i++) setTimeout(() => {
+    const g = new THREE.Group(); const sh = cyl(g, 0.05, 1.1, 0x5A3A22, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); sh.castShadow = false;
+    const fl = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshBasicMaterial({ color: 0xFF7A1A })); fl.position.z = 0.6; fl.scale.set(1, 1, 1.8); g.add(fl);
+    const end = tgt.clone().add(new V3(rand(-2.6, 2.6), rand(0.3, 3.2), rand(-1.2, 1.2))), st = from ? from.clone().add(new V3(rand(-2, 2), 6 + rand(0, 3), rand(-2, 2))) : end.clone().add(new V3(rand(-8, 8), 16, rand(-8, 8)));
+    g.position.copy(st); scene.add(g); const t0 = performance.now(), T = 650 + rand(0, 250);
+    const step = () => { const u = (performance.now() - t0) / T; if (u >= 1) { scene.remove(g); burst(end, [0xFF8A24, 0xFFE066, 0xE2584A], 20, 4, 1.5); burst(end.clone().setY(end.y + 0.6), [0x6A6A6A, 0x9A9A9A], 6, 1.2, 2, 1.4, 1); return; }
+      const prev = g.position.clone(); g.position.lerpVectors(st, end, u); g.position.y += Math.sin(Math.PI * u) * (from ? 6 : 1.5); g.lookAt(g.position.clone().add(g.position.clone().sub(prev))); if (Math.random() < 0.5) burst(g.position.clone(), [0xFFB04A, 0xFF6A1A], 2, 0.6, 0.5, 0.35, 0); requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }, i * 180);
+}
 function sgPlayFx(v, mine) { // 투석기 돌 · 화공 화살비 (모두에게 보여요)
   const c = sgw.castles[v.to]; if (!c) return; const tgt = c.hit.getCenter(new V3());
   if (v.k === 'cat') {
@@ -15597,6 +15735,7 @@ function sgPlayFx(v, mine) { // 투석기 돌 · 화공 화살비 (모두에게 
     const step = () => { const u = (performance.now() - t0) / T; if (u >= 1) { scene.remove(rock); burst(tgt, [0xBBB4A4, 0x8A6A44, 0xFFE066], 60, 7, 3); playSfx('oops'); if (mine) sgHitGate(v.to, 6, true); return; } rock.position.lerpVectors(from, tgt, u); rock.position.y += Math.sin(Math.PI * u) * 14; rock.rotation.x += 0.1; requestAnimationFrame(step); };
     requestAnimationFrame(step);
   } else if (v.k === 'fire') {
+    sgFireRain(tgt, 12);
     playSfx('cast'); let n = 0; const iv = setInterval(() => { n++; burst(tgt.clone().add(new V3(rand(-3, 3), rand(2, 6), rand(-3, 3))), [0xFF8A24, 0xFFE066, 0xE2584A], 26, 4, 1); if (n >= 8) { clearInterval(iv); if (mine) sgHitGate(v.to, v.d || 8, true); } }, 300);
   }
 }
@@ -15616,9 +15755,12 @@ async function sgHitGate(k, dmg, quiet) {
 }
 async function sgLoot(k) { const res = sgRes(k), give = {}; for (const key of ['w', 'i', 'f']) give[key] = Math.min(8, Math.floor((res[key] || 0) / 2)); await backend.sgLoot(k, sgMine(), give); }
 // ---------- 역할 행동 ----------
+const SG_FIX_CD = 5000; // 🔨 성문 한 번 고치면 5초 쉬어요
+const sgFixLeft = () => Math.max(0, Math.ceil(((sgw.fixCd || 0) - performance.now()) / 1000));
 async function sgRepair(t) {
-  if (sgw.busy.fix) return; sgw.busy.fix = true; setTimeout(() => { sgw.busy.fix = false; }, 2500);
-  const r = await backend.sgFix(t, 4 + 2 * statTier('eng'), sgMax(t)); if (r.ok) { playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
+  if (sgFixLeft()) { toast(`🔨 망치를 고쳐 잡는 중이에요… ${sgFixLeft()}초 뒤에 다시 고칠 수 있어요`, 'info'); return; }
+  if (sgw.busy.fix) return; sgw.busy.fix = true; setTimeout(() => { sgw.busy.fix = false; }, 1200);
+  const r = await backend.sgFix(t, 4 + 2 * statTier('eng'), sgMax(t)); if (r.ok) { sgw.fixCd = performance.now() + SG_FIX_CD; burst(new V3(...castleLocal(t, 0, 6.2).flatMap((v, i) => i ? [1.6, v] : [v])), [0xC9A65E, 0xFFFFFF], 16, 3, 1); playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
 }
 function sgCatText(key, owner) {
   if (!S.siege?.on || !sgStarted() || sgWinner() || !sgMine() || owner !== sgMine()) return null;
@@ -15658,6 +15800,7 @@ async function sgSkill(k) { // 📜 책사 스킬 (사회력으로 더 세져요
   const r = await backend.sgSpend(me, need); if (!r.ok) return;
   const dur = { horn: 30 + 5 * t, shield: 20 + 5 * t, fire: 45 }[k];
   await backend.sgBuff(me, k, backend.now() + dur * 1000); playAct(player.avatar, 'cheer'); playSfx('fanfare');
+  sgWave(player.pos.x, player.pos.z, { horn: 0xFFC83D, shield: 0x5AB4FF, fire: 0xFF7A1A }[k], 9); burst(player.pos.clone().setY(2.2), { horn: [0xFFE066, 0xFFFFFF], shield: [0x5AB4FF, 0xFFFFFF], fire: [0xFF8A24, 0xFFE066] }[k], 30, 4, 3);
   if (k === 'fire') { const v = { k: 'fire', to: target, d: 8 + 2 * t }; backend.sgFx(v); sgPlayFx(v, true); toast(`🔥 화공! ${sgSet().nat[target - 1].name} 성문에 불화살이 쏟아져요`, 'success'); }
   else toast(k === 'horn' ? `📯 진격 나팔! ${dur}초 동안 우리 나라가 빨리 달리고 빨리 차지해요` : `🛡️ 방패진! ${dur}초 동안 우리 나라가 덜 아파요 (피해 -1)`, 'success');
   renderSgBar(true);
@@ -15777,6 +15920,8 @@ function updateSiege(dt) {
   if (sgw.cool > 0) { sgw.cool -= dt; renderSgBar(); }
   sgw.healTarget = sgFindHeal(); if (sgw.healTarget) { const r = remotes.get(sgw.healTarget); sgw.healIt.pos.set(r.pos.x, r.pos.y + 1, r.pos.z); } else sgw.healIt.pos.set(0, -99, 0);
   renderSgHud(false);
+  sgAimMark(spec.on ? null : sgCan() && sgMyRole() !== 'sch' ? sgAimPoint(null) : trw.role === 'sol' && trRegion() ? sgAimPoint(trAimCands()) : null);
+  sgAuraAll(s);
   if (!s || !joined) return;
   // 🤕 내가 쓰러졌을 때
   const myHurt = s.hurt?.[backend.uid], me = sgMine();
@@ -15879,7 +16024,7 @@ function sgBotsHost(dt) {
     if (b.cool <= 0) {
       if (b.aim) { const e = b.aim, cur = e[2] === 'b' ? sgb.sim[e[3]] : e[3] === backend.uid ? player.pos : remotes.get(e[3])?.pos; if (cur && !(e[2] === 'b' && cur.down)) { sgBotShoot(b, cur.x, cur.z, e[2], e[3]); b.cool = 2.2 + Math.random(); } }
       else if (b.goal === 'gate' && b.gateT && Math.hypot(b.x - b.tx, b.z - b.tz) < 3) { const c = sgw.castles[b.gateT]; if (c && !c.open) { const m = c.hit.getCenter(new V3()); sgBotShoot(b, m.x, m.z, 'g', b.gateT); b.cool = 2.6; } }
-      else if (b.goal === 'fix' && Math.hypot(b.x - b.tx, b.z - b.tz) < 2 && backend.now() > b.fixT) { b.fixT = backend.now() + 4000; backend.sgFix(b.t, 4, sgMax(b.t)); b.cool = 1; }
+      else if (b.goal === 'fix' && Math.hypot(b.x - b.tx, b.z - b.tz) < 2 && backend.now() > b.fixT) { b.fixT = backend.now() + SG_FIX_CD; backend.sgFix(b.t, 4, sgMax(b.t)); b.cool = 1; }
     }
   }
   if (performance.now() - sgb.pushT > 400) { // 모두에게 위치 알려 주기
@@ -15989,7 +16134,9 @@ function renderSgHud(force) {
   if (w && sgw.ended !== s.r) { sgw.ended = s.r; showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
 // ---------- 선생님 ----------
-function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]); if (backend.mode !== 'firebase' && !list.some(([u]) => u === backend.uid)) list.push([backend.uid, { a: myAnimal, c: myShirt, n: myNick, me: true }]); return list; }
+function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]);
+  if (isTeacher && backend.mode === 'firebase' && (sgw.meJoin || S.siege?.team?.[backend.uid])) list.push([backend.uid, { a: myAnimal, c: myShirt, n: myNick, me: true, teach: true }]); /* 🧑‍🏫 선생님도 참여 */
+  if (backend.mode !== 'firebase' && !list.some(([u]) => u === backend.uid)) list.push([backend.uid, { a: myAnimal, c: myShirt, n: myNick, me: true }]); return list; }
 function sgBalance(n, list) {
   const cnt = {}; for (const [u] of list) { const v = sgw.assign[u]; if (v >= 1 && v <= n) cnt[v] = (cnt[v] || 0) + 1; else delete sgw.assign[u]; }
   for (const [u] of hShuffle([...list])) if (!sgw.assign[u]) { let best = 1; for (let t = 1; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; sgw.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; }
@@ -16007,11 +16154,11 @@ function fillSiegeAdmin(force) {
   list.forEach(([u, tg], i) => {
     const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot');
     dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
-    row.append(dot, el2('span', 'sg-name', tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
+    row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1))));
     sel.value = String((s ? s.team?.[u] : sgw.assign[u]) || 0);
-    sel.onchange = () => { const v = +sel.value; if (s?.on) { if (v) backend.adminUpdate({ [`siege/team/${u}`]: v }); } else { if (v) sgw.assign[u] = v; else delete sgw.assign[u]; } };
+    sel.onchange = () => { const v = +sel.value; if (s?.on) { if (v) { backend.adminUpdate({ [`siege/team/${u}`]: v }); if (u === backend.uid) setTimeout(sgSpawn, 400); } else if (u === backend.uid) backend.adminUpdate({ [`siege/team/${u}`]: null }); } else { if (v) sgw.assign[u] = v; else delete sgw.assign[u]; } };
     const find = el2('button', 'btn', '📍'); find.title = '이 학생 위에 빛기둥 보이기'; find.onclick = () => sgBeam(u);
     row.append(sel, find); box.append(row);
   });
@@ -16041,7 +16188,14 @@ function initSiegeUI() {
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
   $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 우리 마을 광장으로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
-  $('tpSgGo').onclick = () => { if (S.siege) { closeModals(); sgSpawn(); } else toast('진행 중인 전쟁이 없어요', 'info'); };
+  $('tpSgMe').onchange = () => { sgw.meJoin = $('tpSgMe').checked; if (!sgw.meJoin && !S.siege?.on) delete sgw.assign[backend.uid]; fillSiegeAdmin(true); };
+  $('tpSgWatch').onclick = () => { if (!S.siege) { toast('진행 중인 전쟁이 없어요. 왼쪽 👁️ 관전 버튼으로 마을을 볼 수 있어요', 'info'); return; } specStart(); };
+  $('tbSpec').onclick = () => spec.on ? specStop() : specStart(); $('specBtn').onclick = specStart;
+  $('specExit').onclick = specStop; $('specPrev').onclick = () => specCycle(-1); $('specNext').onclick = () => specCycle(1);
+  $('specAll').onclick = () => { spec.follow = null; if (S.siege && (siegeRegion() || camera.position.x > SG.x0 - 10)) { spec.x = SG.cx; spec.z = SG.cz; spec.h = 108; } else spec.h = 60; renderSpec(); };
+  addEventListener('keydown', e => { if (spec.on && e.key === 'Escape') specStop(); });
+  $('specIn').onclick = () => { spec.h = clamp(spec.h - 10, 12, 120); }; $('specOut').onclick = () => { spec.h = clamp(spec.h + 10, 12, 120); };
+  $('tpSgGo').onclick = () => { if (S.siege) { closeModals(); specStop(); sgSpawn(); } else toast('진행 중인 전쟁이 없어요', 'info'); };
   $('sgThrow').addEventListener('pointerdown', e => { e.preventDefault(); sgShoot(); });
   $('sgBarBtn').onclick = sgPlaceBar; $('sgRoleBtn').onclick = openSgRole;
   $('sgSkHorn').onclick = () => sgSkill('horn'); $('sgSkShield').onclick = () => sgSkill('shield'); $('sgSkFire').onclick = () => sgSkill('fire'); $('sgArmBtn').onclick = () => sgArmor(backend.uid);
@@ -16090,7 +16244,7 @@ function buildTrainCamp() {
     box(gg, 3.6, 2.8, 0.35, 0x7A4A2A, 0, 1.4, 0, { surf: 'wood' }); box(gg, 8.8, 0.6, 1.2, 0x9A9486, 0, 3.4, 0, { solid: false, surf: 'stone' });
     const bar = sgHpBar(); bar.position.set(0, 4.4, 0); bar.scale.set(2.6, 0.55, 1); gg.add(bar); trw.gate = { g: gg, bar, x: gx, z: gz };
     const gob = makeAvatar(0, 5, 1, 4, g); gob.g.position.set(gx, 0.12, gz - 3); gob.badge.userData.set(['👹 도깨비']); gob.g.visible = false; trw.goblin = gob;
-    addInteract({ pos: new V3(gx, 1, gz + 1.6), r: 2.4, text: () => trw.role === 'eng' ? ['성문 고치기 🔨', `+${4 + 2 * statTier('eng')} · ${trw.gateHp}/30`] : null, run: trRepair }); }
+    addInteract({ pos: new V3(gx, 1, gz + 1.6), r: 2.4, text: () => trw.role !== 'eng' ? null : (trw.fixT || 0) > performance.now() ? ['성문 고치기 ⏳', `${Math.ceil((trw.fixT - performance.now()) / 1000)}초 뒤에 다시 · ${trw.gateHp}/30`] : ['성문 고치기 🔨', `+${4 + 2 * statTier('eng')} · ${trw.gateHp}/30`], run: trRepair }); }
   // 🌿 다친 친구 · ⚒️ 갑옷 받을 친구
   for (const [i, x] of [2286, 2290, 2294].entries()) trw.mates.push({ ...trMate(g, x, -20, i + 1), role: 'med' });
   for (const [i, x] of [2280, 2288].entries()) trw.mates.push({ ...trMate(g, x, 20, i + 3), role: 'smith' });
@@ -16105,7 +16259,7 @@ function buildTrainCamp() {
 }
 function trReset() { // 모두 처음 모습으로
   for (const d of trw.dummies) { d.hp = d.max; d.g.rotation.x = 0; d.bar.userData.draw(d.hp, d.max, 0); }
-  trw.gateHp = 8; trw.gate.bar.userData.draw(trw.gateHp, 30, 0); trw.goblin.g.visible = false;
+  trw.gateHp = 16; trw.gate.bar.userData.draw(trw.gateHp, 30, 0); trw.goblin.g.visible = false;
   const med = trw.mates.filter(m => m.role === 'med'); [[0, 5, true], [2, 5, false], [3, 6, false]].forEach(([hp, max, down], i) => Object.assign(med[i], { hp, max, down }));
   for (const m of trw.mates.filter(m => m.role === 'smith')) Object.assign(m, { arm: 0, hp: 6, max: 6, down: false });
   for (const m of trw.mates) { m.a.g.rotation.z = m.down ? 1.45 : 0; m.bar.userData.draw(m.down ? 0 : m.hp, m.max, m.arm || 0); }
@@ -16129,7 +16283,7 @@ function trBar(force) {
   const k = trw.role; $('trBar').classList.toggle('hidden', !k || !trRegion()); if (!k) return;
   const W = WEAPONS[trw.weap], med = trw.mates.filter(m => m.role === 'med'), smith = trw.mates.filter(m => m.role === 'smith');
   const info = k === 'sol' ? `⚔️ 허수아비 ${trw.dummies.filter(d => d.hp <= 0).length}/5 · ${W.icon} ${W.name} 피해 ${W.pd + 1 + statTier('math')} (무기 ${W.pd} + 병사 1${statTier('math') ? ` + 수학력 ${statTier('math')}` : ''})`
-    : k === 'eng' ? `🔨 성문 ${trw.gateHp}/30 · 도깨비가 3초마다 -2 · 성문 앞 E로 +${4 + 2 * statTier('eng')}`
+    : k === 'eng' ? `🔨 성문 ${trw.gateHp}/30 · 도깨비가 5초마다 -2 · 성문 앞 E로 +${4 + 2 * statTier('eng')} (고친 뒤 5초 쉬어요)`
     : k === 'med' ? `🌿 치료한 친구 ${med.filter(m => !m.down && m.hp >= m.max).length}/3 · 치료량 ❤️ +${2 + statTier('read')}`
     : k === 'sch' ? `📜 ${trw.sch.fire ? '✅' : '⬜'} 화공 · ${trw.sch.horn ? '✅' : '⬜'} 나팔 달리기 · ${trw.sch.shield ? '✅' : '⬜'} 방패진 · 내 ❤️ ${trw.myHp}/5`
     : `⚒️ 철 갑옷 ${smith.filter(m => m.arm >= 2).length}/2 · 친구 곁에서 E`;
@@ -16142,17 +16296,16 @@ function trBar(force) {
 // ⚔️ 병사: 앞쪽 허수아비를 겨눠 쏘기
 function trShoot() {
   if (trw.role !== 'sol' || trw.cool > 0) return;
-  const W = WEAPONS[trw.weap], p = player.pos, f = sgAimDir(); let best = null, bs = 1e9;
-  for (const d of trw.dummies) { if (d.hp <= 0) continue; const dx = d.x - p.x, dz = d.z - p.z, dist = Math.hypot(dx, dz); if (dist > 32 || dist < 1.2) continue; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / dist))); if (ang > 1.1) continue; const sc = ang * 12 + dist; if (sc < bs) { bs = sc; best = d; } }
-  let dx = f.x, dz = f.z, v = W.v || 17, a = W.ang;
-  if (best) { const ex = best.x - p.x, ez = best.z - p.z, d = Math.hypot(ex, ez); dx = ex / d; dz = ez / d; const sol = sgSolve(W, d - 0.4, 1.4 - 1.7, 0); v = sol.v; a = sol.a; }
+  const W = WEAPONS[trw.weap], p = player.pos;
+  const { dx, dz, v, a } = sgAimShot(W, sgAimPoint(trAimCands())); // 🎯 보는 방향으로
   player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'cheer'); playSfx('jump'); trw.cool = W.cd;
   const m = W === WEAPONS.sling ? mesh(SPH_LO, scene, 0.22, 0.2, 0.22, W.col, p.x, 1.7, p.z, { solid: false, flat: true, surf: null }) : (() => { const g = new THREE.Group(); cyl(g, 0.03, 0.9, 0x8A5A34, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); scene.add(g); return g; })();
   trw.balls.push({ m, x: p.x + dx * 0.6, y: 1.7, z: p.z + dz * 0.6, vx: dx * v * Math.cos(a), vy: v * Math.sin(a), vz: dz * v * Math.cos(a), t: 0, dmg: W.pd + 1 + statTier('math') });
 }
+const trAimCands = () => trw.dummies.filter(d => d.hp > 0).map(d => ({ x: d.x, y: 1.4, z: d.z }));
 // 🔨 공병
 function trRepair() {
-  if (trw.role !== 'eng' || (trw.fixT || 0) > performance.now()) return; trw.fixT = performance.now() + 1100;
+  if (trw.role !== 'eng') return; if ((trw.fixT || 0) > performance.now()) { toast(`🔨 ${Math.ceil((trw.fixT - performance.now()) / 1000)}초 뒤에 다시 고칠 수 있어요 (실제 전쟁도 고친 뒤 5초 쉬어요)`, 'info'); return; } trw.fixT = performance.now() + SG_FIX_CD;
   trw.gateHp = Math.min(30, trw.gateHp + 4 + 2 * statTier('eng')); trw.gate.bar.userData.draw(trw.gateHp, 30, 0); playAct(player.avatar, 'mine'); playSfx('build');
   burst(new V3(trw.gate.x, 1.6, trw.gate.z + 0.6), [0xC9A65E, 0xFFFFFF], 14, 3, 1);
   if (trw.gateHp >= 30) trDone('eng', '성문을 지켜 냈어요! 공병은 영어력이 오를수록 더 많이 고쳐요'); else trBar(true);
@@ -16176,7 +16329,8 @@ function trCare(i) {
 // 📜 책사 스킬
 function trSkill(k) {
   if (trw.role !== 'sch') return; const t = statTier('soc');
-  if (k === 'fire') { if (trw.sch.fire) return; const tgt = trw.fireGate; playSfx('cast'); let n = 0; const iv = setInterval(() => { n++; burst(tgt.g.position.clone().add(new V3(rand(-2.5, 2.5), rand(2, 5), rand(-1, 1))), [0xFF8A24, 0xFFE066, 0xE2584A], 22, 4, 1); if (n >= 6) { clearInterval(iv); tgt.hp = Math.max(0, tgt.hp - (8 + 2 * t)); tgt.bar.userData.draw(tgt.hp, 30, 0); trw.sch.fire = 1; toast(`🔥 화공! 성문 -${8 + 2 * t} (실제 전쟁에서는 ⛓️6 🍚6 · 45초에 한 번)`, 'success'); trSchCheck(); } }, 260); }
+  if (k === 'fire') { if (trw.sch.fire) return; const tgt = trw.fireGate; sgFireRain(tgt.g.position.clone().setY(1.5), 10); playSfx('cast'); let n = 0; const iv = setInterval(() => { n++; burst(tgt.g.position.clone().add(new V3(rand(-2.5, 2.5), rand(2, 5), rand(-1, 1))), [0xFF8A24, 0xFFE066, 0xE2584A], 22, 4, 1); if (n >= 6) { clearInterval(iv); tgt.hp = Math.max(0, tgt.hp - (8 + 2 * t)); tgt.bar.userData.draw(tgt.hp, 30, 0); trw.sch.fire = 1; toast(`🔥 화공! 성문 -${8 + 2 * t} (실제 전쟁에서는 ⛓️6 🍚6 · 45초에 한 번)`, 'success'); trSchCheck(); } }, 260); }
+  if (k !== 'fire') { sgWave(player.pos.x, player.pos.z, k === 'horn' ? 0xFFC83D : 0x5AB4FF, 8); burst(player.pos.clone().setY(2.2), k === 'horn' ? [0xFFE066, 0xFFFFFF] : [0x5AB4FF, 0xFFFFFF], 26, 4, 3); }
   if (k === 'horn') { trw.horn = performance.now() + (10 + 2 * t) * 1000; trw.flag.visible = true; playSfx('fanfare'); toast(`📯 진격 나팔! ${10 + 2 * t}초 안에 빨간 깃발까지 달려가요 (발이 빨라져요)`, 'info'); }
   if (k === 'shield') { if (trw.sch.shield) return; trw.shield = performance.now() + 12000; trw.arrows = 3; trw.arrowT = performance.now() + 800; playSfx('pick'); toast('🛡️ 방패진! 화살 3발이 날아와요 — 방패진 덕분에 피해가 1씩 줄어요', 'info'); }
   trBar(true);
@@ -16197,7 +16351,7 @@ function updateTrain(dt) {
   if (trw.role === 'sol' && trw.dummies.every(d => d.hp <= 0) && !trw.solDone) { trw.solDone = true; trDone('sol', '허수아비를 모두 쓰러뜨렸어요! 쇠뇌 > 활 > 돌팔매 순서로 세요'); }
   if (trw.role !== 'sol') trw.solDone = false;
   // 🔨 도깨비가 성문을 두드려요
-  if (trw.role === 'eng' && performance.now() - trw.gateT > 3000) { trw.gateT = performance.now(); if (trw.gateHp > 2) { trw.gateHp -= 2; trw.gate.bar.userData.draw(trw.gateHp, 30, 0); burst(new V3(trw.gate.x, 1.5, trw.gate.z - 0.4), [0x8A6A44, 0xFFFFFF], 10, 2, 1); playSfx('oops'); } }
+  if (trw.role === 'eng' && performance.now() - trw.gateT > 5000) { trw.gateT = performance.now(); if (trw.gateHp > 2) { trw.gateHp -= 2; trw.gate.bar.userData.draw(trw.gateHp, 30, 0); burst(new V3(trw.gate.x, 1.5, trw.gate.z - 0.4), [0x8A6A44, 0xFFFFFF], 10, 2, 1); playSfx('oops'); } }
   // 📯 나팔 깃발
   if (trw.role === 'sch' && trw.flag.visible) { if (Math.hypot(player.pos.x - 2242, player.pos.z - 6) < 2) { trw.flag.visible = false; trw.horn = 0; trw.sch.horn = 1; toast('📯 깃발 도착! 나팔을 불면 우리 나라가 빨리 달리고 거점도 빨리 차지해요', 'success'); trSchCheck(); } else if (trw.horn && performance.now() > trw.horn) { trw.flag.visible = false; trw.horn = 0; toast('⏱ 시간이 다 됐어요. 📯 나팔을 다시 불어 봐요!', 'warn'); trBar(true); } }
   // 🛡️ 방패진 화살
@@ -16254,7 +16408,7 @@ function loop() {
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
-  if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); }
+  if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); }
   { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine())); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
   updateFund(dt);
   if (joined) updateHome(dt);
