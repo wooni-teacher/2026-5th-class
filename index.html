@@ -516,6 +516,14 @@
   #kickOverlay .kick-card { background: #FFF8EC; border-radius: 22px; padding: 28px 30px; max-width: 420px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.3); color: #3B2F2A; line-height: 1.6; }
   .who-row { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-bottom: 1px dashed #E8DCC8; }
   .who-row .who-name { flex: 1; font-weight: 700; } .who-row .who-idle { color: #6B5E55; font-size: 14px; } .who-row.idle .who-idle { color: #C0392B; font-weight: 700; }
+  #upChip { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); top: calc(250px + var(--safe-top)); z-index: 5; padding: 9px 14px; background: #FFE066; font-weight: 800; animation: upPulse 1.6s ease-in-out infinite; }
+  @keyframes upPulse { 50% { transform: scale(1.05); } }
+  body.in-play #upChip { display: none; }
+  .up-cand { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; margin: 6px 0; border-radius: 14px; background: #fff; border: 2px solid #EADCC4; font-size: 17px; cursor: pointer; }
+  .up-cand.on { border-color: #F28C28; background: #FFF1DE; } .up-cand .up-t { flex: 1; font-weight: 700; } .up-cand .up-n { font-weight: 800; color: #C4621A; white-space: nowrap; }
+  .up-bar { height: 8px; border-radius: 6px; background: #F1E3CC; overflow: hidden; margin-top: 4px; } .up-bar > span { display: block; height: 100%; background: #F28C28; }
+  .up-win { background: #FFF1DE; border: 2px solid #F7C98A; border-radius: 16px; padding: 14px 16px; margin: 8px 0; font-size: 18px; font-weight: 800; text-align: center; }
+  .up-hist li { margin: 4px 0; }
   #specBtn { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); z-index: 6; padding: 10px 14px; }
   #specBar { position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 7; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; align-items: center; max-width: calc(100vw - 24px); }
   #specBar .spec-head { font-size: 15px; } #specBar #specWho { color: #2F6FB0; font-weight: 800; margin-left: 4px; }
@@ -878,6 +886,7 @@
   <button class="btn" id="tbSpec" aria-pressed="false">👁️ 관전</button>
 </div>
 <div id="kickOverlay" class="hidden" role="alertdialog" aria-live="assertive"><div class="kick-card"><p style="font-size:56px;margin:0">💤</p><h2 style="margin:6px 0">접속이 끝났어요</h2><p id="kickText">한동안 움직이지 않아서 선생님이 접속을 끝냈어요.<br>모은 재료와 저장한 것은 그대로 있어요.</p><button class="btn" id="kickBack" style="background:var(--leaf);color:#fff;font-size:20px;padding:12px 22px">🔄 다시 들어가기</button></div></div>
+<button class="btn sticker hidden" id="upChip">🗳️ 업데이트 투표 중! 골라 주세요</button>
 <button class="btn sticker hidden" id="specBtn">👁️ 하늘에서 관전하기</button>
 <div id="specBar" class="sticker hidden" role="group" aria-label="관전 모드">
   <div class="spec-head"><b>👁️ 관전 중</b> <span id="specWho">전체 보기</span></div>
@@ -1093,7 +1102,7 @@
   <div id="mpList"></div>
   <p class="hint" id="mpDoneN" style="text-align:center"></p>
   <div class="row-center" style="margin-top:8px">
-    <button class="btn" id="mpVote" style="background:#fff">🗳️ 다음 미션 투표하기</button>
+    <button class="btn" id="mpVote" style="background:#fff">🗳️ 업데이트 투표</button>
     <button class="btn" id="mpClose" style="background:#E6DED2">닫기</button>
   </div>
 </section>
@@ -1142,6 +1151,9 @@
   <div class="row-center"><button class="btn" id="apClose" style="background:#E6DED2">닫기</button></div>
 </section>
 <section id="votePanel" class="modal sticker hidden">
+  <h2>🗳️ 우리가 뽑는 업데이트</h2>
+  <div id="upBox"></div>
+  <div id="oldVote" class="hidden" aria-hidden="true">
   <h2>🗳️ 우리 마을에 무엇을 더할까요?</h2>
   <p class="hint" style="margin-bottom:6px">한 사람은 한 번만 투표할 수 있어요.<br>가장 많은 표를 받은 곳이 다음 우리 반 미션 보상이 돼요!</p>
   <h3>📊 투표판 <span id="vTotal" style="font-size:16px;opacity:.7"></span></h3>
@@ -1150,7 +1162,8 @@
   <p class="hint" style="margin-bottom:8px">누르면 투표판에 올라가요</p>
   <div id="vPropose" class="rewards"></div>
   <p class="vempty hidden" id="vClosed">🔒 투표가 마감됐어요. 선생님이 새 투표를 열면 다시 할 수 있어요.</p>
-  <div class="row-center" style="margin-top:16px"><button class="btn" id="vClose" style="background:#E6DED2">닫기</button></div>
+    </div>
+<div class="row-center" style="margin-top:16px"><button class="btn" id="vClose" style="background:#E6DED2">닫기</button></div>
 </section>
 <section id="teacherPanel" class="modal sticker admin hidden" aria-label="선생님 관리 화면">
   <h2>🔐 선생님 관리 화면</h2>
@@ -1276,6 +1289,10 @@
     <p class="hint">학생이 광장 분수에서 던진 게임 건의예요. 이름은 남지 않아요.</p>
     <p class="hint" id="tpIdeaNow"></p>
     <div id="tpIdeaList"></div>
+    <div class="field" style="margin-top:12px">🗳️ 업데이트 투표 (건의 → 후보 → 투표 → 만들기)</div>
+    <p class="hint">위 건의에서 ➕ 후보를 눌러 2~4개를 고르고, 학생이 알아보기 쉽게 문구를 다듬은 뒤 투표를 시작해요. 1등을 실제로 만들고 나면 ✅ 만들었어요를 눌러 모두에게 알려요.</p>
+    <p class="hint" id="tpUpNow"></p>
+    <div id="tpUpBox"></div>
 
     <h3>📢 게시판 공지</h3>
     <p class="hint" id="tpNoticeSave"></p>
@@ -1348,10 +1365,10 @@
 
     </div>
 
-    <h3>🗳️ 마을 제안 투표</h3>
-    <p id="tpVote"></p>
-    <p class="hint" id="tpVoteState"></p>
-    <div class="row-center wrap">
+    <h3 style="display:none">🗳️ 마을 제안 투표</h3>
+    <p id="tpVote" style="display:none"></p>
+    <p class="hint" id="tpVoteState" style="display:none"></p>
+    <div class="row-center wrap" style="display:none">
       <button class="btn" id="tpVoteOpen" style="background:#fff">▶️ 새 투표 시작</button>
       <button class="btn" id="tpVoteClose" style="background:#fff">⏹️ 투표 마감</button>
       <button class="btn" id="tpUseVote" style="background:#fff">🗳️ 1등을 새 미션 보상으로</button>
@@ -1646,7 +1663,7 @@ const CFG = {
   NOTICES: [
     '📢 오늘은 마을 미션을 함께해요!',
     '🏘️ 마을 미션에 한 번씩 참여해 주세요',
-    '🗳️ 다음 미션 투표가 열렸어요. 투표해 주세요!',
+    '🗳️ 업데이트 투표가 열렸어요. 투표해 주세요!',
     '🎯 우리 반 미션에 힘을 모아요',
     '🧹 친구와 함께 마을을 깨끗하게 해요',
     '🤝 친구를 도와주는 마을을 만들어요',
@@ -1914,7 +1931,7 @@ function normalize(v) {
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
     nick: toObj(v.nick), idea: plainObj(v.idea), badm: Object.fromEntries(['c0', 'c1'].filter(k => plainObj(v.badm)[k]?.s).map(k => [k, v.badm[k]])), eng: toObj(v.eng),
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
-    hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick),
+    hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
     coins: v.coins || 0,
     dex: v.dex || {},
@@ -2228,6 +2245,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
     presence() {}, leave() {}, async kickPlayers() { return { ok: true }; },
+    async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
   };
 }
 
@@ -2646,6 +2664,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
     presence(data) { if (online) D.set(me, data).catch(() => {}); },
     leave() { D.remove(me).catch(() => {}); D.onDisconnect(me).cancel().catch(() => {}); },
+    async upVote(k) { try { await D.set(R(`state/upvote/v/${uid}`), k); return { ok: true }; } catch (e) { return { ok: false }; } },
     async kickPlayers(uids) { // 💤 선생님: 접속 끝내기 (하루 지난 기록은 지워요)
       try { const t = Date.now() + offset, up = {}; for (const u of uids) up[`state/kick/${u}`] = D.serverTimestamp();
         for (const [u, v] of Object.entries(cache.kick || {})) if (t - v > 86400000 && !uids.includes(u)) up[`state/kick/${u}`] = null;
@@ -2662,7 +2681,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -4285,6 +4304,7 @@ function applyState(st) {
   S = st;
   stateLoaded = true;
   if (joined && !kicked && !isTeacher && (st.kick?.[backend?.uid] || 0) > joinedAt) kickMe(); // 💤 선생님이 접속을 끝냈어요
+  try { upNotify(prev, first); } catch (e) { console.warn(e); } // 🗳️ 업데이트 투표
   resetRemoved(prev, first);
 
   const count = builtCount(st);
@@ -5279,7 +5299,7 @@ function tally() {
   return { rows, total, max, winners: max > 0 ? open.filter(([, c]) => c === max).map(([id]) => id) : [] };
 }
 
-function openVotePanel() { closeModals(); $('votePanel').classList.remove('hidden'); fillVotePanel(); }
+function openVotePanel() { closeModals(); $('votePanel').classList.remove('hidden'); fillVotePanel(); fillUpPanel(); }
 function fillVotePanel() {
   const t = tally(), mine = S.vote.votes[backend?.uid], closed = !S.vote.open;
   $('vClosed').classList.toggle('hidden', !closed);
@@ -13444,6 +13464,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1012b', d: '10월 12일 (오전)', items: ['🗳️ 우리가 뽑는 업데이트! 분수 건의함에 들어온 아이디어 중 선생님이 고른 후보에 투표해요 · 1등은 선생님이 실제로 게임에 만들어 줘요', '💡 내가 던진 건의가 후보에 오르거나 뽑히면 알려 줘요 · 지금까지 우리가 뽑아서 만든 업데이트도 볼 수 있어요'] },
   { id: '1012a', d: '10월 12일', items: ['💤 오래 아무것도 누르지 않으면 선생님이 접속을 끝낼 수 있어요 · \'다시 들어가기\'를 누르면 바로 돌아와요 (모은 것은 그대로)'] },
   { id: '1011c', d: '10월 11일 (밤)', items: ['🗡️ 병사는 이제 검으로 싸워요! 가까이 가서 F로 베기(피해 4) · ⚡ 돌격(Q): 앞으로 확 달려가며 부딪힌 상대에게 피해 (10초마다)', '🌬️ 책사는 부채를 들어요 · F로 부채 평타(피해 1)', '📯 나팔 · 🛡️ 방패진은 책사 둘레 10걸음 안 우리 편에게만 · 🔥 화공은 빨간 원을 옮겨 그 자리에 불화살 비 (원 안 상대 모두 · 성문도)', '🤖 컴퓨터 병사도 검과 돌격으로 싸워요 · 🎯 역할 체험장도 새 방식으로 바뀌었어요'] },
   { id: '1011b', d: '10월 11일 (저녁)', items: ['⛏️ 전쟁터에 철광산이 하나 더 생겼어요 (철광산①·②) · 🔥 봉수대는 조금 옆으로 옮겼어요', '🧑‍🏫 선생님도 한 나라에 들어가 함께 싸울 수 있어요', '👁️ 관전 모드: 하늘에서 전쟁터를 내려다봐요 · 나라가 없을 때 \'하늘에서 관전하기\' 버튼 · ◀▶로 친구를 따라가요'] },
@@ -13512,16 +13533,102 @@ function fillIdeaAdmin() {
   const box = $('tpIdeaList'); if (!box) return;
   const all = Object.entries(S.idea || {}).map(([k, v]) => ({ k, ...v })).sort((a, b) => (b.at || 0) - (a.at || 0));
   $('tpIdeaNow').textContent = all.length ? `받은 건의 ${all.length}개 · 새 건의 ${all.filter(x => !x.ok).length}개` : '아직 받은 건의가 없어요';
-  const key = JSON.stringify(all); if (key === box.dataset.key) return; box.dataset.key = key; box.textContent = '';
+  fillUpAdmin();
+  const key = JSON.stringify(all) + JSON.stringify(upw.cands.map(c => c.k)) + !!S.upvote?.open; if (key === box.dataset.key) return; box.dataset.key = key; box.textContent = '';
   for (const x of all.slice(0, 40)) {
     const row = el2('div', 'sg-row'), when = x.at ? new Date(x.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
     row.append(el2('span', 'sg-name', `${x.ok ? '✅' : '🆕'} ${x.t}`), el2('span', 'hint', when));
     const ok = el2('button', 'btn', x.ok ? '↩️' : '✅'); ok.title = x.ok ? '새 건의로 되돌리기' : '읽었어요'; ok.onclick = () => adminDo({ [`idea/${x.k}/ok`]: !x.ok }, x.ok ? '🆕 새 건의로 되돌렸어요' : '✅ 읽음으로 표시했어요');
     const del = el2('button', 'btn danger', '🗑️'); del.title = '지우기'; del.onclick = () => adminDo({ [`idea/${x.k}`]: null }, '🗑️ 건의를 지웠어요');
-    row.append(ok, del); box.append(row);
+    const pick = el2('button', 'btn', '➕ 후보'); pick.title = '업데이트 투표 후보로'; pick.disabled = !!S.upvote?.open || upw.cands.length >= 4 || upw.cands.some(c => c.k === x.k);
+    pick.onclick = () => { upw.cands.push({ t: x.t.slice(0, 60), u: x.k.slice(0, x.k.lastIndexOf('_')), k: x.k }); box.dataset.key = ''; fillIdeaAdmin(); fillUpAdmin(true); };
+    row.append(pick, ok, del); box.append(row);
   }
 }
 
+/* ---------- 🗳️ 우리가 뽑는 업데이트: 건의함 → 후보 → 투표 → 실제 업데이트 ----------
+   · 선생님: 건의 줄의 ➕ 후보(2~4개, 문구 다듬기) → 투표 시작 → 마감하고 발표 → (만든 뒤) ✅ 만들었어요
+   · 저장: state/upvote { r, open, at, c: {c0: {t, u}}, v: {기기: 'c0'}, win } · state/uphist/{r} { t, at, n } (우리가 뽑아서 만든 업데이트)
+   · 학생: 투표가 열리면 배너 + 왼쪽 '🗳️ 업데이트 투표' 버튼 · 마감 전까지 고른 것을 바꿀 수 있어요 · 고른 뒤에 표 수가 보여요
+   · 내가 던진 건의가 후보에 오르거나 뽑히면 나에게만 알려 줘요 (c.u = 건의를 던진 기기) */
+const upw = { cands: [] };
+const upMine = () => S.upvote?.v?.[backend?.uid] || '';
+function upTally() { const u = S.upvote, n = {}; for (const k of Object.keys(u?.c || {})) n[k] = 0; for (const v of Object.values(u?.v || {})) if (v in n) n[v]++; const total = Object.values(n).reduce((a, b) => a + b, 0), max = Math.max(0, ...Object.values(n)); return { n, total, top: Object.keys(n).filter(k => max > 0 && n[k] === max) }; }
+function fillUpPanel() {
+  const box = $('upBox'); if (!box) return; box.textContent = ''; const u = S.upvote, mine = upMine();
+  if (u?.open) {
+    box.append(el2('p', 'hint', '분수 건의함에 들어온 아이디어 중에서 선생님이 골랐어요. 가장 하고 싶은 것 하나를 골라요! (마감 전까지 바꿀 수 있어요)'));
+    const t = upTally(), show = !!mine || isTeacher;
+    for (const [k, c] of Object.entries(u.c || {})) {
+      const b = el2('button', 'up-cand' + (mine === k ? ' on' : '')), wrap = el2('div', ''); wrap.style.flex = '1';
+      wrap.append(el2('div', 'up-t', `${mine === k ? '✅ ' : ''}${c.t}`)); if (show) { const bar = el2('div', 'up-bar'), f = el2('span', ''); f.style.width = `${t.total ? Math.round(t.n[k] / t.total * 100) : 0}%`; bar.append(f); wrap.append(bar); }
+      b.append(wrap); if (show) b.append(el2('span', 'up-n', `${t.n[k]}표`));
+      b.onclick = async () => { if (isTeacher && backend?.mode === 'firebase') { toast('선생님은 투표하지 않아요 · 결과만 봐요', 'info'); return; } const r = await backend.upVote(k); if (r.ok) { playSfx('right'); toast(mine ? '🗳️ 고른 것을 바꿨어요' : '🗳️ 투표했어요! 마감되면 결과를 알려 줄게요', 'success'); } };
+      box.append(b);
+    }
+    box.append(el2('p', 'hint', show ? `지금까지 ${t.total}명이 투표했어요` : '고르고 나면 지금까지의 표 수가 보여요'));
+  } else if (u?.win && u.c?.[u.win]) {
+    box.append(el2('div', 'up-win', `🎉 뽑힌 업데이트: ${u.c[u.win].t}`), el2('p', 'hint', '🛠️ 선생님이 만들고 있어요. 다 만들면 알려 줄게요!'));
+  } else if (u && !u.open) {
+    box.append(el2('p', 'hint', '투표가 마감됐어요. 선생님이 결과를 정하는 중이에요.'));
+  } else {
+    box.append(el2('p', '', '지금은 열린 투표가 없어요.'), el2('p', 'hint', '⛲ 광장 분수에 동전을 던져 건의해 보세요! 좋은 건의가 다음 업데이트 투표 후보가 돼요.'));
+    const go = el2('button', 'btn', '💡 건의하러 가기'); go.style.background = '#FFD23C'; go.onclick = () => { closeModals(); openIdea(); }; box.append(go);
+  }
+  const hist = Object.values(S.uphist || {}).sort((a, b) => (b.at || 0) - (a.at || 0));
+  if (hist.length) { box.append(el2('h3', '', '🛠️ 우리가 뽑아서 만든 업데이트')); const ul = el2('ul', 'up-hist'); for (const h of hist.slice(0, 12)) ul.append(el2('li', '', `${new Date(h.at || 0).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} · ${h.t}`)); box.append(ul); }
+}
+function fillUpAdmin(force) {
+  const box = $('tpUpBox'); if (!box || !isTeacher) return; const u = S.upvote, t = upTally();
+  const key = JSON.stringify([u, upw.cands, S.uphist ? Object.keys(S.uphist).length : 0]); if (!force && key === box.dataset.key) return; box.dataset.key = key; box.textContent = '';
+  if (u?.open) {
+    $('tpUpNow').textContent = `🗳️ 투표 중 · ${t.total}명 투표 (접속한 학생 ${[...remotes.values()].filter(r => !r.target?.t).length}명)`;
+    for (const [k, c] of Object.entries(u.c || {})) box.append(el2('p', '', `${t.top.includes(k) ? '👑 ' : ''}${c.t} — ${t.n[k]}표`));
+    const end = el2('button', 'btn', '⏹️ 마감하고 발표'); end.style.cssText = 'background:var(--leaf);color:#fff';
+    end.onclick = async () => { if (!(await confirmAction({ title: '🗳️ 투표를 마감할까요?', body: t.top.length === 1 ? `1등: ${u.c[t.top[0]].t}` : t.top.length ? '공동 1등이 있어요. 마감한 뒤 하나를 골라요.' : '아직 표가 없어요.', okText: '마감하고 발표' }))) return;
+      adminDo({ 'upvote/open': 0, 'upvote/win': t.top.length === 1 ? t.top[0] : null }, '🗳️ 투표를 마감했어요'); };
+    const cancel = el2('button', 'btn danger', '🗑️ 투표 취소'); cancel.onclick = async () => { if (await confirmAction({ title: '투표를 취소할까요?', body: '표가 모두 지워져요.', okText: '취소하기' })) adminDo({ upvote: null }, '투표를 취소했어요'); };
+    const row = el2('div', 'row-center wrap'); row.append(end, cancel); box.append(row); return;
+  }
+  if (u && !u.open) {
+    const w = u.win && u.c?.[u.win];
+    $('tpUpNow').textContent = w ? `🎉 뽑힌 업데이트: ${w.t} (${t.n[u.win]}표 / 모두 ${t.total}표)` : `마감했어요 · ${t.top.length ? '공동 1등 중 하나를 골라요' : '표가 없었어요'}`;
+    if (!w) for (const k of (t.top.length ? t.top : Object.keys(u.c || {}))) { const b = el2('button', 'btn', `이걸로 결정: ${u.c[k].t}`); b.onclick = () => adminDo({ 'upvote/win': k }, '🎉 결정했어요'); box.append(b); }
+    const row = el2('div', 'row-center wrap');
+    if (w) { const done = el2('button', 'btn', '✅ 만들었어요! (모두에게 알리기)'); done.style.cssText = 'background:var(--leaf);color:#fff'; done.onclick = () => adminDo({ [`uphist/${u.r}`]: { t: w.t, at: backend.now(), n: t.n[u.win] || 0 }, upvote: null }, '🛠️ 업데이트를 알렸어요!'); row.append(done); }
+    const clr = el2('button', 'btn danger', '🗑️ 이 투표 지우기'); clr.onclick = async () => { if (await confirmAction({ title: '이 투표를 지울까요?', body: '결과가 지워지고 새 투표를 준비할 수 있어요.', okText: '지우기' })) adminDo({ upvote: null }, '투표를 지웠어요'); };
+    row.append(clr); box.append(row); return;
+  }
+  $('tpUpNow').textContent = upw.cands.length ? `후보 ${upw.cands.length}개 (2~4개)` : '건의 줄의 ➕ 후보를 눌러 후보를 골라요 (직접 적어도 돼요)';
+  upw.cands.forEach((c, i) => {
+    const row = el2('div', 'sg-row'), inp = document.createElement('input'); inp.className = 'tinput'; inp.maxLength = 60; inp.value = c.t; inp.setAttribute('aria-label', `후보 ${i + 1}`); inp.style.flex = '1'; inp.oninput = () => { c.t = inp.value; };
+    const x = el2('button', 'btn danger', '✖'); x.title = '빼기'; x.onclick = () => { upw.cands.splice(i, 1); $('tpIdeaList').dataset.key = ''; fillIdeaAdmin(); fillUpAdmin(true); };
+    row.append(el2('b', '', `${i + 1}.`), inp, x); box.append(row);
+  });
+  const row = el2('div', 'row-center wrap');
+  const add = el2('button', 'btn', '✏️ 직접 적기'); add.disabled = upw.cands.length >= 4; add.onclick = () => { upw.cands.push({ t: '', u: '', k: 'my' + Date.now() }); fillUpAdmin(true); };
+  const go = el2('button', 'btn', '🗳️ 업데이트 투표 시작'); go.style.cssText = 'background:var(--leaf);color:#fff'; go.disabled = upw.cands.length < 2;
+  go.onclick = async () => {
+    const cs = upw.cands.map(c => ({ ...c, t: c.t.replace(/\s+/g, ' ').trim().slice(0, 60) })).filter(c => c.t.length >= 2);
+    if (cs.length < 2) { toast('후보를 2개 이상 적어 주세요', 'warn'); return; }
+    if (cs.some(c => thxBadWord(c.t) || nickBad(c.t))) { toast('🙅 후보 문구를 다시 확인해 주세요', 'warn'); return; }
+    if (!(await confirmAction({ title: '🗳️ 업데이트 투표를 시작할까요?', body: cs.map((c, i) => `${i + 1}. ${c.t}`).join('\n'), okText: '시작' }))) return;
+    const c = Object.fromEntries(cs.map((x, i) => [`c${i}`, x.u ? { t: x.t, u: x.u } : { t: x.t }]));
+    const r = await adminDo({ upvote: { r: Date.now().toString(36), open: 1, at: backend.now(), c } }, '🗳️ 업데이트 투표를 시작했어요!');
+    upw.cands = []; $('tpIdeaList').dataset.key = ''; fillIdeaAdmin(); fillUpAdmin(true);
+  };
+  row.append(add, go); box.append(row);
+}
+function upNotify(prev, first) { // 투표 열림 · 결과 · 만들었어요 알림 (모두)
+  const u = S.upvote, p = prev?.upvote, me = backend?.uid;
+  $('upChip')?.classList.toggle('hidden', !(joined && u?.open && !upMine() && !(isTeacher && backend?.mode === 'firebase')));
+  if (!$('votePanel').classList.contains('hidden')) fillUpPanel();
+  if (isTeacher) fillUpAdmin();
+  if (first) return;
+  if (u?.open && u.r !== p?.r) { showBanner('🗳️ 업데이트 투표가 열렸어요!', '건의함에서 고른 후보 중 하나를 골라요 · 왼쪽 버튼을 눌러요', 4500); playSfx('fanfare'); if (Object.values(u.c || {}).some(c => c.u && c.u === me)) setTimeout(() => toast('💡 내가 던진 건의가 업데이트 후보에 올랐어요!', 'success'), 1500); }
+  if (u && !u.open && u.win && (p?.open || !p?.win)) { const w = u.c?.[u.win]; if (w) { showBanner('🎉 뽑힌 업데이트', w.t, 5000); playSfx('fanfare'); if (w.u && w.u === me) setTimeout(() => toast('🌟 내가 던진 건의가 뽑혔어요! 선생님이 만들어 줄 거예요', 'success'), 1500); } }
+  for (const [r, h] of Object.entries(S.uphist || {})) if (!prev?.uphist?.[r]) { showBanner('🛠️ 우리가 뽑은 업데이트가 들어왔어요!', h.t, 5000); playSfx('fanfare'); burst(player.pos.clone().setY(2.6), RAINBOW, 50, 5, 2.5); }
+}
 // ---------- 🌀 마을 포털 (학교 앞 길) — 다른 마을·교실·체육관으로 한 번에 ----------
 const PORTAL = { x: 0, z: -29.5 };
 const PLAZA_BACK = [0, -9]; // 다른 마을에서 돌아오면 광장 분수 앞 (학교 앞 포털이 바로 보여요)
@@ -16376,6 +16483,7 @@ function initSiegeUI() {
   $('tpWhoMin').onchange = () => { fillWhoAdmin.key = ''; fillWhoAdmin(); };
   $('tpWhoKick').onclick = async () => { const lim = +$('tpWhoMin').value, us = [...remotes.entries()].filter(([u, r]) => !r.target?.t && idleMin(u, r) >= lim).map(([u]) => u); if (!us.length) return; if (!(await confirmAction({ title: `💤 ${us.length}명의 접속을 끝낼까요?`, body: `${lim}분 넘게 아무것도 누르지 않은 친구들이에요. 화면에 '다시 들어가기' 버튼이 떠요.`, okText: '모두 내보내기' }))) return; kickUids(us); };
   $('kickBack').onclick = () => location.reload();
+  $('upChip').onclick = openVotePanel;
   setInterval(() => { if (isTeacher && !$('teacherPanel').classList.contains('hidden')) fillWhoAdmin(); }, 5000);
   $('tpSgMe').onchange = () => { sgw.meJoin = $('tpSgMe').checked; if (!sgw.meJoin && !S.siege?.on) delete sgw.assign[backend.uid]; fillSiegeAdmin(true); };
   $('tpSgWatch').onclick = () => { if (!S.siege) { toast('진행 중인 전쟁이 없어요. 왼쪽 👁️ 관전 버튼으로 마을을 볼 수 있어요', 'info'); return; } specStart(); };
