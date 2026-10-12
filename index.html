@@ -511,6 +511,11 @@
   #teachBar .btn { font-size: 17px; padding: 8px 12px; background: #fff; }
   #teachBar #tbGather { background: var(--leaf); color: #fff; }
   #teachBar #tbSpec[aria-pressed="true"] { background: #5AB4FF; color: #fff; }
+  #kickOverlay { position: fixed; inset: 0; z-index: 60; background: rgba(31,42,68,.82); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #kickOverlay.hidden { display: none; }
+  #kickOverlay .kick-card { background: #FFF8EC; border-radius: 22px; padding: 28px 30px; max-width: 420px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.3); color: #3B2F2A; line-height: 1.6; }
+  .who-row { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-bottom: 1px dashed #E8DCC8; }
+  .who-row .who-name { flex: 1; font-weight: 700; } .who-row .who-idle { color: #6B5E55; font-size: 14px; } .who-row.idle .who-idle { color: #C0392B; font-weight: 700; }
   #specBtn { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); z-index: 6; padding: 10px 14px; }
   #specBar { position: fixed; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 7; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; align-items: center; max-width: calc(100vw - 24px); }
   #specBar .spec-head { font-size: 15px; } #specBar #specWho { color: #2F6FB0; font-weight: 800; margin-left: 4px; }
@@ -872,6 +877,7 @@
   <button class="btn" id="tbFreeze" aria-pressed="false">✋ 잠깐 멈춤</button>
   <button class="btn" id="tbSpec" aria-pressed="false">👁️ 관전</button>
 </div>
+<div id="kickOverlay" class="hidden" role="alertdialog" aria-live="assertive"><div class="kick-card"><p style="font-size:56px;margin:0">💤</p><h2 style="margin:6px 0">접속이 끝났어요</h2><p id="kickText">한동안 움직이지 않아서 선생님이 접속을 끝냈어요.<br>모은 재료와 저장한 것은 그대로 있어요.</p><button class="btn" id="kickBack" style="background:var(--leaf);color:#fff;font-size:20px;padding:12px 22px">🔄 다시 들어가기</button></div></div>
 <button class="btn sticker hidden" id="specBtn">👁️ 하늘에서 관전하기</button>
 <div id="specBar" class="sticker hidden" role="group" aria-label="관전 모드">
   <div class="spec-head"><b>👁️ 관전 중</b> <span id="specWho">전체 보기</span></div>
@@ -1153,6 +1159,11 @@
   <div class="row-center" style="margin-top:8px"><button class="btn" id="tpRuleCheck" style="background:#fff">🔎 Firebase 규칙 점검</button></div>
   <p class="hint" id="tpRuleResult" style="white-space:pre-line"></p>
   <div id="tpForm">
+    <h3>👥 접속한 친구 · 잠수 정리</h3>
+    <p class="hint">오래 아무것도 누르지 않은 친구를 골라 접속을 끝낼 수 있어요. 끝난 친구 화면에는 '다시 들어가기' 버튼이 떠서, 돌아오면 언제든 다시 들어올 수 있어요 (저장된 것은 그대로예요).</p>
+    <p class="hint" id="tpWhoNow"></p>
+    <div class="row-center wrap"><label class="sr-only" for="tpWhoMin">잠수 기준</label><select id="tpWhoMin" class="tinput" style="width:auto"><option value="5">5분</option><option value="10" selected>10분</option><option value="15">15분</option><option value="20">20분</option></select><button class="btn danger" id="tpWhoKick">💤 넘게 가만히 있는 친구 모두 내보내기</button></div>
+    <div id="tpWhoList"></div>
     <h3>🧑‍🏫 수업 도구</h3>
     <p class="hint" id="tpCtrlNow"></p>
     <div class="row-center wrap">
@@ -1903,7 +1914,7 @@ function normalize(v) {
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
     nick: toObj(v.nick), idea: plainObj(v.idea), badm: Object.fromEntries(['c0', 'c1'].filter(k => plainObj(v.badm)[k]?.s).map(k => [k, v.badm[k]])), eng: toObj(v.eng),
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
-    hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null,
+    hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
     coins: v.coins || 0,
     dex: v.dex || {},
@@ -2216,7 +2227,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (st.decor[key]) return { ok: false };
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
-    presence() {},
+    presence() {}, leave() {}, async kickPlayers() { return { ok: true }; },
   };
 }
 
@@ -2634,6 +2645,11 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       catch (e) { return { ok: false }; }
     },
     presence(data) { if (online) D.set(me, data).catch(() => {}); },
+    leave() { D.remove(me).catch(() => {}); D.onDisconnect(me).cancel().catch(() => {}); },
+    async kickPlayers(uids) { // 💤 선생님: 접속 끝내기 (하루 지난 기록은 지워요)
+      try { const t = Date.now() + offset, up = {}; for (const u of uids) up[`state/kick/${u}`] = D.serverTimestamp();
+        for (const [u, v] of Object.entries(cache.kick || {})) if (t - v > 86400000 && !uids.includes(u)) up[`state/kick/${u}`] = null;
+        await D.update(D.ref(db, base), up); await Promise.all(uids.map(u => D.remove(R(`players/${u}`)).catch(() => {}))); return { ok: true }; } catch (e) { return { ok: false }; } },
     async checkRules() { // 선생님: 게시된 규칙이 최신인지 점검 (시험 칸을 썼다가 바로 지워요)
       const out = {};
       const test = async (k, fn) => { try { await fn(); out[k] = true; } catch (e) { out[k] = String(e?.code || e?.message || e).includes('PERMISSION') ? false : null; } };
@@ -3915,6 +3931,7 @@ function onPlayers(type, uid, data) {
     remotes.set(uid, r);
     refreshSyncStatus();
   }
+  if (!r.target || r.target.x !== data.x || r.target.z !== data.z || r.target.m !== data.m) r.seenAt = performance.now();
   r.target = data;
   { const nm = nickOf(uid, data); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
@@ -3962,15 +3979,17 @@ function updateRemotes(dt) {
   }
 }
 const PRESENCE_INTERVAL = 0.5; // 초
-let lastSent = '', lastSentAt = 0;
+let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0;
+for (const ev of ['keydown', 'pointerdown', 'touchstart', 'wheel']) addEventListener(ev, () => { lastInputAt = Date.now(); }, { capture: true, passive: true }); // 💤 잠수 판단: 마지막으로 누른 때
 function sendPresence(time) {
-  if (!joined || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
+  if (!joined || kicked || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
   const p = player.pos;
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
+  if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
   const key = JSON.stringify(d);
   if (key === lastSent) return;
   lastSent = key; lastSentAt = time;
@@ -4265,6 +4284,7 @@ function applyState(st) {
   const prev = S;
   S = st;
   stateLoaded = true;
+  if (joined && !kicked && !isTeacher && (st.kick?.[backend?.uid] || 0) > joinedAt) kickMe(); // 💤 선생님이 접속을 끝냈어요
   resetRemoved(prev, first);
 
   const count = builtCount(st);
@@ -4497,7 +4517,7 @@ async function join(practice, asTeacher = false) {
   player.avatar = makeAvatar(myAnimal, myShirt, myHair, myHairColor); player.avatar.badge.userData.set([myNick]);
   player.avatar.g.position.copy(player.pos);
   camYaw = 0;
-  joined = true;
+  joined = true; joinedAt = backend.now(); lastInputAt = Date.now();
   backend.subscribe(applyState, onPlayers, (e) => {
     console.error(e);
     toast('데이터를 읽을 수 없어요. 데이터베이스 규칙을 확인해 주세요.', 'warn');
@@ -5110,8 +5130,38 @@ async function copyText(text, what) {
   if (!ok) { const ta = $('tpUidText'), keep = ta.value; ta.value = text; ta.select(); try { ok = document.execCommand('copy'); } catch { ok = false; } ta.value = keep; }
   toast(ok ? `📋 ${what}를 복사했어요. Firebase 콘솔에 붙여 넣으세요` : '📋 복사가 안 돼요. 아래 칸의 글자를 길게 눌러 복사해 주세요', ok ? 'success' : 'warn');
 }
+/* ---------- 💤 잠수 정리: 선생님이 오래 가만히 있는 친구의 접속을 끝내요 ----------
+   · 학생 기기: 위치와 함께 '마지막으로 누른 시각(분)'(players/{uid}/l)을 보내요 (1분에 한 번만 바뀌어요)
+   · 선생님: 관리화면 🧑‍🏫 수업 탭 '👥 접속한 친구'에서 [접속 끝내기] → state/kick/{uid} = 지금, players/{uid} 지우기
+   · 학생 기기: kick 시각이 내가 들어온 시각보다 늦으면 위치 보내기를 멈추고 '다시 들어가기' 화면을 보여요 */
+function idleMin(uid, r) { const l = r?.target?.l; if (Number.isFinite(l)) return Math.max(0, Math.floor(backend.now() / 60000) - l); return Math.floor((performance.now() - (r?.seenAt || performance.now())) / 60000); }
+function fillWhoAdmin() {
+  if (!$('tpWhoList') || !isTeacher) return;
+  const lim = +($('tpWhoMin')?.value || 10), box = $('tpWhoList'), list = [...remotes.entries()].filter(([, r]) => !r.target?.t).map(([u, r]) => [u, r, idleMin(u, r)]).sort((a, b) => b[2] - a[2]);
+  const n = list.filter(x => x[2] >= lim).length;
+  $('tpWhoNow').textContent = backend?.mode === 'firebase' ? `지금 접속한 학생 ${list.length}명 · ${lim}분 넘게 가만히 있는 친구 ${n}명` : '연습 모드라 다른 기기와 함께 쓰지 않아요';
+  $('tpWhoKick').disabled = !n; $('tpWhoKick').textContent = `💤 ${lim}분 넘게 가만히 있는 친구 ${n}명 모두 내보내기`;
+  const key = list.map(([u, , m]) => u + ':' + m).join(',') + '|' + lim; if (key === fillWhoAdmin.key) return; fillWhoAdmin.key = key;
+  box.textContent = ''; if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
+  for (const [u, r, m] of list) {
+    const row = el2('div', 'who-row' + (m >= lim ? ' idle' : '')), sit = ACTS[(r.target?.m | 0) % 32]?.startsWith('sit');
+    row.append(el2('span', 'who-name', nickOf(u, r.target) || '친구'), el2('span', 'who-idle', m < 1 ? '지금 하는 중' : `${m}분째 가만히${sit ? ' · 🪑 앉아 있음(학습지 공부 중일 수 있어요)' : ''}`));
+    const find = el2('button', 'btn', '📍'); find.title = '이 친구 위에 빛기둥 보이기'; find.onclick = () => sgBeam(u);
+    const kb = el2('button', 'btn danger', '접속 끝내기'); kb.onclick = async () => { if (!(await confirmAction({ title: `💤 ${nickOf(u, r.target) || '이 친구'}의 접속을 끝낼까요?`, body: '그 친구 화면에 \'다시 들어가기\' 버튼이 떠요. 모은 것은 그대로예요.', okText: '접속 끝내기' }))) return; kickUids([u]); };
+    row.append(find, kb); box.append(row);
+  }
+}
+async function kickUids(uids) {
+  if (!uids.length) return; const r = await backend.kickPlayers(uids);
+  toast(r.ok ? `💤 ${uids.length}명의 접속을 끝냈어요` : '⚠️ 접속을 끝내지 못했어요. database.rules.json을 다시 게시해 주세요', r.ok ? 'success' : 'warn');
+  fillWhoAdmin.key = ''; setTimeout(fillWhoAdmin, 800);
+}
+function kickMe() {
+  kicked = true; backend.leave?.(); closeModals?.(); specStop?.();
+  $('kickOverlay').classList.remove('hidden'); playSfx('oops');
+}
 function fillTeacherPanel() {
-  fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
+  fillWhoAdmin(); fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
   $('tpForm').classList.toggle('hidden', !isTeacher); $('tpTabs')?.classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -13394,6 +13444,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1012a', d: '10월 12일', items: ['💤 오래 아무것도 누르지 않으면 선생님이 접속을 끝낼 수 있어요 · \'다시 들어가기\'를 누르면 바로 돌아와요 (모은 것은 그대로)'] },
   { id: '1011c', d: '10월 11일 (밤)', items: ['🗡️ 병사는 이제 검으로 싸워요! 가까이 가서 F로 베기(피해 4) · ⚡ 돌격(Q): 앞으로 확 달려가며 부딪힌 상대에게 피해 (10초마다)', '🌬️ 책사는 부채를 들어요 · F로 부채 평타(피해 1)', '📯 나팔 · 🛡️ 방패진은 책사 둘레 10걸음 안 우리 편에게만 · 🔥 화공은 빨간 원을 옮겨 그 자리에 불화살 비 (원 안 상대 모두 · 성문도)', '🤖 컴퓨터 병사도 검과 돌격으로 싸워요 · 🎯 역할 체험장도 새 방식으로 바뀌었어요'] },
   { id: '1011b', d: '10월 11일 (저녁)', items: ['⛏️ 전쟁터에 철광산이 하나 더 생겼어요 (철광산①·②) · 🔥 봉수대는 조금 옆으로 옮겼어요', '🧑‍🏫 선생님도 한 나라에 들어가 함께 싸울 수 있어요', '👁️ 관전 모드: 하늘에서 전쟁터를 내려다봐요 · 나라가 없을 때 \'하늘에서 관전하기\' 버튼 · ◀▶로 친구를 따라가요'] },
   { id: '1011a', d: '10월 11일', items: ['🏹 병사·공병·의원은 화면이 보는 방향으로 쏴요 · 바닥의 🎯 표시(빛기둥)가 떨어질 곳이에요 · 화면을 낮게 눕히면 멀리, 내려다보면 가까이 · 표시 가까이에 상대가 있으면 빨갛게 바뀌며 맞춰 줘요', '📜 책사 스킬 효과: 📯 나팔 = 우리 나라 발밑 금빛 고리 · 🛡️ 방패진 = 파란 방패 막 · 🔥 화공 = 하늘에서 불화살 비', '🔨 공병 성문 고치기는 한 번 고치면 5초 쉬어요'] },
@@ -16322,6 +16373,10 @@ function initSiegeUI() {
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
   $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 우리 마을 광장으로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
+  $('tpWhoMin').onchange = () => { fillWhoAdmin.key = ''; fillWhoAdmin(); };
+  $('tpWhoKick').onclick = async () => { const lim = +$('tpWhoMin').value, us = [...remotes.entries()].filter(([u, r]) => !r.target?.t && idleMin(u, r) >= lim).map(([u]) => u); if (!us.length) return; if (!(await confirmAction({ title: `💤 ${us.length}명의 접속을 끝낼까요?`, body: `${lim}분 넘게 아무것도 누르지 않은 친구들이에요. 화면에 '다시 들어가기' 버튼이 떠요.`, okText: '모두 내보내기' }))) return; kickUids(us); };
+  $('kickBack').onclick = () => location.reload();
+  setInterval(() => { if (isTeacher && !$('teacherPanel').classList.contains('hidden')) fillWhoAdmin(); }, 5000);
   $('tpSgMe').onchange = () => { sgw.meJoin = $('tpSgMe').checked; if (!sgw.meJoin && !S.siege?.on) delete sgw.assign[backend.uid]; fillSiegeAdmin(true); };
   $('tpSgWatch').onclick = () => { if (!S.siege) { toast('진행 중인 전쟁이 없어요. 왼쪽 👁️ 관전 버튼으로 마을을 볼 수 있어요', 'info'); return; } specStart(); };
   $('tbSpec').onclick = () => spec.on ? specStop() : specStart(); $('specBtn').onclick = specStart;
