@@ -3864,7 +3864,8 @@ function updatePlayer(dt) {
   let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -3896,6 +3897,7 @@ function updatePlayer(dt) {
   if (ny <= g) { ny = g; player.vy = 0; player.onGround = true; } else player.onGround = false;
   p.y = ny;
   if (p.y < -10) { p.set(0, 0.15, 8); player.vy = 0; }
+  if (attr.on) attrFollow(p, dt); // 🎠 놀이기구에 앉아 함께 움직여요
 
   const a = player.avatar;
   a.g.position.copy(p);
@@ -4090,6 +4092,7 @@ function sendPresence(time) {
    7. 상호작용
    ===================================================================== */
 let S = emptyState();
+const attrW = { swing: null, its: null }; // 🎠 놀이기구 (그네 모델은 마을을 만들 때 넣어요)
 let stateLoaded = false;
 let backend = null, joined = false;
 let myAnimal = 0, myShirt = 0, myHair = 0, myHairColor = 0, myBookUntil = 0, myNick = '';
@@ -5771,7 +5774,9 @@ function buildNewDecor(id) {
     mesh(TAPER, g, 0.9, 4.2, 0.9, 0x6B4A33, 0, 2.1, 0);
     for (const [x, y, z, r] of [[0, 5.6, 0, 3.2], [2.2, 5.0, 0.8, 2.0], [-2.2, 5.1, -0.6, 2.2], [0.4, 6.8, -1.2, 1.8], [-0.8, 5.0, 2.2, 1.8]]) mesh(SPH_MID, g, r, r * 0.8, r, [0x4FA04F, 0x5DB85F, 0x3E8A45][Math.abs(Math.round(x)) % 3], x, y, z, { solid: false, flat: true });
     box(g, 3.2, 0.2, 2.2, C.wood, 0, 0.55, 2.6); for (const x of [-1.4, 1.4]) for (const z of [1.7, 3.5]) box(g, 0.16, 0.5, 0.16, C.dark, x, 0.25, z, o);
-    box(g, 0.08, 0.08, 1.6, C.dark, 2.0, 3.6, -0.8, { solid: false, rx: 0 }); for (const z of [-1.3, -0.3]) cyl(g, 0.02, 2.6, 0xE8E2D6, 2.0, 2.3, z, o); box(g, 0.4, 0.08, 1.2, 0xE2584A, 2.0, 1.0, -0.8, o);
+    box(g, 0.08, 0.08, 1.6, C.dark, 2.0, 3.6, -0.8, { solid: false, rx: 0 });
+    { const sw = new THREE.Group(); sw.name = 'Swing'; sw.position.set(2.0, 3.6, -0.8); g.add(sw); // 🪢 그네 (탈 수 있어요 · 이름이 있어서 합치지 않아요)
+      for (const z of [-0.5, 0.5]) cyl(sw, 0.02, 2.6, 0xE8E2D6, 0, -1.3, z, o); box(sw, 0.4, 0.08, 1.2, 0xE2584A, 0, -2.6, 0, o); attrW.swing = sw; }
     top = 8.4;
   }
   makeLabel(g, [`${d.icon} ${d.name}`], 0.9, 0, top, 0);
@@ -9345,6 +9350,70 @@ function openCoinShop() {
     box.append(el2('p', 'hint', '🪙 반 동전 모으는 법: 마을 가게에 모은 것을 팔기 · 퀴즈와 공부로 능력치 올리기 (오른 만큼 쌓여요)'));
   });
 }
+/* ---------- 🎠 놀이기구 타기: 회전목마(학급 미션 보상) · 🎡 관람차(반 기부) · 🪢 큰 나무 그네 ----------
+   E로 타고, E나 점프로 내려요. 내 위치가 놀이기구를 따라 움직여서 친구 화면에도 타는 모습(앉은 몸짓)이 보여요. 저장하는 것은 없어요. */
+const attr = { on: false, k: '', i: 0, t: 0, a0: 0, laps: 0, last: 0 };
+const ATTR = { carousel: { icon: '🎠', name: '회전목마' }, wheel: { icon: '🎡', name: '관람차' }, swing: { icon: '🪢', name: '그네' } };
+const _aw = new V3(), _aws = new V3(), CAR_SC = 0.72; // 회전목마 지붕 아래에 맞게 몸을 조금 작게
+function attrReady(k) {
+  if (k === 'carousel') return !!rewardSpots.carousel?.built && !!rewardSpots.carousel.spin;
+  if (k === 'wheel') return !!fundV.wheel;
+  if (k === 'swing') return !!attrW.swing && attrW.swing.parent?.parent != null;
+  return false;
+}
+function attrBlock() { return isFrozen() || hideOn() && hideIn(backend?.uid) || kite.active || hv.travel || spec.on || isSeated(player.avatar) ? '지금은 탈 수 없어요' : ''; }
+function attrEnter(k) {
+  if (attr.on || !attrReady(k)) return; const why = attrBlock(); if (why) { toast(why, 'info'); return; }
+  attr.on = true; attr.k = k; attr.t = 0; attr.laps = 0;
+  if (k === 'carousel') attr.i = Math.floor(Math.random() * 4);
+  if (k === 'wheel') { const w = fundV.wheel, cabs = w.children.filter(c => c.userData.cab); let best = 0, by = Infinity; cabs.forEach((c, i) => { c.getWorldPosition(_aw); if (_aw.y < by) { by = _aw.y; best = i; } }); attr.i = best; attr.a0 = w.rotation.x; }
+  playAct(player.avatar, 'sit'); playSfx('pick');
+  toast(`${ATTR[k].icon} ${ATTR[k].name}에 탔어요! ${k === 'wheel' ? '한 바퀴 돌면 내려요 · ' : ''}E나 점프로 내려요`, 'success');
+}
+function attrExit(msg) {
+  if (!attr.on) return; const k = attr.k; attr.on = false; playAct(player.avatar, null); player.vy = 0;
+  const p = player.pos;
+  if (k === 'carousel') { const c = rewardSpots.carousel.spot.position, a = Math.atan2(p.x - c.x, p.z - c.z); p.set(c.x + Math.sin(a) * 4.6, 0.15, c.z + Math.cos(a) * 4.6); }
+  else if (k === 'wheel') { const g = fundV.wheel.parent.position; p.set(g.x - 3, 0.3, g.z); }
+  else if (k === 'swing') { attrW.swing.getWorldPosition(_aw); p.set(_aw.x + 2.2, 0.15, _aw.z); attrW.swing.rotation.z = 0; }
+  if (msg) toast(msg, 'info');
+}
+function attrFollow(p, dt) { // 앉은 자리 = 놀이기구의 지금 위치
+  if (!attrReady(attr.k)) { attrExit(); return; }
+  attr.t += dt; player.vy = 0; player.onGround = true;
+  if (attr.k === 'carousel') {
+    const spin = rewardSpots.carousel.spin, h = spin.children.filter(c => c.isGroup)[attr.i]; if (!h) { attrExit(); return; }
+    h.getWorldPosition(_aw); const sc = h.getWorldScale(_aws).y; p.set(_aw.x, _aw.y + 1.56 * sc - 0.45 * CAR_SC + Math.sin(attr.t * 2.4 + attr.i) * 0.15 * sc, _aw.z); // 안장 높이 (회전목마 크기에 맞춰)
+    player.heading = spin.rotation.y - attr.i * Math.PI / 2 + Math.PI; // 말이 보는 쪽
+    if (attr.t > 40) attrExit('🎠 회전목마가 멈췄어요. 또 타요!');
+  } else if (attr.k === 'wheel') {
+    const w = fundV.wheel, cab = w.children.filter(c => c.userData.cab)[attr.i]; if (!cab) { attrExit(); return; }
+    cab.getWorldPosition(_aw); p.set(_aw.x, _aw.y - 1.85, _aw.z); player.heading = -Math.PI / 2;
+    if (w.rotation.x - attr.a0 > Math.PI * 2 + 0.05) attrExit('🎡 한 바퀴! 관람차에서 내렸어요');
+  } else if (attr.k === 'swing') {
+    const sw = attrW.swing, th = Math.sin(attr.t * 2.3) * Math.min(0.85, 0.2 + attr.t * 0.12); sw.rotation.z = th;
+    sw.parent.updateMatrixWorld(true); sw.getWorldPosition(_aw); const L = 2.55;
+    p.set(_aw.x + Math.sin(th) * L, _aw.y - Math.cos(th) * L - 0.5, _aw.z); player.heading = Math.PI / 2;
+  }
+}
+function updateAttr() { // 타는 곳 (E) — 처음 한 번 만들어요
+  if (!attrW.its) {
+    attrW.its = {
+      carousel: addInteract({ pos: new V3(0, -99, 0), r: 4.8, dy: 2, text: () => !attr.on && attrReady('carousel') ? ['🎠 회전목마 타기', 'E · 점프로 내려요'] : null, run: () => attrEnter('carousel') }),
+      wheel: addInteract({ pos: new V3(0, -99, 0), r: 3.6, dy: 2, text: () => !attr.on && attrReady('wheel') ? ['🎡 관람차 타기', '한 바퀴 돌아요 (약 40초)'] : null, run: () => attrEnter('wheel') }),
+      swing: addInteract({ pos: new V3(0, -99, 0), r: 2.6, dy: 1.5, text: () => !attr.on && attrReady('swing') ? ['🪢 그네 타기', 'E · 점프로 내려요'] : null, run: () => attrEnter('swing') }),
+      off: addInteract({ pos: new V3(0, -99, 0), r: 3, dy: 1, text: () => attr.on ? [`${ATTR[attr.k].icon} 내리기`, ATTR[attr.k].name] : null, run: () => attrExit() }),
+    };
+  }
+  const I = attrW.its;
+  if (attrReady('carousel')) I.carousel.pos.copy(rewardSpots.carousel.spot.position).setY(0.5); else I.carousel.pos.set(0, -99, 0);
+  if (attrReady('wheel')) { const g = fundV.wheel.parent.position; I.wheel.pos.set(g.x - 2.5, 0.5, g.z); } else I.wheel.pos.set(0, -99, 0);
+  if (attrReady('swing')) { attrW.swing.getWorldPosition(_aw); I.swing.pos.set(_aw.x, 0.5, _aw.z); } else I.swing.pos.set(0, -99, 0);
+  if (attr.on) I.off.pos.copy(player.pos); else I.off.pos.set(0, -99, 0);
+  { const on = attrReady('carousel'), c = on ? rewardSpots.carousel.spot.position : null; // 🎠 회전목마에 앉은 사람(나·친구)은 몸을 조금 작게
+    const fit = (a, p, sitting) => { const k = on && sitting && Math.hypot(p.x - c.x, p.z - c.z) < 2.6 && p.y > 0.2 ? CAR_SC : 1; if (a.g.scale.x !== k) a.g.scale.setScalar(k); };
+    fit(player.avatar, player.pos, attr.on && attr.k === 'carousel'); for (const r of remotes.values()) fit(r.a, r.pos, isSeated(r.a)); }
+}
 /* ---------- 🏆 주간 능력치 랭킹: 이번 주(월~일)에 오른 능력치를 모아 능력치마다 1~5등만 보여 줘요 (나는 내 순위도) ----------
    저장: state/rank/{주 번호}/{기기} = { n: 닉네임, eng, soc, math, read } (내 칸만 · 줄일 수 없어요) · 선생님 기기가 2주 지난 기록은 지워요
    보상(지난주 1~3등, 능력치마다): 다음 한 주 이름표 칭호 🥇🔤 · 🐚 100/70/50 · ⭐ 탈것 꾸미기 전용 아이템 하나(1등은 둘) — 그 기기가 한 번만 받아요 */
@@ -12823,7 +12892,8 @@ function buildFundProject(i) {
     for (let k = 0; k < 8; k++) {
       const a = k / 8 * Math.PI * 2; box(wheel, 0.1, 12, 0.1, 0xFFFFFF, 0, 0, 0, { solid: false }).rotation.x = a;
       const cab = new THREE.Group(); cab.position.set(0, Math.cos(a) * 6, Math.sin(a) * 6); wheel.add(cab);
-      box(cab, 1.2, 1.0, 1.2, cols[k], 0, -0.6, 0, o); box(cab, 1.3, 0.12, 1.3, 0xFFFFFF, 0, -0.05, 0, o); cab.userData.cab = true;
+      box(cab, 1.7, 0.7, 1.7, cols[k], 0, -2.2, 0, o); box(cab, 1.9, 0.14, 1.9, 0xFFFFFF, 0, -0.05, 0, o); cab.userData.cab = true; // 🎡 사람이 앉아 보이는 열린 칸
+      for (const sx of [-0.8, 0.8]) for (const sz of [-0.8, 0.8]) box(cab, 0.08, 1.6, 0.08, 0xFFFFFF, sx, -0.9, sz, o);
     }
     fundV.wheel = wheel;
   } else if (f.id === 'fountain') {
@@ -14349,6 +14419,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1013c', d: '10월 13일 (오후)', items: ['🎠 놀이기구를 직접 타요! 회전목마 · 🎡 바닷가 관람차(한 바퀴 약 40초) · 🪢 큰 나무 그네 — 앞에서 E, 내릴 때는 E나 점프'] },
   { id: '1013b', d: '10월 13일', items: ['🐞 건의함에 글을 쓰는 동안 친구들 활동 때문에 글이 지워지던 문제를 고쳤어요 · 쓰던 글은 창을 닫았다 열어도 남아 있어요'] },
   { id: '1013a', d: '10월 13일', items: ['🎨 탈것 꾸미기: 색 10가지 · 장식(깃발·풍선·꽃 화환·방울·💎 보석) — 탈것 가게에서 🎨 · ⭐ 금색·별 반짝이·왕관·무지개 꼬리는 랭킹 보상', '🏠 집 모양 4가지 더 (🏯 한옥 · 🌲 통나무집 · 🏰 꼬마 성 · 🧁 컵케이크 집) · 색 4가지 더 · 🏷️ 집 이름 달기 · 🏚️ 집 허물기(땅은 그대로, 🐚120 돌려받기)', '🏆 이번 주 능력치 랭킹 (📊 능력치 창) — 능력치마다 1~5등 · 지난주 1~3등은 이름표 칭호 🥇 · 🐚 100/70/50 · ⭐ 꾸미기 아이템', '🎪 행사: 🏡 예쁜 집 자랑 대회 · 🚲 탈것 퍼레이드 · 🎣 반 전체 낚시 대회 · 💎 보물찾기 (선생님이 열어요)', '⛏️ 수학 마을: 💎 보석 가공소(약수·배수·분수) · 🧩 도형 공방(둘레·넓이) + 반 모자이크 · ⚖️ 균형 저울 다리(□ 구하기) → 균형의 탑 보물'] },
   { id: '1012i', d: '10월 12일 (밤)', items: ['🚲 탈것 가게! 반 동전으로 탈것 10가지(스케이트보드·킥보드·거북이·자전거·조랑말·스쿠터·꼬마 자동차·구름·공룡·용)를 열면 우리 반 모두가 타요 · 🚲 버튼이나 V 키', '🪙 반 동전 값이 올랐어요 — 탈것은 🪙4,000~45,000 · 이벤트도 10배 (불꽃놀이 🪙300 ~ 공부 보너스 🪙1,200)', '🐎 공성전 왕은 하얀 말을 타고 30% 빨리 달려요', '🎭 역할은 다섯 역할(왕·병사·의원·대장장이·책사)에 1명씩 먼저 채워요 · 다 차면 6명째부터 나머지 역할에 고르게'] },
@@ -17733,7 +17804,7 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
-  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updateRides(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePest(dt); }
+  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
