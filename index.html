@@ -2291,8 +2291,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async festAdd(k) { if (!st.fest || Date.now() > st.fest.until) return { ok: false }; (st.festc ||= {})[k] = (st.festc[k] || 0) + 1; emit(); return { ok: true }; },
     async festFind(i) { const t = ((st.festc ||= {}).t ||= {}); if (t[i] || !st.fest || Date.now() > st.fest.until) return { ok: false }; t[i] = 'me'; emit(); return { ok: true }; },
     async festLap(n) { (st.festp ||= {}).me = n; emit(); return { ok: true }; },
-    async rideBuy(k, price) { if ((st.rides ||= {})[k]) return { ok: false, reason: 'have' }; if ((st.coins || 0) - (st.coinSpent || 0) < price) return { ok: false, reason: 'money' }; st.rides[k] = 1; st.coinSpent = (st.coinSpent || 0) + price; emit(); return { ok: true }; },
-    async coinEvent(k, price, dur) { if (st.cev && Date.now() < st.cev.until + 15000) return { ok: false, reason: 'busy' }; if ((st.coins || 0) - (st.coinSpent || 0) < price) return { ok: false, reason: 'money' }; st.coinSpent = (st.coinSpent || 0) + price; st.cev = { k, at: Date.now(), until: Date.now() + dur * 1000 }; emit(); return { ok: true }; },
+    async rideBuy(k, price) { if ((st.rides ||= {})[k]) return { ok: false, reason: 'have' }; if (price > 0 && (st.coins || 0) - (st.coinSpent || 0) < price) return { ok: false, reason: 'money' }; st.rides[k] = 1; st.coinSpent = (st.coinSpent || 0) + price; emit(); return { ok: true }; },
+    async coinEvent(k, price, dur) { if (st.cev && Date.now() < st.cev.until + 15000) return { ok: false, reason: 'busy' }; if (price > 0 && (st.coins || 0) - (st.coinSpent || 0) < price) return { ok: false, reason: 'money' }; st.coinSpent = (st.coinSpent || 0) + price; st.cev = { k, at: Date.now(), until: Date.now() + dur * 1000 }; emit(); return { ok: true }; },
   };
 }
 
@@ -2724,13 +2724,13 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       try { await D.set(R(`state/rank/${wk}/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async rideBuy(k, price) { // 🚲 탈것 열기: 탈것 칸 먼저(한 번만 · 규칙이 막아요) → 쓴 동전 늘리기
       if (cache.rides?.[k]) return { ok: false, reason: 'have' };
-      if ((cache.coins || 0) - (cache.coinSpent || 0) < price) return { ok: false, reason: 'money' };
+      if (price > 0 && (cache.coins || 0) - (cache.coinSpent || 0) < price) return { ok: false, reason: 'money' };
       try { const r = await D.runTransaction(R(`state/rides/${k}`), c => c ? undefined : 1); if (!r.committed) return { ok: false, reason: 'have' }; } catch (e) { return { ok: false, reason: 'rules' }; }
-      try { await D.runTransaction(R('state/coinSpent'), c => (c || 0) + price); } catch (e) {} return { ok: true }; },
+      if (price > 0) try { await D.runTransaction(R('state/coinSpent'), c => (c || 0) + price); } catch (e) {} return { ok: true }; },
     async coinEvent(k, price, dur) { // 🎁 반 동전 이벤트: 이벤트 칸 먼저(진행 중이면 규칙이 막아요) → 쓴 동전 늘리기
-      if ((cache.coins || 0) - (cache.coinSpent || 0) < price) return { ok: false, reason: 'money' };
+      if (price > 0 && (cache.coins || 0) - (cache.coinSpent || 0) < price) return { ok: false, reason: 'money' };
       try { await D.set(R('state/cev'), { k, at: D.serverTimestamp(), until: now() + dur * 1000 }); } catch (e) { return { ok: false, reason: 'busy' }; }
-      try { await D.runTransaction(R('state/coinSpent'), c => (c || 0) + price); return { ok: true }; } catch (e) { return { ok: true }; } },
+      if (!(price > 0)) return { ok: true }; try { await D.runTransaction(R('state/coinSpent'), c => (c || 0) + price); return { ok: true }; } catch (e) { return { ok: true }; } },
     async kickPlayers(uids) { // 💤 선생님: 접속 끝내기 (하루 지난 기록은 지워요)
       try { const t = Date.now() + offset, up = {}; for (const u of uids) up[`state/kick/${u}`] = D.serverTimestamp();
         for (const [u, v] of Object.entries(cache.kick || {})) if (t - v > 86400000 && !uids.includes(u)) up[`state/kick/${u}`] = null;
@@ -4604,7 +4604,7 @@ async function join(practice, asTeacher = false) {
 
   if (asTeacher) { // 학생 입장(연습 모드 포함)에서는 선생님 화면을 보여 주지 않아요
     isTeacher = await backend.checkTeacher();
-    renderTeachBar();
+    renderTeachBar(); renderCoinChip(); saveBag(); // 🧑‍🏫 선생님 지갑(무한)으로
     $('teacherBtn').classList.remove('hidden');
   }
   renderRoleBtn();
@@ -8550,13 +8550,21 @@ function gainCritter(c) {
 const coinNow = () => S.coins || 0; // 지금까지 모은 합계 (마을 발전 기준 · 줄지 않아요)
 const coinAvail = () => Math.max(0, (S.coins || 0) - (S.coinSpent || 0)); // 이벤트에 쓸 수 있는 반 동전
 function earnShell(n) { bag.shell = (bag.shell || 0) + n; saveBag(); }
+const T_SHELL = 999999; // 🧑‍🏫 선생님 기기: 조개돈 무한 (학생 때 조개돈은 bag.shellStu에 따로 보관)
+function teacherWallet() {
+  if (isTeacher) { if (bag.shellStu == null) bag.shellStu = bag.shell || 0; if (bag.shell !== T_SHELL) bag.shell = T_SHELL; }
+  else if (bag.shellStu != null) { bag.shell = bag.shellStu; delete bag.shellStu; }
+}
+const coinCan = (price) => isTeacher || coinAvail() >= price; // 🧑‍🏫 선생님은 반 동전을 쓰지 않고 무한으로
 function renderCoinChip() {
-  const sc = $('shellChip'); if (sc) sc.textContent = `🐚 ${bag.shell || 0}`;
+  teacherWallet();
+  const sc = $('shellChip'); if (sc) sc.textContent = isTeacher ? '🐚 ∞' : `🐚 ${bag.shell || 0}`;
   const el = $('coinChip'); if (!el) return;
   el.textContent = `🪙 ${coinAvail()}`;
   el.title = `반 동전 · 눌러서 모두를 위한 이벤트 열기 (모은 합계 ${coinNow()})${backend?.mode === 'firebase' ? '' : ' · 이 브라우저에만 저장돼요'}`;
 }
 async function earnCoins(n) { // 한 번에 200까지 (서버 규칙과 같아요)
+  if (isTeacher) return true; // 🧑‍🏫 선생님 활동은 반 동전에 더하지 않아요 (따로 관리)
   let ok = true;
   for (let left = n; left > 0 && ok; left -= 200) ok = (await backend.addCoins(Math.min(200, left))).ok;
   return ok;
@@ -9339,9 +9347,9 @@ function openCoinShop() {
     for (const [k, E] of Object.entries(CEV)) {
       const row = el2('div', 'sg-row'), txt = el2('span', 'sg-name', `${E.icon} ${E.name} · 🪙${E.price}`);
       const b = el2('button', 'btn', '열기'); b.style.background = '#FFE066';
-      b.disabled = cevBusy() || coinAvail() < E.price || cevToday() >= CEV_PER_DAY;
+      b.disabled = cevBusy() || !coinCan(E.price) || (!isTeacher && cevToday() >= CEV_PER_DAY);
       b.onclick = async () => {
-        b.disabled = true; const r = await backend.coinEvent(k, E.price, E.dur);
+        b.disabled = true; const r = await backend.coinEvent(k, isTeacher ? 0 : E.price, E.dur); // 🧑‍🏫 선생님은 반 동전을 쓰지 않아요
         if (r.ok) { bag.cev.n++; saveBag(); closeLife(); }
         else { toast(r.reason === 'money' ? '🪙 반 동전이 모자라요' : r.reason === 'busy' ? '⏳ 다른 이벤트가 진행 중이에요' : '⚠️ 이벤트를 열지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); refillLife(); }
       };
@@ -9421,6 +9429,7 @@ const RANK_SHELL = [100, 70, 50], MEDAL = ['🥇', '🥈', '🥉'], RANK_STAR = 
 const weekNum = () => Math.floor((dayNum() + 3) / 7); // 월요일에 바뀌어요 (한국 시간)
 const rankW = { t: 0, sent: '', checked: 0 };
 function rankAdd(k, n) {
+  if (isTeacher) return; // 🧑‍🏫 선생님은 랭킹에 들어가지 않아요
   const w = weekNum(); if (!bag.wkp || bag.wkp.w !== w) bag.wkp = { w, eng: 0, soc: 0, math: 0, read: 0 };
   bag.wkp[k] = Math.round(((bag.wkp[k] || 0) + n) * 10) / 10; clearTimeout(rankW.t); rankW.t = setTimeout(rankPush, 2500);
 }
@@ -9754,10 +9763,10 @@ function openRides() {
         const dc = el2('button', 'btn', '🎨'); dc.title = '꾸미기'; dc.setAttribute('aria-label', `${R0.name} 꾸미기`); dc.onclick = () => openRideDeco(R0.k); row.append(el2('span', 'ride-ic', R0.icon), tx, dc, b); box.append(row); continue; }
       else {
         b.textContent = `🪙${R0.price.toLocaleString()} 열기`; b.style.background = '#CDEFC2';
-        b.disabled = coinAvail() < R0.price || (!isTeacher && rideBoughtToday());
+        b.disabled = !coinCan(R0.price) || (!isTeacher && rideBoughtToday());
         b.onclick = async () => {
-          if (!(await confirmAction({ title: `${R0.icon} ${R0.name}을(를) 열까요?`, body: `반 동전 🪙${R0.price.toLocaleString()}개를 써서 우리 반 모두가 ${R0.name}을(를) 탈 수 있게 해요.\n반 동전은 모두가 함께 모은 거예요. 친구들과 의논했나요?`, okText: '열기' }))) return;
-          b.disabled = true; const r = await backend.rideBuy(R0.k, R0.price);
+          if (!(await confirmAction({ title: `${R0.icon} ${R0.name}을(를) 열까요?`, body: isTeacher ? `🧑‍🏫 선생님 기기라 반 동전은 쓰지 않아요. 우리 반 모두가 ${R0.name}을(를) 탈 수 있게 열어요.` : `반 동전 🪙${R0.price.toLocaleString()}개를 써서 우리 반 모두가 ${R0.name}을(를) 탈 수 있게 해요.\n반 동전은 모두가 함께 모은 거예요. 친구들과 의논했나요?`, okText: '열기' }))) return;
+          b.disabled = true; const r = await backend.rideBuy(R0.k, isTeacher ? 0 : R0.price);
           if (r.ok) { if (!isTeacher) bag.rideBuy = dayNum(); rideMount(R0.k); playSfx('fanfare'); }
           else toast(r.reason === 'money' ? '🪙 반 동전이 모자라요' : r.reason === 'have' ? '✅ 이미 열린 탈것이에요' : '⚠️ 탈것을 열지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn');
           refillLife();
@@ -10800,7 +10809,7 @@ async function switchRole(toTeacher) {
   toast(`🧑‍🏫 선생님 모드로 바꿨어요. 위쪽 🧑‍🏫 버튼으로 관리 화면을 열어요${backend.mode === 'firebase' ? '' : ' (연습 모드: 이 브라우저에서만)'}`, 'success');
 }
 function afterRoleChange() {
-  renderTeachBar(); renderSoundBtn(); refreshSyncStatus(); renderRoleBtn();
+  renderTeachBar(); renderSoundBtn(); refreshSyncStatus(); renderRoleBtn(); saveBag(); // 🐚 선생님 무한 ↔ 학생 조개돈 되돌리기
   if (!$('teacherPanel').classList.contains('hidden')) fillTeacherPanel();
 }
 function renderRoleBtn() {
@@ -14419,6 +14428,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1013d', d: '10월 13일 (오후)', items: ['🧑‍🏫 선생님 기기는 조개돈·반 동전을 따로 써요 (무한) — 우리 반 동전은 줄지 않아요'] },
   { id: '1013c', d: '10월 13일 (오후)', items: ['🎠 놀이기구를 직접 타요! 회전목마 · 🎡 바닷가 관람차(한 바퀴 약 40초) · 🪢 큰 나무 그네 — 앞에서 E, 내릴 때는 E나 점프'] },
   { id: '1013b', d: '10월 13일', items: ['🐞 건의함에 글을 쓰는 동안 친구들 활동 때문에 글이 지워지던 문제를 고쳤어요 · 쓰던 글은 창을 닫았다 열어도 남아 있어요'] },
   { id: '1013a', d: '10월 13일', items: ['🎨 탈것 꾸미기: 색 10가지 · 장식(깃발·풍선·꽃 화환·방울·💎 보석) — 탈것 가게에서 🎨 · ⭐ 금색·별 반짝이·왕관·무지개 꼬리는 랭킹 보상', '🏠 집 모양 4가지 더 (🏯 한옥 · 🌲 통나무집 · 🏰 꼬마 성 · 🧁 컵케이크 집) · 색 4가지 더 · 🏷️ 집 이름 달기 · 🏚️ 집 허물기(땅은 그대로, 🐚120 돌려받기)', '🏆 이번 주 능력치 랭킹 (📊 능력치 창) — 능력치마다 1~5등 · 지난주 1~3등은 이름표 칭호 🥇 · 🐚 100/70/50 · ⭐ 꾸미기 아이템', '🎪 행사: 🏡 예쁜 집 자랑 대회 · 🚲 탈것 퍼레이드 · 🎣 반 전체 낚시 대회 · 💎 보물찾기 (선생님이 열어요)', '⛏️ 수학 마을: 💎 보석 가공소(약수·배수·분수) · 🧩 도형 공방(둘레·넓이) + 반 모자이크 · ⚖️ 균형 저울 다리(□ 구하기) → 균형의 탑 보물'] },
