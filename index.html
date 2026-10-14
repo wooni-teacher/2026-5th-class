@@ -1934,7 +1934,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1970,7 +1970,7 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
-    coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -2170,6 +2170,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async gymAdd(k, n) { st.gym ||= {}; st.gym[k] = (st.gym[k] || 0) + n; emit(); return { ok: true }; },
     async ideaPost(t) { st.idea ||= {}; st.idea[`me_${Date.now().toString(36)}`] = { t, at: Date.now() }; emit(); return { ok: true }; },
     async engStar(n) { st.eng ||= {}; st.eng[n] = (st.eng[n] || 0) + 1; emit(); return { ok: true }; },
+    async evClear(n, nm) { const c = ((st.evc ||= {}).me ||= {}); c.nm = nm; c['l' + n] = (c['l' + n] || 0) + 1; emit(); return { ok: true }; },
     async badSet(c, upd) { // 🏸 배드민턴 (연습 모드: 이 브라우저에서만 · 🤖와 함께)
       const o = st.badm?.[c]; if (!o) return { ok: false };
       for (const [path, val] of Object.entries(upd)) { const parts = path.split('/'); let x = o; for (const k of parts.slice(0, -1)) { if (!x[k] || typeof x[k] !== 'object') x[k] = {}; x = x[k]; } const last = parts[parts.length - 1]; if (val === null) delete x[last]; else x[last] = JSON.parse(JSON.stringify(val)); }
@@ -2287,6 +2288,9 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     presence() {}, leave() {}, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
+    async attrClaim(k) { const c = (st.attr ||= {})[k]; if (c && c.u !== 'me' && Date.now() - c.t < ATTR_STALE) return { ok: false }; st.attr[k] = { u: 'me', t: Date.now() }; emit(); return { ok: true }; },
+    async attrFree(k) { if (st.attr?.[k]?.u === 'me') { delete st.attr[k]; emit(); } return { ok: true }; },
+    async attrQueue(on) { st.attrq ||= {}; if (on) st.attrq.me = Date.now(); else delete st.attrq.me; emit(); return { ok: true }; },
     async festVote(t) { if (!st.fest || Date.now() > st.fest.until) return { ok: false }; (st.festv ||= {}).me = t; emit(); return { ok: true }; },
     async festAdd(k) { if (!st.fest || Date.now() > st.fest.until) return { ok: false }; (st.festc ||= {})[k] = (st.festc[k] || 0) + 1; emit(); return { ok: true }; },
     async festFind(i) { const t = ((st.festc ||= {}).t ||= {}); if (t[i] || !st.fest || Date.now() > st.fest.until) return { ok: false }; t[i] = 'me'; emit(); return { ok: true }; },
@@ -2562,6 +2566,8 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async ideaPost(t) { // 💡 소원 분수 건의: 열쇠 = 내 기기 번호_시각
       try { await D.set(R(`state/idea/${uid}_${Date.now().toString(36)}`), { t, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; }
     },
+    async evClear(n, nm) { // 🏁 영어 마을 레슨 클리어 횟수 (내 칸 · +1씩)
+      try { await D.runTransaction(R(`state/evc/${uid}`), c => ({ ...(c || {}), nm, ['l' + n]: ((c || {})['l' + n] || 0) + 1 })); return { ok: true }; } catch (e) { return { ok: false }; } },
     async engStar(n) { // 🗽 영어 마을: 반 전체 영어 별 +1
       try { const r = await D.runTransaction(R(`state/eng/${n}`), c => (c || 0) + 1); return { ok: r.committed }; } catch (e) { return { ok: false }; }
     },
@@ -2715,6 +2721,10 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     presence(data) { if (online) D.set(me, data).catch(() => {}); },
     leave() { D.remove(me).catch(() => {}); D.onDisconnect(me).cancel().catch(() => {}); },
     async upVote(k) { try { await D.set(R(`state/upvote/v/${uid}`), k); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async attrClaim(k) { // 🎠 놀이기구 자리 (한 자리에 한 명 · 1분 지나면 빈 자리로)
+      try { const r = await D.runTransaction(R(`state/attr/${k}`), c => (!c || c.u === uid || now() - (c.t || 0) > ATTR_STALE) ? { u: uid, t: D.serverTimestamp() } : undefined); return { ok: !!r.committed && r.snapshot.val()?.u === uid }; } catch (e) { return { ok: false }; } },
+    async attrFree(k) { if (cache.attr?.[k]?.u !== uid) return { ok: true }; try { await D.remove(R(`state/attr/${k}`)); } catch (e) {} return { ok: true }; },
+    async attrQueue(on) { try { await D.set(R(`state/attrq/${uid}`), on ? D.serverTimestamp() : null); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎡 관람차 줄
     async festVote(t) { try { await D.set(R(`state/festv/${uid}`), t); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎪 행사 투표 (1인 1표 · 바꿀 수 있어요)
     async festAdd(k) { try { await D.runTransaction(R(`state/festc/${k}`), c => (c || 0) + 1); return { ok: true }; } catch (e) { return { ok: false }; } }, // 반 전체 수 +1
     async festFind(i) { try { const r = await D.runTransaction(R(`state/festc/t/${i}`), c => c ? undefined : uid); return { ok: !!r.committed && r.snapshot.val() === uid }; } catch (e) { return { ok: false }; } }, // 💎 먼저 연 사람만
@@ -2747,7 +2757,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'rideBuy', 'mathMo', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'evClear', 'rideBuy', 'mathMo', 'attrClaim', 'attrQueue', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -4977,10 +4987,10 @@ function buildReward(id, parent) {
     cyl(g, 0.55, 1.2, 0xFFFFFF, 0, 0.9, 0, o); // 가운데 기둥 받침
     const spin = new THREE.Group(); spin.name = 'Spin'; // 이름이 있으면 합치지 않아요 (계속 돌아요)
     g.add(spin);
-    [0xFFFFFF, 0xFFB3C7, 0xB9DCFF, 0xFFE38A].forEach((col, i) => {
-      const a = i * Math.PI / 2, x = Math.cos(a) * 2.2, z = Math.sin(a) * 2.2;
+    [0xFFFFFF, 0xC9A27A, 0xFFB3C7, 0xB58CF0, 0xB9DCFF, 0x9BE3A0, 0xFFE38A, 0xFFB07A].forEach((col, i) => { // 🎠 말 8마리 (한 마리에 한 명)
+      const a = i * Math.PI / 4, x = Math.cos(a) * 2.2, z = Math.sin(a) * 2.2;
       cyl(spin, 0.06, 3.6, C.gold, x, 2.1, z, { solid: false });
-      horse(spin, col, x, z, a);
+      horse(spin, col, x, z, a); spin.children[spin.children.length - 1].userData.a = a;
     });
     mesh(CONE, g, 3.7, 1.6, 3.7, C.red, 0, 5.0, 0, o); // 원뿔 지붕
     for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8; ball(g, 0.3, k % 2 ? 0xFFFFFF : C.gold, Math.cos(a) * 3.6, 4.15, Math.sin(a) * 3.6, o); } // 지붕 가장자리 방울
@@ -6851,7 +6861,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -9358,69 +9368,115 @@ function openCoinShop() {
     box.append(el2('p', 'hint', '🪙 반 동전 모으는 법: 마을 가게에 모은 것을 팔기 · 퀴즈와 공부로 능력치 올리기 (오른 만큼 쌓여요)'));
   });
 }
-/* ---------- 🎠 놀이기구 타기: 회전목마(학급 미션 보상) · 🎡 관람차(반 기부) · 🪢 큰 나무 그네 ----------
-   E로 타고, E나 점프로 내려요. 내 위치가 놀이기구를 따라 움직여서 친구 화면에도 타는 모습(앉은 몸짓)이 보여요. 저장하는 것은 없어요. */
-const attr = { on: false, k: '', i: 0, t: 0, a0: 0, laps: 0, last: 0 };
+/* ---------- 🎠 놀이기구 타기: 회전목마(말 8마리) · 🎡 관람차(8칸 · 줄 서기) · 🪢 큰 나무 그네 ----------
+   · 한 자리에 한 명: state/attr/{c0~c7 말 · w0~w7 관람차 칸 · s0 그네} = { u: 기기, t: 탄 시각 } (25초마다 다시 써서 지켜요 · 1분 지나면 빈 자리)
+   · 관람차 줄: state/attrq/{기기} = 줄 선 시각 → 맨 앞 사람이 빈 칸이 맨 아래에 올 때 타요
+   · 회전목마·관람차·그네는 서버 시각으로 움직여서 모든 화면에서 같은 자리에 있어요 · 친구가 탄 모습도 그 자리에 정확히 그려요 */
+const attr = { on: false, k: '', key: '', i: 0, t: 0, a0: 0, beat: 0, busy: false, qAt: 0 };
 const ATTR = { carousel: { icon: '🎠', name: '회전목마' }, wheel: { icon: '🎡', name: '관람차' }, swing: { icon: '🪢', name: '그네' } };
+const ATTR_STALE = 60000, WHEEL_N = 8;
 const _aw = new V3(), _aws = new V3(), CAR_SC = 0.72; // 회전목마 지붕 아래에 맞게 몸을 조금 작게
+const nowS = () => (backend?.now ? backend.now() : Date.now()) / 1000;
+const carAng = () => nowS() * 0.8, wheelAng = () => nowS() * 0.15, swingAng = () => Math.sin(nowS() * 2.3) * 0.7;
 function attrReady(k) {
   if (k === 'carousel') return !!rewardSpots.carousel?.built && !!rewardSpots.carousel.spin;
   if (k === 'wheel') return !!fundV.wheel;
   if (k === 'swing') return !!attrW.swing && attrW.swing.parent?.parent != null;
   return false;
 }
+const attrClaimOf = (key) => { const c = S.attr?.[key]; return c && backend && backend.now() - (c.t || 0) < ATTR_STALE ? c : null; };
+const attrFreeSeat = (key) => { const c = attrClaimOf(key); return !c || c.u === backend?.uid; };
+const carFree = () => [...Array(8).keys()].filter(i => attrFreeSeat('c' + i));
+const wheelQueue = () => Object.entries(S.attrq || {}).filter(([, t]) => backend.now() - (t || 0) < 180000).sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? -1 : 1)).map(([u]) => u);
+function wheelBottom() { const step = Math.PI * 2 / WHEEL_N, r = wheelAng() % (Math.PI * 2), x = ((Math.PI - r) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2), k = Math.round(x / step) % WHEEL_N; return { k, off: Math.abs(x - Math.round(x / step) * step) }; }
 function attrBlock() { return isFrozen() || hideOn() && hideIn(backend?.uid) || kite.active || hv.travel || spec.on || isSeated(player.avatar) ? '지금은 탈 수 없어요' : ''; }
-function attrEnter(k) {
-  if (attr.on || !attrReady(k)) return; const why = attrBlock(); if (why) { toast(why, 'info'); return; }
-  attr.on = true; attr.k = k; attr.t = 0; attr.laps = 0;
-  if (k === 'carousel') attr.i = Math.floor(Math.random() * 4);
-  if (k === 'wheel') { const w = fundV.wheel, cabs = w.children.filter(c => c.userData.cab); let best = 0, by = Infinity; cabs.forEach((c, i) => { c.getWorldPosition(_aw); if (_aw.y < by) { by = _aw.y; best = i; } }); attr.i = best; attr.a0 = w.rotation.x; }
+function seatPos(key, out) { // 자리의 지금 위치(발 높이)와 보는 쪽
+  const k = key[0], i = +key.slice(1);
+  if (k === 'c') { const spin = rewardSpots.carousel?.spin, h = spin?.children.filter(c => c.isGroup)[i]; if (!h) return null; h.getWorldPosition(out); const sc = h.getWorldScale(_aws).y; out.y += 1.56 * sc - 0.45 * CAR_SC + Math.sin(nowS() * 2.4 + i) * 0.15 * sc; return { h: spin.rotation.y - (h.userData.a ?? i * Math.PI / 4) + Math.PI, sc: CAR_SC }; }
+  if (k === 'w') { const cab = fundV.wheel?.children.filter(c => c.userData.cab)[i]; if (!cab) return null; cab.getWorldPosition(out); out.y -= 1.85; return { h: -Math.PI / 2, sc: 1 }; }
+  if (k === 's') { const sw = attrW.swing; if (!sw) return null; const th = swingAng(); sw.rotation.z = th; sw.parent.updateMatrixWorld(true); sw.getWorldPosition(out); out.x += Math.sin(th) * 2.55; out.y += -Math.cos(th) * 2.55 - 0.5; return { h: Math.PI / 2, sc: 1 }; }
+  return null;
+}
+async function attrEnter(k, seat) {
+  if (attr.on || attr.busy || !attrReady(k)) return; const why = attrBlock(); if (why) { toast(why, 'info'); return; }
+  let key = '';
+  attr.busy = true;
+  try {
+    if (k === 'carousel') { const free = shuf(carFree()); for (const i of free) { if ((await backend.attrClaim('c' + i)).ok) { key = 'c' + i; break; } } if (!key) { toast('🎠 말이 모두 찼어요. 잠깐 뒤에 다시 타요!', 'info'); return; } }
+    else if (k === 'swing') { if (!(await backend.attrClaim('s0')).ok) { toast('🪢 친구가 그네를 타고 있어요. 차례를 기다려요!', 'info'); return; } key = 's0'; }
+    else if (k === 'wheel') { key = 'w' + seat; }
+  } finally { attr.busy = false; }
+  attr.on = true; attr.k = k; attr.key = key; attr.t = 0; attr.beat = performance.now(); attr.a0 = wheelAng();
+  if (k === 'carousel') { attr.cam = [camDist, camPitch]; camDist = 3.2; camPitch = 0.14; if (player.avatar.badge) player.avatar.badge.visible = false; } // 🎠 말 등 위에서 앞을 보는 눈높이 (내 이름표는 잠깐 숨겨요)
   playAct(player.avatar, 'sit'); playSfx('pick');
-  toast(`${ATTR[k].icon} ${ATTR[k].name}에 탔어요! ${k === 'wheel' ? '한 바퀴 돌면 내려요 · ' : ''}E나 점프로 내려요`, 'success');
+  toast(`${ATTR[k].icon} ${ATTR[k].name}에 탔어요! ${k === 'wheel' ? '한 바퀴 돌면 내려요 · ' : k === 'carousel' ? '40초 동안 돌아요 · ' : ''}E나 점프로 내려요`, 'success');
 }
 function attrExit(msg) {
-  if (!attr.on) return; const k = attr.k; attr.on = false; playAct(player.avatar, null); player.vy = 0;
+  if (!attr.on) return; const k = attr.k; attr.on = false; backend.attrFree(attr.key);
+  if (attr.cam) { [camDist, camPitch] = attr.cam; attr.cam = null; if (player.avatar.badge) player.avatar.badge.visible = true; } attr.key = ''; playAct(player.avatar, null); player.vy = 0;
   const p = player.pos;
   if (k === 'carousel') { const c = rewardSpots.carousel.spot.position, a = Math.atan2(p.x - c.x, p.z - c.z); p.set(c.x + Math.sin(a) * 4.6, 0.15, c.z + Math.cos(a) * 4.6); }
-  else if (k === 'wheel') { const g = fundV.wheel.parent.position; p.set(g.x - 3, 0.3, g.z); }
-  else if (k === 'swing') { attrW.swing.getWorldPosition(_aw); p.set(_aw.x + 2.2, 0.15, _aw.z); attrW.swing.rotation.z = 0; }
+  else if (k === 'wheel') { const g = fundV.wheel.parent.position; p.set(g.x - 3.4, 0.3, g.z + 1.5); }
+  else if (k === 'swing') { attrW.swing.getWorldPosition(_aw); p.set(_aw.x + 2.4, 0.15, _aw.z); }
   if (msg) toast(msg, 'info');
 }
-function attrFollow(p, dt) { // 앉은 자리 = 놀이기구의 지금 위치
+function attrFollow(p, dt) { // 내 자리 = 놀이기구의 지금 위치
   if (!attrReady(attr.k)) { attrExit(); return; }
   attr.t += dt; player.vy = 0; player.onGround = true;
-  if (attr.k === 'carousel') {
-    const spin = rewardSpots.carousel.spin, h = spin.children.filter(c => c.isGroup)[attr.i]; if (!h) { attrExit(); return; }
-    h.getWorldPosition(_aw); const sc = h.getWorldScale(_aws).y; p.set(_aw.x, _aw.y + 1.56 * sc - 0.45 * CAR_SC + Math.sin(attr.t * 2.4 + attr.i) * 0.15 * sc, _aw.z); // 안장 높이 (회전목마 크기에 맞춰)
-    player.heading = spin.rotation.y - attr.i * Math.PI / 2 + Math.PI; // 말이 보는 쪽
+  const sp = seatPos(attr.key, _aw); if (!sp) { attrExit(); return; }
+  p.copy(_aw); player.heading = sp.h;
+  if (attr.k === 'carousel') { // 말이 달리는 앞쪽을 바라봐요
+    const want = sp.h + Math.PI; let d = want - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 5);
     if (attr.t > 40) attrExit('🎠 회전목마가 멈췄어요. 또 타요!');
-  } else if (attr.k === 'wheel') {
-    const w = fundV.wheel, cab = w.children.filter(c => c.userData.cab)[attr.i]; if (!cab) { attrExit(); return; }
-    cab.getWorldPosition(_aw); p.set(_aw.x, _aw.y - 1.85, _aw.z); player.heading = -Math.PI / 2;
-    if (w.rotation.x - attr.a0 > Math.PI * 2 + 0.05) attrExit('🎡 한 바퀴! 관람차에서 내렸어요');
-  } else if (attr.k === 'swing') {
-    const sw = attrW.swing, th = Math.sin(attr.t * 2.3) * Math.min(0.85, 0.2 + attr.t * 0.12); sw.rotation.z = th;
-    sw.parent.updateMatrixWorld(true); sw.getWorldPosition(_aw); const L = 2.55;
-    p.set(_aw.x + Math.sin(th) * L, _aw.y - Math.cos(th) * L - 0.5, _aw.z); player.heading = Math.PI / 2;
   }
+  if (attr.k === 'wheel' && wheelAng() - attr.a0 >= Math.PI * 2) attrExit('🎡 한 바퀴! 관람차에서 내렸어요');
+  if (performance.now() - attr.beat > 25000) { attr.beat = performance.now(); backend.attrClaim(attr.key); } // 내 자리 지키기
+}
+function attrRemotes() { // 친구가 탄 자리에 친구를 정확히 그려요 (위치 공유가 늦어도 겹치지 않게)
+  for (const [key, c] of Object.entries(S.attr || {})) {
+    if (!c || c.u === backend?.uid || backend.now() - (c.t || 0) > ATTR_STALE) continue;
+    const r = remotes.get(c.u); if (!r || !isSeated(r.a)) continue;
+    const sp = seatPos(key, _aw); if (!sp || Math.hypot(r.pos.x - _aw.x, r.pos.z - _aw.z) > 8) continue;
+    r.a.g.position.copy(_aw); r.a.g.rotation.y = sp.h; r.heading = sp.h;
+  }
+  if (attrW.swing && !attrClaimOf('s0')) attrW.swing.rotation.z *= 0.9; // 아무도 안 타면 멈춰요
+}
+async function wheelJoin() {
+  if (attr.on) return; const why = attrBlock(); if (why) { toast(why, 'info'); return; }
+  const inQ = !!S.attrq?.[backend.uid];
+  await backend.attrQueue(!inQ);
+  toast(inQ ? '🎡 줄에서 나왔어요' : '🎡 관람차 줄을 섰어요! 내 차례가 되면 빈 칸이 아래로 올 때 저절로 타요', inQ ? 'info' : 'success');
+}
+async function wheelBoard() { // 줄 맨 앞이고, 맨 아래 칸이 비었으면 타요
+  if (attr.on || attr.busy || !attrReady('wheel') || !S.attrq?.[backend.uid]) return;
+  const g = fundV.wheel.parent.position;
+  if (Math.hypot(player.pos.x - g.x, player.pos.z - g.z) > 12) { backend.attrQueue(false); toast('🎡 관람차에서 멀어져서 줄에서 빠졌어요', 'info'); return; }
+  if (wheelQueue()[0] !== backend.uid) return;
+  const { k, off } = wheelBottom(); if (off > 0.12 || !attrFreeSeat('w' + k)) return;
+  attr.busy = true; const r = await backend.attrClaim('w' + k); attr.busy = false;
+  if (!r.ok) return;
+  await backend.attrQueue(false); attrEnter('wheel', k);
 }
 function updateAttr() { // 타는 곳 (E) — 처음 한 번 만들어요
   if (!attrW.its) {
     attrW.its = {
-      carousel: addInteract({ pos: new V3(0, -99, 0), r: 4.8, dy: 2, text: () => !attr.on && attrReady('carousel') ? ['🎠 회전목마 타기', 'E · 점프로 내려요'] : null, run: () => attrEnter('carousel') }),
-      wheel: addInteract({ pos: new V3(0, -99, 0), r: 3.6, dy: 2, text: () => !attr.on && attrReady('wheel') ? ['🎡 관람차 타기', '한 바퀴 돌아요 (약 40초)'] : null, run: () => attrEnter('wheel') }),
-      swing: addInteract({ pos: new V3(0, -99, 0), r: 2.6, dy: 1.5, text: () => !attr.on && attrReady('swing') ? ['🪢 그네 타기', 'E · 점프로 내려요'] : null, run: () => attrEnter('swing') }),
-      off: addInteract({ pos: new V3(0, -99, 0), r: 3, dy: 1, text: () => attr.on ? [`${ATTR[attr.k].icon} 내리기`, ATTR[attr.k].name] : null, run: () => attrExit() }),
+      carousel: addInteract({ pos: new V3(0, -99, 0), r: 4.8, dy: 2, text: () => !attr.on && attrReady('carousel') ? ['🎠 회전목마 타기', `빈 말 ${carFree().length}/8 · E · 점프로 내려요`] : null, run: () => attrEnter('carousel') }),
+      wheel: addInteract({ pos: new V3(0, -99, 0), r: 4, dy: 2, text: () => { if (attr.on || !attrReady('wheel')) return null; const q = wheelQueue(), i = q.indexOf(backend.uid); return i >= 0 ? [`🎡 줄 서는 중 · ${i + 1}번째`, i === 0 ? '곧 타요! (E: 줄에서 나오기)' : 'E: 줄에서 나오기'] : ['🎡 관람차 줄 서기', `한 칸에 한 명 · 지금 줄 ${q.length}명`]; }, run: wheelJoin }),
+      swing: addInteract({ pos: new V3(0, -99, 0), r: 3, dy: 2, text: () => !attr.on && attrReady('swing') ? (attrFreeSeat('s0') ? ['🪢 그네 타기', 'E · 점프로 내려요'] : ['🪢 친구가 타는 중', '차례를 기다려요']) : null, run: () => attrEnter('swing') }),
+      off: addInteract({ pos: new V3(0, -99, 0), r: 3, dy: 3, text: () => attr.on ? [`${ATTR[attr.k].icon} 내리기`, ATTR[attr.k].name] : null, run: () => attrExit() }),
     };
   }
   const I = attrW.its;
   if (attrReady('carousel')) I.carousel.pos.copy(rewardSpots.carousel.spot.position).setY(0.5); else I.carousel.pos.set(0, -99, 0);
   if (attrReady('wheel')) { const g = fundV.wheel.parent.position; I.wheel.pos.set(g.x - 2.5, 0.5, g.z); } else I.wheel.pos.set(0, -99, 0);
-  if (attrReady('swing')) { attrW.swing.getWorldPosition(_aw); I.swing.pos.set(_aw.x, 0.5, _aw.z); } else I.swing.pos.set(0, -99, 0);
-  if (attr.on) I.off.pos.copy(player.pos); else I.off.pos.set(0, -99, 0);
-  { const on = attrReady('carousel'), c = on ? rewardSpots.carousel.spot.position : null; // 🎠 회전목마에 앉은 사람(나·친구)은 몸을 조금 작게
-    const fit = (a, p, sitting) => { const k = on && sitting && Math.hypot(p.x - c.x, p.z - c.z) < 2.6 && p.y > 0.2 ? CAR_SC : 1; if (a.g.scale.x !== k) a.g.scale.setScalar(k); };
-    fit(player.avatar, player.pos, attr.on && attr.k === 'carousel'); for (const r of remotes.values()) fit(r.a, r.pos, isSeated(r.a)); }
+  if (attrReady('swing')) { attrW.swing.getWorldPosition(_aw); I.swing.pos.set(_aw.x + 0.6, 0.5, _aw.z); } else I.swing.pos.set(0, -99, 0);
+  if (attr.on) I.off.pos.copy(player.pos).setY(player.pos.y + 1); else I.off.pos.set(0, -99, 0);
+  if (performance.now() - attr.qAt > 250) { attr.qAt = performance.now(); wheelBoard(); }
+  { const on = attrReady('carousel'); // 🎠 회전목마에 앉은 사람(나·친구)은 몸을 조금 작게
+    const fitK = (a, k) => { if (a.g.scale.x !== k) a.g.scale.setScalar(k); };
+    fitK(player.avatar, on && attr.on && attr.k === 'carousel' ? CAR_SC : 1);
+    const onCar = new Set(Object.entries(S.attr || {}).filter(([k, c]) => k[0] === 'c' && c && backend.now() - (c.t || 0) < ATTR_STALE).map(([, c]) => c.u));
+    for (const [u, r] of remotes) fitK(r.a, on && onCar.has(u) && isSeated(r.a) ? CAR_SC : 1); }
 }
 /* ---------- 🏆 주간 능력치 랭킹: 이번 주(월~일)에 오른 능력치를 모아 능력치마다 1~5등만 보여 줘요 (나는 내 순위도) ----------
    저장: state/rank/{주 번호}/{기기} = { n: 닉네임, eng, soc, math, read } (내 칸만 · 줄일 수 없어요) · 선생님 기기가 2주 지난 기록은 지워요
@@ -10333,7 +10389,7 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1816, z0: -52, z1: 52, s: 2.4 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 };
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 };
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
@@ -10423,8 +10479,11 @@ function drawEvMapBase() { // 영어 마을 지도
   rect(EV.x0, EV.z0, EV.x1, EV.z1, '#A9D18A'); rect(EV.x0, -3, EV.x1, 3, '#E3D6BC');
   for (const Z of EV_Z) { rect(Z.npc[0] - 2, Math.min(0, Math.sign(Z.z) * 14), Z.npc[0] + 2, Math.max(0, Math.sign(Z.z) * 14), '#E3D6BC'); rect(Z.x - 11, Z.z - 9, Z.x + 11, Z.z + 9, '#C9E3A8'); }
   rect(EV_POOL[0] - EV_POOL[2], EV_POOL[1] - EV_POOL[3], EV_POOL[0] + EV_POOL[2], EV_POOL[1] + EV_POOL[3], '#5AB4E6');
+  rect(MZP.x0, MZP.z0, MZP.x1, MZP.z1, '#B9D79A'); rect(EV.x1 - 2, MZP.gz - 2, MZP.x0 + 4, MZP.gz + 2, '#E3D6BC'); rect(MZP.x0, -3, MZP.x1, 3, '#E3D6BC');
+  for (const L of MZL) { const MZ = L.M, MAZE = L.maze, mzCell = (r, c) => mzCellL(L, r, c);
   rect(MZ.x0, MZ.z0, MZ.x0 + MZ.cols * MZ.cs, MZ.z0 + MZ.rows * MZ.cs, '#D8CBA4'); c.fillStyle = '#3E8A45';
   for (let r = 0; r < MZ.rows; r++) for (let cc = 0; cc < MZ.cols; cc++) { const [x, z] = mzCell(r, cc), op = MAZE.open[r][cc], h = MZ.cs / 2; if (!op[0]) rect(x - h, z - h - 0.3, x + h, z - h + 0.3, '#3E8A45'); if (!op[1]) rect(x + h - 0.3, z - h, x + h + 0.3, z + h, '#3E8A45'); if (!op[2] && !(r === MZ.rows - 1 && cc === MZ.sc)) rect(x - h, z + h - 0.3, x + h, z + h + 0.3, '#3E8A45'); if (!op[3]) rect(x - h - 0.3, z - h, x - h + 0.3, z + h, '#3E8A45'); }
+  } // 미로마다
   c.fillStyle = '#EFE6D2'; c.beginPath(); c.arc(mapX(EV.cx), mapZ(0), 6.5 * s, 0, Math.PI * 2); c.fill();
   mapUI.key = mapKey();
 }
@@ -11819,15 +11878,16 @@ function setTeachLook(a, code) {
   if (hat && a.badge) a.badge.position.y = 3.02; // 모자 위로 동물 배지를 살짝 올려요
   objs.push(makeLabel(a.g, ['🧑‍🏫 선생님'], 0.5, 0, hat ? 3.55 : 3.28, 0, { bg: '#FFD84D', fg: '#3B2F2A', font: 52, pad: 10 })); // 선생님 표시
   const ring = new THREE.Mesh(TL_RING, tlRingMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); // 금빛 고리
-  if (hat === 1) add(a.head, g => { // 학사모
+  a.tlHat = null;
+  if (hat === 1) a.tlHat = add(a.head, g => { // 학사모
     box(g, 0.72, 0.26, 0.72, 0x2B2B36, 0, 2.4, 0, o); box(g, 1.2, 0.06, 1.2, 0x2B2B36, 0, 2.55, 0, { solid: false, ry: 0.2 });
     ball(g, 0.06, GOLD, 0, 2.6, 0, o); box(g, 0.55, 0.03, 0.03, GOLD, 0.3, 2.59, 0, o); cyl(g, 0.025, 0.3, GOLD, 0.58, 2.44, 0, o); ball(g, 0.07, GOLD, 0.58, 2.28, 0, o);
   });
-  else if (hat === 2) add(a.head, g => { // 밀짚모자
+  else if (hat === 2) a.tlHat = add(a.head, g => { // 밀짚모자
     cyl(g, 0.8, 0.05, 0xE9C77B, 0, 2.33, 0, o); cyl(g, 0.48, 0.3, 0xE9C77B, 0, 2.5, 0, o); cyl(g, 0.49, 0.09, 0xE2584A, 0, 2.41, 0, o);
     ball(g, 0.1, 0xFF8FB3, 0.42, 2.44, 0.2, o); ball(g, 0.05, GOLD, 0.45, 2.46, 0.27, o);
   });
-  else if (hat === 3) add(a.head, g => { // 왕관
+  else if (hat === 3) a.tlHat = add(a.head, g => { // 왕관
     cyl(g, 0.42, 0.22, GOLD, 0, 2.42, 0, o);
     for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; mesh(TL_CONE, g, 0.09, 0.22, 0.09, GOLD, Math.sin(t) * 0.36, 2.63, Math.cos(t) * 0.36, o); ball(g, 0.04, 0xFFFFFF, Math.sin(t) * 0.36, 2.76, Math.cos(t) * 0.36, o); }
     ball(g, 0.07, 0xE2584A, 0, 2.42, 0.43, o); ball(g, 0.06, 0x4A9AE8, 0.3, 2.42, 0.3, o); ball(g, 0.06, 0x5FBE5A, -0.3, 2.42, 0.3, o);
@@ -12782,13 +12842,14 @@ const myWearCode = () => (bag.wear.h || 0) * 100 + (bag.wear.f || 0) * 10 + (bag
 const WEAR_CONE = new THREE.ConeGeometry(1, 1, 10), WEAR_TORUS = new THREE.TorusGeometry(1, 0.18, 6, 18);
 function setWear(a, code) {
   code = Number.isInteger(code) && code >= 0 && code <= 999 ? code : 0;
-  const key = code * 10 + (a.tcode ? 1 : 0);
+  const key = code * 100 + (a.tcode || 0);
   if (a.wearKey === key) return;
   if (a.wearObjs) { for (const x of a.wearObjs) x.parent?.remove(x); a.wearObjs = null; }
+  if (a.tlHat) a.tlHat.visible = !Math.floor(code / 100); // 🧑‍🏫 옷장 모자를 쓰면 선생님 모자는 잠깐 벗어요
   a.wearKey = key; if (!code) { if (!a.tcode && a.badge) a.badge.position.y = 2.75; return; }
   const h = Math.floor(code / 100), f = Math.floor(code / 10) % 10, bk = code % 10, o = { solid: false }, objs = [], GOLD = 0xFFC93C;
   const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
-  if (h && !a.tcode) { // 선생님 모자와 겹치면 선생님 모자를 보여요
+  if (h) { // 옷장 모자 (선생님도 보여요 · 선생님 모자는 위에서 숨겨요)
     if (a.badge) a.badge.position.y = 3.02;
     add(a.head, g => {
       if (h === 1) { mesh(SPH_MID, g, 0.52, 0.34, 0.52, 0x3E6AC8, 0, 2.25, 0, o); box(g, 0.62, 0.05, 0.4, 0x3E6AC8, 0, 2.2, 0.5, o); ball(g, 0.07, 0xFFFFFF, 0, 2.58, 0, o); }
@@ -12956,7 +13017,7 @@ function openFund() {
 }
 function syncFund(prev, first) { renderFund(first); if (!$('teacherPanel').classList.contains('hidden')) fillEconAdmin(); }
 function updateFund(dt) {
-  if (fundV.wheel) { fundV.wheel.rotation.x += dt * 0.15; fundV.wheel.children.forEach(c => { if (c.userData.cab) c.rotation.x = -fundV.wheel.rotation.x; }); }
+  if (fundV.wheel) { fundV.wheel.rotation.x = wheelAng() % (Math.PI * 2); fundV.wheel.children.forEach(c => { if (c.userData.cab) c.rotation.x = -fundV.wheel.rotation.x; }); }
 }
 // ---------- 🏅 도감 배지 ----------
 const DEX_BADGES = [[25, 'h8'], [50, 'f5'], [75, 'b6'], [100, 'b7']];
@@ -14112,10 +14173,12 @@ function buildInteriors() {
     for (let k = 0; k < 6; k++) box(g, 1.2, 2.2, 0.08, [0xF4EAD2, 0xEADBB8][k % 2], cx - 3 + k * 1.2, 1.2, fz - 1.1, { solid: false, ry: (k % 2 ? 0.12 : -0.12) });
     box(g, 2.2, 0.45, 0.9, 0x7A4A2A, cx, 0.35, fz, o); box(g, 1.6, 0.12, 1.4, 0xB0303A, cx, 0.18, fz - 0.9, o);
     signPlane(g, ['배우고 때때로 익히면', '즐겁지 아니한가'], 2.6, 1.0, cx + 6, 2.0, cz - d / 2 + 0.2, { font: 40, pad: 6, fg: '#3B2F2A', bg: '#F7EED8', stroke: false }).rotation.y = 0;
-    { const T = makeAvatar(0, 1, 0, 0, g); T.g.position.set(cx, 0.12, fz - 0.9); T.badge.userData.set(['📜 훈장님']); bld.sdTeacher = T; }
+    // 🧑‍🏫 훈장 자리: 선생님이 앉아 학생 화면(사이트)을 열어요 (예전 훈장님 인형은 없앴어요)
+    addInteract({ pos: new V3(cx, 1, fz - 0.9), r: 1.6, text: () => roomNow() !== 'sd' ? null : isTeacher ? ['🧑‍🏫 훈장 자리에 앉기', '학생 화면(사이트) 열기'] : ['🧑‍🏫 선생님 자리', '선생님만 앉을 수 있어요'], run: () => isTeacher ? sdTeacherSit(cx, fz - 0.9) : toast('🧑‍🏫 선생님 자리예요. 방석에 앉아 공부해요!', 'info') });
+    bld.sdScreen = makeLabel(g, ['🖥️ 선생님 화면'], 0.8, cx, 3.3, fz - 1.15);
     bld.sdSeats = [];
-    for (let row = 0; row < 3; row++) for (let col = 0; col < 4; col++) {
-      const x = cx - 5.4 + col * 3.6, z = cz - 1 + row * 2.6;
+    for (let row = 0; row < 4; row++) for (let col = 0; col < 4; col++) { // 서안 16자리 (4줄 × 4)
+      const x = cx - 5.4 + col * 3.6, z = cz - 3.6 + row * 2.4;
       box(g, 1.5, 0.42, 0.7, 0x8A5A34, x, 0.33, z, o); box(g, 1.3, 0.04, 0.5, 0xF4EAD2, x, 0.56, z, o); // 서안 + 펼친 책
       box(g, 0.9, 0.1, 0.9, [0xB0303A, 0x2F5E9E][(row + col) % 2], x, 0.18, z + 0.85, o); // 방석
       bld.sdSeats.push([x, z + 0.85]);
@@ -14216,7 +14279,7 @@ function updateRooms(dt) {
   bld.group.visible = near;
   updateBm(dt); if (near) bdmCourtLabels();
   if (roomNow() === 'sd' && isSeated(player.avatar) && (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(k => keys[k]) || joy.x || joy.y)) playAct(player.avatar, null); // 서당: 움직이면 일어나요
-  if (bld.sdTeacher && near) animateAvatar(bld.sdTeacher, 0, dt, true, false);
+  sdScreenUpdate();
   bld.dt = (bld.dt || 0) - dt; if (bld.dt <= 0) { bld.dt = 0.25; updateDoors(); }
 }
 // ---------- 📒 독서 기록장 ----------
@@ -14428,6 +14491,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1014a', d: '10월 14일', items: ['📜 서당 자리가 16자리로! 앞자리는 선생님 자리 — 선생님이 앉아 연 화면이 서당 친구들 학습 창에 바로 열려요', '🎠 회전목마는 말 8마리 · 한 마리에 한 명 · 말 앞쪽을 보며 달려요 · 🎡 관람차는 줄을 서서 한 칸에 한 명씩 · 🪢 그네도 한 명씩 (친구 모습이 겹치지 않아요)', '🔊 영어 마을 문장 만들기에서 다시 듣기가 돼요', '⚾ 길 찾기 미로: Level 1 · 2 · 3 (동쪽 문 🧭 미로 공원) · 틀리면 START부터 다시 · 높은 단계일수록 보상 2배·3배', '🏁 영어 마을 클리어 게시판: 레슨마다 우리 반 클리어 횟수와 1~3등'] },
   { id: '1013d', d: '10월 13일 (오후)', items: ['🧑‍🏫 선생님 기기는 조개돈·반 동전을 따로 써요 (무한) — 우리 반 동전은 줄지 않아요'] },
   { id: '1013c', d: '10월 13일 (오후)', items: ['🎠 놀이기구를 직접 타요! 회전목마 · 🎡 바닷가 관람차(한 바퀴 약 40초) · 🪢 큰 나무 그네 — 앞에서 E, 내릴 때는 E나 점프'] },
   { id: '1013b', d: '10월 13일', items: ['🐞 건의함에 글을 쓰는 동안 친구들 활동 때문에 글이 지워지던 문제를 고쳤어요 · 쓰던 글은 창을 닫았다 열어도 남아 있어요'] },
@@ -14664,7 +14728,7 @@ function updatePortal(dt) { for (const P of portals) { P.disk.rotation.z -= dt *
 const EV = { x0: 1690, x1: 1810, z0: -46, z1: 46, cx: 1750, bus: [1697, 4], stop: [54, 14] };
 const EV_POOL = [1714, -27, 9.5, 6.5]; // 독도 항구 바다 (x, z, 반너비, 반깊이) — 걸어 들어갈 수 없어요
 const inEV = (x, z) => x >= EV.x0 + 0.6 && x <= EV.x1 - 0.6 && z >= EV.z0 + 0.6 && z <= EV.z1 - 0.6 && !(Math.abs(x - EV_POOL[0]) < EV_POOL[2] && Math.abs(z - EV_POOL[1]) < EV_POOL[3]);
-const evRegion = () => joined && player.pos.x > 1680 && player.pos.x < 1820;
+const evRegion = () => joined && player.pos.x > 1680 && player.pos.x < 1940; // 🧭 미로 공원까지
 const EV_Z = [
   { n: 7, key: 'port', name: 'Dokdo Port', ko: '독도 항구', icon: '⚓', title: 'I Went to Dokdo', x: 1714, z: -27, npc: [1714, -16.5], who: 'Captain Dami', shirt: 4, hair: 4, hc: 0, col: 0x4FB3E8, how: '방학에 한 일 말하기 · 과거형 고르기 · 문장 만들기' },
   { n: 8, key: 'shop', name: 'Fashion Shop', ko: '멋쟁이 옷 가게', icon: '👕', title: 'What Does He Look Like?', x: 1750, z: -27, npc: [1743, -15.5], who: 'Designer Leo', shirt: 5, hair: 1, hc: 2, col: 0xFF8FB1, how: '설명을 듣고 무대 위 친구를 찾아 E (3번)' },
@@ -14677,10 +14741,14 @@ const evZone = (n) => EV_Z.find(z => z.n === n);
 const ev = { group: null, dyn: null, signs: {}, flags: {}, npcs: [], manq: [], bld: [], q: null, game: null, seen: false, starT: 0, key: '' };
 // ---- 말하기 (기기 목소리) ----
 function sayEn(t) {
+  if (!t) return;
   try {
-    speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.85;
-    const vs = speechSynthesis.getVoices(), v = vs.find(v => /en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)); if (v) u.voice = v;
-    speechSynthesis.speak(u);
+    const go = () => { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.85;
+      const vs = speechSynthesis.getVoices(), v = vs.find(v => /en[-_]US/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)); if (v) u.voice = v;
+      sayEn.u = u; // 크롬이 말하는 중에 지워 버리지 않게 붙잡아 둬요
+      speechSynthesis.resume(); speechSynthesis.speak(u); };
+    if (speechSynthesis.speaking || speechSynthesis.pending) { speechSynthesis.cancel(); setTimeout(go, 90); } // 크롬: 멈춘 바로 뒤에 말하면 소리가 안 나는 문제
+    else go();
   } catch (e) {}
 }
 const evShuffle = (a) => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -14780,7 +14848,7 @@ function renderEvQ() {
     $('evNext').textContent = pass ? '한 번 더' : '다시 하기'; $('evNext').disabled = false; $('evSay').disabled = true;
     return;
   }
-  const it = q.qs[q.i]; q.answered = false; $('evSay').disabled = !it.say; $('evNext').disabled = true; $('evNext').textContent = q.i === q.qs.length - 1 ? '결과 보기 ▶' : '다음 ▶';
+  const it = q.qs[q.i]; q.answered = false; $('evSay').disabled = !(it.say || it.type === 'order'); // 🔊 문장 만들기도 다시 듣기 $('evNext').disabled = true; $('evNext').textContent = q.i === q.qs.length - 1 ? '결과 보기 ▶' : '다음 ▶';
   $('evStep').textContent = `${q.train ? '🏋️ 영어 훈련소 · Lesson ' + q.n : Z.ko} · ${q.i + 1} / ${q.qs.length}${it.type !== 'pick' ? ' · ✍️ 쓰기 (보상 2배)' : ''}`;
   box.append(el2('div', 'ev-ask', it.type === 'order' ? '🧩 단어를 차례대로 눌러 문장을 만들어요' : it.type === 'spell' ? '✍️ 뜻에 맞는 영어 단어를 알파벳을 눌러 만들어요' : it.ask));
   if (it.show) box.append(el2('div', 'ev-big', it.show));
@@ -14822,12 +14890,13 @@ function evNext() {
   q.i++; if (q.i >= q.qs.length) { q.done = true; if (q.right >= q.pass) evReward(q.n, q.wr || 0, q.train); }
   renderEvQ();
 }
-async function evReward(n, wr = 0, train = false) { // ✍️ 쓰기를 맞힌 만큼 🐚 +3씩 더 (쓰기 보상이 더 커요)
+async function evReward(n, wr = 0, train = false, mult = 1) { // ✍️ 쓰기를 맞힌 만큼 🐚 +3씩 더 (쓰기 보상이 더 커요)
   const Z = evZone(n); bag.ev ||= {}; if (bag.ev.day !== todayKey()) bag.ev = { day: todayKey() };
   const key = train ? 't' + n : n; bag.ev[key] = (bag.ev[key] || 0) + 1; saveBag();
   earnMat(train ? `영어 훈련소 Lesson ${n}` : `영어 마을 ${Z.ko}`); if (wr >= 3) earnMat('영어 쓰기 3개 이상');
-  const want = (train ? 3 : 5) + wr * 3, cap = capNow(), give = cap ? Math.max(0, Math.min(want, cap - earnToday())) : want; if (give > 0) { bag.earn.n += give; earnShell(give); toast(`🐚 +${give}${wr ? ` (✍️ 쓰기 ${wr}개 보너스 포함)` : ''} · ${train ? '🏋️ 영어 훈련소' : `${Z.icon} ${Z.name}`}`, 'success'); }
-  addStat('eng', 3 + wr);
+  const want = ((train ? 3 : 5) + wr * 3) * mult, cap = capNow(), give = cap ? Math.max(0, Math.min(want, cap - earnToday())) : want; if (give > 0) { bag.earn.n += give; earnShell(give); toast(`🐚 +${give}${wr ? ` (✍️ 쓰기 ${wr}개 보너스 포함)` : ''} · ${train ? '🏋️ 영어 훈련소' : `${Z.icon} ${Z.name}`}`, 'success'); }
+  addStat('eng', (3 + wr) * mult);
+  if (!train && !isTeacher) backend.evClear(n, cleanNick(myNick) || '친구'); // 🏁 클리어 게시판 (클리어할 때마다)
   if (!train && bag.ev[key] <= 3) await backend.engStar(n); // 반 전체 영어 별 (한 구역에서 하루 3개까지)
   burst(player.pos.clone().add(new V3(0, 2.4, 0)), RAINBOW, 36, 4, 2); playSfx('fanfare');
 }
@@ -14905,21 +14974,52 @@ const MZ = { x0: 1774, z0: -45.5, cs: 5.4, cols: 6, rows: 5, sc: 2 }; // 북쪽�
 const MZ_NAMES = [['donut shop', '🍩'], ['bus stop', '🚏'], ['market', '🏪'], ['baseball park', '⚾'], ['bookstore', '📚'], ['flower shop', '🌻']];
 const mzCell = (r, c) => [MZ.x0 + (c + 0.5) * MZ.cs, MZ.z0 + (r + 0.5) * MZ.cs];
 const MZ_START = [MZ.x0 + (MZ.sc + 0.5) * MZ.cs, MZ.z0 + MZ.rows * MZ.cs + 1.6];
-const MAZE = (() => { // 손으로 그린 미로: 가운데 큰길에서 갈림길로 가게 6곳 (안내 3~7개) · open[r][c] = [북, 동, 남, 서] 열림
-  const { rows: R, cols: C } = MZ, open = Array.from({ length: R }, () => Array.from({ length: C }, () => [0, 0, 0, 0])), D = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+const MZ_NUM = ['', '', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven'];
+function mzMake(M, names, paths, ends, seed, range) {
+  if (!paths && range) { // 🎲 안내 문장 수가 알맞은 가게가 6곳 나올 때까지 미로를 다시 만들어요 (늘 같은 순서라 모든 화면이 같은 미로)
+    for (let k = 0; k < 400; k++) { const m = mzMake(M, names, null, null, seed + k * 7919, null); const L = { M, maze: m };
+      const de = []; for (let r = 0; r < M.rows; r++) for (let c = 0; c < M.cols; c++) if (!(r === M.rows - 1 && c === M.sc) && m.open[r][c].reduce((a, b) => a + b, 0) === 1) { const n = mzSteps({ r, c, name: '' }, L).length - 1; if (n >= range[0] && n <= range[1]) de.push([r, c, n]); }
+      if (de.length >= 6) { de.sort((a, b) => a[2] - b[2]); const pick = [], step = (de.length - 1) / 5; for (let i = 0; i < 6; i++) pick.push(de[Math.round(i * step)]); return mzMake(M, names, null, pick.map(([r, c]) => [r, c]), seed + k * 7919, null); }
+    }
+  } // open[r][c] = [북, 동, 남, 서] 열림 · paths가 없으면 seed로 미로를 만들어요 (모든 화면이 같은 미로)
+  const { rows: R, cols: C } = M, open = Array.from({ length: R }, () => Array.from({ length: C }, () => [0, 0, 0, 0])), D = [[-1, 0], [0, 1], [1, 0], [0, -1]];
   const link = (a, b) => { const d = D.findIndex(([dr, dc]) => a[0] + dr === b[0] && a[1] + dc === b[1]); open[a[0]][a[1]][d] = 1; open[b[0]][b[1]][(d + 2) % 4] = 1; };
-  const paths = [[[4, 2], [3, 2], [2, 2], [1, 2], [0, 2], [0, 1], [0, 0]], [[3, 2], [3, 1], [3, 0]], [[3, 2], [3, 3], [3, 4], [3, 5], [4, 5]], [[2, 2], [2, 3], [2, 4]], [[1, 2], [1, 1], [1, 0], [2, 0]], [[1, 2], [1, 3], [0, 3], [0, 4], [0, 5]]];
-  for (const pth of paths) for (let k = 1; k < pth.length; k++) link(pth[k - 1], pth[k]);
-  const dist = Array.from({ length: R }, () => Array(C).fill(-1)), prev = {}, q = [[R - 1, MZ.sc]]; dist[R - 1][MZ.sc] = 0;
+  let used;
+  if (paths) { for (const pth of paths) for (let k = 1; k < pth.length; k++) link(pth[k - 1], pth[k]); used = new Set(paths.flat().map(([r, c]) => r + ',' + c)); }
+  else { // 🎲 갈림길이 많고 곧은 길이 긴 미로 (프림 방식 + 같은 방향으로 이어지기 좋아해요)
+    let t = seed >>> 0; const rnd = () => { t = t + 0x6D2B79F5 | 0; let x = Math.imul(t ^ t >>> 15, 1 | t); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
+    const seen = new Set([(R - 1) + ',' + M.sc]), act = [[R - 1, M.sc, 0]];
+    while (act.length) { const ai = rnd() < 0.5 ? act.length - 1 : Math.floor(rnd() * act.length), [r, c, pd] = act[ai];
+      const nb = [0, 1, 2, 3].filter(d => { const nr = r + D[d][0], nc = c + D[d][1]; return nr >= 0 && nr < R && nc >= 0 && nc < C && !seen.has(nr + ',' + nc); });
+      if (!nb.length) { act.splice(ai, 1); continue; }
+      const d = nb.includes(pd) && rnd() < 0.55 ? pd : nb[Math.floor(rnd() * nb.length)], nx = [r + D[d][0], c + D[d][1]];
+      link([r, c], nx); seen.add(nx[0] + ',' + nx[1]); act.push([nx[0], nx[1], d]); }
+    used = seen;
+  }
+  const dist = Array.from({ length: R }, () => Array(C).fill(-1)), prev = {}, q = [[R - 1, M.sc]]; dist[R - 1][M.sc] = 0;
   while (q.length) { const [r, c] = q.shift(); for (let d = 0; d < 4; d++) if (open[r][c][d]) { const nr = r + D[d][0], nc = c + D[d][1]; if (dist[nr][nc] < 0) { dist[nr][nc] = dist[r][c] + 1; prev[nr + ',' + nc] = [r, c, d]; q.push([nr, nc]); } } }
-  const ends = [[3, 0], [4, 5], [2, 4], [2, 0], [0, 5], [0, 0]];
-  const shops = ends.map(([r, c], i) => ({ r, c, name: MZ_NAMES[i][0], icon: MZ_NAMES[i][1], face: open[r][c].indexOf(1) }));
-  const used = new Set(paths.flat().map(([r, c]) => r + ',' + c));
+  if (!ends) ends = [];
+  const shops = ends.map(([r, c], i) => ({ r, c, name: names[i][0], icon: names[i][1], face: open[r][c].indexOf(1) }));
   return { open, dist, prev, shops, D, used };
-})();
-const MZ_NUM = ['', '', 'two', 'three', 'four', 'five', 'six'];
-function mzSteps(shop) { // 출발(북쪽을 봐요) → 가게까지 길 안내 문장들
-  const path = []; let cur = [shop.r, shop.c]; while (!(cur[0] === MZ.rows - 1 && cur[1] === MZ.sc)) { const pv = MAZE.prev[cur[0] + ',' + cur[1]]; path.unshift(pv[2]); cur = [pv[0], pv[1]]; }
+}
+const MAZE = mzMake(MZ, MZ_NAMES, [[[4, 2], [3, 2], [2, 2], [1, 2], [0, 2], [0, 1], [0, 0]], [[3, 2], [3, 1], [3, 0]], [[3, 2], [3, 3], [3, 4], [3, 5], [4, 5]], [[2, 2], [2, 3], [2, 4]], [[1, 2], [1, 1], [1, 0], [2, 0]], [[1, 2], [1, 3], [0, 3], [0, 4], [0, 5]]], [[3, 0], [4, 5], [2, 4], [2, 0], [0, 5], [0, 0]]);
+// 🧭 미로 공원 (영어 마을 동쪽 문 너머): Level 2 · Level 3 미로
+const MZP = { x0: 1810, x1: 1932, z0: -45, z1: 22, gz: 17 }; // gz: 영어 마을 동쪽 울타리 문 (훈련소 건물 옆 북쪽)
+const inMP = (x, z) => (x >= 1808 && x <= MZP.x0 + 2 && Math.abs(z - MZP.gz) <= 2) || (x >= MZP.x0 + 0.6 && x <= MZP.x1 - 0.6 && z >= MZP.z0 + 0.6 && z <= MZP.z1 - 0.6);
+const MZ2 = { x0: 1822, z0: -37, cs: 5, cols: 8, rows: 7, sc: 3 }, MZ3 = { x0: 1874, z0: -39.2, cs: 4.6, cols: 11, rows: 8, sc: 5 };
+const MZ_NAMES2 = [['hospital', '🏥'], ['school', '🏫'], ['bakery', '🥐'], ['post office', '🏤'], ['toy store', '🧸'], ['police station', '🚓']];
+const MZ_NAMES3 = [['zoo', '🦁'], ['museum', '🏛️'], ['restaurant', '🍽️'], ['pet shop', '🐶'], ['bank', '🏦'], ['movie theater', '🎬']];
+const mzStart = (M) => [M.x0 + (M.sc + 0.5) * M.cs, M.z0 + M.rows * M.cs + 1.6];
+const MZL = [ // 🧭 미로 단계: 클수록 길고 꺾임이 많아요 · 보상 ×1 · ×2 · ×3
+  { lv: 1, M: MZ, maze: MAZE, mult: 1, names: MZ_NAMES },
+  { lv: 2, M: MZ2, mult: 2, names: MZ_NAMES2, range: [7, 12] },  // 안내 7~12문장
+  { lv: 3, M: MZ3, mult: 3, names: MZ_NAMES3, range: [11, 17] }, // 안내 11~17문장
+];
+MZL.forEach(L => { L.start = mzStart(L.M); if (!L.maze) L.maze = mzMake(L.M, L.names, null, null, 20261014 + L.lv * 101, L.range); });
+const mzCellL = (L, r, c) => [L.M.x0 + (c + 0.5) * L.M.cs, L.M.z0 + (r + 0.5) * L.M.cs];
+
+function mzSteps(shop, L = MZL[0]) { // 출발(북쪽을 봐요) → 가게까지 길 안내 문장들
+  const path = []; let cur = [shop.r, shop.c]; while (!(cur[0] === L.M.rows - 1 && cur[1] === L.M.sc)) { const pv = L.maze.prev[cur[0] + ',' + cur[1]]; path.unshift(pv[2]); cur = [pv[0], pv[1]]; }
   const steps = []; let dir = 0, run = 1; // 입구로 들어가는 한 칸
   const flush = () => { if (run > 0) steps.push(run > 1 ? `Go straight ${MZ_NUM[run] || run} blocks.` : 'Go straight.'); run = 0; };
   for (const d of path) { const t = (d - dir + 4) % 4; if (t === 0) run++; else { flush(); steps.push(t === 1 ? 'Turn right.' : 'Turn left.'); dir = d; run = 1; } }
@@ -14927,34 +15027,55 @@ function mzSteps(shop) { // 출발(북쪽을 봐요) → 가게까지 길 안내
   return steps;
 }
 function evDirRound() {
-  const g = ev.game, i = evPick(MAZE.shops.map((_, k) => k).filter(k => k !== g.last)); g.last = i; g.target = i; g.first = true; g.show = false;
-  g.steps = mzSteps(MAZE.shops[i]); g.lines = ['', g.steps.join(' ')];
+  const g = ev.game, L = MZL[g.lv - 1], i = evPick(L.maze.shops.map((_, k) => k).filter(k => k !== g.last)); g.last = i; g.target = i; g.first = true; g.show = false;
+  g.steps = mzSteps(L.maze.shops[i], L); g.lines = ['', g.steps.join(' ')];
   evBar(); setTimeout(() => sayEn(g.steps.join(' ')), 300);
 }
-function startEvDir() {
+const mzOpen = (lv) => lv <= 1 || isTeacher || (bag.mzLv || 0) >= lv - 1; // 앞 단계를 깨면 다음 단계가 열려요
+function startEvDir() { // 🧭 미로 단계 고르기
   closeModals(); stopEvGame();
-  ev.game = { kind: 'dir', n: 9, round: 0, right: 0, last: -1 };
-  player.pos.set(MZ_START[0], 0.15, MZ_START[1]); player.heading = Math.PI; camYaw = 0; camPitch = 0.6; // 🟡 START에서 미로 입구(북쪽)를 봐요
-  toast('⚾ 미로 입구 START에서 북쪽을 보고 시작해요. 길 안내를 순서대로 따라가서 그 가게 앞에서 E! (발판 돌 하나 = 1 block)', 'info');
+  openLife('⚾ 길 찾기 미로', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', '영어 길 안내를 듣고 미로 속 가게를 찾아요. 3곳을 차례로 찾으면 성공! 한 번이라도 다른 가게로 가면 START로 돌아가 처음부터 다시 해요. 단계가 높을수록 미로가 크고 보상이 커요.'));
+    for (const L of MZL) {
+      const open = mzOpen(L.lv), row = el2('div', 'ride-row' + ((bag.mzLv || 0) >= L.lv ? ' on' : '')), tx = el2('span', 'ride-tx');
+      tx.append(el2('b', '', `Level ${L.lv} 미로${(bag.mzLv || 0) >= L.lv ? ' ✅' : ''}`), el2('span', 'hint', `${L.M.cols}×${L.M.rows} 칸 · 보상 ×${L.mult}${L.lv > 1 ? ' · 🧭 미로 공원(동쪽 문)' : ' · 야구장 거리'}`));
+      const b = el2('button', 'btn', open ? '시작 ▶' : `🔒 Level ${L.lv - 1} 먼저`); b.disabled = !open; if (open) b.style.background = '#FFE066';
+      b.onclick = () => { closeLife(); evDirStart(L.lv); };
+      row.append(el2('span', 'ride-ic', ['🟢', '🟡', '🔴'][L.lv - 1]), tx, b); box.append(row);
+    }
+  });
+}
+function evDirGo(L) { player.pos.set(L.start[0], 0.15, L.start[1]); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.6; } // 🟡 START에서 미로 입구(북쪽)를 봐요
+function evDirStart(lv) {
+  const L = MZL[lv - 1]; stopEvGame();
+  ev.game = { kind: 'dir', n: 9, lv, round: 0, right: 0, last: -1 };
+  evDirGo(L);
+  toast(`⚾ Level ${lv} 미로! START에서 북쪽을 보고 시작해요. 길 안내를 순서대로 따라가서 그 가게 앞에서 E (발판 돌 하나 = 1 block · 틀리면 처음부터)`, 'info');
   evDirRound();
 }
-function evPickPlace(i) {
-  const g = ev.game; if (!g || g.kind !== 'dir') return;
-  const ok = i === g.target, P = MAZE.shops[i], T = MAZE.shops[g.target];
-  if (!ok) { g.first = false; playSfx('drop'); toast(`❌ 여기는 ${P.icon} ${P.name}예요. 안내를 다시 들어 봐요 (🔊)`, 'warn'); sayEn(`This is the ${P.name}. Let's find the ${T.name}.`); return; }
-  if (g.first) { g.right++; addStat('eng', 2); } playSfx('pick'); sayEn(`Yes! This is the ${P.name}.`); toast(`⭕ ${P.icon} ${P.name} 도착! (${g.round + 1}/3)`, 'success');
-  g.round++; if (g.round >= 3) return evGameEnd();
-  setTimeout(() => { if (ev.game === g) { player.pos.set(MZ_START[0], 0.15, MZ_START[1]); player.heading = Math.PI; camYaw = 0; evDirRound(); } }, 1400);
+function evPickPlace(lv, i) {
+  const g = ev.game; if (!g || g.kind !== 'dir' || g.lv !== lv) return;
+  const L = MZL[lv - 1], ok = i === g.target, P = L.maze.shops[i], T = L.maze.shops[g.target];
+  if (!ok) { // ❌ 한 번 틀리면 START로 돌아가 처음부터
+    playSfx('drop'); toast(`❌ 여기는 ${P.icon} ${P.name}예요. START로 돌아가 처음부터 다시 해요!`, 'warn'); sayEn(`Oops! This is the ${P.name}. Let's start again.`);
+    g.round = 0; g.right = 0; g.last = -1;
+    setTimeout(() => { if (ev.game === g) { evDirGo(L); evDirRound(); } }, 1600); return;
+  }
+  g.right++; addStat('eng', 2 * L.mult); playSfx('pick'); sayEn(`Yes! This is the ${P.name}.`); toast(`⭕ ${P.icon} ${P.name} 도착! (${g.round + 1}/3)`, 'success');
+  g.round++; if (g.round >= 3) { bag.mzLv = Math.max(bag.mzLv || 0, lv); saveBag(); return evGameEnd(); }
+  setTimeout(() => { if (ev.game === g) { evDirGo(L); evDirRound(); } }, 1400);
 }
 // ---- 3D 놀이 공통 ----
 function evBar() {
   const g = ev.game; if (!g) { $('evBar').classList.add('hidden'); return; }
   const Z = evZone(g.n); $('evBar').classList.remove('hidden');
-  $('evBarT').textContent = `${Z.icon} ${Z.name} · ${Math.min(3, g.round + 1)} / 3 ${g.kind === 'find' ? '· 설명에 맞는 친구 앞에서 E' : `· 🟡 START에서 북쪽을 보고 출발 · 안내 ${g.steps?.length || 0}개`}`;
+  $('evBarT').textContent = `${Z.icon} ${Z.name} · ${Math.min(3, g.round + 1)} / 3 ${g.kind === 'find' ? '· 설명에 맞는 친구 앞에서 E' : `· Level ${g.lv || 1} · 🟡 START에서 북쪽을 보고 출발 · 안내 ${g.steps?.length || 0}개 · 틀리면 처음부터`}`;
   $('evBarS').textContent = g.show ? (g.kind === 'find' ? g.lines.join(' ') : g.steps.map((t, k) => `${k + 1}. ${t}`).join('  ')) : '🔊 듣기를 눌러 다시 들어요 · 👀 글자로도 볼 수 있어요';
 }
 function evGameEnd() {
   const g = ev.game, pass = g.right >= 2; stopEvGame();
+  if (g.kind === 'dir') { const L = MZL[(g.lv || 1) - 1]; toast(`🎉 Level ${L.lv} 미로 성공! 보상 ×${L.mult}${L.lv < 3 ? ` · Level ${L.lv + 1} 미로가 열렸어요` : ''}`, 'success'); evReward(g.n, 0, false, L.mult); return; }
   if (pass) { toast(`🎉 Great job! 3판 중 ${g.right}번 한 번에 맞혔어요`, 'success'); evReward(g.n); }
   else toast(`💪 Nice try! 3판 중 ${g.right}번 한 번에 맞혔어요. 2번 이상이면 영어 별을 달아요`, 'info');
 }
@@ -14963,9 +15084,15 @@ function stopEvGame() { ev.game = null; $('evBar').classList.add('hidden'); }
 function evStars(n) { return S.eng?.[n] || 0; }
 function syncEv() {
   if (!ev.group) return;
-  const key = JSON.stringify(S.eng || {}); if (key === ev.key) return; ev.key = key;
-  let total = 0;
-  for (const Z of EV_Z) { const s = evStars(Z.n); total += s; ev.signs[Z.n]?.userData.set([`${Z.icon} ${Z.name}`, `Lesson ${Z.n} · ${Z.ko} · ⭐ ${s}`]); if (ev.flags[Z.n]) ev.flags[Z.n].visible = s >= 5; }
+  const key = JSON.stringify([S.eng || {}, S.evc || {}, S.nick || {}]); if (key === ev.key) return; ev.key = key;
+  let total = 0; const lines = ['🏁 영어 마을 클리어 게시판'];
+  for (const Z of EV_Z) { const s = evStars(Z.n); total += s;
+    const list = Object.entries(S.evc || {}).map(([u, c]) => [u, c?.['l' + Z.n] | 0, c]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)), sum = list.reduce((a, x) => a + x[1], 0);
+    ev.signs[Z.n]?.userData.set([`${Z.icon} ${Z.name}`, `Lesson ${Z.n} · ${Z.ko} · ⭐ ${s} · 🏁 우리 반 ${sum}회`]); if (ev.flags[Z.n]) ev.flags[Z.n].visible = s >= 5;
+    lines.push(`${Z.icon} L${Z.n} ${Z.ko} · 🏁 ${sum}회${list.length ? ' · ' + list.slice(0, 3).map(([u, n, c], i) => `${MEDAL[i]}${nickOf(u, { n: c?.nm }) || '친구'} ${n}`).join(' ') : ''}`); }
+  if (ev.clearAt) { // 판자에 직접 써요 (바뀔 때마다 새로)
+    if (ev.clearSign) { ev.group.remove(ev.clearSign); ev.clearSign.material.map?.dispose(); ev.clearSign.material.dispose(); }
+    ev.clearSign = signPlane(ev.group, lines.slice(1), 5.2, 2.3, ev.clearAt[0], 2.2, ev.clearAt[1] - 0.12, { font: 30, pad: 10, fg: '#3B2F2A', bg: '#FFF8E8', stroke: false }); ev.clearSign.rotation.y = Math.PI; ev.clearLines = lines; }
   ev.board?.userData.set(['🗽 Welcome to English Village!', `우리 반 영어 별 ⭐ ${total}개 · 구역마다 별 5개면 깃발 장식`]);
 }
 function buildEnglishVillage() {
@@ -14977,7 +15104,7 @@ function buildEnglishVillage() {
   box(g, W, 0.04, 6, road, EV.cx, 0.02, 0, o); for (const s of [-1, 1]) box(g, W, 0.05, 1.2, side, EV.cx, 0.025, s * 3.6, o);
   for (const Z of EV_Z) box(g, 4, 0.035, 10, road, Z.npc[0], 0.018, Math.sign(Z.z) * 9, o);
   // 울타리 (낮은 나무 울타리)
-  for (const [x0, z0, x1, z1] of [[EV.x0, EV.z0, EV.x1, EV.z0], [EV.x0, EV.z1, EV.x1, EV.z1], [EV.x1, EV.z0, EV.x1, EV.z1], [EV.x0, EV.z0, EV.x0, -2.5], [EV.x0, 6.5, EV.x0, EV.z1]]) {
+  for (const [x0, z0, x1, z1] of [[EV.x0, EV.z0, EV.x1, EV.z0], [EV.x0, EV.z1, EV.x1, EV.z1], [EV.x1, EV.z0, EV.x1, MZP.gz - 2.2], [EV.x1, MZP.gz + 2.2, EV.x1, EV.z1], [EV.x0, EV.z0, EV.x0, -2.5], [EV.x0, 6.5, EV.x0, EV.z1]]) { // 동쪽 가운데는 🧭 미로 공원 문
     const len = Math.hypot(x1 - x0, z1 - z0), n = Math.ceil(len / 2.5), ry = Math.atan2(x1 - x0, z1 - z0);
     box(g, 0.12, 0.12, len, C.wood, (x0 + x1) / 2, 0.75, (z0 + z1) / 2, { solid: false, ry }); box(g, 0.12, 0.12, len, C.wood, (x0 + x1) / 2, 0.4, (z0 + z1) / 2, { solid: false, ry });
     for (let k = 0; k <= n; k++) box(g, 0.2, 1.0, 0.2, 0x8A6A48, x0 + (x1 - x0) * k / n, 0.5, z0 + (z1 - z0) * k / n, o);
@@ -14996,6 +15123,9 @@ function buildEnglishVillage() {
     const spots = [[-1.5, 1.25], [0, 1.25], [1.5, 1.25], [-0.75, 2.75], [0.75, 2.75], [0, 4.25]];
     'ABCDEF'.split('').forEach((ch, i) => { const [dx, y] = spots[i], x = px + dx; const c = new THREE.Group(); c.position.set(x, y, 0); c.rotation.y = i * 0.25; g.add(c); box(c, 1.4, 1.4, 1.4, cols[i], 0, 0, 0); for (const r of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { const s = signPlane(c, [ch], 1.1, 1.1, Math.sin(r) * 0.71, 0, Math.cos(r) * 0.71, { font: 90, pad: 2, fg: '#FFFFFF', stroke: false }); s.rotation.y = r; } });
     ev.board = makeLabel(g, [''], 1.2, px, 6.2, 0); }
+  { const bx = EV.cx - 10, bz = 9.5; // 🏁 클리어 게시판 (큰길 북쪽 · 레슨 길 사이)
+    for (const sx of [-2.4, 2.4]) box(g, 0.25, 3.2, 0.25, C.wood, bx + sx, 1.6, bz); box(g, 5.4, 2.4, 0.2, 0xFFF3DC, bx, 2.2, bz, o); box(g, 5.8, 0.3, 0.4, 0x7A4A2A, bx, 3.5, bz, o);
+    makeLabel(g, ['🏁 영어 마을 클리어 게시판'], 1.1, bx, 4.6, bz); ev.clearAt = [bx, bz]; }
   for (const [x, z] of [[1700, -12], [1700, 12], [1732, -10], [1768, -10], [1732, 10], [1768, 10], [1806, -12], [1806, 12], [1696, -40], [1696, 40], [1804, 42], [1730, 42], [1768, 42]]) makeTree(x, z, g);
   for (let x = EV.x0 + 8; x < EV.x1 - 4; x += 16) for (const s of [-1, 1]) { cyl(g, 0.09, 3.4, 0x3B3F46, x, 1.7, s * 4.4, o); ball(g, 0.3, 0xFFF3C4, x, 3.5, s * 4.4, { solid: false, emissive: 0.5 }); } // 가로등
   // 구역 공통: 간판 + 별 깃발
@@ -15027,8 +15157,8 @@ function buildEnglishVillage() {
     for (let k = 0; k < 4; k++) { const p = EV_MANQ(k); cyl(g, 0.7, 0.06, 0xFFFFFF, p.x, 0.5, p.z, o); signPlane(g, [`${k + 1}`], 0.6, 0.45, p.x, 0.36, z - 3.98, { font: 44, pad: 2, fg: '#C2185B', bg: '#FFFFFF', stroke: false }); }
     for (const dx of [-10.5, 10.5]) { box(g, 1.2, 0.05, 2, 0xFFFFFF, x + dx, 0.5, z - 6.5, o); }
   }
-  // ⚾ 야구장 거리 미로 (L9): 산울타리 미로 + 칸마다 발판 돌 + 막다른 곳 가게 6곳
-  { const { x0, z0, cs, rows: R, cols: C } = MZ, H = 2.7, T = 0.55, hedge = 0x3E8A45;
+  // ⚾ 야구장 거리 미로 (L9) + 🧭 미로 공원 Level 2·3: 산울타리 미로 + 칸마다 발판 돌 + 막다른 곳 가게 6곳
+  for (const L of MZL) { const MAZE = L.maze, MZ = L.M, MZ_START = L.start, mzCell = (r, c) => mzCellL(L, r, c); const { x0, z0, cs, rows: R, cols: C } = MZ, H = 2.7, T = 0.55, hedge = 0x3E8A45;
     box(g, C * cs + 1, 0.04, R * cs + 1, 0xC9B98E, x0 + C * cs / 2, 0.02, z0 + R * cs / 2, o);
     const wall = (x, z, len, alongX) => box(g, alongX ? len + T : T, H, alongX ? T : len + T, hedge, x, H / 2, z, { surf: 'leaf' });
     for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
@@ -15040,7 +15170,7 @@ function buildEnglishVillage() {
       if (!op[1]) wall(cx + cs / 2, cz, cs, false);
       if (!op[2] && !(r === R - 1 && c === MZ.sc)) wall(cx, cz + cs / 2, cs, true);
     }
-    cyl(g, 1.1, 0.06, 0xF5C531, MZ_START[0], 0.04, MZ_START[1], o); signPlane(g, ['START'], 1.6, 0.42, MZ_START[0], 0.6, MZ_START[1] + 1.3, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#F5C531', stroke: false }).rotation.y = 0;
+    cyl(g, 1.1, 0.06, 0xF5C531, MZ_START[0], 0.04, MZ_START[1], o); signPlane(g, [L.lv > 1 ? `START · Level ${L.lv}` : 'START'], 1.6, 0.42, MZ_START[0], 0.6, MZ_START[1] + 1.3, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#F5C531', stroke: false }).rotation.y = 0;
     { const ar = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 3), new THREE.MeshBasicMaterial({ color: 0xF5C531 })); ar.rotation.x = -Math.PI / 2; ar.position.set(MZ_START[0], 0.08, MZ_START[1] - 1.4); g.add(ar); }
     const cols = [0xF2A0B5, 0x7AB8E8, 0xF5C531, 0x5FBE5A, 0xA06EE0, 0xFF9A3C];
     MAZE.shops.forEach((sh, i) => {
@@ -15049,9 +15179,16 @@ function buildEnglishVillage() {
       const st = new THREE.Group(); st.position.set(bx, 0, bz); st.rotation.y = ry; g.add(st);
       box(st, 2.6, 2.2, 1.2, 0xF5EDE0, 0, 1.1, 0); box(st, 3.0, 0.3, 1.6, cols[i], 0, 2.35, 0.1, o); box(st, 2.2, 0.6, 0.15, cols[i], 0, 0.9, 0.62, o);
       const sp = signPlane(st, [`${sh.icon} ${sh.name}`], 2.8, 0.6, 0, 2.9, 0.2, { font: 40, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }); sp.rotation.y = 0;
-      addInteract({ pos: new V3(cx, 1, cz), r: 2.3, text: () => evRegion() && ev.game?.kind === 'dir' ? ['여기예요! 🏁', `${sh.icon} ${sh.name}`] : null, run: () => evPickPlace(i) });
+      addInteract({ pos: new V3(cx, 1, cz), r: 2.3, text: () => evRegion() && ev.game?.kind === 'dir' && ev.game.lv === L.lv ? ['여기예요! 🏁', `${sh.icon} ${sh.name}`] : null, run: () => evPickPlace(L.lv, i) });
     });
   }
+  { // 🧭 미로 공원 땅 · 길 · 표지
+    const o2 = { solid: false }; lawnPlane(g, MZP.x1 - MZP.x0 + 70, 130, (MZP.x0 + MZP.x1) / 2 + 20, 0, 0x8ACB64, -0.02); box(g, MZP.x1 - MZP.x0, 0.03, MZP.z1 - MZP.z0, 0xB9D79A, (MZP.x0 + MZP.x1) / 2, 0.012, (MZP.z0 + MZP.z1) / 2, o2);
+    box(g, MZP.x1 - MZP.x0 - 6, 0.045, 6, 0xD8CDB8, (MZP.x0 + MZP.x1) / 2 + 3, 0.024, 0, o2); box(g, 6, 0.045, MZP.gz + 3, 0xD8CDB8, MZP.x0 + 3, 0.024, MZP.gz / 2 - 1.5, o2); box(g, 6, 0.045, 4, 0xD8CDB8, MZP.x0 + 1, 0.024, MZP.gz, o2); // 문 → 남쪽 길
+    for (const [x0, z0, x1, z1] of [[MZP.x0, MZP.z0, MZP.x1, MZP.z0], [MZP.x1, MZP.z0, MZP.x1, MZP.z1], [MZP.x0, MZP.z1, MZP.x1, MZP.z1]]) { const len = Math.hypot(x1 - x0, z1 - z0), ry = Math.atan2(x1 - x0, z1 - z0); box(g, 0.12, 0.12, len, C.wood, (x0 + x1) / 2, 0.75, (z0 + z1) / 2, { solid: false, ry }); box(g, 0.12, 0.12, len, C.wood, (x0 + x1) / 2, 0.4, (z0 + z1) / 2, { solid: false, ry }); }
+    for (const sx of [-1.8, 1.8]) box(g, 0.25, 3.4, 0.25, C.wood, EV.x1 + 1, 1.7, MZP.gz + sx * 1.2, o2);
+    box(g, 0.3, 0.7, 3.4, 0x2F8F83, EV.x1 + 1, 3.6, MZP.gz, o2); signPlane(g, ['🧭 미로 공원'], 3.0, 0.6, EV.x1 + 0.8, 3.6, MZP.gz, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F8F83', stroke: false }).rotation.y = -Math.PI / 2;
+    makeLabel(g, ['🧭 미로 공원', 'Level 2 · Level 3 미로 (야구장 거리 Officer Max에게서 시작)'], 1.1, MZ2.x0 + 22, 6.5, 3); }
   // 🛒 알뜰 시장 (L10): 노점 세 개
   { const x = 1714, z = 28, items = [[0xF26B6B, 0xFFFFFF], [0xF5C531, 0x4F8FE8], [0x5FBE5A, 0xFF8A3A]];
     items.forEach(([c1, c2], k) => { const sx = x - 8 + k * 8, sz = z + 2;
@@ -15125,7 +15262,7 @@ function buildEnglishVillage() {
 function evSayAgain() { const g = ev.game; if (!g) return; sayEn(g.kind === 'find' ? g.lines.join(' ') : g.lines[1]); }
 function updateEv(dt) {
   if (!ev.dyn) return;
-  const near = (player.pos.x > 1660 && player.pos.x < 1840) || (camera.position.x > 1660 && camera.position.x < 1840);
+  const near = (player.pos.x > 1660 && player.pos.x < 1960) || (camera.position.x > 1660 && camera.position.x < 1960);
   ev.group.visible = ev.dyn.visible = near;
   if (!near) { if (ev.game) stopEvGame(); return; }
   for (const a of ev.npcs) animateAvatar(a, 0, dt, true, false);
@@ -15134,7 +15271,7 @@ function updateEv(dt) {
 }
 function initEvUI() {
   $('evNext').onclick = evNext; $('evClose').onclick = () => { $('evPanel').classList.add('hidden'); speechSynthesis?.cancel?.(); };
-  $('evSay').onclick = () => { const it = ev.q?.qs[ev.q.i]; if (it) sayEn(it.type === 'order' ? it.en : it.say); };
+  $('evSay').onclick = () => { const it = ev.q?.qs[ev.q.i]; if (it) sayEn(it.type === 'order' ? it.en : it.type === 'spell' ? (ev.q.answered ? it.word : it.say) : it.say); };
   $('evBarSay').onclick = evSayAgain;
   $('evBarShow').onclick = () => { if (ev.game) { ev.game.show = !ev.game.show; evBar(); } };
   $('evBarQuit').onclick = stopEvGame;
@@ -16362,9 +16499,37 @@ function sdSit(x, z) { // 📜 서당 방석에 앉기 → 학습지
   player.pos.set(x, 0.12, z); player.vy = 0; player.heading = Math.PI; player.avatar.g.position.copy(player.pos); player.avatar.g.rotation.y = Math.PI;
   camYaw = 0; camPitch = 0.55; playAct(player.avatar, 'sit'); playSfx('pick'); openStudyPanel();
 }
+const sdUrlNow = () => { const v = S.sdUrl?.u; return typeof v === 'string' && /^https?:\/\//.test(v) ? v : ''; }; // 🖥️ 선생님이 연 화면
 function openStudyPanel() {
-  closeModals(); const f = $('studyFrame'); if (!f.src) f.src = STUDY_URL;
+  closeModals(); const f = $('studyFrame'), url = sdUrlNow() || STUDY_URL;
+  if (f.dataset.url !== url) { f.src = url; f.dataset.url = url; }
+  $('studyOpen').href = url; $('studyTitle').textContent = sdUrlNow() ? '🖥️ 선생님 화면' : '📖 사회 학습지';
   $('studyPanel').classList.remove('hidden'); addStat('soc', 0);
+}
+function sdTeacherSit(x, z) { // 🧑‍🏫 훈장 자리 (학생들을 바라봐요)
+  player.pos.set(x, 0.12, z); player.vy = 0; player.heading = 0; player.avatar.g.position.copy(player.pos); player.avatar.g.rotation.y = 0;
+  camYaw = Math.PI; camPitch = 0.45; playAct(player.avatar, 'sit'); playSfx('pick'); openSdScreen();
+}
+function openSdScreen() { // 🖥️ 학생 화면 정하기 (서당 학생들의 학습 창에 열려요)
+  openLife('🖥️ 학생 화면 열기', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', '사이트 주소를 넣고 \'모두에게 열기\'를 누르면 서당에 있는 학생들 화면에 바로 열려요. 나중에 방석에 앉는 학생도 이 화면이 열려요. (어떤 사이트는 게임 안 창에서 열리지 않아요 — 그때는 학생이 ↗ 새 창으로를 눌러요)'));
+    const cur = sdUrlNow(); box.append(el2('p', 'lp-big', cur ? `지금: ${cur.replace(/^https?:\/\//, '').slice(0, 60)}` : '지금: 기본 사회 학습지'));
+    const inp = document.createElement('input'); inp.className = 'tinput'; inp.type = 'url'; inp.placeholder = 'https://...'; inp.value = cur || ''; inp.style.width = 'min(460px, 80vw)'; inp.setAttribute('aria-label', '사이트 주소');
+    const row = el2('div', 'row-center wrap'), go = el2('button', 'btn', '📺 모두에게 열기'), pre = el2('button', 'btn', '📖 사회 학습지'), off = el2('button', 'btn danger', '🛑 닫기 (기본으로)'), me = el2('button', 'btn', '👀 내 화면에서 보기');
+    go.style.background = '#FFE066';
+    go.onclick = () => { let u = inp.value.trim(); if (!u) return; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; if (u.length > 500 || /\s/.test(u)) { toast('주소를 다시 확인해 주세요', 'warn'); return; } adminDo({ sdUrl: { u, at: backend.now() } }, '🖥️ 서당 학생들에게 화면을 열었어요'); };
+    pre.onclick = () => { inp.value = STUDY_URL; };
+    off.onclick = () => adminDo({ sdUrl: null }, '🖥️ 학생 화면을 닫았어요 (기본 사회 학습지로)');
+    me.onclick = () => openStudyPanel();
+    row.append(go, pre, me, off); box.append(inp, row);
+  });
+}
+function sdScreenUpdate() { // 서당 앞 '선생님 화면' 표지 + 새 화면이 열리면 서당 안 학생에게 바로 보여요
+  const at = S.sdUrl?.at || 0, u = sdUrlNow();
+  if (bld.sdScreen) { const t = u ? `🖥️ 선생님 화면 · ${u.replace(/^https?:\/\//, '').split('/')[0]}` : '🖥️ 선생님 화면'; if (bld.sdScreenT !== t) { bld.sdScreenT = t; bld.sdScreen.userData.set([t]); } }
+  if (bld.sdAt === undefined) { bld.sdAt = at; return; }
+  if (at !== bld.sdAt) { bld.sdAt = at; if (u && !isTeacher && roomNow() === 'sd') { openStudyPanel(); toast('🧑‍🏫 선생님이 화면을 열었어요!', 'info'); } else if (!u && $('studyTitle').textContent.startsWith('🖥️')) { $('studyFrame').dataset.url = ''; } }
 }
 function openEraQuiz(E) {
   openHQ({ title: `${E.icon} ${E.n} 시대 퀴즈`, keys: [E.k], mode: 'era',
@@ -17827,7 +17992,7 @@ function loop() {
   if (!joined) renderPreview(dt);
   updatePretty(dt);
   updateEnv(dt);
-  if (joined) updateRemotes(dt);
+  if (joined) { updateRemotes(dt); attrRemotes(); }
   updateTeachLooks(dt);
 
   world.crates.forEach((c, k) => {
@@ -17846,7 +18011,7 @@ function loop() {
   updateRockets(dt);
   updateParticles(dt);
   updatePlacing();
-  if (rewardSpots.carousel?.spin) rewardSpots.carousel.spin.rotation.y += dt * 0.8;
+  if (rewardSpots.carousel?.spin) rewardSpots.carousel.spin.rotation.y = carAng() % (Math.PI * 2); // 모든 화면이 같은 시각으로 돌아요
   updateInteract();
   sendPresence(time);
   renderer.render(scene, camera);
