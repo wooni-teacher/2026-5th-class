@@ -9392,7 +9392,8 @@ function wheelBottom() { const step = Math.PI * 2 / WHEEL_N, r = wheelAng() % (M
 function attrBlock() { return isFrozen() || hideOn() && hideIn(backend?.uid) || kite.active || hv.travel || spec.on || isSeated(player.avatar) ? '지금은 탈 수 없어요' : ''; }
 function seatPos(key, out) { // 자리의 지금 위치(발 높이)와 보는 쪽
   const k = key[0], i = +key.slice(1);
-  if (k === 'c') { const spin = rewardSpots.carousel?.spin, h = spin?.children.filter(c => c.isGroup)[i]; if (!h) return null; h.getWorldPosition(out); const sc = h.getWorldScale(_aws).y; out.y += 1.56 * sc - 0.45 * CAR_SC + Math.sin(nowS() * 2.4 + i) * 0.15 * sc; return { h: spin.rotation.y - (h.userData.a ?? i * Math.PI / 4) + Math.PI, sc: CAR_SC }; }
+  if (k === 'c') { const spin = rewardSpots.carousel?.spin, h = spin?.children.filter(c => c.isGroup)[i]; if (!h) return null; h.getWorldPosition(out); const sc = h.getWorldScale(_aws).y; out.y += 1.56 * sc - 0.45 * CAR_SC + Math.sin(nowS() * 2.4 + i) * 0.15 * sc;
+    const wd = h.getWorldDirection(_aws); return { h: Math.atan2(-wd.x, -wd.z), sc: CAR_SC }; } // 말 머리(-z) 쪽을 봐요 (회전목마 받침이 돌아가 있어도)
   if (k === 'w') { const cab = fundV.wheel?.children.filter(c => c.userData.cab)[i]; if (!cab) return null; cab.getWorldPosition(out); out.y -= 1.85; return { h: -Math.PI / 2, sc: 1 }; }
   if (k === 's') { const sw = attrW.swing; if (!sw) return null; const th = swingAng(); sw.rotation.z = th; sw.parent.updateMatrixWorld(true); sw.getWorldPosition(out); out.x += Math.sin(th) * 2.55; out.y += -Math.cos(th) * 2.55 - 0.5; return { h: Math.PI / 2, sc: 1 }; }
   return null;
@@ -14095,6 +14096,7 @@ const ROOMS = {
   gh: { name: '온실', icon: '🌿', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
   sd: { name: '서당', icon: '📜', cx: 1450, cz: 40, w: 20, d: 16, wall: 0xF1E4CC, floor: 0xC79A64, site: 'hv:seodang' },
   era: { name: '시대관', icon: '🏛️', cx: 1450, cz: -40, w: 20, d: 16, wall: 0xF3EBDD, floor: 0xB9905F, site: 'hv:era' },
+  etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
 const READ_FEELS = ['재미있었어요', '감동적이었어요', '새로 알게 됐어요', '다음 권도 읽고 싶어요', '친구에게 추천해요'];
@@ -14185,6 +14187,20 @@ function buildInteriors() {
       addInteract({ pos: new V3(x, 1, z + 0.85), r: 1.25, text: () => roomNow() === 'sd' ? ['자리에 앉아 공부하기 📖', '사회 학습지를 펴요'] : null, run: () => sdSit(x, z + 0.85) });
     }
   }
+  // ---------- 🏋️ 영어 훈련소 (교실): 책상 16자리 · 앉으면 레슨별 학습지·쓰기 연습을 펴요 ----------
+  { const r = ROOMS.etr, { cx, cz, w, d } = r; roomShell(g, r);
+    const fz = cz - d / 2 + 0.3;
+    box(g, 9, 2.4, 0.12, 0x2F5E4A, cx, 1.9, fz, o); box(g, 9.3, 0.15, 0.3, 0x8A6A44, cx, 0.65, fz + 0.15, o); // 칠판
+    signPlane(g, ['📒 ENGLISH TRAINING', 'Words · Sentences · Writing'], 8.2, 1.6, cx, 2.0, fz + 0.08, { font: 54, pad: 8, fg: '#FFFFFF', bg: '#2F5E4A', stroke: false }).rotation.y = 0;
+    box(g, 2.2, 0.9, 0.8, 0x7A5A3A, cx, 0.45, fz + 2.2); // 선생님 책상
+    for (const [x, t] of [[cx - 7.5, 'ABC'], [cx + 7.5, 'Hello!']]) signPlane(g, [t], 2.2, 0.9, x, 2.3, fz + 0.06, { font: 60, pad: 6, fg: '#2F5E9E', bg: '#FFF8E8', stroke: false }).rotation.y = 0;
+    for (let row = 0; row < 4; row++) for (let col = 0; col < 4; col++) { // 책상 16자리 (4줄 × 4)
+      const x = cx - 5.4 + col * 3.6, z = cz - 3.6 + row * 2.4;
+      box(g, 1.5, 0.08, 0.75, 0xE9C98F, x, 0.76, z, o); for (const [dx, dz] of [[-0.65, -0.3], [0.65, -0.3], [-0.65, 0.3], [0.65, 0.3]]) box(g, 0.06, 0.74, 0.06, 0x8C95A3, x + dx, 0.37, z + dz, o);
+      box(g, 1.1, 0.03, 0.55, 0xFFFFFF, x, 0.81, z, o); box(g, 0.5, 0.06, 0.5, [0x4A9AE8, 0xE2584A][(row + col) % 2], x, 0.46, z + 0.85, o); box(g, 0.5, 0.5, 0.06, [0x4A9AE8, 0xE2584A][(row + col) % 2], x, 0.75, z + 1.1, o); // 책상 · 의자
+      addInteract({ pos: new V3(x, 1, z + 0.85), r: 1.25, text: () => roomNow() === 'etr' ? ['자리에 앉아 공부하기 📒', '레슨별 학습지 · 쓰기 연습'] : null, run: () => etrSit(x, z + 0.85) });
+    }
+  }
   // ---------- 🏛️ 시대관: 역사의 길 건축물 안 (들어갈 때마다 그 시대로 꾸며져요) ----------
   { const r = ROOMS.era, { cx, cz, w, d } = r; roomShell(g, r);
     bld.eraDeco = null;
@@ -14228,7 +14244,7 @@ async function enterRoom(id) {
   player.pos.set(r.cx, 0.12, r.cz + r.d / 2 - 3.2); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
-  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
+  toast({ lib: '📚 도서관 안이에요! 책상에서 독서 기록장을 쓰면 독서 나무가 자라요', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
 }
 async function exitRoom(id) {
   if (hv.travel) return;
@@ -14238,6 +14254,7 @@ async function exitRoom(id) {
   let x, z, h;
   if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
   else if (id === 'sd') { const sp = HV_SITE.seodang.pos; x = sp[0]; z = sp[1] + 7; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); }
+  else if (id === 'etr') { x = 1796.2; z = -0.2; h = -Math.PI / 2; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 영어 마을 훈련소 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
   else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
   player.pos.set(x, 0.15, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.45;
@@ -14278,7 +14295,7 @@ function updateRooms(dt) {
   const near = (player.pos.x > 1400 && player.pos.x < 1620) || (camera.position.x > 1400 && camera.position.x < 1620);
   bld.group.visible = near;
   updateBm(dt); if (near) bdmCourtLabels();
-  if (roomNow() === 'sd' && isSeated(player.avatar) && (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(k => keys[k]) || joy.x || joy.y)) playAct(player.avatar, null); // 서당: 움직이면 일어나요
+  if ((roomNow() === 'sd' || roomNow() === 'etr') && isSeated(player.avatar) && (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(k => keys[k]) || joy.x || joy.y)) playAct(player.avatar, null); // 서당: 움직이면 일어나요
   sdScreenUpdate();
   bld.dt = (bld.dt || 0) - dt; if (bld.dt <= 0) { bld.dt = 0.25; updateDoors(); }
 }
@@ -14491,6 +14508,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1014b', d: '10월 14일 (밤)', items: ['🏋️ 영어 훈련소 안으로 들어가요! 문 앞에서 E → 교실 책상 16자리 · 앉으면 레슨별 학습지·쓰기 연습', '🎠 회전목마에서 말 머리 쪽을 보고 앉아요'] },
   { id: '1014a', d: '10월 14일', items: ['📜 서당 자리가 16자리로! 앞자리는 선생님 자리 — 선생님이 앉아 연 화면이 서당 친구들 학습 창에 바로 열려요', '🎠 회전목마는 말 8마리 · 한 마리에 한 명 · 말 앞쪽을 보며 달려요 · 🎡 관람차는 줄을 서서 한 칸에 한 명씩 · 🪢 그네도 한 명씩 (친구 모습이 겹치지 않아요)', '🔊 영어 마을 문장 만들기에서 다시 듣기가 돼요', '⚾ 길 찾기 미로: Level 1 · 2 · 3 (동쪽 문 🧭 미로 공원) · 틀리면 START부터 다시 · 높은 단계일수록 보상 2배·3배', '🏁 영어 마을 클리어 게시판: 레슨마다 우리 반 클리어 횟수와 1~3등'] },
   { id: '1013d', d: '10월 13일 (오후)', items: ['🧑‍🏫 선생님 기기는 조개돈·반 동전을 따로 써요 (무한) — 우리 반 동전은 줄지 않아요'] },
   { id: '1013c', d: '10월 13일 (오후)', items: ['🎠 놀이기구를 직접 타요! 회전목마 · 🎡 바닷가 관람차(한 바퀴 약 40초) · 🪢 큰 나무 그네 — 앞에서 E, 내릴 때는 E나 점프'] },
@@ -14901,8 +14919,12 @@ async function evReward(n, wr = 0, train = false, mult = 1) { // ✍️ 쓰기�
   burst(player.pos.clone().add(new V3(0, 2.4, 0)), RAINBOW, 36, 4, 2); playSfx('fanfare');
 }
 // ---- 🏋️ 영어 훈련소: 레슨별 학습지(단어·문장 + 🔊) · 단어 쓰기 · 문장 만들기 연습 ----
+function etrSit(x, z) { // 🏋️ 훈련소 책상에 앉기 → 학습지
+  player.pos.set(x, 0.12, z); player.vy = 0; player.heading = Math.PI; player.avatar.g.position.copy(player.pos); player.avatar.g.rotation.y = Math.PI;
+  camYaw = 0; camPitch = 0.55; playAct(player.avatar, 'sit'); playSfx('pick'); openTraining();
+}
 function openTraining(n = ev.trainN || 7) {
-  if (!evRegion()) return; ev.trainN = n;
+  if (!evRegion() && roomNow() !== 'etr') return; ev.trainN = n;
   openLife('🏋️ 영어 훈련소', (box) => {
     box.textContent = '';
     const tabs = el2('div', 'ev-tabs'); for (const Z of EV_Z) { const b = el2('button', 'btn ev-tab' + (Z.n === n ? ' on' : ''), `L${Z.n} ${Z.icon}`); b.onclick = () => openTraining(Z.n); tabs.append(b); } box.append(tabs);
@@ -15245,7 +15267,8 @@ function buildEnglishVillage() {
     addInteract({ pos: new V3(Z.npc[0], 1, Z.npc[1] + (Z.z < 0 ? 1.2 : -1.2)), r: 2.4, text: () => evRegion() ? (ev.game?.n === Z.n ? ['다시 듣기 🔊', Z.ko] : [`${Z.icon} ${Z.name} 놀이 ▶`, Z.how]) : null, run: () => { if (ev.game?.n === Z.n) evSayAgain(); else openEvZone(Z.n); } });
   }
   { const a = makeAvatar(0, 4, 4, 0, dyn); a.g.position.set(1797.5, 0.12, 2.6); a.g.rotation.y = -Math.PI / 2; a.badge.userData.set(['🏋️ Coach Kim']); ev.npcs.push(a);
-    addInteract({ pos: new V3(1797.5, 1, 1.2), r: 2.6, text: () => evRegion() ? ['영어 훈련소 📒', '학습지 보기 · 단어 쓰기 · 문장 만들기'] : null, run: () => openTraining() }); }
+    addInteract({ pos: new V3(1797.5, 1, 1.2), r: 2.6, text: () => evRegion() ? ['영어 훈련소 📒', '학습지 보기 · 단어 쓰기 · 문장 만들기'] : null, run: () => openTraining() });
+    addInteract({ pos: new V3(1799.0, 1, -1.6), r: 2.6, text: () => evRegion() ? ['훈련소 들어가기 🚪', '교실 자리에 앉아 공부해요'] : null, run: () => enterRoom('etr') }); }
   for (let k = 0; k < 4; k++) {
     evDressUp(k, { hair: EV_HAIR[k], shirt: k + 1, hc: k, glasses: k % 2 === 1, eyes: k < 2 ? 'blue' : 'brown' });
     const p = EV_MANQ(k); addInteract({ pos: new V3(p.x, 1, p.z + 1.7), r: 1.9, text: () => evRegion() && ev.game?.kind === 'find' ? ['이 친구예요! 👉', `${k + 1}번`] : null, run: () => evPickManq(k) });
