@@ -1808,6 +1808,7 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const hexStr = (n) => '#' + n.toString(16).padStart(6, '0');
 const r2 = (n) => Math.round(n * 100) / 100;
+const AUTOJOIN = (() => { try { return localStorage.getItem('sv-autojoin') || ''; } catch { return ''; } })(); // 🎒 반 코드를 바꿔 다시 불러온 뒤 바로 들어가요
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } },
@@ -4618,7 +4619,7 @@ function initUI() {
     shirts.appendChild(b);
   });
   const params = new URLSearchParams(location.search);
-  $('room').value = params.get('room') || store.get('sv-room') || '';
+  $('room').value = (AUTOJOIN ? store.get('sv-room') : params.get('room') || store.get('sv-room')) || '';
   if (HAS_FIREBASE) {
     $('practiceBtn').classList.remove('hidden');
   } else {
@@ -4630,6 +4631,7 @@ function initUI() {
   $('practiceBtn').onclick = () => join(true);
   $('teacherJoinBtn').classList.remove('hidden');
   $('teacherJoinBtn').onclick = () => askPin(() => join(!HAS_FIREBASE, true));
+  if (AUTOJOIN && HAS_FIREBASE) { store.set('sv-autojoin', ''); setTimeout(() => join(false, AUTOJOIN === 'teacher'), 400); } // 🎒 가방을 바꿔 불러왔으면 바로 들어가요
   $('room').addEventListener('keydown', e => { if (e.key === 'Enter') join(!HAS_FIREBASE); });
 
   // 상단 바 아이콘
@@ -4677,6 +4679,7 @@ async function join(practice, asTeacher = false) {
   } else {
     const room = cleanRoom($('room').value);
     if (!room) { err.textContent = '우리 반 코드를 적어 주세요'; $('room').focus(); return; }
+    if (room !== BAG_ROOM) { store.set('sv-room', room); store.set('sv-autojoin', asTeacher ? 'teacher' : 'student'); err.textContent = '🎒 이 반 코드의 가방을 불러오는 중…'; setTimeout(() => location.reload(), 200); return; } // 반마다 가방이 따로라서 다시 불러와요
     store.set('sv-room', room);
   currentRoom = room;
     $('joinBtn').disabled = true;
@@ -8636,10 +8639,14 @@ const REQUESTS = [
 const LIFE_POS = { pond: [50, 42, 4.8], museum: [-46, -28], shop: [46, -28], bench: [13, 64.8] };
 
 // ---------- 가방 (이 기기에만 저장) ----------
-const BAG_KEY = 'sv-bag-v1', CAP_CRIT = 20, CAP_MAT = 50;
+// 🎒 가방은 반 코드마다 따로: sv-bag-v1:{반 코드} · 예전 가방(sv-bag-v1)은 업데이트 뒤 처음 들어간 반 코드가 이어받아요
+const BAG_ROOM = (() => { const q = new URLSearchParams(location.search).get('room'); return cleanRoom(String((AUTOJOIN ? store.get('sv-room') : q || store.get('sv-room')) || '')); })();
+const BAG_LEGACY = 'sv-bag-v1', BAG_KEY = BAG_ROOM ? `${BAG_LEGACY}:${BAG_ROOM}` : BAG_LEGACY, CAP_CRIT = 20, CAP_MAT = 50;
 const bag = (() => {
   const b = { m: { branch: 0, stone: 0, fruit: 0 }, c: {}, f: {}, day: '', req: {}, cd: {}, shell: 100 }; // 🐚 조개돈: 처음 100
-  try { const s = JSON.parse(store.get(BAG_KEY) || 'null'); if (s && s.m) Object.assign(b, s, { m: { ...b.m, ...s.m } }); } catch { /* 망가지면 새 가방 */ }
+  let raw = store.get(BAG_KEY);
+  if (!raw && BAG_ROOM && !store.get('sv-bag-claimed') && store.get(BAG_LEGACY)) { raw = store.get(BAG_LEGACY); store.set(BAG_KEY, raw); store.set('sv-bag-claimed', BAG_ROOM); } // 예전 가방 이어받기 (한 반만)
+  try { const s = JSON.parse(raw || 'null'); if (s && s.m) Object.assign(b, s, { m: { ...b.m, ...s.m } }); } catch { /* 망가지면 새 가방 */ }
   return b;
 })();
 function saveBag() { store.set(BAG_KEY, JSON.stringify(bag)); renderCoinChip(); }
@@ -14859,7 +14866,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
-  { id: '1015h', d: '10월 15일 (밤)', items: ['🌀 광차·버스·배를 없애고 🌀 포털로만 오가요', '🏟️ 관장 4단계: 1 우리 마을 펫 체육관 · 2 수학 광산 마을 · 3 역사 마을 · 4 영어 마을 (배지 4개)', '🧑‍🏫 관리 화면에서 단계마다 관장 속성을 바꿀 수 있어요', '⏳ 관장과 배틀 중인 친구가 있으면 🙋 줄 서서 기다려요 (차례가 되면 알려 줘요)'] },
+  { id: '1015h', d: '10월 15일 (밤)', items: ['🌀 광차·버스·배를 없애고 🌀 포털로만 오가요', '🏟️ 관장 4단계: 1 우리 마을 펫 체육관 · 2 수학 광산 마을 · 3 역사 마을 · 4 영어 마을 (배지 4개)', '🧑‍🏫 관리 화면에서 단계마다 관장 속성을 바꿀 수 있어요', '⏳ 관장과 배틀 중인 친구가 있으면 🙋 줄 서서 기다려요 (차례가 되면 알려 줘요)', '🎒 가방(조개돈·펫·옷 등)은 반 코드마다 따로 저장돼요'] },
   { id: '1015g', d: '10월 15일 (밤)', items: ['🐾 도서관이 펫 체육관으로! 🩺 펫 센터(데려오기·팀·도감) · 💿 기술머신(능력치 Lv로 열려요) · 🏆 관장 3단계 · ⚔️ 친구 1:1 대전', '📖 도감 생물 30가지가 속성(🔥💧🌿⚡🌪️🪨)을 가진 새 펫이 됐어요 (잡는 곳은 그대로)', '📒 독서 책상은 체육관 왼쪽 구석 — 선생님께 확인받고 써요'] },
   { id: '1015f', d: '10월 15일 (저녁)', items: ['🪨 패드(가볍게 화질)에서 캘 수 있는 돌이 안 보이던 문제 고침', '🌱 렉 줄이기: 풀잎을 단순하게 · 개수 절반 · 화면 해상도 상한 낮춤 · 🐛 해충 잡기 없앰', '🏸 배드민턴 랭킹 (주간 · 이기면 더 많이, 친구와 하면 져도 점수)', '🐲 하늘을 나는 용: 지난주 능력치 합계 1등이 한 주 동안 타요 (매주 월요일 초기화) — 스페이스·⬆️로 하늘을 날아요'] },
   { id: '1015e', d: '10월 15일 (저녁)', items: ['🎁 랭킹 보상 진열장 (🏆 랭킹 창 아래) — 1~3등이면 아직 없는 ⭐ 보상을 받아요 (1등은 두 개)', '👕 ⭐ 아바타: 👑 챔피언 왕관(도는 별) · 🎭 별빛 가면 · 💖 하트 안경 · 🔥 불사조 날개(불씨) · 🌌 은하 오라(도는 별 고리)', '🏡 ⭐ 집 칭호 6가지: 이름표 위 반짝이는 칭호 + 마당 기념 조각 (👑 명예의 집 · 🏆 챔피언 하우스 · 🌟 별빛 저택 · 💎 보석 궁전 · 🌈 무지개 성 · 📚 지혜의 탑)', '🚲 ⭐ 탈것: 금색이 반짝이는 금속으로 · 💫 오로라 고리 새로', '🧑‍🏫 선생님은 모든 보상이 열려 있어요'] },
