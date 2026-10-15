@@ -1296,7 +1296,7 @@
     <h3>🙈 변신 숨바꼭질 (메인 마을)</h3>
     <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
     <p class="hint" id="tpHideNow"></p>
-    <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><div id="tpHidePick" class="row-center wrap" style="width:100%"></div><label class="sr-only" for="tpHideSk">술래 수</label><select id="tpHideSk" class="tinput" style="width:auto"><option value="1" selected>술래 1명</option><option value="2">술래 2명</option><option value="3">술래 3명</option></select><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
+    <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><button class="btn" id="tpHideMe" style="background:#fff">🧑‍🏫 선생님도 참가</button><div id="tpHidePick" class="row-center wrap" style="width:100%"></div><label class="sr-only" for="tpHideSk">술래 수</label><select id="tpHideSk" class="tinput" style="width:auto"><option value="1" selected>술래 1명</option><option value="2">술래 2명</option><option value="3">술래 3명</option></select><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
 
     <h3>🎪 행사</h3>
     <p class="hint">행사를 고르고 시작하면 모든 학생 화면 위에 행사 막대가 떠요. 시간이 끝나거나 '마치기'를 누르면 결과와 🐚 상을 모두에게 보여 줘요.</p>
@@ -9513,10 +9513,15 @@ function rankPush() {
   const d = { n: cleanNick(myNick) || '친구' }; for (const k of Object.keys(STATS)) d[k] = Math.min(5000, Math.floor(bag.wkp[k] || 0));
   const key = JSON.stringify(d); if (key === rankW.sent) return; rankW.sent = key; backend.rankSet(String(bag.wkp.w), d);
 }
-const rankList = (w, k) => Object.entries(S.rank?.[String(w)] || {}).map(([u, e]) => [u, e?.[k] | 0, e]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+// 👥 같은 이름은 한 줄로 합쳐요: 랭킹은 기기마다 저장돼서 크롬북·태블릿을 바꿔 쓰거나 다시 접속하면 같은 학생이 두 번 나왔어요 → 이름이 같으면 점수를 더해 한 줄로 ('친구'처럼 이름이 없으면 기기별)
+const rankList = (w, k) => { const g = new Map();
+  for (const [u, e] of Object.entries(S.rank?.[String(w)] || {})) { const p = e?.[k] | 0; if (p <= 0) continue; const nm = cleanNick(nickOf(u, e) || ''), key = nm && nm !== '친구' ? 'n:' + nm : u;
+    const x = g.get(key); if (x) { x[1] += p; x[3].push(u); if (p > x[4]) { x[2] = e; x[4] = p; } } else g.set(key, [u, p, e, [u], p]); }
+  return [...g.values()].map(x => [x[0], Math.min(5000 * 4, x[1]), x[2], x[3]]).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)); };
+const rankHas = (x, uid) => x[0] === uid || !!x[3]?.includes(uid);
 function rankTitle(uid) { // 지난주 1~3등 칭호 (이름표 옆 · 둘까지)
   if (!S.rank) return ''; const w = weekNum() - 1, out = [];
-  for (const k of Object.keys(STATS)) { const i = rankList(w, k).slice(0, 3).findIndex(x => x[0] === uid); if (i >= 0) out.push(MEDAL[i] + STATS[k].icon); }
+  for (const k of Object.keys(STATS)) { const i = rankList(w, k).slice(0, 3).findIndex(x => rankHas(x, uid)); if (i >= 0) out.push(MEDAL[i] + STATS[k].icon); }
   return out.length ? ' ' + out.slice(0, 2).join('') : '';
 }
 const rankNick = (u, e) => nickOf(u, e) || '친구';
@@ -9528,7 +9533,7 @@ function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · 
   const pw = weekNum() - 1;
   if (bag.rwk !== pw && !isTeacher) {
     bag.rwk = pw; const got = [];
-    for (const k of Object.keys(STATS)) { const i = rankList(pw, k).slice(0, 3).findIndex(x => x[0] === me); if (i >= 0) got.push([k, i]); }
+    for (const k of Object.keys(STATS)) { const i = rankList(pw, k).slice(0, 3).findIndex(x => rankHas(x, me)); if (i >= 0) got.push([k, i]); }
     if (got.length) {
       let shell = 0; const items = []; bag.rx ||= {};
       for (const [, i] of got) { shell += RANK_SHELL[i]; for (let n = 0; n < (i === 0 ? 2 : 1); n++) { const it = RANK_STAR.find(x => !bag.rx[x]); if (it) { bag.rx[it] = 1; items.push(it[0] === 'c' ? `🎨 ${RIDE_COLORS[+it.slice(1)].n}` : `${RIDE_ACC[+it.slice(1)].icon} ${RIDE_ACC[+it.slice(1)].n}`); } } }
@@ -9548,8 +9553,8 @@ function openRank() {
       const col = el2('div', 'rank-col'), list = rankList(w, k); col.append(el2('h3', 'lp-sec', `${S2.icon} ${S2.name}`));
       const show = isTeacher ? list : list.slice(0, 5);
       if (!show.length) col.append(el2('p', 'hint', '아직 아무도 없어요. 1등에 도전!'));
-      show.forEach(([u, p, e], i) => col.append(el2('div', 'rank-row' + (u === me ? ' me' : ''), `${MEDAL[i] || `${i + 1}.`} ${rankNick(u, e)} · ${p}점`)));
-      const mi = list.findIndex(x => x[0] === me); if (!isTeacher) col.append(el2('p', 'rank-me', mi >= 0 ? `나: ${mi + 1}등 · ${list[mi][1]}점` : '나: 아직 점수가 없어요'));
+      show.forEach((x, i) => { const [u, p, e] = x; col.append(el2('div', 'rank-row' + (rankHas(x, me) ? ' me' : ''), `${MEDAL[i] || `${i + 1}.`} ${rankNick(u, e)} · ${p}점`)); });
+      const mi = list.findIndex(x => rankHas(x, me)); if (!isTeacher) col.append(el2('p', 'rank-me', mi >= 0 ? `나: ${mi + 1}등 · ${list[mi][1]}점` : '나: 아직 점수가 없어요'));
       const last = rankList(w - 1, k).slice(0, 3); if (last.length) col.append(el2('p', 'hint', `지난주 ${last.map(([u, , e], i) => `${MEDAL[i]}${rankNick(u, e)}`).join(' ')}`));
       grid.append(col);
     }
@@ -12051,7 +12056,7 @@ function updateTeachLooks(dt) {
     const p = a.g.position, sp = Math.hypot(p.x - tl.last.x, p.z - tl.last.z) / Math.max(dt, 1e-3); tl.last.copy(p);
     tl.sp += (Math.min(1, sp / SPEED) - tl.sp) * Math.min(1, dt * 8);
     if (tl.cape) tl.cape.rotation.x = 0.1 + tl.sp * 0.45 + Math.sin(time * (3 + tl.sp * 6)) * (0.03 + tl.sp * 0.08);
-    if (tl.trail && tl.sp > 0.3 && (tl.tt -= dt) <= 0) { tl.tt = 0.14; burst(p.clone().setY(p.y + 0.25), [0xFFD24A, 0xFFFFFF, 0xFF9FC8], 3, 1.1, 1.4, 0.6, -2); }
+    if (tl.trail && !a.propP && tl.sp > 0.3 && (tl.tt -= dt) <= 0) { tl.tt = 0.14; burst(p.clone().setY(p.y + 0.25), [0xFFD24A, 0xFFFFFF, 0xFF9FC8], 3, 1.1, 1.4, 0.6, -2); }
   }
 }
 function renderTeachLookUI() {
@@ -14637,6 +14642,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1015d', d: '10월 15일 (저녁)', items: ['🙈 숨바꼭질에 선생님도 참가! 관리 화면 🧑‍🏫 선생님도 참가 (또는 아래 🙋 참가하기) — 선생님도 술래로 뽑히거나 숨어요', '🏆 랭킹에 같은 친구가 두 번 나오던 문제 고침 (기기를 바꿔 써도 이름이 같으면 한 줄로 합쳐요)', '🎪 행사가 열리지 않던 문제 고침 (서버 규칙에 행사 칸 추가)'] },
   { id: '1015c', d: '10월 15일 (오후)', items: ['🎤 꿈나무 무대: 무대에 서면 조명! 💃 춤 · 🎤 노래 · 🗣️ 영어 한 마디(소리) — 친구들은 👏 박수', '🌈 무지개 다리 밑을 지나가면 하루 한 번 무지개 행운 선물', '🎪 알록달록 천막: 🔨 두더지 잡기 1분 (영어 단어 · 곱셈)', '🔥 숲속 캠프: 모닥불 둘레 그루터기 16자리 · 🍡 마시멜로 굽기 · 선생님이 캠프파이어로 모두 불러요'] },
   { id: '1015b', d: '10월 15일', items: ['🙈 선생님이 술래를 정할 수 있어요 (안 고르면 무작위)', '🛠️ 마을 가게 → 🙈 숨바꼭질 도구: 📡 레이더(술래 · 가까울수록 빨개지고 삐삐) · 📻 전파 방해기 · 🎭 변신 물약 · 👟 몰래 걸음 (숨는 사람) — 한 게임에 도구마다 한 번'] },
   { id: '1015a', d: '10월 15일', items: ['🙈 숨바꼭질 술래는 안대를 써요 — 숨는 동안 화면이 완전히 까매지고, 숨바꼭질 내내 지도를 볼 수 없어요'] },
@@ -16056,8 +16062,9 @@ function fillHideAdmin() {
   { const box = $('tpHidePick'), ids = h?.ph === 'join' ? Object.keys(h.in || {}) : []; for (const u of [...hidePick]) if (!ids.includes(u)) hidePick.delete(u); // 🙋 술래 지정 (참가자 이름을 눌러요)
     const key = JSON.stringify([ids, [...hidePick], ids.map(u => nickOf(u, remotes.get(u)?.target))]); if (box.dataset.k !== key) { box.dataset.k = key; box.textContent = '';
       if (ids.length) box.append(el2('span', 'hint', '술래로 정할 친구를 눌러요 (안 고르면 무작위):'));
-      for (const u of ids) { const on = hidePick.has(u), b = el2('button', 'btn', `${on ? '🙈 ' : ''}${u === backend.uid ? (cleanNick(myNick) || '나') : (nickOf(u, remotes.get(u)?.target) || '친구')}`); if (on) b.style.background = '#FFE066'; b.onclick = () => { if (on) hidePick.delete(u); else if (hidePick.size < 3) hidePick.add(u); else toast('술래는 3명까지예요', 'warn'); fillHideAdmin(); }; box.append(b); } } }
+      for (const u of ids) { const on = hidePick.has(u), b = el2('button', 'btn', `${on ? '🙈 ' : ''}${u === backend.uid ? (isTeacher ? '🧑‍🏫 선생님(나)' : cleanNick(myNick) || '나') : (nickOf(u, remotes.get(u)?.target) || '친구')}`); if (on) b.style.background = '#FFE066'; b.onclick = () => { if (on) hidePick.delete(u); else if (hidePick.size < 3) hidePick.add(u); else toast('술래는 3명까지예요', 'warn'); fillHideAdmin(); }; box.append(b); } } }
   $('tpHideStop').disabled = !h;
+  { const b = $('tpHideMe'), inMe = hideIn(backend?.uid); if (b) { b.disabled = !h || h.ph !== 'join'; b.textContent = inMe ? '🧑‍🏫 선생님 빠지기' : '🧑‍🏫 선생님도 참가'; b.style.background = inMe ? '#FFE066' : '#fff'; } } // 🧑‍🏫 선생님도 함께 숨거나 술래가 돼요
 }
 function initHideUI() {
   $('hideJoin').onclick = () => backend.hideJoin();
@@ -16070,6 +16077,7 @@ function initHideUI() {
     adminDo({ 'hide/ph': 'hide', 'hide/sk': sks[0], 'hide/sks': Object.fromEntries(sks.map(u => [u, true])), 'hide/t1': now + HIDE_T, 'hide/t2': now + HIDE_T + SEEK_T }, `🙈 숨바꼭질을 시작했어요! 술래 ${k}명${picked.length ? ` (지정 ${picked.length}명)` : ''}`);
   };
   $('tpHideStop').onclick = () => adminDo({ hide: null }, '🙈 숨바꼭질을 끝냈어요');
+  $('tpHideMe').onclick = () => { const h = S.hide, u = backend?.uid; if (!h || h.ph !== 'join' || !u) return; const on = hideIn(u); if (on) hidePick.delete(u); adminDo({ [`hide/in/${u}`]: on ? null : true }, on ? '🧑‍🏫 선생님은 이번 판에서 빠져요' : '🧑‍🏫 선생님도 참가해요! 술래로 뽑힐 수도 있어요'); };
   $('tpHideSk').onchange = fillHideAdmin;
 }
 
