@@ -405,6 +405,11 @@
   }
   #rideBtn.on { background: #FFE066; }
   body:has(#emoteBar:not(.hidden)) #rideBtn { visibility: hidden; }
+  #stageBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + var(--safe-bottom, 0px)); z-index: 26; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 8px 12px; max-width: 94vw; }
+  .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: min(380px, 86vw); margin: 10px auto; }
+  .mole { aspect-ratio: 1.2; border-radius: 50%; border: 3px solid #7A5A3A; background: radial-gradient(#5A3E28 55%, #8A6A44 56%); color: #3B2F2A; font-size: 20px; font-weight: 800; padding: 4px; cursor: pointer; transition: transform .08s; }
+  .mole.up { background: radial-gradient(#C9A27A 60%, #8A6A44 61%); transform: translateY(-4px); }
+  .mole.hit { background: radial-gradient(#9BE3A0 60%, #5FBE5A 61%); } .mole.miss { background: radial-gradient(#F6C9C0 60%, #E2584A 61%); }
   #festBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(76px + var(--safe-top, 0px)); z-index: 25; max-width: min(620px, 94vw); padding: 7px 16px; border-radius: 999px; border: 2px solid #E8B84A; background: #FFF6D8; font: inherit; font-size: 17px; color: #3B2F2A; box-shadow: 0 3px 0 rgba(0,0,0,0.12); cursor: pointer; }
   .mx-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; } .mx-opt { font-size: 22px; padding: 14px 8px; }
   .mo-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; width: min(360px, 86vw); margin: 8px auto; }
@@ -593,7 +598,10 @@
   .bb-gauge #bbFill { height: 100%; width: 0; background: linear-gradient(90deg, #FFD23C, #FF8A3A, #E2584A); }
   .bb-gauge i { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #2E7D32; }
   #bbShoot { background: #FF8A3A; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
-  #hideBlind { position: fixed; inset: 0; z-index: 40; background: rgba(20, 16, 14, .94); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 26px; font-weight: 800; text-align: center; }
+  #radarHud { position: fixed; left: 50%; top: calc(80px + var(--safe-top, 0px)); transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 10px; padding: 8px 18px 8px 10px; border-radius: 999px; background: rgba(20, 24, 30, .82); color: #fff; font-size: 18px; }
+  #radarDot { width: 34px; height: 34px; border-radius: 50%; background: #5FBE5A; box-shadow: 0 0 14px currentColor; transition: background .2s; }
+  #radarS { font-size: 14px; opacity: .85; }
+  #hideBlind { position: fixed; inset: 0; z-index: 9000; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 26px; font-weight: 800; text-align: center; }
   #hideBlind b { font-size: 90px; }
   body.in-hide #missionDock { top: calc(190px + var(--safe-top)); }
   /* 🏛️ 역사 마을 퀴즈 · ⚔️ 성 공방전 */
@@ -870,8 +878,10 @@
 <div id="hideBar" class="sticker hidden" role="status" aria-live="polite">
   <div id="hdT"></div><div id="hdS"></div>
   <div class="row-center wrap" style="margin-top:6px"><button class="btn hidden" id="hideJoin" style="background:var(--leaf);color:#fff">🙋 참가하기</button><button class="btn hidden" id="hideFind" style="background:#E2584A;color:#fff">🔍 찾았다! (F)</button></div>
+  <div id="hideItems" class="row-center wrap hidden" style="margin-top:6px"></div>
   <div id="hideProps" class="hide-props hidden" aria-label="변신할 물건"></div>
 </div>
+<div id="radarHud" class="hidden" role="status" aria-live="polite"><div id="radarDot"></div><b id="radarT"></b><span id="radarS"></span></div>
 <div id="pestBar" class="sticker hidden" role="status"></div>
 <div id="evBar" class="sticker hidden">
   <div id="evBarT"></div>
@@ -886,7 +896,7 @@
   <div class="bb-gauge"><div id="bbFill"></div><i style="left:62%"></i><i style="left:78%"></i></div>
   <div class="row-center" style="margin-top:6px"><button class="btn" id="bbShoot">🏀 꾹 눌렀다 놓기 (F)</button><button class="btn" id="bbQuit" style="background:#fff">그만</button></div>
 </div>
-<div id="hideBlind" class="hidden"><div>🙈 술래는 눈을 감고 있어요</div><b id="hideBlindT"></b><div style="font-size:18px">친구들이 숨는 동안 기다려요</div></div>
+<div id="hideBlind" class="hidden"><div style="font-size:64px">🙈</div><div>안대를 썼어요 · 술래는 눈을 감고 있어요</div><b id="hideBlindT"></b><div style="font-size:18px">친구들이 숨는 동안 기다려요 · 숨바꼭질 동안 술래는 지도를 볼 수 없어요</div></div>
 <div id="sgHud" class="sticker hidden" role="status" aria-live="polite"><div id="sgNats"></div><div id="sgInfo"></div><div id="sgMine"></div></div>
 <div id="trBar" class="sticker hidden">
   <div id="trInfo" style="font-weight:800"></div>
@@ -1088,6 +1098,7 @@
 <button id="jumpBtn" class="btn hidden">점프</button>
 <button id="soundBtn" class="btn hidden" aria-pressed="true" aria-label="소리 끄기" title="소리 끄기">🔊</button>
 <button id="festBar" class="hidden" aria-live="polite"></button>
+<div id="stageBar" class="sticker hidden" role="group" aria-label="무대"></div>
 <button id="rideBtn" class="btn hidden" aria-label="탈것 (V)" title="탈것 (V)">🚲</button>
 <button id="emoteBtn" class="btn hidden" aria-label="몸짓 고르기 (Q)" aria-expanded="false" aria-controls="emoteBar" title="몸짓 (Q)">😊</button>
 <div id="emoteBar" class="sticker hidden" role="group" aria-label="몸짓">
@@ -1204,6 +1215,7 @@
     <p class="hint" id="tpCtrlNow"></p>
     <div class="row-center wrap">
       <button class="btn" id="tpGather" style="background:var(--leaf);color:#fff">📣 모두 광장으로 모이기</button>
+      <button class="btn" id="tpCamp" style="background:#E2742A;color:#fff">🔥 캠프파이어로 모두 모이기</button>
       <button class="btn" id="tpFreeze" style="background:#fff">✋ 잠깐 멈춤</button>
     </div>
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
@@ -1284,7 +1296,7 @@
     <h3>🙈 변신 숨바꼭질 (메인 마을)</h3>
     <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
     <p class="hint" id="tpHideNow"></p>
-    <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><label class="sr-only" for="tpHideSk">술래 수</label><select id="tpHideSk" class="tinput" style="width:auto"><option value="1" selected>술래 1명</option><option value="2">술래 2명</option><option value="3">술래 3명</option></select><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
+    <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><div id="tpHidePick" class="row-center wrap" style="width:100%"></div><label class="sr-only" for="tpHideSk">술래 수</label><select id="tpHideSk" class="tinput" style="width:auto"><option value="1" selected>술래 1명</option><option value="2">술래 2명</option><option value="3">술래 3명</option></select><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
 
     <h3>🎪 행사</h3>
     <p class="hint">행사를 고르고 시작하면 모든 학생 화면 위에 행사 막대가 떠요. 시간이 끝나거나 '마치기'를 누르면 결과와 🐚 상을 모두에게 보여 줘요.</p>
@@ -1934,7 +1946,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -1970,7 +1982,7 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
-    coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -2164,12 +2176,15 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async hideSet(o) { if (!st.hide) return { ok: false }; Object.assign(st.hide, o); if (o.ph === 'end') st.hide.t3 = Date.now(); emit(); return { ok: true }; },
     async hideJoin() { if (!st.hide) return { ok: false }; (st.hide.in ||= {}).me = true; emit(); return { ok: true }; },
     async hideFind(u) { if (!st.hide) return { ok: false }; (st.hide.f ||= {})[u] = Date.now(); emit(); return { ok: true }; },
+    async hideJam(until) { if (!st.hide) return { ok: false }; (st.hide.jam ||= {}).me = until; emit(); return { ok: true }; },
     async readLog(g) { st.read ||= {}; st.read.n = (st.read.n || 0) + 1; (st.read.g ||= {})[g] = (st.read.g[g] || 0) + 1; emit(); return { ok: true }; },
     async artPost(p) { (st.art ||= {})[`me_${Date.now().toString(36)}`] = { p, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async gymJc() { st.gym ||= {}; if (st.gym.jc && Date.now() < st.gym.jc + GYM2.jc.len) return { ok: false }; st.gym.jc = Date.now() + GYM2.jc.wait; emit(); return { ok: true }; },
     async gymAdd(k, n) { st.gym ||= {}; st.gym[k] = (st.gym[k] || 0) + n; emit(); return { ok: true }; },
     async ideaPost(t) { st.idea ||= {}; st.idea[`me_${Date.now().toString(36)}`] = { t, at: Date.now() }; emit(); return { ok: true }; },
     async engStar(n) { st.eng ||= {}; st.eng[n] = (st.eng[n] || 0) + 1; emit(); return { ok: true }; },
+    async stageAct(k, s2) { st.stage = { ...(st.stage || {}), u: 'me', k, s: s2, at: Date.now() }; emit(); return { ok: true }; },
+    async stageClap() { st.stage = { ...(st.stage || {}), c: ((st.stage || {}).c || 0) + 1 }; emit(); return { ok: true }; },
     async evClear(n, nm) { const c = ((st.evc ||= {}).me ||= {}); c.nm = nm; c['l' + n] = (c['l' + n] || 0) + 1; emit(); return { ok: true }; },
     async badSet(c, upd) { // 🏸 배드민턴 (연습 모드: 이 브라우저에서만 · 🤖와 함께)
       const o = st.badm?.[c]; if (!o) return { ok: false };
@@ -2544,6 +2559,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
     async hideJoin() { try { await D.set(R(`state/hide/in/${uid}`), true); return { ok: true }; } catch (e) { return { ok: false }; } },
     async hideFind(u) { try { await D.set(R(`state/hide/f/${u}`), D.serverTimestamp()); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async hideJam(until) { try { await D.set(R(`state/hide/jam/${uid}`), Math.round(until)); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📻 전파 방해
     async readLog(g) { // 📒 독서 기록: 반 전체 권수 +1, 장르 +1 (누가 읽었는지는 없어요)
       try { const a = await D.runTransaction(R('state/read/n'), c => (c || 0) + 1); await D.runTransaction(R(`state/read/g/${g}`), c => (c || 0) + 1); return { ok: a.committed }; }
       catch (e) { return { ok: false }; }
@@ -2568,6 +2584,8 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
     async evClear(n, nm) { // 🏁 영어 마을 레슨 클리어 횟수 (내 칸 · +1씩)
       try { await D.runTransaction(R(`state/evc/${uid}`), c => ({ ...(c || {}), nm, ['l' + n]: ((c || {})['l' + n] || 0) + 1 })); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async stageAct(k, s2) { try { await D.update(R('state/stage'), { u: uid, k, s: s2, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎤 무대 공연 (노래·영어 한 마디)
+    async stageClap() { try { await D.runTransaction(R('state/stage/c'), c => (c || 0) + 1); return { ok: true }; } catch (e) { return { ok: false }; } }, // 👏 박수
     async engStar(n) { // 🗽 영어 마을: 반 전체 영어 별 +1
       try { const r = await D.runTransaction(R(`state/eng/${n}`), c => (c || 0) + 1); return { ok: r.committed }; } catch (e) { return { ok: false }; }
     },
@@ -2757,7 +2775,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
   };
   for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'evClear', 'rideBuy', 'mathMo', 'attrClaim', 'attrQueue', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'evClear', 'stageAct', 'stageClap', 'rideBuy', 'mathMo', 'attrClaim', 'attrQueue', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'hideFind', 'hideJam', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -6909,13 +6927,13 @@ function buildForestCamp() {
   }
   // 모닥불과 통나무 의자
   campfire(g, -74, -17, 1.2);
-  for (const [x, z, ry] of [[-74, -13.5, 0], [-74, -20.5, 0], [-70.5, -17, Math.PI / 2]]) logSeat(g, x, z, ry, 2.6);
+  for (let k = 0; k < CAMP_N; k++) { const [x, z] = campSeat(k); cyl(g, 0.38, 0.46, 0x8A5A34, x, 0.23, z, { solid: false }); cyl(g, 0.32, 0.03, 0xD9B07A, x, 0.47, z, { solid: false }); } // 🔥 그루터기 의자 16자리
   // 텐트 두 개
   for (const [x, z, col] of [[-82, -23, 0xFF9628], [-82, -11, 0x4F8FE8]]) {
     tent(g, x, z, col);
   }
   // 등불
-  for (const [x, z] of [[-64, -10.5], [-64, -15.5], [-78, -17]]) lantern(g, x, z, 2.2);
+  for (const [x, z] of [[-64, -10.5], [-64, -15.5], [-80.6, -17]]) lantern(g, x, z, 2.2);
   // 입구 표지판 (마을 쪽을 봐요)
   box(g, 0.3, 3, 0.3, C.wood, -63, 1.5, -18.2);
   box(g, 0.25, 1.6, 4.2, 0x2F7D3B, -63, 3, -18.2, { solid: false });
@@ -9129,7 +9147,7 @@ function openShop() {
     box.append(el2('p', 'hint', `팔면 반 동전은 값만큼, 내 🐚 조개돈은 값의 절반만큼 늘어요. 오늘 같은 물건을 많이 팔면 값이 내려가요(내일 회복). 조개돈으로 땅(🐚${LAND_PRICE})·집(🐚${HOUSE_PRICE})·집 키우기·👕 옷을 사고, 🐷 반 기부함에 모아 바닷가 놀이 시설을 지어요. (내 조개돈 🐚${bag.shell || 0}, 나만 보여요)`));
     { const cap = capNow(), used = earnToday();
       if (cap) { const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, Math.round(used / cap * 100))}%`; bar.append(fill); box.append(el2('p', '', `🏪 오늘 가게 예산: 🐚 ${used} / ${cap} ${used >= cap ? '· 다 썼어요! 내일 또 와요' : ''}`), bar); } }
-    { const w = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', '👕 옷가게 · 내 옷장'), b2 = el2('button', 'btn', '🐷 반 기부함 알아보기'), b3 = el2('button', 'btn', '🚲 탈것 가게'); b1.onclick = openWardrobe; b2.onclick = openFund; b3.onclick = openRides; w.append(b3); w.append(b1, b2); box.append(w); }
+    { const w = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', '👕 옷가게 · 내 옷장'), b2 = el2('button', 'btn', '🐷 반 기부함 알아보기'), b3 = el2('button', 'btn', '🚲 탈것 가게'), b4 = el2('button', 'btn', '🙈 숨바꼭질 도구'); b1.onclick = openWardrobe; b2.onclick = openFund; b3.onclick = openRides; b4.onclick = openHideShop; w.append(b3, b4); w.append(b1, b2); box.append(w); }
     // 팔 것
     box.append(el2('h3', 'lp-sec', '🎒 팔기'));
     const rows = [...Object.entries(bag.m).filter(([, n]) => n > 0).map(([k, n]) => ({ key: k, icon: MATS[k].icon, name: MATS[k].name, n, price: MATS[k].price, mat: true })),
@@ -9695,6 +9713,112 @@ function initFestAdmin() {
     adminDo({ fest, festv: null, festc: null, festp: null }, `${FEST[k].icon} ${FEST[k].name}을(를) 열었어요!`);
   };
   $('tpFestEnd').onclick = () => { if (festOn()) adminDo({ 'fest/until': backend.now() }, '🏁 행사를 마쳤어요 · 결과를 모두에게 보여 줘요'); };
+}
+/* ---------- 🎤 꿈나무 무대 · 🌈 무지개 다리 · 🎪 알록달록 천막 · 🔥 숲속 캠프파이어 ----------
+   · 무대: 무대 위에 서면 조명 · 💃 춤 · 🎤 노래 · 🗣️ 영어 한 마디(정해진 문장을 소리로) — 둘레 친구들이 보고 들어요 · 관객은 👏 박수 (state/stage {u,k,s,at,c})
+   · 무지개 다리: 아치 밑을 지나가면 하루 한 번 무지개 행운 선물 (이 기기)
+   · 천막: 🔨 두더지 잡기 1분 — 영어 뜻·곱셈 정답을 든 두더지를 잡아요 → 🐚 · 능력치
+   · 캠프: 모닥불 둘레 그루터기 16자리 · 앉기 · 🍡 마시멜로 굽기 · 선생님 '🔥 캠프파이어로 모두 모이기'(control/camp) */
+const CAMP_N = 16, CAMP_C = [-74, -17], CAMP_R = 4.6;
+const campSeat = (k) => { const a = k / CAMP_N * Math.PI * 2; return [CAMP_C[0] + Math.sin(a) * CAMP_R, CAMP_C[1] + Math.cos(a) * CAMP_R]; };
+const STAGE_SENTS = () => Object.values(typeof EV_SENTS !== 'undefined' ? EV_SENTS : {}).flat().map(x => x[0]);
+const plc = { init: false, cones: [], clapC: null, stageAt: 0, clapAt: 0, sayAt: 0, barKey: '', moleT: null, marsh: null };
+function stageLocal(p) { const s0 = rewardSpots.stage; if (!s0?.built || !s0.group) return null; const v = s0.group.worldToLocal(p.clone()); return v; }
+const onStage = (p) => { const v = stageLocal(p); return !!v && Math.abs(v.x) < 3.9 && Math.abs(v.z) < 2.4 && v.y > 0.15; };
+function placesInit() {
+  plc.init = true;
+  plc.moleIt = addInteract({ pos: new V3(0, -99, 0), r: 2.8, text: () => decorOn('tent') ? ['🔨 두더지 잡기', '1분 · 정답 두더지를 잡아요'] : null, run: openMole });
+  plc.fireIt = addInteract({ pos: new V3(CAMP_C[0], 1, CAMP_C[1]), r: 2.6, text: () => forestOpen() ? ['🍡 마시멜로 굽기', '노릇노릇할 때 꺼내요'] : null, run: openMarsh });
+  for (let k = 0; k < CAMP_N; k++) { const [x, z] = campSeat(k); addInteract({ pos: new V3(x, 1, z), r: 1.0, text: () => forestOpen() && !isSeated(player.avatar) ? ['🔥 그루터기에 앉기', '모닥불을 봐요'] : null, run: () => campSit(k) }); }
+}
+function campSit(k) { const [x, z] = campSeat(k); player.pos.set(x, 0.15, z); player.vy = 0; player.heading = Math.atan2(CAMP_C[0] - x, CAMP_C[1] - z); player.avatar.g.rotation.y = player.heading; playAct(player.avatar, 'sit'); playSfx('pick'); }
+function campGather() { // 🔥 선생님이 부르면 모닥불 둘레 자리로 (자리는 접속한 사람 순서로 나눠요)
+  if (!joined) return; if (isTeacher) { toast('🔥 학생들을 모닥불로 불렀어요', 'success'); return; }
+  closeModals(); if (attr.on) attrExit(); bag.ride && (bag.ride = bag.ride); // 탈것은 앉으면 저절로 내려요
+  const ids = [backend.uid, ...remotes.keys()].sort(), k = ids.indexOf(backend.uid) % CAMP_N;
+  campSit(k); camYaw = player.heading + Math.PI; camPitch = 0.35; toast('🔥 숲속 캠프 모닥불에 모였어요! 선생님 이야기를 들어요', 'info');
+}
+function openMarsh() { // 🍡 마시멜로 굽기 (하루 5번까지 🐚)
+  if (!forestOpen()) return; bag.marsh ||= {}; if (bag.marsh.d !== dayNum()) bag.marsh = { d: dayNum(), n: 0 };
+  const m = { t0: performance.now(), done: false }; plc.marsh = m;
+  openLife('🍡 마시멜로 굽기', (box) => {
+    if (m.started) return; m.started = true; // 친구들 때문에 창을 다시 그려도 처음부터 하지 않아요
+    box.textContent = ''; box.append(el2('p', 'hint', `막대를 모닥불에 대고 있다가 노릇노릇한 금빛일 때 '꺼내기'를 눌러요! (오늘 🐚 받은 횟수 ${bag.marsh.n}/5)`));
+    const bar = el2('div', 'bar'), fill = el2('div'); bar.style.height = '26px'; bar.append(fill); const lab = el2('p', 'lp-big', '🔥 굽는 중…');
+    const out = el2('button', 'btn lp-btn', '🍡 꺼내기'); out.style.background = '#FFE066'; box.append(lab, bar); box.append(el2('div', 'row-center', null)); box.lastChild.append(out);
+    const tick = () => { if (plc.marsh !== m || m.done || $('lifePanel').classList.contains('hidden')) return; const u = Math.min(1, (performance.now() - m.t0) / 6000); fill.style.width = `${u * 100}%`;
+      fill.style.background = u < 0.45 ? '#FFFFFF' : u < 0.6 ? '#F5DFA0' : u < 0.8 ? '#E8A33C' : '#5A3E28'; lab.textContent = u < 0.45 ? '🤍 아직 하얘요' : u < 0.6 ? '🙂 살짝 노래졌어요' : u < 0.8 ? '✨ 노릇노릇! 지금!' : '🔥 앗, 타고 있어요!'; requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+    out.onclick = () => { if (m.done) return; m.done = true; const u = (performance.now() - m.t0) / 6000, ok = u >= 0.6 && u < 0.8;
+      if (ok) { let msg = '🍡 노릇노릇 완벽해요!'; if (bag.marsh.n < 5) { bag.marsh.n++; const g = giveShellCapped(3); if (g) msg += ` 🐚 +${g}`; } saveBag(); playSfx('right'); burst(new V3(CAMP_C[0], 1.6, CAMP_C[1]), [0xFFE066, 0xFFFFFF], 18, 2, 1.5); toast(msg, 'success'); }
+      else { playSfx('wrong'); toast(u < 0.6 ? '🤍 아직 덜 구워졌어요. 다시 해 봐요!' : '🔥 앗, 탔어요! 다시 해 봐요', 'info'); }
+      setTimeout(() => { if (!$('lifePanel').classList.contains('hidden')) openMarsh(); }, 900); };
+  });
+}
+function moleQ() { // 영어 뜻 ↔ 단어 · 곱셈
+  if (Math.random() < 0.6 && typeof EV_WORDS !== 'undefined') { const all = Object.values(EV_WORDS).flat(), it = all[Math.floor(Math.random() * all.length)]; const wrong = shuf(all.filter(x => x[0] !== it[0])).slice(0, 5).map(x => x[0]); return { q: `${it[2] || ''} ${it[1]}`, ans: it[0], bad: wrong, st: 'eng' }; }
+  const a = ri(2, 9), b = ri(2, 9), ans = a * b; const bad = [...new Set([ans + a, ans - b, ans + 1, ans - 1, (a + 1) * b, a * (b - 1), a + b].filter(v => v > 0 && v !== ans))].slice(0, 5).map(String);
+  return { q: `${a} × ${b} = ?`, ans: String(ans), bad, st: 'math' };
+}
+function openMole() { // 🔨 두더지 잡기 (1분)
+  if (!decorOn('tent')) return; clearInterval(plc.moleT);
+  const g = { left: 60, score: 0, q: moleQ(), holes: Array(9).fill(null), st: { eng: 0, math: 0 } };
+  openLife('🔨 두더지 잡기', (box) => {
+    if (g.started) return; g.started = true; // 친구들 때문에 창을 다시 그려도 처음부터 하지 않아요
+    box.textContent = ''; const head = el2('p', 'lp-big', ''), qq = el2('div', 'ev-big', ''), grid = el2('div', 'mole-grid'), fb = el2('p', 'hint', '정답을 든 두더지를 눌러요!');
+    const btns = [...Array(9)].map((_, i) => { const b = el2('button', 'mole', ''); b.onclick = () => { const v = g.holes[i]; if (!v || g.left <= 0) return; if (v === g.q.ans) { g.score++; g.st[g.q.st]++; b.className = 'mole hit'; playSfx('pick'); fb.textContent = `⭕ 맞아요! ${g.q.ans}`; g.q = moleQ(); g.holes.fill(null); } else { b.className = 'mole miss'; playSfx('drop'); fb.textContent = `❌ ${v}는(은) 아니에요`; g.holes[i] = null; } setTimeout(draw, 180); }; grid.append(b); return b; });
+    const draw = () => { head.textContent = `⏱ ${g.left}초 · 🔨 ${g.score}마리`; qq.textContent = g.q.q; btns.forEach((b, i) => { if (b.className.includes('hit') || b.className.includes('miss')) b.className = 'mole'; b.textContent = g.holes[i] || ''; b.classList.toggle('up', !!g.holes[i]); }); };
+    box.append(head, qq, grid, fb); draw();
+    let tk = 0; plc.moleT = setInterval(() => {
+      if ($('lifePanel').classList.contains('hidden') || $('lpTitle').textContent !== '🔨 두더지 잡기') { clearInterval(plc.moleT); return; }
+      tk++; if (tk % 2 === 0) { g.left--; }
+      if (tk % 2 === 0 || g.holes.every(v => !v)) { // 두더지 새로 (정답 하나 + 틀린 것 1~2개)
+        g.holes.fill(null); const n = ri(2, 3), spots = shuf([...Array(9).keys()]).slice(0, n), vals = shuf([g.q.ans, ...shuf(g.q.bad).slice(0, n - 1)]); spots.forEach((p, i) => { g.holes[p] = vals[i]; }); }
+      draw();
+      if (g.left <= 0) { clearInterval(plc.moleT); g.holes.fill(null); draw();
+        const give = giveShellCapped(g.score * 2); if (g.st.eng) addStat('eng', Math.ceil(g.st.eng / 2)); if (g.st.math) addStat('math', Math.ceil(g.st.math / 2));
+        fb.textContent = `🎉 끝! ${g.score}마리 잡았어요${give ? ` · 🐚 +${give}` : ''}`; playSfx('fanfare');
+        const again = el2('button', 'btn lp-btn', '🔨 한 번 더'); again.onclick = openMole; box.append(el2('div', 'row-center', null)); box.lastChild.append(again); }
+    }, 500);
+  });
+}
+function updatePlaces(dt) {
+  if (!backend || !stateLoaded) return; if (!plc.init) placesInit();
+  // 🎪 천막 입구
+  if (decorOn('tent')) plc.moleIt.pos.set(-36, 1, -45); else plc.moleIt.pos.set(0, -99, 0);
+  // 🌈 무지개 다리: 아치 밑을 지나가면 하루 한 번
+  { const rb = rewardSpots.rainbow; if (rb?.built && rb.group && bag.rbD !== dayNum()) { const v = rb.group.worldToLocal(player.pos.clone()); if (Math.abs(v.x) < 3.2 && Math.abs(v.z) < 1.6) rainbowGift(); } }
+  // 🎤 무대
+  const s0 = rewardSpots.stage, built = !!(s0?.built && s0.group);
+  if (built && !plc.cones.length) { for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(1.6, 7, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xFFF3B0, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide })); c.visible = false; scene.add(c); plc.cones.push(c); }
+    plc.clapLab = makeLabel(scene, ['👏 박수 0'], 1.0, s0.spot.position.x, 7.2, s0.spot.position.z); }
+  if (!built) { plc.cones.forEach(c => { c.visible = false; }); $('stageBar').classList.add('hidden'); return; }
+  const performers = []; if (onStage(player.pos)) performers.push([backend.uid, player.avatar.g.position]);
+  for (const [u, r] of remotes) if (onStage(r.pos)) performers.push([u, r.a.g.position]);
+  plc.cones.forEach((c, i) => { const p = performers[i]; c.visible = !!p; if (p) c.position.set(p[1].x, p[1].y + 3.6, p[1].z); });
+  const st = S.stage || {};
+  if (plc.clapC === null) plc.clapC = st.c || 0;
+  if ((st.c || 0) > plc.clapC) { plc.clapC = st.c || 0; burst(s0.spot.position.clone().setY(3), [0xFFE066, 0xFF8FB3, 0xFFFFFF], 14, 3, 2); if (onStage(player.pos)) toast('👏 친구들이 박수를 보내요!', 'success'); }
+  plc.clapLab.userData.set([`👏 박수 ${st.c || 0}`]);
+  if (st.at && st.at !== plc.stageAt) { plc.stageAt = st.at; if (backend.now() - st.at < 8000) { const r = st.u === backend.uid ? null : remotes.get(st.u), pos = st.u === backend.uid ? player.pos : r?.pos;
+      if (pos && Math.hypot(pos.x - player.pos.x, pos.z - player.pos.z) < 35) { if (st.k === 'eng') { const t = STAGE_SENTS()[st.s | 0]; if (t) { sayEn(t); toast(`🗣️ “${t}”`, 'info'); } } else if (st.k === 'song') { for (let i = 0; i < 5; i++) setTimeout(() => burst(pos.clone().setY(2.6 + i * 0.2), [0xFF8FB3, 0x7AB8E8, 0xFFE066], 4, 1.5, 1.2), i * 220); if (soundAllowed() && audioCtx()) [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, { at: i * 0.2, vol: 0.7 })); } } } }
+  // 무대 막대: 무대 위 = 공연 버튼 · 무대 가까이 + 공연 중 = 👏
+  const me = onStage(player.pos), near = Math.hypot(player.pos.x - s0.spot.position.x, player.pos.z - s0.spot.position.z) < 16, show = me || (near && performers.length > 0);
+  const key = me ? 'me' : show ? 'aud' : ''; const bar = $('stageBar'); bar.classList.toggle('hidden', !show);
+  if (key !== plc.barKey) { plc.barKey = key; bar.textContent = '';
+    if (me) { const add = (t, fn) => { const b = el2('button', 'btn', t); b.onclick = fn; bar.append(b); };
+      add('💃 춤', () => playAct(player.avatar, 'dance')); add('👋 인사', () => playAct(player.avatar, 'bow'));
+      add('🎤 노래', () => { if (performance.now() - plc.sayAt < 2500) return; plc.sayAt = performance.now(); playAct(player.avatar, 'yaho'); backend.stageAct('song', 0); });
+      add('🗣️ 영어 한 마디', () => { if (performance.now() - plc.sayAt < 3000) return; plc.sayAt = performance.now(); const n = STAGE_SENTS().length; if (!n) return; playAct(player.avatar, 'wave'); backend.stageAct('eng', Math.floor(Math.random() * n)); }); }
+    else if (show) { const b = el2('button', 'btn', '👏 박수'); b.style.background = '#FFE066'; b.onclick = () => { if (performance.now() - plc.clapAt < 600) return; plc.clapAt = performance.now(); playAct(player.avatar, 'clap'); backend.stageClap(); }; bar.append(el2('span', 'hint', '🎤 무대 공연 중!'), b); } }
+}
+function rainbowGift() { // 🌈 하루 한 번 무지개 행운
+  bag.rbD = dayNum(); const r = Math.random(); let msg = '';
+  const paid = RIDE_COLORS.map((c, i) => i).filter(i => i > 0 && !RIDE_COLORS[i].star && !rideItemHave('c', i));
+  if (r < 0.25 && paid.length) { const i = paid[Math.floor(Math.random() * paid.length)]; (bag.rdh ||= {})['c' + i] = 1; msg = `🎨 탈것 색 '${RIDE_COLORS[i].n}'이 열렸어요`; }
+  else if (r < 0.5) { const ks = Object.keys(HIDE_ITEMS), k = ks[Math.floor(Math.random() * ks.length)]; bag.hitem[k] = (bag.hitem[k] || 0) + 1; msg = `${HIDE_ITEMS[k].icon} 숨바꼭질 도구 '${HIDE_ITEMS[k].name}' 1개`; }
+  else { const n = ri(2, 5) * 10; earnShell(n); msg = `🐚 조개돈 +${n}`; }
+  saveBag(); showBanner('🌈 무지개 행운!', `${msg} · 무지개 다리는 하루에 한 번 선물을 줘요`, 4500); playSfx('fanfare'); burst(player.pos.clone().setY(2.5), RAINBOW, 50, 5, 3);
 }
 /* ---------- 🚲 탈것: 반 동전으로 반 전체가 함께 열고, 열린 탈것은 누구나 골라 타요 ----------
    저장: state/rides/{k} = 1 (한 번만 · 값은 state/coinSpent에 더해요) · 내가 고른 탈것은 이 기기 가방(bag.ride)
@@ -10320,6 +10444,7 @@ let frozenShown = false;
 function syncControl(prev, first) {
   const g = S.control?.gather || 0, pg = prev.control?.gather || 0;
   if (!first && g && g !== pg) gatherHere();
+  { const c = S.control?.camp || 0, pc = prev.control?.camp || 0; if (!first && c && c !== pc) campGather(); } // 🔥 캠프파이어 모이기
   if (!$('teacherPanel').classList.contains('hidden')) fillControlAdmin();
   renderTeachBar(); renderSoundBtn(); renderGfxUI();
 }
@@ -10384,6 +10509,7 @@ function fillControlAdmin() {
 }
 function initControlUI() {
   for (const id of ['tbGather', 'tpGather']) $(id).onclick = teacherGather;
+  $('tpCamp').onclick = () => adminDo({ 'control/camp': Date.now(), 'areas/forest': true }, '🔥 모두 숲속 캠프 모닥불로 불렀어요 (캠프 열림)');
   for (const id of ['tbFreeze', 'tpFreeze']) $(id).onclick = () => teacherFreeze(!freezeOn());
   $('tpLite').onclick = () => { if (isTeacher) adminDo({ 'control/lite': S.control?.lite ? 0 : 1 }, S.control?.lite ? '✨ 학생 기기가 각자 고른 화질로 돌아가요' : '🪶 학생 기기 화질을 모두 가볍게 맞췄어요 (교실 태블릿에 좋아요)'); };
   renderGfxUI();
@@ -10558,6 +10684,7 @@ function drawBig() {
 }
 function openMap() {
   if (!joined) return;
+  if (seekerNoMap()) { toast('🙈 술래는 숨바꼭질 중에 지도를 볼 수 없어요', 'info'); return; }
   closeModals(); $('emoteBar').classList.add('hidden');
   const panel = $('mapPanel'); panel.classList.remove('hidden');
   const aspect = (MAPB.x1 - MAPB.x0) / (MAPB.z1 - MAPB.z0), dpr = Math.min(2, devicePixelRatio || 1);
@@ -10568,8 +10695,10 @@ function openMap() {
   drawBig(); $('mapClose').focus();
 }
 function closeMap() { $('mapPanel').classList.add('hidden'); $('miniBtn').focus(); }
+const seekerNoMap = () => joined && hideOn() && iAmSeeker(); // 🙈 숨바꼭질 술래는 지도를 볼 수 없어요 (숨기·찾기 내내)
 function updateMap(dt) {
   if (!joined) return;
+  if (seekerNoMap()) { $('miniBtn').classList.add('hidden'); if (!$('mapPanel').classList.contains('hidden')) closeMap(); return; }
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
   const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : evRegion() ? MAPB_EV : siegeRegion() ? MAPB_SG : trRegion() ? MAPB_TR : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
@@ -14508,6 +14637,9 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1015c', d: '10월 15일 (오후)', items: ['🎤 꿈나무 무대: 무대에 서면 조명! 💃 춤 · 🎤 노래 · 🗣️ 영어 한 마디(소리) — 친구들은 👏 박수', '🌈 무지개 다리 밑을 지나가면 하루 한 번 무지개 행운 선물', '🎪 알록달록 천막: 🔨 두더지 잡기 1분 (영어 단어 · 곱셈)', '🔥 숲속 캠프: 모닥불 둘레 그루터기 16자리 · 🍡 마시멜로 굽기 · 선생님이 캠프파이어로 모두 불러요'] },
+  { id: '1015b', d: '10월 15일', items: ['🙈 선생님이 술래를 정할 수 있어요 (안 고르면 무작위)', '🛠️ 마을 가게 → 🙈 숨바꼭질 도구: 📡 레이더(술래 · 가까울수록 빨개지고 삐삐) · 📻 전파 방해기 · 🎭 변신 물약 · 👟 몰래 걸음 (숨는 사람) — 한 게임에 도구마다 한 번'] },
+  { id: '1015a', d: '10월 15일', items: ['🙈 숨바꼭질 술래는 안대를 써요 — 숨는 동안 화면이 완전히 까매지고, 숨바꼭질 내내 지도를 볼 수 없어요'] },
   { id: '1014b', d: '10월 14일 (밤)', items: ['🏋️ 영어 훈련소 안으로 들어가요! 문 앞에서 E → 교실 책상 16자리 · 앉으면 레슨별 학습지·쓰기 연습', '🎠 회전목마에서 말 머리 쪽을 보고 앉아요'] },
   { id: '1014a', d: '10월 14일', items: ['📜 서당 자리가 16자리로! 앞자리는 선생님 자리 — 선생님이 앉아 연 화면이 서당 친구들 학습 창에 바로 열려요', '🎠 회전목마는 말 8마리 · 한 마리에 한 명 · 말 앞쪽을 보며 달려요 · 🎡 관람차는 줄을 서서 한 칸에 한 명씩 · 🪢 그네도 한 명씩 (친구 모습이 겹치지 않아요)', '🔊 영어 마을 문장 만들기에서 다시 듣기가 돼요', '⚾ 길 찾기 미로: Level 1 · 2 · 3 (동쪽 문 🧭 미로 공원) · 틀리면 START부터 다시 · 높은 단계일수록 보상 2배·3배', '🏁 영어 마을 클리어 게시판: 레슨마다 우리 반 클리어 횟수와 1~3등'] },
   { id: '1013d', d: '10월 13일 (오후)', items: ['🧑‍🏫 선생님 기기는 조개돈·반 동전을 따로 써요 (무한) — 우리 반 동전은 줄지 않아요'] },
@@ -15745,13 +15877,63 @@ const PROPS = [null, // 변신할 수 있는 물건 10가지
   { icon: '🪴', name: '화분', t: 7 }, { icon: '🏮', name: '돌 등불', t: 11 }, { icon: '📦', name: '상자', t: -1 },
   { icon: '🧺', name: '과일 바구니', t: 10 }, { icon: '🏺', name: '장독대', t: 17 }, { icon: '🍊', name: '과일나무', t: 12 }, { icon: '🐦', name: '솟대', t: 19 },
 ];
-const hide = { prop: 0, rewarded: '', endSent: '', bar: false };
+const hide = { prop: 0, rewarded: '', endSent: '', bar: false, potion: false, sneakUntil: 0, radarUntil: 0, beepAt: 0 };
+const hidePick = new Set(); // 🧑‍🏫 술래로 정한 참가자
+// 🛠️ 숨바꼭질 도구 (마을 가게 · 🐚 · 한 게임에 도구마다 한 번)
+const HIDE_ITEMS = {
+  radar: { icon: '📡', name: '레이더', price: 60, who: 'seek', desc: '술래용 · 20초 동안 가장 가까운 숨은 친구가 가까울수록 빨개지고 삐삐 소리가 빨라져요' },
+  jam: { icon: '📻', name: '전파 방해기', price: 40, who: 'hide', desc: '숨는 사람용 · 30초 동안 술래 레이더에 잡히지 않아요' },
+  potion: { icon: '🎭', name: '변신 물약', price: 30, who: 'hide', desc: '숨는 사람용 · 찾는 시간에도 한 번 다른 물건으로 바꿔요' },
+  sneak: { icon: '👟', name: '몰래 걸음', price: 50, who: 'hide', desc: '숨는 사람용 · 찾는 시간에 6초 동안 몰래 자리를 옮겨요' },
+};
+const RADAR_T = 20000, JAM_T = 30000, SNEAK_T = 6000;
+bag.hitem ||= {};
+const hItemUsed = (k) => bag.huse?.id === S.hide?.id && !!bag.huse.u?.[k];
+function hItemCan(k) {
+  if (!S.hide || !((bag.hitem[k] || 0) > 0) || hItemUsed(k)) return false;
+  return HIDE_ITEMS[k].who === 'seek' ? S.hide.ph === 'seek' && iAmSeeker() : hideLocked() || (hide.sneakUntil > performance.now() && k !== 'sneak');
+}
+async function hItemUse(k) {
+  if (!hItemCan(k)) return; const I = HIDE_ITEMS[k];
+  if (k === 'jam') { const r = await backend.hideJam(backend.now() + JAM_T); if (!r.ok) { toast('⚠️ 쓰지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); return; } }
+  bag.hitem[k]--; if (bag.huse?.id !== S.hide.id) bag.huse = { id: S.hide.id, u: {} }; bag.huse.u[k] = 1; saveBag();
+  if (k === 'radar') { hide.radarUntil = performance.now() + RADAR_T; hide.beepAt = 0; }
+  if (k === 'potion') { hide.potion = true; $('hideProps').dataset.p = ''; }
+  if (k === 'sneak') hide.sneakUntil = performance.now() + SNEAK_T;
+  playSfx('pick'); toast(`${I.icon} ${I.name}! ${k === 'radar' ? '20초 동안 숨은 친구를 찾아요' : k === 'jam' ? '30초 동안 레이더에 안 잡혀요' : k === 'potion' ? '아래에서 새 물건을 골라요' : '6초 동안 몰래 움직여요!'}`, 'success');
+}
+function renderHideItems() { // 숨바꼭질 막대의 도구 버튼
+  const box = $('hideItems'), ks = Object.keys(HIDE_ITEMS).filter(k => (bag.hitem[k] || 0) > 0 && HIDE_ITEMS[k].who === (iAmSeeker() ? 'seek' : 'hide') && hideIn(backend.uid) && S.hide && S.hide.ph !== 'end' && S.hide.ph !== 'join');
+  const key = ks.map(k => k + (bag.hitem[k] || 0) + (hItemCan(k) ? 1 : 0) + (hItemUsed(k) ? 'u' : '')).join(',');
+  box.classList.toggle('hidden', !ks.length); if (box.dataset.k === key) return; box.dataset.k = key; box.textContent = '';
+  for (const k of ks) { const I = HIDE_ITEMS[k], b = el2('button', 'btn', `${I.icon} ${I.name}${hItemUsed(k) ? ' ✓' : ` ×${bag.hitem[k]}`}`); b.disabled = !hItemCan(k); b.title = I.desc; b.onclick = () => hItemUse(k); box.append(b); }
+}
+function updateRadar() { // 📡 술래 레이더: 가장 가까운(전파 방해 안 한) 숨은 친구까지 거리
+  const on = hide.radarUntil > performance.now() && S.hide?.ph === 'seek' && iAmSeeker();
+  $('radarHud').classList.toggle('hidden', !on); if (!on) return;
+  let bd = Infinity; const now = backend.now();
+  for (const [u, r] of remotes) { if (!hideIn(u) || isSeeker(u) || hideFound(u) || (S.hide.jam?.[u] || 0) > now) continue; bd = Math.min(bd, Math.hypot(r.pos.x - player.pos.x, r.pos.z - player.pos.z)); }
+  const [col, txt] = bd < 6 ? ['#E2384A', '🔥 아주 가까워요!'] : bd < 12 ? ['#F08A24', '가까워요'] : bd < 22 ? ['#FFD23C', '조금 멀어요'] : bd < Infinity ? ['#5FBE5A', '멀어요'] : ['#8C95A3', '잡히는 친구가 없어요'];
+  $('radarDot').style.background = col; $('radarDot').style.color = col; $('radarT').textContent = `📡 ${txt}`; $('radarS').textContent = `${Math.ceil((hide.radarUntil - performance.now()) / 1000)}초`;
+  if (bd < Infinity) { const gap = Math.min(1600, Math.max(140, bd * 55)); if (performance.now() - hide.beepAt > gap) { hide.beepAt = performance.now(); if (soundAllowed() && audioCtx()) tone(bd < 6 ? 1320 : bd < 12 ? 990 : 660, 0.09, { type: 'square', vol: 0.8 }); } }
+}
+function openHideShop() { // 🛠️ 마을 가게: 숨바꼭질 도구
+  openLife('🙈 숨바꼭질 도구', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', `🐚 조개돈으로 사요. 숨바꼭질 막대에 버튼이 생기고, 한 게임에 도구마다 한 번 쓸 수 있어요. (내 조개돈 🐚${isTeacher ? '∞' : bag.shell || 0})`));
+    for (const [k, I] of Object.entries(HIDE_ITEMS)) {
+      const row = el2('div', 'ride-row'), tx = el2('span', 'ride-tx'); tx.append(el2('b', '', `${I.name} · 가진 것 ${bag.hitem[k] || 0}개`), el2('span', 'hint', I.desc));
+      const b = el2('button', 'btn', `🐚${I.price} 사기`); b.style.background = '#FFE066'; b.disabled = (bag.shell || 0) < I.price;
+      b.onclick = () => { if ((bag.shell || 0) < I.price) return; bag.shell -= I.price; bag.hitem[k] = (bag.hitem[k] || 0) + 1; saveBag(); playSfx('coin'); toast(`${I.icon} ${I.name}을(를) 샀어요!`, 'success'); refillLife(); };
+      row.append(el2('span', 'ride-ic', I.icon), tx, b); box.append(row);
+    }
+  });
+}
 const hideOn = () => !!S.hide && ['hide', 'seek'].includes(S.hide.ph);
 const hideIn = (uid) => !!S.hide?.in?.[uid];
 const hideFound = (uid) => !!S.hide?.f?.[uid];
 const isSeeker = (u) => !!S.hide && !!u && (S.hide.sk === u || !!S.hide.sks?.[u]); // 술래는 2~3명까지 (sk = 첫 술래 · sks = 모든 술래)
 const iAmSeeker = () => isSeeker(backend?.uid);
-const hideLocked = () => !!(joined && S.hide?.ph === 'seek' && hideIn(backend?.uid) && !iAmSeeker() && !hideFound(backend?.uid)); // 🧊 찾기가 시작되면 숨은 자리에서 그대로
+const hideLocked = () => !!(joined && S.hide?.ph === 'seek' && hideIn(backend?.uid) && !iAmSeeker() && !hideFound(backend?.uid) && !(hide.sneakUntil > performance.now())); // 🧊 찾기가 시작되면 숨은 자리에서 그대로 (👟 몰래 걸음 중엔 움직여요)
 const hideBlind = () => !!(joined && S.hide?.ph === 'hide' && iAmSeeker() && backend.now() < S.hide.t1);
 const inTown = (x, z) => Math.abs(x) <= CFG.MAP_LIMIT && Math.abs(z) <= CFG.MAP_LIMIT;
 function propModel(p) {
@@ -15806,11 +15988,12 @@ function renderHideBar() {
   else { title = h.win === 'seek' ? '🎉 술래가 모두 찾았어요!' : '🎉 숨은 친구들이 이겼어요!'; sub = `찾은 친구 ${found} / ${hiders.length}`; }
   $('hdT').textContent = title; $('hdS').textContent = sub;
   $('hideJoin').classList.toggle('hidden', !(h.ph === 'join' && !hideIn(me)));
-  const picking = h.ph === 'hide' && hideIn(me) && !iAmSeeker() && !hideFound(me); // 고르기는 숨는 40초 동안만 (찾기 때는 고정)
+  const picking = (h.ph === 'hide' || (hide.potion && h.ph === 'seek')) && hideIn(me) && !iAmSeeker() && !hideFound(me); // 고르기는 숨는 40초 동안만 (찾기 때는 고정 · 🎭 변신 물약이면 한 번 더)
+  renderHideItems(); updateRadar();
   $('hideProps').classList.toggle('hidden', !picking);
   if (picking && $('hideProps').dataset.p !== String(hide.prop)) {
     $('hideProps').dataset.p = String(hide.prop); $('hideProps').textContent = '';
-    PROPS.forEach((d, i) => { const b = el2('button', 'btn hide-prop' + (hide.prop === i ? ' on' : ''), d ? d.icon : '🙂'); b.title = d ? `${d.name}으로 변신` : '원래 모습'; b.setAttribute('aria-label', b.title); b.onclick = () => { hide.prop = i; if (i) { playSfx('plop'); burst(player.pos.clone().setY(1), [0xFFFFFF, C.gold], 20, 3, 2); } renderHideBar(); }; $('hideProps').append(b); });
+    PROPS.forEach((d, i) => { const b = el2('button', 'btn hide-prop' + (hide.prop === i ? ' on' : ''), d ? d.icon : '🙂'); b.title = d ? `${d.name}으로 변신` : '원래 모습'; b.setAttribute('aria-label', b.title); b.onclick = () => { hide.prop = i; if (hide.potion && S.hide?.ph === 'seek' && i) { hide.potion = false; $('hideProps').dataset.p = ''; toast(`🎭 ${d.name}(으)로 바뀌었어요!`, 'success'); } if (i) { playSfx('plop'); burst(player.pos.clone().setY(1), [0xFFFFFF, C.gold], 20, 3, 2); } renderHideBar(); }; $('hideProps').append(b); });
   }
   // 술래: 가까운 변신 친구가 있으면 찾았다 버튼
   let target = null;
@@ -15869,7 +16052,11 @@ function fillNickAdmin(force) {
 function fillHideAdmin() {
   const h = S.hide, n = Object.keys(h?.in || {}).length;
   $('tpHideNow').textContent = !h ? '지금 숨바꼭질을 하고 있지 않아요' : h.ph === 'join' ? `참가자 모집 중 (${n}명)` : h.ph === 'end' ? `끝났어요 (${h.win === 'seek' ? '술래 승리' : '숨은 친구 승리'})` : `${h.ph === 'hide' ? '숨는 중' : '찾는 중'} · 참가 ${n}명`;
-  $('tpHideStart').disabled = !h || h.ph !== 'join' || n < +($('tpHideSk')?.value || 1) + 1;
+  $('tpHideStart').disabled = !h || h.ph !== 'join' || n < Math.max(+($('tpHideSk')?.value || 1), hidePick.size) + 1;
+  { const box = $('tpHidePick'), ids = h?.ph === 'join' ? Object.keys(h.in || {}) : []; for (const u of [...hidePick]) if (!ids.includes(u)) hidePick.delete(u); // 🙋 술래 지정 (참가자 이름을 눌러요)
+    const key = JSON.stringify([ids, [...hidePick], ids.map(u => nickOf(u, remotes.get(u)?.target))]); if (box.dataset.k !== key) { box.dataset.k = key; box.textContent = '';
+      if (ids.length) box.append(el2('span', 'hint', '술래로 정할 친구를 눌러요 (안 고르면 무작위):'));
+      for (const u of ids) { const on = hidePick.has(u), b = el2('button', 'btn', `${on ? '🙈 ' : ''}${u === backend.uid ? (cleanNick(myNick) || '나') : (nickOf(u, remotes.get(u)?.target) || '친구')}`); if (on) b.style.background = '#FFE066'; b.onclick = () => { if (on) hidePick.delete(u); else if (hidePick.size < 3) hidePick.add(u); else toast('술래는 3명까지예요', 'warn'); fillHideAdmin(); }; box.append(b); } } }
   $('tpHideStop').disabled = !h;
 }
 function initHideUI() {
@@ -15878,9 +16065,9 @@ function initHideUI() {
   addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && !$('hideFind').classList.contains('hidden') && !$('hideFind').disabled && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); hideFindNow(); } });
   $('tpHideOpen').onclick = () => adminDo({ hide: { ph: 'join', id: Date.now().toString(36), in: isTeacher ? {} : {} } }, '🙈 숨바꼭질 참가자를 모아요');
   $('tpHideStart').onclick = () => {
-    const h = S.hide, ids = Object.keys(h?.in || {}), k = Math.min(3, +($('tpHideSk')?.value || 1)); if (!h || ids.length < k + 1) { toast(`술래 ${k}명이면 참가자가 ${k + 1}명 넘어야 해요`, 'warn'); return; }
-    const sks = hShuffle([...ids]).slice(0, k), now = backend.now();
-    adminDo({ 'hide/ph': 'hide', 'hide/sk': sks[0], 'hide/sks': Object.fromEntries(sks.map(u => [u, true])), 'hide/t1': now + HIDE_T, 'hide/t2': now + HIDE_T + SEEK_T }, `🙈 숨바꼭질을 시작했어요! 술래 ${k}명을 뽑았어요`);
+    const h = S.hide, ids = Object.keys(h?.in || {}), picked = [...hidePick].filter(u => ids.includes(u)), k = Math.min(3, Math.max(+($('tpHideSk')?.value || 1), picked.length)); if (!h || ids.length < k + 1) { toast(`술래 ${k}명이면 참가자가 ${k + 1}명 넘어야 해요`, 'warn'); return; }
+    const sks = [...picked, ...hShuffle(ids.filter(u => !picked.includes(u)))].slice(0, k), now = backend.now(); hidePick.clear(); // 🙋 고른 친구가 먼저 술래, 모자라면 무작위
+    adminDo({ 'hide/ph': 'hide', 'hide/sk': sks[0], 'hide/sks': Object.fromEntries(sks.map(u => [u, true])), 'hide/t1': now + HIDE_T, 'hide/t2': now + HIDE_T + SEEK_T }, `🙈 숨바꼭질을 시작했어요! 술래 ${k}명${picked.length ? ` (지정 ${picked.length}명)` : ''}`);
   };
   $('tpHideStop').onclick = () => adminDo({ hide: null }, '🙈 숨바꼭질을 끝냈어요');
   $('tpHideSk').onchange = fillHideAdmin;
@@ -18002,7 +18189,7 @@ function loop() {
   updateBeach();
   updateMountain(dt);
   if (joined) updateHanok(dt);
-  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePest(dt); }
+  if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
