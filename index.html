@@ -8147,8 +8147,22 @@ async function buyLot(id) {
 const claimPlot = buyLot; // 예전 이름
 
 // 집 짓기·바꾸기 창 (가방 창을 함께 써요)
-function openHouse() {
-  const id = myLotHere(); if (!id) return;
+function houseNameRow(box, id) { // 🏷️ 집 이름 (8글자 · 나쁜 말은 막아요 · 무료) — 집 바꾸기 창과 🛋️ 꾸미기 창에서 같이 써요
+  const cur = S.plots[id]?.h; if (!cur) return;
+  box.append(el2('h3', 'lp-sec', '🏷️ 집 이름'));
+  const row = el2('div', 'row-center wrap'), inp = document.createElement('input'); inp.className = 'tinput'; inp.maxLength = HOUSE_NAME_MAX; inp.placeholder = '예: 하늘 집'; inp.value = cur.n || ''; inp.setAttribute('aria-label', '집 이름');
+  const sv = el2('button', 'btn', '💾 이름 달기');
+  sv.onclick = async () => {
+    const v = cleanNick(inp.value).slice(0, HOUSE_NAME_MAX);
+    if (v && nickBad(v)) { toast('🙅 고운 말로 이름을 지어 주세요', 'warn'); return; }
+    if (!S.plots[id]?.h) return; const h2 = { ...S.plots[id].h }; if (v) h2.n = v; else delete h2.n; const res = await backend.setHouse(id, h2);
+    if (!res.ok) { if (res.reason !== 'offline') toast('🚫 이름을 달지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); return; }
+    toast(v ? `🏷️ 우리 집 이름은 '${v}'!` : '🏷️ 집 이름을 뗐어요', 'success'); refillLife();
+  };
+  row.append(inp, sv); box.append(row);
+}
+function openHouse(lotId) {
+  const id = lotId && S.plots[lotId]?.o === backend?.uid ? lotId : myLotHere(); if (!id) { toast('🏠 내 땅 가까이에서 눌러 주세요', 'info'); return; } // 🏠 집 안에서는 그 집 땅으로 (예전엔 집 안이 마을과 떨어져 있어서 버튼이 반응하지 않았어요)
   const cur = S.plots[id].h, pick = { s: cur?.s ?? 0, c: cur?.c ?? 0 };
   openLife(cur ? '🎨 우리 집 바꾸기' : '🏠 집 짓기', (box) => {
     box.textContent = '';
@@ -8179,19 +8193,7 @@ function openHouse() {
       closeLife();
     };
     box.append(el2('div', 'row-center', null)); box.lastChild.append(go);
-    if (cur) { // 🏷️ 집 이름 (8글자 · 나쁜 말은 막아요 · 무료)
-      box.append(el2('h3', 'lp-sec', '🏷️ 집 이름'));
-      const row = el2('div', 'row-center wrap'), inp = document.createElement('input'); inp.className = 'tinput'; inp.maxLength = HOUSE_NAME_MAX; inp.placeholder = '예: 하늘 집'; inp.value = cur.n || ''; inp.setAttribute('aria-label', '집 이름');
-      const sv = el2('button', 'btn', '💾 이름 달기');
-      sv.onclick = async () => {
-        const v = cleanNick(inp.value).slice(0, HOUSE_NAME_MAX);
-        if (v && nickBad(v)) { toast('🙅 고운 말로 이름을 지어 주세요', 'warn'); return; }
-        const h2 = { ...S.plots[id].h }; if (v) h2.n = v; else delete h2.n; const res = await backend.setHouse(id, h2);
-        if (!res.ok) { if (res.reason !== 'offline') toast('🚫 이름을 달지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); return; }
-        toast(v ? `🏷️ 우리 집 이름은 '${v}'!` : '🏷️ 집 이름을 뗐어요', 'success'); refillLife();
-      };
-      row.append(inp, sv); box.append(row);
-    }
+    if (cur) houseNameRow(box, id);
     if (cur) { // 🏚️ 집 허물기 (땅은 그대로 · 다시 지을 수 있어요)
       const dm = el2('button', 'btn danger', `🏚️ 집 허물기 (🐚${HOUSE_DEMOLISH_BACK} 돌려받기)`);
       dm.onclick = async () => {
@@ -13326,6 +13328,7 @@ function openHomeDecor() {
     box.textContent = '';
     const inn = pl.in || {};
     box.append(el2('p', 'hint', `가구를 고르면 내 앞 칸에 미리 보여요. 자리를 잡고 ✅ 놓기(E), 🔄 돌리기(R). 놓은 가구 앞에서 E를 누르면 치워서 내 가구 상자에 넣어요. (내 조개돈 🐚${bag.shell || 0})`));
+    houseNameRow(box, id); // 🏷️ 꾸미기 창에서도 집 이름을 바꿔요
     for (const [key, list, label] of [['w', WALLS, '벽지'], ['f', FLOORS, '바닥']]) {
       box.append(el2('h3', 'lp-sec', `${label} (바꾸기 🐚50)`));
       const row = el2('div', 'row-center wrap');
@@ -13442,7 +13445,7 @@ function initHomeUI() {
   home.exitI = addInteract({ pos: new V3(0, -99, 0), r: 1.8, text: () => home.id ? ['밖으로 나가기 🚪', '마당으로'] : null, run: () => goHome(home.id, false) });
   home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => home.inCell ? ['가구 치우기 📦', `${FURN[S.plots[home.id]?.in?.c?.[home.inCell]?.t | 0]?.name} → 내 가구 상자`] : null, run: () => homeRemove(home.inCell) });
   $('hbEdit').onclick = openHomeDecor;
-  $('hbHouse').onclick = () => openHouse();
+  $('hbHouse').onclick = () => openHouse(home.id);
   $('hbPlace').onclick = homePlace;
   $('hbRot').onclick = () => { if (home.edit) { home.edit.r = (home.edit.r + 1) % 4; } };
   $('hbCancel').onclick = homeEditStop;
@@ -14642,7 +14645,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
-  { id: '1015d', d: '10월 15일 (저녁)', items: ['🙈 숨바꼭질에 선생님도 참가! 관리 화면 🧑‍🏫 선생님도 참가 (또는 아래 🙋 참가하기) — 선생님도 술래로 뽑히거나 숨어요', '🏆 랭킹에 같은 친구가 두 번 나오던 문제 고침 (기기를 바꿔 써도 이름이 같으면 한 줄로 합쳐요)', '🎪 행사가 열리지 않던 문제 고침 (서버 규칙에 행사 칸 추가)'] },
+  { id: '1015d', d: '10월 15일 (저녁)', items: ['🙈 숨바꼭질에 선생님도 참가! 관리 화면 🧑‍🏫 선생님도 참가 (또는 아래 🙋 참가하기) — 선생님도 술래로 뽑히거나 숨어요', '🏆 랭킹에 같은 친구가 두 번 나오던 문제 고침 (기기를 바꿔 써도 이름이 같으면 한 줄로 합쳐요)', '🎪 행사가 열리지 않던 문제 고침 (서버 규칙에 행사 칸 추가)', '🏠 집 안 🎨 집 바꾸기·키우기 버튼이 반응하지 않던 문제 고침 · 🛋️ 꾸미기 창에서도 🏷️ 집 이름 바꾸기'] },
   { id: '1015c', d: '10월 15일 (오후)', items: ['🎤 꿈나무 무대: 무대에 서면 조명! 💃 춤 · 🎤 노래 · 🗣️ 영어 한 마디(소리) — 친구들은 👏 박수', '🌈 무지개 다리 밑을 지나가면 하루 한 번 무지개 행운 선물', '🎪 알록달록 천막: 🔨 두더지 잡기 1분 (영어 단어 · 곱셈)', '🔥 숲속 캠프: 모닥불 둘레 그루터기 16자리 · 🍡 마시멜로 굽기 · 선생님이 캠프파이어로 모두 불러요'] },
   { id: '1015b', d: '10월 15일', items: ['🙈 선생님이 술래를 정할 수 있어요 (안 고르면 무작위)', '🛠️ 마을 가게 → 🙈 숨바꼭질 도구: 📡 레이더(술래 · 가까울수록 빨개지고 삐삐) · 📻 전파 방해기 · 🎭 변신 물약 · 👟 몰래 걸음 (숨는 사람) — 한 게임에 도구마다 한 번'] },
   { id: '1015a', d: '10월 15일', items: ['🙈 숨바꼭질 술래는 안대를 써요 — 숨는 동안 화면이 완전히 까매지고, 숨바꼭질 내내 지도를 볼 수 없어요'] },
