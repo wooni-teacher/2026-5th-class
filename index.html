@@ -418,6 +418,13 @@
   .rank-col { border: 1.5px solid var(--line-2); border-radius: 12px; padding: 6px 10px 10px; background: #fff; }
   .rank-row { font-size: 17px; padding: 3px 2px; } .rank-row.me { background: #FFF6CC; border-radius: 6px; font-weight: 700; }
   .rank-me { font-size: 15px; margin-top: 6px; color: #6A5A3A; }
+  .mus-line { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; border-left: 4px solid #C9A27A; padding-left: 10px; }
+  .mus-slot { display: flex; gap: 10px; align-items: center; text-align: left; padding: 8px 10px; border-radius: 10px; border: 2px dashed var(--ec, #C9A27A); background: #FFFCF7; font: inherit; cursor: pointer; min-height: 46px; }
+  .mus-slot.full { border-style: solid; background: #fff; } .mus-slot.good { background: #E6F7DF; border-color: #5FBE5A; } .mus-slot.bad { background: #FDE7E3; border-color: #E2584A; }
+  .mus-y { min-width: 7.5em; color: #6A4A1A; font-size: 15px; } .mus-t { flex: 1; font-size: 16px; }
+  .mus-cards { display: flex; flex-wrap: wrap; gap: 8px; } .mus-card { padding: 9px 12px; border-radius: 10px; border: 2px solid #E8B84A; background: #FFF6D8; font: inherit; font-size: 15px; text-align: left; cursor: pointer; max-width: 100%; }
+  .mus-card.on { background: #FFE066; box-shadow: 0 0 0 3px #F5C518; transform: translateY(-2px); }
+  .mus-all { margin-top: 10px; } .mus-all summary { cursor: pointer; font-weight: 700; } .mus-list { max-height: 260px; overflow: auto; margin-top: 6px; } .mus-li { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px dashed var(--line-2); font-size: 14px; } .mus-li b { min-width: 7.5em; color: #6A4A1A; }
   #pbPanel { width: min(660px, 96vw); padding: 14px; }
   .pb-field { position: relative; height: 260px; border-radius: 16px; background: linear-gradient(#BFE6FF 0 52%, #A8D88A 52% 100%); overflow: hidden; }
   .pb-side { position: absolute; display: flex; align-items: center; gap: 8px; }
@@ -14429,6 +14436,7 @@ const ROOMS = {
   era: { name: '시대관', icon: '🏛️', cx: 1450, cz: -40, w: 20, d: 16, wall: 0xF3EBDD, floor: 0xB9905F, site: 'hv:era' },
   pg2: { name: '2단계 펫 체육관', icon: '🏟️', cx: 1580, cz: -45, w: 22, d: 18, wall: 0xEAF2FF, floor: 0xD8C4A0, site: null }, // ⛏️ 수학 광산 마을
   pg3: { name: '3단계 펫 체육관', icon: '🏟️', cx: 1580, cz: 45, w: 22, d: 18, wall: 0xF6EBDA, floor: 0xC9A27A, site: null }, // 🏯 역사 마을
+  mus: { name: '역사 박물관', icon: '🏛️', cx: 1450, cz: -82, w: 30, d: 22, wall: 0xF6EFE2, floor: 0xC9A27A, site: null }, // 🏯 역사 마을
   pg4: { name: '4단계 펫 체육관', icon: '🏟️', cx: 1510, cz: 80, w: 22, d: 18, wall: 0xE8F0FA, floor: 0xC8B48E, site: null }, // 🗽 영어 마을
   etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
 };
@@ -14599,6 +14607,7 @@ async function enterRoom(id) {
   player.pos.set(r.cx, 0.12, r.cz + r.d / 2 - 3.2); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.7;
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
+  if (id === 'mus') { toast('🏛️ 역사 박물관이에요! 양쪽 전시실에서 연표 보고 사건을 차례대로 놓아요', 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
   toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 왼쪽 구석)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
 }
@@ -14610,6 +14619,7 @@ async function exitRoom(id) {
   let x, z, h;
   if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
   else if (id === 'sd') { const sp = HV_SITE.seodang.pos; x = sp[0]; z = sp[1] + 7; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); }
+  else if (id === 'mus') { x = MUS_SPOT[0]; z = MUS_SPOT[1] - 6; h = Math.PI; mus.g = null; } // 🏛️ 박물관 문 앞
   else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz] = PG_SPOT[+id[2]]; x = gx; z = gz + 5.4; h = 0; } // 🏟️ 마을 체육관 문 앞
   else if (id === 'etr') { x = 1796.2; z = -0.2; h = -Math.PI / 2; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 영어 마을 훈련소 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
@@ -14866,6 +14876,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1016a', d: '10월 16일', items: ['🏛️ 역사 마을에 역사 박물관! 전시실 6곳(선사~현대)에서 연표를 보고 사건 카드를 차례대로 놓아요 · 쉬움·보통·어려움(순서만) · 📊 사회력'] },
   { id: '1015h', d: '10월 15일 (밤)', items: ['🌀 광차·버스·배를 없애고 🌀 포털로만 오가요', '🏟️ 관장 4단계: 1 우리 마을 펫 체육관 · 2 수학 광산 마을 · 3 역사 마을 · 4 영어 마을 (배지 4개)', '🧑‍🏫 관리 화면에서 단계마다 관장 속성을 바꿀 수 있어요', '⏳ 관장과 배틀 중인 친구가 있으면 🙋 줄 서서 기다려요 (차례가 되면 알려 줘요)', '🎒 가방(조개돈·펫·옷 등)은 반 코드마다 따로 저장돼요'] },
   { id: '1015g', d: '10월 15일 (밤)', items: ['🐾 도서관이 펫 체육관으로! 🩺 펫 센터(데려오기·팀·도감) · 💿 기술머신(능력치 Lv로 열려요) · 🏆 관장 3단계 · ⚔️ 친구 1:1 대전', '📖 도감 생물 30가지가 속성(🔥💧🌿⚡🌪️🪨)을 가진 새 펫이 됐어요 (잡는 곳은 그대로)', '📒 독서 책상은 체육관 왼쪽 구석 — 선생님께 확인받고 써요'] },
   { id: '1015f', d: '10월 15일 (저녁)', items: ['🪨 패드(가볍게 화질)에서 캘 수 있는 돌이 안 보이던 문제 고침', '🌱 렉 줄이기: 풀잎을 단순하게 · 개수 절반 · 화면 해상도 상한 낮춤 · 🐛 해충 잡기 없앰', '🏸 배드민턴 랭킹 (주간 · 이기면 더 많이, 친구와 하면 져도 점수)', '🐲 하늘을 나는 용: 지난주 능력치 합계 1등이 한 주 동안 타요 (매주 월요일 초기화) — 스페이스·⬆️로 하늘을 날아요'] },
@@ -16697,6 +16708,96 @@ function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이�
   }
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.busy && pb.turnDone !== pb.B.turn && performance.now() - pb.waitAt > 45000) { pb.B.over = pb.me; $('pbLog').textContent = '⏱️ 친구가 오래 고르지 않아서 이겼어요'; pbEnd(); }
   if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000) up[`pb/m/${k}`] = null; for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
+}
+
+
+/* =====================================================================
+   57. 🏛️ 역사 박물관 (역사 마을) — 연표를 보고 사건을 차례대로 놓아요
+   · 전시실 6곳(선사~삼국 · 남북국·고려 · 조선 · 개항기 · 일제 강점기 · 현대) — 『용선생의 시끌벅적 한국사』 연표에서 사건·연도만 골랐어요
+   · 놀이: 연표 칸(연도) + 뒤섞인 사건 카드 → 카드를 누르고 칸을 눌러 놓기 → 확인 (틀린 카드는 돌아와요)
+     쉬움 4장(연도 보임) · 보통 6장(연도 보임) · 어려움 6장(연도 없이 순서만) — 처음 깨면 ⭐ · 사회력 +2/+3/+4 · 🐚
+   · 저장(이 기기): bag.mus {전시실: [쉬움, 보통, 어려움] 깬 횟수}
+   ===================================================================== */
+const MUS_EV = {"pre":[[-70000000,"70만 년 전","구석기 시대가 시작되다"],[-800000,"BC 8000년경","신석기 시대가 시작되다"],[-233300,"BC 2333년","단군이 고조선을 세우다"],[-200000,"BC 2000년경","청동기 시대가 시작되다"],[-19500,"BC 2세기 초","위만이 고조선의 왕이 되다"],[-5700,"BC 57년","박혁거세가 신라를 세우다"],[-3700,"BC 37년","주몽이 고구려를 세우다"],[-1800,"BC 18년","온조가 백제를 세우다"],[4200,"42년","김수로가 금관가야를 세우다"],[19400,"194년","고국천왕이 진대법을 실시하다"],[31300,"313년","고구려가 낙랑군을 한반도에서 내쫓다"],[37100,"371년","근초고왕이 평양성을 공격하다"],[40000,"400년","광개토대왕이 신라를 도와 왜를 물리치다"],[47500,"475년","장수왕이 한강 유역을 손에 넣다"],[51200,"512년","이사부가 우산국을 정벌하다"],[52500,"525년","무령왕릉을 만들다"],[53200,"532년","금관가야가 멸망하다"],[55300,"553년","신라가 한강 유역을 차지하다"],[56200,"562년","대가야가 멸망하다"],[61200,"612년","을지문덕이 수나라군을 크게 무찌르다 (살수 대첩)"],[64500,"645년","안시성에서 당나라군을 물리치다"],[64800,"648년","김춘추가 당나라로 가서 군사를 요청하다"],[66000,"660년","백제가 멸망하다"],[66800,"668년","고구려가 멸망하다"]],"ns":[[67600,"676년","신라가 삼국을 통일하다"],[69800,"698년","대조영이 발해를 세우다"],[73200,"732년","발해가 당나라를 공격하다"],[75600,"756년","발해 문왕이 상경성으로 수도를 옮기다"],[77400,"774년","석굴암을 완성하다"],[82200,"822년","김헌창이 반란을 일으키다"],[82800,"828년","장보고가 청해진을 세우다"],[88900,"889년","원종과 애노가 반란을 일으키다"],[90000,"900년","견훤이 후백제를 세우다"],[90100,"901년","궁예가 후고구려를 세우다"],[92600,"926년","발해가 멸망하다"],[93600,"936년","고려가 후삼국을 통일하다"],[95800,"958년","과거 제도를 실시하다"],[98200,"982년","최승로가 「시무 28조」를 올리다"],[99300,"993년","서희가 거란과 협상하여 강동 6주를 얻다"],[101900,"1019년","강감찬이 귀주에서 거란군을 물리치다 (귀주 대첩)"],[110700,"1107년","윤관이 동북 9성을 쌓기 시작하다"],[112600,"1126년","이자겸이 난을 일으키다"],[113500,"1135년","묘청이 난을 일으키다"],[114500,"1145년","김부식이 『삼국사기』를 펴내다"],[117000,"1170년","무신들이 난을 일으키다"],[117600,"1176년","망이와 망소이가 난을 일으키다"],[119600,"1196년","최충헌이 권력을 잡다"],[119800,"1198년","만적이 반란을 계획하다"],[123100,"1231년","몽골이 침략하다 (1차 침입)"],[123200,"1232년","강화도로 수도를 옮기다"],[125100,"1251년","『팔만대장경』의 완성을 기념하다"],[125900,"1259년","고려와 몽골이 화친을 맺다"],[135600,"1356년","정동행성 이문소를 없애다"],[136600,"1366년","신돈이 전민변정도감을 설치하다"],[137600,"1376년","최영이 홍산에서 왜구를 무찌르다"],[138800,"1388년","이성계가 위화도에서 군사를 돌리다"]],"jo":[[139200,"1392년","조선이 세워지다"],[139400,"1394년","한양에 궁궐을 짓고 수도를 옮기다"],[139800,"1398년","1차 왕자의 난이 일어나다"],[141300,"1413년","호패법을 실시하다"],[142000,"1420년","집현전을 설치하다"],[143400,"1434년","자격루를 완성하다"],[144600,"1446년","훈민정음을 반포하다"],[145500,"1455년","세조가 단종을 내쫓다"],[148500,"1485년","성종이 『경국대전』을 시행하다"],[149800,"1498년","무오사화가 일어나다"],[151900,"1519년","기묘사화가 일어나다"],[159200,"1592년","임진왜란이 일어나다"],[160800,"1608년","대동법을 처음 실시하다"],[163600,"1636년","병자호란이 일어나다"],[167800,"1678년","상평통보가 전국에 널리 쓰이다"],[170100,"1701년","붕당 간의 다툼 속에 장희빈이 사약을 받다"],[172500,"1725년","영조가 탕평책을 실시하다"],[178000,"1780년","박지원이 『열하일기』를 쓰다"],[179100,"1791년","금난전권을 없애다"],[179600,"1796년","수원 화성을 완공하다"],[181100,"1811년","홍경래의 난이 일어나다"],[181800,"1818년","정약용이 『목민심서』를 펴내다"],[186200,"1862년","전국적으로 농민 봉기가 일어나다 (임술 농민 봉기)"]],"op":[[186300,"1863년","흥선 대원군이 권력을 잡다"],[186600,"1866년","프랑스 함대가 강화도에 쳐들어오다 (병인양요)"],[187100,"1871년","미국 함대가 강화도에 쳐들어오다 (신미양요)"],[187600,"1876년","강화도 조약을 맺다"],[188200,"1882년","구식 군대가 반란을 일으키다 (임오군란)"],[188308,"1883년 8월","원산 학사가 세워지다"],[188310,"1883년 10월","『한성순보』가 발행되다"],[188400,"1884년","급진 개화파들이 정변을 일으키다 (갑신정변)"],[188700,"1887년","경복궁에 전등을 밝히다"],[189401,"1894년 1월","전라도 고부에서 농민들이 봉기하다"],[189407,"1894년 7월","갑오개혁이 추진되다"],[189409,"1894년 9월","동학 농민군이 다시 봉기하다"],[189508,"1895년 8월","일본 자객들이 왕비 민씨를 죽이다 (을미사변)"],[189602,"1896년 2월","고종이 러시아 공사관으로 피하다 (아관파천)"],[189604,"1896년 4월","『독립신문』이 창간되다"],[189710,"1897년 10월","대한 제국을 선포하다"],[189805,"1898년 5월","명동 성당이 세워지다"],[189909,"1899년 9월","서울-인천 사이 기차 운행을 시작하다"],[190511,"1905년 11월","일본에 외교권을 빼앗기다 (을사늑약)"],[190706,"1907년 6월","만국 평화 회의에 헤이그 특사를 보내다"],[190910,"1909년 10월","안중근이 이토 히로부미를 저격하다"]],"jp":[[191008,"1910년 8월","일제에 나라를 빼앗기다"],[191208,"1912년 8월","토지 조사 사업을 본격적으로 실시하다"],[191801,"1918년 1월","윌슨이 민족 자결주의를 선언하다"],[191903,"1919년 3월","3·1 운동이 일어나다"],[191904,"1919년 4월","대한민국 임시 정부가 세워지다"],[192010,"1920년 10월","청산리에서 일본군을 크게 무찌르다"],[192011,"1920년 11월","산미 증식 계획을 실시하다"],[192308,"1923년 8월","암태도에서 소작 쟁의가 시작되다"],[192505,"1925년 5월","치안 유지법이 발표되다"],[192606,"1926년 6월","6·10 만세 운동이 일어나다"],[192702,"1927년 2월","신간회가 창립되다"],[192911,"1929년 11월","광주 학생 항일 운동이 일어나다"],[193109,"1931년 9월","일본이 만주를 침략하다"],[193201,"1932년 1월","이봉창이 일왕에게 폭탄을 던지다"],[193204,"1932년 4월","윤봉길이 일본 장교들에게 폭탄을 던지다"],[193707,"1937년 7월","일본이 중일 전쟁을 벌이다"],[194111,"1941년 11월","임시 정부가 대한민국 건국 강령을 발표하다"]],"mo":[[194508,"1945년 8월","광복을 맞이하다"],[194509,"1945년 9월","미군정이 들어서다"],[194601,"1946년 1월","신탁 통치 문제로 좌우가 대립하다"],[194603,"1946년 3월","제1차 미소 공동 위원회가 열리다"],[194808,"1948년 8월","대한민국 정부가 수립되다"],[195006,"1950년 6월","6·25 전쟁이 일어나다"],[195009,"1950년 9월","인천 상륙 작전을 실시하다"],[195011,"1950년 11월","중국군이 전쟁에 참여하다"],[195207,"1952년 7월","발췌 개헌을 하다"],[195307,"1953년 7월","휴전 협정을 맺다"],[196003,"1960년 3월","3·15 부정 선거가 일어나다"],[196004,"1960년 4월","4·19 혁명이 일어나다"],[196105,"1961년 5월","5·16 군사 정변이 일어나다"],[196201,"1962년 1월","제1차 경제 개발 5개년 계획이 시작되다"],[196506,"1965년 6월","한일 협정이 체결되다"],[197004,"1970년 4월","새마을 운동을 시작하다"],[197011,"1970년 11월","전태일이 노동자의 권리를 외치다 숨지다"],[197207,"1972년 7월","7·4 남북 공동 성명을 발표하다"],[197210,"1972년 10월","유신 체제가 시작되다"],[197700,"1977년","수출액 100억 달러를 넘어서다"],[197910,"1979년 10월","박정희 대통령이 피살되다 (10·26 사태)"],[197912,"1979년 12월","신군부가 등장하다 (12·12 사태)"],[198706,"1987년 6월","6월 민주 항쟁이 일어나다"],[198809,"1988년 9월","서울 올림픽을 개최하다"],[199109,"1991년 9월","남한과 북한이 동시에 유엔에 가입하다"],[199506,"1995년 6월","지방 자치 제도가 전면적으로 실시되다"],[199612,"1996년 12월","OECD에 가입하다"],[199711,"1997년 11월","외환 위기로 IMF의 구제 금융을 받다"],[200006,"2000년 6월","6·15 남북 공동 선언이 발표되다"],[200205,"2002년 5월","한일 월드컵이 개최되다"],[200503,"2005년 3월","호주제 폐지를 결정하다"],[200710,"2007년 10월","남과 북의 정상이 다시 만나다"]]}; // 전시실: [[정렬 값(연도×100+월), 연도 글, 사건], ...]
+const MUS_ERAS = [['pre', '🏺', '선사~삼국', 0xC9A27A], ['ns', '🏯', '남북국·고려', 0x7FB35A], ['jo', '📜', '조선', 0x4A9AE8], ['op', '🚢', '개항기', 0xF08A24], ['jp', '🕊️', '일제 강점기', 0x8A8AA0], ['mo', '🏙️', '현대', 0xB35AD8]];
+const MUS_LV = [{ n: '쉬움', k: 4, yr: true, st: 2, sh: 5 }, { n: '보통', k: 6, yr: true, st: 3, sh: 8 }, { n: '어려움', k: 6, yr: false, st: 4, sh: 12 }];
+const MUS_SPOT = [500, 12]; // 역사 마을 박물관 (문은 -z 쪽 · 큰길을 봐요)
+bag.mus ||= {};
+const mus = { g: null, labels: {} };
+const musStars = (e) => (bag.mus[e] || []).filter(x => x > 0).length;
+function buildHistMuseum() {
+  const o = { solid: false }, [x, z] = MUS_SPOT, g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  box(g, 12, 0.4, 8.6, 0xD8D2C6, 0, 0.2, 0); box(g, 11, 3.8, 7.4, 0xF5F1E8, 0, 2.3, 0); box(g, 12.4, 0.5, 8.8, 0x8A5A34, 0, 4.45, 0);
+  mesh(TL_CONE, g, 6.8, 1.6, 4.9, 0x4A4E57, 0, 5.5, 0, { solid: false, ry: Math.PI / 4 }); // 기와 느낌 지붕
+  for (let k = -2; k <= 2; k++) { if (!k) continue; cyl(g, 0.28, 3.8, 0xFFFFFF, k * 2.2, 2.3, -3.9); } // 앞 기둥
+  box(g, 11.6, 0.3, 1.4, 0xE8E0D0, 0, 4.0, -4.1, o); box(g, 2.4, 2.8, 0.12, 0x5A3A22, 0, 1.8, -3.72, o);
+  signPlane(g, ['🏛️ 역사 박물관'], 5.2, 0.9, 0, 3.55, -4.2, { font: 56, pad: 4, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false }).rotation.y = Math.PI;
+  for (const sx of [-1, 1]) box(g, 3, 0.3, 1.6, 0xD8D2C6, 0, 0.15, -5 - 0.2, o);
+  mus.labels.out = makeLabel(g, ['🏛️ 역사 박물관', '연표 보고 사건 차례대로 놓기'], 1.1, 0, 7.4, 0);
+  registerSolids(g, 'hanok');
+  addInteract({ pos: new V3(x, 1, z - 5.6), r: 2.6, text: () => roomNow() ? null : ['들어가기 🚪', '🏛️ 역사 박물관'], run: () => enterRoom('mus') });
+  // 안쪽: 전시실 6곳 (양쪽 벽 3곳씩) + 가운데 긴 연표 띠
+  const r = ROOMS.mus, { cx, cz, w, d } = r, gi = new THREE.Group(); gi.name = 'Museum'; scene.add(gi); roomShell(gi, r);
+  MUS_ERAS.forEach(([k, ic, nm, col], i) => { box(gi, w - 6, 0.06, 0.6, col, cx - (w - 6) / 2 + (i + 0.5) * (w - 6) / 6, 0.14, cz - 1, o); });
+  signPlane(gi, ['📜 한국사 연표 — 선사 시대부터 오늘날까지'], 9, 0.8, cx, 2.6, cz - d / 2 + 0.25, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false });
+  MUS_ERAS.forEach(([k, ic, nm, col], i) => {
+    const side = i < 3 ? -1 : 1, ex = cx + side * (w / 2 - 1.6), ez = cz - d / 2 + 3.5 + (i % 3) * 5;
+    box(gi, 1.6, 1.0, 2.6, 0xF5F1E8, ex, 0.5, ez); box(gi, 1.64, 0.12, 2.64, col, ex, 1.02, ez, o);
+    box(gi, 0.12, 2.2, 3.4, col, ex + side * 0.85, 2.1, ez, o);
+    mus.labels[k] = makeLabel(gi, [`${ic} ${nm}`, ''], 0.75, ex, 3.6, ez);
+    addInteract({ pos: new V3(ex - side * 1.6, 1, ez), r: 2.4, text: () => roomNow() === 'mus' ? [`${ic} ${nm} 전시실`, `사건 차례대로 놓기 · ⭐ ${musStars(k)}/3`] : null, run: () => openHistMus(k) });
+  });
+  registerSolids(gi, 'rooms'); musLabels();
+}
+function musLabels() { for (const [k, ic, nm] of MUS_ERAS) mus.labels[k]?.userData.set([`${ic} ${nm}`, `${'⭐'.repeat(musStars(k))}${'☆'.repeat(3 - musStars(k))} · 사건 ${MUS_EV[k].length}개`]); }
+function musNew(era, lv) { // 연도가 겹치지 않게 무작위로 골라 연표 순서로
+  const L = MUS_LV[lv], pool = [...MUS_EV[era]].sort(() => Math.random() - 0.5).slice(0, L.k).sort((a, b) => a[0] - b[0]);
+  return { era, lv, slots: pool, cards: [...pool.keys()].sort(() => Math.random() - 0.5), put: Array(L.k).fill(-1), sel: -1, tries: 0, ok: null, done: false };
+}
+function openHistMus(era, lv) {
+  if (!joined) return; const E = MUS_ERAS.find(x => x[0] === era); if (!E) return;
+  if (lv != null) mus.g = musNew(era, lv);
+  else if (!mus.g || mus.g.era !== era || mus.g.done) mus.g = null;
+  openLife(`${E[1]} ${E[2]} 전시실`, (box) => {
+    box.textContent = ''; const g = mus.g;
+    if (!g) { // 단계 고르기
+      box.append(el2('p', 'hint', `연표 칸에 사건 카드를 차례대로 놓아요. 카드를 누르고 → 놓을 칸을 눌러요. ${E[2]} 사건 ${MUS_EV[era].length}개 중에서 골라 나와요.`));
+      MUS_LV.forEach((L, i) => { const n = (bag.mus[era] || [])[i] || 0, r = el2('div', 'ride-row' + (n ? ' on' : '')), tx = el2('span', 'ride-tx');
+        tx.append(el2('b', '', `${L.n} ${n ? '⭐' : ''}`), el2('span', 'hint', `사건 ${L.k}개 · ${L.yr ? '연도를 보고 놓기' : '연도 없이 순서만!'} · 📊 사회력 +${L.st} · 🐚 ${L.sh}${n ? ` · 깬 횟수 ${n}` : ''}`));
+        const b = el2('button', 'btn', '시작'); b.style.background = '#FFE066'; b.onclick = () => openHistMus(era, i); r.append(el2('span', 'ride-ic', ['🙂', '🤔', '🔥'][i]), tx, b); box.append(r); });
+      const all = MUS_EV[era], tl = el2('details', 'mus-all'); tl.append(el2('summary', '', `📜 ${E[2]} 연표 미리 보기 (${all.length}개)`));
+      const ul = el2('div', 'mus-list'); for (const [, y, t] of all) { const li = el2('div', 'mus-li'); li.append(el2('b', '', y), el2('span', '', t)); ul.append(li); } tl.append(ul); box.append(tl);
+      return;
+    }
+    const L = MUS_LV[g.lv];
+    box.append(el2('p', 'hint', g.done ? '🎉 모두 맞았어요!' : `${L.n} · 카드를 누르고 칸을 눌러 놓아요 (놓은 카드를 누르면 빼요)${g.tries ? ` · 확인 ${g.tries}번` : ''}`));
+    const line = el2('div', 'mus-line');
+    g.slots.forEach((ev, i) => { const c = g.put[i], cell = el2('button', 'mus-slot' + (g.ok ? (g.ok[i] ? ' good' : ' bad') : '') + (c >= 0 ? ' full' : ''));
+      cell.style.setProperty('--ec', '#' + E[3].toString(16).padStart(6, '0'));
+      cell.append(el2('b', 'mus-y', L.yr || g.done ? ev[1] : `${i + 1}번째`), el2('span', 'mus-t', c >= 0 ? g.slots[c][2] : (g.sel >= 0 ? '👉 여기에 놓기' : '빈칸')));
+      cell.disabled = g.done; cell.onclick = () => { if (c >= 0) { g.put[i] = -1; g.ok = null; } else if (g.sel >= 0) { g.put[i] = g.sel; g.sel = -1; g.ok = null; playSfx('plop'); } refillLife(); };
+      line.append(cell); });
+    box.append(line);
+    const left = g.cards.filter(ci => !g.put.includes(ci));
+    if (left.length) { box.append(el2('h3', 'lp-sec', '🃏 사건 카드')); const cs = el2('div', 'mus-cards');
+      for (const ci of left) { const b = el2('button', 'mus-card' + (g.sel === ci ? ' on' : ''), g.slots[ci][2]); b.onclick = () => { g.sel = g.sel === ci ? -1 : ci; refillLife(); }; cs.append(b); } box.append(cs); }
+    const row = el2('div', 'row-center wrap');
+    if (!g.done) { const chk = el2('button', 'btn', '✅ 확인'); chk.style.background = '#FFD23C'; chk.disabled = left.length > 0; chk.onclick = () => musCheck(); row.append(chk); }
+    const again = el2('button', 'btn', g.done ? '🔁 한 판 더' : '🔀 새로 섞기'); again.onclick = () => openHistMus(era, g.lv); row.append(again);
+    const back = el2('button', 'btn', '단계 고르기'); back.onclick = () => { mus.g = null; openHistMus(era); }; row.append(back);
+    box.append(row);
+  });
+}
+function musCheck() {
+  const g = mus.g; if (!g || g.done) return; g.tries++;
+  g.ok = g.put.map((c, i) => c === i);
+  if (g.ok.every(Boolean)) {
+    g.done = true; const L = MUS_LV[g.lv], arr = (bag.mus[g.era] ||= [0, 0, 0]), first = !arr[g.lv]; arr[g.lv]++;
+    const perfect = g.tries === 1; addStat('soc', L.st + (perfect ? 1 : 0)); const sh = giveShellCapped(first ? L.sh * 2 : L.sh); saveBag(); musLabels();
+    playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 40, 4, 2);
+    toast(`🏛️ 연표 완성!${perfect ? ' 한 번에 맞혔어요!' : ''} 📊 사회력 +${L.st + (perfect ? 1 : 0)}${sh ? ` · 🐚 +${sh}` : ''}${first ? ' · ⭐ 새 별!' : ''}`, 'success');
+  } else { const n = g.ok.filter(x => !x).length; g.put = g.put.map((c, i) => g.ok[i] ? c : -1); g.ok = g.ok.map(x => x || null); playSfx('oops'); toast(`🤔 ${n}장이 자리를 잘못 찾았어요. 돌아온 카드를 다시 놓아 봐요`, 'info'); }
+  refillLife();
 }
 
 /* =====================================================================
@@ -18797,7 +18898,7 @@ initStarHud();
 initMemGame();
 initDropGame();
 initPlotAdmin(); initFestAdmin();
-makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
+makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); buildHistMuseum(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
 $('tpTime').onchange = (e) => { envView.time = e.target.value; applyEnv(true); };
