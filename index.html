@@ -1935,7 +1935,7 @@ function sanitizeState(raw) {
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
     if (pl.h != null && ok(isInt(pl.h.s, 0, 6) && isInt(pl.h.c, 0, 9))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; if (typeof pl.h.n === 'string' && pl.h.n.length <= 8) out.plots[n].h.n = pl.h.n; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
-      { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 5) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '' }; } // 🐾 집 펫
+      { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 5) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '', ...(pt.w === 1 ? { w: 1 } : {}) }; } // 🐾 집 펫
       for (const L of ['c', 'g', 'u']) for (const [cell, d] of Object.entries(plainObj(inn[L]))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o[L] ||= {})[cell] = { t: d.t, r: d.r }; // 🛋️ c 가구 · g 바닥(러그) · u 위에 올린 작은 장식
       for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
@@ -13920,11 +13920,14 @@ function hpetAnim(g, dt, moving) { // 걷기 · 숨쉬기 · 꼬리 살랑
 const hpw = { inG: null, inT: null, inLab: null, petHouse: null, me: null, follow: new Map(), mine: false };
 function hpetBuildIn(g, id, pt, mine) { // 집 안: 펫이 돌아다녀요 (친구 집도)
   hpw.inG = null; hpw.mine = mine; if (!pt) return;
+  { const [cx, cz] = inRoomCenter(id); if (pt.l >= 6) { const ph = new THREE.Group(); ph.position.set(cx + HOME_IN.w / 2 - 1.3, 0.1, cz - HOME_IN.d / 2 + 1.3); g.add(ph); box(ph, 1.1, 0.8, 1.0, 0xF2C9A0, 0, 0.4, 0, { solid: false }); mesh(GABLE, ph, 1.3, 0.6, 1.1, 0xE2584A, 0, 0.8, 0, { solid: false }); box(ph, 0.45, 0.45, 0.04, 0x5A3A22, 0, 0.3, 0.51, { solid: false }); box(ph, 0.9, 0.08, 0.7, 0xA8D8FF, 0, 0.06, 0.75, { solid: false }); hpw.petHouse = ph; }
+  }
+  if (pt.w && !mine) { const [cx, cz] = inRoomCenter(id); makeLabel(g, [`🚶 ${HPETS[pt.k].icon} ${pt.n || HPETS[pt.k].n}은(는) 주인과 산책 중이에요`], 0.4, cx, 1.6, cz, { font: 44, pad: 8 }); return; } // 친구 집: 산책 나가면 집이 비어요 (주인이 집에 오면 같이 들어와요)
   const [cx, cz] = inRoomCenter(id), m = hpetModel(pt.k, pt.a, pt.l >= 9); m.position.set(cx + 2, 0.1, cz); g.add(m); hpw.inG = m; hpw.inT = null;
   hpw.inLab = makeLabel(m, [`${HPETS[pt.k].icon} ${pt.n || HPETS[pt.k].n} ❤️${pt.l}`], 0.3, 0, 1.3, 0, { font: 44, pad: 6 });
-  if (pt.l >= 6) { const ph = new THREE.Group(); ph.position.set(cx + HOME_IN.w / 2 - 1.3, 0.1, cz - HOME_IN.d / 2 + 1.3); g.add(ph); box(ph, 1.1, 0.8, 1.0, 0xF2C9A0, 0, 0.4, 0, { solid: false }); mesh(GABLE, ph, 1.3, 0.6, 1.1, 0xE2584A, 0, 0.8, 0, { solid: false }); box(ph, 0.45, 0.45, 0.04, 0x5A3A22, 0, 0.3, 0.51, { solid: false }); box(ph, 0.9, 0.08, 0.7, 0xA8D8FF, 0, 0.06, 0.75, { solid: false }); hpw.petHouse = ph; }
 }
 function hpetUpdate(dt) {
+  if (joined && stateLoaded && hpCur() && (hpw.syncT = (hpw.syncT || 0) - dt) <= 0) { hpw.syncT = 5; hpetSync(); } // 산책 여부를 집 정보에 맞춰요
   // 집 안 펫: 천천히 돌아다니다 쉬어요
   const m = hpw.inG; if (m && home.group && home.id) {
     const [cx, cz] = inRoomCenter(home.id);
@@ -13949,7 +13952,7 @@ function hpetUpdate(dt) {
 }
 function hpetSync() { // 내 집 안 펫 모습을 저장 (친구도 봐요)
   const id = myLot(); if (!id || !S.plots[id]) return; const k = hpCur(), p = k && bag.hpet.pets[k];
-  const v = p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '' } : null, cur = S.plots[id].in?.pet || null;
+  const v = p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(bag.hpet.walk ? { w: 1 } : {}) } : null, cur = S.plots[id].in?.pet || null;
   if (JSON.stringify(v) !== JSON.stringify(cur)) backend.homeSet(id, { pet: v });
 }
 function hpetGift() { // 🎁 Lv4부터 하루 한 번 집에 오면
@@ -13982,7 +13985,7 @@ function openHomePet() {
     const care = el2('div', 'row-center wrap'); for (const [ck, C2] of Object.entries(HPET_CARE)) { const left = C2.max - (day[ck] | 0), b = el2('button', 'btn', `${C2.icon} ${C2.n}${C2.sh ? ` 🐚${C2.sh}` : ''} (${left})`); b.disabled = left <= 0; b.style.background = left > 0 ? '#FFF3C4' : '#fff'; b.onclick = () => hpetCare(ck); care.append(b); } box.append(care);
     const row = el2('div', 'row-center wrap');
     if (lv >= 1) { const nb = el2('button', 'btn', '🏷️ 이름 짓기'); nb.style.background = '#fff'; nb.onclick = () => { const inp = el2('input', 'tinput'); inp.maxLength = 6; inp.value = p.n || ''; inp.placeholder = '6글자까지'; const ok = el2('button', 'btn', '저장'); ok.onclick = () => { const v = cleanNick(inp.value).slice(0, 6); if (nickBad(v)) { toast('🙅 고운 이름으로 지어 줘요', 'warn'); return; } p.n = v; saveBag(); hpetSync(); refillLife(); }; nb.replaceWith(inp, ok); inp.focus(); }; row.append(nb); }
-    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; saveBag(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요!` : '🏠 펫이 집에서 기다려요', 'info'); refillLife(); }; row.append(wb); }
+    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; saveBag(); hpetSync(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요! (산책하는 동안 집은 비어요)` : `🏠 ${H.icon} 이제 집 안에서 기다려요 · 밖에서는 따라오지 않아요`, 'info'); refillLife(); }; row.append(wb); }
     if (lv >= 5) { const tb = el2('button', 'btn', '🐾 재주 부리기'); tb.style.background = '#fff'; tb.onclick = hpetTrick; row.append(tb); }
     box.append(row);
     { const ac = el2('div', 'row-center wrap'); ac.append(el2('span', 'hint', '꾸미기:')); HPET_ACC.forEach((A, i) => { const b = el2('button', 'btn', `${A.icon} ${A.n}${lv < A.lv ? ` 🔒Lv${A.lv}` : ''}`); b.disabled = lv < A.lv; b.style.background = (p.acc | 0) === i ? '#FFE066' : '#fff'; b.onclick = () => { p.acc = i; saveBag(); hpetSync(); refillLife(); }; ac.append(b); }); box.append(ac); }
@@ -15286,6 +15289,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017o', d: '10월 17일 (밤)', items: ['🏠 산책을 그만하면 펫이 집 안에서 기다려요 · 산책하는 동안은 집이 비어요'] },
   { id: '1017m', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 처음부터 마을에서 졸졸 따라와요! (🐾 우리 집 펫 창에서 산책 켜고 끄기)'] },
   { id: '1017l', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 생겼어요! 집 안에서 🐾 우리 집 펫 → 강아지·고양이·토끼·햄스터·병아리·아기 여우 중 하나를 데려와요 (첫 펫 무료)', '💞 간식·쓰다듬기·공놀이·목욕으로 친밀도를 올리면 이름 짓기 → 리본 → 같이 산책 → 매일 선물 → 재주 → 펫 집 → 이름표 표시 → 반짝 털 → 왕관·단짝 칭호'] },
   { id: '1017k', d: '10월 17일 (밤)', items: ['💰 재화는 이제 🐚 조개(내 돈)와 🪙 반 동전(모두의 돈) 두 가지예요! 건물 짓기는 🪙 반 동전으로 · 놀이·미션 성공 보상도 🪙 · 수학 마을은 문제를 풀면 바로 🐚', '🐷 반 기부함 목표가 줄었어요: 🎁 1500 → 🐲 3000 → 🥚 5000', '🪨 잔디에 흩어진 돌은 치웠어요 (돌은 뒷산 바위에서 캐요)'] },
