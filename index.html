@@ -512,6 +512,18 @@
   #kiteNeedle { position: absolute; top: -2px; bottom: -2px; width: 6px; margin-left: -3px; background: #E2584A; border-radius: 3px; }
   .kb-level { font-size: 26px; text-align: center; margin: 6px 0; letter-spacing: 4px; min-height: 1.2em; }
   #kiteBar .btn { font-size: 20px; padding: 10px 18px; }
+  #chatBtn { position: fixed; right: calc(134px + env(safe-area-inset-right, 0px)); bottom: calc(102px + var(--safe-bottom)); width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 20px; background: #fff; }
+  body.touch #chatBtn { bottom: calc(222px + var(--safe-bottom)); }
+  body:has(#emoteBar:not(.hidden)) #chatBtn { visibility: hidden; }
+  #chatBox { position: fixed; left: 50%; top: calc(8px + var(--safe-top)); transform: translateX(-50%); width: min(560px, 96vw); padding: 8px 10px; z-index: 40; display: flex; flex-direction: column; gap: 6px; }
+  #chatBox .cq { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; } #chatBox .cq::-webkit-scrollbar { display: none; }
+  #chatBox .cq .btn { flex: none; font-size: 15px; padding: 6px 10px; background: #fff; }
+  #chatBox .cin { display: flex; gap: 6px; } #chatBox .cin input { flex: 1; min-width: 0; font-size: 17px; padding: 8px 10px; border: 1.5px solid var(--line-2); border-radius: 10px; }
+  #chatBox .cin .btn { font-size: 16px; padding: 6px 12px; }
+  #chatLog { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); top: calc(172px + var(--safe-top)); max-width: min(300px, 45vw); display: flex; flex-direction: column; gap: 3px; pointer-events: none; z-index: 5; }
+  #chatLog div { background: rgba(30, 30, 40, .55); color: #fff; font-size: 14px; line-height: 1.3; padding: 3px 8px; border-radius: 8px; transition: opacity .8s; word-break: break-all; }
+  #chatLog div b { color: #FFE066; font-weight: 700; } #chatLog div.out { opacity: 0; }
+  body:has(#guideChip:not(.hidden)) #chatLog { top: calc(290px + var(--safe-top)); } /* 미니맵·첫걸음 안내 아래 */
   #soundBtn {
     position: fixed; right: calc(82px + env(safe-area-inset-right, 0px)); bottom: calc(102px + var(--safe-bottom));
     width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 20px; background: #fff;
@@ -1185,6 +1197,9 @@
 <div id="stageBar" class="sticker hidden" role="group" aria-label="무대"></div>
 <button id="rideBtn" class="btn hidden" aria-label="탈것 (V)" title="탈것 (V)">🚲</button>
 <div id="flyBar" class="hidden"><button class="btn" id="flyUp" aria-label="위로 날기 (스페이스)" title="위로 (스페이스)">⬆️</button><button class="btn" id="flyDn" aria-label="아래로 (Shift)" title="아래로 (Shift)">⬇️</button></div>
+<button id="chatBtn" class="btn hidden" aria-label="채팅 (Enter)" aria-expanded="false" aria-controls="chatBox" title="채팅 (Enter)">💬</button>
+<div id="chatBox" class="sticker hidden" role="dialog" aria-label="채팅"><div class="cq" id="chatQuick"></div><div class="cin"><input id="chatIn" maxlength="30" placeholder="친구에게 할 말 (30자)" autocomplete="off" aria-label="채팅 입력"><button class="btn" id="chatSend" style="background:#FFD23C">보내기</button><button class="btn" id="chatClose" aria-label="채팅 닫기" style="background:#fff">✕</button></div></div>
+<div id="chatLog" aria-live="polite"></div>
 <button id="emoteBtn" class="btn hidden" aria-label="몸짓 고르기 (Q)" aria-expanded="false" aria-controls="emoteBar" title="몸짓 (Q)">😊</button>
 <div id="emoteBar" class="sticker hidden" role="group" aria-label="몸짓">
   <button class="btn emo" data-k="wave">👋<span>인사</span></button>
@@ -1385,6 +1400,10 @@
     <h3>⭐ 능력치 레벨 경험치</h3>
     <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv12). 능력치는 하루 100점까지 오르니, 합계 2000점이면 매일 꾸준히 할 때 약 한 달이에요. Lv3·6·9·12마다 성 공방전 역할이 강해져요.</p>
     <div id="tpLvx"></div>
+
+    <h3>💬 채팅</h3>
+    <p class="hint">학생들이 머리 위 말풍선으로 짧게(30자) 이야기해요. 나쁜 말은 막고, 대화는 저장하지 않아요 (한 사람당 마지막 한 줄만 1분 동안 있다가 저절로 지워져요). 수업 중에는 꺼 두세요.</p>
+    <div id="tpChat"></div>
 
     <h3>🙈 변신 숨바꼭질 (메인 마을)</h3>
     <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
@@ -1913,7 +1932,7 @@ function sanitizeState(raw) {
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
     if (pl.h != null && ok(isInt(pl.h.s, 0, 6) && isInt(pl.h.c, 0, 9))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; if (typeof pl.h.n === 'string' && pl.h.n.length <= 8) out.plots[n].h.n = pl.h.n; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
-      for (const [cell, d] of Object.entries(plainObj(inn.c))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o.c ||= {})[cell] = { t: d.t, r: d.r };
+      for (const L of ['c', 'g', 'u']) for (const [cell, d] of Object.entries(plainObj(inn[L]))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o[L] ||= {})[cell] = { t: d.t, r: d.r }; // 🛋️ c 가구 · g 바닥(러그) · u 위에 올린 작은 장식
       for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
     for (const [k, d] of Object.entries(plainObj(pl.items))) if (ok(/^[0-5]_[0-5]$/.test(k) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) out.plots[n].items[k] = { t: d.t, r: d.r };
@@ -2038,7 +2057,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2074,7 +2093,7 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
-    lvx: plainObj(v.lvx), pgb: plainObj(v.pgb), pgq: Object.fromEntries(Object.entries(plainObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: plainObj(v.pgym), pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    chatOff: v.chatOff === true, lvx: plainObj(v.lvx), pgb: plainObj(v.pgb), pgq: Object.fromEntries(Object.entries(plainObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: plainObj(v.pgym), pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -2384,6 +2403,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false };
       if (h) pl.h = { ...h }; else delete pl.h; emit(); return { ok: true };
     },
+    async chatSend(t, nm) { chatRemote({ me: { t, nm, at: Date.now() } }); return { ok: true }; },
+    async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
       const pl = st.plots[n];
@@ -2455,6 +2476,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     subscribe(onState, onPlayers, onError) {
       // 친구들이 한꺼번에 바꿔도 짧은 순간(0.08초)의 변화는 모아서 한 번만 화면에 반영해요 (잔렉 줄이기)
       let timer = 0;
+      D.onValue(R('chat'), s => chatRemote(s.val()), () => {}); // 💬 말풍선 (한 사람당 마지막 한 줄만 · 저절로 지워져요)
       D.onValue(R('sgbots'), s => sgBotsRemote(s.val()), () => {}); // 🤖 컴퓨터 병사 위치 (선생님 기기가 올려요)
       D.onValue(R('sgbotdmg'), s => sgBotDmgRemote(s.val()), () => {}); // 학생이 🤖를 맞힌 기록 (선생님 기기만 반영)
       D.onValue(R('state'), s => {
@@ -2832,6 +2854,9 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async setHouse(n, h) { // 내 땅에만 (주인만 쓸 수 있어요)
       try { await D.set(R(`state/plots/${n}/h`), h); return { ok: true }; } catch (e) { return { ok: false }; }
     },
+    async chatSend(t, nm) { try { const ref = R(`chat/${uid}`); await D.set(ref, { t, nm, at: D.serverTimestamp() }); D.onDisconnect(ref).remove().catch(() => {}); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async chatDel() { try { await D.set(R(`chat/${uid}`), null); } catch (e) {} },
+    async chatClear() { try { await D.set(R('chat'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async homeSet(n, upd) { // 우리 집 안 (주인만 쓸 수 있어요)
       try { await D.update(R(`state/plots/${n}/in`), upd); return { ok: true }; } catch (e) { return { ok: false }; }
     },
@@ -2883,7 +2908,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
       return out;
     },
   };
-  for (const k of ['pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
+  for (const k of ['chatSend', 'pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
     'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'evClear', 'stageAct', 'stageClap', 'rideBuy', 'mathMo', 'attrClaim', 'attrQueue', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'pbOpen', 'pbMatch', 'pbChoose', 'pbDel', 'pgLock', 'pgLockHb', 'pgLockEnd', 'pgQueueSet', 'hideFind', 'hideJam', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
@@ -3939,10 +3964,66 @@ function updateFx(dt) {
     if (u >= 1) { scene.remove(f.m); f.m.traverse?.(o => { if (o.geometry && ![BOX, CYL, SPH, SPH_LO, SPH_MID, CONE].includes(o.geometry)) o.geometry.dispose(); }); fxList.splice(fxList.indexOf(f), 1); }
   }
 }
+// ---------- 💬 채팅 (1017e) — 머리 위 말풍선 + 왼쪽 위 최근 3줄 · 한 사람당 마지막 한 줄만 저장 · 1분 뒤 저절로 지워져요 · 선생님이 끌 수 있어요 (state/chatOff) ----------
+const CHAT_QUICK = ['👋 안녕!', '🙌 같이 하자', '🙏 고마워', '📍 여기로 와', '⏳ 잠깐만', '👍 좋아', '🎉 잘했어!', '❓ 어디야?', '🏃 먼저 갈게', '😆 ㅋㅋㅋ'];
+const CHAT_SHOW = 6000, CHAT_KEEP = 60000, CHAT_GAP = 3000;
+const chatW = { seen: {}, last: 0, bubbles: new Map(), delT: 0 };
+const chatName = (u, m) => (u === backend?.uid || u === 'me') ? '나' : (nickOf(u, remotes.get(u)?.target) || cleanNick(m.nm) || '친구');
+function chatShow(on = $('chatBox').classList.contains('hidden')) {
+  if (on && (!joined || S.chatOff && !isTeacher)) { if (S.chatOff) toast('💬 지금은 선생님이 채팅을 꺼 두었어요', 'info'); return; }
+  $('chatBox').classList.toggle('hidden', !on); $('chatBtn').setAttribute('aria-expanded', String(on));
+  if (on) { for (const k in keys) keys[k] = false; setTimeout(() => $('chatIn').focus(), 30); } else $('chatIn').blur();
+}
+async function chatSendText(raw) {
+  const t = String(raw || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30); if (!t || !joined) return;
+  if (S.chatOff && !isTeacher) { toast('💬 지금은 선생님이 채팅을 꺼 두었어요', 'info'); chatShow(false); return; }
+  if (nickBad(t)) { toast('🙅 고운 말로 써 볼까요? 나쁜 말은 보낼 수 없어요', 'warn'); return; }
+  const left = chatW.last + CHAT_GAP - performance.now(); if (left > 0) { toast(`⏳ ${Math.ceil(left / 1000)}초 뒤에 다시 보낼 수 있어요`, 'info'); return; }
+  chatW.last = performance.now();
+  const r = await backend.chatSend(t, isTeacher ? '선생님' : (cleanNick(myNick) || '친구'));
+  if (!r?.ok) { toast(r?.reason === 'offline' ? '📡 연결이 끊겨서 보내지 못했어요' : '💬 보내지 못했어요. 잠시 뒤에 다시 해 봐요', 'warn'); return; }
+  $('chatIn').value = ''; clearTimeout(chatW.delT); chatW.delT = setTimeout(() => backend?.chatDel?.(), CHAT_KEEP); // 1분 뒤 내 말은 지워져요
+}
+function chatBubble(u, t) {
+  const a = (u === backend?.uid || u === 'me') ? player.avatar : remotes.get(u)?.a; if (!a?.g || a.propP) return;
+  let b = chatW.bubbles.get(u);
+  if (!b || b.sp.parent !== a.g) { b?.sp.parent?.remove(b.sp); b = { sp: makeLabel(a.g, [''], 0.6, 0, 3.4, 0, { font: 52, pad: 14, fg: '#2B2B36', bg: '#FFFFFF' }), tm: 0 }; chatW.bubbles.set(u, b); }
+  b.sp.userData.set([t]); b.sp.visible = true; clearTimeout(b.tm); b.tm = setTimeout(() => { b.sp.visible = false; }, CHAT_SHOW);
+}
+function chatLogAdd(nm, t) {
+  const box = $('chatLog'), d = el2('div', '', ''); d.append(el2('b', '', nm), ` ${t}`); box.append(d);
+  while (box.children.length > 3) box.firstChild.remove();
+  setTimeout(() => d.classList.add('out'), CHAT_SHOW); setTimeout(() => d.remove(), CHAT_SHOW + 900);
+}
+function chatRemote(v) { // 친구들의 마지막 한 줄 (새로 바뀐 것만 보여요)
+  if (!v || typeof v !== 'object') return; const now = backend?.now ? backend.now() : Date.now();
+  for (const [u, m] of Object.entries(v)) {
+    if (!m || typeof m.t !== 'string' || typeof m.at !== 'number' || chatW.seen[u] === m.at) continue; chatW.seen[u] = m.at;
+    if (now - m.at > 15000 || (S.chatOff && !isTeacher)) continue; // 들어오기 전 말 · 꺼진 동안은 안 보여요
+    const t = m.t.replace(/[\u0000-\u001f<>]/g, '').slice(0, 30); if (!t || nickBad(t)) continue;
+    chatBubble(u, t); chatLogAdd(chatName(u, m), t);
+  }
+}
+function initChat() {
+  const q = $('chatQuick'); for (const p of CHAT_QUICK) { const b = el2('button', 'btn', p); b.onclick = () => chatSendText(p); q.append(b); }
+  $('chatBtn').onclick = () => chatShow(); $('chatClose').onclick = () => chatShow(false); $('chatSend').onclick = () => chatSendText($('chatIn').value);
+  $('chatIn').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); chatSendText($('chatIn').value); } else if (e.key === 'Escape') chatShow(false); });
+  addEventListener('keydown', e => { // Enter로 채팅 열기 (창이 열려 있지 않을 때)
+    if (!joined || e.repeat || e.key !== 'Enter' || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+    if ([...document.querySelectorAll('.modal')].some(m => !m.classList.contains('hidden')) || document.body.classList.contains('in-pb')) return;
+    if (e.target instanceof HTMLButtonElement) return; e.preventDefault(); chatShow(true);
+  });
+}
+function fillChatAdmin() {
+  const box = $('tpChat'); if (!box) return; box.textContent = ''; const off = !!S.chatOff;
+  const b = el2('button', 'btn', off ? '💬 채팅 켜기' : '🔇 채팅 끄기'); b.style.background = off ? '#FFD23C' : '#fff';
+  b.onclick = async () => { const ok = await adminDo({ chatOff: !off }, off ? '💬 채팅을 켰어요' : '🔇 채팅을 껐어요 (말풍선도 모두 지웠어요)'); if (ok && !off) backend.chatClear?.(); setTimeout(fillChatAdmin, 300); };
+  box.append(el2('p', 'hint', off ? '지금: 🔇 꺼짐 — 학생들은 채팅을 보낼 수 없어요' : '지금: 💬 켜짐'), b);
+}
 function initEmotes() {
   const bar = $('emoteBar'), btn = $('emoteBtn');
   const toggle = (show = bar.classList.contains('hidden')) => { bar.classList.toggle('hidden', !show); btn.setAttribute('aria-expanded', show); if (show) bar.querySelector('button')?.focus(); };
-  btn.onclick = () => { if (joined) toggle(); };
+  btn.onclick = () => { if (joined) toggle(); }; initChat();
   $('rideBtn').onclick = () => openRides(); initFlyBar(); // 🚲 탈것 가게 · 타기/내리기 · 🐲 날기 버튼
   bar.querySelectorAll('button').forEach(b => b.onclick = () => {
     if (!joined || isFrozen() || onCooldown('emote', 0.8)) return;
@@ -4570,6 +4651,7 @@ function applyState(st) {
   syncMath(prev, first);
   syncThx(prev, first);
   syncHide(prev, first);
+  if (S.chatOff && !isTeacher && !$('chatBox').classList.contains('hidden')) chatShow(false);
   pbSync(); pgSync(); if (JSON.stringify([prev.pgb, prev.pgq]) !== JSON.stringify([S.pgb, S.pgq])) pgPanelRefresh(); syncPest(prev, first); renderPots(false); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🪴 내 화분') refillLife();
   renderRooms(false); if (!$('teacherPanel').classList.contains('hidden')) fillRoomAdmin();
   syncMural(prev, first);
@@ -4764,7 +4846,7 @@ async function join(practice, asTeacher = false) {
   $('join').classList.add('hidden');
   $('hud').classList.remove('hidden');
   $('decorBtn').classList.remove('hidden');
-  $('emoteBtn').classList.remove('hidden'); $('soundBtn').classList.remove('hidden');
+  $('emoteBtn').classList.remove('hidden'); $('soundBtn').classList.remove('hidden'); $('chatBtn').classList.remove('hidden');
   $('tip').classList.remove('hidden');
   setTimeout(() => $('tip').classList.add('hidden'), 25000);
   if (document.body.classList.contains('touch')) showTouchControls();
@@ -4954,7 +5036,7 @@ function startPlacing(t, mode = 'town') {
     scene.add(placing.marker);
   }
   placing.marker.visible = true;
-  $('decorBtn').classList.add('hidden'); $('emoteBtn').classList.add('hidden'); $('emoteBar').classList.add('hidden'); $('soundBtn').classList.add('hidden');
+  $('decorBtn').classList.add('hidden'); $('emoteBtn').classList.add('hidden'); $('emoteBar').classList.add('hidden'); $('soundBtn').classList.add('hidden'); $('chatBtn').classList.add('hidden'); chatShow(false);
   $('placeBar').classList.remove('hidden');
 }
 function stopPlacing() {
@@ -4963,7 +5045,7 @@ function stopPlacing() {
   if (placing.ghost) { scene.remove(placing.ghost); placing.ghost = null; }
   if (placing.marker) placing.marker.visible = false;
   $('placeBar').classList.add('hidden');
-  if (joined) { $('decorBtn').classList.remove('hidden'); $('emoteBtn').classList.remove('hidden'); $('soundBtn').classList.remove('hidden'); }
+  if (joined) { $('decorBtn').classList.remove('hidden'); $('emoteBtn').classList.remove('hidden'); $('soundBtn').classList.remove('hidden'); $('chatBtn').classList.remove('hidden'); }
 }
 function rotatePlacing() { placing.r = (placing.r + 1) % 4; }
 function pinPlacing(clientX, clientY) {
@@ -5399,7 +5481,7 @@ function kickMe() {
   $('kickOverlay').classList.remove('hidden'); playSfx('oops');
 }
 function fillTeacherPanel() {
-  fillFestAdmin(); fillWhoAdmin(); fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin(); try { fillPgymAdmin(); } catch (e) { console.warn(e); }
+  fillFestAdmin(); fillWhoAdmin(); fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin(); try { fillPgymAdmin(); fillChatAdmin(); } catch (e) { console.warn(e); }
   $('tpForm').classList.toggle('hidden', !isTeacher); $('tpTabs')?.classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -13453,6 +13535,20 @@ const FURN = [ // 25~27: 수학 마을에서 만들거나 받는 특별 가구 (
 bag.fur ||= {};
 const home = { id: '', group: null, key: '', edit: null, ghost: null, ghostKey: '', inItem: null, exitI: null, doorI: null };
 const DOOR_CELLS = new Set(['2_4', '3_4']); // 문 앞 길은 비워 둬요
+// 🛋️ 1017e 가구 층: g 바닥(러그) → c 가구 → u 위(작은 장식은 탁자·책장·침대 위에 올려요)
+const FURN_RUG = new Set([11, 26]), FURN_SMALL = new Set([5, 6, 14, 18, 19, 20, 21, 22, 23, 24]), TOP_SC = 0.55;
+const FURN_TOP = { 0: [0.62, 0.25], 1: [1.92, -0.6], 2: [0.82, -0.3], 3: [0.5, 0.05], 4: [0.8, 0], 8: [1.02, -0.45], 12: [2.02, -0.6] }; // 위에 올릴 수 있는 가구: [높이, 앞뒤 위치]
+const LAYER_NM = { g: '바닥', c: '가구', u: '위' };
+function topPos(id, cell, base) { const [x, z] = roomCellPos(id, cell), [h, dz] = FURN_TOP[base.t], a = ((base.r | 0) % 4) * Math.PI / 2; return [x + Math.sin(a) * dz, 0.1 + h, z + Math.cos(a) * dz]; }
+function placeSlot(cell, t) { // 이 칸에 놓을 층 (못 놓으면 이유)
+  const inn = S.plots[home.id]?.in || {}; if (!cell) return { why: '🙅 빈 칸을 바라봐요' };
+  if (DOOR_CELLS.has(cell)) return { why: '🚪 문 앞 길은 비워 둬요' };
+  if (FURN_RUG.has(t)) return inn.g?.[cell] ? { why: '🟫 여기에는 벌써 러그가 깔려 있어요' } : { L: 'g' };
+  const base = inn.c?.[cell];
+  if (FURN_SMALL.has(t) && base && FURN_TOP[base.t] != null) return inn.u?.[cell] ? { why: '🙅 그 위에는 벌써 장식이 있어요' } : { L: 'u' };
+  if (base) return { why: FURN_SMALL.has(t) ? `🙅 ${FURN[base.t].name} 위에는 올릴 수 없어요 (탁자·책장·침대·소파·피아노·옷장 위에 올려요)` : '🙅 여기에는 가구가 있어요. 빈 칸을 바라봐요' };
+  return { L: 'c' };
+}
 // 🖼️ 벽화 액자 자리 4곳 (방 가운데 기준, 벽 안쪽 면): 0 뒤 벽 · 1 왼쪽 벽 · 2 오른쪽 벽 · 3 앞 벽 오른쪽
 const WALL_SLOTS = [
   { name: '뒤 벽 가운데', x: 0, z: -HOME_IN.d / 2 + 0.2, ry: 0 },
@@ -13513,9 +13609,11 @@ function buildRoom(id) { // 지금 들어가 있는 집 안만 그려요
   box(g, 1.8, 0.02, 1.0, 0xE2584A, cx, 0.115, cz + D / 2 - 0.9, o);                                   // 현관 매트
   const mine = pl.o === backend?.uid;
   signPlane(g, [mine ? '⭐ 우리 집' : `🏡 친구 집`], 2.4, 0.5, cx, H - 0.5, cz - D / 2 + 0.2, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = 0;
-  for (const [cell, d] of Object.entries(inn.c || {})) {
+  for (const L of ['g', 'c', 'u']) for (const [cell, d] of Object.entries(inn[L] || {})) {
     if (!/^[0-5]_[0-4]$/.test(cell)) continue;
-    const [x, z] = roomCellPos(id, cell), it = new THREE.Group(); it.position.set(x, 0.1, z); it.rotation.y = ((d.r | 0) % 4) * Math.PI / 2;
+    const base = inn.c?.[cell]; if (L === 'u' && (!base || FURN_TOP[base.t] == null)) continue;
+    const [x, z] = roomCellPos(id, cell), it = new THREE.Group(); it.position.set(x, L === 'g' ? 0.1 - 0.06 : 0.1, z); it.rotation.y = ((d.r | 0) % 4) * Math.PI / 2;
+    if (L === 'u') { it.position.set(...topPos(id, cell, base)); it.scale.setScalar(TOP_SC); }
     buildFurn(clamp(d.t | 0, 0, FURN.length - 1), it); g.add(it);
   }
   for (const [slot, mi] of Object.entries(inn.p || {})) { // 🖼️ 벽에 건 벽화 액자
@@ -13607,7 +13705,7 @@ function openHomeDecor() {
       const b = el2('button', 'btn lp-btn', '사서 놓기'); b.disabled = (bag.shell || 0) < f.price; b.onclick = () => homeEditStart(t, true); card.append(b); grid.append(card);
     });
     box.append(grid);
-    box.append(el2('p', 'hint', `놓은 가구 ${Object.keys(inn.c || {}).length} / ${HOME_IN.cols * HOME_IN.rows - DOOR_CELLS.size}칸`));
+    box.append(el2('p', 'hint', `놓은 가구 ${Object.keys(inn.c || {}).length} / ${HOME_IN.cols * HOME_IN.rows - DOOR_CELLS.size}칸 · 🟫 러그 ${Object.keys(inn.g || {}).length} · 🪴 위에 올린 장식 ${Object.keys(inn.u || {}).length}`), el2('p', 'hint', '🟫 러그는 가구 밑에 깔 수 있어요 · 🪴 화분·인형·트로피·쿠션·바구니는 탁자·책장·침대·소파·피아노·옷장을 바라보고 놓으면 그 위에 올라가요'));
   });
 }
 function homeEditStart(t, buy) { closeLife(); home.edit = { t, r: 0, buy }; renderHomeBar(); }
@@ -13621,22 +13719,23 @@ function frontCell() { // 내 앞 칸
 function cellFree(cell) { return cell && !DOOR_CELLS.has(cell) && !S.plots[home.id]?.in?.c?.[cell]; }
 async function homePlace() {
   const e = home.edit, id = home.id; if (!e || !id) return;
-  const cell = frontCell();
-  if (!cellFree(cell)) { toast(cell && DOOR_CELLS.has(cell) ? '🚪 문 앞 길은 비워 둬요' : '🙅 여기에는 놓을 수 없어요. 빈 칸을 바라봐요', 'warn'); return; }
+  const cell = frontCell(), slot = placeSlot(cell, e.t);
+  if (!slot.L) { toast(slot.why, 'warn'); return; }
   const f = FURN[e.t];
   if (e.buy && (bag.shell || 0) < f.price) { toast(`🐚 조개돈이 ${f.price - (bag.shell || 0)} 모자라요`, 'warn'); return; }
   if (!e.buy && !(bag.fur[e.t] > 0)) { homeEditStop(); return; }
-  const res = await backend.homeSet(id, { [`c/${cell}`]: { t: e.t, r: e.r } });
+  const res = await backend.homeSet(id, { [`${slot.L}/${cell}`]: { t: e.t, r: e.r } });
   if (!res.ok) { if (res.reason !== 'offline') toast('🚫 놓지 못했어요. 한 번 더 해 봐요', 'warn'); return; }
   if (e.buy) bag.shell -= f.price; else bag.fur[e.t]--;
   saveBag(); playSfx('build');
   const [x, z] = roomCellPos(id, cell); burst(new V3(x, 1, z), [0xFFD23C, 0xFFFFFF, 0x9BE36B], 20, 3, 2);
-  toast(`${f.icon} ${josa(f.name, '을', '를')} 놓았어요!`, 'success');
+  toast(`${f.icon} ${josa(f.name, '을', '를')} ${slot.L === 'u' ? `${FURN[S.plots[id]?.in?.c?.[cell]?.t | 0]?.name} 위에 올렸어요!` : slot.L === 'g' ? '바닥에 깔았어요!' : '놓았어요!'}`, 'success');
   homeEditStop();
 }
+const topLayer = (inn, cell) => ['u', 'c', 'g'].find(L => inn?.[L]?.[cell]) || ''; // 맨 위부터 치워요
 async function homeRemove(cell) {
-  const id = home.id, d = S.plots[id]?.in?.c?.[cell]; if (!d) return;
-  const res = await backend.homeSet(id, { [`c/${cell}`]: null });
+  const id = home.id, inn = S.plots[id]?.in, L = topLayer(inn, cell), d = inn?.[L]?.[cell]; if (!d) return;
+  const res = await backend.homeSet(id, { [`${L}/${cell}`]: null });
   if (res.ok) { bag.fur[d.t] = (bag.fur[d.t] || 0) + 1; saveBag(); playSfx('pick'); toast(`📦 ${FURN[d.t].icon} ${FURN[d.t].name}을(를) 내 가구 상자에 넣었어요`, 'info'); }
 }
 function updateHome(dt) {
@@ -13656,19 +13755,20 @@ function updateHome(dt) {
     const [cx, cz] = inRoomCenter(home.id); home.exitI.pos.set(cx, 1, cz + HOME_IN.d / 2 - 0.8);
     // 놓은 가구 치우기 (주인만)
     let best = null, bd2 = 1.7;
-    if (pl.o === backend.uid && !home.edit) for (const cell of Object.keys(pl.in?.c || {})) { const [x, z] = roomCellPos(home.id, cell), d = Math.hypot(p.x - x, p.z - z); if (d < bd2) { bd2 = d; best = cell; } }
+    if (pl.o === backend.uid && !home.edit) for (const cell of new Set([...Object.keys(pl.in?.c || {}), ...Object.keys(pl.in?.g || {}), ...Object.keys(pl.in?.u || {})])) { const [x, z] = roomCellPos(home.id, cell), d = Math.hypot(p.x - x, p.z - z); if (d < bd2) { bd2 = d; best = cell; } }
     home.inCell = best; if (best) { const [x, z] = roomCellPos(home.id, best); home.inItem.pos.set(x, 1, z); } else home.inItem.pos.set(0, -99, 0);
   } else { home.exitI.pos.set(0, -99, 0); home.inItem.pos.set(0, -99, 0); }
   // 미리보기 가구
   if (home.edit && home.group) {
-    const cell = frontCell(), key = `${home.edit.t}|${home.edit.r}|${cell}|${cellFree(cell)}`;
+    const cell = frontCell(), slot = placeSlot(cell, home.edit.t), key = `${home.edit.t}|${home.edit.r}|${cell}|${slot.L || ''}|${home.key}`;
     if (key !== home.ghostKey) {
       home.ghostKey = key; if (home.ghost) home.ghost.parent?.remove(home.ghost);
       home.ghost = null;
       if (cell) {
         const g = new THREE.Group(), [x, z] = roomCellPos(home.id, cell); g.position.set(x, 0.1, z); g.rotation.y = home.edit.r * Math.PI / 2;
+        if (slot.L === 'u') { g.position.set(...topPos(home.id, cell, S.plots[home.id].in.c[cell])); g.scale.setScalar(TOP_SC); }
         buildFurn(home.edit.t, g);
-        const ok = cellFree(cell), mat = new THREE.MeshBasicMaterial({ color: ok ? 0x9BE36B : 0xE2584A, transparent: true, opacity: 0.45, depthWrite: false });
+        const ok = !!slot.L, mat = new THREE.MeshBasicMaterial({ color: ok ? 0x9BE36B : 0xE2584A, transparent: true, opacity: 0.45, depthWrite: false });
         g.traverse(o => { if (o.isMesh) o.material = mat; });
         const pad = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), mat); pad.rotation.x = -Math.PI / 2; pad.position.y = 0.03; g.add(pad);
         scene.add(g); home.ghost = g;
@@ -13680,7 +13780,7 @@ function updateHome(dt) {
 function initHomeUI() {
   home.doorI = addInteract({ pos: new V3(0, -99, 0), r: 2.2, text: () => { const pl = S.plots[home.doorId]; if (!pl) return null; return pl.o === backend?.uid ? ['우리 집 들어가기 🚪', '집 안을 꾸밀 수 있어요'] : ['친구 집 놀러 가기 🏠', `🏡 친구 집 · 구경만 해요`]; }, run: () => goHome(home.doorId, true) });
   home.exitI = addInteract({ pos: new V3(0, -99, 0), r: 1.8, text: () => home.id ? ['밖으로 나가기 🚪', '마당으로'] : null, run: () => goHome(home.id, false) });
-  home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => home.inCell ? ['가구 치우기 📦', `${FURN[S.plots[home.id]?.in?.c?.[home.inCell]?.t | 0]?.name} → 내 가구 상자`] : null, run: () => homeRemove(home.inCell) });
+  home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => { if (!home.inCell) return null; const inn = S.plots[home.id]?.in, L = topLayer(inn, home.inCell); return L ? ['가구 치우기 📦', `${FURN[inn[L][home.inCell].t | 0]?.name}${L === 'u' ? ' (위)' : L === 'g' ? ' (바닥)' : ''} → 내 가구 상자`] : null; }, run: () => homeRemove(home.inCell) });
   $('hbEdit').onclick = openHomeDecor;
   $('hbHouse').onclick = () => openHouse(home.id);
   $('hbPlace').onclick = homePlace;
@@ -14927,6 +15027,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017e', d: '10월 17일', items: ['💬 채팅! 💬 버튼(또는 Enter)을 누르면 위에 입력창이 나와요 · 말은 머리 위 말풍선으로 보이고 1분 뒤 사라져요 · 고운 말만!', '🛋️ 집 꾸미기: 러그는 가구 밑에 깔고, 화분·인형·트로피·쿠션은 탁자·책장·침대 위에 올릴 수 있어요'] },
   { id: '1017d', d: '10월 17일', items: ['⭐ 능력치 레벨이 새로 시작해요! 이제 모은 점수가 계속 쌓여 레벨이 올라요 (최고 Lv12 · 한 달쯤 꾸준히 하면 만렙)', '⚔️ Lv3·6·9·12마다 성 공방전 역할이 한 단계씩 강해져요 (최대 4단계)'] },
   { id: '1017c', d: '10월 17일', items: ['📚🎉 독서 축제! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요', '❓ 📊 내 능력치 → "점수 얻는 방법"에서 과목별로 점수 얻는 곳을 볼 수 있어요'] },
   { id: '1017b', d: '10월 17일', items: ['🧮 수학력·🏛️ 사회력 점수가 더 많이 올라요 (광산 +4 · 도형 +3 · 균형 다리 +10 · 시대 퀴즈 +4 · 박물관 +5/+8/+12) · 📚 독서: 책 한 권마다 완독 보너스 +10, 그림책·만화·그림 많은 책 배율 올림'] },
