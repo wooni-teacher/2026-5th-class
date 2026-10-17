@@ -322,6 +322,7 @@
     background: var(--ink); color: #fff; border-radius: 16px 16px 0 0;
   }
   .admin-note { margin: 10px 0 4px; font-size: 15px; text-align: center; opacity: .75; }
+  .stat-day { margin: 6px 0 0; font-weight: 800; color: #6A4A1A; }
   .stat-row { margin: 10px 0; padding: 10px 12px; background: #fff; border: 1px solid var(--line, #E0D3BE); border-radius: 12px; } .stat-head { display: flex; justify-content: space-between; font-size: 18px; } .stat-lv { font-weight: 800; color: #2F5E9E; } .stat-row .hint { margin: 4px 0 0; }
   .modal.study { width: min(1100px, 96vw); height: 92vh; max-height: 92vh; display: flex; flex-direction: column; padding: 14px; }
   .study-head a.btn { text-decoration: none; color: inherit; }
@@ -9963,7 +9964,7 @@ function openMole() { // 🔨 두더지 잡기 (1분)
         g.holes.fill(null); const n = ri(2, 3), spots = shuf([...Array(9).keys()]).slice(0, n), vals = shuf([g.q.ans, ...shuf(g.q.bad).slice(0, n - 1)]); spots.forEach((p, i) => { g.holes[p] = vals[i]; }); }
       draw();
       if (g.left <= 0) { clearInterval(plc.moleT); g.holes.fill(null); draw();
-        const give = giveShellCapped(g.score * 2); if (g.st.eng) addStat('eng', Math.ceil(g.st.eng / 2)); if (g.st.math) addStat('math', Math.ceil(g.st.math / 2));
+        const give = giveShellCapped(g.score * 2); if (g.st.eng) addStat('eng', Math.ceil(g.st.eng / 2)); if (g.st.math) addStat('math', g.st.math); /* 1017b 수학은 그대로(영어는 절반) */
         fb.textContent = `🎉 끝! ${g.score}마리 잡았어요${give ? ` · 🐚 +${give}` : ''}`; playSfx('fanfare');
         const again = el2('button', 'btn lp-btn', '🔨 한 번 더'); again.onclick = openMole; box.append(el2('div', 'row-center', null)); box.lastChild.append(again); }
     }, 500);
@@ -14101,7 +14102,7 @@ async function digMine() {
   const res = await backend.mathOre(m.id);
   mv.busy = false;
   if (!res.ok && res.reason !== 'offline') { say('⚠️ 저장되지 않았어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요'); return; }
-  bag.ore[m.id] = (bag.ore[m.id] || 0) + 1; saveBag(); updateHUD(null); earnMat('광산 문제 성공'); addStat('math', 2); // 🧮 수학력
+  bag.ore[m.id] = (bag.ore[m.id] || 0) + 1; saveBag(); updateHUD(null); earnMat('광산 문제 성공'); addStat('math', 4); // 🧮 수학력
   fb.textContent = `⛏️ ${m.frac ? mv.expr.map(t => t.k === 'n' ? frText(t.v) : t.v).join(' ') : exprText(mv.expr)} = ${frText(p.target)} 정답! ${m.oreIcon} ${m.ore} +1`; fb.className = 'qz-fb good';
   playSfx('pick'); playAct(player.avatar, 'cheer');
   burst(new V3(m.x, 2.5, MV.z0 + 3), [m.color, 0xFFFFFF, C.gold], 40, 5, 2);
@@ -14194,7 +14195,7 @@ function mathQuiz(title, Q, onRight, extra) { // 4지선다 창 (맞히면 onRig
     box.append(el2('p', 'lp-big', Q.q));
     const fb = el2('p', 'hint', `💡 ${Q.tip}`), grid = el2('div', 'mx-opts'); let done = false;
     for (const o of Q.opts) { const b = el2('button', 'btn mx-opt', `${o}${Q.unit ? ' ' + Q.unit : ''}`);
-      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); addStat('math', 1); onRight(); } else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = `🤔 다시 생각해 봐요 · 💡 ${Q.tip}`; } };
+      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); addStat('math', 3); onRight(); } else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = `🤔 다시 생각해 봐요 · 💡 ${Q.tip}`; } };
       grid.append(b); }
     box.append(grid, fb);
   });
@@ -14292,7 +14293,7 @@ function buildBridgePlanks() { // 🪵 내 화면의 다리 판자 (부딪혀서
 }
 function balanceTreasure() {
   if (bag.balD === dayNum()) { toast('🏆 오늘 보물은 이미 받았어요. 내일 또 와요!', 'info'); return; }
-  bag.balD = dayNum(); const g = GEMS[ri(0, 3)]; bag.gem[g.k] = (bag.gem[g.k] || 0) + 1; earnShell(30); addStat('math', 3);
+  bag.balD = dayNum(); const g = GEMS[ri(0, 3)]; bag.gem[g.k] = (bag.gem[g.k] || 0) + 1; earnShell(30); addStat('math', 10);
   let extra = ''; if (!bag.balScale) { bag.balScale = 1; bag.fur[27] = (bag.fur[27] || 0) + 1; extra = ' · ⚖️ 황금 저울(가구)'; }
   saveBag(); const p = mv.brChest.position; burst(new V3(p.x, p.y + 1, p.z), RAINBOW, 70, 6, 3); playSfx('fanfare');
   showBanner('🏆 균형의 탑 보물!', `🐚 +30 · ${g.icon} ${g.n} +1 · 🧮 수학력 +3${extra}`, 5000);
@@ -14472,9 +14473,10 @@ const ROOMS = {
   etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
-const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.5, '그림과 글이 반반'], ['💬', '만화책', 0.3, '말풍선 만화'], ['🧸', '그림책', 0.25, '그림이 대부분']]; // 📚 독서력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
-const READ_DAY_MAX = 2000; // 하루에 독서 기록으로 오르는 독서력 최대 (잘못 적은 큰 숫자만 막아요)
-const readPts = (p, k) => Math.max(1, Math.round(Math.min(999, Math.max(0, p | 0)) * (READ_KINDS[k]?.[2] ?? 0)));
+const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.7, '그림과 글이 반반'], ['💬', '만화책', 0.4, '말풍선 만화'], ['🧸', '그림책', 0.5, '그림이 대부분']]; // 📚 독서력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
+const READ_DAY_MAX = 2000; // (독서 기록 자체 제한 · 실제로는 능력치 하루 상한 STAT_DAY_MAX가 먼저 걸려요)
+const READ_BONUS = 10; // 📚 1017b 책 한 권 다 읽으면 완독 보너스
+const readPts = (p, k) => READ_BONUS + Math.max(1, Math.round(Math.min(999, Math.max(0, p | 0)) * (READ_KINDS[k]?.[2] ?? 0)));
 const READ_FEELS = ['재미있었어요', '감동적이었어요', '새로 알게 됐어요', '다음 권도 읽고 싶어요', '친구에게 추천해요'];
 const inRoom = (x, z) => Object.values(ROOMS).some(r => Math.abs(x - r.cx) <= r.w / 2 - 0.5 && Math.abs(z - r.cz) <= r.d / 2 - 0.5);
 const bldRegion = () => joined && player.pos.x > 1410 && player.pos.x < 1610;
@@ -14705,7 +14707,7 @@ function openReadLog() {
   const pick = { g: -1, s: 0, f: -1, k: -1, p: 0 };
   openLife('📒 독서 기록장', (box) => {
     box.textContent = '';
-    box.append(el2('p', 'up-win', '📌 책을 다 읽고 선생님께 확인받은 다음에 기록해요'));
+    box.append(el2('p', 'up-win', '📌 책을 다 읽고 선생님께 확인받은 다음에 기록해요')); if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중 (10월 30일까지)! 독서력 하루 상한이 없어요 · 책 한 권마다 완독 보너스 +10`));
     box.append(el2('p', 'hint', `읽은 책을 기록하면 반 전체 독서 나무가 자라요. 책 제목은 이 기기의 내 기록장에만 남아요. ${bag.readDay === dayNum() ? '🎁 오늘 보상은 받았어요' : '🎁 오늘 처음 기록하면 🐚 +10'}`));
     box.append(el2('h3', 'lp-sec', '1. 책 제목 (내 기록장에만, 선택)'));
     const ti = el2('input', 'tinput', null); ti.id = 'readTitle'; ti.maxLength = 30; ti.placeholder = '예: 어린 왕자'; ti.autocomplete = 'off'; ti.value = pick.t || ''; ti.oninput = () => { pick.t = ti.value; }; box.append(ti);
@@ -14717,7 +14719,7 @@ function openReadLog() {
     READ_KINDS.forEach(([ic, nm, mul, d], i) => { const b = el2('button', 'btn', `${ic} ${nm}`); b.title = `${d} · ×${mul}`; b.style.background = pick.k === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.k === i)); b.onclick = () => { pick.k = i; refillLife(); }; kd.append(b); });
     box.append(kd);
     const pr = el2('div', 'row-center wrap'), pin = el2('input', 'tinput', null); pin.type = 'number'; pin.min = 1; pin.max = 999; pin.inputMode = 'numeric'; pin.placeholder = '쪽수'; pin.style.width = '7em'; pin.value = pick.p || ''; pin.setAttribute('aria-label', '책 쪽수');
-    const prev = el2('b', 'read-pts', ''); const upd = () => { prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 독서력 +${readPts(pick.p, pick.k)}` : '📚 책 모양과 쪽수를 골라요'; go.disabled = !(pick.g >= 0 && pick.s && pick.f >= 0 && pick.k >= 0 && pick.p > 0) || bld.readBusy; };
+    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 독서력 +${Math.min(readPts(pick.p, pick.k), capL)}${readPts(pick.p, pick.k) > capL ? ` (오늘 남은 ${capL}점까지)` : ''}${readFestOn() ? ' · 🎉 독서 축제: 상한 없음' : ''}` : '📚 책 모양과 쪽수를 골라요'; go.disabled = !(pick.g >= 0 && pick.s && pick.f >= 0 && pick.k >= 0 && pick.p > 0) || bld.readBusy; };
     pin.oninput = () => { pick.p = Math.min(999, Math.max(0, parseInt(pin.value, 10) || 0)); upd(); };
     pr.append(pin, el2('span', 'hint', '쪽'));
     for (const n of [30, 50, 100, 150, 200, 300]) { const b = el2('button', 'btn', `${n}`); b.style.background = pick.p === n ? '#FFF3C4' : '#fff'; b.onclick = () => { pick.p = n; refillLife(); }; pr.append(b); }
@@ -14733,10 +14735,10 @@ function openReadLog() {
     go.onclick = async () => {
       bld.readBusy = true; refillLife();
       const res = await backend.readLog(pick.g); bld.readBusy = false; let gain = 0;
-      if (res.ok) { earnMat('독서 기록'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; if (gain) addStat('read', gain); }
+      if (res.ok) { earnMat('독서 기록'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
       if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
       bag.reads.unshift({ t: (pick.t || '').trim().slice(0, 30), g: pick.g, s: pick.s, f: pick.f, k: pick.k, p: pick.p, at: Date.now() }); bag.reads = bag.reads.slice(0, 60);
-      let msg = `📒 기록했어요! ${gain ? `📚 독서력 +${gain}` : '오늘 독서력은 가득 찼어요'} · 독서 나무가 자라요`;
+      let msg = `📒 기록했어요! ${gain > 0 ? `📚 독서력 +${gain}` : '오늘 독서력은 가득 찼어요'} · 독서 나무가 자라요`;
       if (bag.readDay !== dayNum()) { bag.readDay = dayNum(); earnShell(10); msg += ' · 🎁 🐚 +10'; }
       saveBag(); playSfx('coin'); toast(msg, 'success');
       pick.g = -1; pick.s = 0; pick.f = -1; pick.t = ''; pick.k = -1; pick.p = 0; refillLife();
@@ -14921,6 +14923,9 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017c', d: '10월 17일', items: ['📚🎉 독서 축제! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요', '❓ 📊 내 능력치 → "점수 얻는 방법"에서 과목별로 점수 얻는 곳을 볼 수 있어요'] },
+  { id: '1017b', d: '10월 17일', items: ['🧮 수학력·🏛️ 사회력 점수가 더 많이 올라요 (광산 +4 · 도형 +3 · 균형 다리 +10 · 시대 퀴즈 +4 · 박물관 +5/+8/+12) · 📚 독서: 책 한 권마다 완독 보너스 +10, 그림책·만화·그림 많은 책 배율 올림'] },
+  { id: '1017a', d: '10월 17일', items: ['📅 능력치마다 하루 100점까지 (주간 랭킹 점수도 같이) · 📊 내 능력치에서 오늘 모은 점수 확인'] },
   { id: '1016d', d: '10월 16일', items: ['🎮 펫 배틀: 맞는 순간에만 흔들려요 (계속 들썩이던 문제 고침) · 체력 막대가 피해만큼 정확히 줄고, 줄어든 만큼 빨갛게 잠깐 보여요', '📚 독서력 새 계산: 쪽수 × 책 모양 (줄글책 ×1 · 그림이 많은 책 ×½ · 만화책 ×0.3 · 그림책 ×¼) — 줄글책 150쪽이면 +150'] },
   { id: '1016c', d: '10월 16일', items: ['🎮 펫 배틀이 완전한 3D로! 툰 느낌 3D 펫 30마리 (날갯짓·꼬리·다리 움직임) · 3D 기술 효과 · 맞으면 흔들리고 번쩍 · 화면 흔들림 · 배틀 중에는 마을 그리기를 쉬어서 가벼워요'] },
   { id: '1016b', d: '10월 16일', items: ['🐾 펫 배틀 화면이 전체 화면으로! 하늘·언덕·발판 배경 · 펫이 숨 쉬듯 살랑살랑', '🎨 펫 30마리를 큰 눈의 귀여운 그림으로 새로 그렸어요 (속성 장식 · 귀한 펫은 반짝)', '✨ 기술 효과: 🔥 불꽃 · 💧 물줄기 · 🍃 나뭇잎 · ⚡ 번개 · 🌀 회오리 · 🪨 바위 · 💥 몸통박치기 — 맞으면 흔들리고 번쩍, 피해 숫자 · 급소!'] },
@@ -17033,7 +17038,7 @@ function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이�
    ===================================================================== */
 const MUS_EV = {"pre":[[-70000000,"70만 년 전","구석기 시대가 시작되다"],[-800000,"BC 8000년경","신석기 시대가 시작되다"],[-233300,"BC 2333년","단군이 고조선을 세우다"],[-200000,"BC 2000년경","청동기 시대가 시작되다"],[-19500,"BC 2세기 초","위만이 고조선의 왕이 되다"],[-5700,"BC 57년","박혁거세가 신라를 세우다"],[-3700,"BC 37년","주몽이 고구려를 세우다"],[-1800,"BC 18년","온조가 백제를 세우다"],[4200,"42년","김수로가 금관가야를 세우다"],[19400,"194년","고국천왕이 진대법을 실시하다"],[31300,"313년","고구려가 낙랑군을 한반도에서 내쫓다"],[37100,"371년","근초고왕이 평양성을 공격하다"],[40000,"400년","광개토대왕이 신라를 도와 왜를 물리치다"],[47500,"475년","장수왕이 한강 유역을 손에 넣다"],[51200,"512년","이사부가 우산국을 정벌하다"],[52500,"525년","무령왕릉을 만들다"],[53200,"532년","금관가야가 멸망하다"],[55300,"553년","신라가 한강 유역을 차지하다"],[56200,"562년","대가야가 멸망하다"],[61200,"612년","을지문덕이 수나라군을 크게 무찌르다 (살수 대첩)"],[64500,"645년","안시성에서 당나라군을 물리치다"],[64800,"648년","김춘추가 당나라로 가서 군사를 요청하다"],[66000,"660년","백제가 멸망하다"],[66800,"668년","고구려가 멸망하다"]],"ns":[[67600,"676년","신라가 삼국을 통일하다"],[69800,"698년","대조영이 발해를 세우다"],[73200,"732년","발해가 당나라를 공격하다"],[75600,"756년","발해 문왕이 상경성으로 수도를 옮기다"],[77400,"774년","석굴암을 완성하다"],[82200,"822년","김헌창이 반란을 일으키다"],[82800,"828년","장보고가 청해진을 세우다"],[88900,"889년","원종과 애노가 반란을 일으키다"],[90000,"900년","견훤이 후백제를 세우다"],[90100,"901년","궁예가 후고구려를 세우다"],[92600,"926년","발해가 멸망하다"],[93600,"936년","고려가 후삼국을 통일하다"],[95800,"958년","과거 제도를 실시하다"],[98200,"982년","최승로가 「시무 28조」를 올리다"],[99300,"993년","서희가 거란과 협상하여 강동 6주를 얻다"],[101900,"1019년","강감찬이 귀주에서 거란군을 물리치다 (귀주 대첩)"],[110700,"1107년","윤관이 동북 9성을 쌓기 시작하다"],[112600,"1126년","이자겸이 난을 일으키다"],[113500,"1135년","묘청이 난을 일으키다"],[114500,"1145년","김부식이 『삼국사기』를 펴내다"],[117000,"1170년","무신들이 난을 일으키다"],[117600,"1176년","망이와 망소이가 난을 일으키다"],[119600,"1196년","최충헌이 권력을 잡다"],[119800,"1198년","만적이 반란을 계획하다"],[123100,"1231년","몽골이 침략하다 (1차 침입)"],[123200,"1232년","강화도로 수도를 옮기다"],[125100,"1251년","『팔만대장경』의 완성을 기념하다"],[125900,"1259년","고려와 몽골이 화친을 맺다"],[135600,"1356년","정동행성 이문소를 없애다"],[136600,"1366년","신돈이 전민변정도감을 설치하다"],[137600,"1376년","최영이 홍산에서 왜구를 무찌르다"],[138800,"1388년","이성계가 위화도에서 군사를 돌리다"]],"jo":[[139200,"1392년","조선이 세워지다"],[139400,"1394년","한양에 궁궐을 짓고 수도를 옮기다"],[139800,"1398년","1차 왕자의 난이 일어나다"],[141300,"1413년","호패법을 실시하다"],[142000,"1420년","집현전을 설치하다"],[143400,"1434년","자격루를 완성하다"],[144600,"1446년","훈민정음을 반포하다"],[145500,"1455년","세조가 단종을 내쫓다"],[148500,"1485년","성종이 『경국대전』을 시행하다"],[149800,"1498년","무오사화가 일어나다"],[151900,"1519년","기묘사화가 일어나다"],[159200,"1592년","임진왜란이 일어나다"],[160800,"1608년","대동법을 처음 실시하다"],[163600,"1636년","병자호란이 일어나다"],[167800,"1678년","상평통보가 전국에 널리 쓰이다"],[170100,"1701년","붕당 간의 다툼 속에 장희빈이 사약을 받다"],[172500,"1725년","영조가 탕평책을 실시하다"],[178000,"1780년","박지원이 『열하일기』를 쓰다"],[179100,"1791년","금난전권을 없애다"],[179600,"1796년","수원 화성을 완공하다"],[181100,"1811년","홍경래의 난이 일어나다"],[181800,"1818년","정약용이 『목민심서』를 펴내다"],[186200,"1862년","전국적으로 농민 봉기가 일어나다 (임술 농민 봉기)"]],"op":[[186300,"1863년","흥선 대원군이 권력을 잡다"],[186600,"1866년","프랑스 함대가 강화도에 쳐들어오다 (병인양요)"],[187100,"1871년","미국 함대가 강화도에 쳐들어오다 (신미양요)"],[187600,"1876년","강화도 조약을 맺다"],[188200,"1882년","구식 군대가 반란을 일으키다 (임오군란)"],[188308,"1883년 8월","원산 학사가 세워지다"],[188310,"1883년 10월","『한성순보』가 발행되다"],[188400,"1884년","급진 개화파들이 정변을 일으키다 (갑신정변)"],[188700,"1887년","경복궁에 전등을 밝히다"],[189401,"1894년 1월","전라도 고부에서 농민들이 봉기하다"],[189407,"1894년 7월","갑오개혁이 추진되다"],[189409,"1894년 9월","동학 농민군이 다시 봉기하다"],[189508,"1895년 8월","일본 자객들이 왕비 민씨를 죽이다 (을미사변)"],[189602,"1896년 2월","고종이 러시아 공사관으로 피하다 (아관파천)"],[189604,"1896년 4월","『독립신문』이 창간되다"],[189710,"1897년 10월","대한 제국을 선포하다"],[189805,"1898년 5월","명동 성당이 세워지다"],[189909,"1899년 9월","서울-인천 사이 기차 운행을 시작하다"],[190511,"1905년 11월","일본에 외교권을 빼앗기다 (을사늑약)"],[190706,"1907년 6월","만국 평화 회의에 헤이그 특사를 보내다"],[190910,"1909년 10월","안중근이 이토 히로부미를 저격하다"]],"jp":[[191008,"1910년 8월","일제에 나라를 빼앗기다"],[191208,"1912년 8월","토지 조사 사업을 본격적으로 실시하다"],[191801,"1918년 1월","윌슨이 민족 자결주의를 선언하다"],[191903,"1919년 3월","3·1 운동이 일어나다"],[191904,"1919년 4월","대한민국 임시 정부가 세워지다"],[192010,"1920년 10월","청산리에서 일본군을 크게 무찌르다"],[192011,"1920년 11월","산미 증식 계획을 실시하다"],[192308,"1923년 8월","암태도에서 소작 쟁의가 시작되다"],[192505,"1925년 5월","치안 유지법이 발표되다"],[192606,"1926년 6월","6·10 만세 운동이 일어나다"],[192702,"1927년 2월","신간회가 창립되다"],[192911,"1929년 11월","광주 학생 항일 운동이 일어나다"],[193109,"1931년 9월","일본이 만주를 침략하다"],[193201,"1932년 1월","이봉창이 일왕에게 폭탄을 던지다"],[193204,"1932년 4월","윤봉길이 일본 장교들에게 폭탄을 던지다"],[193707,"1937년 7월","일본이 중일 전쟁을 벌이다"],[194111,"1941년 11월","임시 정부가 대한민국 건국 강령을 발표하다"]],"mo":[[194508,"1945년 8월","광복을 맞이하다"],[194509,"1945년 9월","미군정이 들어서다"],[194601,"1946년 1월","신탁 통치 문제로 좌우가 대립하다"],[194603,"1946년 3월","제1차 미소 공동 위원회가 열리다"],[194808,"1948년 8월","대한민국 정부가 수립되다"],[195006,"1950년 6월","6·25 전쟁이 일어나다"],[195009,"1950년 9월","인천 상륙 작전을 실시하다"],[195011,"1950년 11월","중국군이 전쟁에 참여하다"],[195207,"1952년 7월","발췌 개헌을 하다"],[195307,"1953년 7월","휴전 협정을 맺다"],[196003,"1960년 3월","3·15 부정 선거가 일어나다"],[196004,"1960년 4월","4·19 혁명이 일어나다"],[196105,"1961년 5월","5·16 군사 정변이 일어나다"],[196201,"1962년 1월","제1차 경제 개발 5개년 계획이 시작되다"],[196506,"1965년 6월","한일 협정이 체결되다"],[197004,"1970년 4월","새마을 운동을 시작하다"],[197011,"1970년 11월","전태일이 노동자의 권리를 외치다 숨지다"],[197207,"1972년 7월","7·4 남북 공동 성명을 발표하다"],[197210,"1972년 10월","유신 체제가 시작되다"],[197700,"1977년","수출액 100억 달러를 넘어서다"],[197910,"1979년 10월","박정희 대통령이 피살되다 (10·26 사태)"],[197912,"1979년 12월","신군부가 등장하다 (12·12 사태)"],[198706,"1987년 6월","6월 민주 항쟁이 일어나다"],[198809,"1988년 9월","서울 올림픽을 개최하다"],[199109,"1991년 9월","남한과 북한이 동시에 유엔에 가입하다"],[199506,"1995년 6월","지방 자치 제도가 전면적으로 실시되다"],[199612,"1996년 12월","OECD에 가입하다"],[199711,"1997년 11월","외환 위기로 IMF의 구제 금융을 받다"],[200006,"2000년 6월","6·15 남북 공동 선언이 발표되다"],[200205,"2002년 5월","한일 월드컵이 개최되다"],[200503,"2005년 3월","호주제 폐지를 결정하다"],[200710,"2007년 10월","남과 북의 정상이 다시 만나다"]]}; // 전시실: [[정렬 값(연도×100+월), 연도 글, 사건], ...]
 const MUS_ERAS = [['pre', '🏺', '선사~삼국', 0xC9A27A], ['ns', '🏯', '남북국·고려', 0x7FB35A], ['jo', '📜', '조선', 0x4A9AE8], ['op', '🚢', '개항기', 0xF08A24], ['jp', '🕊️', '일제 강점기', 0x8A8AA0], ['mo', '🏙️', '현대', 0xB35AD8]];
-const MUS_LV = [{ n: '쉬움', k: 4, yr: true, st: 2, sh: 5 }, { n: '보통', k: 6, yr: true, st: 3, sh: 8 }, { n: '어려움', k: 6, yr: false, st: 4, sh: 12 }];
+const MUS_LV = [{ n: '쉬움', k: 4, yr: true, st: 5, sh: 5 }, { n: '보통', k: 6, yr: true, st: 8, sh: 8 }, { n: '어려움', k: 6, yr: false, st: 12, sh: 12 }];
 const MUS_SPOT = [500, 12]; // 역사 마을 박물관 (문은 -z 쪽 · 큰길을 봐요)
 bag.mus ||= {};
 const mus = { g: null, labels: {} };
@@ -17140,7 +17145,7 @@ function musCheck() {
   g.ok = g.put.map((c, i) => c === i);
   if (g.ok.every(Boolean)) {
     g.done = true; const L = MUS_LV[g.lv], arr = (bag.mus[g.era] ||= [0, 0, 0]), first = !arr[g.lv]; arr[g.lv]++;
-    const perfect = g.tries === 1; addStat('soc', L.st + (perfect ? 1 : 0)); const sh = giveShellCapped(first ? L.sh * 2 : L.sh); saveBag(); musLabels();
+    const perfect = g.tries === 1; addStat('soc', L.st + (perfect ? 3 : 0)); const sh = giveShellCapped(first ? L.sh * 2 : L.sh); saveBag(); musLabels();
     playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 40, 4, 2);
     toast(`🏛️ 연표 완성!${perfect ? ' 한 번에 맞혔어요!' : ''} 📊 사회력 +${L.st + (perfect ? 1 : 0)}${sh ? ` · 🐚 +${sh}` : ''}${first ? ' · ⭐ 새 별!' : ''}`, 'success');
   } else { const n = g.ok.filter(x => !x).length; g.put = g.put.map((c, i) => g.ok[i] ? c : -1); g.ok = g.ok.map(x => x || null); playSfx('oops'); toast(`🤔 ${n}장이 자리를 잘못 찾았어요. 돌아온 카드를 다시 놓아 봐요`, 'info'); }
@@ -17578,7 +17583,7 @@ async function answerHQ(a) {
   const first = c.wrong.size === 0, fresh = first && !bag.hq?.[c.it.id];
   playSfx('right'); burst(player.pos.clone().setY(2.4), [0xFFD23C, 0xFFFFFF, 0x7FD36A], 18, 3, 2);
   if (fresh) { bag.hq[c.it.id] = 1; saveBag(); backend.histRight(c.it.k); if (o.mode === 'era') earnMat('시대 퀴즈 정답', true); }
-  if (first) addStat('soc', fresh ? 2 : 1); // 🏛️ 사회력
+  if (first) addStat('soc', fresh ? 4 : 2); // 🏛️ 사회력
   o.onRight?.(first, fresh, c.it);
   hq.cur = null; refillLife();
 }
@@ -17885,18 +17890,27 @@ function initHistAdmin() {
    🔤 영어력(영어 마을) · 🏛️ 사회력(역사 퀴즈·나라 창고) · 🧮 수학력(수학 광산) · 📚 독서력(독서 기록장)
    10점마다 1레벨(최대 10) · 3레벨마다 성 공방전 역할이 한 단계 강해져요: 병사←수학 · 대장장이←영어 · 의원←독서 · 책사←사회 */
 const STATS = {
-  eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 (쓰기 문제는 2배)', role: '⚒️ 대장장이 성문 수리 +2씩' },
-  soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 성 공방전 나라 창고 문제', role: '📜 책사 스킬 시간·화공 피해 +' },
-  math: { icon: '🧮', name: '수학력', where: '수학 광산 식 만들기', role: '⚔️ 병사 공격 피해 +1씩' },
+  eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '⚒️ 대장장이 성문 수리 +2씩' },
+  soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '📜 책사 스킬 시간·화공 피해 +' },
+  math: { icon: '🧮', name: '수학력', where: '수학 광산 식 만들기 · 도형 공방 · 균형 다리', role: '⚔️ 병사 공격 피해 +1씩' },
   read: { icon: '📚', name: '독서력', where: '펫 체육관 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '🌿 의원 치료량 +1씩' },
 };
 bag.stat ||= {};
 const statExp = (k) => bag.stat?.[k] || 0;
 const statLv = (k) => Math.min(10, Math.floor(statExp(k) / 10));
 const statTier = (k) => Math.floor(statLv(k) / 3);
+const STAT_DAY_MAX = 100; // 📅 능력치마다 하루에 오를 수 있는 최대 (선생님 요청 · 랭킹 점수도 같이)
+const READ_FEST_FIRST = Date.UTC(2026, 9, 17) / 86400000, READ_FEST_LAST = Date.UTC(2026, 9, 30) / 86400000; // 📚 독서 축제 10/17~10/30 (KST) — 독서력 하루 상한 없음
+const readFestOn = () => dayNum() >= READ_FEST_FIRST && dayNum() <= READ_FEST_LAST;
+const statCap = (k) => (k === 'read' && readFestOn() ? Infinity : STAT_DAY_MAX);
+const statToday = (k) => (bag.statDay?.d === dayNum() ? bag.statDay[k] || 0 : 0);
 function addStat(k, n) {
   if (!STATS[k] || !(n > 0)) return; bag.stat ||= {};
   if (cevOn('study')) n *= 2; // 📚 공부 보너스 이벤트: 능력치 2배
+  if (bag.statDay?.d !== dayNum()) bag.statDay = { d: dayNum() };
+  const left = Math.max(0, statCap(k) - (bag.statDay[k] || 0)); n = Math.min(n, left);
+  if (n <= 0) { if (bag.statDay['t' + k] !== 1) { bag.statDay['t' + k] = 1; saveBag(); toast(`📅 오늘 ${STATS[k].icon} ${STATS[k].name}은(는) ${STAT_DAY_MAX}점을 다 모았어요! 내일 또 올라요 (다른 능력치는 계속 올릴 수 있어요)`, 'info'); } return; }
+  bag.statDay[k] = (bag.statDay[k] || 0) + n; if (bag.statDay[k] >= statCap(k)) setTimeout(() => toast(`📅 오늘 ${STATS[k].icon} ${STATS[k].name} ${STAT_DAY_MAX}점을 꽉 채웠어요! 🎉`, 'success'), 1200);
   if (joined) earnCoins(Math.min(20, Math.round(n))).then(renderCoinChip); // 🪙 공부하면 반 동전도 쌓여요
   rankAdd(k, n); // 🏆 이번 주 점수 (능력치가 최고여도 계속 쌓여요)
   const before = statLv(k); bag.stat[k] = Math.min(100, statExp(k) + n); saveBag();
@@ -17906,13 +17920,36 @@ function addStat(k, n) {
 function openStats() {
   openLife('📊 내 능력치', (box) => {
     box.textContent = ''; { const b = el2('button', 'btn', '🏆 이번 주 능력치 랭킹'); b.style.background = '#FFE066'; b.onclick = openRank; box.append(el2('div', 'row-center', null)); box.lastChild.append(b); }
-    box.append(el2('p', 'hint', '과목 퀴즈를 잘 풀면 능력치가 올라요. 3레벨마다 성 공방전 역할이 한 단계 강해져요. 내 기기에만 저장되고 친구와 비교하지 않아요.'));
+    { const b = el2('button', 'btn', '❓ 점수 얻는 방법'); b.style.background = '#D7F0FF'; b.onclick = openStatGuide; box.lastChild.append(' ', b); }
+    if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요 (D-${READ_FEST_LAST - dayNum()})`));
+    box.append(el2('p', 'hint', `과목 퀴즈를 잘 풀면 능력치가 올라요. 능력치마다 하루 ${STAT_DAY_MAX}점까지 오르고(주간 랭킹 점수도 같아요), 다음 날 0시에 다시 채워요. 3레벨마다 성 공방전 역할이 한 단계 강해져요.`));
     for (const [k, S2] of Object.entries(STATS)) {
       const lv = statLv(k), e = statExp(k), row = el2('div', 'stat-row');
       const head = el2('div', 'stat-head'); head.append(el2('b', '', `${S2.icon} ${S2.name}`), el2('span', 'stat-lv', `Lv ${lv}${lv >= 10 ? ' (최고)' : ''}`));
       const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${lv >= 10 ? 100 : (e % 10) * 10}%`; bar.append(fill);
-      row.append(head, bar, el2('p', 'hint', `올리는 곳: ${S2.where}`), el2('p', 'hint', `⚔️ ${S2.role} · 지금 강화 ${statTier(k)}단계`)); box.append(row);
+      row.append(head, bar, el2('p', 'stat-day', statCap(k) === Infinity ? `📅 오늘 ${statToday(k)}점 · 📚 독서 축제: 상한 없음!` : `📅 오늘 ${statToday(k)} / ${STAT_DAY_MAX}점${statToday(k) >= STAT_DAY_MAX ? ' · 꽉 찼어요!' : ''}`), el2('p', 'hint', `올리는 곳: ${S2.where}`), el2('p', 'hint', `⚔️ ${S2.role} · 지금 강화 ${statTier(k)}단계`)); box.append(row);
     }
+  });
+}
+// ❓ 능력치 점수 얻는 방법 (학생 안내 · 1017c)
+const STAT_GUIDE = {
+  eng: [['🗽 영어 마을 구역 놀이 · 🏋️ 영어 훈련소', '고르기 정답 +1 · 쓰기 정답 +2 · 한 판 통과 +3 (쓰기 1개마다 +1 더)'], ['🧭 영어 미로', '칸 도착 +2 × 단계 · 통과 +3 × 단계 (Level 3이 제일 많아요)'], ['🔨 천막 두더지 (영어 단어)', '잡은 단어 수의 절반']],
+  math: [['⛏️ 수학 광산 식 만들기', '한 문제 +4'], ['🧩 도형 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
+  soc: [['🏯 역사의 길 시대 퀴즈', '처음 보는 문제 한 번에 정답 +4 · 다시 맞히면 +2'], ['🏛️ 역사 박물관 연표 맞추기', '쉬움 +5 · 보통 +8 · 어려움 +12 (한 번에 맞히면 +3 더)']],
+  read: [['📒 펫 체육관 독서 책상', '책을 다 읽고 선생님께 확인받은 뒤 기록해요'], ['📖 줄글책', '쪽수 그대로 (100쪽 = 100점)'], ['🖼️ 그림이 많은 책 · 💬 만화책 · 🧸 그림책', '쪽수 × 0.7 · × 0.4 · × 0.5'], ['🎁 완독 보너스', '책 한 권 기록할 때마다 +10']],
+};
+function openStatGuide() {
+  openLife('❓ 능력치 점수 얻는 방법', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', `능력치마다 하루 ${STAT_DAY_MAX}점까지 올라요. 매일 0시에 다시 채울 수 있고, 주간 랭킹 점수도 똑같이 올라요. 한 과목이 꽉 차면 다른 과목을 공부해 보세요!`));
+    if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 (10월 30일까지): 독서력은 하루 상한 없이 읽은 만큼 올라요!`));
+    for (const [k, S2] of Object.entries(STATS)) {
+      const row = el2('div', 'stat-row'); row.append(el2('div', 'stat-head', null)); row.lastChild.append(el2('b', '', `${S2.icon} ${S2.name}`), el2('span', 'stat-lv', `오늘 ${statToday(k)}${statCap(k) === Infinity ? '점' : ` / ${STAT_DAY_MAX}`}`));
+      for (const [w, pts] of STAT_GUIDE[k] || []) { const r = el2('p', 'hint', ''); r.append(el2('b', '', w), ` — ${pts}`); row.append(r); }
+      box.append(row);
+    }
+    box.append(el2('p', 'hint', '📚 공부 보너스 행사가 열리면 점수가 2배! (하루 상한 안에서)'));
+    const b = el2('button', 'btn', '← 내 능력치로'); b.onclick = openStats; box.append(el2('div', 'row-center', null)); box.lastChild.append(b);
   });
 }
 
