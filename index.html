@@ -13737,7 +13737,7 @@ function buildRoom(id) { // 지금 들어가 있는 집 안만 그려요
     const pic = new THREE.Mesh(new THREE.PlaneGeometry(artP ? 1.5 : 2.0, 1.5), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); pic.position.z = 0.05; fg.add(pic);
   }
   registerSolids(g, 'in:' + id);
-  hpetBuildIn(g, id, inn.pet, pl.o === backend?.uid);
+  hpetBuildIn(g, id, pl.o === backend?.uid ? hpetLocal() : inn.pet, pl.o === backend?.uid); // 🐾 내 집은 내 가방 정보로 바로 그려요 (저장이 늦거나 막혀도 보이게)
   home.id = id; home.key = JSON.stringify(inn);
 }
 async function goHome(id, inside) {
@@ -13950,10 +13950,12 @@ function hpetUpdate(dt) {
     f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8); hpetAnim(f.g, dt, mv);
   }
 }
+function hpetLocal() { const k = hpCur(), p = k && bag.hpet.pets[k]; return p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(bag.hpet.walk ? { w: 1 } : {}) } : null; }
 function hpetSync() { // 내 집 안 펫 모습을 저장 (친구도 봐요)
+  const lk = JSON.stringify(hpetLocal()); if (home.group && home.id && S.plots[home.id]?.o === backend?.uid && hpw.localKey !== lk) home.key = ''; hpw.localKey = lk; // 내 집 안이면 바로 다시 그려요
   const id = myLot(); if (!id || !S.plots[id]) return; const k = hpCur(), p = k && bag.hpet.pets[k];
   const v = p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(bag.hpet.walk ? { w: 1 } : {}) } : null, cur = S.plots[id].in?.pet || null;
-  if (JSON.stringify(v) !== JSON.stringify(cur)) backend.homeSet(id, { pet: v });
+  if (JSON.stringify(v) !== JSON.stringify(cur) && !hpw.saving) { hpw.saving = true; backend.homeSet(id, { pet: v }).then(r => { hpw.saving = false; if (!r?.ok && !hpw.warned) { hpw.warned = true; toast('⚠️ 펫 정보를 저장하지 못해 친구 화면에는 안 보일 수 있어요. 선생님께 database.rules.json을 다시 게시해 달라고 말씀드려요', 'warn'); } }); }
 }
 function hpetGift() { // 🎁 Lv4부터 하루 한 번 집에 오면
   const k = hpCur(); if (!k) return; const p = bag.hpet.pets[k], lv = hpLv(p.a); if (lv < 4 || bag.hpet.gift === dayNum()) return;
@@ -15289,6 +15291,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017p', d: '10월 17일 (밤)', items: ['🏠 우리 집 안 펫과 펫 집이 바로 보이게 고쳤어요'] },
   { id: '1017o', d: '10월 17일 (밤)', items: ['🏠 산책을 그만하면 펫이 집 안에서 기다려요 · 산책하는 동안은 집이 비어요'] },
   { id: '1017m', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 처음부터 마을에서 졸졸 따라와요! (🐾 우리 집 펫 창에서 산책 켜고 끄기)'] },
   { id: '1017l', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 생겼어요! 집 안에서 🐾 우리 집 펫 → 강아지·고양이·토끼·햄스터·병아리·아기 여우 중 하나를 데려와요 (첫 펫 무료)', '💞 간식·쓰다듬기·공놀이·목욕으로 친밀도를 올리면 이름 짓기 → 리본 → 같이 산책 → 매일 선물 → 재주 → 펫 집 → 이름표 표시 → 반짝 털 → 왕관·단짝 칭호'] },
