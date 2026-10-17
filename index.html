@@ -2025,7 +2025,7 @@ function sanitizeState(raw) {
   { const pr = {}; for (const [i, t] of Object.entries(plainObj(mc.promise))) if (ok(/^[0-4]$/.test(i) && strOk(t, 40))) pr[i] = t; if (Object.keys(pr).length) out.meetCfg.promise = pr; }
   if (mc.teams === 3 || mc.teams === 5) out.meetCfg.teams = mc.teams;
   const ec = plainObj(v.econ); if (ec.cap != null && ok(ECON_CAPS.includes(ec.cap))) out.econ.cap = ec.cap; // 하루 가게 예산
-  const fd = v.fund; if (fd && ok(isInt(fd.p, 0, FUND.length) && isInt(fd.n, 0, 99999))) out.fund = { p: fd.p, n: fd.n, r: isInt(fd.r, 0, 9999) ? fd.r : 0 }; // 반 기부
+  const fd = v.fund; if (fd && ok(isInt(fd.p, 0, FUND.length) && isInt(fd.n, 0, 99999))) out.fund = { p: fd.p, n: fd.n, r: isInt(fd.r, 0, 9999) ? fd.r : 0, ...(isInt(fd.q, 0, 3) ? { q: fd.q } : {}) }; // 반 기부
   const hvv = v.hv; // 역사 마을: 재료 수, 상자 시각, 지은 곳, 연날리기 성공 (기기 번호만)
   if (ok(isInt(hvv.picks, 0, 500))) out.hv.picks = hvv.picks;
   for (const [k, t] of Object.entries(plainObj(hvv.crates))) if (ok(isInt(+k, 0, HV_CRATES.length - 1) && Number.isFinite(t))) out.hv.crates[k] = t;
@@ -2196,7 +2196,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async ctfTake(e) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h) return { ok: false }; c.flag ||= {}; c.flag[e] = { h: 'me' }; emit(); return { ok: true }; },
     async ctfDrop(e) { if (st.ctf?.flag?.[e]?.h === 'me') { delete st.ctf.flag[e]; emit(); } return { ok: true }; },
     async ctfScore(e, t) { const c = st.ctf; if (!c?.on || c.flag?.[e]?.h !== 'me') return { ok: false }; delete c.flag[e]; c.score ||= {}; c.score[t] = (c.score[t] || 0) + 1; emit(); return { ok: true }; },
-    async fundRound() { const f = st.fund || { p: 0, n: 0 }; if (f.p < FUND.length) return { ok: false }; st.fund = { p: 0, n: 0, r: (f.r || 0) + 1 }; emit(); return { ok: true }; },
+    async fundRound() { const f = st.fund || { p: 0, n: 0 }; if (f.p < FUND.length) return { ok: false }; st.fund = { p: 0, n: 0, r: (f.r || 0) + 1, q: 3 }; emit(); return { ok: true }; },
     async fundGive(amt) { const f = st.fund || { p: 0, n: 0 }; if (f.p >= FUND.length) return { ok: false }; f.n += amt; if (f.n >= FUND[f.p].goal) { f.n -= FUND[f.p].goal; f.p++; } st.fund = f; emit(); return { ok: true }; },
     async ctfCatch(u) { const c = st.ctf; if (!c?.on || c.jail?.[u] || !c.team?.[u] || c.team[u] === c.team.me) return { ok: false }; c.jail ||= {}; c.jail[u] = { t: Date.now() }; emit(); return { ok: true }; },
     async ctfFree(us) { const c = st.ctf; if (!c?.jail) return { ok: false }; for (const u of us) delete c.jail[u]; emit(); return { ok: true }; },
@@ -2512,12 +2512,12 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async ctfJoin(t) { try { await D.set(R(`state/ctf/team/${uid}`), t); return { ok: true }; } catch (err) { return { ok: false }; } },
     async fundGive(amt) { // 한 번에 500까지 · 목표를 넘으면 다음 시설로 (규칙이 막아요)
       try {
-        const r = await D.runTransaction(R('state/fund'), cur => { const f = cur || { p: 0, n: 0 }; if (f.p >= FUND.length) return; let n = f.n + amt, p = f.p; if (n >= FUND[p].goal) { n -= FUND[p].goal; p++; } return f.r != null ? { p, n, r: f.r } : { p, n }; });
+        const r = await D.runTransaction(R('state/fund'), cur => { const f = cur || { p: 0, n: 0 }; if (f.p >= FUND.length) return; let n = f.n + amt, p = f.p; if (n >= FUND[p].goal) { n -= FUND[p].goal; p++; } return { p, n, ...(f.r != null ? { r: f.r } : {}), ...(f.q != null ? { q: f.q } : {}) }; });
         return { ok: r.committed };
       } catch (err) { return { ok: false }; }
     },
     async fundRound() { // 🔁 다 모은 뒤 다음 회차 (규칙: p 3 → 0, r +1)
-      try { const r = await D.runTransaction(R('state/fund'), cur => { const f = cur || { p: 0, n: 0 }; if (f.p < FUND.length) return; return { p: 0, n: 0, r: (f.r || 0) + 1 }; }); return { ok: r.committed }; } catch (e) { return { ok: false }; }
+      try { const r = await D.runTransaction(R('state/fund'), cur => { const f = cur || { p: 0, n: 0 }; if (f.p < FUND.length) return; return { p: 0, n: 0, r: (f.r || 0) + 1, q: 3 }; }); return { ok: r.committed }; } catch (e) { return { ok: false }; }
     },
     async ctfCatch(u) { try { await D.set(R(`state/ctf/jail/${u}`), { t: D.serverTimestamp() }); return { ok: true }; } catch (err) { return { ok: false }; } }, // 이미 갇혔으면 규칙이 막아요
     async ctfFree(us) { try { await D.update(R('state/ctf/jail'), Object.fromEntries(us.map(u => [u, null]))); return { ok: true }; } catch (err) { return { ok: false }; } },
@@ -13471,7 +13471,7 @@ const FUND = [
   { id: 'egg', icon: '🥚', name: '희귀 펫 알', goal: 5000, desc: '펫 센터에 없는 희귀 펫이 알에서 태어나요' },
 ];
 const FUND_BOX = [40, -20];
-const fundNow = () => ({ p: S.fund?.p || 0, n: S.fund?.n || 0, r: S.fund?.r || 0 });
+const fundNow = () => ({ p: S.fund?.p || 0, n: S.fund?.n || 0, r: S.fund?.r || 0, q: S.fund?.q ?? 3 }); // q = 지난 회차에 열린 선물 수
 const fundV = { built: [], signs: [], wheel: null };
 function buildFundWorld() {
   const o = { solid: false }, g = new THREE.Group(); g.name = 'FundBox'; scene.add(g);
@@ -13528,8 +13528,8 @@ function renderFund(first) {
 }
 let rendFundP = null;
 function fundOwed() { // 아직 안 받은 선물 [회차, 몇 번째]
-  if (isTeacher) return 0; const { p, r } = fundNow(), got = bag.fundGot || {}, out = [];
-  if (r > 0) for (let i = got[r - 1] | 0; i < FUND.length; i++) out.push([r - 1, i]);
+  if (isTeacher) return 0; const { p, r, q } = fundNow(), got = bag.fundGot || {}, out = [];
+  if (r > 0) for (let i = got[r - 1] | 0; i < Math.min(q, FUND.length); i++) out.push([r - 1, i]); // 지난 회차는 열린 만큼만
   for (let i = got[r] | 0; i < p; i++) out.push([r, i]);
   return out.length ? out : 0;
 }
@@ -13611,7 +13611,8 @@ function initEconUI() {
   $('tpCap').onchange = (e) => adminDo({ 'econ/cap': +e.target.value }, +e.target.value ? `🏪 하루 가게 예산을 🐚${e.target.value}로 바꿨어요` : '🏪 가게 예산 한도를 없앴어요');
   $('tpFundReset').onclick = async () => {
     if (!(await confirmAction({ title: '🐷 반 기부를 처음부터 할까요?', body: '모인 조개돈이 0이 되고 새 회차로 시작해요. (아직 안 받은 지난 회차 선물은 받을 수 있어요)', typeWord: '초기화', okText: '처음부터' }))) return;
-    adminDo({ fund: { p: 0, n: 0, r: (S.fund?.r || 0) + 1 } }, '🐷 반 기부를 처음부터 다시 시작해요 (새 회차)');
+    const ok = await adminDo({ fund: { p: 0, n: 0, r: (S.fund?.r || 0) + 1, q: Math.min(3, S.fund?.p || 0) } }, '🐷 반 기부를 처음부터 다시 시작해요 (새 회차)');
+    if (!ok) { const ok2 = await adminDo({ fund: null }, '🐷 반 기부를 처음부터 다시 시작해요'); if (ok2) toast('⚠️ 데이터베이스 규칙이 예전 것이라 간단히 초기화했어요. database.rules.json을 다시 게시해 주세요', 'warn'); }
   };
   $('lpWardrobe')?.addEventListener('click', openWardrobe);
 }
@@ -13865,20 +13866,20 @@ const HPET_LV = [0, 10, 25, 45, 70, 100, 140, 190, 250, 320, 400]; // ❤️ 친
 const HPET_CARE = { snack: { icon: '🍪', n: '간식 주기', pt: 3, max: 3, sh: 10 }, pat: { icon: '🤚', n: '쓰다듬기', pt: 1, max: 5 }, play: { icon: '🎾', n: '공놀이', pt: 4, max: 3 }, bath: { icon: '🛁', n: '목욕', pt: 5, max: 1 } };
 const HPET_ACC = [{ n: '없음', icon: '·', lv: 0 }, { n: '리본', icon: '🎀', lv: 2 }, { n: '모자', icon: '🎩', lv: 5 }, { n: '왕관', icon: '👑', lv: 10 }];
 const HPET_REWARD = [ // 친밀도 단계마다 생기는 것
-  [1, '🏷️ 이름 지어 주기'], [2, '🎀 리본 달기'], [3, '🚶 마을에서 같이 산책 (친구에게도 보여요)'], [4, '🎁 매일 집에 오면 펫이 조개를 물어와요'],
+  [1, '🏷️ 이름 지어 주기'], [2, '🎀 리본 달기'], [3, '💗 산책할 때 머리 위로 하트가 뿅뿅'], [4, '🎁 매일 집에 오면 펫이 조개를 물어와요'],
   [5, '🎩 모자 · 🐾 재주 부리기'], [6, '🏠 집 안에 펫 집이 생겨요'], [7, '🏷️ 내 이름표 옆에 펫 표시'], [8, '🎁 물어오는 선물이 더 커져요'],
   [9, '✨ 반짝반짝 털'], [10, '👑 왕관 · 💞 단짝 칭호'],
 ];
 const HPET_NEW = 300; // 두 번째 펫부터 입양비 🐚
-bag.hpet ||= { cur: '', pets: {} };
+bag.hpet ||= { cur: '', pets: {} }; if (bag.hpet.walk === undefined) bag.hpet.walk = true; // 🚶 처음부터 같이 산책 (1017m)
 const hpCur = () => bag.hpet.pets[bag.hpet.cur] ? bag.hpet.cur : '';
-const hpLv = (a) => { let l = 0; HPET_LV.forEach((t, i) => { if (a >= t) l = i; }); return l; };
+const hpLv = (a) => { if (isTeacher) return 10; let l = 0; HPET_LV.forEach((t, i) => { if (a >= t) l = i; }); return l; }; // 🧑‍🏫 선생님은 모든 보상이 열려 있어요
 const hpIdx = (k) => HPETS.findIndex(h => h.k === k);
 const hpDay = (p) => { if (p.day?.d !== dayNum()) p.day = { d: dayNum() }; return p.day; };
 const hpMood = (p) => { const d = dayNum() - (p.last ?? dayNum()); return d <= 0 ? ['😊', '신나요!'] : d <= 2 ? ['🙂', '오늘도 놀아 줘요'] : ['😢', '보고 싶었어요…']; };
-function hpetCode() { const k = hpCur(); if (!k || !bag.hpet.walk || !joined) return 0; const p = bag.hpet.pets[k], lv = hpLv(p.a); if (lv < 3) return 0; return 1 + hpIdx(k) * 16 + (p.acc | 0) * 4 + (lv >= 9 ? 2 : 0) + (lv >= 10 ? 1 : 0); }
-const hpDecode = (e) => { e = (e | 0) - 1; if (e < 0) return null; return { k: Math.floor(e / 16), acc: (e >> 2) & 3, spark: !!(e & 2), best: !!(e & 1) }; };
-function hpetTag(e) { const d = hpDecode(e); if (!d) return ''; return ' ' + HPETS[d.k]?.icon + (d.best ? '💞' : ''); }
+function hpetCode() { const k = hpCur(); if (!k || !bag.hpet.walk || !joined) return 0; const p = bag.hpet.pets[k], lv = hpLv(p.a); return 1 + hpIdx(k) * 64 + (p.acc | 0) * 16 + (lv >= 3 ? 8 : 0) + (lv >= 7 ? 4 : 0) + (lv >= 9 ? 2 : 0) + (lv >= 10 ? 1 : 0); } // 종류 · 꾸미기 · 하트(Lv3) · 이름표(Lv7) · 반짝(Lv9) · 단짝(Lv10)
+const hpDecode = (e) => { e = (e | 0) - 1; if (e < 0) return null; return { k: Math.floor(e / 64), acc: (e >> 4) & 3, heart: !!(e & 8), tag: !!(e & 4), spark: !!(e & 2), best: !!(e & 1) }; };
+function hpetTag(e) { const d = hpDecode(e); if (!d || !d.tag) return ''; return ' ' + (HPETS[d.k]?.icon || '') + (d.best ? '💞' : ''); }
 function hpetModel(ki, acc = 0, spark = false) { // 🐾 네모네모 귀여운 동물 (앞 = +z)
   const H = HPETS[ki] || HPETS[0], g = new THREE.Group(), o = { solid: false }, b = new THREE.Group(); g.add(b); g.userData.body = b;
   const c = H.col, d = H.dark;
@@ -13913,6 +13914,7 @@ function hpetAnim(g, dt, moving) { // 걷기 · 숨쉬기 · 꼬리 살랑
   u.body.position.y = moving ? Math.abs(Math.sin(u.ph)) * 0.06 : Math.sin(u.ph) * 0.01; if (u.hop > 0) u.body.position.y += Math.sin((0.6 - u.hop) / 0.6 * Math.PI) * 0.5;
   if (u.spin > 0) { u.spin -= dt; u.body.rotation.y += dt * 12; } else u.body.rotation.y *= 0.8;
   if (u.tail) u.tail.rotation.y = Math.sin(u.ph * 1.6) * 0.5;
+  if (u.heart && (u.ht = (u.ht || 0) - dt) <= 0) { u.ht = 1.4; burst(g.getWorldPosition(new V3()).add(new V3(0, 1.1, 0)), [0xFF7AA8, 0xFF9AC0], 3, 0.8, 1.2, 0.9, -0.5); }
   if (u.spark && (u.st = (u.st || 0) - dt) <= 0) { u.st = 0.6; burst(g.getWorldPosition(new V3()).add(new V3(0, 0.7, 0)), [0xFFE680, 0xFFFFFF], 4, 1.2, 0.8, 0.6, -1); }
 }
 const hpw = { inG: null, inT: null, inLab: null, petHouse: null, me: null, follow: new Map(), mine: false };
@@ -13936,10 +13938,10 @@ function hpetUpdate(dt) {
   // 같이 산책: 나와 친구 뒤를 따라와요
   const want = new Map(); { const d = hpDecode(hpetCode()); if (d && !homeRegion()) want.set('me', [player.avatar?.g, d]); }
   for (const [u, r] of remotes) { const d = hpDecode(r.target?.e); if (d && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, d]); }
-  for (const [u, f] of hpw.follow) { const w = want.get(u); if (!w || w[1].k !== f.d.k || w[1].acc !== f.d.acc || w[1].spark !== f.d.spark) { scene.remove(f.g); hpw.follow.delete(u); } }
+  for (const [u, f] of hpw.follow) { const w = want.get(u); if (!w || w[1].k !== f.d.k || w[1].acc !== f.d.acc || w[1].spark !== f.d.spark || w[1].heart !== f.d.heart) { scene.remove(f.g); hpw.follow.delete(u); } }
   for (const [u, [ag, d]] of want) {
     if (!ag) continue; let f = hpw.follow.get(u);
-    if (!f) { f = { g: hpetModel(d.k, d.acc, d.spark), d }; f.g.position.copy(ag.position); scene.add(f.g); hpw.follow.set(u, f); }
+    if (!f) { f = { g: hpetModel(d.k, d.acc, d.spark), d }; f.g.userData.heart = d.heart; f.g.position.copy(ag.position); scene.add(f.g); hpw.follow.set(u, f); }
     const back = new V3(Math.sin(ag.rotation.y + 2.4) * 1.3, 0, Math.cos(ag.rotation.y + 2.4) * 1.3).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
     if (dd > 12) f.g.position.copy(back); const mv = dd > 0.35; if (mv) { const sp = Math.min(dd * 3, 9); f.g.position.x += dx / dd * sp * dt; f.g.position.z += dz / dd * sp * dt; f.g.rotation.y = Math.atan2(dx, dz); }
     f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8); hpetAnim(f.g, dt, mv);
@@ -13971,7 +13973,7 @@ function openHomePet() {
   openLife('🐾 우리 집 펫', (box) => {
     box.textContent = ''; const k = hpCur();
     if (!k) { // 처음 입양
-      box.append(el2('p', 'hint', '함께 살 펫을 골라요! 첫 펫은 무료예요. 매일 돌봐 주면 친밀도가 올라서 함께 산책하고, 선물도 물어와요.'));
+      box.append(el2('p', 'hint', '함께 살 펫을 골라요! 첫 펫은 무료예요. 밖에 나가면 졸졸 따라오고, 매일 돌봐 주면 친밀도가 올라 선물도 물어와요.'));
       const gd = el2('div', 'lp-grid'); HPETS.forEach(H => { const c = el2('div', 'lp-card'); c.append(el2('div', 'lp-icon', H.icon), el2('div', 'lp-name', H.n)); const b = el2('button', 'btn lp-btn', '데려오기'); b.onclick = () => hpetAdopt(H.k); c.append(b); gd.append(c); }); box.append(gd); return;
     }
     const p = bag.hpet.pets[k], H = HPETS[hpIdx(k)], lv = hpLv(p.a), nx = HPET_LV[lv + 1], day = hpDay(p), [mi, mt] = hpMood(p);
@@ -13980,7 +13982,7 @@ function openHomePet() {
     const care = el2('div', 'row-center wrap'); for (const [ck, C2] of Object.entries(HPET_CARE)) { const left = C2.max - (day[ck] | 0), b = el2('button', 'btn', `${C2.icon} ${C2.n}${C2.sh ? ` 🐚${C2.sh}` : ''} (${left})`); b.disabled = left <= 0; b.style.background = left > 0 ? '#FFF3C4' : '#fff'; b.onclick = () => hpetCare(ck); care.append(b); } box.append(care);
     const row = el2('div', 'row-center wrap');
     if (lv >= 1) { const nb = el2('button', 'btn', '🏷️ 이름 짓기'); nb.style.background = '#fff'; nb.onclick = () => { const inp = el2('input', 'tinput'); inp.maxLength = 6; inp.value = p.n || ''; inp.placeholder = '6글자까지'; const ok = el2('button', 'btn', '저장'); ok.onclick = () => { const v = cleanNick(inp.value).slice(0, 6); if (nickBad(v)) { toast('🙅 고운 이름으로 지어 줘요', 'warn'); return; } p.n = v; saveBag(); hpetSync(); refillLife(); }; nb.replaceWith(inp, ok); inp.focus(); }; row.append(nb); }
-    if (lv >= 3) { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; saveBag(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요!` : '🏠 펫이 집에서 기다려요', 'info'); refillLife(); }; row.append(wb); }
+    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; saveBag(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요!` : '🏠 펫이 집에서 기다려요', 'info'); refillLife(); }; row.append(wb); }
     if (lv >= 5) { const tb = el2('button', 'btn', '🐾 재주 부리기'); tb.style.background = '#fff'; tb.onclick = hpetTrick; row.append(tb); }
     box.append(row);
     { const ac = el2('div', 'row-center wrap'); ac.append(el2('span', 'hint', '꾸미기:')); HPET_ACC.forEach((A, i) => { const b = el2('button', 'btn', `${A.icon} ${A.n}${lv < A.lv ? ` 🔒Lv${A.lv}` : ''}`); b.disabled = lv < A.lv; b.style.background = (p.acc | 0) === i ? '#FFE066' : '#fff'; b.onclick = () => { p.acc = i; saveBag(); hpetSync(); refillLife(); }; ac.append(b); }); box.append(ac); }
@@ -15284,6 +15286,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017m', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 처음부터 마을에서 졸졸 따라와요! (🐾 우리 집 펫 창에서 산책 켜고 끄기)'] },
   { id: '1017l', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 생겼어요! 집 안에서 🐾 우리 집 펫 → 강아지·고양이·토끼·햄스터·병아리·아기 여우 중 하나를 데려와요 (첫 펫 무료)', '💞 간식·쓰다듬기·공놀이·목욕으로 친밀도를 올리면 이름 짓기 → 리본 → 같이 산책 → 매일 선물 → 재주 → 펫 집 → 이름표 표시 → 반짝 털 → 왕관·단짝 칭호'] },
   { id: '1017k', d: '10월 17일 (밤)', items: ['💰 재화는 이제 🐚 조개(내 돈)와 🪙 반 동전(모두의 돈) 두 가지예요! 건물 짓기는 🪙 반 동전으로 · 놀이·미션 성공 보상도 🪙 · 수학 마을은 문제를 풀면 바로 🐚', '🐷 반 기부함 목표가 줄었어요: 🎁 1500 → 🐲 3000 → 🥚 5000', '🪨 잔디에 흩어진 돌은 치웠어요 (돌은 뒷산 바위에서 캐요)'] },
   { id: '1017j', d: '10월 17일 (밤)', items: ['⚡ 마을이 가벼워졌어요: 생울타리·나무 잎 덩이·풀 포기·독서 나무를 더 가볍게 그려요'] },
