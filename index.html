@@ -1316,7 +1316,7 @@
     <p class="hint" id="tpCtrlNow"></p>
     <div class="row-center wrap">
       <button class="btn" id="tpGather" style="background:var(--leaf);color:#fff">📣 모두 광장으로 모이기</button>
-      <button class="btn" id="tpCamp" style="background:#E2742A;color:#fff">🔥 캠프파이어로 모두 모이기</button>
+      <button class="btn hidden" id="tpCamp" style="background:#E2742A;color:#fff">🔥 캠프파이어로 모두 모이기</button>
       <button class="btn" id="tpFreeze" style="background:#fff">✋ 잠깐 멈춤</button>
     </div>
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
@@ -2094,7 +2094,7 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
-    chatOff: v.chatOff === true, lvx: plainObj(v.lvx), pgb: plainObj(v.pgb), pgq: Object.fromEntries(Object.entries(plainObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: plainObj(v.pgym), pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    chatOff: v.chatOff === true, lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -3816,16 +3816,16 @@ function animateAvatar(a, moving, dt, grounded, reading) {
   a.head.rotation.y += (look - a.head.rotation.y) * Math.min(1, dt * 6);
   poseAct(a, dt, moving, arms);
   a.armL.rotation.x = arms[0]; a.armR.rotation.x = arms[1];
-  a.book.visible = reading;
+  a.book.visible = reading || a.act?.k === 'sitread';
   if (a.rideK || a.rideWas) poseRide(a, moving, dt);
 }
 
 // ---- 몸짓 (낚시 찌 던지기·채집·인사 등) ----
 // 몸짓 번호는 위치와 함께 보내서 친구 화면에서도 같은 몸짓이 보여요 (글자·이름은 보내지 않아요)
 const ACTS = ['', 'cast', 'fish', 'reel', 'show', 'net', 'shake', 'mine', 'pick', 'water', 'cheer', 'wave', 'dance', 'clap', 'bow', 'yaho', 'look', 'oops',
-  'sit', 'sithand', 'sitgood', 'sitthink', 'sitask', 'hand', 'good', 'think', 'ask', 'slash', 'fanw', 'dash']; // 교실: 앉기·손들기·반응 · ⚔️ 베기·🌬️ 부채·⚡ 돌격 (32개까지)
+  'sit', 'sithand', 'sitgood', 'sitthink', 'sitask', 'hand', 'good', 'think', 'ask', 'slash', 'fanw', 'dash', 'sitread']; // 교실: 앉기·손들기·반응 · ⚔️ 베기·🌬️ 부채·⚡ 돌격 (32개까지)
 const ACT_D = { cast: 0.8, fish: Infinity, reel: 0.45, show: 1.6, net: 0.6, shake: 0.9, mine: 1.0, pick: 0.7, water: 1.2, cheer: 1.4, wave: 1.6, dance: 2.8, clap: 1.4, bow: 1.2, yaho: 1.8, look: Infinity, oops: 1.0,
-  sit: Infinity, sithand: Infinity, sitgood: 4, sitthink: 4, sitask: 4, hand: Infinity, good: 4, think: 4, ask: 4, slash: 0.38, fanw: 0.45, dash: 0.42 };
+  sit: Infinity, sithand: Infinity, sitgood: 4, sitthink: 4, sitask: 4, hand: Infinity, good: 4, think: 4, ask: 4, slash: 0.38, fanw: 0.45, dash: 0.42, sitread: Infinity };
 const ACT_KEEP = new Set(['cast', 'fish', 'reel', 'show', 'cheer', 'wave', 'clap', 'yaho', 'oops', 'slash', 'fanw', 'dash']); // 걸어도 이어지는 몸짓
 let myAct = 0, actSeq = 0;
 const easeOut = (u) => 1 - (1 - u) ** 3, easeBack = (u) => 1 + 2.7 * (u - 1) ** 3 + 1.7 * (u - 1) ** 2;
@@ -3898,8 +3898,9 @@ function poseAct(a, dt, moving, arms) { // 몸짓 자세 (팔·몸 기울기·�
       case 'yaho': arms[0] = arms[1] = -2.3; a.armL.rotation.z = 0.55; a.armR.rotation.z = -0.55; a.head.rotation.x = -0.35; hop = u < 0.2 ? Math.sin(u / 0.2 * Math.PI) * 0.3 : 0; break;
       case 'look': arms[0] = arms[1] = -1.35; a.armL.rotation.z = 0.3; a.armR.rotation.z = -0.3; break;
       case 'oops': a.head.rotation.y = Math.sin(t * 14) * 0.4 * (1 - u); a.armL.rotation.z = -0.35; a.armR.rotation.z = 0.35; arms[0] = arms[1] = -0.2; break;
-      case 'sit': case 'sithand': case 'sitgood': case 'sitthink': case 'sitask': // 의자에 앉기 (+ 손들기·반응)
+      case 'sit': case 'sithand': case 'sitgood': case 'sitthink': case 'sitask': case 'sitread': // 의자에 앉기 (+ 손들기·반응 · 📖 책 읽기)
         a.legL.rotation.x = a.legR.rotation.x = -1.45; R.position.y -= 0.3; arms[0] = arms[1] = -0.6;
+        if (ac.k === 'sitread') { arms[0] = arms[1] = -1.15; a.head.rotation.x = 0.28 + Math.sin(t * 0.8) * 0.03; a.head.rotation.y = Math.sin(t * 0.5) * 0.12; } // 책을 들고 고개 숙여 읽어요 (천천히 줄 따라 읽기)
         if (ac.k === 'sithand') { arms[1] = -2.95; a.armR.rotation.z = Math.sin(t * 3) * 0.06; }
         else if (ac.k === 'sitgood') arms[1] = -1.5;
         else if (ac.k === 'sitthink') { arms[1] = -2.0; a.armR.rotation.z = 0.5; a.head.rotation.z = -0.12; }
@@ -4533,7 +4534,7 @@ function setupActivity(id, model) {
     buildReadTree(model);
     addInteract({ pos: wp('TreeSpot'), r: 3.6, text: () => { const st = rtStage(); return ['독서 나무 🌳', `${RT_ST[st].nm} · 책 ${rtBooks()}권${rtPending() ? ' · 🎁 보상!' : ''}`]; }, run: openReadTree });
     addInteract({ pos: wp('Barrel'), r: 2.6, text: () => ['물방울 순서 기억하기 💧', '텃밭 물통'], run: openDropGame });
-    signPlane(model, ['🌿 온실'], 1.8, 0.5, 0, 2.85, 1.9, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#E6F7EE', stroke: false });
+    signPlane(model, ['📚 도서관'], 1.8, 0.5, 0, 2.85, 1.9, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#E6F7EE', stroke: false });
     setTimeout(applyGardenBloom, 0); // 이미 성공한 친구가 있으면 새로 지은 텃밭에도 꽃
   } else if (id === 'Art') {
     buildMuralWall(model); // 🖌️ 함께 그리는 벽화 (예전 이젤 꾸미기·무늬 놀이 대신)
@@ -7113,7 +7114,8 @@ function syncJump(prev, first) {
    ===================================================================== */
 // 캠프 구역·울타리 틈(통로) 범위 (월드 좌표)
 const FOREST = { x0: -88, x1: -60.5, z0: -30, z1: -4, cx0: -61.5, cx1: -57, cz0: -17, cz1: -9 };
-const forestOpen = () => !!S.areas?.forest;
+const FOREST_OFF = true; // 1017g: 숲속 캠프·별자리 찾기 없앴어요 (선생님 요청)
+const forestOpen = () => !FOREST_OFF && !!S.areas?.forest;
 const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 
 // 캐릭터가 설 수 있는 곳: 기존 마을 + (열렸으면) 울타리 틈 + 캠프
@@ -7138,7 +7140,7 @@ function keepInWorld(p, x0, z0) {
     return;
   }
   if (canStand(p.x, z0)) p.z = z0; else if (canStand(x0, p.z)) p.x = x0; else { p.x = x0; p.z = z0; } // 벽을 따라 미끄러지기
-  if (!forestOpen() && p.x < -57.5 && p.z > FOREST.cz0 - 1 && p.z < FOREST.cz1 + 1 && performance.now() - forest.hintAt > 8000) {
+  if (!FOREST_OFF && !forestOpen() && p.x < -57.5 && p.z > FOREST.cz0 - 1 && p.z < FOREST.cz1 + 1 && performance.now() - forest.hintAt > 8000) {
     forest.hintAt = performance.now();
     toast('🔒 숲속 캠프는 아직 잠겨 있어요. 공동 미션 보상을 하나 열면 들어갈 수 있어요', 'info');
   }
@@ -7151,6 +7153,7 @@ function tent(g, x, z, col) { // 삼각 텐트: 몸은 부딪히고, 문·끈은
   for (const sz of [-1, 1]) cyl(g, 0.05, 0.4, 0x8A5A34, x, 2.4, z + sz * 1.55, { solid: false }); // 폴대 끝
 }
 function buildForestCamp() {
+  if (FOREST_OFF) { box(scene, 0.8, 1, 8.6, C.hedge, -60, 0.5, -13, { solid: false }); return; } // 울타리 틈도 막아요
   const g = new THREE.Group(); g.name = 'ForestCamp'; scene.add(g);
   // 땅과 숲길 (도서관 남쪽 → 서쪽 울타리 틈 → 캠프)
   lawnPlane(g, 24, 28, -77, -17, 0x6FAF4F);
@@ -7193,11 +7196,13 @@ function buildForestCamp() {
   forest.lockLabel = makeLabel(scene, [''], 1.4, -58.5, 3.4, -13);
 }
 function renderForest() {
+  if (FOREST_OFF) return;
   const open = forestOpen();
   forest.gate.visible = !open;
   forest.lockLabel.userData.set(open ? ['🌲 숲속 캠프 가는 길 →'] : ['🔒 숲속 캠프', '공동 미션 보상을 하나 열면 열려요']);
 }
 function syncForest(prev, first) {
+  if (FOREST_OFF) return;
   // 보상 장소가 하나라도 열렸는데 아직 캠프가 잠겨 있으면 열어요 (한 번만 저장)
   if (!forestOpen() && Object.keys(S.unlocks).length && !forest.opening) {
     forest.opening = true;
@@ -7222,6 +7227,7 @@ const sg = { active: false, next: 0, time: 0, lives: 0, found: [], immune: {}, g
 const STAR_GEO = new THREE.OctahedronGeometry(0.45);
 
 function buildStarGame() {
+  if (FOREST_OFF) return; // 🌌 우리 반 별자리 · 🔭 별자리 찾기 없앰
   // 망원경 (시작 지점)
   const g = new THREE.Group(); scene.add(g);
   cyl(g, 0.5, 0.3, C.dark, -66, 0.15, -19.5);
@@ -7326,6 +7332,7 @@ async function finishStarGame() {
 }
 const starCount = () => Object.keys(S.starDone || {}).length;
 function syncStars(prev, first) {
+  if (FOREST_OFF || !sg.sky) return;
   const n = starCount(), pn = Object.keys(prev.starDone || {}).length;
   sg.sky.visible = n > 0 && forestOpen();
   sg.skyLabel.visible = sg.sky.visible;
@@ -7447,6 +7454,7 @@ function closeMemGame() {
 const libCount = () => Object.keys(S.libDone || {}).length;
 // 성공한 친구가 한 명이라도 있으면 도서관 책장이 빛나요 (모두에게 보여요)
 function applyLibGlow() {
+  if (mg.glowLabel) { mg.glowLabel.parent?.remove(mg.glowLabel); mg.glowLabel = null; } return; // 1017g: '✨ 반짝이는 책장' 표지는 없앴어요 (선생님 요청)
   const lib = world.sites.Library?.model;
   if (!lib) return;
   const on = libCount() > 0;
@@ -10897,7 +10905,7 @@ function drawMapBase() {
     c.lineWidth = 1; rect(x - h, z - h, x + h, z + h, mine ? '#FFD23C' : owned ? '#F2C58A' : null, mine ? '#8A5A00' : owned ? '#C08A50' : 'rgba(80,120,60,.45)');
   }
   rect(-60, -60, 60, 60, '#93CC6C');                                                                             // 마을
-  if (forestOpen()) rect(FOREST.x0, FOREST.z0, FOREST.x1, FOREST.z1, '#5E9E4C'); else rect(FOREST.x0, FOREST.z0, FOREST.x1, FOREST.z1, '#9AAE8C');
+  if (!FOREST_OFF) { if (forestOpen()) rect(FOREST.x0, FOREST.z0, FOREST.x1, FOREST.z1, '#5E9E4C'); else rect(FOREST.x0, FOREST.z0, FOREST.x1, FOREST.z1, '#9AAE8C'); }
   c.lineWidth = 3; c.strokeStyle = '#4E8A3E'; c.strokeRect(mapX(-60), mapZ(-60), 120 * s, 120 * s);
   c.strokeStyle = '#93CC6C'; c.lineWidth = 4; // 울타리 틈 (뒷산·들판·바닷가·숲 입구)
   for (const [x0, z0, x1, z1] of [[-33, -60, -27, -60], [-3, 60, 3, 60], [60, 26, 60, 32], [-60, -17, -60, -9]]) { c.beginPath(); c.moveTo(mapX(x0), mapZ(z0)); c.lineTo(mapX(x1), mapZ(z1)); c.stroke(); }
@@ -14617,7 +14625,7 @@ const ROOMS = {
   lib: { name: '펫 체육관', icon: '🐾', cx: 1450, cz: 0, w: 28, d: 22, wall: 0xFFF1D6, floor: 0xD8C4A0, site: 'Library' }, // 예전 도서관 (독서 책상은 왼쪽 구석에)
   art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
   gym: { name: '체육관', icon: '🏸', cx: 1580, cz: 0, w: 30, d: 30, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
-  gh: { name: '온실', icon: '🌿', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
+  gh: { name: '온실 도서관', icon: '📚', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
   sd: { name: '서당', icon: '📜', cx: 1450, cz: 40, w: 20, d: 16, wall: 0xF1E4CC, floor: 0xC79A64, site: 'hv:seodang' },
   era: { name: '시대관', icon: '🏛️', cx: 1450, cz: -40, w: 20, d: 16, wall: 0xF3EBDD, floor: 0xB9905F, site: 'hv:era' },
   pg2: { name: '2단계 펫 체육관', icon: '🏟️', cx: 1580, cz: -45, w: 22, d: 18, wall: 0xEAF2FF, floor: 0xD8C4A0, site: null }, // ⛏️ 수학 광산 마을
@@ -14775,7 +14783,7 @@ function buildingDoor(id) { // 도서관·미술 공방: 건물 문 앞 (세워�
 function setupDoors() {
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '🐾 펫 체육관 · 📒 독서 책상'] : null, run: () => enterRoom('lib') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'art', text: () => S.built.Art ? ['들어가기 🚪', '🎨 미술 공방 안'] : null, run: () => enterRoom('art') });
-  addInteract({ pos: new V3(0, -99, 0), r: 2.0, dyn: 'gh', text: () => S.built.Garden ? ['온실 들어가기 🌿', '내 화분 키우기'] : null, run: () => enterRoom('gh') });
+  addInteract({ pos: new V3(0, -99, 0), r: 2.0, dyn: 'gh', text: () => S.built.Garden ? ['온실 도서관 들어가기 📚', '자리에 앉아 책 읽기'] : null, run: () => enterRoom('gh') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.6, dyn: 'gym', text: () => S.built.Playground ? ['들어가기 🚪', '🏸 체육관 안'] : null, run: () => enterRoom('gym') });
   addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() || S.built.Playground ? null : ['들어가기 🚪', '🏸 임시 체육관'], run: () => enterRoom('gym') });
 }
@@ -15073,6 +15081,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017g', d: '10월 17일', items: ['📚 온실이 온실 도서관이 됐어요! 의자나 빈백 앞에서 E를 누르면 앉아서 책을 읽어요', '🏟️ 관장 속성을 선생님이 바꾸면 바로 바뀌어요 (고침)', '🌲 숲속 캠프·🌌 별자리 찾기와 ✨ 반짝이는 책장 표지는 정리했어요'] },
   { id: '1017f', d: '10월 17일', items: ['🌳 텃밭 자리에 우리 반 독서 나무가 생겼어요! 읽은 책을 기록할수록 씨앗 → 새싹 → … → 🌈 무지개 나무로 자라고, 단계마다 모두 보상을 받아요', '🐾 펫 체육관 앞 책장·평상과 체육관 안 나무는 정리했어요'] },
   { id: '1017e', d: '10월 17일', items: ['💬 채팅! 💬 버튼(또는 Enter)을 누르면 위에 입력창이 나와요 · 말은 머리 위 말풍선으로 보이고 1분 뒤 사라져요 · 고운 말만!', '🛋️ 집 꾸미기: 러그는 가구 밑에 깔고, 화분·인형·트로피·쿠션은 탁자·책장·침대 위에 올릴 수 있어요'] },
   { id: '1017d', d: '10월 17일', items: ['⭐ 능력치 레벨이 새로 시작해요! 이제 모은 점수가 계속 쌓여 레벨이 올라요 (최고 Lv12 · 한 달쯤 꾸준히 하면 만렙)', '⚔️ Lv3·6·9·12마다 성 공방전 역할이 한 단계씩 강해져요 (최대 4단계)'] },
@@ -17445,15 +17454,33 @@ function buildGreenhouse() {
   const { cx, cz, w, d } = r, o = { solid: false };
   for (let k = -3; k <= 3; k++) box(g, 0.12, 0.12, d, 0xFFFFFF, cx + k * 3, 3.0, cz, o); // 유리 지붕 살
   const glass = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, d), new THREE.MeshStandardMaterial({ color: 0xCFF3FF, transparent: true, opacity: 0.25 })); glass.position.set(cx, 3.05, cz); g.add(glass);
-  for (let row = 0; row < 3; row++) { const z = cz - 4.5 + row * 3.2; box(g, 15, 0.8, 1.2, 0x8A5A34, cx - 1, 0.4, z); box(g, 15.2, 0.08, 1.3, 0xB07C50, cx - 1, 0.82, z, o); }
-  for (const [x, z] of [[cx - 9.5, cz - 6], [cx + 9.5, cz - 6], [cx - 9.5, cz + 4], [cx + 9.5, cz + 4]]) { mesh(SPH_MID, g, 0.9, 0.9, 0.9, 0x5DB85F, x, 1.0, z, { solid: false, flat: true }); cyl(g, 0.6, 0.5, 0xD9814A, x, 0.25, z); }
-  box(g, 2.6, 1, 1, 0xB07C50, cx + 8.4, 0.5, cz + 2); for (let k = 0; k < 5; k++) box(g, 0.35, 0.45, 0.2, [0xFFD23C, 0xFF6A8A, 0xE63C32, 0x4FA04F, 0xE2304A][k], cx + 7.5 + k * 0.45, 1.2, cz + 2, o); // 씨앗 가게
-  makeLabel(g, ['🌱 씨앗 · 내 화분'], 0.8, cx + 8.4, 2.4, cz + 2);
-  gh.pots = new THREE.Group(); g.add(gh.pots);
-  gh.mark = makeLabel(g, ['⭐ 내 화분'], 0.6, 0, -99, 0);
-  addInteract({ pos: new V3(cx + 8.4, 1, cz + 3.2), r: 2.4, text: () => roomNow() === 'gh' ? ['내 화분 돌보기 🪴', myPot() ? `${SEEDS[myPot().s].icon} ${SEEDS[myPot().s].name}` : '씨앗 심기'] : null, run: openPot });
-  addInteract({ pos: new V3(0, -99, 0), r: 1.8, dyn2: 'mypot', text: () => roomNow() === 'gh' && myPot() ? [potGrown(myPot()) ? '수확하기 🧺' : potWatered(myPot()) ? '오늘 물 줬어요 💧' : '물 주기 💧', '⭐ 내 화분'] : null, run: () => (potGrown(myPot()) || potWatered(myPot())) ? openPot() : waterPot() });
-  renderPots(true);
+  // 📚 (1017g) 화분 키우기는 없애고 온실 도서관으로: 벽 책장 · 읽기 탁자 4개(의자 16) · 창가 빈백 · 자리에 앉으면 📖 책 읽는 몸짓
+  const BK = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E, 0x3FB8AF, 0xF2F2F2];
+  const shelf = (x, z, len, ry) => { const sg = new THREE.Group(); sg.position.set(x, 0, z); sg.rotation.y = ry; g.add(sg);
+    box(sg, len, 2.5, 0.5, 0x8A5A34, 0, 1.25, -0.14); for (const y of [0.55, 1.2, 1.85]) { box(sg, len - 0.1, 0.05, 0.4, 0x6B4226, 0, y - 0.3, 0.1, o); for (let b = 0, x2 = -len / 2 + 0.2; x2 < len / 2 - 0.2; b++) { const bw = 0.12 + ((b * 7 + y * 10) % 5) * 0.03, bh = 0.4 + ((b * 3) % 4) * 0.05; box(sg, bw, bh, 0.3, BK[(b * 3 + Math.round(y * 5)) % BK.length], x2 + bw / 2, y - 0.27 + bh / 2, 0.14, o); x2 += bw + 0.02; } } };
+  for (const x of [-7.5, -2.5, 2.5, 7.5]) shelf(cx + x, cz - d / 2 + 0.45, 4.6, 0);                       // 뒤 벽 책장
+  for (const sx of [-1, 1]) for (const z of [-4, 0.5]) shelf(cx + sx * (w / 2 - 0.45), cz + z, 3.8, -sx * Math.PI / 2); // 옆 벽 책장
+  for (const [x, z] of [[cx - 9.5, cz + 5], [cx + 9.5, cz + 5]]) { mesh(SPH_MID, g, 0.9, 0.9, 0.9, 0x5DB85F, x, 1.0, z, { solid: false, flat: true }); cyl(g, 0.6, 0.5, 0xD9814A, x, 0.25, z); } // 초록 화분 (온실 느낌)
+  box(g, 15, 0.02, 9, 0x7A5AA8, cx, 0.115, cz - 0.5, o); box(g, 14.4, 0.025, 8.4, 0xE9DDF5, cx, 0.12, cz - 0.5, o); // 큰 러그
+  gh.seats = [];
+  for (const [tx, tz] of [[cx - 4, cz - 3], [cx + 4, cz - 3], [cx - 4, cz + 2], [cx + 4, cz + 2]]) {
+    box(g, 2.6, 0.1, 1.4, 0xE9C98F, tx, 0.8, tz); for (const [lx, lz] of [[-1.15, -0.55], [1.15, -0.55], [-1.15, 0.55], [1.15, 0.55]]) box(g, 0.1, 0.75, 0.1, 0x8A5A34, tx + lx, 0.4, tz + lz, o);
+    cyl(g, 0.12, 0.05, 0x3B3B46, tx, 0.88, tz, o); cyl(g, 0.02, 0.4, 0x3B3B46, tx, 1.08, tz, o); mesh(CONE, g, 0.22, 0.2, 0.22, 0xFFE8A0, tx, 1.3, tz, { solid: false, emissive: 0.7 }); // 탁자 스탠드
+    box(g, 0.5, 0.08, 0.36, 0xFFFFFF, tx - 0.7, 0.87, tz - 0.2, o); box(g, 0.45, 0.1, 0.32, 0x4A9AE8, tx + 0.7, 0.88, tz + 0.2, o); // 펼친 책들
+    for (const sx of [-0.65, 0.65]) for (const sz of [-1, 1]) { const x = tx + sx, z = tz + sz * 1.1, f = -sz; // 의자 (탁자를 봐요)
+      box(g, 0.56, 0.08, 0.5, 0xC9A06A, x, 0.48, z, o); box(g, 0.56, 0.6, 0.08, 0xC9A06A, x, 0.8, z - f * 0.24, o); for (const lx of [-0.22, 0.22]) box(g, 0.06, 0.45, 0.06, 0x8A5A34, x + lx, 0.22, z, o);
+      gh.seats.push({ x, z, h: Math.atan2(0, f) }); }
+  }
+  for (const [x, z, col] of [[cx - 7.8, cz + 5.6, 0xFF9E5E], [cx - 6.2, cz + 5.8, 0x4A9AE8], [cx + 6.2, cz + 5.8, 0x9A5AD8], [cx + 7.8, cz + 5.6, 0x5FBE5A]]) { mesh(SPH_MID, g, 0.6, 0.38, 0.6, col, x, 0.3, z, { solid: false }); gh.seats.push({ x, z, h: Math.PI, bean: true }); } // 창가 빈백 (문 쪽 아니고 앞 창가)
+  makeLabel(g, ['🤫 조용히 읽어요', '빈 자리에서 E → 앉아서 책 읽기'], 0.8, cx, 2.6, cz - d / 2 + 1.3);
+  for (const st of gh.seats) addInteract({ pos: new V3(st.x, 1, st.z), r: 0.9, text: () => roomNow() === 'gh' && !isSeated(player.avatar) ? ['📖 앉아서 책 읽기', st.bean ? '푹신한 빈백' : '도서관 의자'] : null, run: () => ghSitRead(st) });
+}
+function ghSitRead(st) { // 📖 의자에 앉아 책 읽는 몸짓 (움직이면 일어나요)
+  if (isFrozen()) return; if (bag.ride) { bag.ride = ''; saveBag(); }
+  player.pos.set(st.x, st.bean ? 0.02 : 0.15, st.z); player.vy = 0; player.heading = st.h; player.avatar.g.rotation.y = st.h; camYaw = st.h + Math.PI; camPitch = 0.4;
+  playAct(player.avatar, 'sitread'); playSfx('pick');
+  if (!onCooldown('ghread', 60)) creditAction('read'); // 마을 미션 '책 읽기'에도 쳐요
+  toast(CFG.LIBRARY_LINES[Math.floor(Math.random() * CFG.LIBRARY_LINES.length)] + ' · 움직이면 일어나요', 'info');
 }
 const potSlot = (k) => { const r = ROOMS.gh, row = Math.floor(k / 10) % 3, col = k % 10; return [r.cx - 7.75 + col * 1.5, r.cz - 4.5 + row * 3.2]; };
 function renderPots(force) {
