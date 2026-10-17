@@ -340,6 +340,7 @@
   .row-center.wrap { flex-wrap: wrap; margin-bottom: 8px; }
   .btn.danger { background: #E2584A; color: #fff; }
   .modal#confirmBox { z-index: 30; width: min(460px, 92vw); }
+  body.in-pb .modal#confirmBox { z-index: 60; } /* 🎮 펫 배틀 화면(40) 위에 '그만할까요?' 창이 보이게 (1017f) */
   .cf-body { margin: 0 0 12px; font-size: 18px; line-height: 1.5; text-align: center; white-space: pre-line; }
   #tpSetup code, #tpSetup textarea, .uid-chars { -webkit-user-select: text; user-select: text; }
   .uid-box { margin: 10px 0 4px; padding: 10px 12px; background: #fff; border: 2px dashed #C9BBA8; border-radius: 12px; }
@@ -1777,7 +1778,7 @@ const CFG = {
   SITES: [
     { id: 'Library',    name: '펫 체육관', icon: '🐾', cost: 5, color: 0x568CEB, pos: [-40, 0],  front: [1, 0] },
     { id: 'Playground', name: '체육관',    icon: '🏸', cost: 5, color: 0x3F7FD0, pos: [40, 0],   front: [-1, 0] },
-    { id: 'Garden',     name: '텃밭',      icon: '🌱', cost: 4, color: 0x5FBE5A, pos: [-28, 40], front: [0, -1] },
+    { id: 'Garden',     name: '독서 나무', icon: '🌳', cost: 4, color: 0x5FBE5A, pos: [-28, 40], front: [0, -1] },
     { id: 'Art',        name: '미술 공방', icon: '🎨', cost: 5, color: 0xE16EC8, pos: [28, 40],  front: [0, -1] },
   ],
   CRATES: [], // 떠다니는 재료 상자는 없앴어요 (재료는 게임·미션 성공으로 얻어요: earnMat)
@@ -1807,10 +1808,10 @@ const CFG = {
   // 활동 완료 감사 메시지 (자유 입력 없이 이 중에서만 골라요, 순서를 바꾸면 저장된 번호의 뜻이 바뀌어요)
   // 활동 템플릿: 장소별 짧은 협력 활동 (id는 database.rules.json과 같아야 해요)
   TEMPLATES: [
-    { id: 'lib_books', place: '📚 도서관', title: '도서관 책 정리하기', desc: '흩어진 책을 제자리에 꽂아요', reward: 'books' },
-    { id: 'lib_quiet', place: '📚 도서관', title: '도서관에서 조용히 읽기', desc: '친구가 책 읽는 동안 조용히 해요', reward: 'books' },
-    { id: 'gar_water', place: '🌱 텃밭', title: '텃밭 물 주기', desc: '목마른 작물에 물을 줘요', reward: 'water' },
-    { id: 'gar_weed', place: '🌱 텃밭', title: '텃밭 잡초 뽑기', desc: '작물이 잘 자라게 잡초를 뽑아요', reward: 'sunflower' },
+    { id: 'lib_books', place: '🐾 펫 체육관', title: '읽은 책 기록하기', desc: '책을 다 읽고 선생님께 확인받아 독서 책상에 기록해요', reward: 'books' },
+    { id: 'lib_quiet', place: '🌳 독서 나무', title: '독서 나무 아래에서 읽기', desc: '독서 나무 아래에서 조용히 책을 읽어요', reward: 'books' },
+    { id: 'gar_water', place: '🌳 독서 나무', title: '독서 나무에 물 주기', desc: '우리 반 독서 나무에 물을 줘요', reward: 'water' },
+    { id: 'gar_weed', place: '🌳 독서 나무', title: '독서 나무 가꾸기', desc: '독서 나무가 잘 자라게 둘레를 가꿔요 (물 주기)', reward: 'sunflower' },
     { id: 'plz_clean', place: '🏫 광장', title: '광장 쓰레기 줍기', desc: '광장을 깨끗하게 만들어요', reward: 'plaza' },
     { id: 'plz_deco', place: '🏫 광장', title: '광장 꾸미기', desc: '광장을 알록달록하게 꾸며요', reward: 'plaza' },
     { id: 'pg_turn', place: '🏸 체육관', title: '체육관 차례 지키기', desc: '줄을 서서 차례대로 운동해요', reward: 'carousel' },
@@ -3386,13 +3387,7 @@ function bLibrary(g, c) {
   box(g, 2.2, 2.8, 0.3, C.white, -1.05, 9.6, 3, { solid: false, ry: -0.35 });
   box(g, 2.2, 2.8, 0.3, C.white, 1.05, 9.6, 3, { solid: false, ry: 0.35 });
   box(g, 0.4, 2.8, 0.4, c, 0, 9.6, 3.45, { solid: false });
-  const bookColors = [C.red, C.gold, c];
-  for (const x of [-5, 5]) {
-    box(g, 2, 3, 1, C.wood, x, 1.5, -1.5, { name: x > 0 ? 'ShelfR' : 'ShelfL' });
-    for (let r = 0; r < 3; r++) box(g, 1.7, 0.55, 0.15, bookColors[r], x, 0.6 + r * 0.95, -2.05, { solid: false, name: 'Books' });
-  }
-  box(g, 4, 0.4, 1.5, C.wood, 0, 0.8, -4.5, { name: 'ReadSpot' });
-  for (const x of [-1.6, 1.6]) box(g, 0.4, 0.6, 1.2, C.dark, x, 0.3, -4.5, { solid: false });
+  // (1017f) 앞의 책장 두 개와 평상은 없앴어요 — 독서는 독서 나무(옛 텃밭 자리)에서
 }
 
 function bPlayground(g, c) { // 🏸 체육관 (예전 놀이터 자리 · 부지 id는 그대로 'Playground'): 둥근 지붕 강당, 앞(-z)에 큰 유리문
@@ -3442,10 +3437,10 @@ function bGarden(g, c) {
     picketFence(g, x - w / 2 + 0.15, z - d / 2 + 0.15, x + w / 2 - 0.15, z + d / 2 - 0.15);
   }
   for (const x of [-2, 2]) cyl(g, 0.16, 1.6, C.wood, x, 0.8, -7, { solid: false }); // 입구 문기둥
-  box(g, 12, 0.3, 3, C.soil, 0, 0.15, -1.5);
-  for (const [w, d, x, z] of [[12.4, 0.25, 0, -3.1], [12.4, 0.25, 0, 0.1], [0.25, 3.4, -6.1, -1.5], [0.25, 3.4, 6.1, -1.5]]) box(g, w, 0.45, d, C.wood, x, 0.22, z, { solid: false }); // 밭 나무 틀
-  for (const z of [-2.4, -0.6]) box(g, 11.6, 0.08, 0.35, C.soil2, 0, 0.32, z, { solid: false }); // 이랑
-  [-4, 0, 4].forEach((x, i) => box(g, 1.5, 0.2, 1.5, C.soil2, x, 0.4, -1.5, { name: 'CropSpot' + i }));
+  // 🌳 (1017f) 텃밭 밭은 허물고 가운데에 독서 나무 (나무는 setupActivity → buildReadTree가 반 독서량에 맞춰 키워요)
+  cyl(g, 3.1, 0.12, 0x7FC46A, 0, 0.06, -1.6, { solid: false }); cyl(g, 2.3, 0.34, C.stone, 0, 0.17, -1.6); cyl(g, 2.05, 0.36, C.soil, 0, 0.19, -1.6, { solid: false }); // 잔디 · 돌 화단
+  box(g, 0.1, 0.1, 0.1, C.soil, 0, 0.4, -1.6, { solid: false, name: 'TreeSpot' });
+  for (const [x, z] of [[-4.6, -4.2], [4.6, -4.2]]) { box(g, 1.8, 0.14, 0.6, C.wood, x, 0.5, z, { solid: false }); for (const dx of [-0.7, 0.7]) box(g, 0.14, 0.5, 0.5, 0x6B5A48, x + dx, 0.25, z, { solid: false }); } // 나무 아래 작은 벤치
   box(g, 4.5, 3.5, 3, C.wood, 0, 1.75, 3.5);
   wallDetail(g, 4.5, 3.5, 3, 3.5, C.cream);
   for (const y of [0.9, 1.7, 2.5]) box(g, 4.52, 0.08, 3.02, C.dark, 0, y, 3.5, { solid: false }); // 나무 판자 줄
@@ -3975,12 +3970,13 @@ function chatShow(on = $('chatBox').classList.contains('hidden')) {
   if (on) { for (const k in keys) keys[k] = false; setTimeout(() => $('chatIn').focus(), 30); } else $('chatIn').blur();
 }
 async function chatSendText(raw) {
+  if (chatW.busy) return; // 보내는 중에 또 누르면 무시 (두 번 가지 않게)
   const t = String(raw || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30); if (!t || !joined) return;
   if (S.chatOff && !isTeacher) { toast('💬 지금은 선생님이 채팅을 꺼 두었어요', 'info'); chatShow(false); return; }
   if (nickBad(t)) { toast('🙅 고운 말로 써 볼까요? 나쁜 말은 보낼 수 없어요', 'warn'); return; }
   const left = chatW.last + CHAT_GAP - performance.now(); if (left > 0) { toast(`⏳ ${Math.ceil(left / 1000)}초 뒤에 다시 보낼 수 있어요`, 'info'); return; }
-  chatW.last = performance.now();
-  const r = await backend.chatSend(t, isTeacher ? '선생님' : (cleanNick(myNick) || '친구'));
+  chatW.last = performance.now(); chatW.busy = true;
+  const r = await backend.chatSend(t, isTeacher ? '선생님' : (cleanNick(myNick) || '친구')).finally(() => { chatW.busy = false; });
   if (!r?.ok) { toast(r?.reason === 'offline' ? '📡 연결이 끊겨서 보내지 못했어요' : '💬 보내지 못했어요. 잠시 뒤에 다시 해 봐요', 'warn'); return; }
   $('chatIn').value = ''; clearTimeout(chatW.delT); chatW.delT = setTimeout(() => backend?.chatDel?.(), CHAT_KEEP); // 1분 뒤 내 말은 지워져요
 }
@@ -3998,7 +3994,8 @@ function chatLogAdd(nm, t) {
 function chatRemote(v) { // 친구들의 마지막 한 줄 (새로 바뀐 것만 보여요)
   if (!v || typeof v !== 'object') return; const now = backend?.now ? backend.now() : Date.now();
   for (const [u, m] of Object.entries(v)) {
-    if (!m || typeof m.t !== 'string' || typeof m.at !== 'number' || chatW.seen[u] === m.at) continue; chatW.seen[u] = m.at;
+    if (!m || typeof m.t !== 'string' || typeof m.at !== 'number' || chatW.seen[u] === m.at) continue;
+    const dup = chatW.seenT?.[u] === m.t && Math.abs(m.at - (chatW.seen[u] || 0)) < 8000; chatW.seen[u] = m.at; (chatW.seenT ||= {})[u] = m.t; if (dup) continue; // 내 말은 '보내는 중'·'서버 시각' 두 번 와요 → 한 번만
     if (now - m.at > 15000 || (S.chatOff && !isTeacher)) continue; // 들어오기 전 말 · 꺼진 동안은 안 보여요
     const t = m.t.replace(/[\u0000-\u001f<>]/g, '').slice(0, 30); if (!t || nickBad(t)) continue;
     chatBubble(u, t); chatLogAdd(chatName(u, m), t);
@@ -4007,7 +4004,7 @@ function chatRemote(v) { // 친구들의 마지막 한 줄 (새로 바뀐 것만
 function initChat() {
   const q = $('chatQuick'); for (const p of CHAT_QUICK) { const b = el2('button', 'btn', p); b.onclick = () => chatSendText(p); q.append(b); }
   $('chatBtn').onclick = () => chatShow(); $('chatClose').onclick = () => chatShow(false); $('chatSend').onclick = () => chatSendText($('chatIn').value);
-  $('chatIn').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); chatSendText($('chatIn').value); } else if (e.key === 'Escape') chatShow(false); });
+  $('chatIn').addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); chatSendText($('chatIn').value); } else if (e.key === 'Escape') chatShow(false); });
   addEventListener('keydown', e => { // Enter로 채팅 열기 (창이 열려 있지 않을 때)
     if (!joined || e.repeat || e.key !== 'Enter' || e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
     if ([...document.querySelectorAll('.modal')].some(m => !m.classList.contains('hidden')) || document.body.classList.contains('in-pb')) return;
@@ -4468,24 +4465,73 @@ function makeCrop(parent, spot, crop) {
   return c;
 }
 
+// ---------- 🌳 우리 반 독서 나무 (1017f · 옛 텃밭 자리) — 반 전체가 기록한 책 수(state/read/n)만큼 자라요 · 단계마다 한 사람 한 번 보상 ----------
+const RT_ST = [
+  { n: 0, nm: '🌰 씨앗' }, { n: 3, nm: '🌱 새싹', sh: 30 }, { n: 10, nm: '🌿 어린 나무', sh: 50 }, { n: 20, nm: '🌳 튼튼한 나무', sh: 80, fur: 6 },
+  { n: 35, nm: '🌸 꽃 핀 나무', sh: 100 }, { n: 50, nm: '🍎 열매 나무', sh: 150, fur: 5 }, { n: 80, nm: '✨ 황금 열매 나무', sh: 200, fur: 16 }, { n: 120, nm: '🌈 무지개 나무', sh: 300, fur: 18 },
+];
+const rtw = { g: null, key: '', parts: null, stage: -1 };
+const rtBooks = () => S.read?.n || 0;
+const rtStage = () => { const n = rtBooks(); let st = 0; RT_ST.forEach((x, i) => { if (n >= x.n) st = i; }); return st; };
+const rtGot = () => bag.rtree | 0; // 받은 단계까지
+const rtPending = () => Math.max(0, rtStage() - rtGot());
+function buildReadTree(model) {
+  const spot = model.getObjectByName('TreeSpot'); const g = new THREE.Group(); g.name = 'ReadTree'; g.position.copy(spot.position); g.position.y = 0.36; model.add(g); rtw.g = g; rtw.key = ''; /* 이름이 있어야 합치기(batchStatic)에서 빠져요 */
+  const o = { solid: false }, P = { leaves: [], flowers: [], fruits: [] };
+  P.seed = ball(g, 0.28, 0x8A5A34, 0, 0.15, 0, o);
+  P.trunk = new THREE.Group(); g.add(P.trunk); mesh(TAPER, P.trunk, 0.5, 1, 0.5, 0x7A5436, 0, 0.5, 0, o);
+  for (const a of [0.6, 2.7, 4.6]) mesh(TAPER, P.trunk, 0.18, 0.6, 0.18, 0x7A5436, Math.cos(a) * 0.25, 0.75, Math.sin(a) * 0.25, { solid: false, rz: Math.cos(a) * 0.7, rx: -Math.sin(a) * 0.7 });
+  P.crown = new THREE.Group(); g.add(P.crown);
+  for (let k = 0; k < 34; k++) { const a = k * 2.399, rr = 0.25 + (k % 6) * 0.2, y = (k % 5) * 0.22; P.leaves.push(mesh(SPH_LO, P.crown, 0.55, 0.48, 0.55, [0x5DB85F, 0x4FA04F, 0x7CC85C][k % 3], Math.cos(a) * rr, y, Math.sin(a) * rr, { solid: false, flat: true })); }
+  for (let k = 0; k < 14; k++) { const a = k * 1.7, rr = 0.9 + (k % 3) * 0.18; P.flowers.push(ball(P.crown, 0.09, 0xFF9AC0, Math.cos(a) * rr, 0.15 + (k % 4) * 0.25, Math.sin(a) * rr, o)); }
+  for (let k = 0; k < 12; k++) { const a = k * 2.1 + 0.5, rr = 1.12 + (k % 2) * 0.12; P.fruits.push(ball(P.crown, 0.1, 0xE63C32, Math.cos(a) * rr, -0.05 + (k % 3) * 0.3, Math.sin(a) * rr, o)); }
+  P.ring = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.07, 6, 48), new THREE.MeshBasicMaterial({ color: 0xFFE680, transparent: true, opacity: 0.7 })); P.ring.rotation.x = Math.PI / 2; P.ring.position.y = 0.3; g.add(P.ring);
+  P.label = makeLabel(g, [''], 0.85, 0, 3, 0);
+  rtw.parts = P; readTreeSync(true);
+}
+function readTreeSync(force) {
+  const P = rtw.parts; if (!rtw.g || !P) return;
+  const n = rtBooks(), st = rtStage(), key = `${n}|${st}|${rtGot()}`; if (!force && key === rtw.key) return; rtw.key = key;
+  const sc = [0, 0.35, 0.6, 0.85, 1.0, 1.1, 1.2, 1.35][st], h = [0, 0.7, 1.4, 2.2, 2.6, 2.9, 3.1, 3.4][st];
+  P.seed.visible = st === 0; P.trunk.visible = st > 0; P.trunk.scale.set(0.4 + sc * 0.9, h, 0.4 + sc * 0.9);
+  P.crown.visible = st > 0; P.crown.position.y = h * 0.92; P.crown.scale.setScalar(Math.max(0.3, sc * 1.6));
+  const nl = st === 1 ? 4 : st === 2 ? 12 : st === 3 ? 24 : 34; P.leaves.forEach((m, k) => { m.visible = k < nl; });
+  P.flowers.forEach(m => { m.visible = st >= 4 && st !== 5 && st !== 6 || st === 7; });
+  const gold = st >= 6; P.fruits.forEach((m, k) => { m.visible = st >= 5; m.material = M(gold ? (k % 3 ? 0xFFC93C : 0xFFE680) : 0xE63C32); });
+  P.ring.visible = st >= 7; if (st >= 7) P.ring.material.color.setHSL((performance.now() / 4000) % 1, 0.8, 0.65);
+  const nx = RT_ST[st + 1];
+  P.label.position.y = h + 1.6 + sc * 1.2; P.label.userData.set([`🌳 우리 반 독서 나무 · ${RT_ST[st].nm}`, nx ? `함께 기록한 책 ${n}권 · 다음 단계까지 ${nx.n - n}권` : `함께 기록한 책 ${n}권 · 최고 단계!`]);
+  if (rtw.stage >= 0 && st > rtw.stage && joined) { showBanner(`🌳 독서 나무가 자랐어요! ${RT_ST[st].nm}`, '나무 앞에서 🎁 보상을 받아요', 6000); playSfx('fanfare'); burst(rtw.g.getWorldPosition(new V3()).add(new V3(0, h, 0)), [0x9BE36B, 0xFFE680, 0xFF9AC0], 40, 5, 3); }
+  rtw.stage = st;
+}
+function rtRewardText(x) { return [x.sh ? `🐚 ${x.sh}` : '', x.fur != null ? `${FURN[x.fur].icon} ${FURN[x.fur].name}` : ''].filter(Boolean).join(' + '); }
+function openReadTree() {
+  openLife('🌳 우리 반 독서 나무', (box) => {
+    box.textContent = ''; const n = rtBooks(), st = rtStage(), nx = RT_ST[st + 1], pend = rtPending();
+    box.append(el2('p', 'up-win', `${RT_ST[st].nm} · 우리 반이 함께 기록한 책 ${n}권`));
+    if (nx) { const bar = el2('div', 'bar'), fill = el2('div'); const lo = RT_ST[st].n; fill.style.width = `${Math.floor((n - lo) / (nx.n - lo) * 100)}%`; bar.append(fill); box.append(bar, el2('p', 'hint', `다음 단계 ${nx.nm}까지 ${nx.n - n}권 더! (내가 기록한 책 ${bag.reads?.length || 0}권)`)); }
+    box.append(el2('p', 'hint', '📒 펫 체육관 독서 책상에 읽은 책을 기록하면 (선생님 확인) 나무가 자라요. 나무가 한 단계 자랄 때마다 모두 보상을 한 번씩 받아요.'));
+    const row = el2('div', 'row-center wrap');
+    if (pend) { const b = el2('button', 'btn', `🎁 보상 받기 (${pend}단계)`); b.style.background = '#FFD23C'; b.onclick = () => {
+      let sh = 0; const fur = []; for (let i = rtGot() + 1; i <= st; i++) { const x = RT_ST[i]; sh += x.sh || 0; if (x.fur != null) { bag.fur[x.fur] = (bag.fur[x.fur] || 0) + 1; fur.push(`${FURN[x.fur].icon} ${FURN[x.fur].name}`); } }
+      bag.rtree = st; if (sh) earnShell(sh); saveBag(); updateHUD(null); playSfx('fanfare'); readTreeSync(true);
+      showBanner('🎁 독서 나무 보상!', [sh ? `🐚 조개 ${sh}` : '', ...fur.map(f => `${f} (가구 상자)`)].filter(Boolean).join(' · '), 5000); refillLife(); }; row.append(b); }
+    const rd = el2('button', 'btn', '📖 나무 아래에서 책 읽기'); rd.style.background = '#fff'; rd.onclick = () => { actRead(); }; row.append(rd);
+    const wt = el2('button', 'btn', bag.rtWater === dayNum() ? '💧 오늘 물 줬어요' : '💧 물 주기'); wt.style.background = '#D7F0FF'; wt.disabled = bag.rtWater === dayNum();
+    wt.onclick = () => { bag.rtWater = dayNum(); saveBag(); creditAction('water'); playSfx('pick'); if (rtw.g) burst(rtw.g.getWorldPosition(new V3()).add(new V3(0, 1.5, 0)), [0x6EB4FF, 0x9BE36B, 0xFFFFFF], 30, 4, 3); toast('💧 독서 나무에 물을 줬어요! 책을 기록하면 더 쑥쑥 자라요', 'success'); refillLife(); };
+    row.append(wt); box.append(row);
+    box.append(el2('h3', 'lp-sec', '🌱 자라는 단계와 보상'));
+    RT_ST.forEach((x, i) => { if (!i) return; const r = el2('div', 'ride-row' + (st >= i ? ' on' : '')), tx = el2('span', 'ride-tx'); tx.append(el2('b', '', `${x.nm} · 책 ${x.n}권`), el2('span', 'hint', rtRewardText(x))); r.append(tx, el2('span', '', rtGot() >= i ? '✅ 받음' : st >= i ? '🎁 받을 수 있어요' : '🔒')); box.append(r); });
+  });
+}
 function setupActivity(id, model) {
   const wp = (name) => model.getObjectByName(name).getWorldPosition(new V3());
   if (id === 'Library') {
-    addInteract({ pos: wp('ReadSpot'), r: 3, text: () => ['책 읽기 📖', '도서관'], run: actRead });
-    setTimeout(applyLibGlow, 0); // 이미 성공한 친구가 있으면 새로 지은 책장도 반짝여요
+    // (1017f) 책장·평상이 없어져서 '책 읽기'는 독서 나무에서 해요
   } else if (id === 'Playground') { // 🏸 체육관: 문은 setupDoors가 맡아요 (예전 종·점프맵은 없어졌어요)
-  } else if (id === 'Garden') {
-    CFG.CROPS.forEach((crop, i) => {
-      const spot = model.getObjectByName('CropSpot' + i);
-      const c = makeCrop(model, spot, crop);
-      c.setStage(S.garden[i] || 0);
-      world.crops[i] = c;
-      addInteract({
-        pos: spot.getWorldPosition(new V3()), r: 2.2,
-        text: () => (S.garden[i] || 0) < 3 ? ['물 주기 💧', crop.name] : ['수확하기 🧺', crop.name],
-        run: () => actWater(i),
-      });
-    });
+  } else if (id === 'Garden') { // 🌳 (1017f) 텃밭 자리 → 우리 반 독서 나무
+    buildReadTree(model);
+    addInteract({ pos: wp('TreeSpot'), r: 3.6, text: () => { const st = rtStage(); return ['독서 나무 🌳', `${RT_ST[st].nm} · 책 ${rtBooks()}권${rtPending() ? ' · 🎁 보상!' : ''}`]; }, run: openReadTree });
     addInteract({ pos: wp('Barrel'), r: 2.6, text: () => ['물방울 순서 기억하기 💧', '텃밭 물통'], run: openDropGame });
     signPlane(model, ['🌿 온실'], 1.8, 0.5, 0, 2.85, 1.9, { font: 44, pad: 4, fg: '#3B2F2A', bg: '#E6F7EE', stroke: false });
     setTimeout(applyGardenBloom, 0); // 이미 성공한 친구가 있으면 새로 지은 텃밭에도 꽃
@@ -4652,7 +4698,7 @@ function applyState(st) {
   syncThx(prev, first);
   syncHide(prev, first);
   if (S.chatOff && !isTeacher && !$('chatBox').classList.contains('hidden')) chatShow(false);
-  pbSync(); pgSync(); if (JSON.stringify([prev.pgb, prev.pgq]) !== JSON.stringify([S.pgb, S.pgq])) pgPanelRefresh(); syncPest(prev, first); renderPots(false); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🪴 내 화분') refillLife();
+  readTreeSync(); pbSync(); pgSync(); if (JSON.stringify([prev.pgb, prev.pgq]) !== JSON.stringify([S.pgb, S.pgq])) pgPanelRefresh(); syncPest(prev, first); renderPots(false); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🪴 내 화분') refillLife();
   renderRooms(false); if (!$('teacherPanel').classList.contains('hidden')) fillRoomAdmin();
   syncMural(prev, first);
   syncMeeting(prev, first);
@@ -5711,7 +5757,7 @@ function unbuildSite(info) { // 지은 건물을 다시 빈 부지로
   info.base.add(info.ghost);
   info.pad.visible = true;
   setSiteLabel(info);
-  if (id === 'Garden') world.crops = [];
+  if (id === 'Garden') { world.crops = []; rtw.g = null; rtw.key = ''; }
   if (id === 'Art') { world.decoGroup = null; world.decoArea = null; world.decos = {}; world.easelPos = null; mural.wall = null; }
   if (id === 'Playground') { world.bell = null; removeJumpMap(); bld.gymTempOn = undefined; }
 }
@@ -6890,8 +6936,8 @@ function initRvote() {
    ===================================================================== */
 const ACTION_LINK = { lib_books: 'read', lib_quiet: 'read', gar_water: 'water', gar_weed: 'water', plz_clean: 'decor', plz_deco: 'decor' };
 const ACTION_INFO = {
-  read:  { icon: '📖', name: '도서관에서 책 읽기', how: '도서관 벤치 앞에서 E를 눌러 책을 읽으면', need: 'Library', needName: '도서관' },
-  water: { icon: '💧', name: '텃밭에 물 주기', how: '텃밭 작물 앞에서 E를 눌러 물을 주면', need: 'Garden', needName: '텃밭' },
+  read:  { icon: '📖', name: '독서 나무 아래에서 책 읽기', how: '독서 나무 앞에서 E → 📖 책 읽기를 누르거나, 펫 체육관 독서 책상에 책을 기록하면', need: 'Garden', needName: '독서 나무' },
+  water: { icon: '💧', name: '독서 나무에 물 주기', how: '독서 나무 앞에서 E → 💧 물 주기를 누르면', need: 'Garden', needName: '독서 나무' },
   decor: { icon: '🌼', name: '광장에 장식 놓기', how: '🌼 꾸미기 버튼으로 광장 둘레 꾸미기 구역에 장식을 놓으면', need: null },
 };
 // 이 마을 미션은 어떤 마을 행동과 연결돼 있나? (템플릿 마을 미션, 또는 보상 값이 없던 예전 마을 미션만)
@@ -7554,7 +7600,7 @@ function applyGardenBloom() {
   const on = gardenCount() > 0;
   g.traverse(o => { if (o.name === 'GFlower') o.visible = on; });
   if (on && !dg.bloomLabel) dg.bloomLabel = makeLabel(g, [''], 0.9, 0, 3.2, 6.3);
-  if (dg.bloomLabel) { dg.bloomLabel.visible = on; if (on) dg.bloomLabel.userData.set(['🌼 꽃이 핀 텃밭', `순서 기억하기 성공 ${gardenCount()}명${backend?.mode === 'firebase' ? '' : ' (이 기기)'}`]); }
+  if (dg.bloomLabel) { dg.bloomLabel.visible = on; if (on) dg.bloomLabel.userData.set(['🌼 꽃이 핀 독서 나무 뜰', `순서 기억하기 성공 ${gardenCount()}명${backend?.mode === 'firebase' ? '' : ' (이 기기)'}`]); }
 }
 function syncDropGame(prev, first) {
   if (!world.sites.Garden?.model) dg.bloomLabel = null; // 텃밭이 치워지면 표지도 함께
@@ -9604,21 +9650,25 @@ const CEV_PER_DAY = 2;
 const cevOn = (k) => !!S.cev && S.cev.k === k && backend && backend.now() < S.cev.until;
 const cevBusy = () => !!S.cev && backend && backend.now() < S.cev.until + 15000; // 끝나고 15초 쉬었다가 다음 이벤트
 function cevToday() { bag.cev ||= {}; if (bag.cev.d !== dayNum()) bag.cev = { d: dayNum(), n: 0 }; return bag.cev.n; }
+const cevTop = () => rankList(weekNum(), 'sum')[0] || null; // 🏆 이번 주 능력치 합계 1위 (1017f: 이 친구만 반 동전 이벤트를 열어요)
+const cevMayOpen = () => isTeacher || (() => { const t = cevTop(); return !!(t && backend && rankHas(t, backend.uid)); })();
 function openCoinShop() {
   if (!joined) return;
   openLife('🎁 반 동전 이벤트', cevw.fill = (box) => {
     box.textContent = '';
     box.append(el2('p', 'lp-big', `🪙 쓸 수 있는 반 동전 ${coinAvail()}`));
     { const b = el2('button', 'btn', '🚲 탈것 가게 (반 전체가 함께 타요)'); b.style.background = '#CDEFC2'; b.onclick = openRides; box.append(b); }
-    box.append(el2('p', 'hint', `모두가 모은 반 동전으로 반 전체를 위한 이벤트를 열어요. 누가 열었는지는 남지 않아요. 한 사람은 하루 ${CEV_PER_DAY}번까지 (오늘 ${Math.max(0, CEV_PER_DAY - cevToday())}번 남았어요)`));
+    box.append(el2('p', 'hint', `모두가 모은 반 동전으로 반 전체를 위한 이벤트를 열어요. 🏆 이번 주 능력치 합계 1위만 열 수 있어요 (하루 ${CEV_PER_DAY}번까지 · 오늘 ${Math.max(0, CEV_PER_DAY - cevToday())}번 남았어요)`));
+    { const t = cevTop(); box.append(el2('p', cevMayOpen() ? 'up-win' : 'hint', isTeacher ? '🧑‍🏫 선생님은 언제든 열 수 있어요' : cevMayOpen() ? '🏆 이번 주 합계 1위! 반 친구들을 위해 이벤트를 열어 줘요' : `🔒 지금 열 수 있는 친구: 🏆 ${t ? `${rankNick(t[0], t[2])} (이번 주 합계 1위)` : '아직 없어요 (이번 주 점수가 없어요)'} · 공부해서 1위에 도전해요!`)); }
     const on = S.cev && backend.now() < S.cev.until ? CEV[S.cev.k] : null;
     if (on) box.append(el2('p', 'up-win', `${on.icon} 지금 ${on.name} 중! ${Math.ceil((S.cev.until - backend.now()) / 1000)}초 남았어요`));
     else if (cevBusy()) box.append(el2('p', 'hint', '방금 이벤트가 끝났어요. 잠깐 뒤에 다음 이벤트를 열 수 있어요'));
     for (const [k, E] of Object.entries(CEV)) {
       const row = el2('div', 'sg-row'), txt = el2('span', 'sg-name', `${E.icon} ${E.name} · 🪙${E.price}`);
       const b = el2('button', 'btn', '열기'); b.style.background = '#FFE066';
-      b.disabled = cevBusy() || !coinCan(E.price) || (!isTeacher && cevToday() >= CEV_PER_DAY);
+      b.disabled = !cevMayOpen() || cevBusy() || !coinCan(E.price) || (!isTeacher && cevToday() >= CEV_PER_DAY);
       b.onclick = async () => {
+        if (!cevMayOpen()) { toast('🔒 이번 주 능력치 합계 1위만 열 수 있어요', 'warn'); refillLife(); return; }
         b.disabled = true; const r = await backend.coinEvent(k, isTeacher ? 0 : E.price, E.dur); // 🧑‍🏫 선생님은 반 동전을 쓰지 않아요
         if (r.ok) { bag.cev.n++; saveBag(); closeLife(); }
         else { toast(r.reason === 'money' ? '🪙 반 동전이 모자라요' : r.reason === 'busy' ? '⏳ 다른 이벤트가 진행 중이에요' : '⚠️ 이벤트를 열지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); refillLife(); }
@@ -14628,16 +14678,12 @@ function buildInteriors() {
     // 📒 독서 구석 (왼쪽): 독서 나무 · 기록장 책상 · 많이 읽은 책
     const cols = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E];
     box(g, 0.6, 2.6, 4, 0x8A5A34, cx - w / 2 + 0.5, 1.3, cz - 6); for (const y of [0.5, 1.25, 2.0]) for (let b = 0; b < 8; b++) box(g, 0.4, 0.55, 0.32, cols[(b + y * 2) % 6 | 0], cx - w / 2 + 0.75, y + 0.3, cz - 7.6 + b * 0.42, o);
-    const tx = cx - w / 2 + 3.2, tz = cz + 4; mesh(TAPER, g, 0.5, 3.2, 0.5, 0x7A5436, tx, 1.6, tz); cyl(g, 1.3, 0.3, 0x8A5A34, tx, 0.15, tz);
-    bld.leafs = [];
-    for (let k = 0; k < 40; k++) { const a = k * 2.399, rr = 0.4 + (k % 7) * 0.22, y = 3.0 + (k % 5) * 0.35; const m = mesh(SPH_LO, g, 0.38, 0.32, 0.38, [0x5DB85F, 0x4FA04F, 0x7CC85C][k % 3], tx + Math.cos(a) * rr, y, tz + Math.sin(a) * rr, { solid: false, flat: true }); m.visible = false; m.userData.kind = k % 9 === 4 ? 'flower' : k % 9 === 7 ? 'fruit' : 'leaf'; bld.leafs.push(m); }
-    bld.treeLabel = makeLabel(g, [''], 0.8, tx, 5.6, tz);
+    bld.leafs = []; // (1017f) 체육관 안 독서 나무는 없앴어요 → 옛 텃밭 자리의 🌳 독서 나무
     bld.genreSign = makeLabel(g, [''], 0.7, cx - w / 2 + 1.4, 3.5, cz - 6);
     const dx = cx - w / 2 + 3.2, dz = cz - 2; box(g, 2.4, 0.12, 1.2, 0xE9C98F, dx, 0.85, dz); box(g, 0.8, 0.1, 0.6, 0xFFFFFF, dx, 0.95, dz, o); box(g, 0.08, 0.3, 0.08, 0x3B2F2A, dx + 0.4, 1.05, dz + 0.1, { solid: false, rz: 0.5 });
     for (const sx of [-1, 1]) box(g, 0.1, 0.8, 0.1, 0x8A5A34, dx + sx * 1.1, 0.4, dz, o);
     makeLabel(g, ['📒 독서 책상', '선생님께 확인받고 써요'], 0.8, dx, 2.3, dz);
     addInteract({ pos: new V3(dx, 1, dz + 1), r: 2.6, text: () => roomNow() === 'lib' ? ['독서 기록하기 📒', '선생님께 확인받고 써요'] : null, run: openReadLog });
-    addInteract({ pos: new V3(tx, 1, tz + 1.4), r: 2.4, text: () => roomNow() === 'lib' ? ['독서 나무 보기 🌳', `반 전체 ${S.read?.n || 0}권`] : null, run: () => toast(`🌳 우리 반이 함께 기록한 책 ${S.read?.n || 0}권!`, 'info') });
   }
   // ---------- 🎨 미술 공방 ----------
   { const r = ROOMS.art, { cx, cz, w, d } = r; roomShell(g, r);
@@ -14778,7 +14824,7 @@ function renderRooms(force) {
       const on = k < show; m.visible = on; if (!on) return;
       if (m.userData.kind === 'flower' && n >= 50) m.material = M(0xFF9AC0); else if (m.userData.kind === 'fruit' && n >= 100) m.material = M(0xE63C32);
     });
-    bld.treeLabel.userData.set(['🌳 우리 반 독서 나무', `함께 기록한 책 ${n}권${n >= 100 ? ' · 🍎 열매가 열렸어요' : n >= 50 ? ' · 🌸 꽃이 폈어요' : ''}`]);
+    bld.treeLabel?.userData.set(['🌳 우리 반 독서 나무', `함께 기록한 책 ${n}권${n >= 100 ? ' · 🍎 열매가 열렸어요' : n >= 50 ? ' · 🌸 꽃이 폈어요' : ''}`]);
     const g = rd.g || {}, top = READ_GENRES.map(([ic, nm], i) => [ic, nm, g[i] || 0]).sort((a, b) => b[2] - a[2]).filter(x => x[2]).slice(0, 3);
     bld.genreSign.userData.set(['📊 우리 반이 많이 읽은 책', ...(top.length ? top.map(([ic, nm, c]) => `${ic} ${nm} ${c}권`) : ['아직 기록이 없어요'])]);
   }
@@ -14839,7 +14885,7 @@ function openReadLog() {
     go.onclick = async () => {
       bld.readBusy = true; refillLife();
       const res = await backend.readLog(pick.g); bld.readBusy = false; let gain = 0;
-      if (res.ok) { earnMat('독서 기록'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
+      if (res.ok) { earnMat('독서 기록'); creditAction('read'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
       if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
       bag.reads.unshift({ t: (pick.t || '').trim().slice(0, 30), g: pick.g, s: pick.s, f: pick.f, k: pick.k, p: pick.p, at: Date.now() }); bag.reads = bag.reads.slice(0, 60);
       let msg = `📒 기록했어요! ${gain > 0 ? `📚 독서력 +${gain}` : '오늘 독서력은 가득 찼어요'} · 독서 나무가 자라요`;
@@ -15027,6 +15073,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017f', d: '10월 17일', items: ['🌳 텃밭 자리에 우리 반 독서 나무가 생겼어요! 읽은 책을 기록할수록 씨앗 → 새싹 → … → 🌈 무지개 나무로 자라고, 단계마다 모두 보상을 받아요', '🐾 펫 체육관 앞 책장·평상과 체육관 안 나무는 정리했어요'] },
   { id: '1017e', d: '10월 17일', items: ['💬 채팅! 💬 버튼(또는 Enter)을 누르면 위에 입력창이 나와요 · 말은 머리 위 말풍선으로 보이고 1분 뒤 사라져요 · 고운 말만!', '🛋️ 집 꾸미기: 러그는 가구 밑에 깔고, 화분·인형·트로피·쿠션은 탁자·책장·침대 위에 올릴 수 있어요'] },
   { id: '1017d', d: '10월 17일', items: ['⭐ 능력치 레벨이 새로 시작해요! 이제 모은 점수가 계속 쌓여 레벨이 올라요 (최고 Lv12 · 한 달쯤 꾸준히 하면 만렙)', '⚔️ Lv3·6·9·12마다 성 공방전 역할이 한 단계씩 강해져요 (최대 4단계)'] },
   { id: '1017c', d: '10월 17일', items: ['📚🎉 독서 축제! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요', '❓ 📊 내 능력치 → "점수 얻는 방법"에서 과목별로 점수 얻는 곳을 볼 수 있어요'] },
