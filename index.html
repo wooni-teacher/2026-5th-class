@@ -1382,6 +1382,10 @@
     <p class="hint">1단계 우리 마을 · 2단계 수학 광산 마을 · 3단계 역사 마을 · 4단계 영어 마을. 속성을 바꾸면 관장 펫이 그 속성으로 바뀌어요.</p>
     <div id="tpPgym"></div>
 
+    <h3>⭐ 능력치 레벨 경험치</h3>
+    <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv12). 능력치는 하루 100점까지 오르니, 합계 2000점이면 매일 꾸준히 할 때 약 한 달이에요. Lv3·6·9·12마다 성 공방전 역할이 강해져요.</p>
+    <div id="tpLvx"></div>
+
     <h3>🙈 변신 숨바꼭질 (메인 마을)</h3>
     <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
     <p class="hint" id="tpHideNow"></p>
@@ -2034,7 +2038,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2070,7 +2074,7 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
-    pgb: plainObj(v.pgb), pgq: Object.fromEntries(Object.entries(plainObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: plainObj(v.pgym), pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    lvx: plainObj(v.lvx), pgb: plainObj(v.pgb), pgq: Object.fromEntries(Object.entries(plainObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: plainObj(v.pgym), pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -5395,7 +5399,7 @@ function kickMe() {
   $('kickOverlay').classList.remove('hidden'); playSfx('oops');
 }
 function fillTeacherPanel() {
-  fillFestAdmin(); fillWhoAdmin(); fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin();
+  fillFestAdmin(); fillWhoAdmin(); fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin(); try { fillPgymAdmin(); } catch (e) { console.warn(e); }
   $('tpForm').classList.toggle('hidden', !isTeacher); $('tpTabs')?.classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
   $('tpPath').textContent = `${DB_ROOT}/teachers/${backend?.uid}`;
@@ -14923,6 +14927,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1017d', d: '10월 17일', items: ['⭐ 능력치 레벨이 새로 시작해요! 이제 모은 점수가 계속 쌓여 레벨이 올라요 (최고 Lv12 · 한 달쯤 꾸준히 하면 만렙)', '⚔️ Lv3·6·9·12마다 성 공방전 역할이 한 단계씩 강해져요 (최대 4단계)'] },
   { id: '1017c', d: '10월 17일', items: ['📚🎉 독서 축제! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요', '❓ 📊 내 능력치 → "점수 얻는 방법"에서 과목별로 점수 얻는 곳을 볼 수 있어요'] },
   { id: '1017b', d: '10월 17일', items: ['🧮 수학력·🏛️ 사회력 점수가 더 많이 올라요 (광산 +4 · 도형 +3 · 균형 다리 +10 · 시대 퀴즈 +4 · 박물관 +5/+8/+12) · 📚 독서: 책 한 권마다 완독 보너스 +10, 그림책·만화·그림 많은 책 배율 올림'] },
   { id: '1017a', d: '10월 17일', items: ['📅 능력치마다 하루 100점까지 (주간 랭킹 점수도 같이) · 📊 내 능력치에서 오늘 모은 점수 확인'] },
@@ -16987,7 +16992,18 @@ function pgSync() { // 관장 속성이 바뀌면 이름표를 다시 써요
   if (!$('teacherPanel').classList.contains('hidden')) fillPgymAdmin();
 }
 function pgPanelRefresh() { if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🏆 펫 체육관 관장') refillLifeSoft(); }
-function fillPgymAdmin() {
+function fillLvxAdmin() { // ⭐ 레벨별 필요 경험치 (state/lvx/1..12)
+  const box = $('tpLvx'); if (!box) return; box.textContent = '';
+  const grid = el2('div', ''); grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px';
+  const ins = [], sum = el2('p', 'hint', ''), upd = () => { let t = 0; ins.forEach((x, i) => { t += Math.max(1, +x.value || 0); x.nextSibling.textContent = `누적 ${t}`; }); sum.textContent = `최고 Lv${LV_MAX}까지 합계 ${t}점 · 하루 100점씩이면 약 ${Math.ceil(t / 100)}일`; };
+  for (let i = 1; i <= LV_MAX; i++) { const c = el2('label', ''); c.style.cssText = 'display:flex;flex-direction:column;font-size:13px;gap:2px'; const inp = document.createElement('input'); inp.type = 'number'; inp.min = '1'; inp.max = '5000'; inp.className = 'tinput'; inp.value = lvNeed(i); inp.oninput = upd; ins.push(inp);
+    c.append(el2('b', '', `Lv${i - 1} → Lv${i}${i % 3 === 0 ? ' ⚔️' : ''}`), inp, el2('span', 'hint', '')); grid.append(c); }
+  const save = el2('button', 'btn', '💾 저장'), def = el2('button', 'btn', '↺ 기본값 (합계 2000)'); save.style.background = '#FFD23C'; def.style.background = '#fff';
+  save.onclick = () => { const u = {}; ins.forEach((x, i) => { u[`lvx/${i + 1}`] = Math.min(5000, Math.max(1, Math.round(+x.value || 1))); }); adminDo(u, '⭐ 능력치 레벨 경험치를 바꿨어요'); };
+  def.onclick = () => { ins.forEach((x, i) => { x.value = LV_DEF[i]; }); upd(); };
+  const row = el2('div', 'row-center wrap'); row.append(def, save); box.append(grid, sum, row); upd();
+}
+function fillPgymAdmin() { fillLvxAdmin();
   const box = $('tpPgym'); if (!box) return; box.textContent = '';
   for (const n of [1, 2, 3, 4]) { const row = el2('div', 'sg-row'), sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `${n}단계 관장 속성`);
     for (const t of Object.keys(PG_WHO)) { const op = document.createElement('option'); op.value = t; op.textContent = `${PT[t].i} ${PT[t].n}`; sel.append(op); } sel.value = pgType(n);
@@ -17896,8 +17912,12 @@ const STATS = {
   read: { icon: '📚', name: '독서력', where: '펫 체육관 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '🌿 의원 치료량 +1씩' },
 };
 bag.stat ||= {};
+if (bag.statV !== 2) { bag.stat = {}; bag.statV = 2; saveBag(); } // 1017d 능력치 레벨 새로 시작 (누적 경험치 · 최고 Lv12)
+const LV_MAX = 12, LV_DEF = [30, 50, 70, 90, 110, 130, 160, 190, 230, 270, 310, 360]; // 레벨마다 필요한 경험치 (기본 합계 2000 · 선생님이 관리 화면에서 바꿔요: state/lvx)
+const lvNeed = (i) => { const v = +S.lvx?.[i]; return v >= 1 && v <= 5000 ? Math.round(v) : LV_DEF[i - 1]; }; // i = 1..12
+const lvAt = (i) => { let t = 0; for (let j = 1; j <= i; j++) t += lvNeed(j); return t; }; // Lv i까지 누적 경험치
 const statExp = (k) => bag.stat?.[k] || 0;
-const statLv = (k) => Math.min(10, Math.floor(statExp(k) / 10));
+const statLv = (k) => { const e = statExp(k); let lv = 0; while (lv < LV_MAX && e >= lvAt(lv + 1)) lv++; return lv; };
 const statTier = (k) => Math.floor(statLv(k) / 3);
 const STAT_DAY_MAX = 100; // 📅 능력치마다 하루에 오를 수 있는 최대 (선생님 요청 · 랭킹 점수도 같이)
 const READ_FEST_FIRST = Date.UTC(2026, 9, 17) / 86400000, READ_FEST_LAST = Date.UTC(2026, 9, 30) / 86400000; // 📚 독서 축제 10/17~10/30 (KST) — 독서력 하루 상한 없음
@@ -17913,7 +17933,7 @@ function addStat(k, n) {
   bag.statDay[k] = (bag.statDay[k] || 0) + n; if (bag.statDay[k] >= statCap(k)) setTimeout(() => toast(`📅 오늘 ${STATS[k].icon} ${STATS[k].name} ${STAT_DAY_MAX}점을 꽉 채웠어요! 🎉`, 'success'), 1200);
   if (joined) earnCoins(Math.min(20, Math.round(n))).then(renderCoinChip); // 🪙 공부하면 반 동전도 쌓여요
   rankAdd(k, n); // 🏆 이번 주 점수 (능력치가 최고여도 계속 쌓여요)
-  const before = statLv(k); bag.stat[k] = Math.min(100, statExp(k) + n); saveBag();
+  const before = statLv(k); bag.stat[k] = Math.min(999999, statExp(k) + n); saveBag();
   const after = statLv(k);
   if (after > before) { toast(`📈 ${STATS[k].icon} ${STATS[k].name} Lv${after}!${after % 3 === 0 ? ` · 성 공방전 ${STATS[k].role.split(' ')[0]} ${STATS[k].role.split(' ')[1]} 강화 ${statTier(k)}단계` : ''}`, 'success'); playSfx('fanfare'); }
 }
@@ -17922,12 +17942,12 @@ function openStats() {
     box.textContent = ''; { const b = el2('button', 'btn', '🏆 이번 주 능력치 랭킹'); b.style.background = '#FFE066'; b.onclick = openRank; box.append(el2('div', 'row-center', null)); box.lastChild.append(b); }
     { const b = el2('button', 'btn', '❓ 점수 얻는 방법'); b.style.background = '#D7F0FF'; b.onclick = openStatGuide; box.lastChild.append(' ', b); }
     if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요 (D-${READ_FEST_LAST - dayNum()})`));
-    box.append(el2('p', 'hint', `과목 퀴즈를 잘 풀면 능력치가 올라요. 능력치마다 하루 ${STAT_DAY_MAX}점까지 오르고(주간 랭킹 점수도 같아요), 다음 날 0시에 다시 채워요. 3레벨마다 성 공방전 역할이 한 단계 강해져요.`));
+    box.append(el2('p', 'hint', `과목 퀴즈를 잘 풀면 능력치가 올라요. 능력치마다 하루 ${STAT_DAY_MAX}점까지 오르고(주간 랭킹 점수도 같아요), 다음 날 0시에 다시 채워요. 모은 점수가 쌓여 레벨이 올라요 (최고 Lv${LV_MAX} · 누적 ${lvAt(LV_MAX)}점). Lv3·6·9·12마다 성 공방전 역할이 한 단계 강해져요.`));
     for (const [k, S2] of Object.entries(STATS)) {
-      const lv = statLv(k), e = statExp(k), row = el2('div', 'stat-row');
-      const head = el2('div', 'stat-head'); head.append(el2('b', '', `${S2.icon} ${S2.name}`), el2('span', 'stat-lv', `Lv ${lv}${lv >= 10 ? ' (최고)' : ''}`));
-      const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${lv >= 10 ? 100 : (e % 10) * 10}%`; bar.append(fill);
-      row.append(head, bar, el2('p', 'stat-day', statCap(k) === Infinity ? `📅 오늘 ${statToday(k)}점 · 📚 독서 축제: 상한 없음!` : `📅 오늘 ${statToday(k)} / ${STAT_DAY_MAX}점${statToday(k) >= STAT_DAY_MAX ? ' · 꽉 찼어요!' : ''}`), el2('p', 'hint', `올리는 곳: ${S2.where}`), el2('p', 'hint', `⚔️ ${S2.role} · 지금 강화 ${statTier(k)}단계`)); box.append(row);
+      const lv = statLv(k), e = statExp(k), row = el2('div', 'stat-row'), lo = lvAt(lv), hi = lv >= LV_MAX ? lo : lvAt(lv + 1);
+      const head = el2('div', 'stat-head'); head.append(el2('b', '', `${S2.icon} ${S2.name}`), el2('span', 'stat-lv', `Lv ${lv}${lv >= LV_MAX ? ' (최고)' : ` · 다음 레벨까지 ${hi - e}점`}`));
+      const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${lv >= LV_MAX ? 100 : Math.floor((e - lo) / (hi - lo) * 100)}%`; bar.append(fill);
+      row.append(head, bar, el2('p', 'stat-day', `⭐ 누적 ${e}점 / 최고 레벨 ${lvAt(LV_MAX)}점`), el2('p', 'stat-day', statCap(k) === Infinity ? `📅 오늘 ${statToday(k)}점 · 📚 독서 축제: 상한 없음!` : `📅 오늘 ${statToday(k)} / ${STAT_DAY_MAX}점${statToday(k) >= STAT_DAY_MAX ? ' · 꽉 찼어요!' : ''}`), el2('p', 'hint', `올리는 곳: ${S2.where}`), el2('p', 'hint', `⚔️ ${S2.role} · 지금 강화 ${statTier(k)}단계`)); box.append(row);
     }
   });
 }
