@@ -9323,6 +9323,8 @@ function fishSpot(p) { // 낚시할 수 있는 자리: 연못가, 뒷산 계곡,
   const [px, pz, pr] = LIFE_POS.pond;
   if (Math.hypot(p.x - px, p.z - pz) - pr < 2.6) { const a = Math.atan2(p.z - pz, p.x - px); return { w: 'pond', at: new V3(px + Math.cos(a) * 2.8, 0.1, pz + Math.sin(a) * 2.8) }; }
   if (p.x > BEACH.pierX1 - 3.5 && Math.abs(p.z - BEACH.pierZ) <= 1.4) return null; // 부두 끝은 배 타는 곳
+  if (sail.on || sea.on) return null; // ⛵ 배 타는 중
+  if (p.x > 71 && (Math.abs(p.z - ISLE.dock[1]) <= 4 || p.z >= SY.z - 4 || DRIFT.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 2.6))) return null; // ⚓ 선착장 · 🛠️ 조선소 · 🪵 떠내려온 나무는 그 행동 먼저
   if (p.x >= BEACH.shore - 0.2 && Math.abs(p.z - BEACH.pierZ) <= 1.4) return { w: 'sea', at: new V3(p.x + 1.5, 0.1, BEACH.pierZ + (p.z >= BEACH.pierZ ? 3 : -3)) }; // 부두 옆
   if (inBeach(p.x, p.z) && p.x >= BEACH.shore - 3.5) return { w: 'sea', at: new V3(Math.max(p.x + 4, BEACH.shore + 3), 0.1, p.z) };
   return null;
@@ -15689,7 +15691,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
-  { id: '1018b', d: '10월 18일', items: ['⛵ 내 배 만들기! 배 가게에서 재료를 사고 🛠️ 조선소에서 망치질로 뗏목 · 나룻배 · 돛단배 · 해적선을 만들어요', '🏝️ 보물섬은 이제 바다로 둘러싸여 헤엄치거나 날아서는 못 가요. ⚓ 선착장에서 내 배를 띄워 직접 노 저어 가요', '🪵 바닷가의 떠내려온 나무를 주우면 판자가 생겨요 · 배 색과 깃발도 꾸며요 (바다에서 친구들에게 보여요)'] },
+  { id: '1018b', d: '10월 18일', items: ['🎣 선착장·조선소·떠내려온 나무 앞에서는 낚시 대신 배 타기·줍기가 먼저 나와요', '⛵ 내 배 만들기! 배 가게에서 재료를 사고 🛠️ 조선소에서 망치질로 뗏목 · 나룻배 · 돛단배 · 해적선을 만들어요', '🏝️ 보물섬은 이제 바다로 둘러싸여 헤엄치거나 날아서는 못 가요. ⚓ 선착장에서 내 배를 띄워 직접 노 저어 가요', '🪵 바닷가의 떠내려온 나무를 주우면 판자가 생겨요 · 배 색과 깃발도 꾸며요 (바다에서 친구들에게 보여요)'] },
   { id: '1018a', d: '10월 18일', items: ['🛍️ 우리 집 마을 동쪽 모래사장에 해변 상점가가 생겼어요! 마당·가구 · 옷 · 펫 · 간식·물약 · 페인트 · 기념품 교환소 · 반 공동 구매소', '🚤 부두 끝에서 보트 경주! 고리 8개를 지나 기록에 도전 · 🏝️ 보물섬 가는 배를 타고 단서 4개를 풀면 보물상자', '🔨 작업대는 없어졌어요 (마당 장식은 마당·가구 가게에서)'] },
   { id: '1017p', d: '10월 17일 (밤)', items: ['🏠 우리 집 안 펫과 펫 집이 바로 보이게 고쳤어요'] },
   { id: '1017o', d: '10월 17일 (밤)', items: ['🏠 산책을 그만하면 펫이 집 안에서 기다려요 · 산책하는 동안은 집이 비어요'] },
