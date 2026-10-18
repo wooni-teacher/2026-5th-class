@@ -4097,7 +4097,7 @@ function updatePlayer(dt) {
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
   const moving = Math.min(1, Math.hypot(mx, mz));
   if (moving > 0.05) {
-    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1); p.x += mx * spd * dt; p.z += mz * spd * dt;
+    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt;
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -4109,7 +4109,7 @@ function updatePlayer(dt) {
   jumpBuffer -= dt;
   const flying = player.avatar.rideK === 'sky' && !isFrozen() && !sgFrozen(); // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
   if (flying) { const up = keys[' '] || fly.up ? 1 : 0, dn = keys.shift || keys.c || fly.dn ? 1 : 0; player.vy = (up - dn) * FLY_VY; jumpBuffer = 0; }
-  else { if (jumpBuffer > 0 && player.onGround) { player.vy = JUMP; player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
+  else { if (jumpBuffer > 0 && player.onGround && !sea.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
   let ny = p.y + player.vy * dt; if (flying && ny > FLY_MAX) ny = FLY_MAX;
   if (player.vy > 0) { // 머리 부딪힘
     for (const { box: b } of colliders) {
@@ -4118,7 +4118,7 @@ function updatePlayer(dt) {
       }
     }
   }
-  const g = groundAt(p);
+  const g = sea.on ? 0.05 : groundAt(p); // 🚤 보트는 물 위
   if (ny > g && player.onGround && player.vy <= 0 && ny - g < 0.7 && p.z < -60.4) ny = g; // 산비탈을 내려갈 때 땅에 붙어 걸어요
   if (ny <= g) { ny = g; player.vy = 0; player.onGround = true; } else player.onGround = false;
   p.y = ny;
@@ -7141,6 +7141,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
+  if (inIsle(x, z) || (sea.on && inSeaCourse(x, z))) return true; // 🏝️ 보물섬 · 🚤 보트 경주
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
@@ -8964,6 +8965,7 @@ function buildShop() {
   addInteract({ pos: g.localToWorld(new V3(0, 1, -2.2)), r: 2.8, text: () => ['팔기·마을 발전 보기 🏪', '마을 가게'], run: openShop });
 }
 function buildWorkbench(parent) {
+  return; // 1018a: 작업대는 없앴어요 → 해변 상점가 🌳 마당·가구 가게에서 🐚로 사요
   const [x, z] = LIFE_POS.bench, g = new THREE.Group(); g.position.set(x, 0, z); parent.add(g);
   box(g, 2.4, 0.2, 1.2, C.wood, 0, 1.0, 0);
   for (const sx of [-1, 1]) for (const sz of [-0.45, 0.45]) box(g, 0.15, 1.0, 0.15, 0x8A5A34, sx, 0.5, sz, { solid: false });
@@ -10534,7 +10536,7 @@ function buildBeach() {
     box(b, 1.6, 0.6, 3.6, 0xF2F2F2, 0, 0.2, 0, o); box(b, 1.7, 0.14, 3.7, 0xE2584A, 0, 0.45, 0, o); cyl(b, 0.06, 2.4, 0x8A5A34, 0, 1.6, 0, o); mesh(GABLE, b, 0.05, 1.8, 1.4, 0xFFFFFF, 0, 0.8, 0.2, { solid: false, rz: -Math.PI / 2 }); }
   // 야자수·파라솔·수건·모래성
   for (const [x, z, l] of [[64, -40, 0.25], [66, -12, -0.2], [63, 8, 0.3], [65, 58, -0.25], [63, 86, 0.2], [66, 118, -0.3], [64, 142, 0.25]]) palm(g, x, z, l);
-  for (const [x, z, c] of [[70, -28, 0xE2584A], [71, 14, 0x4A9AE8], [70, 72, 0xF5B82A], [71, 104, 0x9A5AD8]]) {
+  for (const [x, z, c] of [[70, -28, 0xE2584A], [71, 14, 0x4A9AE8]]) { // (1018a 상점가 자리 파라솔은 치웠어요)
     cyl(g, 0.07, 2.6, 0xFFFFFF, x, 1.3, z, o); mesh(CONE, g, 1.9, 0.8, 1.9, c, x, 2.7, z, o);
     for (let k = 0; k < 8; k += 2) mesh(CONE, g, 1.92, 0.81, 1.92, 0xFFFFFF, x, 2.7, z, { solid: false, ry: k * 0.785 }).scale.set(0.35, 0.81, 1.92);
     box(g, 1.1, 0.04, 2.2, [0xFFB3C7, 0xB9DCFF, 0xFFE38A][Math.abs(z) % 3], x + 1.6, 0.03, z + 0.4, o);
@@ -10547,6 +10549,205 @@ function buildBeach() {
   registerSolids(g, 'beach');
   for (const [x, z] of [[64, -40], [66, -12], [63, 8], [65, 58], [63, 86], [66, 118], [64, 142]]) (world.trees ||= []).push({ x: x + 1, z, palm: true }); // 야자수도 흔들 수 있어요
   batchStatic(g);
+}
+// ================= 🛍️ 해변 상점가 (1018a · 우리 집 마을 동쪽 모래사장) =================
+const SHOP_X = 70.6, SHOPS = [
+  { k: 'yard', z: 70, icon: '🌳', n: '마당·가구 가게', d: '마당 장식 · 집 가구', col: 0x7CC85C, run: () => openYardShop() },
+  { k: 'wear', z: 80, icon: '👕', n: '옷가게', d: '모자 · 얼굴 · 등 꾸미기', col: 0x4A9AE8, run: () => openWardrobe() },
+  { k: 'pet', z: 90, icon: '🐾', n: '펫 가게', d: '집 펫 데려오기 · 간식', col: 0xFF9AC0, run: () => openPetShop() },
+  { k: 'potion', z: 100, icon: '🍭', n: '간식·물약 가게', d: '빨라지는 물약 · 점프 젤리', col: 0xB58CF0, run: () => openPotionShop() },
+  { k: 'paint', z: 110, icon: '🎨', n: '페인트·리모델링', d: '집 모양 · 색 · 이름', col: 0xF5B82A, run: () => { const id = myLot(); if (!id) { toast('🏡 먼저 우리 집 마을에서 땅을 사요', 'info'); return; } openHouse(id); } },
+  { k: 'gift', z: 120, icon: '🏪', n: '기념품 교환소', d: '잡은 생물 팔기', col: 0xE2584A, run: () => openShop() },
+  { k: 'coin', z: 130, icon: '🪙', n: '반 공동 구매소', d: '반 동전 · 탈것 · 반 이벤트', col: 0xD9A82A, run: () => openCoinStore() },
+];
+function buildShopStreet() {
+  const g = new THREE.Group(); g.name = 'ShopStreet'; scene.add(g); const o = { solid: false };
+  for (const S0 of SHOPS) {
+    const x = SHOP_X, z = S0.z, c = S0.col;
+    box(g, 4.2, 3.0, 5.6, 0xFFF6E6, x + 0.3, 1.5, z);                                    // 몸 (부딪혀요)
+    box(g, 4.4, 0.4, 5.8, shade(c, 0.85), x + 0.3, 3.1, z, o);                           // 지붕 띠
+    for (let k = 0; k < 6; k++) box(g, 1.6, 0.08, 0.93, k % 2 ? 0xFFFFFF : c, x - 2.4, 2.75, z - 2.33 + k * 0.93, { solid: false, rz: 0.35 }); // 줄무늬 차양
+    box(g, 0.9, 1.0, 4.4, shade(c, 1.1), x - 2.05, 0.5, z);                              // 가게 앞 판매대
+    box(g, 1.0, 0.08, 4.6, 0xFFFFFF, x - 2.05, 1.04, z, o);
+    box(g, 0.06, 1.5, 3.4, 0x3B2F2A, x - 1.78, 1.95, z, o);                              // 가게 안 (어두운 창)
+    signPlane(g, [`${S0.icon} ${S0.n}`], 4.2, 0.9, x - 1.82, 3.75, z, { font: 46, pad: 4, fg: '#3B2F2A', bg: '#FFFFFF', stroke: false }).rotation.y = -Math.PI / 2;
+    for (let k = 0; k < 3; k++) ball(g, 0.22, [c, 0xFFD23C, 0xFFFFFF][k], x - 2.05, 1.3, z - 1.2 + k * 1.2, o); // 판매대 위 물건
+    addInteract({ pos: new V3(x - 3.4, 1, z), r: 2.8, text: () => [`${S0.icon} ${S0.n}`, S0.d], run: S0.run });
+  }
+  makeLabel(g, ['🛍️ 해변 상점가', '우리 집 마을 동쪽 모래사장'], 1.4, 66, 5.8, 64);
+  registerSolids(g, 'shops'); batchStatic(g);
+}
+const YARD_PRICE = { branch: 15, stone: 15, fruit: 20, bug: 30, fish: 30, shell: 30, hv: 40 };
+const yardPrice = (r) => Object.entries(r.need).reduce((a, [k, n]) => a + (YARD_PRICE[k] || 20) * n, 0);
+function openYardShop(tab = 'yard') {
+  openLife('🌳 마당·가구 가게', (box) => {
+    box.textContent = ''; const tabs = el2('div', 'row-center wrap');
+    for (const [k, n] of [['yard', '🌳 마당 장식'], ['furn', '🛋️ 집 가구']]) { const b = el2('button', 'btn', n); b.style.background = tab === k ? '#FFE066' : '#fff'; b.onclick = () => openYardShop(k); tabs.append(b); }
+    box.append(tabs, el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`));
+    const grid = el2('div', 'lp-grid');
+    if (tab === 'yard') {
+      box.append(el2('p', 'hint', '산 장식은 가방에 들어가요. 내 땅에서 🌼 꾸미기로 놓아요.'));
+      for (const r of RECIPES.filter(r => !r.hv)) { const pr = yardPrice(r), card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', r.icon), el2('div', 'lp-name', r.name), el2('div', 'lp-sub', `🐚 ${pr} · 가방 ${bag.f[r.t] || 0}`));
+        const b = el2('button', 'btn lp-btn', '사기'); b.disabled = (bag.shell || 0) < pr; b.onclick = () => { if ((bag.shell || 0) < pr) return; bag.shell -= pr; bag.f[r.t] = (bag.f[r.t] || 0) + 1; saveBag(); updateHUD(null); playSfx('coin'); toast(`🌳 ${josa(r.name, '을', '를')} 샀어요! 내 땅에서 놓아 보세요`, 'success'); refillLife(); }; card.append(b); grid.append(card); }
+    } else {
+      box.append(el2('p', 'hint', '산 가구는 우리 집 안 📦 가구 상자에 들어가요. 집 안 🛋️ 꾸미기에서 놓아요.'));
+      FURN.forEach((f, t) => { if (f.grown || f.special || !f.price) return; const card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', f.icon), el2('div', 'lp-name', f.name), el2('div', 'lp-sub', `🐚 ${f.price} · 상자 ${bag.fur[t] || 0}`));
+        const b = el2('button', 'btn lp-btn', '사기'); b.disabled = (bag.shell || 0) < f.price; b.onclick = () => { if ((bag.shell || 0) < f.price) return; bag.shell -= f.price; bag.fur[t] = (bag.fur[t] || 0) + 1; saveBag(); updateHUD(null); playSfx('coin'); toast(`🛋️ ${josa(f.name, '을', '를')} 샀어요! 우리 집 가구 상자에 들어갔어요`, 'success'); refillLife(); }; card.append(b); grid.append(card); });
+    }
+    box.append(grid);
+  });
+}
+function openPetShop() {
+  openLife('🐾 펫 가게', (box) => {
+    box.textContent = ''; const k = hpCur();
+    box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0} · 🍪 간식 ${bag.hpet.snacks | 0}개`));
+    box.append(el2('p', 'hint', '간식 묶음을 사 두면 집에서 🍪 간식 주기를 할 때 조개 대신 써요.'));
+    const row = el2('div', 'row-center wrap');
+    for (const [n, pr] of [[5, 40], [12, 90]]) { const b = el2('button', 'btn', `🍪 간식 ${n}개 · 🐚${pr}`); b.style.background = '#FFF3C4'; b.disabled = (bag.shell || 0) < pr; b.onclick = () => { if ((bag.shell || 0) < pr) return; bag.shell -= pr; bag.hpet.snacks = (bag.hpet.snacks | 0) + n; saveBag(); updateHUD(null); playSfx('coin'); toast(`🍪 간식 ${n}개를 샀어요!`, 'success'); refillLife(); }; row.append(b); }
+    const go = el2('button', 'btn', k ? '🐾 내 펫 · 다른 펫 데려오기' : '🐾 펫 데려오기 (첫 펫 무료)'); go.style.background = '#FFD6E5'; go.onclick = openHomePet; row.append(go);
+    box.append(row, el2('p', 'hint', '🛁 목욕·🎾 공놀이·🤚 쓰다듬기는 우리 집에서 해요. 펫 꾸미기(리본·모자·왕관)는 친밀도가 오르면 열려요.'));
+  });
+}
+const BUFFS = [
+  { k: 'speed', icon: '🧪', n: '빨라지는 물약', d: '1분 동안 빠르기 +35%', pr: 30, sec: 60 },
+  { k: 'jump', icon: '🍬', n: '점프 젤리', d: '1분 동안 점프가 높아져요', pr: 20, sec: 60 },
+  { k: 'spark', icon: '✨', n: '반짝 발자국 사탕', d: '2분 동안 걸을 때 반짝반짝', pr: 15, sec: 120 },
+  { k: 'combo', icon: '🍹', n: '무지개 주스', d: '1분 동안 빠르기 + 점프 + 반짝', pr: 55, sec: 60 },
+];
+const buffOn = (k) => (bag.buff?.[k] || 0) > Date.now() || (bag.buff?.combo || 0) > Date.now();
+const buffFair = () => !(S.siege?.on && typeof sgMine === 'function' && sgMine()); // ⚔️ 성 공방전 중에는 효과 없음
+const buffSpeed = () => buffOn('speed') && buffFair() ? 1.35 : 1, buffJump = () => buffOn('jump') && buffFair() ? 1.45 : 1;
+function openPotionShop() {
+  openLife('🍭 간식·물약 가게', (box) => {
+    box.textContent = ''; box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', '먹으면 잠깐 동안 효과가 생겨요. 성 공방전·펫 배틀 같은 대결에는 효과가 없어요.'));
+    const grid = el2('div', 'lp-grid');
+    for (const B of BUFFS) { const left = Math.max(0, Math.ceil(((bag.buff?.[B.k] || 0) - Date.now()) / 1000)), card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', B.icon), el2('div', 'lp-name', B.n), el2('div', 'lp-sub', `${B.d} · 🐚${B.pr}`));
+      const b = el2('button', 'btn lp-btn', left ? `${left}초 남음` : '먹기'); b.disabled = !!left || (bag.shell || 0) < B.pr;
+      b.onclick = () => { if ((bag.shell || 0) < B.pr) return; bag.shell -= B.pr; (bag.buff ||= {})[B.k] = Date.now() + B.sec * 1000; saveBag(); updateHUD(null); playSfx('fanfare'); burst(player.pos.clone().setY(1.5), [0xB58CF0, 0xFFD23C, 0xFFFFFF], 30, 4, 2); toast(`${B.icon} ${B.n}! ${B.d}`, 'success'); refillLife(); }; card.append(b); grid.append(card); }
+    box.append(grid);
+  });
+}
+function openCoinStore() {
+  openLife('🪙 반 공동 구매소', (box) => {
+    box.textContent = ''; box.append(el2('p', 'lp-big', `🪙 쓸 수 있는 반 동전 ${coinAvail()}`), el2('p', 'hint', '반 동전은 우리 반 모두의 돈이에요. 공부하고 놀이·미션을 성공하면 모여요.'));
+    const row = el2('div', 'row-center wrap');
+    const r = el2('button', 'btn', '🚲 탈것 가게 (반 전체가 함께 타요)'); r.style.background = '#CDEFC2'; r.onclick = openRides;
+    const e = el2('button', 'btn', '🎁 반 동전 이벤트 (이번 주 1위가 열어요)'); e.style.background = '#FFE066'; e.onclick = openCoinShop;
+    row.append(r, e); box.append(row, el2('p', 'hint', '🏗️ 건물 짓기도 반 동전으로 해요 (빛나는 건축 부지에서)'));
+  });
+}
+// ================= 🌊 바다 놀이 (1018a): 🚤 보트 경주 · 🏝️ 보물섬 =================
+const SEA_RINGS = [[104, 34], [118, 22], [134, 12], [150, 20], [156, 38], [146, 54], [128, 58], [110, 52]], SEA_START = [97, 40];
+const ISLE = { cx: 150, cz: 112, r: 11, dock: [77.5, 112] };
+const inIsle = (x, z) => Math.hypot(x - ISLE.cx, z - ISLE.cz) <= ISLE.r - 0.6;
+const inSeaCourse = (x, z) => x >= 94 && x <= 172 && z >= -6 && z <= 76;
+const sea = { on: false, next: 0, t0: 0, rings: [], boat: null, hud: null, posts: [], chest: null };
+function buildSeaFun() {
+  const g = new THREE.Group(); g.name = 'SeaFun'; scene.add(g); const o = { solid: false };
+  // 🚤 경주 고리 (물 위 둥근 문)
+  SEA_RINGS.forEach(([x, z], i) => { const nx = SEA_RINGS[(i + 1) % SEA_RINGS.length], a = Math.atan2(nx[0] - x, nx[1] - z);
+    const r = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.22, 8, 28), new THREE.MeshLambertMaterial({ color: 0xFF9E3D, emissive: 0x000000 })); r.position.set(x, 1.7, z); r.rotation.y = a; g.add(r);
+    for (const s of [-1, 1]) cyl(g, 0.35, 0.6, i % 2 ? 0xE2584A : 0xFFFFFF, x + Math.cos(a) * s * 2.8, 0.2, z - Math.sin(a) * s * 2.8, o); sea.rings.push(r); });
+  sea.ringLabel = makeLabel(g, [''], 0.9, 0, -99, 0);
+  { const b = new THREE.Group(); b.position.set(BEACH.pierX1 - 1, 0, BEACH.pierZ - 2.2); g.add(b); box(b, 1.4, 0.5, 2.8, 0xFFFFFF, 0, 0.15, 0, o); box(b, 1.5, 0.12, 2.9, 0x4A9AE8, 0, 0.42, 0, o); }
+  signPlane(g, ['🚤 보트 경주'], 2.2, 0.6, BEACH.pierX1 - 3, 1.6, BEACH.pierZ - 1.45, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = Math.PI;
+  addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.6, text: () => sea.on ? null : ['🚤 보트 경주 시작', `고리 ${SEA_RINGS.length}개 · 내 최고 ${bag.seaBest ? (bag.seaBest / 1000).toFixed(1) + '초' : '-'}`], run: seaStart });
+  // 🏝️ 보물섬
+  const isle = new THREE.Group(); isle.name = 'TreasureIsle'; scene.add(isle);
+  cyl(isle, ISLE.r, 0.8, 0xF3DFA8, ISLE.cx, -0.2, ISLE.cz, o); cyl(isle, ISLE.r - 3, 0.9, 0x7FC46A, ISLE.cx, -0.1, ISLE.cz, o);
+  for (const [dx, dz, l] of [[-6, -5, 0.3], [6, -6, -0.25], [-7, 4, -0.2], [7, 5, 0.25]]) palm(isle, ISLE.cx + dx, ISLE.cz + dz, l);
+  box(isle, 3.2, 0.3, 2.4, 0xB07C50, ISLE.cx - ISLE.r + 0.8, 0.15, ISLE.cz, o); // 섬 부두
+  sea.posts = [];
+  const POSTS = [{ k: 'eng', icon: '🔤', n: '영어 단서', dx: 0, dz: -6 }, { k: 'math', icon: '🧮', n: '수학 단서', dx: 6, dz: 0 }, { k: 'soc', icon: '🏛️', n: '사회 단서', dx: 0, dz: 6 }, { k: 'math2', icon: '📐', n: '도형 단서', dx: -5, dz: 2 }];
+  for (const P of POSTS) { const x = ISLE.cx + P.dx, z = ISLE.cz + P.dz; box(isle, 0.25, 1.8, 0.25, 0x8A5A34, x, 0.9, z); box(isle, 1.6, 0.9, 0.12, 0xE9C98F, x, 1.8, z, o);
+    const lab = makeLabel(isle, [''], 0.6, x, 3.0, z); sea.posts.push({ ...P, x, z, lab });
+    addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => !inIsle(player.pos.x, player.pos.z) ? null : isleDone(P.k) ? [`${P.icon} ${P.n} ✅`, '풀었어요'] : [`${P.icon} ${P.n} 풀기`, '맞히면 보물 지도 조각!'], run: () => islePost(P) }); }
+  { const c = new THREE.Group(); c.position.set(ISLE.cx, 0.35, ISLE.cz); isle.add(c); box(c, 1.4, 0.8, 0.9, 0x8A5A34, 0, 0.4, 0); box(c, 1.5, 0.12, 1.0, C.gold, 0, 0.82, 0, o); const lid = new THREE.Group(); lid.position.set(0, 0.85, -0.45); c.add(lid); box(lid, 1.4, 0.35, 0.9, 0xA06A3A, 0, 0.17, 0.45, o); sea.chest = { g: c, lid };
+    addInteract({ pos: new V3(ISLE.cx, 1, ISLE.cz + 1.2), r: 2.2, text: () => !inIsle(player.pos.x, player.pos.z) ? null : bag.isle?.d === dayNum() && bag.isle.open ? ['🏴‍☠️ 보물상자', '오늘 보물은 찾았어요! 내일 또 와요'] : ['🏴‍☠️ 보물상자 열기', `지도 조각 ${isleCount()}/4`], run: isleChest }); }
+  sea.isleLabel = makeLabel(isle, ['🏝️ 보물섬', '단서 4개를 풀면 보물상자가 열려요'], 1.2, ISLE.cx, 6.5, ISLE.cz);
+  // 오가는 배
+  box(g, 2.6, 0.3, 2.2, 0xB07C50, ISLE.dock[0] - 0.4, 0.15, ISLE.dock[1], o); signPlane(g, ['🏝️ 보물섬 가는 배'], 2.6, 0.6, ISLE.dock[0] - 2.2, 1.7, ISLE.dock[1] - 1.4, { font: 40, pad: 4, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false }).rotation.y = -Math.PI / 2;
+  box(g, 0.15, 1.6, 0.15, C.wood, ISLE.dock[0] - 2.2, 0.8, ISLE.dock[1] - 1.4, o);
+  addInteract({ pos: new V3(ISLE.dock[0] - 1, 1, ISLE.dock[1]), r: 2.6, text: () => ['⛵ 보물섬 가기', '단서를 풀고 보물을 찾아요'], run: () => isleTravel(true) });
+  addInteract({ pos: new V3(ISLE.cx - ISLE.r + 1.2, 1, ISLE.cz), r: 2.4, text: () => inIsle(player.pos.x, player.pos.z) ? ['⛵ 바닷가로 돌아가기', '상점가 앞 바닷가'] : null, run: () => isleTravel(false) });
+  registerSolids(isle, 'isle');
+  // 🚤 경주 화면 띠
+  const hud = document.createElement('div'); hud.id = 'seaHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:18px';
+  hud.innerHTML = '<b id="seaTime">0.0초</b><span id="seaRing"></span><button class="btn" id="seaQuit" style="background:#fff;font-size:15px;padding:4px 10px">그만하기</button>'; document.body.append(hud); sea.hud = hud;
+  $('seaQuit').onclick = () => seaEnd(false);
+}
+function seaBoat(on) {
+  if (sea.boat) { sea.boat.parent?.remove(sea.boat); sea.boat = null; }
+  if (!on || !player.avatar) return; const b = new THREE.Group(), o = { solid: false };
+  box(b, 1.5, 0.55, 3.0, 0xFFFFFF, 0, 0.1, 0.1, o); box(b, 1.6, 0.12, 3.1, 0xE2584A, 0, 0.4, 0.1, o); mesh(PYR, b, 1.5, 0.55, 0.9, 0xFFFFFF, 0, 0.1, 1.9, { solid: false, rx: Math.PI / 2 });
+  player.avatar.g.add(b); sea.boat = b;
+}
+async function seaStart() {
+  if (sea.on || isFrozen()) return; if (bag.ride) { bag.ride = ''; saveBag(); }
+  closeModals(); sea.on = true; sea.next = 0; sea.t0 = performance.now(); player.pos.set(SEA_START[0], 0.05, SEA_START[1]); player.vy = 0; player.heading = Math.PI / 2; camYaw = -Math.PI / 2; camPitch = 0.35;
+  seaBoat(true); sea.hud.classList.remove('hidden'); playSfx('fanfare'); toast(`🚤 출발! 주황 고리 ${SEA_RINGS.length}개를 순서대로 지나 부두로 돌아와요`, 'info');
+}
+function seaEnd(done) {
+  if (!sea.on) return; sea.on = false; seaBoat(false); sea.hud.classList.add('hidden'); sea.ringLabel.position.set(0, -99, 0);
+  sea.rings.forEach(r => { r.material.emissive.setHex(0); r.material.color.setHex(0xFF9E3D); r.visible = true; });
+  if (done) {
+    const ms = performance.now() - sea.t0, best = !bag.seaBest || ms < bag.seaBest; if (best) bag.seaBest = Math.round(ms);
+    let sh = 0; if (bag.seaDay !== dayNum()) { bag.seaDay = dayNum(); sh += giveShellCapped(30); } if (best) sh += giveShellCapped(10);
+    saveBag(); updateHUD(null); playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 60, 6, 3);
+    showBanner(`🏁 ${(ms / 1000).toFixed(1)}초!${best ? ' 🎉 내 최고 기록' : ''}`, `${sh ? `🐚 +${sh} · ` : ''}내 최고 ${(bag.seaBest / 1000).toFixed(1)}초 (하루 첫 완주 🐚30 · 새 기록 🐚10)`, 5000);
+  }
+  player.pos.set(BEACH.pierX1 - 2, 0.35, BEACH.pierZ); player.vy = 0;
+}
+function updateSeaFun(dt) {
+  if (buffOn('spark') && joined && (sea.sp = (sea.sp || 0) - dt) <= 0 && (keys.w || keys.a || keys.s || keys.d || joy.x || joy.y)) { sea.sp = 0.12; burst(player.pos.clone().setY(0.25), [0xFFE680, 0xFF9AC0, 0x9FE0FF, 0xFFFFFF], 3, 1.2, 0.8, 0.6, -2); } // ✨ 반짝 발자국
+  if (sea.chest) { const open = bag.isle?.d === dayNum() && bag.isle.open; sea.chest.lid.rotation.x += ((open ? -1.4 : 0) - sea.chest.lid.rotation.x) * Math.min(1, dt * 4); }
+  for (const P of sea.posts) P.lab.userData.set([isleDone(P.k) ? `${P.icon} ✅` : `${P.icon} ${P.n}`]);
+  if (!sea.on) return;
+  const p = player.pos, t = (performance.now() - sea.t0) / 1000; $('seaTime').textContent = `⏱️ ${t.toFixed(1)}초`;
+  const done = sea.next >= SEA_RINGS.length; $('seaRing').textContent = done ? '🏁 부두로 돌아가요!' : `🟠 고리 ${sea.next + 1}/${SEA_RINGS.length}`;
+  sea.rings.forEach((r, i) => { const nx = i === sea.next; r.material.color.setHex(i < sea.next ? 0x9BE36B : nx ? 0xFFD23C : 0xFF9E3D); r.material.emissive.setHex(nx ? 0x553300 : 0); });
+  if (!done) { const [rx, rz] = SEA_RINGS[sea.next]; sea.ringLabel.position.set(rx, 4.8, rz); sea.ringLabel.userData.set([`${sea.next + 1}번 고리 ⬇️`]);
+    if (Math.hypot(p.x - rx, p.z - rz) < 3.2) { sea.next++; playSfx('pick'); burst(new V3(rx, 1.7, rz), [0xFFD23C, 0xFFFFFF, 0x7FD3F2], 24, 4, 2); } }
+  else { sea.ringLabel.position.set(SEA_START[0], 4, SEA_START[1]); sea.ringLabel.userData.set(['🏁 부두로!']); if (Math.hypot(p.x - SEA_START[0], p.z - SEA_START[1]) < 3.5) seaEnd(true); }
+  if ((sea.splash = (sea.splash || 0) - dt) <= 0 && (keys.w || keys.a || keys.s || keys.d || joy.x || joy.y)) { sea.splash = 0.15; burst(p.clone().setY(0.2), [0xFFFFFF, 0x9FE0FF], 3, 1.5, 0.6, 0.5, -3); }
+}
+// 🏝️ 보물섬: 단서 4개 (영어·수학·사회·도형) → 보물상자 (하루 한 번)
+const isleDay = () => { if (bag.isle?.d !== dayNum()) bag.isle = { d: dayNum(), s: {}, open: false }; return bag.isle; };
+const isleDone = (k) => !!(bag.isle?.d === dayNum() && bag.isle.s?.[k]);
+const isleCount = () => ['eng', 'math', 'soc', 'math2'].filter(isleDone).length;
+async function isleTravel(go) {
+  if (hv.travel || !joined) return; if (sea.on) seaEnd(false); hv.travel = true; closeModals();
+  const boat = document.querySelector('#travelFx .tv-boat'); if (boat) boat.textContent = '⛵';
+  $('travelText').textContent = go ? '⛵ 보물섬으로 가는 중…' : '⛵ 바닷가로 돌아가는 중…'; $('travelFx').classList.remove('hidden'); await sleep(900);
+  if (go) { player.pos.set(ISLE.cx - ISLE.r + 2.4, 0.35, ISLE.cz); player.heading = Math.PI / 2; camYaw = -Math.PI / 2; } else { player.pos.set(ISLE.dock[0] - 3, 0.35, ISLE.dock[1]); player.heading = -Math.PI / 2; camYaw = Math.PI / 2; }
+  player.vy = 0; camPitch = 0.4; await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
+  if (go) toast(`🏝️ 보물섬! 단서 4개를 풀어 보물 지도를 완성해요 (지금 ${isleCount()}/4)`, 'info');
+}
+function isleQ(k) {
+  if (k === 'math') return Math.random() < 0.5 ? qBalance() : qGem();
+  if (k === 'math2') return qShape();
+  if (k === 'eng') { const ls = Object.keys(EV_WORDS), L = EV_WORDS[ls[Math.floor(Math.random() * ls.length)]], w = L[Math.floor(Math.random() * L.length)]; const pool = Object.values(EV_WORDS).flat().map(x => x[1]).filter(m => m !== w[1]); const opts = [w[1]]; while (opts.length < 4) { const m = pool[Math.floor(Math.random() * pool.length)]; if (!opts.includes(m)) opts.push(m); } return { q: `${w[2]} '${w[0]}'의 뜻은?`, opts: opts.sort(() => Math.random() - 0.5), ans: w[1], tip: '영어 마을에서 배운 낱말이에요' }; }
+  const all = histBank()._all || []; if (all.length < 4) return qBalance(); const it = all[Math.floor(Math.random() * all.length)]; const others = [...new Set(all.filter(x => x.k === it.k && x.a !== it.a).map(x => x.a))]; const pool2 = others.length >= 3 ? others : [...new Set(all.map(x => x.a))].filter(a => a !== it.a); const opts = [it.a]; while (opts.length < 4 && pool2.length) { const m = pool2.splice(Math.floor(Math.random() * pool2.length), 1)[0]; if (!opts.includes(m)) opts.push(m); }
+  return { q: it.q, opts: opts.sort(() => Math.random() - 0.5), ans: it.a, tip: `${it.sub || ''} · 사회 학습지에서 찾아봐요` };
+}
+function islePost(P) {
+  if (isleDone(P.k)) { toast(`${P.icon} 이 단서는 오늘 풀었어요!`, 'info'); return; }
+  const Q = isleQ(P.k), stat = P.k.startsWith('math') ? 'math' : P.k;
+  openLife(`${P.icon} ${P.n}`, (box) => {
+    box.textContent = ''; if (Q.sh) box.append(drawShape(Q)); box.append(el2('p', 'lp-big', Q.q));
+    const fb = el2('p', 'hint', `💡 ${Q.tip || ''}`), grid = el2('div', 'mx-opts'); let done = false;
+    for (const o of Q.opts) { const b = el2('button', 'btn mx-opt', `${o}${Q.unit ? ' ' + Q.unit : ''}`);
+      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); isleDay().s[P.k] = 1; saveBag(); addStat(stat, 3); toast(`🗺️ 지도 조각 ${isleCount()}/4!`, 'success'); setTimeout(closeLife, 900); }
+        else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = '🤔 다시 생각해 봐요'; } };
+      grid.append(b); }
+    box.append(grid, fb);
+  });
+}
+function isleChest() {
+  const d = isleDay(); if (d.open) { toast('🏴‍☠️ 오늘 보물은 찾았어요! 내일 또 와요', 'info'); return; }
+  if (isleCount() < 4) { toast(`🗺️ 단서를 ${4 - isleCount()}개 더 풀어요`, 'warn'); return; }
+  d.open = true; const sh = giveShellCapped(40) + 20; earnShell(20); saveBag(); updateHUD(null); playSfx('fanfare'); burst(new V3(ISLE.cx, 2, ISLE.cz), RAINBOW, 80, 7, 3);
+  showBanner('🏴‍☠️ 보물을 찾았어요!', `🐚 +${sh} · 영어·수학·사회 능력치도 올랐어요 (내일 새 단서)`, 6000);
 }
 function updateBeach() {
   if (beach.foam) beach.foam.position.x = Math.sin(time * 0.9) * 0.9 - 0.4;
@@ -13965,8 +14166,9 @@ function hpetGift() { // 🎁 Lv4부터 하루 한 번 집에 오면
 function hpetCare(kind) {
   const k = hpCur(); if (!k) return; const p = bag.hpet.pets[k], C2 = HPET_CARE[kind], day = hpDay(p);
   if ((day[kind] | 0) >= C2.max) { toast(`${C2.icon} 오늘 ${C2.n}는 다 했어요. 내일 또 해요!`, 'info'); return; }
-  if (C2.sh && (bag.shell || 0) < C2.sh) { toast(`🐚 간식 값 ${C2.sh}이 모자라요`, 'warn'); return; }
-  if (C2.sh) bag.shell -= C2.sh;
+  const useSnack = kind === 'snack' && (bag.hpet.snacks | 0) > 0;
+  if (C2.sh && !useSnack && (bag.shell || 0) < C2.sh) { toast(`🐚 간식 값 ${C2.sh}이 모자라요 (🐾 펫 가게에서 간식 묶음을 사도 돼요)`, 'warn'); return; }
+  if (useSnack) bag.hpet.snacks--; else if (C2.sh) bag.shell -= C2.sh;
   const lv0 = hpLv(p.a); day[kind] = (day[kind] | 0) + 1; p.a = (p.a | 0) + C2.pt; p.last = dayNum(); saveBag(); updateHUD(null);
   const m = hpw.inG; if (m) { m.userData.hop = 0.6; if (kind === 'play') m.userData.spin = 0.6; burst(m.getWorldPosition(new V3()).add(new V3(0, 1, 0)), [0xFF7AA8, 0xFFFFFF, 0xFFD23C], 14, 2, 1.5); }
   playSfx(kind === 'snack' ? 'coin' : 'pick'); toast(`${C2.icon} ${C2.n}! ❤️ +${C2.pt}`, 'success');
@@ -15291,6 +15493,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1018a', d: '10월 18일', items: ['🛍️ 우리 집 마을 동쪽 모래사장에 해변 상점가가 생겼어요! 마당·가구 · 옷 · 펫 · 간식·물약 · 페인트 · 기념품 교환소 · 반 공동 구매소', '🚤 부두 끝에서 보트 경주! 고리 8개를 지나 기록에 도전 · 🏝️ 보물섬 가는 배를 타고 단서 4개를 풀면 보물상자', '🔨 작업대는 없어졌어요 (마당 장식은 마당·가구 가게에서)'] },
   { id: '1017p', d: '10월 17일 (밤)', items: ['🏠 우리 집 안 펫과 펫 집이 바로 보이게 고쳤어요'] },
   { id: '1017o', d: '10월 17일 (밤)', items: ['🏠 산책을 그만하면 펫이 집 안에서 기다려요 · 산책하는 동안은 집이 비어요'] },
   { id: '1017m', d: '10월 17일 (밤)', items: ['🐾 우리 집 펫이 처음부터 마을에서 졸졸 따라와요! (🐾 우리 집 펫 창에서 산책 켜고 끄기)'] },
@@ -19687,7 +19890,7 @@ buildDecorZones();
 buildMissionWorld();
 buildForestCamp();
 buildHomeVillage();
-buildBeach();
+buildBeach(); buildShopStreet(); buildSeaFun();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -19713,7 +19916,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach();
+  updateBeach(); updateSeaFun(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
