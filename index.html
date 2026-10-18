@@ -4085,6 +4085,7 @@ function groundAt(p) {
 const fly = { up: false, dn: false }, FLY_VY = 7, FLY_MAX = 30; // 🐲 나는 높이 (땅에서 30m까지)
 function updatePlayer(dt) {
   const p = player.pos;
+  if ((sea.on || sail.on) && !inWater(p.x, p.z)) boatQuiet(); // ⛵ 다른 곳으로 옮겨지면 배에서 내려요
   const x0 = p.x, z0 = p.z; // 움직이기 전 위치 (경계에서 되돌릴 때 사용)
   let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x;
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
@@ -4097,7 +4098,7 @@ function updatePlayer(dt) {
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
   const moving = Math.min(1, Math.hypot(mx, mz));
   if (moving > 0.05) {
-    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt;
+    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1); p.x += mx * spd * dt; p.z += mz * spd * dt;
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -4109,7 +4110,7 @@ function updatePlayer(dt) {
   jumpBuffer -= dt;
   const flying = player.avatar.rideK === 'sky' && !isFrozen() && !sgFrozen(); // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
   if (flying) { const up = keys[' '] || fly.up ? 1 : 0, dn = keys.shift || keys.c || fly.dn ? 1 : 0; player.vy = (up - dn) * FLY_VY; jumpBuffer = 0; }
-  else { if (jumpBuffer > 0 && player.onGround && !sea.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
+  else { if (jumpBuffer > 0 && player.onGround && !sea.on && !sail.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
   let ny = p.y + player.vy * dt; if (flying && ny > FLY_MAX) ny = FLY_MAX;
   if (player.vy > 0) { // 머리 부딪힘
     for (const { box: b } of colliders) {
@@ -4118,7 +4119,7 @@ function updatePlayer(dt) {
       }
     }
   }
-  const g = sea.on ? 0.05 : groundAt(p); // 🚤 보트는 물 위
+  const g = sea.on || sail.on ? BOAT_Y : groundAt(p); // 🚤⛵ 배는 물 위
   if (ny > g && player.onGround && player.vy <= 0 && ny - g < 0.7 && p.z < -60.4) ny = g; // 산비탈을 내려갈 때 땅에 붙어 걸어요
   if (ny <= g) { ny = g; player.vy = 0; player.onGround = true; } else player.onGround = false;
   p.y = ny;
@@ -4304,7 +4305,7 @@ function sendPresence(time) {
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
-  { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } // 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
+  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) d.e = e; } // 🐾 같이 산책하는 집 펫
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
@@ -7141,7 +7142,8 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
-  if (inIsle(x, z) || (sea.on && inSeaCourse(x, z))) return true; // 🏝️ 보물섬 · 🚤 보트 경주
+  if (sea.on || sail.on) return inWater(x, z); // 🚤⛵ 배를 타면 바다 위만 (섬·모래사장에는 못 올라가요)
+  if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
@@ -7160,6 +7162,7 @@ function keepInWorld(p, x0, z0) {
     return;
   }
   if (canStand(p.x, z0)) p.z = z0; else if (canStand(x0, p.z)) p.x = x0; else { p.x = x0; p.z = z0; } // 벽을 따라 미끄러지기
+  if (!sail.on && !sea.on && x0 > 76.5 && x0 < 80 && performance.now() - (sail.hintAt || 0) > 8000) { sail.hintAt = performance.now(); toast('🌊 바다는 헤엄치거나 날아서 건널 수 없어요. ⛵ 배를 만들어 선착장에서 띄워요!', 'info'); }
   if (!FOREST_OFF && !forestOpen() && p.x < -57.5 && p.z > FOREST.cz0 - 1 && p.z < FOREST.cz1 + 1 && performance.now() - forest.hintAt > 8000) {
     forest.hintAt = performance.now();
     toast('🔒 숲속 캠프는 아직 잠겨 있어요. 공동 미션 보상을 하나 열면 들어갈 수 있어요', 'info');
@@ -10260,6 +10263,7 @@ function rideBlockMe() { // 지금 내가 탈 수 없는 까닭 (없으면 '')
   if (sgInSG(p) || trRegion()) return '⚔️ 공성전·체험장에서는 탈 수 없어요 (👑 왕만 말을 타요)';
   if (rideIndoor(p.x, p.z)) return '🏫 건물 안·경기장에서는 내려서 걸어요';
   if (hideOn() && (hideIn(backend?.uid) || isSeeker(backend?.uid))) return '🙈 숨바꼭질 중에는 탈 수 없어요';
+  if (sea.on || sail.on) return '⛵ 배를 타는 중이에요';
   if (isSeated(player.avatar) || kite.active || hv.travel || spec.on) return '잠깐 내렸어요';
   return '';
 }
@@ -10559,6 +10563,7 @@ const SHOP_X = 70.6, SHOPS = [
   { k: 'paint', z: 110, icon: '🎨', n: '페인트·리모델링', d: '집 모양 · 색 · 이름', col: 0xF5B82A, run: () => { const id = myLot(); if (!id) { toast('🏡 먼저 우리 집 마을에서 땅을 사요', 'info'); return; } openHouse(id); } },
   { k: 'gift', z: 120, icon: '🏪', n: '기념품 교환소', d: '잡은 생물 팔기', col: 0xE2584A, run: () => openShop() },
   { k: 'coin', z: 130, icon: '🪙', n: '반 공동 구매소', d: '반 동전 · 탈것 · 반 이벤트', col: 0xD9A82A, run: () => openCoinStore() },
+  { k: 'boat', z: 140, icon: '⛵', n: '배 가게', d: '배 재료 · 배 색 · 깃발', col: 0x2F8FD0, run: () => openBoatShop() },
 ];
 function buildShopStreet() {
   const g = new THREE.Group(); g.name = 'ShopStreet'; scene.add(g); const o = { solid: false };
@@ -10638,7 +10643,7 @@ function openCoinStore() {
 }
 // ================= 🌊 바다 놀이 (1018a): 🚤 보트 경주 · 🏝️ 보물섬 =================
 const SEA_RINGS = [[104, 34], [118, 22], [134, 12], [150, 20], [156, 38], [146, 54], [128, 58], [110, 52]], SEA_START = [97, 40];
-const ISLE = { cx: 150, cz: 112, r: 11, dock: [77.5, 112] };
+const ISLE = { cx: 150, cz: 112, r: 11, dock: [77.8, 141] }; // dock: ⚓ 선착장 (1018b)
 const inIsle = (x, z) => Math.hypot(x - ISLE.cx, z - ISLE.cz) <= ISLE.r - 0.6;
 const inSeaCourse = (x, z) => x >= 94 && x <= 172 && z >= -6 && z <= 76;
 const sea = { on: false, next: 0, t0: 0, rings: [], boat: null, hud: null, posts: [], chest: null };
@@ -10665,26 +10670,33 @@ function buildSeaFun() {
   { const c = new THREE.Group(); c.position.set(ISLE.cx, 0.35, ISLE.cz); isle.add(c); box(c, 1.4, 0.8, 0.9, 0x8A5A34, 0, 0.4, 0); box(c, 1.5, 0.12, 1.0, C.gold, 0, 0.82, 0, o); const lid = new THREE.Group(); lid.position.set(0, 0.85, -0.45); c.add(lid); box(lid, 1.4, 0.35, 0.9, 0xA06A3A, 0, 0.17, 0.45, o); sea.chest = { g: c, lid };
     addInteract({ pos: new V3(ISLE.cx, 1, ISLE.cz + 1.2), r: 2.2, text: () => !inIsle(player.pos.x, player.pos.z) ? null : bag.isle?.d === dayNum() && bag.isle.open ? ['🏴‍☠️ 보물상자', '오늘 보물은 찾았어요! 내일 또 와요'] : ['🏴‍☠️ 보물상자 열기', `지도 조각 ${isleCount()}/4`], run: isleChest }); }
   sea.isleLabel = makeLabel(isle, ['🏝️ 보물섬', '단서 4개를 풀면 보물상자가 열려요'], 1.2, ISLE.cx, 6.5, ISLE.cz);
-  // 오가는 배
-  box(g, 2.6, 0.3, 2.2, 0xB07C50, ISLE.dock[0] - 0.4, 0.15, ISLE.dock[1], o); signPlane(g, ['🏝️ 보물섬 가는 배'], 2.6, 0.6, ISLE.dock[0] - 2.2, 1.7, ISLE.dock[1] - 1.4, { font: 40, pad: 4, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false }).rotation.y = -Math.PI / 2;
-  box(g, 0.15, 1.6, 0.15, C.wood, ISLE.dock[0] - 2.2, 0.8, ISLE.dock[1] - 1.4, o);
-  addInteract({ pos: new V3(ISLE.dock[0] - 1, 1, ISLE.dock[1]), r: 2.6, text: () => ['⛵ 보물섬 가기', '단서를 풀고 보물을 찾아요'], run: () => isleTravel(true) });
-  addInteract({ pos: new V3(ISLE.cx - ISLE.r + 1.2, 1, ISLE.cz), r: 2.4, text: () => inIsle(player.pos.x, player.pos.z) ? ['⛵ 바닷가로 돌아가기', '상점가 앞 바닷가'] : null, run: () => isleTravel(false) });
+  // ⚓ 선착장 (내가 만든 배를 띄워요) · 🏝️ 섬 부두 (1018b: 오가는 배 대신)
+  box(g, 3.6, 0.3, 2.4, 0xB07C50, ISLE.dock[0], 0.15, ISLE.dock[1], o); for (const sz of [-1.1, 1.1]) cyl(g, 0.14, 1.2, 0x8A5A34, ISLE.dock[0] + 1.6, 0.3, ISLE.dock[1] + sz, o);
+  signPlane(g, ['⚓ 선착장'], 2.2, 0.6, ISLE.dock[0] - 1.9, 1.7, ISLE.dock[1] - 1.4, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = -Math.PI / 2;
+  box(g, 0.15, 1.6, 0.15, C.wood, ISLE.dock[0] - 1.9, 0.8, ISLE.dock[1] - 1.4, o);
+  makeLabel(g, ['⚓ 선착장', '내가 만든 배를 띄워요 · 🏝️ 보물섬은 배로만!'], 0.9, ISLE.dock[0], 3.6, ISLE.dock[1]);
+  addInteract({ pos: new V3(ISLE.dock[0] + 0.6, 1, ISLE.dock[1]), r: 2.8, text: () => sail.on || sea.on ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 띄우기`, '바다로 나가요 · 🏝️ 보물섬은 동쪽'] : ['⛵ 배가 없어요', '배 가게에서 재료를 사서 🛠️ 조선소에서 만들어요'], run: () => sailStart('beach') });
+  addInteract({ pos: new V3(ISLE.dock[0] + 3, 1, ISLE.dock[1]), r: 3.2, text: () => sail.on ? ['⚓ 바닷가에 내리기', '선착장'] : null, run: sailLand });
+  addInteract({ pos: new V3(ISLE.cx - ISLE.r + 1.2, 1, ISLE.cz), r: 2.4, text: () => !inIsle(player.pos.x, player.pos.z) || sail.on ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 타기`, '바닷가로 돌아가요'] : ['🛟 구조선 부르기', '배가 없으면 바닷가까지 데려다줘요'], run: () => boatCur() >= 0 ? sailStart('isle') : isleTravel(false) });
+  addInteract({ pos: new V3(ISLE.cx - ISLE.r - 1.5, 1, ISLE.cz), r: 3.2, text: () => sail.on ? ['⚓ 보물섬에 내리기', '섬 부두'] : null, run: sailLand });
+  buildShipyard(g); buildDrift(g);
   registerSolids(isle, 'isle');
   // 🚤 경주 화면 띠
   const hud = document.createElement('div'); hud.id = 'seaHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:18px';
   hud.innerHTML = '<b id="seaTime">0.0초</b><span id="seaRing"></span><button class="btn" id="seaQuit" style="background:#fff;font-size:15px;padding:4px 10px">그만하기</button>'; document.body.append(hud); sea.hud = hud;
   $('seaQuit').onclick = () => seaEnd(false);
+  const sh = document.createElement('div'); sh.id = 'sailHud'; sh.className = 'sticker hidden'; sh.style.cssText = hud.style.cssText;
+  sh.innerHTML = '<b id="sailName">⛵</b><span id="sailDir"></span><button class="btn" id="sailLandBtn" style="background:#FFE066;font-size:15px;padding:4px 10px">⚓ 내리기</button>'; document.body.append(sh); sail.hud = sh;
+  $('sailLandBtn').onclick = sailLand;
 }
-function seaBoat(on) {
+function seaBoat(on, q = RACE_Q) {
   if (sea.boat) { sea.boat.parent?.remove(sea.boat); sea.boat = null; }
-  if (!on || !player.avatar) return; const b = new THREE.Group(), o = { solid: false };
-  box(b, 1.5, 0.55, 3.0, 0xFFFFFF, 0, 0.1, 0.1, o); box(b, 1.6, 0.12, 3.1, 0xE2584A, 0, 0.4, 0.1, o); mesh(PYR, b, 1.5, 0.55, 0.9, 0xFFFFFF, 0, 0.1, 1.9, { solid: false, rx: Math.PI / 2 });
+  if (!on || !player.avatar) return; const b = boatModel(q);
   player.avatar.g.add(b); sea.boat = b;
 }
 async function seaStart() {
-  if (sea.on || isFrozen()) return; if (bag.ride) { bag.ride = ''; saveBag(); }
-  closeModals(); sea.on = true; sea.next = 0; sea.t0 = performance.now(); player.pos.set(SEA_START[0], 0.05, SEA_START[1]); player.vy = 0; player.heading = Math.PI / 2; camYaw = -Math.PI / 2; camPitch = 0.35;
+  if (sea.on || sail.on || isFrozen()) return; if (bag.ride) { bag.ride = ''; saveBag(); }
+  closeModals(); sea.on = true; sea.next = 0; sea.t0 = performance.now(); player.pos.set(SEA_START[0], BOAT_Y, SEA_START[1]); player.vy = 0; player.heading = Math.PI / 2; camYaw = -Math.PI / 2; camPitch = 0.35;
   seaBoat(true); sea.hud.classList.remove('hidden'); playSfx('fanfare'); toast(`🚤 출발! 주황 고리 ${SEA_RINGS.length}개를 순서대로 지나 부두로 돌아와요`, 'info');
 }
 function seaEnd(done) {
@@ -10702,6 +10714,7 @@ function updateSeaFun(dt) {
   if (buffOn('spark') && joined && (sea.sp = (sea.sp || 0) - dt) <= 0 && (keys.w || keys.a || keys.s || keys.d || joy.x || joy.y)) { sea.sp = 0.12; burst(player.pos.clone().setY(0.25), [0xFFE680, 0xFF9AC0, 0x9FE0FF, 0xFFFFFF], 3, 1.2, 0.8, 0.6, -2); } // ✨ 반짝 발자국
   if (sea.chest) { const open = bag.isle?.d === dayNum() && bag.isle.open; sea.chest.lid.rotation.x += ((open ? -1.4 : 0) - sea.chest.lid.rotation.x) * Math.min(1, dt * 4); }
   for (const P of sea.posts) P.lab.userData.set([isleDone(P.k) ? `${P.icon} ✅` : `${P.icon} ${P.n}`]);
+  updateSail(dt);
   if (!sea.on) return;
   const p = player.pos, t = (performance.now() - sea.t0) / 1000; $('seaTime').textContent = `⏱️ ${t.toFixed(1)}초`;
   const done = sea.next >= SEA_RINGS.length; $('seaRing').textContent = done ? '🏁 부두로 돌아가요!' : `🟠 고리 ${sea.next + 1}/${SEA_RINGS.length}`;
@@ -10718,8 +10731,8 @@ const isleCount = () => ['eng', 'math', 'soc', 'math2'].filter(isleDone).length;
 async function isleTravel(go) {
   if (hv.travel || !joined) return; if (sea.on) seaEnd(false); hv.travel = true; closeModals();
   const boat = document.querySelector('#travelFx .tv-boat'); if (boat) boat.textContent = '⛵';
-  $('travelText').textContent = go ? '⛵ 보물섬으로 가는 중…' : '⛵ 바닷가로 돌아가는 중…'; $('travelFx').classList.remove('hidden'); await sleep(900);
-  if (go) { player.pos.set(ISLE.cx - ISLE.r + 2.4, 0.35, ISLE.cz); player.heading = Math.PI / 2; camYaw = -Math.PI / 2; } else { player.pos.set(ISLE.dock[0] - 3, 0.35, ISLE.dock[1]); player.heading = -Math.PI / 2; camYaw = Math.PI / 2; }
+  $('travelText').textContent = go ? '⛵ 보물섬으로 가는 중…' : '🛟 구조선을 타고 바닷가로…'; $('travelFx').classList.remove('hidden'); await sleep(900);
+  if (go) { player.pos.set(ISLE.cx - ISLE.r + 2.4, 0.35, ISLE.cz); player.heading = Math.PI / 2; camYaw = -Math.PI / 2; } else { player.pos.set(ISLE.dock[0] - 2.5, 0.35, ISLE.dock[1]); player.heading = -Math.PI / 2; camYaw = Math.PI / 2; }
   player.vy = 0; camPitch = 0.4; await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
   if (go) toast(`🏝️ 보물섬! 단서 4개를 풀어 보물 지도를 완성해요 (지금 ${isleCount()}/4)`, 'info');
 }
@@ -10748,6 +10761,189 @@ function isleChest() {
   if (isleCount() < 4) { toast(`🗺️ 단서를 ${4 - isleCount()}개 더 풀어요`, 'warn'); return; }
   d.open = true; const sh = giveShellCapped(40) + 20; earnShell(20); saveBag(); updateHUD(null); playSfx('fanfare'); burst(new V3(ISLE.cx, 2, ISLE.cz), RAINBOW, 80, 7, 3);
   showBanner('🏴‍☠️ 보물을 찾았어요!', `🐚 +${sh} · 영어·수학·사회 능력치도 올랐어요 (내일 새 단서)`, 6000);
+}
+// ================= ⛵ 내가 만든 배 (1018b): 배 가게 재료 → 🛠️ 조선소에서 망치질 → ⚓ 선착장에서 띄워 보물섬까지 =================
+// 보물섬은 바다로 둘러싸여 걷기·헤엄·날기로는 못 가요 (canStand) · 배를 타면 바다 위만 다녀요
+// 저장: 이 기기 가방 bag.boat { h:{만든 배}, p:{재료}, cl:{산 색}, fl:{산 깃발}, cur, c, f, wip:{h,n} } · bag.drift(떠내려온 나무)
+// 친구 화면: players/{uid}/v = 12 (배) · q = 배 모양×25 + 색×5 + 깃발
+const BOAT_V = 12, BOAT_Y = 0.3, RACE_Q = 30;
+const inWater = (x, z) => x >= 78.4 && x <= 178 && z >= -55 && z <= 150 && Math.hypot(x - ISLE.cx, z - ISLE.cz) > ISLE.r + 0.4;
+const sail = { on: false, g: null, hud: null, yard: null, drift: [], hintAt: 0, dt: 0 };
+const BOAT_PARTS = [{ k: 'plank', icon: '🪵', n: '나무판자', pr: 5 }, { k: 'rope', icon: '🪢', n: '밧줄', pr: 8 }, { k: 'cloth', icon: '🧵', n: '돛천', pr: 20 }, { k: 'anchor', icon: '⚓', n: '닻', pr: 30 }];
+const BOAT_H = [
+  { k: 'raft', icon: '🪵', n: '뗏목', mul: 1.3, need: { plank: 6, rope: 2 }, steps: 6, d: '통나무를 밧줄로 묶어요' },
+  { k: 'row', icon: '🛶', n: '나룻배', mul: 1.5, need: { plank: 14, rope: 2 }, steps: 8, d: '노를 저어 가요' },
+  { k: 'sail', icon: '⛵', n: '돛단배', mul: 1.7, need: { plank: 18, rope: 4, cloth: 2 }, steps: 10, d: '바람을 받아 슝' },
+  { k: 'pirate', icon: '🏴‍☠️', n: '해적선', mul: 1.9, need: { plank: 30, rope: 6, cloth: 4, anchor: 1 }, steps: 12, d: '돛이 두 개 · 망루까지' },
+];
+const BOAT_COLS = [{ n: '나무색', c: 0xB07C50 }, { n: '빨강', c: 0xE2584A }, { n: '파랑', c: 0x4A9AE8 }, { n: '노랑', c: 0xFFD23C }, { n: '분홍', c: 0xF29BB8 }];
+const BOAT_FLAGS = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '빨간 깃발', c: 0xE2584A }, { icon: '🏴‍☠️', n: '해적 깃발', c: 0x24262B }, { icon: '🌈', n: '무지개 깃발' }, { icon: '⭐', n: '별 깃발', c: 0x2F5E9E }];
+const BOAT_COL_PR = 20, BOAT_FLAG_PR = 30;
+const partName = (k) => BOAT_PARTS.find(p => p.k === k);
+function boatBag() { const b = bag.boat ||= {}; b.h ||= {}; b.p ||= {}; b.cl ||= {}; b.fl ||= {}; if (b.cur == null) b.cur = -1; b.c |= 0; b.f |= 0; if (b.wip === undefined) b.wip = null; return b; }
+const boatHave = (h) => isTeacher || !!boatBag().h[h]; // 🧑‍🏫 선생님은 모든 배
+const boatColHave = (i) => i === 0 || isTeacher || !!boatBag().cl[i], boatFlagHave = (i) => i === 0 || isTeacher || !!boatBag().fl[i];
+function boatCur() { const b = boatBag(); if (b.cur >= 0 && boatHave(b.cur)) return b.cur; for (let h = 3; h >= 0; h--) if (boatHave(h)) return h; return -1; }
+const boatQ = (h = boatCur()) => { const b = boatBag(); return Math.max(0, h) * 25 + (boatColHave(b.c) ? b.c : 0) * 5 + (boatFlagHave(b.f) ? b.f : 0); };
+const boatMul = () => BOAT_H[boatCur()]?.mul || 1.3;
+const boatPresQ = () => sea.on ? RACE_Q : sail.on ? boatQ() : -1;
+const partsOk = (h) => isTeacher || Object.entries(BOAT_H[h].need).every(([k, n]) => (boatBag().p[k] | 0) >= n);
+function boatModel(q) {
+  q |= 0; const h = Math.min(3, Math.floor(q / 25)), ci = Math.floor(q / 5) % 5, fi = q % 5;
+  const g = new THREE.Group(), o = { solid: false }, col = BOAT_COLS[ci].c, wood = 0xB07C50, dk = 0x7A5234;
+  const bow = (w, hh, y, z, c) => box(g, w * 0.7071, hh, w * 0.7071, c, 0, y, z, { solid: false, ry: Math.PI / 4 });
+  const rims = (w, l, y, z, c) => { for (const sd of [-1, 1]) box(g, 0.1, 0.14, l, c, sd * (w / 2 + 0.02), y, z, o); box(g, w + 0.1, 0.14, 0.1, c, 0, y, z - l / 2, o); };
+  let fa = null;
+  if (h === 0) {
+    for (let i = 0; i < 5; i++) mesh(CYL, g, 0.21, 2.6, 0.21, i % 2 ? 0xA27448 : 0xB58457, -0.84 + i * 0.42, -0.14, 0, { solid: false, rx: Math.PI / 2 });
+    for (const z of [-0.85, 0.85]) box(g, 2.12, 0.1, 0.16, ci ? col : 0xD9C9A0, 0, 0.08, z, o);
+    fa = [0.72, 0.05, -1.0, 1.5];
+  } else if (h === 1) {
+    box(g, 1.4, 0.5, 2.6, col, 0, -0.2, -0.1, o); bow(1.4, 0.5, -0.2, 1.2, col); rims(1.4, 2.6, 0.1, -0.1, wood);
+    box(g, 1.3, 0.08, 0.35, wood, 0, 0.0, -0.95, o);
+    for (const sd of [-1, 1]) { mesh(CYL, g, 0.04, 1.7, 0.04, wood, sd * 0.95, 0.0, -0.2, { solid: false, rz: sd * 1.15 }); box(g, 0.06, 0.08, 0.32, wood, sd * 1.7, -0.32, -0.2, o); }
+    fa = [0.55, 0.1, -1.3, 1.4];
+  } else if (h === 2) {
+    box(g, 1.6, 0.6, 3.2, col, 0, -0.25, -0.1, o); bow(1.6, 0.6, -0.25, 1.5, col); rims(1.6, 3.2, 0.1, -0.1, wood);
+    box(g, 1.64, 0.08, 3.24, 0xFFFFFF, 0, -0.45, -0.1, o);
+    cyl(g, 0.06, 3.0, dk, 0, 1.5, 0.95, o); box(g, 0.08, 0.08, 1.7, dk, 0, 0.55, 0.15, o);
+    mesh(GABLE, g, 1.7, 2.3, 0.05, 0xFFFFFF, 0, 0.6, 0.1, { solid: false, ry: Math.PI / 2 }); box(g, 0.06, 0.3, 1.0, col, 0.03, 1.1, 0.1, o);
+    fa = [0, 3.0, 0.95, 0];
+  } else {
+    box(g, 2.2, 0.9, 4.4, dk, 0, -0.45, -0.1, o); bow(2.2, 0.9, -0.45, 2.1, dk); rims(2.2, 4.4, 0.08, -0.1, col);
+    box(g, 2.24, 0.12, 4.44, 0xE8C547, 0, -0.62, -0.1, o);
+    box(g, 2.2, 0.75, 1.0, dk, 0, 0.35, -1.85, o); box(g, 2.3, 0.12, 1.1, col, 0, 0.78, -1.85, o);
+    for (const sd of [-1, 1]) for (const z of [-0.6, 0.6]) box(g, 0.06, 0.18, 0.28, 0x24262B, sd * 1.12, -0.2, z, o);
+    cyl(g, 0.08, 3.9, dk, 0, 1.95, 1.0, o); box(g, 1.9, 1.2, 0.06, 0xF4EEDD, 0, 1.75, 1.06, o); box(g, 1.5, 0.85, 0.06, 0xF4EEDD, 0, 2.95, 1.06, o); box(g, 1.92, 0.16, 0.07, col, 0, 1.75, 1.08, o);
+    cyl(g, 0.36, 0.32, dk, 0, 3.6, 1.0, o);
+    fa = [0, 3.9, 1.0, 0];
+  }
+  if (fi && fa) { const [x, y, z, pole] = fa, F = BOAT_FLAGS[fi], fy = y + pole - 0.22; if (pole) cyl(g, 0.03, pole, 0xFFFFFF, x, y + pole / 2, z, o);
+    if (fi === 3) [0xFF5A5A, 0xFFE066, 0x6EC1EC].forEach((c, i) => box(g, 0.04, 0.14, 0.62, c, x, fy + 0.14 - i * 0.14, z - 0.32, o));
+    else { box(g, 0.04, 0.42, 0.62, F.c, x, fy, z - 0.32, o); if (fi === 2) ball(g, 0.11, 0xFFFFFF, x + 0.03, fy + 0.03, z - 0.32, o); if (fi === 4) ball(g, 0.11, 0xFFD23C, x + 0.03, fy, z - 0.32, o); } }
+  return g;
+}
+function boatQuiet() { // 다른 곳으로 옮겨졌을 때 조용히 배에서 내려요
+  if (sea.on) { sea.on = false; seaBoat(false); sea.hud?.classList.add('hidden'); sea.ringLabel?.position.set(0, -99, 0); sea.rings.forEach(r => { r.material.emissive.setHex(0); r.material.color.setHex(0xFF9E3D); }); }
+  if (sail.on) { sail.on = false; sail.g?.parent?.remove(sail.g); sail.g = null; sail.hud?.classList.add('hidden'); }
+}
+function sailStart(from) {
+  if (sail.on || sea.on || hv.travel || isFrozen() || !joined) return; const h = boatCur();
+  if (h < 0) { toast('⛵ 먼저 배를 만들어요! 🛍️ 배 가게에서 재료를 사고 🛠️ 조선소에서 만들어요', 'warn'); return; }
+  if (bag.ride) { bag.ride = ''; saveBag(); } closeModals(); sail.on = true;
+  if (from === 'isle') { player.pos.set(ISLE.cx - ISLE.r - 2.4, BOAT_Y, ISLE.cz); player.heading = -Math.PI / 2; camYaw = Math.PI / 2; }
+  else { player.pos.set(ISLE.dock[0] + 3.8, BOAT_Y, ISLE.dock[1]); player.heading = Math.PI / 2; camYaw = -Math.PI / 2; }
+  player.vy = 0; camPitch = 0.4; sail.g = boatModel(boatQ()); player.avatar.g.add(sail.g); sail.q = boatQ();
+  $('sailName').textContent = `${BOAT_H[h].icon} ${BOAT_H[h].n}`; sail.hud.classList.remove('hidden'); playSfx('fanfare');
+  burst(player.pos.clone().setY(0.4), [0xFFFFFF, 0x9FE0FF], 24, 3, 1.5);
+  toast(from === 'isle' ? '⛵ 바닷가는 서쪽이에요. 모래사장 가까이 가서 ⚓ 내리기!' : '⛵ 출발! 🏝️ 보물섬은 동쪽 바다에 있어요. 섬 가까이 가서 ⚓ 내리기!', 'info');
+}
+function sailLand() {
+  if (!sail.on) return; const p = player.pos, di = Math.hypot(p.x - ISLE.cx, p.z - ISLE.cz); let to = null, isle = false;
+  if (di < ISLE.r + 4.5) { const a = Math.atan2(p.z - ISLE.cz, p.x - ISLE.cx); to = [ISLE.cx + Math.cos(a) * (ISLE.r - 2.6), ISLE.cz + Math.sin(a) * (ISLE.r - 2.6)]; isle = true; }
+  else if (p.x < 84 && p.z > BEACH.z0 + 2 && p.z < BEACH.z1 - 2) to = [77.2, p.z];
+  if (!to) { toast('⚓ 육지 가까이(모래사장이나 보물섬 옆) 가야 내릴 수 있어요', 'warn'); return; }
+  boatQuiet(); p.set(to[0], 0.35, to[1]); player.vy = 0; playSfx('pick');
+  toast(isle ? `🏝️ 보물섬에 내렸어요! 단서 4개를 풀어요 (지금 ${isleCount()}/4)` : '🏖️ 바닷가에 내렸어요', isle ? 'success' : 'info');
+}
+function updateSail(dt) {
+  if ((sail.dt -= dt) <= 0) { sail.dt = 1; // 1초마다: 떠내려온 나무 · 친구 배
+    sail.drift.forEach((d, i) => { d.g.visible = !driftGot(i); });
+  }
+  for (const [, r] of remotes) { const want = (r.target?.v | 0) === BOAT_V ? (r.target.q | 0) % 100 : -1;
+    if ((r.boatQ ?? -1) !== want) { r.boatG?.parent?.remove(r.boatG); r.boatG = want >= 0 ? boatModel(want) : null; if (r.boatG) r.a.g.add(r.boatG); r.boatQ = want; } }
+  if (!sail.on) return;
+  if (sail.g && (sail.g.parent !== player.avatar.g || sail.q !== boatQ())) { sail.g.parent?.remove(sail.g); sail.g = boatModel(boatQ()); sail.q = boatQ(); player.avatar.g.add(sail.g); } // 옷을 바꿔도 배는 그대로
+  if (sail.g) sail.g.rotation.z = Math.sin(time * 1.8) * 0.035;
+  const p = player.pos, di = Math.hypot(p.x - ISLE.cx, p.z - ISLE.cz), nearIsle = di < ISLE.r + 4.5, nearBeach = p.x < 84;
+  const t = nearIsle ? '🏝️ 보물섬 옆이에요!' : nearBeach ? '🏖️ 모래사장 옆이에요' : `🏝️ 보물섬까지 ${Math.round(di - ISLE.r)}m`;
+  if ($('sailDir').textContent !== t) $('sailDir').textContent = t;
+  $('sailLandBtn').style.opacity = nearIsle || nearBeach ? '1' : '0.55';
+  if ((sail.splash = (sail.splash || 0) - dt) <= 0 && (keys.w || keys.a || keys.s || keys.d || joy.x || joy.y)) { sail.splash = 0.15; burst(p.clone().setY(0.2), [0xFFFFFF, 0x9FE0FF], 3, 1.5, 0.6, 0.5, -3); }
+}
+// 🛠️ 조선소 (배 가게 바로 남쪽 모래사장) · 만들고 있는 배가 한 조각씩 생겨요
+const SY = { x: 75.4, z: 148 };
+function buildShipyard(g) {
+  const o = { solid: false };
+  box(g, 4.6, 0.2, 6.2, 0xC8A070, SY.x, 0.1, SY.z, o); for (let k = -2; k <= 2; k++) box(g, 4.6, 0.02, 0.05, 0x8A5A34, SY.x, 0.21, SY.z + k * 1.2, o);
+  for (const dz of [-1.4, 1.4]) { box(g, 1.6, 0.7, 0.2, 0x8A5A34, SY.x, 0.55, SY.z + dz, o); }
+  for (const [dx, dz] of [[-2.1, -2.9], [-2.1, 2.9], [2.1, -2.9], [2.1, 2.9]]) cyl(g, 0.1, 2.6, 0x8A5A34, SY.x + dx, 1.3, SY.z + dz, o);
+  box(g, 0.12, 0.12, 6.0, 0x8A5A34, SY.x - 2.1, 2.6, SY.z, o); box(g, 0.12, 0.12, 6.0, 0x8A5A34, SY.x + 2.1, 2.6, SY.z, o);
+  box(g, 0.6, 0.5, 0.6, 0xA06A3A, SY.x - 1.6, 0.45, SY.z + 2.4, o); box(g, 0.08, 0.5, 0.08, 0x777777, SY.x - 1.6, 0.95, SY.z + 2.4, o); // 연장 상자 · 망치
+  signPlane(g, ['🛠️ 조선소'], 2.4, 0.65, SY.x - 2.35, 2.25, SY.z, { font: 46, pad: 4, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false }).rotation.y = -Math.PI / 2;
+  makeLabel(g, ['🛠️ 조선소', '재료를 모아 내 배를 만들어요'], 1.0, SY.x, 4.4, SY.z);
+  sail.yard = new THREE.Group(); sail.yard.position.set(SY.x, 1.25, SY.z); g.add(sail.yard); shipyardRefresh();
+  addInteract({ pos: new V3(SY.x - 2.9, 1, SY.z), r: 3.0, text: () => { const w = boatBag().wip; return w ? [`🔨 ${BOAT_H[w.h].n} 만드는 중`, `망치질 ${w.n}/${BOAT_H[w.h].steps}`] : ['🛠️ 조선소', '배 만들기 · 내 배 고르기']; }, run: openShipyard });
+}
+function shipyardRefresh() {
+  if (!sail.yard) return; sail.yard.clear(); const b = boatBag(), w = b.wip;
+  if (!w && boatCur() < 0) { const o = { solid: false }, f = new THREE.Group(); box(f, 0.2, 0.2, 3.0, 0x8A5A34, 0, -0.3, 0, o); for (let k = -1; k <= 1; k++) for (const sd of [-1, 1]) box(f, 0.1, 0.7, 0.1, 0xB07C50, sd * 0.6, 0, k * 1.0, { solid: false, rz: -sd * 0.35 }); sail.yard.add(f); return; } // 빈 뼈대
+  const m = boatModel(boatQ(w ? w.h : boatCur()));
+  if (w) { const N = m.children.length, show = Math.max(1, Math.ceil(N * w.n / BOAT_H[w.h].steps)); m.children.forEach((c, i) => { c.visible = i < show; }); }
+  sail.yard.add(m);
+}
+function openShipyard() {
+  openLife('🛠️ 조선소', (box) => {
+    box.textContent = ''; const b = boatBag(), w = b.wip;
+    box.append(el2('p', 'hint', `재료: ${BOAT_PARTS.map(P => `${P.icon}${b.p[P.k] | 0}`).join(' · ')}  (재료는 🛍️ 배 가게 · 바닷가 🪵 떠내려온 나무)`));
+    if (w) {
+      const H = BOAT_H[w.h]; box.append(el2('p', 'lp-big', `${H.icon} ${H.n} 만드는 중 · 🔨 ${w.n}/${H.steps}`));
+      const bar = el2('div', ''); bar.style.cssText = 'height:16px;border-radius:8px;background:#EEE;overflow:hidden;margin:6px 0'; const fill = el2('div', ''); fill.style.cssText = `height:100%;width:${Math.round(w.n / H.steps * 100)}%;background:#F5B82A`; bar.append(fill); box.append(bar);
+      const hit = el2('button', 'btn', '🔨 망치질!'); hit.style.cssText = 'font-size:24px;padding:14px 28px;background:#FFE066';
+      hit.onclick = () => { w.n++; playSfx('pick'); burst(new V3(SY.x, 1.6, SY.z), [0xFFD23C, 0xFFFFFF, 0xB07C50], 10, 2.5, 1.2);
+        if (w.n >= H.steps) { b.h[w.h] = 1; b.cur = w.h; b.wip = null; saveBag(); shipyardRefresh(); playSfx('fanfare'); burst(new V3(SY.x, 2, SY.z), RAINBOW, 60, 6, 3); showBanner(`${H.icon} ${H.n} 완성!`, '⚓ 선착장에서 띄워 🏝️ 보물섬에 가 봐요 (배 색·깃발은 배 가게)', 5000); refillLife(); return; }
+        saveBag(); shipyardRefresh(); refillLife(); };
+      box.append(el2('div', 'row-center', null)); box.lastChild.append(hit);
+      box.append(el2('p', 'hint', '한 번 두드릴 때마다 배가 한 조각씩 생겨요. 창을 닫아도 만들던 배는 그대로 있어요.'));
+      return;
+    }
+    const grid = el2('div', 'lp-grid'), cur = boatCur();
+    BOAT_H.forEach((H, h) => { const have = boatHave(h), card = el2('div', 'lp-card' + (cur === h ? ' done' : ''));
+      card.append(el2('div', 'lp-icon', H.icon), el2('div', 'lp-name', H.n), el2('div', 'lp-sub', `${H.d} · 빠르기 ×${H.mul}`));
+      if (!have) card.append(el2('div', 'hint', Object.entries(H.need).map(([k, n]) => `${partName(k).icon}${Math.min(b.p[k] | 0, n)}/${n}`).join(' ')));
+      const bt = el2('button', 'btn lp-btn', have ? (cur === h ? '✔ 지금 내 배' : '이 배로 고르기') : '🔨 만들기 시작');
+      if (have) { bt.disabled = cur === h; bt.onclick = () => { b.cur = h; saveBag(); shipyardRefresh(); toast(`${H.icon} ${H.n}을(를) 골랐어요`, 'success'); refillLife(); }; }
+      else { bt.disabled = !partsOk(h); bt.onclick = () => { if (!partsOk(h)) return; for (const [k, n] of Object.entries(H.need)) b.p[k] = (b.p[k] | 0) - n; b.wip = { h, n: 0 }; saveBag(); shipyardRefresh(); playSfx('coin'); refillLife(); }; }
+      card.append(bt); grid.append(card); });
+    box.append(grid, el2('p', 'hint', '다 만든 배는 ⚓ 선착장(배 가게 바로 동쪽 물가)에서 띄워요. 🏝️ 보물섬은 바다로 둘러싸여 배로만 갈 수 있어요.'));
+  });
+}
+function openBoatShop(tab = 'parts') {
+  openLife('⛵ 배 가게', (box) => {
+    box.textContent = ''; const b = boatBag(), tabs = el2('div', 'row-center wrap');
+    for (const [k, n] of [['parts', '🪵 배 재료'], ['deco', '🎨 배 색·깃발']]) { const t = el2('button', 'btn', n); t.style.background = tab === k ? '#FFE066' : '#fff'; t.onclick = () => openBoatShop(k); tabs.append(t); }
+    box.append(tabs, el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`));
+    const buy = (pr, fn) => { if ((bag.shell || 0) < pr) { toast(`🐚 조개돈이 ${pr - (bag.shell || 0)} 모자라요`, 'warn'); return; } bag.shell -= pr; fn(); saveBag(); updateHUD(null); playSfx('coin'); refillLife(); };
+    if (tab === 'parts') {
+      box.append(el2('p', 'hint', '재료를 모아 바로 옆 🛠️ 조선소에서 배를 만들어요. 바닷가의 🪵 떠내려온 나무를 주우면 판자가 공짜로 생겨요 (하루 한 번씩).'));
+      const grid = el2('div', 'lp-grid');
+      for (const P of BOAT_PARTS) { const card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', P.icon), el2('div', 'lp-name', P.n), el2('div', 'lp-sub', `🐚${P.pr} · 가방 ${b.p[P.k] | 0}개`));
+        for (const n of [1, 5]) { const bt = el2('button', 'btn lp-btn', `${n}개 🐚${P.pr * n}`); bt.disabled = (bag.shell || 0) < P.pr * n; bt.onclick = () => buy(P.pr * n, () => { b.p[P.k] = (b.p[P.k] | 0) + n; toast(`${P.icon} ${P.n} ${n}개를 샀어요`, 'success'); }); card.append(bt); }
+        grid.append(card); }
+      box.append(grid, el2('h3', 'lp-sec', '📜 배 설계도'));
+      for (const H of BOAT_H) box.append(el2('p', 'hint', `${H.icon} ${H.n} (빠르기 ×${H.mul}): ${Object.entries(H.need).map(([k, n]) => `${partName(k).icon}${partName(k).n} ${n}`).join(' · ')}${boatHave(BOAT_H.indexOf(H)) ? ' ✅' : ''}`));
+    } else {
+      box.append(el2('p', 'hint', `색은 🐚${BOAT_COL_PR}, 깃발은 🐚${BOAT_FLAG_PR}로 한 번 사면 내 모든 배에 쓸 수 있어요. 바다에서 친구들에게도 보여요.`));
+      box.append(el2('h3', 'lp-sec', '🎨 배 색'));
+      const g1 = el2('div', 'row-center wrap');
+      BOAT_COLS.forEach((C0, i) => { const have = boatColHave(i), bt = el2('button', 'btn', b.c === i ? '✔' : have ? '' : '🔒'); bt.style.cssText = `width:52px;height:52px;padding:0;font-size:18px;background:${hexStr(C0.c)}`; bt.title = `${C0.n}${have ? '' : ` · 🐚${BOAT_COL_PR}`}`; bt.setAttribute('aria-label', bt.title);
+        bt.onclick = () => { if (have) { b.c = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(BOAT_COL_PR, () => { b.cl[i] = 1; b.c = i; shipyardRefresh(); toast(`🎨 ${C0.n} 배!`, 'success'); }); }; g1.append(bt); });
+      box.append(g1, el2('h3', 'lp-sec', '🚩 깃발'));
+      const g2 = el2('div', 'lp-grid');
+      BOAT_FLAGS.forEach((F, i) => { const have = boatFlagHave(i), bt = el2('button', 'lp-card' + (b.f === i ? ' done' : ''), ''); bt.append(el2('div', 'lp-icon', F.icon), el2('div', 'lp-name', F.n), el2('div', 'hint', b.f === i ? '✔ 달았어요' : have ? '달기' : `🐚${BOAT_FLAG_PR}`));
+        bt.onclick = () => { if (have) { b.f = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(BOAT_FLAG_PR, () => { b.fl[i] = 1; b.f = i; shipyardRefresh(); toast(`${F.icon} ${F.n}을(를) 달았어요`, 'success'); }); }; g2.append(bt); });
+      box.append(g2, el2('p', 'hint', '뗏목·나룻배는 뒤쪽 깃대에, 돛단배·해적선은 돛대 꼭대기에 깃발이 달려요.'));
+    }
+  });
+}
+// 🪵 떠내려온 나무: 바닷가 5곳, 하루 한 번씩 주우면 판자 2개
+const DRIFT = [[75.2, -45], [74.8, -6], [75.2, 18], [74.8, 58], [75.4, 134]];
+const driftGot = (i) => bag.drift?.d === dayNum() && !!(bag.drift.g & (1 << i));
+function buildDrift(g) {
+  DRIFT.forEach(([x, z], i) => { const d = new THREE.Group(); d.position.set(x, 0, z); d.rotation.y = 0.5 + i * 1.1; g.add(d);
+    mesh(CYL, d, 0.2, 1.8, 0.2, 0x9C7A52, 0, 0.18, 0, { solid: false, rz: Math.PI / 2 }); mesh(CYL, d, 0.14, 1.0, 0.14, 0xA88A62, 0.2, 0.14, 0.35, { solid: false, rz: Math.PI / 2, ry: 0.6 }); ball(d, 0.16, 0x5FA65A, -0.6, 0.12, 0.15, { solid: false });
+    sail.drift.push({ g: d });
+    addInteract({ pos: new V3(x, 1, z), r: 2.0, text: () => driftGot(i) ? null : ['🪵 떠내려온 나무 줍기', '배 만들 판자 2개'], run: () => { if (driftGot(i)) return; if (bag.drift?.d !== dayNum()) bag.drift = { d: dayNum(), g: 0 }; bag.drift.g |= 1 << i; const b = boatBag(); b.p.plank = (b.p.plank | 0) + 2; saveBag(); d.visible = false; playSfx('pick'); toast(`🪵 판자 2개! (가방 ${b.p.plank}개 · 배는 🛠️ 조선소에서 만들어요)`, 'success'); } }); });
 }
 function updateBeach() {
   if (beach.foam) beach.foam.position.x = Math.sin(time * 0.9) * 0.9 - 0.4;
@@ -15493,6 +15689,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1018b', d: '10월 18일', items: ['⛵ 내 배 만들기! 배 가게에서 재료를 사고 🛠️ 조선소에서 망치질로 뗏목 · 나룻배 · 돛단배 · 해적선을 만들어요', '🏝️ 보물섬은 이제 바다로 둘러싸여 헤엄치거나 날아서는 못 가요. ⚓ 선착장에서 내 배를 띄워 직접 노 저어 가요', '🪵 바닷가의 떠내려온 나무를 주우면 판자가 생겨요 · 배 색과 깃발도 꾸며요 (바다에서 친구들에게 보여요)'] },
   { id: '1018a', d: '10월 18일', items: ['🛍️ 우리 집 마을 동쪽 모래사장에 해변 상점가가 생겼어요! 마당·가구 · 옷 · 펫 · 간식·물약 · 페인트 · 기념품 교환소 · 반 공동 구매소', '🚤 부두 끝에서 보트 경주! 고리 8개를 지나 기록에 도전 · 🏝️ 보물섬 가는 배를 타고 단서 4개를 풀면 보물상자', '🔨 작업대는 없어졌어요 (마당 장식은 마당·가구 가게에서)'] },
   { id: '1017p', d: '10월 17일 (밤)', items: ['🏠 우리 집 안 펫과 펫 집이 바로 보이게 고쳤어요'] },
   { id: '1017o', d: '10월 17일 (밤)', items: ['🏠 산책을 그만하면 펫이 집 안에서 기다려요 · 산책하는 동안은 집이 비어요'] },
