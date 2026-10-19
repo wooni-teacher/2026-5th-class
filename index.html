@@ -1472,6 +1472,8 @@
     <div id="tpRewards" class="rewards"></div>
     <div class="field">성공하면 생기는 보상 · 🌼 마을 꾸미기</div>
     <div id="tpRewardsDecor" class="rewards"></div>
+    <div class="row-center wrap" style="margin-top:8px"><label style="font-size:16px">🐚 성공하면 함께한 학생마다 조개돈 <select id="tpMShell" class="tinput" style="width:auto"><option value="0">없음</option><option value="10">🐚 10</option><option value="20">🐚 20</option><option value="30" selected>🐚 30</option><option value="50">🐚 50</option><option value="100">🐚 100</option><option value="200">🐚 200</option></select></label></div>
+    <p class="hint">조개돈은 미션에 참여(체크)한 학생만 받아요. 미션이 성공하면 다음에 접속할 때 저절로 들어와요 (하루 가게 예산과 상관없이). 조개돈만 주고 싶으면 이미 생긴 장소·꾸미기를 골라도 돼요.</p>
     <p class="err" id="tpErr"></p>
     <div class="row-center"><button class="btn" id="tpStart" style="background:var(--leaf);color:#fff">🎯 미션 추가하기</button></div>
 
@@ -1558,6 +1560,10 @@
     <p class="hint">팔면 반 동전은 값만큼, 학생 조개돈은 절반만 늘어요. 같은 물건을 많이 팔면 값이 내려가요(다음 날 회복). 하루 가게 예산은 학생 한 명이 하루에 팔아서 벌 수 있는 조개돈 한도예요.</p>
     <div class="row-center wrap"><label style="font-size:16px">하루 가게 예산 <select id="tpCap" class="tinput" style="width:auto"><option value="100">🐚 100</option><option value="200">🐚 200 (기본)</option><option value="300">🐚 300</option><option value="500">🐚 500</option><option value="0">한도 없음</option></select></label></div>
     <p class="hint" id="tpFundNow"></p>
+    <h3>📊 오늘 학생 재화 현황</h3>
+    <p class="hint">오늘(밤 12시부터) 학생마다 번 조개돈과 보탠 반 동전이에요. 학생 기기가 15초쯤마다 알려 줘요. 🎮 놀이·판매 = 하루 가게 예산 안에서 번 것 · 🎁 보상 = 미션·보물섬·매일 보상처럼 예산 밖에서 받은 것.</p>
+    <div class="row-center wrap"><button class="btn" id="tpEarnLoad" style="background:#FFE066">🔄 현황 불러오기</button><button class="btn" id="tpEarnClear" style="background:#fff">🧹 기록 비우기</button></div>
+    <div id="tpEarn" class="hint"></div>
     <div class="row-center"><button class="btn danger" id="tpFundReset">🐷 반 기부 처음부터</button></div>
 
     <h3>🏡 우리 집 마을 (개인 공간)</h3>
@@ -1808,7 +1814,7 @@ const CFG = {
   // 활동 완료 감사 메시지 (자유 입력 없이 이 중에서만 골라요, 순서를 바꾸면 저장된 번호의 뜻이 바뀌어요)
   // 활동 템플릿: 장소별 짧은 협력 활동 (id는 database.rules.json과 같아야 해요)
   TEMPLATES: [
-    { id: 'lib_books', place: '🐾 펫 체육관', title: '읽은 책 기록하기', desc: '책을 다 읽고 선생님께 확인받아 독서 책상에 기록해요', reward: 'books' },
+    { id: 'lib_books', place: '🐾 펫 체육관', title: '읽은 책 기록하기', desc: '책을 다 읽고 선생님께 확인받아 광장 독서 책상에 기록해요', reward: 'books' },
     { id: 'lib_quiet', place: '🌳 독서 나무', title: '독서 나무 아래에서 읽기', desc: '독서 나무 아래에서 조용히 책을 읽어요', reward: 'books' },
     { id: 'gar_water', place: '🌳 독서 나무', title: '독서 나무에 물 주기', desc: '우리 반 독서 나무에 물을 줘요', reward: 'water' },
     { id: 'gar_weed', place: '🌳 독서 나무', title: '독서 나무 가꾸기', desc: '독서 나무가 잘 자라게 둘레를 가꿔요 (물 주기)', reward: 'books' },
@@ -1964,6 +1970,7 @@ function sanitizeState(raw) {
     out.missions[k] = { id: k, title: m.title.trim(), goal: m.goal, reward: m.reward, count: m.count, done: {} };
     if (m.daily === true) { out.missions[k].daily = true; out.missions[k].last = {}; for (const [u, d] of Object.entries(plainObj(m.last))) if (ok(ANON_ID.test(u) && isInt(d, 0, 1e6))) out.missions[k].last[u] = d; }
     if (Number.isFinite(m.at)) out.missions[k].at = m.at;
+    if (isInt(m.sh, 1, 500)) out.missions[k].sh = m.sh; // 🐚 참여한 학생마다 조개돈 (1019a)
     for (const [u, x] of Object.entries(plainObj(m.done))) if (ok(ANON_ID.test(u) && x === true)) out.missions[k].done[u] = true;
   }
   const vt = v.vote;
@@ -2408,6 +2415,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (h) pl.h = { ...h }; else delete pl.h; emit(); return { ok: true };
     },
     async chatSend(t, nm) { chatRemote({ me: { t, nm, at: Date.now() } }); return { ok: true }; },
+    async earnPut(o) { (st._earn ||= {}).me = { ...o, at: Date.now() }; return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -2864,6 +2872,9 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     },
     async chatSend(t, nm) { try { const ref = R(`chat/${uid}`); await D.set(ref, { t, nm, at: D.serverTimestamp() }); D.onDisconnect(ref).remove().catch(() => {}); return { ok: true }; } catch (e) { return { ok: false }; } },
     async chatDel() { try { await D.set(R(`chat/${uid}`), null); } catch (e) {} },
+    async earnPut(o) { try { await D.set(R(`earn/${uid}`), { ...o, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📊 오늘 재화 (선생님만 모아 봐요)
+    async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
+    async earnClear() { try { await D.set(R('earn'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async chatClear() { try { await D.set(R('chat'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async homeSet(n, upd) { // 우리 집 안 (주인만 쓸 수 있어요)
       try { await D.update(R(`state/plots/${n}/in`), upd); return { ok: true }; } catch (e) { return { ok: false }; }
@@ -4528,7 +4539,7 @@ function openReadTree() {
     box.textContent = ''; const n = rtBooks(), st = rtStage(), nx = RT_ST[st + 1], pend = rtPending();
     box.append(el2('p', 'up-win', `${RT_ST[st].nm} · 우리 반이 함께 기록한 책 ${n}권`));
     if (nx) { const bar = el2('div', 'bar'), fill = el2('div'); const lo = RT_ST[st].n; fill.style.width = `${Math.floor((n - lo) / (nx.n - lo) * 100)}%`; bar.append(fill); box.append(bar, el2('p', 'hint', `다음 단계 ${nx.nm}까지 ${nx.n - n}권 더! (내가 기록한 책 ${bag.reads?.length || 0}권)`)); }
-    box.append(el2('p', 'hint', '📒 펫 체육관 독서 책상에 읽은 책을 기록하면 (선생님 확인) 나무가 자라요. 나무가 한 단계 자랄 때마다 모두 보상을 한 번씩 받아요.'));
+    box.append(el2('p', 'hint', '📒 광장 독서 책상에 읽은 책을 기록하면 (선생님 확인) 나무가 자라요. 나무가 한 단계 자랄 때마다 모두 보상을 한 번씩 받아요.'));
     const row = el2('div', 'row-center wrap');
     if (pend) { const b = el2('button', 'btn', `🎁 보상 받기 (${pend}단계)`); b.style.background = '#FFD23C'; b.onclick = () => {
       let sh = 0; const fur = []; for (let i = rtGot() + 1; i <= st; i++) { const x = RT_ST[i]; sh += x.sh || 0; if (x.fur != null) { bag.fur[x.fur] = (bag.fur[x.fur] || 0) + 1; fur.push(`${FURN[x.fur].icon} ${FURN[x.fur].name}`); } }
@@ -5433,7 +5444,18 @@ function renderMission() {
   if (!$('teacherPanel').classList.contains('hidden')) fillTeacherPanel();
 }
 
+function missionShellClaim() { // 🐚 성공한 미션에 참여했으면 조개돈 (한 미션에 한 번 · 이 기기)
+  const uid = backend?.uid; if (!uid || isTeacher) return; bag.mclaim ||= {}; let got = 0; const names = [];
+  for (const m of missionList()) { if (m.legacy || !(m.sh > 0) || m.count < m.goal || bag.mclaim[m.id]) continue;
+    if (!(m.done?.[uid] || m.last?.[uid] != null)) continue;
+    bag.mclaim[m.id] = dayNum(); earnShell(m.sh, 'm'); got += m.sh; names.push(m.title); }
+  if (!got) return;
+  const ks = Object.keys(bag.mclaim); if (ks.length > 60) for (const k of ks.slice(0, ks.length - 60)) delete bag.mclaim[k];
+  saveBag(); renderCoinChip(); updateHUD?.(null);
+  setTimeout(() => showBanner(`🐚 공동 미션 보상 +${got}`, `${names.slice(0, 2).join(', ')}${names.length > 2 ? ` 외 ${names.length - 2}개` : ''} 미션 성공! 함께해 줘서 고마워요`, 6000), 1200);
+}
 function syncMission(prev, first) {
+  try { missionShellClaim(); } catch (e) { console.warn(e); }
   for (const id in rewardSpots) if (rewardSpots[id].built && !S.unlocks[id]) lockReward(id); // 초기화된 장소 다시 잠그기
   for (const id of Object.keys(S.unlocks)) {
     if (S.unlocks[id] && rewardSpots[id] && !rewardSpots[id].built) {
@@ -5448,7 +5470,7 @@ function syncMission(prev, first) {
       if (!pm || pm.id !== m.id) toast(`🎯 새 미션이 왔어요: ${m.title}`, 'info');
       else if (pm.count < pm.goal && m.count >= m.goal) {
         const rw = MREWARD[m.reward];
-        showBanner(`🎉 미션 성공: ${m.title}`, rw ? rw.done : '모두 함께 해냈어요');
+        showBanner(`🎉 미션 성공: ${m.title}`, (rw ? rw.done : '모두 함께 해냈어요') + (m.sh ? ` · 함께한 친구 모두 🐚${m.sh}` : ''));
       }
     }
   }
@@ -5479,7 +5501,7 @@ function fillMissionPanel() {
     card.append(el2('h3', '', `${m.daily ? '🔁' : '🎯'} ${m.title}`));
     const bar = el2('div', 'bar', ''), fill = document.createElement('i'); fill.style.width = `${Math.min(100, m.count / m.goal * 100)}%`; bar.append(fill); card.append(bar);
     card.append(el2('div', 'hint', `${m.count} / ${m.goal}  (${m.goal - m.count}번 남았어요)${m.daily ? ' · 🔁 매일 한 번씩 보태는 누적 미션' : ''}`));
-    card.append(el2('div', 'hint', `🎁 성공하면 ${rewardLine(m.reward)}`));
+    card.append(el2('div', 'hint', `🎁 성공하면 ${m.sh ? `함께한 친구 모두 🐚 ${m.sh} · ` : ''}${rewardLine(m.reward)}`));
     const row = el2('div', 'row-center', ''), b = el2('button', 'btn mp-go', '');
     const mine = mDone(m), busy = missionBusy === m.key;
     b.disabled = !!missionBusy || mine; b.textContent = busy ? '⏳ 보내는 중…' : mine ? (m.daily ? '👍 오늘은 했어요! 내일 또 눌러요' : '👍 이미 함께했어요!') : m.daily ? '✅ 오늘도 미션을 했어요!' : '✅ 나도 미션을 했어요!';
@@ -5581,10 +5603,11 @@ async function startMissionFromPanel() {
   if (!(goal >= 1 && goal <= (daily ? 1000 : 100))) { err.textContent = daily ? '누적 미션 목표는 1부터 1000 사이로 적어 주세요' : '목표 횟수는 1부터 100 사이로 적어 주세요 (더 크게 하려면 🔁 매일 누적 미션으로)'; return; }
   if (activeMissions().length >= 8) { err.textContent = '진행 중인 미션은 8개까지예요. 먼저 끝내거나 지워 주세요'; return; }
   const rw = MREWARD[tpReward];
-  if (rw && mrewardHas(tpReward) && !(await confirmAction({ title: '🎁 이미 생긴 보상이에요', body: `${rw.icon} ${rw.name}은(는) 이미 마을에 있어요.\n성공해도 새로 생기는 것은 없어요. 그래도 추가할까요?`, okText: '추가' }))) return;
+  const msh = +($('tpMShell')?.value || 0);
+  if (rw && mrewardHas(tpReward) && !msh && !(await confirmAction({ title: '🎁 이미 생긴 보상이에요', body: `${rw.icon} ${rw.name}은(는) 이미 마을에 있어요.\n성공해도 새로 생기는 것은 없어요. 그래도 추가할까요?`, okText: '추가' }))) return;
   $('tpStart').disabled = true;
   const id = Date.now().toString(36);
-  const res = await backend.addMission({ id, title, goal, reward: tpReward, count: 0, at: Date.now(), ...(daily ? { daily: true } : {}) });
+  const res = await backend.addMission({ id, title, goal, reward: tpReward, count: 0, at: Date.now(), ...(daily ? { daily: true } : {}), ...(msh ? { sh: msh } : {}) });
   $('tpStart').disabled = false;
   if (res.ok) {
     if (tpFromVote) { await backend.resetVote(); tpFromVote = false; } // 투표 결과로 만든 미션이면 새 투표 시작
@@ -5601,7 +5624,7 @@ function fillMissionAdmin() {
   if (!list.length) box.append(el2('div', 'vempty', '아직 미션이 없어요. 아래에서 추가해 주세요'));
   for (const m of list) {
     const done = m.count >= m.goal, row = el2('div', 'tp-mrow', '');
-    row.append(el2('div', '', `${done ? '🎉' : m.daily ? '🔁' : '🎯'} ${m.title} (${m.count}/${m.goal})${m.daily ? ' · 매일 누적' : ''} · 🎁 ${MREWARD[m.reward]?.icon || ''} ${MREWARD[m.reward]?.name || ''}${done ? ' · 완료' : ''}`));
+    row.append(el2('div', '', `${done ? '🎉' : m.daily ? '🔁' : '🎯'} ${m.title} (${m.count}/${m.goal})${m.daily ? ' · 매일 누적' : ''} · 🎁 ${MREWARD[m.reward]?.icon || ''} ${MREWARD[m.reward]?.name || ''}${m.sh ? ` + 🐚${m.sh}` : ''}${done ? ' · 완료' : ''}`));
     const btns = el2('div', 'row-center wrap', ''); btns.style.margin = '0';
     const base = m.legacy ? 'mission' : `missions/${m.id}`;
     if (!done) { const b = el2('button', 'btn', '✅ 성공'); b.onclick = () => adminCompleteMission(m); btns.append(b); }
@@ -6957,7 +6980,7 @@ function initRvote() {
    ===================================================================== */
 const ACTION_LINK = { lib_books: 'read', lib_quiet: 'read', gar_water: 'water', gar_weed: 'water', plz_clean: 'decor', plz_deco: 'decor' };
 const ACTION_INFO = {
-  read:  { icon: '📖', name: '독서 나무 아래에서 책 읽기', how: '독서 나무 앞에서 E → 📖 책 읽기를 누르거나, 펫 체육관 독서 책상에 책을 기록하면', need: 'Garden', needName: '독서 나무' },
+  read:  { icon: '📖', name: '독서 나무 아래에서 책 읽기', how: '독서 나무 앞에서 E → 📖 책 읽기를 누르거나, 광장 독서 책상에 책을 기록하면', need: 'Garden', needName: '독서 나무' },
   water: { icon: '💧', name: '독서 나무에 물 주기', how: '독서 나무 앞에서 E → 💧 물 주기를 누르면', need: 'Garden', needName: '독서 나무' },
   decor: { icon: '🌼', name: '광장에 장식 놓기', how: '🌼 꾸미기 버튼으로 광장 둘레 꾸미기 구역에 장식을 놓으면', need: null },
 };
@@ -8501,7 +8524,7 @@ function openHouse(lotId) {
         if (!(await confirmAction({ title: '🏚️ 우리 집을 허물까요?', body: `집과 키운 것(꽃울타리·분수 등)이 사라져요. 땅과 땅 위 물건은 그대로라 언제든 다시 지을 수 있어요.\n🐚 ${HOUSE_DEMOLISH_BACK}을 돌려받아요.`, okText: '허물기' }))) return;
         const res = await backend.setHouse(id, null);
         if (!res.ok) { if (res.reason !== 'offline') toast('🚫 허물지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
-        earnShell(HOUSE_DEMOLISH_BACK); const [cx, cz] = lotCenter(id); burst(new V3(cx, 2, cz + 3), [0xC9B79C, 0x8C95A3, 0xFFFFFF], 70, 6, 3);
+        earnShell(HOUSE_DEMOLISH_BACK, 'x'); const [cx, cz] = lotCenter(id); burst(new V3(cx, 2, cz + 3), [0xC9B79C, 0x8C95A3, 0xFFFFFF], 70, 6, 3);
         toast(`🏚️ 집을 허물었어요. 🐚 +${HOUSE_DEMOLISH_BACK} · 새 집을 지어 봐요!`, 'success'); closeLife();
       };
       box.append(el2('div', 'row-center', null)); box.lastChild.append(dm);
@@ -8901,7 +8924,17 @@ function gainCritter(c) {
 // ---------- 반 동전 ----------
 const coinNow = () => S.coins || 0; // 지금까지 모은 합계 (마을 발전 기준 · 줄지 않아요)
 const coinAvail = () => Math.max(0, (S.coins || 0) - (S.coinSpent || 0)); // 이벤트에 쓸 수 있는 반 동전
-function earnShell(n) { bag.shell = (bag.shell || 0) + n; saveBag(); }
+function earnShell(n, kind) { bag.shell = (bag.shell || 0) + n; if (n > 0 && kind !== 'x' && !isTeacher) { const L = elogDay(); L.s += n; if (kind === 'm') L.m += n; elogW.dirty = true; } saveBag(); }
+/* 📊 오늘 재화 현황 (1019a): 이 기기 bag.elog {d 날, s 오늘 번 조개, m 미션 보상, c 보탠 반 동전} → 15초마다 earn/{uid}로 보내요 (선생님 관리화면에서 봐요)
+   kind 'x' = 버는 게 아닌 것(집 허물기 돌려받기·옛 재료 바꾸기) · 'm' = 공동 미션 보상 · 예산 안 = earnToday() */
+const elogW = { dirty: true, at: 0 };
+function elogDay() { if (bag.elog?.d !== dayNum()) bag.elog = { d: dayNum(), s: 0, m: 0, c: 0 }; bag.elog.m |= 0; return bag.elog; }
+function elogTick() {
+  if (!joined || isTeacher || !backend?.earnPut || !elogW.dirty || performance.now() - elogW.at < 15000) return;
+  elogW.at = performance.now(); elogW.dirty = false; const L = elogDay();
+  backend.earnPut({ d: L.d, s: Math.min(100000, L.s | 0), m: Math.min(100000, L.m | 0), b: Math.min(100000, earnToday() | 0), c: Math.min(100000, L.c | 0), h: Math.min(10000000, Math.max(0, bag.shell | 0)), n: (cleanNick(myNick) || '친구').slice(0, 8) }).then(r => { if (!r?.ok) elogW.dirty = true; });
+}
+setInterval(() => { try { elogTick(); } catch (e) { } }, 5000);
 const T_SHELL = 999999; // 🧑‍🏫 선생님 기기: 조개돈 무한 (학생 때 조개돈은 bag.shellStu에 따로 보관)
 function teacherWallet() {
   if (isTeacher) { if (bag.shellStu == null) bag.shellStu = bag.shell || 0; if (bag.shell !== T_SHELL) bag.shell = T_SHELL; }
@@ -8919,6 +8952,7 @@ async function earnCoins(n) { // 한 번에 200까지 (서버 규칙과 같아�
   if (isTeacher) return true; // 🧑‍🏫 선생님 활동은 반 동전에 더하지 않아요 (따로 관리)
   let ok = true;
   for (let left = n; left > 0 && ok; left -= 200) ok = (await backend.addCoins(Math.min(200, left))).ok;
+  if (ok && n > 0) { elogDay().c += n; elogW.dirty = true; saveBag(); } // 📊 오늘 보탠 반 동전
   return ok;
 }
 
@@ -14006,7 +14040,28 @@ function fillEconAdmin() {
   const { p, n } = fundNow();
   $('tpFundNow').textContent = p < FUND.length ? `반 기부: ${FUND[p].icon} ${FUND[p].name} 🐚${n}/${FUND[p].goal} (완성 ${p}/${FUND.length})` : `반 기부: 모두 완성 (${FUND.length}/${FUND.length})`;
 }
+async function loadEarnAdmin() {
+  const box = $('tpEarn'); box.textContent = '불러오는 중…'; const all = await backend.earnGet?.();
+  if (all == null) { box.textContent = '⚠️ 불러오지 못했어요. database.rules.json을 다시 게시했는지 확인해 주세요.'; return; }
+  const today = dayNum(), rows = Object.entries(all).filter(([, v]) => v && v.d === today).map(([u, v]) => ({ u, nm: nickOf(u, v) || v.n || '친구', s: v.s | 0, b: Math.min(v.b | 0, v.s | 0), m: v.m | 0, c: v.c | 0, h: v.h | 0, at: v.at || 0 })).sort((a, b) => b.s - a.s);
+  const old = Object.entries(all).filter(([, v]) => v && v.d !== today).map(([u, v]) => nickOf(u, v) || v.n || '친구');
+  box.textContent = '';
+  if (!rows.length) { box.append(el2('p', '', '오늘 기록이 아직 없어요. 학생이 접속해서 조개돈을 벌면 나타나요.')); }
+  else {
+    const sum = rows.reduce((a, r) => a + r.s, 0), coin = rows.reduce((a, r) => a + r.c, 0);
+    box.append(el2('p', 'lp-big', `오늘 ${rows.length}명 · 🐚 합계 ${sum} · 평균 ${Math.round(sum / rows.length)} · 가장 많이 ${rows[0].s} · 🪙 반 동전 ${coin}`));
+    const t = document.createElement('table'); t.style.cssText = 'width:100%;border-collapse:collapse;font-size:15px;text-align:center';
+    const tr = (cells, head) => { const r = document.createElement('tr'); for (const c of cells) { const d = document.createElement(head ? 'th' : 'td'); d.textContent = c; d.style.cssText = 'padding:5px 4px;border-bottom:1px solid #E5DCC8' + (head ? ';background:#FFF3C4' : ''); r.append(d); } t.append(r); };
+    tr(['이름', '오늘 번 🐚', '🎮 놀이·판매', '🎁 보상', '(미션)', '🪙 반 동전', '지금 가진 🐚', '마지막'], true);
+    for (const r of rows) tr([r.nm, r.s, r.b, Math.max(0, r.s - r.b), r.m, r.c, r.h, r.at ? new Date(r.at).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' }) : '-']);
+    const wrap = el2('div', ''); wrap.style.cssText = 'overflow-x:auto;margin-top:6px'; wrap.append(t); box.append(wrap);
+  }
+  if (old.length) box.append(el2('p', 'hint', `오늘 아직 안 들어온 학생(지난 기록만 있음): ${old.join(', ')}`));
+  box.append(el2('p', 'hint', '조개돈은 각 학생 기기에 저장돼요. 한 학생이 기기를 바꾸면 따로 보여요. 🧑‍🏫 선생님 기기는 세지 않아요.'));
+}
 function initEconUI() {
+  $('tpEarnLoad').onclick = loadEarnAdmin;
+  $('tpEarnClear').onclick = async () => { if (!(await confirmAction({ title: '🧹 재화 기록을 비울까요?', body: '학생들의 오늘 기록 표가 비워져요. (학생이 가진 조개돈은 그대로예요)', okText: '비우기' }))) return; const r = await backend.earnClear?.(); toast(r?.ok ? '🧹 기록을 비웠어요' : '⚠️ 비우지 못했어요. 규칙을 다시 게시해 주세요', r?.ok ? 'success' : 'warn'); loadEarnAdmin(); };
   $('tpCap').onchange = (e) => adminDo({ 'econ/cap': +e.target.value }, +e.target.value ? `🏪 하루 가게 예산을 🐚${e.target.value}로 바꿨어요` : '🏪 가게 예산 한도를 없앴어요');
   $('tpFundReset').onclick = async () => {
     if (!(await confirmAction({ title: '🐷 반 기부를 처음부터 할까요?', body: '모인 조개돈이 0이 되고 새 회차로 시작해요. (아직 안 받은 지난 회차 선물은 받을 수 있어요)', typeWord: '초기화', okText: '처음부터' }))) return;
@@ -14909,7 +14964,7 @@ const MX = { gem: [1252, 15], shape: [1166, 23], mo: [1150, 17], moN: 8, moS: 1.
 const CHAND_COST = 3, RUG_COST = 4;
 bag.gem ||= {}; bag.tile ||= 0;
 const GEM_SH = 60, TILE_SH = 5, CHAND_SH = 300, RUG_SH = 200; // 🐚 1017k: 광석·보석·타일 대신 조개
-if (!bag.cur2) { const sh = Object.entries(bag.ore || {}).reduce((a, [k, n]) => a + (n | 0) * (MINES.find(m => m.id === k)?.price || 2), 0) + GEMS.reduce((a, g) => a + (bag.gem[g.k] || 0), 0) * GEM_SH + (bag.tile | 0) * TILE_SH; bag.ore = {}; bag.gem = {}; bag.tile = 0; bag.cur2 = 1; if (sh > 0) { earnShell(sh); setTimeout(() => toast(`🐚 가지고 있던 광석·보석·타일을 조개 ${sh}개로 바꿨어요 (이제 재화는 🐚 조개 · 🪙 반 동전)`, 'success'), 4000); } saveBag(); }
+if (!bag.cur2) { const sh = Object.entries(bag.ore || {}).reduce((a, [k, n]) => a + (n | 0) * (MINES.find(m => m.id === k)?.price || 2), 0) + GEMS.reduce((a, g) => a + (bag.gem[g.k] || 0), 0) * GEM_SH + (bag.tile | 0) * TILE_SH; bag.ore = {}; bag.gem = {}; bag.tile = 0; bag.cur2 = 1; if (sh > 0) { earnShell(sh, 'x'); setTimeout(() => toast(`🐚 가지고 있던 광석·보석·타일을 조개 ${sh}개로 바꿨어요 (이제 재화는 🐚 조개 · 🪙 반 동전)`, 'success'), 4000); } saveBag(); }
 const gemTotal = () => GEMS.reduce((a, g) => a + (bag.gem[g.k] || 0), 0);
 function gemSpend(n) { for (let i = 0; i < n; i++) { const g = GEMS.slice().sort((a, b) => (bag.gem[b.k] || 0) - (bag.gem[a.k] || 0))[0]; if ((bag.gem[g.k] || 0) > 0) bag.gem[g.k]--; } saveBag(); }
 const oreTotal = () => Object.values(bag.ore || {}).reduce((a, n) => a + (n | 0), 0);
@@ -15297,11 +15352,7 @@ function buildInteriors() {
     const cols = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E];
     box(g, 0.6, 2.6, 4, 0x8A5A34, cx - w / 2 + 0.5, 1.3, cz - 6); for (const y of [0.5, 1.25, 2.0]) for (let b = 0; b < 8; b++) box(g, 0.4, 0.55, 0.32, cols[(b + y * 2) % 6 | 0], cx - w / 2 + 0.75, y + 0.3, cz - 7.6 + b * 0.42, o);
     bld.leafs = []; // (1017f) 체육관 안 독서 나무는 없앴어요 → 옛 텃밭 자리의 🌳 독서 나무
-    bld.genreSign = makeLabel(g, [''], 0.7, cx - w / 2 + 1.4, 3.5, cz - 6);
-    const dx = cx - w / 2 + 3.2, dz = cz - 2; box(g, 2.4, 0.12, 1.2, 0xE9C98F, dx, 0.85, dz); box(g, 0.8, 0.1, 0.6, 0xFFFFFF, dx, 0.95, dz, o); box(g, 0.08, 0.3, 0.08, 0x3B2F2A, dx + 0.4, 1.05, dz + 0.1, { solid: false, rz: 0.5 });
-    for (const sx of [-1, 1]) box(g, 0.1, 0.8, 0.1, 0x8A5A34, dx + sx * 1.1, 0.4, dz, o);
-    makeLabel(g, ['📒 독서 책상', '선생님께 확인받고 써요'], 0.8, dx, 2.3, dz);
-    addInteract({ pos: new V3(dx, 1, dz + 1), r: 2.6, text: () => roomNow() === 'lib' ? ['독서 기록하기 📒', '선생님께 확인받고 써요'] : null, run: openReadLog });
+    buildPlazaRead(); // 📒 독서 책상은 광장으로 옮겼어요 (1019b)
   }
   // ---------- 🎨 미술 공방 ----------
   { const r = ROOMS.art, { cx, cz, w, d } = r; roomShell(g, r);
@@ -15391,7 +15442,7 @@ function buildingDoor(id) { // 도서관·미술 공방: 건물 문 앞 (세워�
   return info.model.localToWorld(new V3(0, 0, id === 'Art' ? 0.3 : id === 'Garden' ? 1.0 : id === 'Playground' ? -7.0 : -1.6)); // 텃밭: 창고 문(온실 입구) · 체육관: 큰 유리문
 }
 function setupDoors() {
-  addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '🐾 펫 체육관 · 📒 독서 책상'] : null, run: () => enterRoom('lib') });
+  addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '🐾 펫 체육관'] : null, run: () => enterRoom('lib') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'art', text: () => S.built.Art ? ['들어가기 🚪', '🎨 미술 공방 안'] : null, run: () => enterRoom('art') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.0, dyn: 'gh', text: () => S.built.Garden ? ['온실 도서관 들어가기 📚', '자리에 앉아 책 읽기'] : null, run: () => enterRoom('gh') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.6, dyn: 'gym', text: () => S.built.Playground ? ['들어가기 🚪', '🏸 체육관 안'] : null, run: () => enterRoom('gym') });
@@ -15413,7 +15464,7 @@ async function enterRoom(id) {
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
   if (id === 'mus') { toast('🏛️ 역사 박물관이에요! 양쪽 전시실에서 연표 보고 사건을 차례대로 놓아요', 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
-  toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 왼쪽 구석)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
+  toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
 }
 async function exitRoom(id) {
   if (hv.travel) return;
@@ -15432,6 +15483,31 @@ async function exitRoom(id) {
   camera.position.set(x - Math.sin(h) * 8, 6, z - Math.cos(h) * 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
 }
+// 📚 광장 독서 쉼터 (1019b): 펫 체육관 안에 있던 📒 독서 책상을 광장 남서쪽으로 · 책장 · 빈백에 앉아 책 읽기 · 우리 반 독서 기록판
+const PR = { x: -6.2, z: 9.4 };
+function buildPlazaRead() {
+  const g = new THREE.Group(); g.name = 'PlazaRead'; scene.add(g); const o = { solid: false }, { x, z } = PR;
+  const cols = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E];
+  cyl(g, 3.3, 0.04, 0xCFE8B8, x - 0.6, 0.1, z + 0.9, o); cyl(g, 2.7, 0.045, 0xE4F3D2, x - 0.6, 0.105, z + 0.9, o); // 둥근 깔개
+  // 📒 기록 책상
+  box(g, 2.4, 0.12, 1.2, 0xE9C98F, x, 0.85, z); box(g, 0.8, 0.1, 0.6, 0xFFFFFF, x, 0.95, z, o); box(g, 0.08, 0.3, 0.08, 0x3B2F2A, x + 0.4, 1.05, z + 0.1, { solid: false, rz: 0.5 });
+  for (const sx of [-1, 1]) box(g, 0.1, 0.8, 0.1, 0x8A5A34, x + sx * 1.1, 0.4, z, o);
+  box(g, 0.5, 0.5, 0.5, 0x8A5A34, x - 0.8, 1.15, z - 0.3, o); for (let b = 0; b < 3; b++) box(g, 0.16, 0.42, 0.34, cols[b + 2], x + 0.55 + b * 0.18, 1.12, z - 0.3, o); // 연필꽂이 · 꽂힌 책
+  bld.plazaRead = makeLabel(g, ['📒 독서 기록 책상', '다 읽고 선생님께 확인받고 써요'], 0.8, x, 2.4, z);
+  addInteract({ pos: new V3(x, 1, z + 1.1), r: 2.6, text: () => ['독서 기록하기 📒', readFestOn() ? '🎉 독서 축제: 하루 상한 없음!' : '선생님께 확인받고 써요'], run: openReadLog });
+  // 📚 책장 (서쪽) · 우리 반이 많이 읽은 책
+  const bx = x - 3.4, bz = z + 0.6; box(g, 0.6, 2.4, 3.2, 0x8A5A34, bx, 1.2, bz); box(g, 0.66, 0.12, 3.3, 0x6E4528, bx, 2.45, bz, o);
+  for (const y of [0.45, 1.15, 1.85]) for (let b = 0; b < 7; b++) box(g, 0.32, 0.5, 0.3, cols[(b + Math.round(y * 3)) % 6], bx + 0.32, y + 0.27, bz - 1.25 + b * 0.42, o);
+  bld.genreSign = makeLabel(g, [''], 0.7, bx, 3.6, bz);
+  // 🛋️ 빈백 2개: 앉아서 책 읽기
+  for (const [sx, sz, c, h] of [[x - 1.6, z + 2.6, 0xFFB3C7, Math.PI * 0.85], [x + 0.9, z + 2.9, 0xB9DCFF, Math.PI * 1.1]]) {
+    mesh(SPH_MID, g, 0.75, 0.42, 0.75, c, sx, 0.3, sz, { solid: false }); mesh(SPH_MID, g, 0.62, 0.5, 0.3, c, sx - Math.sin(h) * 0.45, 0.6, sz - Math.cos(h) * 0.45, { solid: false, ry: h });
+    addInteract({ pos: new V3(sx, 1, sz), r: 1.6, text: () => ['📖 앉아서 책 읽기', '움직이면 일어나요'], run: () => ghSitRead({ x: sx, z: sz, h, bean: true }) });
+  }
+  // 표지판 · 우리 반 독서 기록판
+  cyl(g, 0.08, 2.2, 0x8A5A34, x + 2.2, 1.1, z + 1.4, o); signPlane(g, ['📚 광장 독서 쉼터'], 2.6, 0.7, x + 2.2, 2.2, z + 1.42, { font: 46, pad: 4, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false });
+  registerSolids(g, 'plazaRead');
+}
 function renderRooms(force) {
   if (!bld.group) return;
   const rd = S.read || {}, n = rd.n || 0, key = JSON.stringify(rd);
@@ -15442,6 +15518,7 @@ function renderRooms(force) {
       const on = k < show; m.visible = on; if (!on) return;
       if (m.userData.kind === 'flower' && n >= 50) m.material = M(0xFF9AC0); else if (m.userData.kind === 'fruit' && n >= 100) m.material = M(0xE63C32);
     });
+    bld.plazaRead?.userData.set(['📒 독서 기록 책상', `우리 반이 함께 읽은 책 ${n}권${readFestOn() ? ' · 🎉 독서 축제' : ''}`]);
     bld.treeLabel?.userData.set(['🌳 우리 반 독서 나무', `함께 기록한 책 ${n}권${n >= 100 ? ' · 🍎 열매가 열렸어요' : n >= 50 ? ' · 🌸 꽃이 폈어요' : ''}`]);
     const g = rd.g || {}, top = READ_GENRES.map(([ic, nm], i) => [ic, nm, g[i] || 0]).sort((a, b) => b[2] - a[2]).filter(x => x[2]).slice(0, 3);
     bld.genreSign.userData.set(['📊 우리 반이 많이 읽은 책', ...(top.length ? top.map(([ic, nm, c]) => `${ic} ${nm} ${c}권`) : ['아직 기록이 없어요'])]);
@@ -15691,6 +15768,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1019b', d: '10월 19일', items: ['📚 광장 독서 쉼터! 📒 독서 기록 책상이 펫 체육관에서 광장(분수 남서쪽)으로 옮겨 왔어요 · 빈백에 앉아 책 읽기 · 우리 반이 함께 읽은 책 기록판'] },
+  { id: '1019a', d: '10월 19일', items: ['🐚 공동 미션 보상으로 조개돈도 받아요! 미션에 함께한 친구 모두에게 (미션이 성공하면 다음 접속 때 들어와요)'] },
   { id: '1018b', d: '10월 18일', items: ['🎣 선착장·조선소·떠내려온 나무 앞에서는 낚시 대신 배 타기·줍기가 먼저 나와요', '⛵ 내 배 만들기! 배 가게에서 재료를 사고 🛠️ 조선소에서 망치질로 뗏목 · 나룻배 · 돛단배 · 해적선을 만들어요', '🏝️ 보물섬은 이제 바다로 둘러싸여 헤엄치거나 날아서는 못 가요. ⚓ 선착장에서 내 배를 띄워 직접 노 저어 가요', '🪵 바닷가의 떠내려온 나무를 주우면 판자가 생겨요 · 배 색과 깃발도 꾸며요 (바다에서 친구들에게 보여요)'] },
   { id: '1018a', d: '10월 18일', items: ['🛍️ 우리 집 마을 동쪽 모래사장에 해변 상점가가 생겼어요! 마당·가구 · 옷 · 펫 · 간식·물약 · 페인트 · 기념품 교환소 · 반 공동 구매소', '🚤 부두 끝에서 보트 경주! 고리 8개를 지나 기록에 도전 · 🏝️ 보물섬 가는 배를 타고 단서 4개를 풀면 보물상자', '🔨 작업대는 없어졌어요 (마당 장식은 마당·가구 가게에서)'] },
   { id: '1017p', d: '10월 17일 (밤)', items: ['🏠 우리 집 안 펫과 펫 집이 바로 보이게 고쳤어요'] },
@@ -18705,7 +18784,7 @@ const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '⚒️ 대장장이 성문 수리 +2씩' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '📜 책사 스킬 시간·화공 피해 +' },
   math: { icon: '🧮', name: '수학력', where: '수학 광산 식 만들기 · 도형 공방 · 균형 다리', role: '⚔️ 병사 공격 피해 +1씩' },
-  read: { icon: '📚', name: '독서력', where: '펫 체육관 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '🌿 의원 치료량 +1씩' },
+  read: { icon: '📚', name: '독서력', where: '광장 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '🌿 의원 치료량 +1씩' },
 };
 bag.stat ||= {};
 if (bag.statV !== 2) { bag.stat = {}; bag.statV = 2; saveBag(); } // 1017d 능력치 레벨 새로 시작 (누적 경험치 · 최고 Lv12)
@@ -18752,7 +18831,7 @@ const STAT_GUIDE = {
   eng: [['🗽 영어 마을 구역 놀이 · 🏋️ 영어 훈련소', '고르기 정답 +1 · 쓰기 정답 +2 · 한 판 통과 +3 (쓰기 1개마다 +1 더)'], ['🧭 영어 미로', '칸 도착 +2 × 단계 · 통과 +3 × 단계 (Level 3이 제일 많아요)'], ['🔨 천막 두더지 (영어 단어)', '잡은 단어 수의 절반']],
   math: [['⛏️ 수학 광산 식 만들기', '한 문제 +4'], ['🧩 도형 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
   soc: [['🏯 역사의 길 시대 퀴즈', '처음 보는 문제 한 번에 정답 +4 · 다시 맞히면 +2'], ['🏛️ 역사 박물관 연표 맞추기', '쉬움 +5 · 보통 +8 · 어려움 +12 (한 번에 맞히면 +3 더)']],
-  read: [['📒 펫 체육관 독서 책상', '책을 다 읽고 선생님께 확인받은 뒤 기록해요'], ['📖 줄글책', '쪽수 그대로 (100쪽 = 100점)'], ['🖼️ 그림이 많은 책 · 💬 만화책 · 🧸 그림책', '쪽수 × 0.7 · × 0.4 · × 0.5'], ['🎁 완독 보너스', '책 한 권 기록할 때마다 +10']],
+  read: [['📒 광장 독서 책상 (분수 남서쪽)', '책을 다 읽고 선생님께 확인받은 뒤 기록해요'], ['📖 줄글책', '쪽수 그대로 (100쪽 = 100점)'], ['🖼️ 그림이 많은 책 · 💬 만화책 · 🧸 그림책', '쪽수 × 0.7 · × 0.4 · × 0.5'], ['🎁 완독 보너스', '책 한 권 기록할 때마다 +10']],
 };
 function openStatGuide() {
   openLife('❓ 능력치 점수 얻는 방법', (box) => {
