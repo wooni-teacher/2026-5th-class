@@ -513,6 +513,10 @@
   #kiteNeedle { position: absolute; top: -2px; bottom: -2px; width: 6px; margin-left: -3px; background: #E2584A; border-radius: 3px; }
   .kb-level { font-size: 26px; text-align: center; margin: 6px 0; letter-spacing: 4px; min-height: 1.2em; }
   #kiteBar .btn { font-size: 20px; padding: 10px 18px; }
+  #praiseBtn { position: fixed; right: calc(20px + env(safe-area-inset-right, 0px)); bottom: calc(216px + var(--safe-bottom)); width: 52px; height: 52px; padding: 0; border-radius: 50%; font-size: 26px; background: #FFE9A8; z-index: 6; }
+  body.touch #praiseBtn { bottom: calc(336px + var(--safe-bottom)); }
+  body.in-play #praiseBtn { display: none; }
+  #talkChip { position: fixed; left: 50%; transform: translateX(-50%); top: calc(74px + var(--safe-top)); padding: 6px 14px; font-size: 16px; font-weight: 700; z-index: 3; pointer-events: none; }
   #chatBtn { position: fixed; right: calc(134px + env(safe-area-inset-right, 0px)); bottom: calc(102px + var(--safe-bottom)); width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 20px; background: #fff; }
   body.touch #chatBtn { bottom: calc(222px + var(--safe-bottom)); }
   body:has(#emoteBar:not(.hidden)) #chatBtn { visibility: hidden; }
@@ -721,7 +725,7 @@
   .sg-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed #E8DCC8; }
   .sg-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #3B2F2A; }
   .sg-ani { font-size: 20px; } .sg-name { flex: 1; }
-  body.in-siege #decorBtn, body.in-siege #decorMenu { display: none !important; }
+  body.in-siege #decorBtn, body.in-siege #decorMenu, body.decor-away #decorBtn { display: none !important; }
   #ctfBar { position: fixed; left: 50%; transform: translateX(-50%); top: calc(134px + var(--safe-top)); padding: 6px 16px; text-align: center; min-width: 240px; }
   body.in-ctf #decorBtn, body.in-ctf #decorMenu, body.in-home #decorBtn, body.in-home #decorMenu { display: none !important; } /* 운동장·집 안에서는 마을 꾸미기 버튼을 숨겨요 */
   body.in-ctf #toast { top: calc(222px + var(--safe-top)); }
@@ -2072,7 +2076,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2108,6 +2112,8 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
+    praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => ANON_ID.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
+    talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
     chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 100)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
@@ -4265,7 +4271,7 @@ function onPlayers(type, uid, data) {
   }
   if (!r.target || r.target.x !== data.x || r.target.z !== data.z || r.target.m !== data.m) r.seenAt = performance.now();
   r.target = data;
-  { const nm = nickOf(uid, data) + rankTitle(uid) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
+  { const nm = nickOf(uid, data) + rankTitle(uid) + praiseTag(uid) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
   const now = performance.now(), last = r.buf[r.buf.length - 1];
   if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
@@ -5059,7 +5065,9 @@ function cellAt(x, z) {
 }
 
 // 꾸미기 구역 표시 (연두색 땅 + 칸 선 + 표지)
+const TOWN_DECOR_OFF = true; // 1020c: 광장 둘레 🌼 꾸미기 구역 없앰 (선생님 요청) — 놓았던 기록은 그대로, 보이지만 않아요 · 🌼 꾸미기 버튼은 우리 집 마을 내 땅에서만
 function buildDecorZones() {
+  if (TOWN_DECOR_OFF) return;
   for (const [x0, z0, x1, z1] of CFG.DECOR_ZONES) {
     const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     box(scene, w, 0.04, d, 0xC8EBA0, cx, 0.02, cz, { solid: false });
@@ -5072,6 +5080,7 @@ function buildDecorZones() {
 // 모두가 놓은 꾸미기를 화면에 그리기
 const decorMeshes = {};
 function syncDecor(first) {
+  if (TOWN_DECOR_OFF) return;
   for (const key of Object.keys(decorMeshes)) { // 선생님이 지운 꾸미기 치우기
     const d = S.decor[key];
     if (d && decorMeshes[key].userData.sig === `${d.t}_${d.r}`) continue;
@@ -5459,6 +5468,7 @@ function missionShellClaim() { // 🐚 성공한 미션에 참여했으면 조�
   setTimeout(() => showBanner(`🐚 공동 미션 보상 +${got}`, `${names.slice(0, 2).join(', ')}${names.length > 2 ? ` 외 ${names.length - 2}개` : ''} 미션 성공! 함께해 줘서 고마워요`, 6000), 1200);
 }
 function syncMission(prev, first) {
+  try { praiseSync(); } catch (e) { console.warn(e); }
   try { missionShellClaim(); } catch (e) { console.warn(e); }
   for (const id in rewardSpots) if (rewardSpots[id].built && !S.unlocks[id]) lockReward(id); // 초기화된 장소 다시 잠그기
   for (const id of Object.keys(S.unlocks)) {
@@ -7875,7 +7885,7 @@ function busyAt(x, z) {
   if (Math.abs(x) < 14 && z > -50 && z < -34) return true;
   for (const s of CFG.SITES) if (segDist(x, z, 0, 0, s.pos[0], s.pos[1]) < 4.2) return true;
   if (segDist(x, z, 0, 0, 0, -36) < 4.5) return true;
-  for (const [x0, z0, x1, z1] of CFG.DECOR_ZONES) if (x > x0 - 1 && x < x1 + 1 && z > z0 - 1 && z < z1 + 1) return true;
+  if (!TOWN_DECOR_OFF) for (const [x0, z0, x1, z1] of CFG.DECOR_ZONES) if (x > x0 - 1 && x < x1 + 1 && z > z0 - 1 && z < z1 + 1) return true;
   for (const r of CFG.REWARDS) if (Math.hypot(x - r.pos[0], z - r.pos[1]) < 5.5) return true;
   for (const [cx, cz] of CFG.CRATES) if (Math.hypot(x - cx, z - cz) < 2.2) return true;
   if (x > 47 && Math.abs(z) < 12) return true;                       // 체육관 뒤 (예전 점프맵 자리)
@@ -8564,6 +8574,7 @@ function openDecorMenu() {
     if (!mine) { toast(`🏡 내 땅(${myLots().map(lotName).join(', ')}) 안에 들어가서 꾸미기를 눌러요. 친구 땅은 구경만 할 수 있어요`, 'info'); return; }
     mode = 'plot';
   }
+  if (mode === 'town' && TOWN_DECOR_OFF) { toast('🌼 꾸미기는 🏡 우리 집 마을 내 땅에서 해요 (마당 장식은 🌳 마당·가구 가게)', 'info'); return; }
   const items = mode === 'plot' ? CFG.PLOT_ITEMS : CFG.DECOR_ITEMS, box_ = $('decorItems');
   box_.textContent = '';
   items.forEach((it, i) => {
@@ -8596,6 +8607,7 @@ function openDecorMenu() {
 const seenArea = {};
 function updateHomeHint() { // 들판·바닷가에 처음 들어오면 한 번 안내
   if (!joined) return;
+  { const off = TOWN_DECOR_OFF && !inField(player.pos.x, player.pos.z); if (document.body.classList.contains('decor-away') !== off) document.body.classList.toggle('decor-away', off); } // 🌼 꾸미기 버튼은 내 땅 있는 들판에서만
   const p = player.pos, local = backend.mode !== 'firebase' ? ' (이 브라우저에만 저장, 다른 기기 친구 땅은 보이지 않아요)' : '';
   if (!seenArea.field && p.z > 62 && inField(p.x, p.z)) {
     seenArea.field = true;
@@ -9910,8 +9922,9 @@ const rankNick = (u, e) => nickOf(u, e) || '친구';
 function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · (선생님) 오래된 주 지우기
   if (!joined || !stateLoaded || !backend) return;
   const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn;
-  const me = backend.uid, tl = (cleanNick(myNick) || '') + rankTitle(me) + hpetTag(hpetCode());
+  const me = backend.uid, tl = (cleanNick(myNick) || '') + rankTitle(me) + praiseTag(me) + hpetTag(hpetCode());
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
+  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + rankTitle(u) + praiseTag(u) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -15613,36 +15626,27 @@ function openReadLog() {
   openLife('📒 독서 기록장', (box) => {
     box.textContent = '';
     box.append(el2('p', 'up-win', '📌 책을 다 읽고 선생님께 확인받은 다음에 기록해요')); if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중 (10월 30일까지)! 독서력 하루 상한이 없어요 · 책 한 권마다 완독 보너스 +10`));
-    box.append(el2('p', 'hint', `읽은 책을 기록하면 반 전체 독서 나무가 자라요. 책 제목은 이 기기의 내 기록장에만 남아요. ${bag.readDay === dayNum() ? '🎁 오늘 보상은 받았어요' : '🎁 오늘 처음 기록하면 🐚 +10'}`));
-    box.append(el2('h3', 'lp-sec', '1. 책 제목 (내 기록장에만, 선택)'));
-    const ti = el2('input', 'tinput', null); ti.id = 'readTitle'; ti.maxLength = 30; ti.placeholder = '예: 어린 왕자'; ti.autocomplete = 'off'; ti.value = pick.t || ''; ti.oninput = () => { pick.t = ti.value; }; box.append(ti);
-    box.append(el2('h3', 'lp-sec', '2. 어떤 책이에요?'));
+    box.append(el2('p', 'hint', `읽은 책을 기록하면 반 전체 독서 나무가 자라요. 자세한 내용은 종이 독서 기록장에 써요. ${bag.readDay === dayNum() ? '🎁 오늘 보상은 받았어요' : '🎁 오늘 처음 기록하면 🐚 +10'}`));
+    box.append(el2('h3', 'lp-sec', '1. 어떤 책이에요?'));
     const gr = el2('div', 'row-center wrap');
     READ_GENRES.forEach(([ic, nm], i) => { const b = el2('button', 'btn' + (pick.g === i ? ' on' : ''), `${ic} ${nm}`); b.style.background = pick.g === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.g === i)); b.onclick = () => { pick.g = i; refillLife(); }; gr.append(b); });
-    box.append(gr, el2('h3', 'lp-sec', '3. 책 모양 · 쪽수 (📚 독서력이 정해져요)'));
+    box.append(gr, el2('h3', 'lp-sec', '2. 책 모양 · 쪽수 (📚 독서력이 정해져요)'));
     const kd = el2('div', 'row-center wrap');
     READ_KINDS.forEach(([ic, nm, mul, d], i) => { const b = el2('button', 'btn', `${ic} ${nm}`); b.title = `${d} · ×${mul}`; b.style.background = pick.k === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.k === i)); b.onclick = () => { pick.k = i; refillLife(); }; kd.append(b); });
     box.append(kd);
     const pr = el2('div', 'row-center wrap'), pin = el2('input', 'tinput', null); pin.type = 'number'; pin.min = 1; pin.max = 999; pin.inputMode = 'numeric'; pin.placeholder = '쪽수'; pin.style.width = '7em'; pin.value = pick.p || ''; pin.setAttribute('aria-label', '책 쪽수');
-    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 독서력 +${Math.min(readPts(pick.p, pick.k), capL)}${readPts(pick.p, pick.k) > capL ? ` (오늘 남은 ${capL}점까지)` : ''}${readFestOn() ? ' · 🎉 독서 축제: 상한 없음' : ''}` : '📚 책 모양과 쪽수를 골라요'; go.disabled = !(pick.g >= 0 && pick.s && pick.f >= 0 && pick.k >= 0 && pick.p > 0) || bld.readBusy; };
+    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 독서력 +${Math.min(readPts(pick.p, pick.k), capL)}${readPts(pick.p, pick.k) > capL ? ` (오늘 남은 ${capL}점까지)` : ''}${readFestOn() ? ' · 🎉 독서 축제: 상한 없음' : ''}` : '📚 책 모양과 쪽수를 골라요'; go.disabled = !(pick.g >= 0 && pick.k >= 0 && pick.p > 0) || bld.readBusy; };
     pin.oninput = () => { pick.p = Math.min(999, Math.max(0, parseInt(pin.value, 10) || 0)); upd(); };
     pr.append(pin, el2('span', 'hint', '쪽'));
     for (const n of [30, 50, 100, 150, 200, 300]) { const b = el2('button', 'btn', `${n}`); b.style.background = pick.p === n ? '#FFF3C4' : '#fff'; b.onclick = () => { pick.p = n; refillLife(); }; pr.append(b); }
     box.append(pr, prev, el2('p', 'hint', '독서력 = 쪽수 × 책 모양 배율 · 줄글책 150쪽 → +150 · 그림이 많은 책 100쪽 → +50 · 만화책 200쪽 → +60 · 그림책 40쪽 → +10'));
-    box.append(el2('h3', 'lp-sec', '4. 별점'));
-    const st = el2('div', 'row-center wrap');
-    for (let k = 1; k <= 5; k++) { const b = el2('button', 'btn', k <= pick.s ? '⭐' : '☆'); b.style.cssText = 'font-size:28px;padding:4px 10px;background:#fff'; b.setAttribute('aria-label', `별 ${k}개`); b.onclick = () => { pick.s = k; refillLife(); }; st.append(b); }
-    box.append(st, el2('h3', 'lp-sec', '5. 읽고 나서'));
-    const fe = el2('div', 'row-center wrap');
-    READ_FEELS.forEach((f, i) => { const b = el2('button', 'btn', f); b.style.background = pick.f === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.f === i)); b.onclick = () => { pick.f = i; refillLife(); }; fe.append(b); });
-    box.append(fe);
     var go = el2('button', 'btn lp-btn', '📒 기록하기'); upd();
     go.onclick = async () => {
       bld.readBusy = true; refillLife();
       const res = await backend.readLog(pick.g); bld.readBusy = false; let gain = 0;
       if (res.ok) { earnMat('독서 기록'); creditAction('read'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
       if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
-      bag.reads.unshift({ t: (pick.t || '').trim().slice(0, 30), g: pick.g, s: pick.s, f: pick.f, k: pick.k, p: pick.p, at: Date.now() }); bag.reads = bag.reads.slice(0, 60);
+      bag.reads.unshift({ g: pick.g, k: pick.k, p: pick.p, at: Date.now() }); // 1020d: 제목·별점·느낌은 종이 기록장에 bag.reads = bag.reads.slice(0, 60);
       let msg = `📒 기록했어요! ${gain > 0 ? `📚 독서력 +${gain}` : '오늘 독서력은 가득 찼어요'} · 독서 나무가 자라요`;
       if (bag.readDay !== dayNum()) { bag.readDay = dayNum(); earnShell(10); msg += ' · 🎁 🐚 +10'; }
       saveBag(); playSfx('coin'); toast(msg, 'success');
@@ -15651,7 +15655,7 @@ function openReadLog() {
     box.append(el2('div', 'row-center', null)); box.lastChild.append(go);
     box.append(el2('h3', 'lp-sec', `📚 내 독서 기록장 (${bag.reads.length}권 · 나만 보여요)`));
     if (!bag.reads.length) box.append(el2('div', 'vempty', '아직 기록이 없어요'));
-    for (const r of bag.reads.slice(0, 20)) { const [ic, nm] = READ_GENRES[r.g] || READ_GENRES[6]; box.append(el2('div', 'lp-row', `${ic} [${nm}] ${r.t || '(제목 없음)'}${r.p ? ` · ${READ_KINDS[r.k]?.[0] || ''} ${r.p}쪽` : ''} · ${'⭐'.repeat(r.s)} · ${READ_FEELS[r.f] || ''} · ${new Date(r.at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}`)); }
+    for (const r of bag.reads.slice(0, 20)) { const [ic, nm] = READ_GENRES[r.g] || READ_GENRES[6]; box.append(el2('div', 'lp-row', `${ic} [${nm}]${r.t ? ' ' + r.t : ''}${r.p ? ` · ${READ_KINDS[r.k]?.[0] || ''} ${READ_KINDS[r.k]?.[1] || ''} ${r.p}쪽` : ''}${r.s ? ' · ' + '⭐'.repeat(r.s) : ''} · ${new Date(r.at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}`)); }
   });
 }
 // ---------- 🖌️ 내 그림 작업실 (16×16, 색 12가지 = 벽화 색 번호 1~12 → 그림 글자 0~b) ----------
@@ -15828,6 +15832,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1020d', d: '10월 20일', items: ['🙋 수업 시간에 발표하면 선생님이 칭찬 → 🐚 + 이름표 🎤 (오늘 가장 많이 발표한 친구는 👑🎤)', '📣 반 전체 하루 발표 목표! 채우면 모두 🐚', '📒 독서 기록장이 간단해졌어요: 어떤 책인지 · 책 모양 · 쪽수만 (자세한 건 종이 독서 기록장에)'] },
+  { id: '1020c', d: '10월 20일', items: ['🌼 광장 둘레 꾸미기 구역이 없어졌어요 (꾸미기는 우리 집 마을 내 땅에서)'] },
   { id: '1020b', d: '10월 20일', items: ['🛒 수학 광산 마을에 광산 수레 레이스! 갈림길 수학 문제를 맞히면 ⚡ 빠른 금빛 레일 · 🤖 로봇 수레 3대와 경주', '🗺️ 영어 마을 영어 힌트 보물찾기! 영어 힌트를 읽고 쪽지 3장을 찾으면 보물상자', '🏝️ 바다에 🧮 수학 섬 · 🔤 영어 섬(나룻배 이상) · 🏛️ 역사 섬(돛단배 이상)이 생겼어요'] },
   { id: '1020a', d: '10월 20일', items: ['📅 하루 능력치 상한을 선생님이 과목마다 정해요 (📊 내 능력치에서 오늘 몇 점까지인지 볼 수 있어요)'] },
   { id: '1019b', d: '10월 19일', items: ['📚 광장 독서 쉼터! 📒 독서 기록 책상이 펫 체육관에서 광장(분수 남서쪽)으로 옮겨 왔어요 · 빈백에 앉아 책 읽기 · 우리 반이 함께 읽은 책 기록판'] },
@@ -20396,7 +20402,66 @@ function updateHunt(dt) {
   if (hunt.i < 3) { m.visible = false; addStat('eng', 3); playSfx('pick'); burst(new V3(T.x, 1.2, T.z), [0xFFE066, 0xFFFFFF, 0x9FE0FF], 30, 4, 2); toast(`📜 쪽지 ${hunt.i + 1}/3 찾았어요! 🔤 +3`, 'success'); hunt.i++; huntHud(); setTimeout(huntSay, 500); }
   else huntEnd(true);
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt();
+// ================= 🙋 발표 칭찬 · 📣 반 발표 목표 (1020d) =================
+// 선생님: 🙋 버튼 → 발표한 학생 이름을 누르면 state/praise/{uid} {d 오늘, n 오늘 칭찬 수} · state/talk {d, n 반 전체, g 목표, p 칭찬 1번 🐚, r 목표 달성 🐚}
+// 학생 기기: 칭찬이 늘면 🐚(talk.p)씩 · 반 목표를 채우면 모두 🐚(talk.r) 하루 한 번 · 이름표 🎤 (오늘 가장 많이 칭찬받은 친구는 👑🎤)
+const TALK_DEF = { g: 30, p: 10, r: 20 };
+const talkToday = () => (S.talk?.d === dayNum() ? S.talk : null);
+const talkCfg = () => ({ g: S.talk?.g ?? TALK_DEF.g, p: S.talk?.p ?? TALK_DEF.p, r: S.talk?.r ?? TALK_DEF.r });
+const praiseN = (u) => (S.praise?.[u]?.d === dayNum() ? S.praise[u].n | 0 : 0);
+function praiseTag(u) { const n = praiseN(u); if (!n) return ''; const top = Math.max(...Object.keys(S.praise || {}).map(praiseN)); return n >= top ? ' 👑🎤' : ' 🎤'; }
+const talkW = { seenN: -1, chip: null, btn: null };
+function praiseSync() { // 학생 기기: 칭찬 · 반 목표 보상 받기
+  const T = talkToday(), C = talkCfg();
+  if (talkW.chip) { const show = joined && !!T && C.g > 0 && !cart.on && !sea.on && !sail.on, txt = !T ? '' : T.n >= C.g ? `🎉 오늘 우리 반 발표 목표 달성! (${T.n}번)` : `📣 오늘 우리 반 발표 ${T.n} / ${C.g}`; talkW.chip.classList.toggle('hidden', !show); if (talkW.chip.textContent !== txt) talkW.chip.textContent = txt; }
+  const uid = backend?.uid; if (!uid || isTeacher || !stateLoaded) return;
+  const n = praiseN(uid), seen = bag.prz?.d === dayNum() ? bag.prz.n | 0 : 0;
+  if (n > seen) { const k = n - seen, sh = k * C.p; bag.prz = { d: dayNum(), n }; if (sh) earnShell(sh); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0xFFD23C, 0xFF9AC0, 0xFFFFFF], 40, 4, 2); showBanner('🙋 선생님이 발표를 칭찬했어요!', `${sh ? `🐚 +${sh} · ` : ''}오늘 칭찬 ${n}번 · 이름표에 🎤가 생겼어요`, 5000); }
+  else if (n < seen) { bag.prz = { d: dayNum(), n }; saveBag(); } // 선생님이 취소했어요 (받은 조개는 그대로)
+  if (T && C.g > 0 && T.n >= C.g && bag.talkDay !== dayNum()) { bag.talkDay = dayNum(); if (C.r) earnShell(C.r); saveBag(); renderCoinChip(); setTimeout(() => showBanner('📣 오늘 우리 반 발표 목표 달성!', `모두 함께 해냈어요! ${C.r ? `🐚 +${C.r}` : ''}`, 6000), 600); }
+  else if (T && talkW.seenN >= 0 && T.n > talkW.seenN && T.n < C.g) toast(`📣 우리 반 발표 ${T.n} / ${C.g}! 목표까지 ${C.g - T.n}번`, 'info');
+  talkW.seenN = T ? T.n : 0;
+}
+function praiseStudents() { // 선생님 화면: 학생 목록 (접속한 친구 · 이름 정해 준 친구 · 칭찬받은 친구)
+  const m = new Map();
+  for (const [u, r] of remotes) if (!r.target?.t) m.set(u, nickOf(u, r.target) || '친구');
+  for (const u of Object.keys(S.nick || {})) if (!m.has(u) && S.nick[u]) m.set(u, S.nick[u]);
+  for (const u of Object.keys(S.praise || {})) if (!m.has(u)) m.set(u, nickOf(u) || '친구');
+  return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+}
+async function praiseGive(u, nm, dir = 1) {
+  const today = dayNum(), C = talkCfg(), T = talkToday(), n = Math.max(0, praiseN(u) + dir), tn = Math.max(0, (T?.n | 0) + dir);
+  if (dir < 0 && !praiseN(u)) return;
+  const ok = await backend.adminUpdate({ [`praise/${u}`]: { d: today, n }, talk: { d: today, n: tn, g: C.g, p: C.p, r: C.r } });
+  if (!ok.ok) { toast('⚠️ 저장하지 못했어요. database.rules.json을 다시 게시해 주세요', 'warn'); return; }
+  playSfx(dir > 0 ? 'coin' : 'pick'); toast(dir > 0 ? `🙋 ${nm} 발표 칭찬! (오늘 ${n}번 · 반 ${tn}/${C.g})` : `↩️ ${nm} 칭찬 하나를 취소했어요`, dir > 0 ? 'success' : 'info');
+  setTimeout(() => { if ($('lpTitle').textContent === '🙋 발표 칭찬') refillLife(); }, 300);
+}
+function openPraise() {
+  if (!isTeacher) return;
+  openLife('🙋 발표 칭찬', (box) => {
+    box.textContent = ''; const T = talkToday(), C = talkCfg(), tn = T?.n | 0;
+    box.append(el2('p', 'lp-big', C.g ? `📣 오늘 우리 반 발표 ${tn} / ${C.g}${tn >= C.g ? ' 🎉 달성!' : ''}` : `📣 오늘 우리 반 발표 ${tn}번 (목표 끔)`));
+    if (C.g) { const bar = el2('div', ''); bar.style.cssText = 'height:14px;border-radius:7px;background:#EEE;overflow:hidden;margin:4px 0 8px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.min(100, tn / C.g * 100)}%;background:#5FBE5A`; bar.append(f); box.append(bar); }
+    box.append(el2('p', 'hint', `발표한 학생 이름을 누르면 그 학생에게 🐚${C.p}이 가고 반 발표 수가 1 올라요. 목표를 채우면 반 모두 🐚${C.r}! 잘못 눌렀으면 ↩️로 취소해요. (학생이 접속해 있지 않아도 다음에 들어오면 받아요)`));
+    const list = praiseStudents(), grid = el2('div', 'row-center wrap');
+    if (!list.length) box.append(el2('p', 'vempty', '학생이 아직 없어요. 학생들이 접속하거나 🏷️ 이름을 정해 주면 여기에 나와요.'));
+    for (const [u, nm] of list) { const n = praiseN(u), wrap = el2('span', ''); wrap.style.cssText = 'display:inline-flex;gap:2px;align-items:center';
+      const b = el2('button', 'btn', `🙋 ${nm}${n ? ` · ${n}` : ''}`); b.style.cssText = `font-size:17px;padding:8px 12px;background:${n ? '#FFE9A8' : '#fff'}`; b.onclick = () => praiseGive(u, nm, 1);
+      const un = el2('button', 'btn', '↩️'); un.title = '하나 취소'; un.setAttribute('aria-label', `${nm} 칭찬 하나 취소`); un.style.cssText = 'font-size:13px;padding:6px 6px;background:#fff'; un.disabled = !n; un.onclick = () => praiseGive(u, nm, -1);
+      wrap.append(b, un); grid.append(wrap); }
+    box.append(grid, el2('h3', 'lp-sec', '⚙️ 설정'));
+    const row = el2('div', 'row-center wrap'), mk = (lab, key, opts) => { const l = el2('label', ''); l.style.cssText = 'font-size:16px;display:flex;gap:6px;align-items:center'; const s = document.createElement('select'); s.className = 'tinput'; s.style.width = 'auto'; for (const [v, t] of opts) { const o = document.createElement('option'); o.value = v; o.textContent = t; s.append(o); } s.value = String(C[key]); s.onchange = () => adminDo({ [`talk/${key}`]: +s.value, ...(S.talk?.d == null ? { 'talk/d': dayNum(), 'talk/n': 0 } : {}) }, '⚙️ 발표 설정을 바꿨어요').then(() => setTimeout(refillLife, 300)); l.append(lab, s); return l; };
+    row.append(mk('📣 하루 반 목표', 'g', [[0, '끔'], [10, '10번'], [20, '20번'], [30, '30번'], [40, '40번'], [50, '50번']]), mk('🙋 칭찬 1번', 'p', [[0, '🐚 0'], [5, '🐚 5'], [10, '🐚 10'], [20, '🐚 20']]), mk('🎉 목표 달성', 'r', [[0, '🐚 0'], [10, '🐚 10'], [20, '🐚 20'], [30, '🐚 30'], [50, '🐚 50']]));
+    box.append(row, el2('p', 'hint', '매일 밤 12시에 오늘 발표 수와 칭찬 수가 0부터 다시 시작해요. 학생 이름표에 🎤 (오늘 가장 많이 칭찬받은 친구는 👑🎤)가 붙어요.'));
+  });
+}
+function initTalk() {
+  const b = document.createElement('button'); b.id = 'praiseBtn'; b.className = 'btn hidden'; b.textContent = '🙋'; b.title = '발표 칭찬 (선생님)'; b.setAttribute('aria-label', '발표 칭찬 (선생님)'); b.onclick = openPraise; document.body.append(b); talkW.btn = b;
+  const c = document.createElement('div'); c.id = 'talkChip'; c.className = 'sticker hidden'; document.body.append(c); talkW.chip = c;
+  setInterval(() => { try { const show = isTeacher && joined; if (b.classList.contains('hidden') === show) b.classList.toggle('hidden', !show); praiseSync(); } catch (e) { } }, 1000);
+}
+buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk();
 buildPretty();
 buildMountain();
 buildQuizBoard();
