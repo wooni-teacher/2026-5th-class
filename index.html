@@ -2076,7 +2076,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2112,7 +2112,8 @@ function normalize(v) {
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
-    praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => ANON_ID.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
+    roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
+    praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
     chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 100)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
@@ -4271,7 +4272,7 @@ function onPlayers(type, uid, data) {
   }
   if (!r.target || r.target.x !== data.x || r.target.z !== data.z || r.target.m !== data.m) r.seenAt = performance.now();
   r.target = data;
-  { const nm = nickOf(uid, data) + rankTitle(uid) + praiseTag(uid) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
+  { const nm = nickOf(uid, data) + rankTitle(uid) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
   const now = performance.now(), last = r.buf[r.buf.length - 1];
   if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
@@ -9924,7 +9925,7 @@ function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · 
   const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn;
   const me = backend.uid, tl = (cleanNick(myNick) || '') + rankTitle(me) + praiseTag(me) + hpetTag(hpetCode());
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
-  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + rankTitle(u) + praiseTag(u) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
+  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + rankTitle(u) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -15832,6 +15833,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1020e', d: '10월 20일', items: ['📝 선생님 발표 칭찬 목록에 우리 반 명단이 나와요 (이름표 이름이 명단과 같으면 칭찬이 그 친구에게)'] },
   { id: '1020d', d: '10월 20일', items: ['🙋 수업 시간에 발표하면 선생님이 칭찬 → 🐚 + 이름표 🎤 (오늘 가장 많이 발표한 친구는 👑🎤)', '📣 반 전체 하루 발표 목표! 채우면 모두 🐚', '📒 독서 기록장이 간단해졌어요: 어떤 책인지 · 책 모양 · 쪽수만 (자세한 건 종이 독서 기록장에)'] },
   { id: '1020c', d: '10월 20일', items: ['🌼 광장 둘레 꾸미기 구역이 없어졌어요 (꾸미기는 우리 집 마을 내 땅에서)'] },
   { id: '1020b', d: '10월 20일', items: ['🛒 수학 광산 마을에 광산 수레 레이스! 갈림길 수학 문제를 맞히면 ⚡ 빠른 금빛 레일 · 🤖 로봇 수레 3대와 경주', '🗺️ 영어 마을 영어 힌트 보물찾기! 영어 힌트를 읽고 쪽지 3장을 찾으면 보물상자', '🏝️ 바다에 🧮 수학 섬 · 🔤 영어 섬(나룻배 이상) · 🏛️ 역사 섬(돛단배 이상)이 생겼어요'] },
@@ -20409,25 +20411,30 @@ const TALK_DEF = { g: 30, p: 10, r: 20 };
 const talkToday = () => (S.talk?.d === dayNum() ? S.talk : null);
 const talkCfg = () => ({ g: S.talk?.g ?? TALK_DEF.g, p: S.talk?.p ?? TALK_DEF.p, r: S.talk?.r ?? TALK_DEF.r });
 const praiseN = (u) => (S.praise?.[u]?.d === dayNum() ? S.praise[u].n | 0 : 0);
-function praiseTag(u) { const n = praiseN(u); if (!n) return ''; const top = Math.max(...Object.keys(S.praise || {}).map(praiseN)); return n >= top ? ' 👑🎤' : ' 🎤'; }
+// 📝 우리 반 명단 (1020e): 선생님이 관리화면에서 넣어요 (state/roster · 쉼표로) · 코드에는 이름을 넣지 않아요 (깃허브에 공개되니까)
+const rosterNames = () => [...new Set(String(S.roster || '').split(/[,\n]+/).map(x => cleanNick(x)).filter(Boolean))].slice(0, 40);
+const rosterOf = (u, data) => { const nm = (S.nick?.[u] !== undefined ? S.nick[u] : cleanNick(u === backend?.uid ? myNick : data?.n)) || ''; return nm && rosterNames().includes(nm) ? nm : ''; }; // 이름표 이름이 명단과 같으면 그 학생
+const praiseOf = (u, data) => { const nm = rosterOf(u, data); return praiseN(u) + (nm ? praiseN(nm) : 0); };
+function praiseTag(u, data) { const n = praiseOf(u, data); if (!n) return ''; const top = Math.max(...Object.keys(S.praise || {}).map(praiseN)); return n >= top ? ' 👑🎤' : ' 🎤'; }
 const talkW = { seenN: -1, chip: null, btn: null };
 function praiseSync() { // 학생 기기: 칭찬 · 반 목표 보상 받기
   const T = talkToday(), C = talkCfg();
   if (talkW.chip) { const show = joined && !!T && C.g > 0 && !cart.on && !sea.on && !sail.on, txt = !T ? '' : T.n >= C.g ? `🎉 오늘 우리 반 발표 목표 달성! (${T.n}번)` : `📣 오늘 우리 반 발표 ${T.n} / ${C.g}`; talkW.chip.classList.toggle('hidden', !show); if (talkW.chip.textContent !== txt) talkW.chip.textContent = txt; }
   const uid = backend?.uid; if (!uid || isTeacher || !stateLoaded) return;
-  const n = praiseN(uid), seen = bag.prz?.d === dayNum() ? bag.prz.n | 0 : 0;
+  const n = praiseOf(uid), seen = bag.prz?.d === dayNum() ? bag.prz.n | 0 : 0;
   if (n > seen) { const k = n - seen, sh = k * C.p; bag.prz = { d: dayNum(), n }; if (sh) earnShell(sh); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0xFFD23C, 0xFF9AC0, 0xFFFFFF], 40, 4, 2); showBanner('🙋 선생님이 발표를 칭찬했어요!', `${sh ? `🐚 +${sh} · ` : ''}오늘 칭찬 ${n}번 · 이름표에 🎤가 생겼어요`, 5000); }
   else if (n < seen) { bag.prz = { d: dayNum(), n }; saveBag(); } // 선생님이 취소했어요 (받은 조개는 그대로)
   if (T && C.g > 0 && T.n >= C.g && bag.talkDay !== dayNum()) { bag.talkDay = dayNum(); if (C.r) earnShell(C.r); saveBag(); renderCoinChip(); setTimeout(() => showBanner('📣 오늘 우리 반 발표 목표 달성!', `모두 함께 해냈어요! ${C.r ? `🐚 +${C.r}` : ''}`, 6000), 600); }
   else if (T && talkW.seenN >= 0 && T.n > talkW.seenN && T.n < C.g) toast(`📣 우리 반 발표 ${T.n} / ${C.g}! 목표까지 ${C.g - T.n}번`, 'info');
   talkW.seenN = T ? T.n : 0;
 }
-function praiseStudents() { // 선생님 화면: 학생 목록 (접속한 친구 · 이름 정해 준 친구 · 칭찬받은 친구)
-  const m = new Map();
-  for (const [u, r] of remotes) if (!r.target?.t) m.set(u, nickOf(u, r.target) || '친구');
-  for (const u of Object.keys(S.nick || {})) if (!m.has(u) && S.nick[u]) m.set(u, S.nick[u]);
-  for (const u of Object.keys(S.praise || {})) if (!m.has(u)) m.set(u, nickOf(u) || '친구');
-  return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1], 'ko'));
+function praiseStudents() { // 선생님 화면: 📝 명단 학생(이름으로) + 명단에 없는 접속 기기 · 이름 정해 준 기기 · 칭찬받은 기기
+  const m = new Map(), ros = rosterNames(); for (const nm of ros) m.set(nm, nm);
+  const inRos = (u, d) => !!rosterOf(u, d);
+  for (const [u, r] of remotes) if (!r.target?.t && !inRos(u, r.target)) m.set(u, (nickOf(u, r.target) || '친구') + ' (기기)');
+  for (const u of Object.keys(S.nick || {})) if (!m.has(u) && S.nick[u] && !ros.includes(S.nick[u])) m.set(u, S.nick[u] + ' (기기)');
+  for (const u of Object.keys(S.praise || {})) if (!m.has(u) && !ros.includes(u)) m.set(u, (nickOf(u) || '친구') + ' (기기)');
+  return [...m.entries()].sort((a, b) => (ros.includes(a[0]) ? 0 : 1) - (ros.includes(b[0]) ? 0 : 1) || a[1].localeCompare(b[1], 'ko'));
 }
 async function praiseGive(u, nm, dir = 1) {
   const today = dayNum(), C = talkCfg(), T = talkToday(), n = Math.max(0, praiseN(u) + dir), tn = Math.max(0, (T?.n | 0) + dir);
@@ -20447,13 +20454,19 @@ function openPraise() {
     const list = praiseStudents(), grid = el2('div', 'row-center wrap');
     if (!list.length) box.append(el2('p', 'vempty', '학생이 아직 없어요. 학생들이 접속하거나 🏷️ 이름을 정해 주면 여기에 나와요.'));
     for (const [u, nm] of list) { const n = praiseN(u), wrap = el2('span', ''); wrap.style.cssText = 'display:inline-flex;gap:2px;align-items:center';
-      const b = el2('button', 'btn', `🙋 ${nm}${n ? ` · ${n}` : ''}`); b.style.cssText = `font-size:17px;padding:8px 12px;background:${n ? '#FFE9A8' : '#fff'}`; b.onclick = () => praiseGive(u, nm, 1);
+      const on = [...remotes.entries()].some(([ru, r]) => ru === u || rosterOf(ru, r.target) === u);
+      const b = el2('button', 'btn', `${on ? '🟢' : '⚪'} ${nm}${n ? ` · 🙋${n}` : ''}`); b.style.cssText = `font-size:17px;padding:8px 12px;background:${n ? '#FFE9A8' : '#fff'}`; b.onclick = () => praiseGive(u, nm, 1);
       const un = el2('button', 'btn', '↩️'); un.title = '하나 취소'; un.setAttribute('aria-label', `${nm} 칭찬 하나 취소`); un.style.cssText = 'font-size:13px;padding:6px 6px;background:#fff'; un.disabled = !n; un.onclick = () => praiseGive(u, nm, -1);
       wrap.append(b, un); grid.append(wrap); }
     box.append(grid, el2('h3', 'lp-sec', '⚙️ 설정'));
     const row = el2('div', 'row-center wrap'), mk = (lab, key, opts) => { const l = el2('label', ''); l.style.cssText = 'font-size:16px;display:flex;gap:6px;align-items:center'; const s = document.createElement('select'); s.className = 'tinput'; s.style.width = 'auto'; for (const [v, t] of opts) { const o = document.createElement('option'); o.value = v; o.textContent = t; s.append(o); } s.value = String(C[key]); s.onchange = () => adminDo({ [`talk/${key}`]: +s.value, ...(S.talk?.d == null ? { 'talk/d': dayNum(), 'talk/n': 0 } : {}) }, '⚙️ 발표 설정을 바꿨어요').then(() => setTimeout(refillLife, 300)); l.append(lab, s); return l; };
     row.append(mk('📣 하루 반 목표', 'g', [[0, '끔'], [10, '10번'], [20, '20번'], [30, '30번'], [40, '40번'], [50, '50번']]), mk('🙋 칭찬 1번', 'p', [[0, '🐚 0'], [5, '🐚 5'], [10, '🐚 10'], [20, '🐚 20']]), mk('🎉 목표 달성', 'r', [[0, '🐚 0'], [10, '🐚 10'], [20, '🐚 20'], [30, '🐚 30'], [50, '🐚 50']]));
-    box.append(row, el2('p', 'hint', '매일 밤 12시에 오늘 발표 수와 칭찬 수가 0부터 다시 시작해요. 학생 이름표에 🎤 (오늘 가장 많이 칭찬받은 친구는 👑🎤)가 붙어요.'));
+    box.append(row);
+    { box.append(el2('h3', 'lp-sec', '📝 우리 반 명단')); const ta = document.createElement('textarea'); ta.className = 'tinput'; ta.rows = 3; ta.maxLength = 500; ta.placeholder = '예: 김가나, 이다라, 박마바 (쉼표로 나눠요)'; ta.value = rosterNames().join(', ');
+      const sv = el2('button', 'btn', '💾 명단 저장'); sv.style.background = '#FFD23C'; sv.onclick = async () => { const list = [...new Set(ta.value.split(/[,\n]+/).map(x => cleanNick(x)).filter(Boolean))].slice(0, 40); if (await adminDo({ roster: list.join(',') }, `📝 명단 ${list.length}명을 저장했어요`)) setTimeout(refillLife, 300); };
+      box.append(ta, el2('div', 'row-center', null)); box.lastChild.append(sv);
+      box.append(el2('p', 'hint', '🟢 = 지금 접속한 학생. 학생 이름표 이름이 명단 이름과 똑같아야 그 학생 기기에 칭찬이 가요 (다르면 🧑‍🏫 관리화면 🏷️ 이름 정해 주기로 맞춰요). 명단에 없는 기기는 아래쪽에 "(기기)"로 나와요.')); }
+    box.append(el2('p', 'hint', '매일 밤 12시에 오늘 발표 수와 칭찬 수가 0부터 다시 시작해요. 학생 이름표에 🎤 (오늘 가장 많이 칭찬받은 친구는 👑🎤)가 붙어요.'));
   });
 }
 function initTalk() {
