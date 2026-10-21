@@ -518,7 +518,9 @@
   #praiseBtn { position: fixed; right: calc(20px + env(safe-area-inset-right, 0px)); bottom: calc(216px + var(--safe-bottom)); width: 52px; height: 52px; padding: 0; border-radius: 50%; font-size: 26px; background: #FFE9A8; z-index: 6; }
   body.touch #praiseBtn { bottom: calc(336px + var(--safe-bottom)); }
   body.in-play #praiseBtn { display: none; }
-  #talkChip { position: fixed; left: 50%; transform: translateX(-50%); top: calc(74px + var(--safe-top)); padding: 6px 14px; font-size: 16px; font-weight: 700; z-index: 3; pointer-events: none; }
+  #talkChip { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); bottom: calc(122px + var(--safe-bottom)); padding: 5px 12px; font-size: 15px; font-weight: 700; z-index: 3; pointer-events: none; max-width: 46vw; } /* 1021c: 화면 위 가운데(배드민턴 콕 자리)에서 왼쪽 아래로 */
+  body.touch #talkChip { bottom: calc(170px + var(--safe-bottom)); }
+  body.in-play #talkChip, body.in-pb #talkChip, body.in-siege #talkChip, body.in-ctf #talkChip, body.in-hide #talkChip { display: none !important; }
   #chatBtn { position: fixed; right: calc(134px + env(safe-area-inset-right, 0px)); bottom: calc(102px + var(--safe-bottom)); width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 20px; background: #fff; }
   body.touch #chatBtn { bottom: calc(222px + var(--safe-bottom)); }
   body:has(#emoteBar:not(.hidden)) #chatBtn { visibility: hidden; }
@@ -2078,7 +2080,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', sgive: {}, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2115,6 +2117,7 @@ function normalize(v) {
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
     roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
+    sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read'].filter(k => isInt(x[k], 0, 1000000)).map(k => [k, x[k]]))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
     chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 100)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
@@ -15839,6 +15842,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1021c', d: '10월 21일', items: ['⭐ 선생님이 능력치를 줄 수 있어요 (받으면 알림이 떠요)', '📣 오늘 우리 반 발표 표시를 왼쪽 아래로 옮겼어요 (배드민턴·놀이 중에는 숨겨요)'] },
   { id: '1021b', d: '10월 21일', items: ['🏡 행사 결과 알림이 길어도 줄을 바꿔서 화면 안에 다 보여요'] },
   { id: '1021a', d: '10월 21일', items: ['🎲 반월쉼터가 생겼어요! (광장 북서쪽) 보드게임 방에 들어가 탁자에 앉아 🍓 할리갈리 · 🎲 부루마블을 해요'] },
   { id: '1020e', d: '10월 20일', items: ['📝 선생님 발표 칭찬 목록에 우리 반 명단이 나와요 (이름표 이름이 명단과 같으면 칭찬이 그 친구에게)'] },
@@ -18890,10 +18894,11 @@ const READ_FEST_FIRST = Date.UTC(2026, 9, 17) / 86400000, READ_FEST_LAST = Date.
 const readFestOn = () => dayNum() >= READ_FEST_FIRST && dayNum() <= READ_FEST_LAST;
 const statCap = (k) => (k === 'read' && readFestOn() ? Infinity : statMax(k));
 const statToday = (k) => (bag.statDay?.d === dayNum() ? bag.statDay[k] || 0 : 0);
-function addStat(k, n) {
+function addStat(k, n, gift) { // gift: 🧑‍🏫 선생님이 준 능력치 (하루 상한·2배 없이 그대로)
   if (!STATS[k] || !(n > 0)) return; bag.stat ||= {};
-  if (cevOn('study')) n *= 2; // 📚 공부 보너스 이벤트: 능력치 2배
   if (bag.statDay?.d !== dayNum()) bag.statDay = { d: dayNum() };
+  if (gift) { rankAdd(k, n); const b0 = statLv(k); bag.stat[k] = Math.min(999999, statExp(k) + n); saveBag(); const a0 = statLv(k); if (a0 > b0) { toast(`📈 ${STATS[k].icon} ${STATS[k].name} Lv${a0}!`, 'success'); playSfx('fanfare'); } return; }
+  if (cevOn('study')) n *= 2; // 📚 공부 보너스 이벤트: 능력치 2배
   const left = Math.max(0, statCap(k) - (bag.statDay[k] || 0)); n = Math.min(n, left);
   if (n <= 0) { if (bag.statDay['t' + k] !== 1) { bag.statDay['t' + k] = 1; saveBag(); toast(`📅 오늘 ${STATS[k].icon} ${STATS[k].name}은(는) ${statMax(k)}점을 다 모았어요! 내일 또 올라요 (다른 능력치는 계속 올릴 수 있어요)`, 'info'); } return; }
   bag.statDay[k] = (bag.statDay[k] || 0) + n; if (bag.statDay[k] >= statCap(k)) setTimeout(() => toast(`📅 오늘 ${STATS[k].icon} ${STATS[k].name} ${statMax(k)}점을 꽉 채웠어요! 🎉`, 'success'), 1200);
@@ -20427,9 +20432,13 @@ function praiseTag(u, data) { const n = praiseOf(u, data); if (!n) return ''; co
 const talkW = { seenN: -1, chip: null, btn: null };
 function praiseSync() { // 학생 기기: 칭찬 · 반 목표 보상 받기
   const T = talkToday(), C = talkCfg();
-  if (talkW.chip) { const show = joined && !!T && C.g > 0 && !cart.on && !sea.on && !sail.on, txt = !T ? '' : T.n >= C.g ? `🎉 오늘 우리 반 발표 목표 달성! (${T.n}번)` : `📣 오늘 우리 반 발표 ${T.n} / ${C.g}`; talkW.chip.classList.toggle('hidden', !show); if (talkW.chip.textContent !== txt) talkW.chip.textContent = txt; }
+  if (talkW.chip) { const show = joined && !!T && C.g > 0 && !cart.on && !sea.on && !sail.on && !bgOpen(), txt = !T ? '' : T.n >= C.g ? `🎉 오늘 우리 반 발표 목표 달성! (${T.n}번)` : `📣 오늘 우리 반 발표 ${T.n} / ${C.g}`; talkW.chip.classList.toggle('hidden', !show); if (talkW.chip.textContent !== txt) talkW.chip.textContent = txt; }
   const uid = backend?.uid; if (!uid || isTeacher || !stateLoaded) return;
   const n = praiseOf(uid), seen = bag.prz?.d === dayNum() ? bag.prz.n | 0 : 0;
+  { const keys = [uid, rosterOf(uid)].filter(Boolean), got = []; bag.sgvT ||= {}; let ch = false; // ⭐ 선생님이 준 능력치 (1021c)
+    for (const st of ['eng', 'math', 'soc', 'read']) { const tot = keys.reduce((a, k) => a + (S.sgive?.[k]?.[st] | 0), 0), sn = bag.sgvT[st] | 0;
+      if (tot > sn) { addStat(st, tot - sn, true); got.push(`${STATS[st].icon} ${STATS[st].name} +${tot - sn}`); } if (tot !== sn) { bag.sgvT[st] = tot; ch = true; } }
+    if (got.length) { saveBag(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0x9AF0FF, 0xFFD23C, 0xFFFFFF], 40, 4, 2); setTimeout(() => showBanner('⭐ 선생님이 능력치를 줬어요!', got.join('\n'), 6000), 300); } else if (ch) saveBag(); }
   if (n > seen) { const k = n - seen, sh = k * C.p; bag.prz = { d: dayNum(), n }; if (sh) earnShell(sh); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0xFFD23C, 0xFF9AC0, 0xFFFFFF], 40, 4, 2); showBanner('🙋 선생님이 발표를 칭찬했어요!', `${sh ? `🐚 +${sh} · ` : ''}오늘 칭찬 ${n}번 · 이름표에 🎤가 생겼어요`, 5000); }
   else if (n < seen) { bag.prz = { d: dayNum(), n }; saveBag(); } // 선생님이 취소했어요 (받은 조개는 그대로)
   if (T && C.g > 0 && T.n >= C.g && bag.talkDay !== dayNum()) { bag.talkDay = dayNum(); if (C.r) earnShell(C.r); saveBag(); renderCoinChip(); setTimeout(() => showBanner('📣 오늘 우리 반 발표 목표 달성!', `모두 함께 해냈어요! ${C.r ? `🐚 +${C.r}` : ''}`, 6000), 600); }
@@ -20452,10 +20461,31 @@ async function praiseGive(u, nm, dir = 1) {
   playSfx(dir > 0 ? 'coin' : 'pick'); toast(dir > 0 ? `🙋 ${nm} 발표 칭찬! (오늘 ${n}번 · 반 ${tn}/${C.g})` : `↩️ ${nm} 칭찬 하나를 취소했어요`, dir > 0 ? 'success' : 'info');
   setTimeout(() => { if ($('lpTitle').textContent === '🙋 발표 칭찬') refillLife(); }, 300);
 }
+const stg = { tab: 'talk', k: 'math', n: 10, sel: new Set() };
+function fillStatGive(box) { // ⭐ 능력치 주기 (state/sgive/{이름·기기}/{능력치} = 지금까지 준 합계)
+  box.append(el2('p', 'hint', '능력치와 점수를 고르고, 줄 학생을 눌러 고른 다음 ⭐ 주기를 눌러요. 하루 상한과 상관없이 그대로 오르고 주간 랭킹에도 들어가요. 학생이 접속해 있지 않아도 다음에 들어오면 받아요.'));
+  const r1 = el2('div', 'row-center wrap');
+  for (const k of ['eng', 'math', 'soc', 'read']) { const b = el2('button', 'btn', `${STATS[k].icon} ${STATS[k].name}`); b.style.background = stg.k === k ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.k === k)); b.onclick = () => { stg.k = k; refillLife(); }; r1.append(b); }
+  const r2 = el2('div', 'row-center wrap');
+  for (const n of [5, 10, 20, 30, 50, 100]) { const b = el2('button', 'btn', `+${n}`); b.style.background = stg.n === n ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.n === n)); b.onclick = () => { stg.n = n; refillLife(); }; r2.append(b); }
+  box.append(r1, r2, el2('h3', 'lp-sec', `받을 학생 (${stg.sel.size}명 골랐어요)`));
+  const list = praiseStudents(), grid = el2('div', 'row-center wrap');
+  for (const [u, nm] of list) { const on = stg.sel.has(u), tot = S.sgive?.[u]?.[stg.k] | 0, b = el2('button', 'btn', `${on ? '✅' : '⬜'} ${nm}${tot ? ` · ${STATS[stg.k].icon}${tot}` : ''}`); b.style.cssText = `font-size:16px;padding:7px 10px;background:${on ? '#CDEFC2' : '#fff'}`; b.setAttribute('aria-pressed', String(on)); b.onclick = () => { on ? stg.sel.delete(u) : stg.sel.add(u); refillLife(); }; grid.append(b); }
+  if (!list.length) box.append(el2('p', 'vempty', '학생이 아직 없어요. 🙋 발표 칭찬 탭 아래 📝 명단을 먼저 저장해요.'));
+  const r3 = el2('div', 'row-center wrap'), all = el2('button', 'btn', '모두 고르기'), none = el2('button', 'btn', '모두 풀기'), go = el2('button', 'btn', `⭐ ${STATS[stg.k].icon} ${STATS[stg.k].name} +${stg.n} 주기`);
+  all.style.background = none.style.background = '#fff'; all.onclick = () => { list.forEach(([u]) => stg.sel.add(u)); refillLife(); }; none.onclick = () => { stg.sel.clear(); refillLife(); };
+  go.style.background = '#FFD23C'; go.disabled = !stg.sel.size;
+  go.onclick = async () => { const upd = {}; for (const u of stg.sel) upd[`sgive/${u}/${stg.k}`] = Math.min(1000000, (S.sgive?.[u]?.[stg.k] | 0) + stg.n);
+    const r = await backend.adminUpdate(upd); if (!r.ok) { toast('⚠️ 저장하지 못했어요. database.rules.json을 다시 게시해 주세요', 'warn'); return; }
+    const names = list.filter(([u]) => stg.sel.has(u)).map(([, nm]) => nm); playSfx('coin'); toast(`⭐ ${names.slice(0, 4).join(', ')}${names.length > 4 ? ` 외 ${names.length - 4}명` : ''}에게 ${STATS[stg.k].icon} ${STATS[stg.k].name} +${stg.n}!`, 'success'); stg.sel.clear(); setTimeout(refillLife, 300); };
+  r3.append(all, none, go); box.append(grid, r3);
+}
 function openPraise() {
   if (!isTeacher) return;
   openLife('🙋 발표 칭찬', (box) => {
-    box.textContent = ''; const T = talkToday(), C = talkCfg(), tn = T?.n | 0;
+    box.textContent = ''; { const tb = el2('div', 'row-center wrap'); for (const [k, n] of [['talk', '🙋 발표 칭찬'], ['stat', '⭐ 능력치 주기']]) { const b = el2('button', 'btn', n); b.style.background = stg.tab === k ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.tab === k)); b.onclick = () => { stg.tab = k; refillLife(); }; tb.append(b); } box.append(tb); }
+    if (stg.tab === 'stat') { fillStatGive(box); return; }
+    const T = talkToday(), C = talkCfg(), tn = T?.n | 0;
     box.append(el2('p', 'lp-big', C.g ? `📣 오늘 우리 반 발표 ${tn} / ${C.g}${tn >= C.g ? ' 🎉 달성!' : ''}` : `📣 오늘 우리 반 발표 ${tn}번 (목표 끔)`));
     if (C.g) { const bar = el2('div', ''); bar.style.cssText = 'height:14px;border-radius:7px;background:#EEE;overflow:hidden;margin:4px 0 8px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.min(100, tn / C.g * 100)}%;background:#5FBE5A`; bar.append(f); box.append(bar); }
     box.append(el2('p', 'hint', `발표한 학생 이름을 누르면 그 학생에게 🐚${C.p}이 가고 반 발표 수가 1 올라요. 목표를 채우면 반 모두 🐚${C.r}! 잘못 눌렀으면 ↩️로 취소해요. (학생이 접속해 있지 않아도 다음에 들어오면 받아요)`));
