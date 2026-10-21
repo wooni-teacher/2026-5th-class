@@ -384,8 +384,10 @@
     position: fixed; left: 50%; top: 32%; padding: 20px 34px; text-align: center; background: var(--sun);
     transform: translate(-50%, -50%) rotate(-3deg); animation: wobble .6s ease-in-out infinite alternate; pointer-events: none;
   }
-  #celebrate b { display: block; font-size: 40px; font-weight: 700; }
-  #celebrate span { font-size: 22px; }
+  #celebrate b { display: block; font-size: 40px; font-weight: 700; word-break: keep-all; line-height: 1.2; }
+  @media (max-width: 900px) { #celebrate b { font-size: 32px; } #celebrate span { font-size: 19px; } }
+  #celebrate { max-width: min(92vw, 760px); box-sizing: border-box; }
+  #celebrate span { display: block; font-size: 22px; white-space: pre-line; word-break: keep-all; overflow-wrap: anywhere; line-height: 1.45; } /* 1021b: 긴 결과도 줄을 바꿔서 화면 안에 */
   @keyframes wobble { to { transform: translate(-50%, -50%) rotate(3deg); } }
 
   /* 터치 조작 */
@@ -10092,7 +10094,7 @@ function festResult(f) { // 결과 글 + 내 상
 function festFinish(f) {
   bag.fend = f.id; const { lines, shell } = festResult(f);
   if (shell > 0 && !isTeacher) earnShell(shell); saveBag();
-  showBanner(`${FEST[f.k].icon} ${FEST[f.k].name} 결과`, lines.join(' · ') + (shell > 0 && !isTeacher ? ` · 내 상 🐚 +${shell}` : ''), 9000); playSfx('fanfare');
+  showBanner(`${FEST[f.k].icon} ${FEST[f.k].name} 결과`, lines.join('\n') + (shell > 0 && !isTeacher ? `\n🎁 내 상 🐚 +${shell}` : ''), 12000); playSfx('fanfare');
   burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3);
 }
 function openFest() {
@@ -15837,6 +15839,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1021b', d: '10월 21일', items: ['🏡 행사 결과 알림이 길어도 줄을 바꿔서 화면 안에 다 보여요'] },
   { id: '1021a', d: '10월 21일', items: ['🎲 반월쉼터가 생겼어요! (광장 북서쪽) 보드게임 방에 들어가 탁자에 앉아 🍓 할리갈리 · 🎲 부루마블을 해요'] },
   { id: '1020e', d: '10월 20일', items: ['📝 선생님 발표 칭찬 목록에 우리 반 명단이 나와요 (이름표 이름이 명단과 같으면 칭찬이 그 친구에게)'] },
   { id: '1020d', d: '10월 20일', items: ['🙋 수업 시간에 발표하면 선생님이 칭찬 → 🐚 + 이름표 🎤 (오늘 가장 많이 발표한 친구는 👑🎤)', '📣 반 전체 하루 발표 목표! 채우면 모두 🐚', '📒 독서 기록장이 간단해졌어요: 어떤 책인지 · 책 모양 · 쪽수만 (자세한 건 종이 독서 기록장에)'] },
