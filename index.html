@@ -2080,7 +2080,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', sgive: {}, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2117,6 +2117,9 @@ function normalize(v) {
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
     roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
+    gw: v.gw && typeof v.gw === 'object' ? { open: v.gw.open === true, n: v.gw.n | 0, title: String(v.gw.title || '').slice(0, 30), cur: v.gw.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.gw.ph) ? v.gw.ph : 'wait', qs: Object.values(toObj(v.gw.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)) })), rev: Object.fromEntries(Object.entries(toObj(v.gw.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), res: v.gw.res ? { sc: plainObj(v.gw.res.sc), top: String(v.gw.res.top || '').slice(0, 12), tsc: v.gw.res.tsc | 0 } : null } : null,
+    gwa: Object.fromEntries(Object.entries(plainObj(v.gwa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
+    gwc: v.gwc && typeof v.gwc === 'object' ? { n: v.gwc.n | 0, name: String(v.gwc.name || '').slice(0, 12), uid: String(v.gwc.uid || ''), w: v.gwc.w | 0, sc: v.gwc.sc | 0 } : null,
     sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read'].filter(k => isInt(x[k], 0, 1000000)).map(k => [k, x[k]]))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
@@ -2431,7 +2434,8 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (h) pl.h = { ...h }; else delete pl.h; emit(); return { ok: true };
     },
     async chatSend(t, nm) { chatRemote({ me: { t, nm, at: Date.now() } }); return { ok: true }; },
-    async earnPut(o) { (st._earn ||= {}).me = { ...o, at: Date.now() }; return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
+    async earnPut(o) { (st._earn ||= {}).me = { ...o, at: Date.now() }; return { ok: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -2890,6 +2894,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async chatDel() { try { await D.set(R(`chat/${uid}`), null); } catch (e) {} },
     async earnPut(o) { try { await D.set(R(`earn/${uid}`), { ...o, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📊 오늘 재화 (선생님만 모아 봐요)
     async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
+    async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📜 과거시험 답 (문제가 열려 있을 때만)
     async earnClear() { try { await D.set(R('earn'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async chatClear() { try { await D.set(R('chat'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async homeSet(n, upd) { // 우리 집 안 (주인만 쓸 수 있어요)
@@ -4277,7 +4282,7 @@ function onPlayers(type, uid, data) {
   }
   if (!r.target || r.target.x !== data.x || r.target.z !== data.z || r.target.m !== data.m) r.seenAt = performance.now();
   r.target = data;
-  { const nm = nickOf(uid, data) + rankTitle(uid) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
+  { const nm = nickOf(uid, data) + rankTitle(uid) + gwTag(uid, data) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
   const now = performance.now(), last = r.buf[r.buf.length - 1];
   if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
@@ -9928,9 +9933,9 @@ const rankNick = (u, e) => nickOf(u, e) || '친구';
 function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · (선생님) 오래된 주 지우기
   if (!joined || !stateLoaded || !backend) return;
   const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn;
-  const me = backend.uid, tl = (cleanNick(myNick) || '') + rankTitle(me) + praiseTag(me) + hpetTag(hpetCode());
+  const me = backend.uid, tl = (cleanNick(myNick) || '') + rankTitle(me) + gwTag(me) + praiseTag(me) + hpetTag(hpetCode());
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
-  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + rankTitle(u) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
+  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + rankTitle(u) + gwTag(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -15379,6 +15384,7 @@ const ROOMS = {
   etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
   bg1: { name: '과일 할리갈리 방', icon: '🍓', cx: 1515, cz: -86, w: 22, d: 18, wall: 0xFFF4C8, floor: 0xE8C890, site: null }, // 🎲 반월쉼터 (1021a)
   bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
+  gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
 const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.7, '그림과 글이 반반'], ['💬', '만화책', 0.4, '말풍선 만화'], ['🧸', '그림책', 0.5, '그림이 대부분']]; // 📚 독서력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
@@ -15544,6 +15550,7 @@ async function enterRoom(id) {
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
   if (id === 'mus') { toast('🏛️ 역사 박물관이에요! 양쪽 전시실에서 연표 보고 사건을 차례대로 놓아요', 'info'); return; }
+  if (id === 'gw') { toast(gwOpen() ? `📜 ${S.gw.title || '과거시험'}! 빈 자리(서안)에 앉아 시험지를 펴요` : '📜 과거시험장이에요. 선생님은 앞쪽에서 문제를 올려 시험장을 열어요', 'info'); return; }
   if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
   toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
@@ -15559,6 +15566,7 @@ async function exitRoom(id) {
   else if (id === 'mus') { x = MUS_SPOT[0]; z = MUS_SPOT[1] - 6; h = Math.PI; mus.g = null; } // 🏛️ 박물관 문 앞
   else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz] = PG_SPOT[+id[2]]; x = gx; z = gz + 5.4; h = 0; } // 🏟️ 마을 체육관 문 앞
   else if (id === 'etr') { x = 1796.2; z = -0.2; h = -Math.PI / 2; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 영어 마을 훈련소 문 앞
+  else if (id === 'gw') { x = GW_HOUSE.x; z = GW_HOUSE.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 📜 과거시험장 문 앞
   else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
   else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
@@ -15842,6 +15850,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1021d', d: '10월 21일', items: ['📜 역사 마을 서당 옆 기와집이 과거시험장이 됐어요! 선생님이 문제를 내면 열려요 · 안에서는 선비옷 🎩 · 장원급제하면 시험장 앞 방에 이름이 걸리고 그 주 동안 이름표에 🎓장원'] },
   { id: '1021c', d: '10월 21일', items: ['⭐ 선생님이 능력치를 줄 수 있어요 (받으면 알림이 떠요)', '📣 오늘 우리 반 발표 표시를 왼쪽 아래로 옮겼어요 (배드민턴·놀이 중에는 숨겨요)'] },
   { id: '1021b', d: '10월 21일', items: ['🏡 행사 결과 알림이 길어도 줄을 바꿔서 화면 안에 다 보여요'] },
   { id: '1021a', d: '10월 21일', items: ['🎲 반월쉼터가 생겼어요! (광장 북서쪽) 보드게임 방에 들어가 탁자에 앉아 🍓 할리갈리 · 🎲 부루마블을 해요'] },
@@ -20512,6 +20521,251 @@ function initTalk() {
   const c = document.createElement('div'); c.id = 'talkChip'; c.className = 'sticker hidden'; document.body.append(c); talkW.chip = c;
   setInterval(() => { try { const show = isTeacher && joined; if (b.classList.contains('hidden') === show) b.classList.toggle('hidden', !show); praiseSync(); } catch (e) { } }, 1000);
 }
+// ================= 📜 과거시험장 (1021d · 역사 마을 서당 옆 기와집) =================
+// 선생님이 문제를 올리면(state/gw) 열려요 · 안에서는 학생 🎩 선비옷 · 선생님 👑 임금 옷(어좌) · 앞 칠판 2개에 문제 · 학생 화면에서 고르거나 적어요(state/gwa/{기기})
+// 정답은 선생님 기기에만(bag.gwKey) → 정답 공개(gw.rev) · 채점은 선생님 기기 → gw.res · 장원(state/gwc) → 시험장 앞 방(榜) + 그 주 이름표 🎓장원
+const GW_HOUSE = { x: 486, z: -36 };
+const GW_DEF = `문제: 선사 시대와 역사 시대를 구분하는 기준은 글자로 된 기록이 있는지 여부이다.
+보기: OX
+정답: O
+
+문제: 고조선이 건국된 해인 단기 1년은 서기 몇 년일까요?
+정답: 기원전 2333년 / 기원전2333 / 기원전 2333 / BC2333
+
+문제: 어느 시대의 어린이가 쓴 일기일까요?
+"오늘은 갈판과 갈돌로 곡식의 껍질을 벗겨 빗살무늬토기에 담았다. 어른들은 뼈작살과 돌화살촉을 수리했다. 내일은 나도 사냥에 데려가 달라고 해야지!"
+정답: 신석기 시대 / 신석기시대 / 신석기
+
+문제: 선사 시대의 생활 모습으로 옳지 않은 것은?
+보기: 주먹도끼는 구석기 시대의 만능 도구였다 / 신석기 시대에는 뼈바늘과 가락바퀴로 옷을 지어 입었다 / 청동기 시대에는 단단한 청동기로 농사를 지었다
+정답: 3
+
+문제: 우리나라 나라들이 세워진 순서로 알맞은 것은?
+보기: 고조선 - 신라 - 고구려 - 백제 - 발해 - 고려 / 고조선 - 고구려 - 신라 - 백제 - 고려 - 발해 / 신라 - 고조선 - 백제 - 고구려 - 발해 - 고려 / 고조선 - 백제 - 고구려 - 신라 - 고려 - 발해
+정답: 1
+
+문제: 환웅이 인간 세상을 다스리기 위해 데리고 온 세 신하는 각각 무엇을 다스렸나요?
+보기: 바람, 비, 구름 / 해, 달, 별 / 산, 강, 바다 / 불, 물, 흙
+정답: 1
+
+문제: 고조선의 법 조항(8조법)으로 알 수 있는 생활 모습이 아닌 것은?
+보기: 개인의 재산을 인정했다 / 신분 제도 없이 모두 평등했다 / 생명을 소중하게 여겼다 / 화폐를 사용했다
+정답: 2
+
+문제: 고조선의 대표적인 문화유산 세 가지는?
+보기: 비파형 동검 · 미송리식 토기 · 탁자식 고인돌 / 세형 동검 · 빗살무늬 토기 · 주먹도끼 / 금동 대향로 · 첨성대 · 불국사 / 광개토대왕릉비 · 무령왕릉 · 석굴암
+정답: 1
+
+문제: 삼국이 전성기를 맞이한 순서로 알맞은 것은?
+보기: 백제 - 고구려 - 신라 / 고구려 - 백제 - 신라 / 신라 - 백제 - 고구려 / 고구려 - 신라 - 백제
+정답: 1
+
+문제: 고구려는 (    )이 부여를 떠나 남쪽으로 내려와 졸본에 세운 나라이다. (    )에 들어갈 사람은?
+정답: 주몽 / 동명성왕
+
+문제: 고구려의 전성기를 이끈 아버지의 업적을 기념하기 위해 장수왕이 국내성에 세운 비석은?
+정답: 광개토대왕릉비 / 광개토대왕비 / 광개토왕릉비 / 광개토왕비
+
+문제: 백제는 고구려의 왕자인 (    )가 남쪽으로 내려와 한강 지역에 세운 나라이다. (    )에 들어갈 사람은?
+정답: 온조 / 온조왕
+
+문제: 백제의 전성기에 대해 옳지 않은 것은?
+보기: 중국, 왜와 활발히 교류했다 / 남쪽으로 영토를 넓혔다 / 북쪽으로 영토를 넓혔다 / 초고추장왕이 이끌었다
+정답: 4
+
+문제: 신라를 세운 사람, "알에서 나온 혁거세"의 성은 무엇일까요?
+보기: 김 / 이 / 박 / 석
+정답: 3
+
+문제: 신라는 화랑도를 통해 젊고 유능한 인재를 모았다.
+보기: OX
+정답: O
+
+문제: 삼국이 전성기에 공통으로 차지한 곳은 (    ) 유역이다. (    )에 들어갈 말은?
+정답: 한강 / 한강유역
+
+문제: 삼국 통일 과정을 순서대로 고르면? ① 신라가 당을 몰아냈다 ② 백제가 멸망했다 ③ 고구려가 멸망했다 ④ 신라와 당이 동맹을 맺었다
+보기: ④ - ② - ③ - ① / ② - ③ - ④ - ① / ④ - ③ - ② - ① / ① - ④ - ② - ③
+정답: 1
+
+문제: 발해는 고구려 유민인 (    )이 고구려 유민과 말갈족을 이끌고 동모산 지역에 세운 나라이다. (    )에 들어갈 사람은?
+정답: 대조영
+
+문제: 발해의 전성기인 무왕 시절, "바다 동쪽에서 번성하는 나라"라고 불린 이름은?
+보기: 해동성국 / 해성동국 / 동해성국 / 성해동국
+정답: 1
+
+문제: 백제의 뛰어난 예술 감각을 살펴볼 수 있는, 향을 피우던 금동 유물은?
+보기: 백제 금동 대향로 / 첨성대 / 비파형 동검 / 빗살무늬 토기
+정답: 1
+
+문제: 철이 풍부해 덩이쇠와 철갑옷으로 유명했던, 낙동강 하류의 연맹 왕국은?
+보기: 가야 / 고구려 / 백제 / 신라
+정답: 1
+
+문제: 후삼국 통일 과정을 순서대로 고르면? ① 후백제와 후고구려를 세움 ② 신라 말 나라가 혼란해짐 ③ 지방에서 호족이 등장함 ④ 신라가 고려에 항복함 ⑤ 궁예를 몰아내고 고려를 세움 ⑥ 후백제가 멸망하고 후삼국 통일
+보기: ② - ③ - ① - ⑤ - ④ - ⑥ / ③ - ② - ① - ④ - ⑤ - ⑥ / ① - ② - ③ - ⑤ - ⑥ - ④ / ② - ① - ③ - ④ - ⑤ - ⑥
+정답: 1`;
+const gwNorm = (s) => String(s || '').toLowerCase().replace(/[\s.,!?·~\-()'"「」]/g, '');
+function gwParse(txt) { // 빈 줄로 문제를 나눠요 · 문제:/보기:/정답:
+  const out = [], errs = [];
+  String(txt || '').replace(/\r/g, '').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach((b, i) => {
+    let q = [], o = null, a = '';
+    for (const ln of b.split('\n')) { const m = /^\s*(문제|보기|정답)\s*[:：]\s*(.*)$/.exec(ln); if (m) { if (m[1] === '문제') q.push(m[2]); else if (m[1] === '보기') o = m[2].trim(); else a = m[2].trim(); } else q.push(ln.trim()); }
+    const qt = q.join('\n').trim().slice(0, 400); if (!qt) { errs.push(`${i + 1}번: 문제가 비었어요`); return; } if (!a) { errs.push(`${i + 1}번: 정답이 없어요`); return; }
+    if (o && /^o\s*x$/i.test(o.replace(/[\/,]/g, ''))) { const A = a.toUpperCase().includes('X') ? 'X' : 'O'; out.push({ q: qt, t: 'ox', o: ['O', 'X'], a: A, show: A }); return; }
+    if (o) { const opts = o.split('/').map(x => x.trim()).filter(Boolean).slice(0, 6).map(x => x.slice(0, 80)); let k = parseInt(a, 10); if (!(k >= 1 && k <= opts.length)) { const f = opts.findIndex(x => gwNorm(x) === gwNorm(a)); k = f + 1; } if (opts.length < 2 || !(k >= 1)) { errs.push(`${i + 1}번: 보기 2개 이상과 정답 번호가 필요해요`); return; } out.push({ q: qt, t: 'mc', o: opts, a: String(k), show: `${k}번 ${opts[k - 1]}` }); return; }
+    const acc = a.split('/').map(x => x.trim()).filter(Boolean).slice(0, 8); out.push({ q: qt, t: 'sa', o: [], a: acc.join('/'), show: acc[0] });
+  });
+  return { qs: out.slice(0, 40), errs };
+}
+const gwOk = (Q, key, ans) => { if (ans == null || ans === '') return false; if (Q.t === 'sa') return key.split('/').some(k => gwNorm(k) && gwNorm(k) === gwNorm(ans)); return String(ans) === String(key); };
+const gw = { cos: new Map(), boards: [], tex: null, cvs: null, bKey: '', sKey: '', seenN: 0, champ: null, entry: null, draft: null };
+const gwOpen = () => !!S.gw?.open;
+const gwHall = (p) => { const R = ROOMS.gw; return !!R && Math.abs(p.x - R.cx) <= R.w / 2 + 0.5 && Math.abs(p.z - R.cz) <= R.d / 2 + 0.5; };
+function gwTag(u, data) { const c = S.gwc; if (!c || c.w !== weekNum()) return ''; return c.uid === u || (c.name && rosterOf(u, data) === c.name) ? ' 🎓장원' : ''; }
+function gwCostume(a, kind) { // 🎩 선비 · 👑 임금
+  if ((a.gwKind || '') === kind) return; a.gwG?.parent?.remove(a.gwG); a.gwH?.parent?.remove(a.gwH); a.gwG = a.gwH = null; a.gwKind = kind;
+  if (a.tl) for (const x of a.tl.objs) if (!x.isSprite) x.visible = kind !== 'king'; // 👑 임금 옷일 때는 선생님 모자를 잠깐 숨겨요
+  if (!kind) return;
+  const g = new THREE.Group(), h = new THREE.Group(), o = { solid: false }, king = kind === 'king';
+  box(g, 0.92, 0.98, 0.6, king ? 0xB0302A : 0xF1EEE6, 0, 0.74, 0, o); box(g, 0.3, 0.5, 0.04, king ? 0x8A1E1A : 0xFFFFFF, 0, 1.0, 0.31, o);
+  box(g, 0.94, 0.07, 0.62, king ? 0xE8C547 : 0x2F3E6E, 0, 0.98, 0, o);
+  if (king) { mesh(CYL, g, 0.2, 0.03, 0.2, 0xE8C547, 0, 0.8, 0.31, { solid: false, rx: Math.PI / 2 }); cyl(h, 0.42, 0.34, 0x1E1E22, 0, 2.3, -0.02, o); for (const sx of [-1, 1]) box(h, 0.32, 0.26, 0.04, 0x1E1E22, sx * 0.3, 2.45, -0.36, { solid: false, rz: sx * 0.3 }); }
+  else { cyl(h, 0.8, 0.04, 0x1E1E22, 0, 2.18, 0, o); cyl(h, 0.32, 0.46, 0x2A2A30, 0, 2.42, 0, o); }
+  a.rig.add(g); a.head.add(h); a.gwG = g; a.gwH = h;
+}
+function buildGwacheo(gAll) {
+  // 바깥: 서당 옆 기와집에 표지 · 장원 방(榜)
+  const out = new THREE.Group(); out.name = 'GwacheoOut'; scene.add(out); const o = { solid: false }, { x, z } = GW_HOUSE, fz = z + 3 + 0.7;
+  signPlane(out, ['📜 과거시험장'], 3.4, 0.75, x, 2.95, fz + 0.75, { font: 52, pad: 4, fg: '#FFF6D8', bg: '#5A2E1A', stroke: false });
+  { const bx = x - 6.2, bz = fz + 0.6; for (const sx of [-1.3, 1.3]) box(out, 0.2, 2.6, 0.2, 0x7A4A2A, bx + sx, 1.3, bz); box(out, 2.8, 1.6, 0.1, 0xF4E4BC, bx, 1.75, bz, o); box(out, 3.0, 0.18, 0.3, 0x5A2E1A, bx, 2.65, bz, o);
+    gw.champ = makeLabel(out, [''], 0.85, bx, 3.6, bz); }
+  gw.entry = makeLabel(out, [''], 0.9, x, 5.2, fz - 0.5);
+  addInteract({ pos: new V3(x, 1, fz + 1.2), r: 2.8, text: () => gwOpen() ? ['📜 과거시험장 들어가기', `${S.gw.title || '과거시험'} 중!`] : isTeacher ? ['📜 과거시험장 (선생님)', '들어가서 문제를 내요'] : ['🔒 과거시험장', '선생님이 시험 문제를 내면 열려요'], run: () => { if (!gwOpen() && !isTeacher) { toast('🔒 아직 과거시험이 없어요. 선생님이 문제를 내면 열려요', 'info'); return; } enterRoom('gw'); } });
+  registerSolids(out, 'gwout');
+  // 안: 어좌 · 일월오봉도 · 칠판 2개 · 서안 16자리
+  const g = new THREE.Group(); g.name = 'Gwacheo'; scene.add(g); const R = ROOMS.gw; roomShell(g, R);
+  const fzr = R.cz - R.d / 2;
+  box(g, 7.4, 0.5, 3.2, 0x8A3A22, R.cx, 0.25, fzr + 2.6); box(g, 7.6, 0.06, 3.4, 0xC0392B, R.cx, 0.53, fzr + 2.6, o); // 단
+  box(g, 7.2, 3.4, 0.16, 0x2E5E9E, R.cx, 2.3, fzr + 0.5, o); ball(g, 0.45, 0xE2384A, R.cx - 2.2, 3.3, fzr + 0.6, o); ball(g, 0.4, 0xF4F1E6, R.cx + 2.2, 3.3, fzr + 0.6, o); // 일월오봉도
+  for (const [dx, s] of [[-2.6, 1.0], [-1.3, 1.4], [0, 1.9], [1.3, 1.4], [2.6, 1.0]]) mesh(CONE, g, 0.9, s, 0.15, 0x3F8F4A, R.cx + dx, 0.7, fzr + 0.62, o);
+  box(g, 1.6, 0.9, 1.0, 0xC0392B, R.cx, 0.98, fzr + 2.6); box(g, 1.6, 1.4, 0.2, 0xC0392B, R.cx, 1.6, fzr + 2.0, o); box(g, 1.7, 0.1, 0.25, 0xE8C547, R.cx, 2.33, fzr + 2.0, o); // 어좌
+  addInteract({ pos: new V3(R.cx, 1, fzr + 4.4), r: 2.6, text: () => isTeacher ? ['📜 과거시험 진행 (선생님)', gwOpen() ? '문제 내기 · 정답 공개 · 채점' : '문제를 올려 시험장을 열어요'] : null, run: openGwAdmin });
+  addInteract({ pos: new V3(R.cx + 1.6, 1, fzr + 3.6), r: 1.8, text: () => isTeacher ? ['👑 어좌에 앉기', '임금님 자리'] : null, run: () => { player.pos.set(R.cx, 0.6, fzr + 3.6); player.vy = 0; player.heading = 0; player.avatar.g.rotation.y = 0; camYaw = Math.PI; camPitch = 0.35; playAct(player.avatar, 'sit'); } });
+  // 칠판
+  gw.cvs = document.createElement('canvas'); gw.cvs.width = 1024; gw.cvs.height = 600; gw.tex = new THREE.CanvasTexture(gw.cvs); gw.tex.colorSpace = THREE.SRGBColorSpace;
+  for (const sx of [-1, 1]) { const bx = R.cx + sx * 8.6; box(g, 6.4, 4.0, 0.2, 0x5A2E1A, bx, 2.5, fzr + 0.4, o); const m = new THREE.Mesh(new THREE.PlaneGeometry(6.0, 3.52), new THREE.MeshBasicMaterial({ map: gw.tex, toneMapped: false })); m.position.set(bx, 2.5, fzr + 0.52); g.add(m); }
+  // 서안 · 방석
+  const cols = [-9, -4.5, 4.5, 9], rows = [6.5, 9.5, 12.5, 15.5];
+  for (const rz of rows) for (const cx of cols) { const dx = R.cx + cx, dz = fzr + rz; box(g, 1.5, 0.45, 0.7, 0x7A4A2A, dx, 0.22, dz, o); box(g, 1.2, 0.04, 0.5, 0xF4E4BC, dx, 0.47, dz, o); box(g, 0.9, 0.08, 0.9, 0xB0302A, dx, 0.04, dz + 0.95, o);
+    addInteract({ pos: new V3(dx, 1, dz + 0.9), r: 1.3, text: () => roomNow() === 'gw' ? ['📜 자리에 앉기', gwOpen() ? '시험지를 펴요' : '시험을 기다려요'] : null, run: () => { player.pos.set(dx, 0.15, dz + 0.95); player.vy = 0; player.heading = Math.PI; player.avatar.g.rotation.y = Math.PI; camYaw = 0; camPitch = 0.45; playAct(player.avatar, 'sit'); if (gwOpen()) openGwExam(); } }); }
+  makeLabel(g, ['📜 과거시험장'], 0.9, R.cx, 5.0, fzr + 1.0);
+  registerSolids(g, 'gwin');
+}
+function gwWrap(c, text, x, y, maxW, lh, maxL = 6) { const lines = []; for (const para of String(text).split('\n')) { let cur = ''; for (const ch of para) { if (c.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; } else cur += ch; } lines.push(cur); } lines.slice(0, maxL).forEach((l, i) => c.fillText(l, x, y + i * lh)); return Math.min(lines.length, maxL); }
+function gwDrawBoard() { try { gwDrawBoard0(); } finally { if (gw.tex) gw.tex.needsUpdate = true; } }
+function gwDrawBoard0() {
+  const G = S.gw, key = JSON.stringify([G?.open, G?.n, G?.cur, G?.ph, G?.rev?.[G?.cur], G?.res?.top]); if (key === gw.bKey || !gw.cvs) return; gw.bKey = key;
+  const c = gw.cvs.getContext('2d'); c.fillStyle = '#1F3A2E'; c.fillRect(0, 0, 1024, 600); c.strokeStyle = '#C9A04A'; c.lineWidth = 10; c.strokeRect(8, 8, 1008, 584);
+  c.fillStyle = '#FFF6D8'; c.textBaseline = 'top'; const F = (n) => `700 ${n}px Pretendard, sans-serif`;
+  if (!G?.open) { c.font = F(64); c.textAlign = 'center'; c.fillText('📜 과거시험장', 512, 200); c.font = F(36); c.fillText('임금님(선생님)이 문제를 내면 시험이 열려요', 512, 300); return; }
+  c.textAlign = 'left'; c.font = F(34); c.fillStyle = '#E8C547'; c.fillText(`${G.title || '과거시험'}`, 40, 30);
+  const qs = G.qs || [], Q = qs[G.cur];
+  if (G.ph === 'end') { c.textAlign = 'center'; c.font = F(60); c.fillStyle = '#FFE066'; c.fillText('🎉 장원급제 🎉', 512, 170); c.font = F(72); c.fillStyle = '#FFF6D8'; c.fillText(G.res?.top || '-', 512, 270); c.font = F(34); c.fillText(G.res?.tsc != null ? `${qs.length}문제 중 ${G.res.tsc}문제` : '', 512, 380); return; }
+  if (G.ph === 'wait' || !Q) { c.textAlign = 'center'; c.font = F(52); c.fillText('곧 문제가 나와요', 512, 230); c.font = F(34); c.fillText(`모두 ${qs.length}문제 · 자리에 앉아 기다려요`, 512, 320); return; }
+  c.fillStyle = '#E8C547'; c.font = F(36); c.textAlign = 'right'; c.fillText(`${G.cur + 1} / ${qs.length}`, 984, 30); c.textAlign = 'left';
+  c.fillStyle = '#FFF6D8'; c.font = F(Q.q.length > 90 ? 34 : 42); const nl = gwWrap(c, `${G.cur + 1}. ${Q.q}`, 40, 92, 944, Q.q.length > 90 ? 44 : 54, 6);
+  let y = 100 + nl * (Q.q.length > 90 ? 44 : 54) + 14; c.font = F(Q.t === 'ox' ? 64 : 32);
+  if (Q.t === 'ox') { c.textAlign = 'center'; c.fillText('⭕        ❌', 512, y); c.textAlign = 'left'; }
+  else if (Q.t === 'mc') Q.o.forEach((op, i) => { if (y < 540) { gwWrap(c, `${i + 1}) ${op}`, 60, y, 900, 38, 1); y += 42; } });
+  else { c.fillStyle = '#BFD8C8'; c.fillText('✍️ 답을 적어요 (주관식)', 60, y); }
+  if (G.ph === 'rev') { c.fillStyle = '#FFE066'; c.fillRect(0, 528, 1024, 72); c.fillStyle = '#3B2F2A'; c.font = F(38); c.textAlign = 'center'; c.fillText(`정답: ${G.rev?.[G.cur] || ''}`, 512, 542); }
+}
+function openGwExam() {
+  if (!gwOpen()) { toast('🔒 지금은 과거시험이 없어요', 'info'); return; }
+  gw.sKey = JSON.stringify([S.gw.n, S.gw.cur, S.gw.ph]);
+  openLife('📜 과거시험지', (box) => {
+    box.textContent = ''; const G = S.gw, qs = G.qs || [], Q = qs[G.cur], me = backend.uid, mine = S.gwa?.[me]?.r === G.n ? S.gwa[me] : null;
+    box.append(el2('p', 'lp-big', `${G.title || '과거시험'}`));
+    if (G.ph === 'end') { const sc = G.res?.sc?.[me]; box.append(el2('p', 'lp-big', `🎉 장원급제: ${G.res?.top || '-'}`), el2('p', 'hint', sc != null ? `내 점수: ${qs.length}문제 중 ${sc}문제 정답` : '이번 시험에 답을 내지 않았어요')); return; }
+    if (G.ph === 'wait' || !Q) { box.append(el2('p', 'hint', `모두 ${qs.length}문제예요. 앞 칠판에 문제가 나오면 여기서 답해요.`)); return; }
+    box.append(el2('p', 'hint', `${G.cur + 1} / ${qs.length}번 문제 · ${G.ph === 'q' ? '답을 고르거나 적고 제출해요 (마감 전에는 바꿀 수 있어요)' : '정답 공개!'}`));
+    const qp = el2('p', 'lp-big', `${G.cur + 1}. ${Q.q}`); qp.style.whiteSpace = 'pre-line'; box.append(qp);
+    const my = mine?.a?.[G.cur], send = async (v) => { const r = await backend.gwAnswer({ r: G.n, nm: (rosterOf(me) || cleanNick(myNick) || '친구').slice(0, 12), a: { ...(mine?.a || {}), [G.cur]: String(v).slice(0, 40) }, t: { ...(mine?.t || {}), [G.cur]: Date.now() } }); if (r.ok) { playSfx('pick'); toast(`📜 제출했어요: ${v}`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 제출하지 못했어요 (마감됐을 수 있어요)', 'warn'); };
+    if (G.ph === 'rev') { const key = G.rev?.[G.cur] || ''; const ok = my != null && (Q.t === 'sa' ? key.split('/').some(k => gwNorm(k) === gwNorm(my)) || gwNorm(String(key).split('/')[0]) === gwNorm(my) : Q.t === 'mc' ? key.startsWith(`${my}번`) : key === my);
+      box.append(el2('p', 'lp-big', `정답: ${key}`), el2('p', 'hint', my == null ? '답을 내지 않았어요' : `내 답: ${Q.t === 'mc' ? `${my}번 ${Q.o[+my - 1] || ''}` : my} ${ok ? '⭕ 맞았어요!' : '❌'}`)); return; }
+    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 적어요'; inp.value = my || ''; inp.autocomplete = 'off'; const b = el2('button', 'btn', '📜 제출'); b.style.background = '#FFD23C'; b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (typeof nickBad === 'function' && nickBad(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; inp.onkeydown = (e) => { if (e.key === 'Enter' && !e.isComposing) b.click(); }; box.append(inp, el2('div', 'row-center', null)); box.lastChild.append(b); }
+    else { const grid = el2('div', 'mx-opts'); Q.o.forEach((op, i) => { const v = Q.t === 'ox' ? op : String(i + 1), b = el2('button', 'btn mx-opt', Q.t === 'ox' ? (op === 'O' ? '⭕ O' : '❌ X') : `${i + 1}) ${op}`); if (my === v) b.style.background = '#FFE066'; b.onclick = () => send(v); grid.append(b); }); box.append(grid); }
+    if (my != null) box.append(el2('p', 'hint', `✅ 제출한 답: ${Q.t === 'mc' ? `${my}번` : my}`));
+  });
+}
+function openGwAdmin() {
+  if (!isTeacher) return;
+  openLife('📜 과거시험 진행', (box) => {
+    box.textContent = ''; const G = S.gw, key = bag.gwKey;
+    if (!G?.open) {
+      const n = Math.max(S.gw?.n || 0, S.gwc?.n || 0) + 1;
+      box.append(el2('p', 'hint', '문제를 올리면 과거시험장이 열려요. 문제마다 빈 줄로 나누고 "문제: / 보기: / 정답:"으로 적어요. 보기가 없으면 주관식(정답 여러 개는 / 로), 보기: OX 이면 O·X 문제예요. 정답은 이 선생님 기기에만 남아요.'));
+      const ti = el2('input', 'tinput', null); ti.maxLength = 30; ti.value = gw.draftT || `제${n}회 과거시험`; ti.oninput = () => { gw.draftT = ti.value; };
+      const ta = document.createElement('textarea'); ta.className = 'tinput'; ta.rows = 12; ta.style.cssText = 'width:100%;font-size:14px'; ta.value = gw.draft ?? bag.gwDraft ?? GW_DEF; ta.oninput = () => { gw.draft = ta.value; };
+      const err = el2('p', 'err', ''); const row = el2('div', 'row-center wrap');
+      const def = el2('button', 'btn', '📄 기본 문제 (선사~후삼국 22문제)'); def.style.background = '#fff'; def.onclick = () => { ta.value = gw.draft = GW_DEF; };
+      const go = el2('button', 'btn', '📜 출제하고 시험장 열기'); go.style.background = '#FFD23C';
+      go.onclick = async () => { const { qs, errs } = gwParse(ta.value); if (errs.length || !qs.length) { err.textContent = errs.slice(0, 3).join(' · ') || '문제가 없어요'; return; }
+        bag.gwKey = { n, a: qs.map(q => q.a), show: qs.map(q => q.show), t: qs.map(q => q.t), fix: {} }; bag.gwDraft = ta.value; saveBag();
+        const ok = await backend.adminUpdate({ gw: { open: true, n, title: (ti.value.trim() || `제${n}회 과거시험`).slice(0, 30), qs: qs.map(q => ({ q: q.q, t: q.t, o: q.o })), cur: 0, ph: 'wait', at: Date.now() }, gwa: null });
+        if (!ok.ok) { err.textContent = '⚠️ 올리지 못했어요. database.rules.json을 다시 게시해 주세요'; return; } playSfx('fanfare'); toast(`📜 ${n}회 과거시험장이 열렸어요! (${qs.length}문제)`, 'success'); setTimeout(refillLife, 300); };
+      row.append(def, go); box.append(el2('h3', 'lp-sec', '시험 이름'), ti, el2('h3', 'lp-sec', '문제'), ta, err, row);
+      if (S.gwc?.name) box.append(el2('p', 'hint', `지난 장원: 제${S.gwc.n}회 ${S.gwc.name}`));
+      return;
+    }
+    const qs = G.qs || [], Q = qs[G.cur], noKey = !key || key.n !== G.n, subs = Object.entries(S.gwa || {}).filter(([, v]) => v?.r === G.n);
+    box.append(el2('p', 'lp-big', `${G.title} · ${G.ph === 'wait' ? '시작 전' : G.ph === 'end' ? '끝' : `${G.cur + 1} / ${qs.length}번`}`));
+    if (noKey) box.append(el2('p', 'err', '⚠️ 이 기기에 정답이 없어요. 문제를 올린 선생님 기기에서 진행해요.'));
+    if (Q && G.ph !== 'wait' && G.ph !== 'end') { const qp = el2('p', 'hint', `${G.cur + 1}. ${Q.q}`); qp.style.whiteSpace = 'pre-line'; box.append(qp); if (key) box.append(el2('p', 'hint', `🔑 정답: ${key.show?.[G.cur] || ''}`)); const n2 = subs.filter(([, v]) => v.a?.[G.cur] != null).length; box.append(el2('p', 'lp-big', `📝 제출 ${n2}명`)); }
+    const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = fn; row.append(b); return b; };
+    const last = G.cur >= qs.length - 1;
+    if (G.ph === 'wait') B(`▶ 1번 문제 내기`, '#FFD23C', () => adminDo({ 'gw/ph': 'q', 'gw/cur': 0 }, '▶ 1번 문제!').then(() => setTimeout(refillLife, 300)));
+    if (G.ph === 'q') B('⏹ 마감하고 정답 공개', '#FFD23C', () => { if (noKey) return; adminDo({ 'gw/ph': 'rev', [`gw/rev/${G.cur}`]: key.show[G.cur] || '' }, '📣 정답 공개!').then(() => setTimeout(refillLife, 300)); });
+    if (G.ph === 'rev' && !last) B(`▶ ${G.cur + 2}번 문제 내기`, '#FFD23C', () => adminDo({ 'gw/ph': 'q', 'gw/cur': G.cur + 1 }, `▶ ${G.cur + 2}번 문제!`).then(() => setTimeout(refillLife, 300)));
+    if (G.ph === 'rev' && last) B('🏁 채점하고 장원 발표', '#FFD23C', () => gwGrade());
+    if (G.ph === 'end') B('🔒 시험장 닫기', '#fff', () => adminDo({ 'gw/open': false }, '🔒 과거시험장을 닫았어요').then(() => setTimeout(refillLife, 300)));
+    B('🗑️ 시험 그만두기', '#fff', async () => { if (await confirmAction({ title: '시험을 그만둘까요?', body: '이번 시험이 사라지고 시험장이 닫혀요. (장원 기록은 그대로)', okText: '그만두기' })) adminDo({ gw: { open: false, n: G.n, ph: 'end' }, gwa: null }, '🗑️ 시험을 그만뒀어요').then(() => setTimeout(refillLife, 300)); });
+    box.append(row);
+    if (G.ph === 'rev' && last && key) { // 주관식 확인
+      const sa = qs.map((q, i) => [q, i]).filter(([q]) => q.t === 'sa');
+      if (sa.length) { box.append(el2('h3', 'lp-sec', '✍️ 주관식 답 확인 (눌러서 맞음·틀림 바꾸기)'));
+        for (const [q, i] of sa) { const m = new Map(); for (const [, v] of subs) { const a = v.a?.[i]; if (a != null) m.set(a, (m.get(a) || 0) + 1); } if (!m.size) continue; box.append(el2('p', 'hint', `${i + 1}. 정답 ${key.show[i]}`)); const rw = el2('div', 'row-center wrap');
+          for (const [a, c] of m) { const fx = key.fix?.[i]?.[a], ok = fx != null ? fx : gwOk(q, key.a[i], a), b = el2('button', 'btn', `${ok ? '⭕' : '❌'} ${a} (${c})`); b.style.background = ok ? '#CDEFC2' : '#F6C9C0'; b.onclick = () => { (key.fix ||= {})[i] ||= {}; key.fix[i][a] = !ok; saveBag(); refillLife(); }; rw.append(b); } box.append(rw); } }
+    }
+    if (G.ph === 'end') { box.append(el2('h3', 'lp-sec', '🏁 결과')); const sc = Object.entries(G.res?.sc || {}).sort((a, b) => b[1] - a[1]); sc.slice(0, 15).forEach(([u, s], i) => box.append(el2('div', 'rank-row', `${i + 1}. ${S.gwa?.[u]?.nm || nickOf(u) || '친구'} · ${s}/${qs.length}`))); }
+  });
+}
+async function gwGrade() {
+  const G = S.gw, key = bag.gwKey; if (!G || !key || key.n !== G.n) { toast('⚠️ 이 기기에 정답이 없어요', 'warn'); return; }
+  const qs = G.qs || [], sc = {}, tm = {}; let best = null;
+  for (const [u, v] of Object.entries(S.gwa || {})) { if (v?.r !== G.n) continue; let s = 0, t = 0; qs.forEach((q, i) => { const a = v.a?.[i]; if (a == null) return; const fx = key.fix?.[i]?.[a]; if (fx != null ? fx : gwOk(q, key.a[i], a)) s++; t += v.t?.[i] || 0; }); sc[u] = s; tm[u] = t;
+    if (!best || s > sc[best] || (s === sc[best] && t < tm[best])) best = u; }
+  const top = best ? (S.gwa[best].nm || nickOf(best) || '친구').slice(0, 12) : '';
+  const upd = { 'gw/ph': 'end', 'gw/res': { sc, top, tsc: best ? sc[best] : 0 } };
+  if (best) upd.gwc = { n: G.n, name: top, uid: best, w: weekNum(), sc: sc[best], at: Date.now() };
+  if (await adminDo(upd, best ? `🎉 장원급제: ${top} (${sc[best]}/${qs.length})` : '🏁 채점했어요 (답을 낸 학생이 없어요)')) setTimeout(refillLife, 300);
+}
+function gwTick(dt) {
+  if ((gw.t = (gw.t || 0) - dt) > 0) return; gw.t = 0.4;
+  // 옷: 과거시험장 안에서만
+  if (player.avatar) gwCostume(player.avatar, joined && gwHall(player.pos) ? (isTeacher ? 'king' : 'seonbi') : '');
+  for (const [, r] of remotes) gwCostume(r.a, r.pos && gwHall(r.a.g.position) ? (r.target?.t ? 'king' : 'seonbi') : '');
+  gwDrawBoard();
+  if (gw.champ) { const c = S.gwc, t = c?.name ? [`🎓 제${c.n}회 장원급제`, c.name] : ['🎓 장원급제 방', '아직 없어요']; const k = t.join('|'); if (gw.champK !== k) { gw.champK = k; gw.champ.userData.set(t); } }
+  if (gw.entry) { const t = gwOpen() ? ['📜 지금 과거시험 중!', '들어와서 시험을 봐요'] : ['📜 과거시험장', '선생님이 문제를 내면 열려요']; const k = t.join('|'); if (gw.entryK !== k) { gw.entryK = k; gw.entry.userData.set(t); } }
+  const G = S.gw; if (!joined || !G) return;
+  if (G.open && G.n !== gw.seenN && stateLoaded) { if (gw.seenN && !isTeacher) toast(`📜 ${G.title || '과거시험'}이 열렸어요! 역사 마을 서당 옆 과거시험장으로 와요`, 'info'); gw.seenN = G.n; }
+  if (!isTeacher && G.ph === 'end' && G.res?.sc && bag.gwDone !== G.n) { const s = G.res.sc[backend.uid]; bag.gwDone = G.n; if (s != null) { if (s) { addStat('soc', s * 3, true); earnShell(s * 5); } const champ = S.gwc?.n === G.n && S.gwc.uid === backend.uid; if (champ) earnShell(100); saveBag(); renderCoinChip(); setTimeout(() => showBanner(champ ? '🎓 장원급제!' : '📜 과거시험 결과', `${(G.qs || []).length}문제 중 ${s}문제 정답\n🏛️ 사회력 +${s * 3} · 🐚 +${s * 5 + (champ ? 100 : 0)}${champ ? '\n이번 주 이름표에 🎓장원이 달려요!' : `\n장원급제: ${G.res.top}`}`, 8000), 400); } else saveBag(); }
+  if (!isTeacher && G.open && roomNow() === 'gw') { const k = JSON.stringify([G.n, G.cur, G.ph]); if (k !== gw.sKey) { const open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험지'; if (open || G.ph === 'q') openGwExam(); else gw.sKey = k; } }
+  if (isTeacher && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험 진행') { const k = JSON.stringify([G.ph, G.cur, Object.keys(S.gwa || {}).length, Object.values(S.gwa || {}).map(v => Object.keys(v?.a || {}).length).join()]); if (k !== gw.aKey) { gw.aKey = k; if (!lifeTyping()) refillLife(); } }
+}
 // ================= 🎲 반월쉼터 (1021a): 보드게임 방 · 앉아서 보드게임 웹앱 하기 =================
 // 마을 건물(광장 북서쪽) → 들어가면 방 고르기 → 게임마다 꾸민 방(ROOMS bg1·bg2) → 탁자에서 E: 앉아서 게임 화면(iframe) · 새 게임은 BOARD_GAMES에 한 줄 + 방 꾸미기
 const BG_HOUSE = { x: -24, z: -27, w: 10, d: 8 };
@@ -20579,7 +20833,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms();
+buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -20605,7 +20859,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateHunt(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateHunt(dt); gwTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
