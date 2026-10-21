@@ -1953,7 +1953,7 @@ function sanitizeState(raw) {
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
     if (pl.h != null && ok(isInt(pl.h.s, 0, 6) && isInt(pl.h.c, 0, 9))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; if (typeof pl.h.n === 'string' && pl.h.n.length <= 8) out.plots[n].h.n = pl.h.n; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
-      { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 5) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '', ...(pt.w === 1 ? { w: 1 } : {}) }; } // 🐾 집 펫
+      { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 5) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '', ...(isInt(pt.o, 1, 15) ? { o: pt.o } : {}), ...(pt.w === 1 ? { w: 1 } : {}) }; } // 🐾 집 펫
       for (const L of ['c', 'g', 'u']) for (const [cell, d] of Object.entries(plainObj(inn[L]))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o[L] ||= {})[cell] = { t: d.t, r: d.r }; // 🛋️ c 가구 · g 바닥(러그) · u 위에 올린 작은 장식
       for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
@@ -2471,7 +2471,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
 
 // 함께하기 모드 (Firebase Realtime Database)
 // 판정은 데이터베이스 보안 규칙이 서버에서 합니다 (database.rules.json 참고).
-async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
+async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', teacher = false } = {}) {
   const V = '10.12.2';
   const [{ initializeApp }, A, D] = await Promise.all([
     import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
@@ -2479,8 +2479,26 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     import(`https://www.gstatic.com/firebasejs/${V}/firebase-database.js`),
   ]);
   const app = initializeApp(FIREBASE_CONFIG, 'school-village');
-  const cred = await A.signInAnonymously(A.getAuth(app)); // 이름·이메일 없이 익명 로그인
-  const uid = cred.user.uid;
+  const auth = A.getAuth(app); try { await auth.authStateReady?.(); } catch (e) { }
+  const acct = { mode: 'anon', switched: false, fresh: false };
+  let user = auth.currentUser || (await A.signInAnonymously(auth)).user; // 이름·이메일 없이 익명 로그인
+  if (nick && !teacher) { // 👤 1021e: 같은 반 코드 + 같은 닉네임 = 같은 계정 (다른 기기에서도) · 처음 기기는 익명 계정을 그대로 이어서(uid·땅·집 유지)
+    try {
+      const h = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
+      const k = await h(`sv1|${room}|${cleanNick(nick)}`), email = `n${k.slice(0, 30)}@banwol-village.app`, pw = `bw-${k.slice(30, 54)}`;
+      if (user.email !== email) {
+        if (user.isAnonymous) {
+          try { user = (await A.linkWithCredential(user, A.EmailAuthProvider.credential(email, pw))).user; acct.mode = 'nick'; }
+          catch (e) { if (/already-in-use|already-linked/.test(e.code || '')) { user = (await A.signInWithEmailAndPassword(auth, email, pw)).user; acct.mode = 'nick'; acct.switched = true; } else throw e; }
+        } else {
+          try { user = (await A.signInWithEmailAndPassword(auth, email, pw)).user; acct.switched = true; }
+          catch (e) { if (/invalid-credential|user-not-found|wrong-password/.test(e.code || '')) { user = (await A.createUserWithEmailAndPassword(auth, email, pw)).user; acct.fresh = true; } else throw e; }
+          acct.mode = 'nick';
+        }
+      } else acct.mode = 'nick';
+    } catch (e) { console.warn('nick account', e); acct.mode = 'anon'; acct.err = e?.code || 'x'; if (!auth.currentUser) user = (await A.signInAnonymously(auth)).user; else user = auth.currentUser; }
+  }
+  const uid = user.uid;
   const db = D.getDatabase(app);
   const base = `${DB_ROOT}/rooms/${room}`;
   const R = (p) => D.ref(db, `${base}/${p}`);
@@ -2893,6 +2911,7 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
     async chatSend(t, nm) { try { const ref = R(`chat/${uid}`); await D.set(ref, { t, nm, at: D.serverTimestamp() }); D.onDisconnect(ref).remove().catch(() => {}); return { ok: true }; } catch (e) { return { ok: false }; } },
     async chatDel() { try { await D.set(R(`chat/${uid}`), null); } catch (e) {} },
     async earnPut(o) { try { await D.set(R(`earn/${uid}`), { ...o, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📊 오늘 재화 (선생님만 모아 봐요)
+    acct, async bagGet() { try { return (await D.get(R(`bags/${uid}`))).val(); } catch (e) { return null; } }, async bagAt() { try { return (await D.get(R(`bags/${uid}/at`))).val() || 0; } catch (e) { return -1; } }, async bagPut(j, at) { try { await D.set(R(`bags/${uid}`), { j, at, nk: cleanNick(myNick) || '' }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎒 닉네임 계정 가방 (다른 기기에서 이어서)
     async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
     async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📜 과거시험 답 (문제가 열려 있을 때만)
     async earnClear() { try { await D.set(R('earn'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
@@ -2957,9 +2976,9 @@ async function createFirebaseBackend(room, { onWarning = () => {} } = {}) {
 }
 
 // 화면 코드가 부르는 단 하나의 입구
-async function openVillageData({ practice, room, onWarning }) {
+async function openVillageData({ practice, room, onWarning, nick, teacher }) {
   if (practice || !HAS_FIREBASE) return createLocalBackend(createBrowserStorage(), { onWarning });
-  return createFirebaseBackend(room, { onWarning });
+  return createFirebaseBackend(room, { onWarning, nick, teacher });
 }
 
 /* =====================================================================
@@ -4123,7 +4142,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || bgOpen()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || bgOpen() || boardW.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -4337,8 +4356,8 @@ function sendPresence(time) {
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
-  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on) { d.v = CART_V; } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
-  { const e = hpetCode(); if (e) d.e = e; } // 🐾 같이 산책하는 집 펫
+  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
+  { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } } // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -4906,7 +4925,8 @@ async function join(practice, asTeacher = false) {
     $('joinBtn').disabled = true;
     $('joinBtn').textContent = '연결하는 중…';
     try {
-      backend = await openVillageData({ practice: false, room, onWarning: (m) => toast(m, 'warn') });
+      backend = await openVillageData({ practice: false, room, onWarning: (m) => toast(m, 'warn'), nick: myNick, teacher: asTeacher });
+      if (!asTeacher && (await bagCloudStart()) === 'reload') return; // 🎒 다른 기기에서 쓰던 가방으로 바꿔 다시 불러와요
     } catch (e) {
       console.error(e);
       $('joinBtn').disabled = false;
@@ -7190,6 +7210,7 @@ const forest = { gate: null, lockLabel: null, opening: false, hintAt: 0 };
 function canStand(x, z) {
   const L = CFG.MAP_LIMIT;
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
+  if (boardW.on) return true; // 👫 친구 배에 탔어요 (자리는 선장 배가 정해요)
   if (sea.on || sail.on) return inWater(x, z); // 🚤⛵ 배를 타면 바다 위만 (섬·모래사장에는 못 올라가요)
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
@@ -8906,7 +8927,30 @@ const bag = (() => {
   try { const s = JSON.parse(raw || 'null'); if (s && s.m) Object.assign(b, s, { m: { ...b.m, ...s.m } }); } catch { /* 망가지면 새 가방 */ }
   return b;
 })();
-function saveBag() { store.set(BAG_KEY, JSON.stringify(bag)); renderCoinChip(); }
+function saveBag() { bag._at = Date.now(); store.set(BAG_KEY, JSON.stringify(bag)); renderCoinChip(); }
+// 👤 1021e 닉네임 계정: 가방을 rooms/{반}/bags/{uid}에도 저장 → 다른 기기에서 같은 닉네임으로 들어오면 이어서 써요
+const bagW = { up: 0, timer: null };
+async function bagCloudStart() {
+  const A = backend?.acct; if (!A || !backend.bagGet) return '';
+  if (A.err === 'auth/operation-not-allowed') setTimeout(() => toast('👤 닉네임 계정을 쓰려면 선생님이 Firebase에서 "이메일/비밀번호" 로그인을 켜 주세요 (지금은 이 기기에만 저장돼요)', 'warn'), 1500);
+  if (A.mode !== 'nick') return '';
+  const cloud = await backend.bagGet();
+  if (cloud?.j && cloud.at > (bag._cv || 0)) { // 마지막으로 맞춘 뒤 다른 기기에서 바뀌었으면 그 가방으로
+    try { const o = JSON.parse(cloud.j); o._cv = cloud.at; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); toast('🎒 다른 기기에서 쓰던 가방을 불러와요…', 'info'); setTimeout(() => location.reload(), 700); return 'reload'; } catch (e) { console.warn(e); }
+  }
+  if (!cloud?.j && A.fresh) { const o = { m: { branch: 0, stone: 0, fruit: 0 }, c: {}, f: {}, day: '', req: {}, cd: {}, shell: 100, _at: Date.now() }; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); setTimeout(() => location.reload(), 300); return 'reload'; } // 이 기기에서 처음 만든 다른 닉네임: 새 가방으로
+  bagUpload(true); clearInterval(bagW.timer); bagW.timer = setInterval(() => bagUpload(false), 20000);
+  addEventListener('visibilitychange', () => { if (document.hidden) bagUpload(true); });
+  if (A.switched) setTimeout(() => toast('👤 같은 닉네임 계정으로 들어왔어요 (다른 기기에서 쓰던 집·가방 그대로)', 'success'), 1200);
+  return '';
+}
+async function bagUpload(force) {
+  if (!backend?.bagPut || backend.acct?.mode !== 'nick' || isTeacher || bagW.busy || bagW.stop) return; if (!force && (bag._at || 0) <= bagW.up) return;
+  bagW.busy = true; try {
+    const ca = await backend.bagAt(); if (ca > (bag._cv || 0)) { bagW.stop = true; toast('👤 다른 기기에서 이 닉네임 계정을 쓰고 있어요. 이 기기의 가방은 저장하지 않아요 (다시 들어오면 그 기기 가방을 불러와요)', 'warn'); return; }
+    const at = Date.now(); bagW.up = bag._at || 0; bag._cv = at; store.set(BAG_KEY, JSON.stringify(bag)); await backend.bagPut(JSON.stringify(bag), at);
+  } finally { bagW.busy = false; }
+}
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
 // 🧱 재료는 게임·미션·퀴즈를 성공하면 얻어요 (떠다니는 상자 대신) · 한 기기에서 하루 MAT_DAY_CAP번까지
 const MAT_DAY_CAP = 20;
@@ -9384,7 +9428,7 @@ function fishSpot(p) { // 낚시할 수 있는 자리: 연못가, 뒷산 계곡,
   const [px, pz, pr] = LIFE_POS.pond;
   if (Math.hypot(p.x - px, p.z - pz) - pr < 2.6) { const a = Math.atan2(p.z - pz, p.x - px); return { w: 'pond', at: new V3(px + Math.cos(a) * 2.8, 0.1, pz + Math.sin(a) * 2.8) }; }
   if (p.x > BEACH.pierX1 - 3.5 && Math.abs(p.z - BEACH.pierZ) <= 1.4) return null; // 부두 끝은 배 타는 곳
-  if (sail.on || sea.on) return null; // ⛵ 배 타는 중
+  if (sail.on || sea.on || boardW.on) return null; // ⛵ 배 타는 중
   if (p.x > 71 && (Math.abs(p.z - ISLE.dock[1]) <= 4 || p.z >= SY.z - 4 || DRIFT.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 2.6))) return null; // ⚓ 선착장 · 🛠️ 조선소 · 🪵 떠내려온 나무는 그 행동 먼저
   if (p.x >= BEACH.shore - 0.2 && Math.abs(p.z - BEACH.pierZ) <= 1.4) return { w: 'sea', at: new V3(p.x + 1.5, 0.1, BEACH.pierZ + (p.z >= BEACH.pierZ ? 3 : -3)) }; // 부두 옆
   if (inBeach(p.x, p.z) && p.x >= BEACH.shore - 3.5) return { w: 'sea', at: new V3(Math.max(p.x + 4, BEACH.shore + 3), 0.1, p.z) };
@@ -10329,6 +10373,7 @@ function rideBlockMe() { // 지금 내가 탈 수 없는 까닭 (없으면 '')
   if (hideOn() && (hideIn(backend?.uid) || isSeeker(backend?.uid))) return '🙈 숨바꼭질 중에는 탈 수 없어요';
   if (sea.on || sail.on) return '⛵ 배를 타는 중이에요';
   if (cart.on) return '🛒 수레를 타는 중이에요';
+  if (boardW.on) return '⛵ 친구 배에 타는 중이에요';
   if (isSeated(player.avatar) || kite.active || hv.travel || spec.on) return '잠깐 내렸어요';
   return '';
 }
@@ -10652,10 +10697,16 @@ const yardPrice = (r) => Object.entries(r.need).reduce((a, [k, n]) => a + (YARD_
 function openYardShop(tab = 'yard') {
   openLife('🌳 마당·가구 가게', (box) => {
     box.textContent = ''; const tabs = el2('div', 'row-center wrap');
-    for (const [k, n] of [['yard', '🌳 마당 장식'], ['furn', '🛋️ 집 가구']]) { const b = el2('button', 'btn', n); b.style.background = tab === k ? '#FFE066' : '#fff'; b.onclick = () => openYardShop(k); tabs.append(b); }
+    for (const [k, n] of [['yard', '🌳 마당 장식'], ['furn', '🛋️ 집 가구'], ['sell', '💰 팔기']]) { const b = el2('button', 'btn', n); b.style.background = tab === k ? '#FFE066' : '#fff'; b.onclick = () => openYardShop(k); tabs.append(b); }
     box.append(tabs, el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`));
     const grid = el2('div', 'lp-grid');
-    if (tab === 'yard') {
+    if (tab === 'sell') { // 💰 1021e: 가방·가구 상자에 있는 것을 절반 값에 팔아요 (놓아 둔 것은 먼저 상자에 넣어요)
+      box.append(el2('p', 'hint', '가방(마당 장식)과 우리 집 📦 가구 상자에 있는 것을 산 값의 절반에 팔아요. 집에 놓아 둔 가구는 집 안 🛋️ 꾸미기에서 📦 상자에 넣은 다음 팔 수 있어요.'));
+      let any = false; const sellCard = (icon, name, have, pr, fn) => { any = true; const card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', icon), el2('div', 'lp-name', name), el2('div', 'lp-sub', `🐚 ${pr}에 팔기 · ${have}개`)); const b = el2('button', 'btn lp-btn', '팔기'); b.onclick = async () => { if (!(await confirmAction({ title: `💰 ${name}을(를) 팔까요?`, body: `🐚 ${pr}을 받아요. 판 물건은 돌아오지 않아요.`, okText: '팔기' }))) return; fn(); earnShell(pr, 'x'); saveBag(); updateHUD(null); playSfx('coin'); toast(`💰 ${name}을(를) 팔았어요! 🐚 +${pr}`, 'success'); refillLife(); }; card.append(b); grid.append(card); };
+      for (const r of RECIPES) { const n = bag.f[r.t] | 0; if (n > 0) sellCard(r.icon, r.name, n, Math.max(5, Math.floor(yardPrice(r) / 2)), () => { bag.f[r.t] = Math.max(0, (bag.f[r.t] | 0) - 1); }); }
+      FURN.forEach((f, t) => { const n = bag.fur[t] | 0; if (n > 0) sellCard(f.icon, f.name, n, f.price ? Math.floor(f.price / 2) : f.grown ? 30 : 100, () => { bag.fur[t] = Math.max(0, (bag.fur[t] | 0) - 1); }); });
+      if (!any) box.append(el2('p', 'vempty', '팔 수 있는 물건이 없어요'));
+    } else if (tab === 'yard') {
       box.append(el2('p', 'hint', '산 장식은 가방에 들어가요. 내 땅에서 🌼 꾸미기로 놓아요.'));
       for (const r of RECIPES.filter(r => !r.hv)) { const pr = yardPrice(r), card = el2('div', 'lp-card'); card.append(el2('div', 'lp-icon', r.icon), el2('div', 'lp-name', r.name), el2('div', 'lp-sub', `🐚 ${pr} · 가방 ${bag.f[r.t] || 0}`));
         const b = el2('button', 'btn lp-btn', '사기'); b.disabled = (bag.shell || 0) < pr; b.onclick = () => { if ((bag.shell || 0) < pr) return; bag.shell -= pr; bag.f[r.t] = (bag.f[r.t] || 0) + 1; saveBag(); updateHUD(null); playSfx('coin'); toast(`🌳 ${josa(r.name, '을', '를')} 샀어요! 내 땅에서 놓아 보세요`, 'success'); refillLife(); }; card.append(b); grid.append(card); }
@@ -10676,6 +10727,21 @@ function openPetShop() {
     for (const [n, pr] of [[5, 40], [12, 90]]) { const b = el2('button', 'btn', `🍪 간식 ${n}개 · 🐚${pr}`); b.style.background = '#FFF3C4'; b.disabled = (bag.shell || 0) < pr; b.onclick = () => { if ((bag.shell || 0) < pr) return; bag.shell -= pr; bag.hpet.snacks = (bag.hpet.snacks | 0) + n; saveBag(); updateHUD(null); playSfx('coin'); toast(`🍪 간식 ${n}개를 샀어요!`, 'success'); refillLife(); }; row.append(b); }
     const go = el2('button', 'btn', k ? '🐾 내 펫 · 다른 펫 데려오기' : '🐾 펫 데려오기 (첫 펫 무료)'); go.style.background = '#FFD6E5'; go.onclick = openHomePet; row.append(go);
     box.append(row, el2('p', 'hint', '🛁 목욕·🎾 공놀이·🤚 쓰다듬기는 우리 집에서 해요. 펫 꾸미기(리본·모자·왕관)는 친밀도가 오르면 열려요.'));
+    { // 👗 펫 옷
+      const p = k && bag.hpet.pets[k], mon = petMonth(), cur = petOwOf(p); bag.hpet.own ||= {};
+      box.append(el2('h3', 'lp-sec', `👗 펫 옷 · 이달(${mon}월)의 옷과 마을 테마 옷`));
+      if (!p) box.append(el2('p', 'hint', '펫을 데려오면 옷을 입힐 수 있어요.'));
+      const grid = el2('div', 'lp-grid');
+      PET_OUTFITS.forEach((O, i) => { if (!O) return; const own = petOwOwn(i), inMon = !O.mon || O.mon.includes(mon), unl = !O.ok || O.ok() || isTeacher, on = cur === i;
+        if (!own && O.mon && !inMon) return; // 계절이 아닌 옷은 산 사람만 보여요
+        const card = el2('div', 'lp-card' + (on ? ' done' : '')); card.append(el2('div', 'lp-icon', O.icon), el2('div', 'lp-name', O.n), el2('div', 'lp-sub', O.theme ? (unl ? '🏘️ 마을 테마 옷' : `🔒 ${O.theme} 열려요`) : `🗓️ ${O.d}`));
+        const b = el2('button', 'btn lp-btn', on ? '벗기기' : own ? '입히기' : `🐚 ${O.pr}`); b.disabled = !p && own || (!own && (!unl || (bag.shell || 0) < O.pr));
+        b.onclick = () => { if (!own) { if (!unl || (bag.shell || 0) < O.pr) return; bag.shell -= O.pr; bag.hpet.own[i] = 1; toast(`👗 ${O.icon} ${O.n}을(를) 샀어요!`, 'success'); playSfx('coin'); if (p) p.ow = i; }
+          else if (p) { p.ow = on ? 0 : i; toast(on ? '👗 옷을 벗었어요' : `👗 ${O.icon} ${O.n}을(를) 입었어요!`, 'success'); playSfx('pick'); }
+          saveBag(); updateHUD(null); hpetSync(); refillLife(); };
+        card.append(b); grid.append(card); });
+      box.append(grid, el2('p', 'hint', '계절 옷은 그 달에만 팔아요 (산 옷은 언제든 입어요). 모자 옷을 입으면 리본·모자·왕관은 잠깐 숨어요. 산책할 때 친구들 화면에도 보여요.'));
+    }
   });
 }
 const BUFFS = [
@@ -10748,10 +10814,10 @@ function buildSeaFun() {
   signPlane(g, ['⚓ 선착장'], 2.2, 0.6, ISLE.dock[0] - 1.9, 1.7, ISLE.dock[1] - 1.4, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = -Math.PI / 2;
   box(g, 0.15, 1.6, 0.15, C.wood, ISLE.dock[0] - 1.9, 0.8, ISLE.dock[1] - 1.4, o);
   makeLabel(g, ['⚓ 선착장', '내가 만든 배를 띄워요 · 🏝️ 보물섬은 배로만!'], 0.9, ISLE.dock[0], 3.6, ISLE.dock[1]);
-  addInteract({ pos: new V3(ISLE.dock[0] + 0.6, 1, ISLE.dock[1]), r: 2.8, text: () => sail.on || sea.on ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 띄우기`, '바다로 나가요 · 🏝️ 보물섬은 동쪽'] : ['⛵ 배가 없어요', '배 가게에서 재료를 사서 🛠️ 조선소에서 만들어요'], run: () => sailStart('beach') });
-  addInteract({ pos: new V3(ISLE.dock[0] + 3, 1, ISLE.dock[1]), r: 3.2, text: () => sail.on ? ['⚓ 바닷가에 내리기', '선착장'] : null, run: sailLand });
+  addInteract({ pos: new V3(ISLE.dock[0] + 0.6, 1, ISLE.dock[1]), r: 2.8, text: () => sail.on || sea.on || boardW.cand ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 띄우기`, '바다로 나가요 · 🏝️ 보물섬은 동쪽'] : ['⛵ 배가 없어요', '배 가게에서 재료를 사서 🛠️ 조선소에서 만들어요'], run: () => sailStart('beach') });
+  addInteract({ pos: new V3(ISLE.dock[0] + 3, 1, ISLE.dock[1]), r: 3.2, text: () => sail.on || boardW.on ? ['⚓ 바닷가에 내리기', '선착장'] : null, run: sailLand });
   addInteract({ pos: new V3(ISLE.cx - ISLE.r + 1.2, 1, ISLE.cz), r: 2.4, text: () => !inIsle(player.pos.x, player.pos.z) || sail.on ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 타기`, '바닷가로 돌아가요'] : ['🛟 구조선 부르기', '배가 없으면 바닷가까지 데려다줘요'], run: () => boatCur() >= 0 ? sailStart('isle') : isleTravel(false) });
-  addInteract({ pos: new V3(ISLE.cx - ISLE.r - 1.5, 1, ISLE.cz), r: 3.2, text: () => sail.on ? ['⚓ 보물섬에 내리기', '섬 부두'] : null, run: sailLand });
+  addInteract({ pos: new V3(ISLE.cx - ISLE.r - 1.5, 1, ISLE.cz), r: 3.2, text: () => sail.on || boardW.on ? ['⚓ 보물섬에 내리기', '섬 부두'] : null, run: sailLand });
   buildShipyard(g); buildDrift(g);
   registerSolids(isle, 'isle'); buildSubjectIsles();
   // 🚤 경주 화면 띠
@@ -10788,7 +10854,7 @@ function updateSeaFun(dt) {
   if (sea.chest) { const open = bag.isle?.d === dayNum() && bag.isle.open; sea.chest.lid.rotation.x += ((open ? -1.4 : 0) - sea.chest.lid.rotation.x) * Math.min(1, dt * 4); }
   for (const P of sea.posts) P.lab.userData.set([isleDone(P.k) ? `${P.icon} ✅` : `${P.icon} ${P.n}`]);
   for (const I of SISLES) { if (!I.lab) continue; I.lab.forEach((l, i) => l.userData.set([sIsleDone(I.k, i) ? `${I.icon} ✅` : `${I.icon} 단서 ${i + 1}`])); if (I.lid) { const open = sIsleDay(I.k, true).open; I.lid.rotation.x += ((open ? -1.4 : 0) - I.lid.rotation.x) * Math.min(1, dt * 4); } }
-  updateSail(dt);
+  updateSail(dt); boardFind();
   if (!sea.on) return;
   const p = player.pos, t = (performance.now() - sea.t0) / 1000; $('seaTime').textContent = `⏱️ ${t.toFixed(1)}초`;
   const done = sea.next >= SEA_RINGS.length; $('seaRing').textContent = done ? '🏁 부두로 돌아가요!' : `🟠 고리 ${sea.next + 1}/${SEA_RINGS.length}`;
@@ -10816,7 +10882,7 @@ function buildSubjectIsles() {
       addInteract({ pos: new V3(cx, 1, cz + 1.2), r: 2.2, text: () => Math.hypot(player.pos.x - cx, player.pos.z - cz) > r ? null : sIsleDay(I.k, true).open ? [`🏴‍☠️ ${I.n} 보물상자`, '오늘 보물은 찾았어요! 내일 또 와요'] : [`🏴‍☠️ ${I.n} 보물상자 열기`, `지도 조각 ${sIsleCount(I.k)}/3`], run: () => sIsleChest(I) }); }
     makeLabel(g, [`${I.icon} ${I.n}`, I.minH ? `${BOAT_H[I.minH].icon} ${BOAT_H[I.minH].n} 이상만 닿아요` : '🪵 뗏목으로도 와요'], 1.2, cx, 6.5, cz);
     addInteract({ pos: new V3(cx - r + 1.2, 1, cz), r: 2.4, text: () => Math.hypot(player.pos.x - cx, player.pos.z - cz) > r || sail.on ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 타기`, '바닷가로 돌아가요'] : ['🛟 구조선 부르기', '바닷가까지 데려다줘요'], run: () => boatCur() >= 0 ? sailStart(I) : isleTravel(false) });
-    addInteract({ pos: new V3(cx - r - 1.5, 1, cz), r: 3.2, text: () => sail.on ? [`⚓ ${I.n}에 내리기`, I.minH ? `${BOAT_H[I.minH].n} 이상` : '섬 부두'] : null, run: sailLand });
+    addInteract({ pos: new V3(cx - r - 1.5, 1, cz), r: 3.2, text: () => sail.on || boardW.on ? [`⚓ ${I.n}에 내리기`, I.minH ? `${BOAT_H[I.minH].n} 이상` : '섬 부두'] : null, run: sailLand });
     registerSolids(g, 'isle_' + I.k);
   }
 }
@@ -10906,35 +10972,57 @@ const boatQ = (h = boatCur()) => { const b = boatBag(); return Math.max(0, h) * 
 const boatMul = () => BOAT_H[boatCur()]?.mul || 1.3;
 const boatPresQ = () => sea.on ? RACE_Q : sail.on ? boatQ() : -1;
 const partsOk = (h) => isTeacher || Object.entries(BOAT_H[h].need).every(([k, n]) => (boatBag().p[k] | 0) >= n);
-function boatModel(q) {
+const BOAT_SEATS = [[[0, -0.95]], [[0, -1.0], [0, 1.05]], [[-0.45, -1.2], [0.45, -1.2], [0, 1.4]], [[-0.7, -1.1], [0.7, -1.1], [-0.7, 1.1], [0.7, 1.1], [0, 2.0]]]; // 👫 함께 타는 자리 (선장은 가운데)
+const sailMats = new Map(), sailMat = (c) => { if (!sailMats.has(c)) sailMats.set(c, new THREE.MeshLambertMaterial({ color: c, side: THREE.DoubleSide, emissive: new THREE.Color(c).multiplyScalar(0.45) })); return sailMats.get(c); };
+let SAIL_TRI = null;
+function sailTri(g, base, hgt, c, x, y, z, back = true, dx = 0) { // 직각 삼각 돛 (돛대에서 뒤·앞으로)
+  SAIL_TRI ||= new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)]));
+  const m = new THREE.Mesh(SAIL_TRI, sailMat(c)); m.scale.set(base, hgt, 1); m.position.set(x + dx, y, z); m.rotation.y = back ? Math.PI / 2 : -Math.PI / 2; g.add(m); return m;
+}
+function boatModel(q) { // ⛵ 1021f: 속이 빈 예쁜 배 (선장·친구가 배 안에 서요) · 앞 = +z · 발 높이 = 0
   q |= 0; const h = Math.min(3, Math.floor(q / 25)), ci = Math.floor(q / 5) % 5, fi = q % 5;
-  const g = new THREE.Group(), o = { solid: false }, col = BOAT_COLS[ci].c, wood = 0xB07C50, dk = 0x7A5234;
-  const bow = (w, hh, y, z, c) => box(g, w * 0.7071, hh, w * 0.7071, c, 0, y, z, { solid: false, ry: Math.PI / 4 });
-  const rims = (w, l, y, z, c) => { for (const sd of [-1, 1]) box(g, 0.1, 0.14, l, c, sd * (w / 2 + 0.02), y, z, o); box(g, w + 0.1, 0.14, 0.1, c, 0, y, z - l / 2, o); };
+  const g = new THREE.Group(), o = { solid: false }, col = BOAT_COLS[ci].c, wood = 0xC08A58, dk = 0x6B4226;
+  const hull = (w, l, wh, body, trim, floor = wood) => { // 바닥 · 옆벽 · 뾰족한 뱃머리 · 테두리 · 흰 물띠
+    const bl = w * 0.62, Lb = Math.hypot(w / 2, bl), a = Math.atan2(w / 2, bl);
+    box(g, w, 0.36, l, body, 0, -0.22, 0, o); mesh(BOX, g, w * 0.7071, 0.36, w * 0.7071, body, 0, -0.22, l / 2, { solid: false, ry: Math.PI / 4 });
+    box(g, w + 0.03, 0.07, l + 0.02, 0xFFFFFF, 0, -0.3, 0, o); mesh(BOX, g, w * 0.7071 + 0.02, 0.07, w * 0.7071 + 0.02, 0xFFFFFF, 0, -0.3, l / 2, { solid: false, ry: Math.PI / 4 });
+    box(g, w - 0.14, 0.06, l - 0.1, floor, 0, -0.03, 0, o); mesh(BOX, g, (w - 0.3) * 0.7071, 0.06, (w - 0.3) * 0.7071, floor, 0, -0.03, l / 2 - 0.05, { solid: false, ry: Math.PI / 4 });
+    for (const sd of [-1, 1]) { box(g, 0.1, wh, l, body, sd * (w / 2 - 0.05), wh / 2, 0, o); box(g, 0.16, 0.07, l + 0.04, trim, sd * (w / 2 - 0.05), wh, 0, o);
+      mesh(BOX, g, 0.1, wh + 0.08, Lb, body, sd * w / 4, (wh + 0.08) / 2, l / 2 + bl / 2, { solid: false, ry: -sd * a }); mesh(BOX, g, 0.16, 0.07, Lb + 0.05, trim, sd * w / 4, wh + 0.08, l / 2 + bl / 2, { solid: false, ry: -sd * a }); }
+    box(g, w, wh, 0.1, body, 0, wh / 2, -l / 2 + 0.05, o); box(g, w + 0.04, 0.07, 0.16, trim, 0, wh, -l / 2 + 0.05, o);
+    return l / 2 + bl; // 뱃머리 끝
+  };
   let fa = null;
-  if (h === 0) {
-    for (let i = 0; i < 5; i++) mesh(CYL, g, 0.21, 2.6, 0.21, i % 2 ? 0xA27448 : 0xB58457, -0.84 + i * 0.42, -0.14, 0, { solid: false, rx: Math.PI / 2 });
-    for (const z of [-0.85, 0.85]) box(g, 2.12, 0.1, 0.16, ci ? col : 0xD9C9A0, 0, 0.08, z, o);
-    fa = [0.72, 0.05, -1.0, 1.5];
-  } else if (h === 1) {
-    box(g, 1.4, 0.5, 2.6, col, 0, -0.2, -0.1, o); bow(1.4, 0.5, -0.2, 1.2, col); rims(1.4, 2.6, 0.1, -0.1, wood);
-    box(g, 1.3, 0.08, 0.35, wood, 0, 0.0, -0.95, o);
-    for (const sd of [-1, 1]) { mesh(CYL, g, 0.04, 1.7, 0.04, wood, sd * 0.95, 0.0, -0.2, { solid: false, rz: sd * 1.15 }); box(g, 0.06, 0.08, 0.32, wood, sd * 1.7, -0.32, -0.2, o); }
-    fa = [0.55, 0.1, -1.3, 1.4];
-  } else if (h === 2) {
-    box(g, 1.6, 0.6, 3.2, col, 0, -0.25, -0.1, o); bow(1.6, 0.6, -0.25, 1.5, col); rims(1.6, 3.2, 0.1, -0.1, wood);
-    box(g, 1.64, 0.08, 3.24, 0xFFFFFF, 0, -0.45, -0.1, o);
-    cyl(g, 0.06, 3.0, dk, 0, 1.5, 0.95, o); box(g, 0.08, 0.08, 1.7, dk, 0, 0.55, 0.15, o);
-    mesh(GABLE, g, 1.7, 2.3, 0.05, 0xFFFFFF, 0, 0.6, 0.1, { solid: false, ry: Math.PI / 2 }); box(g, 0.06, 0.3, 1.0, col, 0.03, 1.1, 0.1, o);
-    fa = [0, 3.0, 0.95, 0];
-  } else {
-    box(g, 2.2, 0.9, 4.4, dk, 0, -0.45, -0.1, o); bow(2.2, 0.9, -0.45, 2.1, dk); rims(2.2, 4.4, 0.08, -0.1, col);
-    box(g, 2.24, 0.12, 4.44, 0xE8C547, 0, -0.62, -0.1, o);
-    box(g, 2.2, 0.75, 1.0, dk, 0, 0.35, -1.85, o); box(g, 2.3, 0.12, 1.1, col, 0, 0.78, -1.85, o);
-    for (const sd of [-1, 1]) for (const z of [-0.6, 0.6]) box(g, 0.06, 0.18, 0.28, 0x24262B, sd * 1.12, -0.2, z, o);
-    cyl(g, 0.08, 3.9, dk, 0, 1.95, 1.0, o); box(g, 1.9, 1.2, 0.06, 0xF4EEDD, 0, 1.75, 1.06, o); box(g, 1.5, 0.85, 0.06, 0xF4EEDD, 0, 2.95, 1.06, o); box(g, 1.92, 0.16, 0.07, col, 0, 1.75, 1.08, o);
-    cyl(g, 0.36, 0.32, dk, 0, 3.6, 1.0, o);
-    fa = [0, 3.9, 1.0, 0];
+  if (h === 0) { // 🪵 뗏목: 통나무 6개 · 밧줄 · 노 · 작은 상자
+    for (let i = 0; i < 6; i++) { const x = -1.0 + i * 0.4; mesh(CYL, g, 0.2, 3.0, 0.2, i % 2 ? 0xA27448 : 0xB58457, x, -0.16, 0, { solid: false, rx: Math.PI / 2 }); for (const z of [-1.5, 1.5]) mesh(CYL, g, 0.15, 0.03, 0.15, 0xE3C08A, x, -0.16, z, { solid: false, rx: Math.PI / 2 }); }
+    for (const z of [-1.0, 1.0]) box(g, 2.5, 0.08, 0.14, ci ? col : 0xD9C9A0, 0, 0.05, z, o);
+    mesh(CYL, g, 0.04, 1.8, 0.04, 0x8A5A34, -0.75, 0.09, 0.5, { solid: false, rx: Math.PI / 2, rz: 0.15 }); box(g, 0.22, 0.05, 0.45, 0x8A5A34, -0.62, 0.09, 1.4, { solid: false, ry: 0.15 });
+    box(g, 0.5, 0.4, 0.45, 0xA0784C, 0.65, 0.2, 1.1, o); box(g, 0.52, 0.06, 0.47, 0x7A5234, 0.65, 0.41, 1.1, o);
+    fa = [0.85, 0.05, -1.3, 1.5];
+  } else if (h === 1) { // 🛶 나룻배: 속이 빈 배 · 노 두 개
+    const tip = hull(1.5, 3.0, 0.42, col, 0xFFFFFF);
+    for (const sd of [-1, 1]) { cyl(g, 0.05, 0.14, 0x3B3F46, sd * 0.75, 0.48, 0.15, o); mesh(CYL, g, 0.04, 1.9, 0.04, 0xB07C50, sd * 1.15, 0.25, 0.1, { solid: false, rz: sd * 1.25, rx: 0.12 }); box(g, 0.07, 0.36, 0.22, 0xB07C50, sd * 1.95, -0.08, 0.2, { solid: false, rz: sd * 1.25 }); }
+    ball(g, 0.12, 0xE8C547, 0, 0.55, tip - 0.1, o);
+    fa = [0.55, 0.42, -1.45, 1.3];
+  } else if (h === 2) { // ⛵ 돛단배: 큰 삼각 돛 + 앞 돛 · 줄무늬
+    const tip = hull(1.8, 3.6, 0.45, col, 0xFFFFFF);
+    cyl(g, 0.06, 3.9, 0x7A5234, 0, 1.95, 0.55, o); mesh(CYL, g, 0.04, 1.95, 0.04, 0x7A5234, 0, 2.35, -0.42, { solid: false, rx: Math.PI / 2 });
+    sailTri(g, 1.9, 1.45, 0xFFFFFF, 0, 2.38, 0.55, true, 0.0); sailTri(g, 1.9, 0.45, ci ? col : 0x4A9AE8, 0, 2.38, 0.55, true, 0.012);
+    sailTri(g, tip - 0.75, 2.4, 0xFFF6E6, 0, 1.2, 0.55, false); box(g, 0.02, 0.02, Math.hypot(tip - 0.55, 2.6), 0xDDDDDD, 0, 2.5, (tip + 0.55) / 2, { solid: false, rx: -Math.atan2(2.6, tip - 0.55) });
+    fa = [0, 3.9, 0.55, 0];
+  } else { // 🏴‍☠️ 해적선: 짙은 나무 · 금테 · 난간 · 뒤쪽 높은 갑판 · 돛대 두 개 · 대포 · 뱃머리 장식
+    const L = 4.6, W = 2.4, tip = hull(W, L, 0.6, dk, col, 0xA0784C);
+    box(g, W + 0.05, 0.08, L + 0.04, 0xE8C547, 0, 0.28, 0, o);
+    for (const sd of [-1, 1]) { for (let z = -L / 2 + 0.3; z <= L / 2 - 0.2; z += 0.55) box(g, 0.08, 0.35, 0.08, 0xE8C547, sd * (W / 2 - 0.05), 0.8, z, o); box(g, 0.1, 0.06, L, 0xE8C547, sd * (W / 2 - 0.05), 0.98, 0, o);
+      for (const z of [-0.6, 0.6, 1.6]) mesh(CYL, g, 0.09, 0.4, 0.09, 0x24262B, sd * (W / 2 + 0.12), 0.32, z, { solid: false, rz: Math.PI / 2 }); }
+    box(g, W, 0.95, 1.0, dk, 0, 0.47, -L / 2 + 0.55); box(g, W + 0.06, 0.08, 1.06, col, 0, 0.97, -L / 2 + 0.55, o); for (const sx of [-0.6, 0, 0.6]) box(g, 0.32, 0.26, 0.03, 0xFFD966, sx, 0.55, -L / 2 + 0.03, { solid: false, emissive: 0.6 });
+    cyl(g, 0.03, 0.4, 0x3B3F46, 0, 1.25, -L / 2 + 0.2, o); box(g, 0.2, 0.26, 0.2, 0xFFD966, 0, 1.55, -L / 2 + 0.2, { solid: false, emissive: 0.8 });
+    for (const [mz, mh] of [[-1.0, 4.6], [1.0, 3.8]]) { cyl(g, 0.08, mh, 0x5A3A22, 0, mh / 2, mz, o);
+      for (const [y, sw, shh] of [[mh * 0.45, 2.0, 1.1], [mh * 0.75, 1.5, 0.8]]) { box(g, sw + 0.1, 0.07, 0.07, 0x5A3A22, 0, y + shh / 2, mz, o); box(g, sw, shh, 0.05, 0xF4EEDD, 0, y, mz + 0.08, o); box(g, sw + 0.01, 0.14, 0.06, ci ? col : 0xE2584A, 0, y - shh * 0.25, mz + 0.085, o); } }
+    ball(g, 0.18, 0xFFFFFF, 0, 4.6 * 0.45 + 0.15, -1.0 + 0.12, o); for (const sx of [-0.06, 0.06]) box(g, 0.05, 0.05, 0.02, 0x1E1E22, sx, 4.6 * 0.45 + 0.18, -1.0 + 0.3, o);
+    cyl(g, 0.34, 0.28, 0x5A3A22, 0, 4.0, -1.0, o);
+    mesh(CYL, g, 0.05, 1.4, 0.05, 0x5A3A22, 0, 0.9, tip + 0.3, { solid: false, rx: 1.1 }); ball(g, 0.2, 0xE8C547, 0, 0.5, tip, { solid: false, emissive: 0.3 });
+    fa = [0, 4.6, -1.0, 0];
   }
   if (fi && fa) { const [x, y, z, pole] = fa, F = BOAT_FLAGS[fi], fy = y + pole - 0.22; if (pole) cyl(g, 0.03, pole, 0xFFFFFF, x, y + pole / 2, z, o);
     if (fi === 3) [0xFF5A5A, 0xFFE066, 0x6EC1EC].forEach((c, i) => box(g, 0.04, 0.14, 0.62, c, x, fy + 0.14 - i * 0.14, z - 0.32, o));
@@ -10958,6 +11046,7 @@ function sailStart(from) {
   toast(from && from.cx != null ? '⛵ 바닷가는 서쪽이에요. 모래사장 가까이 가서 ⚓ 내리기!' : '⛵ 출발! 동쪽 바다에 🏝️ 보물섬 · 🧮 수학 섬 · 🔤 영어 섬 · 🏛️ 역사 섬이 있어요. 섬 가까이 가서 ⚓ 내리기!', 'info');
 }
 function sailLand() {
+  if (boardW.on) { boardLand(); return; }
   if (!sail.on) return; const p = player.pos, [N, nd] = isleNear(p); let to = null, isle = null;
   if (nd < 4.5) { if (boatCur() < N.minH) { toast(`🌊 ${N.icon} ${N.n} 둘레는 파도가 세서 ${BOAT_H[N.minH].icon} ${BOAT_H[N.minH].n} 이상만 닿을 수 있어요 (🛠️ 조선소에서 만들어요)`, 'warn'); return; }
     const a = Math.atan2(p.z - N.cz, p.x - N.cx); to = [N.cx + Math.cos(a) * (N.r - 2.6), N.cz + Math.sin(a) * (N.r - 2.6)]; isle = N; }
@@ -10976,7 +11065,7 @@ function updateSail(dt) {
   if (sail.g && (sail.g.parent !== player.avatar.g || sail.q !== boatQ())) { sail.g.parent?.remove(sail.g); sail.g = boatModel(boatQ()); sail.q = boatQ(); player.avatar.g.add(sail.g); } // 옷을 바꿔도 배는 그대로
   if (sail.g) sail.g.rotation.z = Math.sin(time * 1.8) * 0.035;
   const p = player.pos, [N, nd] = isleNear(p), nearIsle = nd < 4.5, nearBeach = p.x < 84;
-  const t = nearIsle ? `${N.icon} ${N.n} 옆이에요!${boatCur() < N.minH ? ` (${BOAT_H[N.minH].n} 이상)` : ''}` : nearBeach ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`;
+  const t = (nearIsle ? `${N.icon} ${N.n} 옆이에요!${boatCur() < N.minH ? ` (${BOAT_H[N.minH].n} 이상)` : ''}` : nearBeach ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`) + (boardW.crew ? ` · 👫 ${boardW.crew}명 함께` : '');
   if ($('sailDir').textContent !== t) $('sailDir').textContent = t;
   $('sailLandBtn').style.opacity = nearIsle || nearBeach ? '1' : '0.55';
   if ((sail.splash = (sail.splash || 0) - dt) <= 0 && (keys.w || keys.a || keys.s || keys.d || joy.x || joy.y)) { sail.splash = 0.15; burst(p.clone().setY(0.2), [0xFFFFFF, 0x9FE0FF], 3, 1.5, 0.6, 0.5, -3); }
@@ -14403,6 +14492,22 @@ const HPETS = [
 const HPET_LV = [0, 10, 25, 45, 70, 100, 140, 190, 250, 320, 400]; // ❤️ 친밀도 단계별 누적 점수 (최고 Lv10)
 const HPET_CARE = { snack: { icon: '🍪', n: '간식 주기', pt: 3, max: 3, sh: 10 }, pat: { icon: '🤚', n: '쓰다듬기', pt: 1, max: 5 }, play: { icon: '🎾', n: '공놀이', pt: 4, max: 3 }, bath: { icon: '🛁', n: '목욕', pt: 5, max: 1 } };
 const HPET_ACC = [{ n: '없음', icon: '·', lv: 0 }, { n: '리본', icon: '🎀', lv: 2 }, { n: '모자', icon: '🎩', lv: 5 }, { n: '왕관', icon: '👑', lv: 10 }];
+// 👗 펫 옷 (1021f): 계절 옷(그 달에만 팔아요) · 마을 테마 옷(그 마을 활동을 하면 열려요) · 산 옷은 계속 · 모자 옷을 입으면 리본·모자·왕관은 잠깐 숨겨요
+const PET_OUTFITS = [null,
+  { k: 'scarf', icon: '🧣', n: '빨간 목도리', pr: 60, mon: [10, 11, 12, 1, 2], d: '쌀쌀한 가을·겨울' },
+  { k: 'rain', icon: '☔', n: '노란 우비', pr: 80, mon: [6, 7, 8, 9], d: '비 오는 날', hat: true },
+  { k: 'pumpkin', icon: '🎃', n: '호박 망토', pr: 90, mon: [10], d: '10월 할로윈 한정' },
+  { k: 'santa', icon: '🎅', n: '산타 옷', pr: 120, mon: [12], d: '12월 크리스마스 한정', hat: true },
+  { k: 'flower', icon: '🌸', n: '꽃 화관', pr: 70, mon: [3, 4, 5], d: '봄 한정', hat: true },
+  { k: 'sun', icon: '🕶️', n: '여름 선글라스', pr: 70, mon: [6, 7, 8], d: '여름 한정' },
+  { k: 'gat', icon: '📜', n: '선비 갓', pr: 100, theme: '🏯 역사 마을 과거시험을 한 번 보면', ok: () => (bag.gwDone | 0) > 0, hat: true },
+  { k: 'miner', icon: '⛏️', n: '광부 헬멧', pr: 100, theme: '⛏️ 수학 마을 수레 레이스를 한 번 완주하면', ok: () => !!bag.cartBest, hat: true },
+  { k: 'liberty', icon: '🗽', n: '자유의 여신 왕관', pr: 100, theme: '🗽 영어 마을 보물찾기를 한 번 완주하면', ok: () => !!bag.huntEver || !!bag.hunt?.done, hat: true },
+  { k: 'pirate', icon: '🏴‍☠️', n: '해적 모자', pr: 100, theme: '⛵ 배를 한 척 만들면', ok: () => boatCur() >= 0, hat: true },
+];
+const petMonth = () => new Date((backend?.now ? backend.now() : Date.now()) + 9 * 3600000).getUTCMonth() + 1;
+const petOwOwn = (i) => isTeacher || !!bag.hpet?.own?.[i];
+const petOwOf = (p) => { const i = p?.ow | 0; return i && PET_OUTFITS[i] && petOwOwn(i) ? i : 0; };
 const HPET_REWARD = [ // 친밀도 단계마다 생기는 것
   [1, '🏷️ 이름 지어 주기'], [2, '🎀 리본 달기'], [3, '💗 산책할 때 머리 위로 하트가 뿅뿅'], [4, '🎁 매일 집에 오면 펫이 조개를 물어와요'],
   [5, '🎩 모자 · 🐾 재주 부리기'], [6, '🏠 집 안에 펫 집이 생겨요'], [7, '🏷️ 내 이름표 옆에 펫 표시'], [8, '🎁 물어오는 선물이 더 커져요'],
@@ -14415,10 +14520,11 @@ const hpLv = (a) => { if (isTeacher) return 10; let l = 0; HPET_LV.forEach((t, i
 const hpIdx = (k) => HPETS.findIndex(h => h.k === k);
 const hpDay = (p) => { if (p.day?.d !== dayNum()) p.day = { d: dayNum() }; return p.day; };
 const hpMood = (p) => { const d = dayNum() - (p.last ?? dayNum()); return d <= 0 ? ['😊', '신나요!'] : d <= 2 ? ['🙂', '오늘도 놀아 줘요'] : ['😢', '보고 싶었어요…']; };
+const hpetOw = () => { const k = hpCur(); return k && bag.hpet.walk && joined ? petOwOf(bag.hpet.pets[k]) : 0; };
 function hpetCode() { const k = hpCur(); if (!k || !bag.hpet.walk || !joined) return 0; const p = bag.hpet.pets[k], lv = hpLv(p.a); return 1 + hpIdx(k) * 64 + (p.acc | 0) * 16 + (lv >= 3 ? 8 : 0) + (lv >= 7 ? 4 : 0) + (lv >= 9 ? 2 : 0) + (lv >= 10 ? 1 : 0); } // 종류 · 꾸미기 · 하트(Lv3) · 이름표(Lv7) · 반짝(Lv9) · 단짝(Lv10)
 const hpDecode = (e) => { e = (e | 0) - 1; if (e < 0) return null; return { k: Math.floor(e / 64), acc: (e >> 4) & 3, heart: !!(e & 8), tag: !!(e & 4), spark: !!(e & 2), best: !!(e & 1) }; };
 function hpetTag(e) { const d = hpDecode(e); if (!d || !d.tag) return ''; return ' ' + (HPETS[d.k]?.icon || '') + (d.best ? '💞' : ''); }
-function hpetModel(ki, acc = 0, spark = false) { // 🐾 네모네모 귀여운 동물 (앞 = +z)
+function hpetModel(ki, acc = 0, spark = false, ow = 0) { // 🐾 네모네모 귀여운 동물 (앞 = +z) · ow: 👗 펫 옷
   const H = HPETS[ki] || HPETS[0], g = new THREE.Group(), o = { solid: false }, b = new THREE.Group(); g.add(b); g.userData.body = b;
   const c = H.col, d = H.dark;
   if (H.bird) { box(b, 0.42, 0.42, 0.42, c, 0, 0.32, 0, o); box(b, 0.34, 0.3, 0.32, c, 0, 0.66, 0.06, o); box(b, 0.1, 0.06, 0.12, d, 0, 0.64, 0.27, o); for (const s of [-1, 1]) box(b, 0.06, 0.2, 0.26, shade(c, 0.9), s * 0.23, 0.36, 0, o); for (const s of [-1, 1]) box(b, 0.05, 0.12, 0.05, d, s * 0.09, 0.06, 0.02, o); }
@@ -14441,6 +14547,21 @@ function hpetModel(ki, acc = 0, spark = false) { // 🐾 네모네모 귀여운 
   const ey = H.bird ? 0.72 : H.round ? 0.42 : 0.72, ez = H.bird ? 0.22 : H.round ? 0.28 : 0.49;
   for (const s of [-1, 1]) { box(b, 0.07, 0.08, 0.02, 0x1E1E24, s * 0.1, ey, ez, o); box(b, 0.025, 0.025, 0.01, 0xFFFFFF, s * 0.1 + 0.015, ey + 0.02, ez + 0.012, o); box(b, 0.07, 0.035, 0.01, 0xFF9AB0, s * 0.15, ey - 0.07, ez, o); }
   const top = H.bird ? 0.82 : H.round ? 0.5 : 0.86, az = H.bird ? 0.06 : H.round ? 0.05 : 0.3;
+  const OW = PET_OUTFITS[ow]; if (OW?.hat) acc = 0;
+  if (OW) { // 👗 펫 옷 그리기
+    const bw = H.bird ? 0.42 : H.round ? 0.5 : 0.42, bl = H.bird ? 0.42 : H.round ? 0.55 : 0.62, by = H.bird ? 0.53 : H.round ? 0.49 : 0.53, ny = H.bird ? 0.52 : H.round ? 0.42 : 0.55, nz = H.bird ? 0.1 : H.round ? 0.2 : 0.16;
+    const k = OW.k;
+    if (k === 'scarf') { box(b, bw + 0.08, 0.1, 0.22, 0xE2384A, 0, ny, nz, o); box(b, bw + 0.09, 0.03, 0.23, 0xFFFFFF, 0, ny + 0.02, nz, o); box(b, 0.09, 0.22, 0.06, 0xE2384A, bw / 2 - 0.02, ny - 0.12, nz + 0.1, o); }
+    if (k === 'rain') { box(b, bw + 0.08, 0.1, bl + 0.04, 0xFFD23C, 0, by, 0, o); box(b, 0.46, 0.14, 0.42, 0xFFD23C, 0, top - 0.02, az, o); box(b, 0.48, 0.04, 0.12, 0xF5B82A, 0, top - 0.06, az + 0.22, o); }
+    if (k === 'pumpkin') { box(b, bw + 0.08, 0.08, bl, 0xF08A24, 0, by, -0.02, o); for (const z of [-0.18, 0.02, 0.22]) box(b, bw + 0.09, 0.085, 0.03, 0x3B2F2A, 0, by, z * (bl / 0.62) - 0.02, o); ball(b, 0.08, 0xF08A24, 0, ny, nz + 0.1, o); }
+    if (k === 'santa') { box(b, bw + 0.06, 0.12, bl + 0.02, 0xD62E2E, 0, by, 0, o); box(b, bw + 0.08, 0.05, 0.1, 0xFFFFFF, 0, by, bl / 2 - 0.02, o); mesh(CONE, b, 0.2, 0.3, 0.2, 0xD62E2E, 0, top + 0.02, az, { solid: false, rz: 0.25 }); cyl(b, 0.21, 0.05, 0xFFFFFF, 0, top + 0.02, az, o); ball(b, 0.06, 0xFFFFFF, 0.08, top + 0.3, az, o); }
+    if (k === 'flower') for (let i = 0; i < 8; i++) { const t = i / 8 * Math.PI * 2; ball(b, 0.06, [0xFF7AA8, 0xFFE066, 0xFFFFFF, 0xB58CF0][i % 4], Math.cos(t) * 0.17, top + 0.01, az + Math.sin(t) * 0.15, o); }
+    if (k === 'sun') { const ey2 = H.bird ? 0.72 : H.round ? 0.42 : 0.72, ez2 = H.bird ? 0.235 : H.round ? 0.295 : 0.505; for (const s2 of [-1, 1]) box(b, 0.12, 0.09, 0.03, 0x1E1E24, s2 * 0.1, ey2, ez2, o); box(b, 0.1, 0.025, 0.03, 0x1E1E24, 0, ey2 + 0.02, ez2, o); }
+    if (k === 'gat') { cyl(b, 0.3, 0.025, 0x1E1E22, 0, top + 0.02, az, o); cyl(b, 0.12, 0.18, 0x2A2A30, 0, top + 0.11, az, o); }
+    if (k === 'miner') { mesh(SPH_MID, b, 0.22, 0.14, 0.22, 0xFFD23C, 0, top - 0.02, az, o); box(b, 0.32, 0.03, 0.08, 0xF5B82A, 0, top - 0.02, az + 0.17, o); box(b, 0.08, 0.07, 0.04, 0xFFF6C8, 0, top + 0.06, az + 0.2, { solid: false, emissive: 0.8 }); }
+    if (k === 'liberty') { cyl(b, 0.16, 0.06, 0x6FBFA0, 0, top + 0.02, az, o); for (let i = 0; i < 5; i++) { const t = -Math.PI / 2 + (i - 2) * 0.45; mesh(PYR, b, 0.05, 0.16, 0.05, 0x6FBFA0, Math.sin(t + Math.PI / 2) * 0.13, top + 0.1, az + Math.cos(t + Math.PI / 2) * 0.13 * -1, o); } }
+    if (k === 'pirate') { box(b, 0.38, 0.1, 0.24, 0x1E1E22, 0, top + 0.04, az, o); box(b, 0.24, 0.12, 0.2, 0x1E1E22, 0, top + 0.13, az, o); ball(b, 0.04, 0xFFFFFF, 0, top + 0.08, az + 0.13, o); box(b, 0.3, 0.02, 0.02, 0xE8C547, 0, top + 0.01, az + 0.12, o); }
+  }
   if (acc === 1) { box(b, 0.1, 0.08, 0.06, 0xE2384A, 0.12, top + 0.02, az, o); for (const s of [-1, 1]) mesh(PYR, b, 0.1, 0.1, 0.05, 0xE2384A, 0.12 + s * 0.08, top + 0.02, az, { solid: false, rz: s * Math.PI / 2 }); }
   if (acc === 2) { cyl(b, 0.16, 0.03, 0x2B2B36, 0, top + 0.02, az, o); cyl(b, 0.1, 0.16, 0x2B2B36, 0, top + 0.11, az, o); cyl(b, 0.105, 0.035, 0xE2384A, 0, top + 0.06, az, o); }
   if (acc === 3) { cyl(b, 0.12, 0.08, C.gold, 0, top + 0.05, az, { solid: false, emissive: 0.4 }); for (let i = 0; i < 5; i++) mesh(PYR, b, 0.05, 0.08, 0.05, C.gold, Math.cos(i * 1.26) * 0.11, top + 0.12, az + Math.sin(i * 1.26) * 0.11, { solid: false, emissive: 0.4 }); }
@@ -14461,7 +14582,7 @@ function hpetBuildIn(g, id, pt, mine) { // 집 안: 펫이 돌아다녀요 (친�
   { const [cx, cz] = inRoomCenter(id); if (pt.l >= 6) { const ph = new THREE.Group(); ph.position.set(cx + HOME_IN.w / 2 - 1.3, 0.1, cz - HOME_IN.d / 2 + 1.3); g.add(ph); box(ph, 1.1, 0.8, 1.0, 0xF2C9A0, 0, 0.4, 0, { solid: false }); mesh(GABLE, ph, 1.3, 0.6, 1.1, 0xE2584A, 0, 0.8, 0, { solid: false }); box(ph, 0.45, 0.45, 0.04, 0x5A3A22, 0, 0.3, 0.51, { solid: false }); box(ph, 0.9, 0.08, 0.7, 0xA8D8FF, 0, 0.06, 0.75, { solid: false }); hpw.petHouse = ph; }
   }
   if (pt.w && !mine) { const [cx, cz] = inRoomCenter(id); makeLabel(g, [`🚶 ${HPETS[pt.k].icon} ${pt.n || HPETS[pt.k].n}은(는) 주인과 산책 중이에요`], 0.4, cx, 1.6, cz, { font: 44, pad: 8 }); return; } // 친구 집: 산책 나가면 집이 비어요 (주인이 집에 오면 같이 들어와요)
-  const [cx, cz] = inRoomCenter(id), m = hpetModel(pt.k, pt.a, pt.l >= 9); m.position.set(cx + 2, 0.1, cz); g.add(m); hpw.inG = m; hpw.inT = null;
+  const [cx, cz] = inRoomCenter(id), m = hpetModel(pt.k, pt.a, pt.l >= 9, pt.o | 0); m.position.set(cx + 2, 0.1, cz); g.add(m); hpw.inG = m; hpw.inT = null;
   hpw.inLab = makeLabel(m, [`${HPETS[pt.k].icon} ${pt.n || HPETS[pt.k].n} ❤️${pt.l}`], 0.3, 0, 1.3, 0, { font: 44, pad: 6 });
 }
 function hpetUpdate(dt) {
@@ -14477,22 +14598,22 @@ function hpetUpdate(dt) {
     if (hpw.patI) hpw.patI.pos.set(near ? m.position.x : 0, near ? 1 : -99, m.position.z);
   } else if (hpw.patI) hpw.patI.pos.set(0, -99, 0);
   // 같이 산책: 나와 친구 뒤를 따라와요
-  const want = new Map(); { const d = hpDecode(hpetCode()); if (d && !homeRegion()) want.set('me', [player.avatar?.g, d]); }
-  for (const [u, r] of remotes) { const d = hpDecode(r.target?.e); if (d && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, d]); }
-  for (const [u, f] of hpw.follow) { const w = want.get(u); if (!w || w[1].k !== f.d.k || w[1].acc !== f.d.acc || w[1].spark !== f.d.spark || w[1].heart !== f.d.heart) { scene.remove(f.g); hpw.follow.delete(u); } }
+  const want = new Map(); { const d = hpDecode(hpetCode()); if (d) d.ow = hpetOw(); if (d && !homeRegion()) want.set('me', [player.avatar?.g, d]); }
+  for (const [u, r] of remotes) { const d = hpDecode(r.target?.e); if (d) d.ow = (r.target?.f | 0) % 16; if (d && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, d]); }
+  for (const [u, f] of hpw.follow) { const w = want.get(u); if (!w || w[1].k !== f.d.k || w[1].acc !== f.d.acc || w[1].spark !== f.d.spark || w[1].heart !== f.d.heart || (w[1].ow | 0) !== (f.d.ow | 0)) { scene.remove(f.g); hpw.follow.delete(u); } }
   for (const [u, [ag, d]] of want) {
     if (!ag) continue; let f = hpw.follow.get(u);
-    if (!f) { f = { g: hpetModel(d.k, d.acc, d.spark), d }; f.g.userData.heart = d.heart; f.g.position.copy(ag.position); scene.add(f.g); hpw.follow.set(u, f); }
+    if (!f) { f = { g: hpetModel(d.k, d.acc, d.spark, d.ow | 0), d }; f.g.userData.heart = d.heart; f.g.position.copy(ag.position); scene.add(f.g); hpw.follow.set(u, f); }
     const back = new V3(Math.sin(ag.rotation.y + 2.4) * 1.3, 0, Math.cos(ag.rotation.y + 2.4) * 1.3).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
     if (dd > 12) f.g.position.copy(back); const mv = dd > 0.35; if (mv) { const sp = Math.min(dd * 3, 9); f.g.position.x += dx / dd * sp * dt; f.g.position.z += dz / dd * sp * dt; f.g.rotation.y = Math.atan2(dx, dz); }
     f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8); hpetAnim(f.g, dt, mv);
   }
 }
-function hpetLocal() { const k = hpCur(), p = k && bag.hpet.pets[k]; return p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(bag.hpet.walk ? { w: 1 } : {}) } : null; }
+function hpetLocal() { const k = hpCur(), p = k && bag.hpet.pets[k]; return p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(petOwOf(p) ? { o: petOwOf(p) } : {}), ...(bag.hpet.walk ? { w: 1 } : {}) } : null; }
 function hpetSync() { // 내 집 안 펫 모습을 저장 (친구도 봐요)
   const lk = JSON.stringify(hpetLocal()); if (home.group && home.id && S.plots[home.id]?.o === backend?.uid && hpw.localKey !== lk) home.key = ''; hpw.localKey = lk; // 내 집 안이면 바로 다시 그려요
   const id = myLot(); if (!id || !S.plots[id]) return; const k = hpCur(), p = k && bag.hpet.pets[k];
-  const v = p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(bag.hpet.walk ? { w: 1 } : {}) } : null, cur = S.plots[id].in?.pet || null;
+  const v = p ? { k: hpIdx(k), a: p.acc | 0, l: hpLv(p.a), n: p.n || '', ...(petOwOf(p) ? { o: petOwOf(p) } : {}), ...(bag.hpet.walk ? { w: 1 } : {}) } : null, cur = S.plots[id].in?.pet || null;
   if (JSON.stringify(v) !== JSON.stringify(cur) && !hpw.saving) { hpw.saving = true; backend.homeSet(id, { pet: v }).then(r => { hpw.saving = false; if (!r?.ok && !hpw.warned) { hpw.warned = true; toast('⚠️ 펫 정보를 저장하지 못해 친구 화면에는 안 보일 수 있어요. 선생님께 database.rules.json을 다시 게시해 달라고 말씀드려요', 'warn'); } }); }
 }
 function hpetGift() { // 🎁 Lv4부터 하루 한 번 집에 오면
@@ -15850,6 +15971,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1021f', d: '10월 21일', items: ['👫 친구 배에 함께 타요! 바다에서 친구 배 가까이 가서 E → 빈 자리에 타요 (뗏목 1 · 나룻배 2 · 돛단배 3 · 해적선 5자리)', '⛵ 배 모양이 예뻐졌어요 (속이 빈 배 · 돛 · 난간 · 대포)', '👗 펫 가게에 펫 옷! 이달의 계절 옷 · 마을 테마 옷(과거시험·수레 레이스·영어 보물찾기·배 만들기로 열려요)'] },
+  { id: '1021e', d: '10월 21일', items: ['💰 🌳 마당·가구 가게에서 가구와 마당 장식을 팔 수 있어요 (산 값의 절반)', '👤 같은 반 코드 + 같은 닉네임이면 다른 기기에서도 같은 계정이에요 (집·가방·조개돈 그대로)'] },
   { id: '1021d', d: '10월 21일', items: ['📜 역사 마을 서당 옆 기와집이 과거시험장이 됐어요! 선생님이 문제를 내면 열려요 · 안에서는 선비옷 🎩 · 장원급제하면 시험장 앞 방에 이름이 걸리고 그 주 동안 이름표에 🎓장원'] },
   { id: '1021c', d: '10월 21일', items: ['⭐ 선생님이 능력치를 줄 수 있어요 (받으면 알림이 떠요)', '📣 오늘 우리 반 발표 표시를 왼쪽 아래로 옮겼어요 (배드민턴·놀이 중에는 숨겨요)'] },
   { id: '1021b', d: '10월 21일', items: ['🏡 행사 결과 알림이 길어도 줄을 바꿔서 화면 안에 다 보여요'] },
@@ -20414,7 +20537,7 @@ function huntHud() { const T = HUNT_SPOTS[hunt.steps[hunt.i]]; $('huntN').textCo
 function huntSay() { if (hunt.on) sayEn($('huntEn').textContent); }
 function huntEnd(done) {
   hunt.on = false; hunt.hud?.classList.add('hidden'); if (hunt.note) hunt.note.visible = false; if (hunt.chest) hunt.chest.visible = false;
-  if (!done) return; const first = !(bag.hunt?.d === dayNum() && bag.hunt.done); bag.hunt = { d: dayNum(), done: true };
+  if (!done) return; const first = !(bag.hunt?.d === dayNum() && bag.hunt.done); bag.hunt = { d: dayNum(), done: true }; bag.huntEver = 1;
   const sh = first ? giveShellCapped(30) : 0; addStat('eng', 3); saveBag(); updateHUD(null); playSfx('fanfare'); burst(hunt.chest.position.clone().setY(1.5), RAINBOW, 70, 6, 3);
   showBanner('🏴‍☠️ 보물을 찾았어요!', `${sh ? `🐚 +${sh} · ` : first ? '' : '오늘 보물 🐚은 받았어요 · '}🔤 영어력이 올랐어요 · 판마다 힌트가 바뀌어요`, 6000);
 }
@@ -20766,6 +20889,57 @@ function gwTick(dt) {
   if (!isTeacher && G.open && roomNow() === 'gw') { const k = JSON.stringify([G.n, G.cur, G.ph]); if (k !== gw.sKey) { const open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험지'; if (open || G.ph === 'q') openGwExam(); else gw.sKey = k; } }
   if (isTeacher && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험 진행') { const k = JSON.stringify([G.ph, G.cur, Object.keys(S.gwa || {}).length, Object.values(S.gwa || {}).map(v => Object.keys(v?.a || {}).length).join()]); if (k !== gw.aKey) { gw.aKey = k; if (!lifeTyping()) refillLife(); } }
 }
+// 👫 함께 배 타기 (1021f): 친구 배(선장) 가까이에서 E → 빈 자리에 타요 · 선장이 움직이면 같이 가요 · 친구 화면에도 그 자리에 보여요 (players/{uid}/bo = "선장uid:자리")
+const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null };
+const boardSeatsOf = (q) => BOAT_SEATS[Math.min(3, Math.floor((q | 0) / 25))] || BOAT_SEATS[0];
+function boardTaken(cap) { const t = new Set(); for (const [, r] of remotes) { const bo = String(r.target?.bo || ''), i = bo.lastIndexOf(':'); if (i > 0 && bo.slice(0, i) === cap) t.add(+bo.slice(i + 1)); } return t; }
+function boardPos(ag, s) { const h = ag.rotation.y; return [ag.position.x + s[0] * Math.cos(h) + s[1] * Math.sin(h), ag.position.z - s[0] * Math.sin(h) + s[1] * Math.cos(h), h]; }
+function initBoard() {
+  boardW.it = addInteract({ pos: new V3(0, -99, 0), r: 4.6, text: () => { const c = boardW.cand; if (!c) return null; const [u, r] = c, n = boardSeatsOf(r.target?.q).length, left = n - boardTaken(u).size; return [`⛵ ${nickOf(u, r.target) || '친구'}의 배에 타기`, left > 0 ? `빈 자리 ${left}/${n}` : '자리가 꽉 찼어요']; }, run: boardJoin });
+  const hud = document.createElement('div'); hud.id = 'boardHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:18px';
+  hud.innerHTML = '<b id="boardName">⛵</b><span id="boardDir"></span><button class="btn" id="boardLandBtn" style="background:#FFE066;font-size:15px;padding:4px 10px">⚓ 내리기</button>'; document.body.append(hud); boardW.hud = hud; $('boardLandBtn').onclick = boardLand;
+}
+function boardFind() { // 가까운 친구 배 (매 프레임 가볍게)
+  boardW.cand = null; if (!joined || sail.on || sea.on || boardW.on || cart.on || hv.travel) { boardW.it.pos.set(0, -99, 0); return; }
+  let best = null, bd = 4.6; for (const [u, r] of remotes) { if ((r.target?.v | 0) !== BOAT_V) continue; const d = Math.hypot(r.a.g.position.x - player.pos.x, r.a.g.position.z - player.pos.z); if (d < bd) { bd = d; best = [u, r]; } }
+  boardW.cand = best; if (best) boardW.it.pos.set(best[1].a.g.position.x, 1, best[1].a.g.position.z); else boardW.it.pos.set(0, -99, 0);
+}
+function boardJoin() {
+  const c = boardW.cand; if (!c || boardW.on || isFrozen()) return; const [u, r] = c, seats = boardSeatsOf(r.target?.q), taken = boardTaken(u);
+  const seat = seats.findIndex((_, i) => !taken.has(i)); if (seat < 0) { toast('⛵ 자리가 꽉 찼어요. 더 큰 배를 가진 친구를 찾아봐요', 'warn'); return; }
+  if (bag.ride) { bag.ride = ''; saveBag(); } closeModals(); Object.assign(boardW, { on: true, cap: u, seat, last: null });
+  $('boardName').textContent = `⛵ ${nickOf(u, r.target) || '친구'}의 배`; boardW.hud.classList.remove('hidden'); playSfx('pick');
+  toast(`⛵ ${nickOf(u, r.target) || '친구'}의 배에 탔어요! 선장이 가는 곳으로 같이 가요 (섬·모래사장 옆에서 ⚓ 내리기)`, 'success');
+}
+function boardEnd(msg, to) {
+  boardW.on = false; boardW.hud?.classList.add('hidden'); boardW.last = null;
+  if (to) { player.pos.set(to[0], 0.35, to[1]); player.vy = 0; } if (msg) toast(msg, 'info');
+}
+function boardLand() {
+  if (!boardW.on) return; const p = player.pos, rc = remotes.get(boardW.cap), hull = Math.min(3, Math.floor((rc?.target?.q | 0) / 25)), [N, nd] = isleNear(p);
+  if (nd < 4.5) { if (hull < N.minH) { toast(`🌊 ${N.icon} ${N.n} 둘레는 파도가 세서 ${BOAT_H[N.minH].n} 이상만 닿아요`, 'warn'); return; } const a = Math.atan2(p.z - N.cz, p.x - N.cx); boardEnd(`${N.icon} ${N.n}에 내렸어요!`, [N.cx + Math.cos(a) * (N.r - 2.6), N.cz + Math.sin(a) * (N.r - 2.6)]); playSfx('pick'); return; }
+  if (p.x < 84 && p.z > BEACH.z0 + 2 && p.z < BEACH.z1 - 2) { boardEnd('🏖️ 바닷가에 내렸어요', [77.2, p.z]); playSfx('pick'); return; }
+  toast('⚓ 육지 가까이(모래사장이나 섬 옆) 가야 내릴 수 있어요', 'warn');
+}
+function boardRemotes(dt) { // updateRemotes 다음: 배에 탄 친구들을 선장 배 자리에 · 내가 탔으면 나도
+  const me = backend?.uid; if (!me) return; const cur = new Set();
+  for (const [u, r] of remotes) { const bo = String(r.target?.bo || ''), i = bo.lastIndexOf(':'); if (i <= 0) continue; const cap = bo.slice(0, i), seat = +bo.slice(i + 1);
+    let cg = null, q = 0; if (cap === me) { if (sail.on) { cg = player.avatar?.g; q = boatQ(); } } else { const rc = remotes.get(cap); if (rc && (rc.target?.v | 0) === BOAT_V) { cg = rc.a.g; q = rc.target.q | 0; } }
+    if (!cg) continue; const s = boardSeatsOf(q)[seat] || boardSeatsOf(q)[0], [x, z, h] = boardPos(cg, s); r.pos.set(x, cg.position.y, z); r.a.g.position.set(x, cg.position.y, z); r.a.g.rotation.y = h; r.heading = h;
+    if (cap === me) { cur.add(u); if (!boardW.seen.has(u)) { boardW.seen.set(u, 1); toast(`🙋 ${nickOf(u, r.target) || '친구'}이(가) 내 배에 탔어요!`, 'success'); } } }
+  for (const u of [...boardW.seen.keys()]) if (!cur.has(u)) boardW.seen.delete(u);
+  boardW.crew = cur.size;
+  if (!boardW.on) return;
+  const p = player.pos;
+  if (boardW.last && Math.hypot(p.x - boardW.last[0], p.z - boardW.last[1]) > 6) { boardEnd(''); return; } // 다른 곳으로 옮겨졌어요
+  const rc = remotes.get(boardW.cap);
+  if (!rc) { boardEnd('🛟 선장이 마을을 나가서 바닷가로 돌아왔어요', [ISLE.dock[0] - 2.5, ISLE.dock[1]]); return; }
+  if ((rc.target?.v | 0) !== BOAT_V) { const cp = rc.a.g.position; boardEnd('⚓ 선장이 내려서 같이 내렸어요', canStand(cp.x + 1.2, cp.z) ? [cp.x + 1.2, cp.z] : [cp.x, cp.z]); return; }
+  const s = boardSeatsOf(rc.target.q)[boardW.seat] || boardSeatsOf(rc.target.q)[0], [x, z, h] = boardPos(rc.a.g, s);
+  p.set(x, rc.a.g.position.y, z); player.vy = 0; player.heading = h; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = h; boardW.last = [x, z];
+  { let d = h + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 1.5); }
+  const [N, nd] = isleNear(p), t = nd < 4.5 ? `${N.icon} ${N.n} 옆이에요!` : p.x < 84 ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`; if ($('boardDir').textContent !== t) $('boardDir').textContent = t;
+}
 // ================= 🎲 반월쉼터 (1021a): 보드게임 방 · 앉아서 보드게임 웹앱 하기 =================
 // 마을 건물(광장 북서쪽) → 들어가면 방 고르기 → 게임마다 꾸민 방(ROOMS bg1·bg2) → 탁자에서 E: 앉아서 게임 화면(iframe) · 새 게임은 BOARD_GAMES에 한 줄 + 방 꾸미기
 const BG_HOUSE = { x: -24, z: -27, w: 10, d: 8 };
@@ -20833,7 +21007,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo();
+buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -20875,7 +21049,7 @@ function loop() {
   if (!joined) renderPreview(dt);
   updatePretty(dt);
   updateEnv(dt);
-  if (joined) { updateRemotes(dt); attrRemotes(); }
+  if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); }
   updateTeachLooks(dt);
 
   world.crates.forEach((c, k) => {
