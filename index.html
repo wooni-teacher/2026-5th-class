@@ -4113,7 +4113,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || bgOpen()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -15372,6 +15372,8 @@ const ROOMS = {
   mus: { name: '역사 박물관', icon: '🏛️', cx: 1450, cz: -82, w: 30, d: 22, wall: 0xF6EFE2, floor: 0xC9A27A, site: null }, // 🏯 역사 마을
   pg4: { name: '4단계 펫 체육관', icon: '🏟️', cx: 1510, cz: 80, w: 22, d: 18, wall: 0xE8F0FA, floor: 0xC8B48E, site: null }, // 🗽 영어 마을
   etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
+  bg1: { name: '과일 할리갈리 방', icon: '🍓', cx: 1515, cz: -86, w: 22, d: 18, wall: 0xFFF4C8, floor: 0xE8C890, site: null }, // 🎲 반월쉼터 (1021a)
+  bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
 const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.7, '그림과 글이 반반'], ['💬', '만화책', 0.4, '말풍선 만화'], ['🧸', '그림책', 0.5, '그림이 대부분']]; // 📚 독서력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
@@ -15537,6 +15539,7 @@ async function enterRoom(id) {
   camera.position.set(player.pos.x, 7, player.pos.z + 8);
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
   if (id === 'mus') { toast('🏛️ 역사 박물관이에요! 양쪽 전시실에서 연표 보고 사건을 차례대로 놓아요', 'info'); return; }
+  if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
   toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
 }
@@ -15551,6 +15554,7 @@ async function exitRoom(id) {
   else if (id === 'mus') { x = MUS_SPOT[0]; z = MUS_SPOT[1] - 6; h = Math.PI; mus.g = null; } // 🏛️ 박물관 문 앞
   else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz] = PG_SPOT[+id[2]]; x = gx; z = gz + 5.4; h = 0; } // 🏟️ 마을 체육관 문 앞
   else if (id === 'etr') { x = 1796.2; z = -0.2; h = -Math.PI / 2; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 영어 마을 훈련소 문 앞
+  else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
   else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
   player.pos.set(x, 0.15, z); player.vy = 0; player.heading = h; camYaw = h + Math.PI; camPitch = 0.45;
@@ -15833,6 +15837,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1021a', d: '10월 21일', items: ['🎲 반월쉼터가 생겼어요! (광장 북서쪽) 보드게임 방에 들어가 탁자에 앉아 🍓 할리갈리 · 🎲 부루마블을 해요'] },
   { id: '1020e', d: '10월 20일', items: ['📝 선생님 발표 칭찬 목록에 우리 반 명단이 나와요 (이름표 이름이 명단과 같으면 칭찬이 그 친구에게)'] },
   { id: '1020d', d: '10월 20일', items: ['🙋 수업 시간에 발표하면 선생님이 칭찬 → 🐚 + 이름표 🎤 (오늘 가장 많이 발표한 친구는 👑🎤)', '📣 반 전체 하루 발표 목표! 채우면 모두 🐚', '📒 독서 기록장이 간단해졌어요: 어떤 책인지 · 책 모양 · 쪽수만 (자세한 건 종이 독서 기록장에)'] },
   { id: '1020c', d: '10월 20일', items: ['🌼 광장 둘레 꾸미기 구역이 없어졌어요 (꾸미기는 우리 집 마을 내 땅에서)'] },
@@ -20474,7 +20479,74 @@ function initTalk() {
   const c = document.createElement('div'); c.id = 'talkChip'; c.className = 'sticker hidden'; document.body.append(c); talkW.chip = c;
   setInterval(() => { try { const show = isTeacher && joined; if (b.classList.contains('hidden') === show) b.classList.toggle('hidden', !show); praiseSync(); } catch (e) { } }, 1000);
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk();
+// ================= 🎲 반월쉼터 (1021a): 보드게임 방 · 앉아서 보드게임 웹앱 하기 =================
+// 마을 건물(광장 북서쪽) → 들어가면 방 고르기 → 게임마다 꾸민 방(ROOMS bg1·bg2) → 탁자에서 E: 앉아서 게임 화면(iframe) · 새 게임은 BOARD_GAMES에 한 줄 + 방 꾸미기
+const BG_HOUSE = { x: -24, z: -27, w: 10, d: 8 };
+const BOARD_GAMES = [
+  { k: 'halli', room: 'bg1', icon: '🍓', n: '할리갈리', url: 'https://fruitpang.vercel.app/', d: '같은 과일이 5개가 되면 종을 땡!' },
+  { k: 'marble', room: 'bg2', icon: '🎲', n: '부루마블', url: 'https://hanbakwi-city-public-ten.vercel.app/', d: '주사위를 굴려 도시를 사고 한 바퀴!' },
+];
+const bgw = { el: null, frame: null, game: null };
+function bgOpen() { return !!bgw.game; }
+function buildBoardCafe() {
+  const g = new THREE.Group(); g.name = 'BoardCafe'; scene.add(g); const o = { solid: false }, { x, z, w, d } = BG_HOUSE;
+  box(g, w, 3.4, d, 0xFFF1DC, x, 1.7, z); box(g, w + 0.4, 0.3, d + 0.4, 0xC9724A, x, 3.5, z, o);
+  mesh(GABLE, g, w + 1.2, 2.2, d + 1.0, 0xE2584A, x, 3.6, z, { solid: false });
+  for (let k = 0; k < 6; k++) box(g, 1.25, 0.08, 1.1, k % 2 ? 0xFFFFFF : 0x2F8FD0, x - w / 2 + 0.9 + k * 1.65, 2.75, z + d / 2 + 0.55, { solid: false, rx: 0.4 }); // 줄무늬 차양
+  box(g, 1.8, 2.4, 0.12, 0x7A4A2A, x, 1.2, z + d / 2 + 0.02, o); ball(g, 0.08, C.gold, x + 0.6, 1.2, z + d / 2 + 0.1, o); // 문
+  for (const sx of [-3, 3]) { box(g, 1.6, 1.2, 0.1, 0xBFE6FF, x + sx, 1.8, z + d / 2 + 0.03, { solid: false, emissive: 0.2 }); box(g, 1.8, 0.12, 0.25, 0xFFFFFF, x + sx, 1.15, z + d / 2 + 0.1, o); }
+  signPlane(g, ['🎲 반월쉼터', '보드게임 카페'], 4.4, 1.3, x, 4.6, z + d / 2 + 0.6, { font: 50, pad: 6, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false });
+  // 문 옆 큰 주사위 · 말
+  { const dc = box(g, 1.3, 1.3, 1.3, 0xFFFFFF, x - w / 2 - 1.2, 0.65, z + d / 2 - 0.3); dc.rotation.y = 0.4; for (const [dx, dy] of [[0, 0], [-0.3, 0.3], [0.3, -0.3]]) ball(g, 0.1, 0xE2584A, x - w / 2 - 1.2 + dx * 0.9, 0.65 + dy, z + d / 2 + 0.38, o); }
+  { const mx = x + w / 2 + 1.2, mz = z + d / 2 - 0.4; cyl(g, 0.5, 0.25, 0x5FBE5A, mx, 0.12, mz); mesh(CONE, g, 0.45, 1.0, 0.45, 0x5FBE5A, mx, 0.25, mz, o); ball(g, 0.32, 0x5FBE5A, mx, 1.4, mz, o); }
+  makeLabel(g, ['🎲 반월쉼터', BOARD_GAMES.map(G => `${G.icon} ${G.n}`).join(' · ')], 1.2, x, 6.8, z);
+  addInteract({ pos: new V3(x, 1, z + d / 2 + 1.4), r: 2.8, text: () => ['🎲 반월쉼터 들어가기', '보드게임 방을 골라요'], run: openBoardCafe });
+  registerSolids(g, 'boardcafe'); batchStatic(g);
+}
+function openBoardCafe() {
+  openLife('🎲 반월쉼터', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', '친구들과 함께 앉아서 보드게임을 해요. 방에 들어가 탁자 앞에서 E를 누르면 게임이 열려요.'));
+    const grid = el2('div', 'lp-grid'), rooms = [...new Set(BOARD_GAMES.map(G => G.room))];
+    for (const rk of rooms) { const R = ROOMS[rk], gs = BOARD_GAMES.filter(G => G.room === rk), card = el2('div', 'lp-card');
+      card.append(el2('div', 'lp-icon', R.icon), el2('div', 'lp-name', R.name), el2('div', 'lp-sub', gs.map(G => `${G.icon} ${G.n} · ${G.d}`).join(' / ')));
+      const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); grid.append(card); }
+    box.append(grid);
+  });
+}
+function buildBoardRooms(gAll) {
+  const g = new THREE.Group(); g.name = 'BoardRooms'; scene.add(g); const o = { solid: false };
+  const table = (cx, cz, top, G, deco) => { cyl(g, 1.5, 0.12, top, cx, 0.82, cz); cyl(g, 0.18, 0.8, 0x7A4A2A, cx, 0.4, cz, o);
+    const seats = []; for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4, sx = cx + Math.cos(a) * 2.1, sz = cz + Math.sin(a) * 2.1; cyl(g, 0.38, 0.5, 0xC9724A, sx, 0.25, sz, o); cyl(g, 0.42, 0.08, 0xFFE9A8, sx, 0.52, sz, o); seats.push([sx, sz]); }
+    deco(cx, cz); makeLabel(g, [`${G.icon} ${G.n}`], 0.7, cx, 2.4, cz);
+    addInteract({ pos: new V3(cx, 1, cz), r: 2.9, text: () => bgOpen() ? null : [`${G.icon} ${G.n} 하기`, '앉아서 게임 화면을 열어요'], run: () => { const p = player.pos; let best = seats[0], bd = 1e9; for (const s of seats) { const dd = Math.hypot(p.x - s[0], p.z - s[1]); if (dd < bd) { bd = dd; best = s; } } bgSitPlay(G, best, [cx, cz]); } }); };
+  // 🍓 과일 할리갈리 방
+  { const R = ROOMS.bg1, G = BOARD_GAMES[0]; roomShell(g, R); const FR = [0xFFD23C, 0xE2384A, 0x7FD36A, 0x9A5AD8];
+    for (let k = 0; k < 14; k++) { const bx = R.cx - R.w / 2 + 1 + k * 1.5; ball(g, 0.35, FR[k % 4], bx, 2.3, R.cz - R.d / 2 + 0.45, o); ball(g, 0.12, 0x5FA65A, bx, 2.65, R.cz - R.d / 2 + 0.45, o); } // 벽 과일 줄
+    for (const [sx, c] of [[-1, 0xFFD23C], [1, 0xE2384A]]) { const fx = R.cx + sx * (R.w / 2 - 1.3), fz = R.cz - R.d / 2 + 1.4; box(g, 1.6, 1.0, 1.0, 0xB07C50, fx, 0.5, fz); for (let i = 0; i < 6; i++) ball(g, 0.28, c, fx - 0.5 + (i % 3) * 0.5, 1.15, fz - 0.2 + Math.floor(i / 3) * 0.4, o); } // 과일 상자
+    for (const [cx, cz] of [[R.cx - 4.5, R.cz - 0.5], [R.cx + 4.5, R.cz - 0.5]]) table(cx, cz, 0xFFF3C4, G, (x, z) => { cyl(g, 0.28, 0.12, 0xE8C547, x, 0.94, z, o); ball(g, 0.1, 0xE8C547, x, 1.06, z, o); for (let k = 0; k < 4; k++) box(g, 0.4, 0.02, 0.55, [0xFFD23C, 0xE2384A, 0x7FD36A, 0x9A5AD8][k], x + Math.cos(k * 1.57) * 0.75, 0.89, z + Math.sin(k * 1.57) * 0.75, { solid: false, ry: k * 1.57 }); });
+    makeLabel(g, ['🍓 과일 할리갈리 방', '같은 과일 5개면 종을 땡! 🔔'], 1.0, R.cx, 3.9, R.cz - R.d / 2 + 1.2); }
+  // 🏙️ 부루마블 방
+  { const R = ROOMS.bg2, G = BOARD_GAMES[1]; roomShell(g, R); const BC = [0x4A9AE8, 0xE2584A, 0x5FBE5A, 0xF5B82A, 0x9A5AD8, 0x3FB6A8];
+    for (let k = 0; k < 11; k++) { const bh = 0.8 + ((k * 37) % 5) * 0.35, bx = R.cx - R.w / 2 + 1.6 + k * 1.95; box(g, 1.5, bh, 0.3, BC[k % 6], bx, 0.4 + bh / 2, R.cz - R.d / 2 + 0.4, o); for (let y = 0.7; y < bh; y += 0.45) box(g, 0.9, 0.18, 0.05, 0xFFF6C8, bx, 0.4 + y, R.cz - R.d / 2 + 0.57, { solid: false, emissive: 0.3 }); } // 벽 도시
+    for (const sx of [-1, 1]) { const dx = R.cx + sx * (R.w / 2 - 1.6), dz = R.cz + 2.5; const dc = box(g, 1.1, 1.1, 1.1, 0xFFFFFF, dx, 0.55, dz); dc.rotation.y = 0.5 * sx; ball(g, 0.12, 0xE2384A, dx, 1.12, dz, o); } // 큰 주사위
+    for (const [cx, cz] of [[R.cx - 5, R.cz - 1], [R.cx + 5, R.cz - 1]]) table(cx, cz, 0xFFFFFF, G, (x, z) => { box(g, 1.7, 0.03, 1.7, 0xD7F0C8, x, 0.9, z, o); for (let k = 0; k < 16; k++) { const side = Math.floor(k / 4), t = (k % 4) / 4 - 0.5 + 0.125; const px = side === 0 ? t * 1.6 : side === 1 ? 0.7 : side === 2 ? -t * 1.6 : -0.7, pz = side === 0 ? -0.7 : side === 1 ? t * 1.6 : side === 2 ? 0.7 : -t * 1.6; box(g, 0.32, 0.04, 0.32, BC[k % 6], x + px, 0.92, z + pz, o); } for (const [i, c] of [[0, 0xE2584A], [1, 0x4A9AE8]]) ball(g, 0.09, c, x - 0.2 + i * 0.4, 1.0, z, o); });
+    makeLabel(g, ['🏙️ 부루마블 방', '주사위를 굴려 도시 한 바퀴!'], 1.0, R.cx, 3.9, R.cz - R.d / 2 + 1.2); }
+  registerSolids(g, 'boardrooms');
+  // 게임 화면
+  const el = document.createElement('div'); el.id = 'bgPlay'; el.className = 'hidden'; el.style.cssText = 'position:fixed;inset:0;z-index:80;background:rgba(30,26,22,.86);display:flex;flex-direction:column;padding:calc(6px + var(--safe-top)) 8px 8px';
+  el.innerHTML = '<div style="display:flex;gap:8px;align-items:center;padding:4px 4px 8px;color:#fff;font-size:18px;flex-wrap:wrap"><b id="bgTitle" style="flex:1;min-width:140px"></b><a id="bgNew" class="btn" target="_blank" rel="noopener" style="background:#fff;font-size:15px;padding:6px 10px;text-decoration:none;color:#3B2F2A">↗ 새 탭에서 열기</a><button class="btn" id="bgClose" style="background:#FFE066;font-size:15px;padding:6px 12px">✕ 일어나기</button></div><iframe id="bgFrame" title="보드게임" allow="fullscreen; autoplay; clipboard-write" style="flex:1;width:100%;border:0;border-radius:12px;background:#fff"></iframe><p style="color:#ddd;font-size:13px;margin:6px 4px 0">화면이 안 나오면 ↗ 새 탭에서 열기를 눌러요. 다 하면 ✕ 일어나기로 마을에 돌아와요.</p>';
+  document.body.append(el); bgw.el = el; bgw.frame = el.querySelector('#bgFrame'); $('bgClose').onclick = bgClose;
+}
+function bgSitPlay(G, seat, c) {
+  if (bgOpen() || isFrozen()) return; closeModals();
+  player.pos.set(seat[0], 0.15, seat[1]); player.vy = 0; player.heading = Math.atan2(c[0] - seat[0], c[1] - seat[1]); player.avatar.g.rotation.y = player.heading; playAct(player.avatar, 'sit');
+  bgw.game = G; $('bgTitle').textContent = `${G.icon} ${G.n} — ${G.d}`; $('bgNew').href = G.url; bgw.frame.src = G.url; bgw.el.classList.remove('hidden'); document.body.classList.add('bg-open'); playSfx('pick');
+}
+function bgClose() {
+  if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
+  if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
+}
+buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms();
 buildPretty();
 buildMountain();
 buildQuizBoard();
