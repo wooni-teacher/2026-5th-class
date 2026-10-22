@@ -328,6 +328,7 @@
   .study-head a.btn { text-decoration: none; color: inherit; }
   .study-head { display: flex; align-items: center; gap: 8px; } .study-head h2 { flex: 1; margin: 0; } .modal.study iframe { flex: 1; width: 100%; border: 1px solid var(--line, #E0D3BE); border-radius: 12px; margin-top: 8px; background: #fff; }
   details.upd { margin: 8px 0; padding: 8px 12px; background: #fff; border: 1px solid var(--line, #E0D3BE); border-radius: 12px; } details.upd summary { font-weight: 800; font-size: 17px; cursor: pointer; } details.upd ul { margin: 6px 0 2px; padding-left: 20px; line-height: 1.6; }
+  .tp-grp-h { background: #E9F4E1; border-radius: 10px; padding: 6px 12px !important; margin-top: 18px !important; font-size: 19px; }
   #tpTabs { position: sticky; top: 52px; z-index: 1; display: flex; gap: 6px; overflow-x: auto; margin: 0 -24px 6px; padding: 8px 16px; background: #F6EFE3; border-bottom: 1px solid var(--line, #E0D3BE); scrollbar-width: thin; }
   .tp-tab { flex: none; border: 0; border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 16px; font-weight: 800; background: #fff; color: var(--ink); cursor: pointer; box-shadow: 0 1px 0 rgba(0,0,0,.08); white-space: nowrap; }
   .tp-tab[aria-selected="true"] { background: var(--ink); color: #fff; }
@@ -518,6 +519,9 @@
   #praiseBtn { position: fixed; right: calc(20px + env(safe-area-inset-right, 0px)); bottom: calc(216px + var(--safe-bottom)); width: 52px; height: 52px; padding: 0; border-radius: 50%; font-size: 26px; background: #FFE9A8; z-index: 6; }
   body.touch #praiseBtn { bottom: calc(336px + var(--safe-bottom)); }
   body.in-play #praiseBtn { display: none; }
+  #vnameChip { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); bottom: calc(160px + var(--safe-bottom)); padding: 6px 12px; font-size: 15px; font-weight: 700; z-index: 4; background: #FFE066; }
+  body.touch #vnameChip { bottom: calc(208px + var(--safe-bottom)); }
+  body.in-play #vnameChip, body.in-pb #vnameChip, body.in-siege #vnameChip { display: none !important; }
   #talkChip { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); bottom: calc(122px + var(--safe-bottom)); padding: 5px 12px; font-size: 15px; font-weight: 700; z-index: 3; pointer-events: none; max-width: 46vw; } /* 1021c: 화면 위 가운데(배드민턴 콕 자리)에서 왼쪽 아래로 */
   body.touch #talkChip { bottom: calc(170px + var(--safe-bottom)); }
   body.in-play #talkChip, body.in-pb #talkChip, body.in-siege #talkChip, body.in-ctf #talkChip, body.in-hide #talkChip { display: none !important; }
@@ -1245,7 +1249,7 @@
   <div id="mpList"></div>
   <p class="hint" id="mpDoneN" style="text-align:center"></p>
   <div class="row-center" style="margin-top:8px">
-    <button class="btn" id="mpVote" style="background:#fff">🗳️ 업데이트 투표</button>
+    <button class="btn hidden" id="mpVote" style="background:#fff">🗳️ 업데이트 투표</button>
     <button class="btn" id="mpClose" style="background:#E6DED2">닫기</button>
   </div>
 </section>
@@ -1329,6 +1333,13 @@
     </div>
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
     <p class="hint" style="margin-top:6px">선생님 화면 왼쪽에도 모이기·멈춤 버튼이 있어요. 멈춤은 10분이 지나면 저절로 풀려요.</p>
+
+    <h3>🙋 발표 칭찬 · ⭐ 능력치 주기</h3>
+    <p class="hint">오른쪽 아래 🙋 버튼과 같아요. 발표한 학생 칭찬(🐚 + 반 발표 목표), 학생을 골라 능력치 주기, 📝 우리 반 명단 저장을 해요.</p>
+    <div class="row-center"><button class="btn" id="tpPraiseOpen" style="background:#FFE9A8">🙋 발표 칭찬 · ⭐ 능력치 주기 열기</button></div>
+
+    <h3>📜 과거시험장</h3>
+    <p class="hint">역사 마을 서당 옆 과거시험장 안, 어좌 앞에서 📜 과거시험 진행을 눌러 문제를 올리고 진행해요. 문제를 올리면 시험장이 열리고, 정답은 문제를 올린 이 기기에만 남아요.</p>
 
     <h3 id="tpMeetSec">🏫 학급회의 (학교 건물 안 교실)</h3>
     <p class="hint" id="tpMeetNow"></p>
@@ -1426,9 +1437,9 @@
     <h3>🎪 행사</h3>
     <p class="hint">행사를 고르고 시작하면 모든 학생 화면 위에 행사 막대가 떠요. 시간이 끝나거나 '마치기'를 누르면 결과와 🐚 상을 모두에게 보여 줘요.</p>
     <p class="hint" id="tpFestNow"></p>
-    <div class="row-center wrap"><label class="sr-only" for="tpFestK">행사</label><select id="tpFestK" class="tinput" style="width:auto"><option value="house">🏡 예쁜 집 자랑 대회</option><option value="parade">🚲 탈것 퍼레이드</option><option value="fish">🎣 반 전체 낚시 대회</option><option value="hunt">💎 보물찾기 대회</option></select>
+    <div class="row-center wrap"><label class="sr-only" for="tpFestK">행사</label><select id="tpFestK" class="tinput" style="width:auto"><option value="house">🏡 예쁜 집 자랑 대회</option></select>
       <label class="sr-only" for="tpFestMin">시간</label><select id="tpFestMin" class="tinput" style="width:auto"><option value="5">5분</option><option value="8" selected>8분</option><option value="10">10분</option><option value="15">15분</option></select>
-      <label for="tpFestGoal" class="hint">목표</label><input id="tpFestGoal" class="tinput" type="number" min="1" max="300" value="30" style="width:76px">
+      <input id="tpFestGoal" type="hidden" value="10">
       <button class="btn" id="tpFestGo" style="background:#FFE066">🎪 시작</button><button class="btn" id="tpFestEnd">🏁 마치기</button></div>
 
     <div class="hidden"><button class="btn" id="tpPest" style="background:#fff">🐛 해충 부르기</button></div>
@@ -1457,10 +1468,12 @@
     <p class="hint">학생이 광장 분수에서 던진 게임 건의예요. 이름은 남지 않아요.</p>
     <p class="hint" id="tpIdeaNow"></p>
     <div id="tpIdeaList"></div>
+    <div hidden id="tpUpWrap"><!-- 1022b: 업데이트 투표 없앰 -->
     <div class="field" style="margin-top:12px">🗳️ 업데이트 투표 (건의 → 후보 → 투표 → 만들기)</div>
     <p class="hint">위 건의에서 ➕ 후보를 눌러 2~4개를 고르고, 학생이 알아보기 쉽게 문구를 다듬은 뒤 투표를 시작해요. 1등을 실제로 만들고 나면 ✅ 만들었어요를 눌러 모두에게 알려요.</p>
     <p class="hint" id="tpUpNow"></p>
     <div id="tpUpBox"></div>
+    </div>
 
     <h3>📢 게시판 공지</h3>
     <p class="hint" id="tpNoticeSave"></p>
@@ -1472,7 +1485,7 @@
     </div>
 
     <h3>🎯 공동 미션 (여러 개를 함께 열 수 있어요)</h3>
-    <p class="hint">교실에서 한 일을 학생이 게시판에서 스스로 체크해요 (미션마다 한 사람 한 번). 목표를 채우면 고른 보상이 마을에 생기고, 그 미션은 학생 화면에서 사라져요.</p>
+    <p class="hint">교실에서 한 일을 학생이 게시판에서 스스로 체크해요 (미션마다 한 사람 한 번 · 🔁 누적 미션은 하루 한 번). 목표를 채우면 참여한 학생 모두 🐚 조개돈을 받고, 그 미션은 학생 화면에서 사라져요.</p>
     <div id="tpMList"></div>
     <div class="row-center wrap"><button class="btn" id="tpMClean" style="background:#fff">🧹 완료한 미션 목록에서 지우기</button></div>
     <label class="field" for="tpTitle">새 미션 제목</label>
@@ -1480,14 +1493,14 @@
     <label class="field" for="tpGoal">목표 횟수 (한 사람은 한 번씩 보태요)</label>
     <input id="tpGoal" class="tinput" type="number" min="1" max="1000" value="20" inputmode="numeric">
     <label class="field" style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="tpDaily" style="width:22px;height:22px"> 🔁 매일 누를 수 있는 누적 미션 (날마다 버튼이 다시 켜져서 한 학생이 하루에 한 번씩 계속 보태요)</label>
-    <div class="field">성공하면 생기는 보상 · 🏞️ 새 장소</div>
-    <div id="tpRewards" class="rewards"></div>
-    <div class="field">성공하면 생기는 보상 · 🌼 마을 꾸미기</div>
-    <div id="tpRewardsDecor" class="rewards"></div>
-    <div class="row-center wrap" style="margin-top:8px"><label style="font-size:16px">🐚 성공하면 함께한 학생마다 조개돈 <select id="tpMShell" class="tinput" style="width:auto"><option value="0">없음</option><option value="10">🐚 10</option><option value="20">🐚 20</option><option value="30" selected>🐚 30</option><option value="50">🐚 50</option><option value="100">🐚 100</option><option value="200">🐚 200</option></select></label></div>
+    <div id="tpRewards" class="rewards" hidden></div><div id="tpRewardsDecor" class="rewards" hidden></div><!-- 1022b: 장소·꾸미기 보상 없앰 (보상은 재화) -->
+    <div class="row-center wrap" style="margin-top:8px"><label style="font-size:16px">🐚 성공하면 함께한 학생마다 조개돈 <select id="tpMShell" class="tinput" style="width:auto"><option value="10">🐚 10</option><option value="20">🐚 20</option><option value="30" selected>🐚 30</option><option value="50">🐚 50</option><option value="100">🐚 100</option><option value="200">🐚 200</option></select></label></div>
     <p class="hint">조개돈은 미션에 참여(체크)한 학생만 받아요. 미션이 성공하면 다음에 접속할 때 저절로 들어와요 (하루 가게 예산과 상관없이). 조개돈만 주고 싶으면 이미 생긴 장소·꾸미기를 골라도 돼요.</p>
     <p class="err" id="tpErr"></p>
     <div class="row-center"><button class="btn" id="tpStart" style="background:var(--leaf);color:#fff">🎯 미션 추가하기</button></div>
+
+    <h3>🕵️ 히든 미션 (준비 중)</h3>
+    <p class="hint">학생에게는 미리 알려 주지 않는 깜짝 미션이에요. 어떤 방식으로 만들지 선생님과 정한 뒤 여기에 들어가요.</p>
 
     <div id="tpActWrap" class="hidden">
     <h3>🎯 공동 미션 ② 🏘️ 마을 미션</h3>
@@ -1577,6 +1590,10 @@
     <div class="row-center wrap"><button class="btn" id="tpEarnLoad" style="background:#FFE066">🔄 현황 불러오기</button><button class="btn" id="tpEarnClear" style="background:#fff">🧹 기록 비우기</button></div>
     <div id="tpEarn" class="hint"></div>
     <div class="row-center"><button class="btn danger" id="tpFundReset">🐷 반 기부 처음부터</button></div>
+
+    <h3>🗳️ 마을 이름 투표</h3>
+    <p class="hint">학생들이 이름 후보를 내고(한 사람 하나), 투표로 마을 이름을 정해요. 정해진 이름은 들판 입구 아치와 표지에 보여요.</p>
+    <div id="tpVname"></div>
 
     <h3>🏡 우리 집 마을 (개인 공간)</h3>
     <p class="hint" id="tpPlotInfo"></p>
@@ -2080,7 +2097,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2117,6 +2134,7 @@ function normalize(v) {
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {} } : null,
     roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
+    vname: v.vname && typeof v.vname === 'object' ? { ph: ['collect', 'vote', 'done'].includes(v.vname.ph) ? v.vname.ph : '', name: typeof v.vname.name === 'string' ? v.vname.name.slice(0, 10) : '', c: Object.fromEntries(Object.entries(plainObj(v.vname.c)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string' && t).map(([u, t]) => [u, t.slice(0, 8)])), v: Object.fromEntries(Object.entries(plainObj(v.vname.v)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string')) } : null,
     gw: v.gw && typeof v.gw === 'object' ? { open: v.gw.open === true, n: v.gw.n | 0, title: String(v.gw.title || '').slice(0, 30), cur: v.gw.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.gw.ph) ? v.gw.ph : 'wait', qs: Object.values(toObj(v.gw.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)) })), rev: Object.fromEntries(Object.entries(toObj(v.gw.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), res: v.gw.res ? { sc: plainObj(v.gw.res.sc), top: String(v.gw.res.top || '').slice(0, 12), tsc: v.gw.res.tsc | 0 } : null } : null,
     gwa: Object.fromEntries(Object.entries(plainObj(v.gwa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     gwc: v.gwc && typeof v.gwc === 'object' ? { n: v.gwc.n | 0, name: String(v.gwc.name || '').slice(0, 12), uid: String(v.gwc.uid || ''), w: v.gwc.w | 0, sc: v.gwc.sc | 0 } : null,
@@ -2435,6 +2453,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     },
     async chatSend(t, nm) { chatRemote({ me: { t, nm, at: Date.now() } }); return { ok: true }; },
     async earnPut(o) { (st._earn ||= {}).me = { ...o, at: Date.now() }; return { ok: true }; },
+    async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
     async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
@@ -2913,7 +2932,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async earnPut(o) { try { await D.set(R(`earn/${uid}`), { ...o, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📊 오늘 재화 (선생님만 모아 봐요)
     acct, async bagGet() { try { return (await D.get(R(`bags/${uid}`))).val(); } catch (e) { return null; } }, async bagAt() { try { return (await D.get(R(`bags/${uid}/at`))).val() || 0; } catch (e) { return -1; } }, async bagPut(j, at) { try { await D.set(R(`bags/${uid}`), { j, at, nk: cleanNick(myNick) || '' }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎒 닉네임 계정 가방 (다른 기기에서 이어서)
     async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
-    async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📜 과거시험 답 (문제가 열려 있을 때만)
+    async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async vnameSet(kind, val) { try { await D.set(R(`state/vname/${kind}/${uid}`), val); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏷️ 마을 이름 후보·투표 // 📜 과거시험 답 (문제가 열려 있을 때만)
     async earnClear() { try { await D.set(R('earn'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async chatClear() { try { await D.set(R('chat'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async homeSet(n, upd) { // 우리 집 안 (주인만 쓸 수 있어요)
@@ -5453,6 +5473,7 @@ const mDone = (m) => m.daily ? m.last?.[backend?.uid] === dayNum() : !!m.done?.[
 let missionDay = 0;
 setInterval(() => { const d = dayNum(); if (missionDay && d !== missionDay && typeof renderMission === 'function') renderMission(); missionDay = d; }, 30000); // 자정이 지나면 버튼이 다시 켜져요
 function rewardLine(id) { const r = MREWARD[id]; return r ? `${r.icon} ${r.will}` : ''; }
+const mRewOff = (m) => DECOR_OFF.has(m.reward) || REWARD_OFF.has(m.reward); // 1022b: 보상이 조개돈만인 미션
 function renderMission() {
   const list = activeMissions(); // 완료한 미션은 화면에서 사라져요
   document.body.classList.toggle('has-mission', !!list.length && joined);
@@ -5463,7 +5484,7 @@ function renderMission() {
       box.dataset.key = key; box.textContent = '';
       for (const m of show) {
         const r = el2('span', 'mrow' + (mDone(m) ? ' mine' : ''), '');
-        r.append(el2('span', 'mt', `${MREWARD[m.reward]?.icon || '🎯'} ${m.daily ? '🔁 ' : ''}${m.title}`));
+        r.append(el2('span', 'mt', `${mRewOff(m) ? '🐚' : MREWARD[m.reward]?.icon || '🎯'} ${m.daily ? '🔁 ' : ''}${m.title}`));
         const bar = el2('span', 'bar', ''), fill = document.createElement('i'); fill.style.width = `${Math.min(100, m.count / m.goal * 100)}%`; bar.append(fill); r.append(bar);
         r.append(el2('small', '', `${m.count}/${m.goal} · ${m.goal - m.count}번 남았어요${mDone(m) ? (m.daily ? ' · 오늘 했어요' : ' · 나도 했어요') : ''}`));
         box.append(r);
@@ -5515,7 +5536,7 @@ function syncMission(prev, first) {
       if (!pm || pm.id !== m.id) toast(`🎯 새 미션이 왔어요: ${m.title}`, 'info');
       else if (pm.count < pm.goal && m.count >= m.goal) {
         const rw = MREWARD[m.reward];
-        showBanner(`🎉 미션 성공: ${m.title}`, (rw ? rw.done : '모두 함께 해냈어요') + (m.sh ? ` · 함께한 친구 모두 🐚${m.sh}` : ''));
+        showBanner(`🎉 미션 성공: ${m.title}`, (rw && !mRewOff(m) ? rw.done : '모두 함께 해냈어요') + (m.sh ? ` · 함께한 친구 모두 🐚${m.sh}` : ''));
       }
     }
   }
@@ -5546,7 +5567,7 @@ function fillMissionPanel() {
     card.append(el2('h3', '', `${m.daily ? '🔁' : '🎯'} ${m.title}`));
     const bar = el2('div', 'bar', ''), fill = document.createElement('i'); fill.style.width = `${Math.min(100, m.count / m.goal * 100)}%`; bar.append(fill); card.append(bar);
     card.append(el2('div', 'hint', `${m.count} / ${m.goal}  (${m.goal - m.count}번 남았어요)${m.daily ? ' · 🔁 매일 한 번씩 보태는 누적 미션' : ''}`));
-    card.append(el2('div', 'hint', `🎁 성공하면 ${m.sh ? `함께한 친구 모두 🐚 ${m.sh} · ` : ''}${rewardLine(m.reward)}`));
+    card.append(el2('div', 'hint', `🎁 성공하면 ${m.sh ? `함께한 친구 모두 🐚 ${m.sh}` : ''}${mRewOff(m) ? '' : `${m.sh ? ' · ' : ''}${rewardLine(m.reward)}`}`));
     const row = el2('div', 'row-center', ''), b = el2('button', 'btn mp-go', '');
     const mine = mDone(m), busy = missionBusy === m.key;
     b.disabled = !!missionBusy || mine; b.textContent = busy ? '⏳ 보내는 중…' : mine ? (m.daily ? '👍 오늘은 했어요! 내일 또 눌러요' : '👍 이미 함께했어요!') : m.daily ? '✅ 오늘도 미션을 했어요!' : '✅ 나도 미션을 했어요!';
@@ -5622,7 +5643,7 @@ function fillTeacherPanel() {
     ? '학생 화면에는 보이지 않아요. 바꾼 내용은 같은 반 코드로 들어온 모두에게 바로 반영돼요.'
     : '학생 화면에는 보이지 않아요. 지금은 이 브라우저에만 저장돼요 (다른 기기와 공유 안 됨).';
   fillMissionAdmin();
-  if (!tpReward) tpReward = (MREWARDS.find(r => !DECOR_OFF.has(r.id) && !REWARD_OFF.has(r.id) && !mrewardHas(r.id) && !activeMissions().some(m => m.reward === r.id)) || MREWARDS[0]).id;
+  tpReward = 'arch'; // 1022b: 미션 보상은 🐚 조개돈 (장소·꾸미기 없음 · arch는 보이지 않는 자리표)
   const t = tally();
   $('tpVote').textContent = !t.total ? '🗳️ 아직 투표가 없어요'
     : t.winners.length > 1 ? `🗳️ 동점이에요: ${t.winners.map(id => REWARD[id].icon + ' ' + REWARD[id].name).join(', ')} (${t.max}표)`
@@ -5649,7 +5670,7 @@ async function startMissionFromPanel() {
   if (activeMissions().length >= 8) { err.textContent = '진행 중인 미션은 8개까지예요. 먼저 끝내거나 지워 주세요'; return; }
   const rw = MREWARD[tpReward];
   const msh = +($('tpMShell')?.value || 0);
-  if (rw && mrewardHas(tpReward) && !msh && !(await confirmAction({ title: '🎁 이미 생긴 보상이에요', body: `${rw.icon} ${rw.name}은(는) 이미 마을에 있어요.\n성공해도 새로 생기는 것은 없어요. 그래도 추가할까요?`, okText: '추가' }))) return;
+  if (false && !(await confirmAction({ title: '🎁 이미 생긴 보상이에요', body: `${rw.icon} ${rw.name}은(는) 이미 마을에 있어요.\n성공해도 새로 생기는 것은 없어요. 그래도 추가할까요?`, okText: '추가' }))) return;
   $('tpStart').disabled = true;
   const id = Date.now().toString(36);
   const res = await backend.addMission({ id, title, goal, reward: tpReward, count: 0, at: Date.now(), ...(daily ? { daily: true } : {}), ...(msh ? { sh: msh } : {}) });
@@ -5669,7 +5690,7 @@ function fillMissionAdmin() {
   if (!list.length) box.append(el2('div', 'vempty', '아직 미션이 없어요. 아래에서 추가해 주세요'));
   for (const m of list) {
     const done = m.count >= m.goal, row = el2('div', 'tp-mrow', '');
-    row.append(el2('div', '', `${done ? '🎉' : m.daily ? '🔁' : '🎯'} ${m.title} (${m.count}/${m.goal})${m.daily ? ' · 매일 누적' : ''} · 🎁 ${MREWARD[m.reward]?.icon || ''} ${MREWARD[m.reward]?.name || ''}${m.sh ? ` + 🐚${m.sh}` : ''}${done ? ' · 완료' : ''}`));
+    row.append(el2('div', '', `${done ? '🎉' : m.daily ? '🔁' : '🎯'} ${m.title} (${m.count}/${m.goal})${m.daily ? ' · 매일 누적' : ''} · 🎁 ${mRewOff(m) ? '' : `${MREWARD[m.reward]?.icon || ''} ${MREWARD[m.reward]?.name || ''} + `}🐚${m.sh || 0}${done ? ' · 완료' : ''}`));
     const btns = el2('div', 'row-center wrap', ''); btns.style.margin = '0';
     const base = m.legacy ? 'mission' : `missions/${m.id}`;
     if (!done) { const b = el2('button', 'btn', '✅ 성공'); b.onclick = () => adminCompleteMission(m); btns.append(b); }
@@ -5682,7 +5703,7 @@ function fillMissionAdmin() {
 }
 async function adminCompleteMission(m) {
   const rw = MREWARD[m.reward];
-  if (!(await confirmAction({ title: '✅ 미션을 성공으로 할까요?', body: `"${m.title}" 진행도를 ${m.goal} / ${m.goal}로 채워요.${rw && !mrewardHas(m.reward) ? `\n${rw.done.replace('생겼어요', '생겨요')}` : ''}`, okText: '성공 처리' }))) return;
+  if (!(await confirmAction({ title: '✅ 미션을 성공으로 할까요?', body: `"${m.title}" 진행도를 ${m.goal} / ${m.goal}로 채워요.${rw && !mrewardHas(m.reward) && !mRewOff(m) ? `\n${rw.done.replace('생겼어요', '생겨요')}` : ''}${m.sh ? `\n참여한 학생 모두 🐚${m.sh}` : ''}`, okText: '성공 처리' }))) return;
   const upd = { [`${m.legacy ? 'mission' : `missions/${m.id}`}/count`]: m.goal };
   if (!mrewardHas(m.reward)) upd[`unlocks/${m.reward}`] = m.legacy ? true : m.id;
   adminDo(upd, '✅ 미션을 성공으로 처리했어요');
@@ -6705,7 +6726,7 @@ function fillBigBoard() {
     const rw = MREWARD[m.reward];
     const bar = bigBar(m.count, m.goal, '');
     bar.querySelector('span').textContent = `${m.count} / ${m.goal}`;
-    mi.append(el('div', 'bb-title', m.title), bar, el('div', 'bb-sub', `${m.goal - m.count}번 남았어요${rw ? ` · 🎁 ${rw.icon} ${rw.name}` : ''}`));
+    mi.append(el('div', 'bb-title', m.title), bar, el('div', 'bb-sub', `${m.goal - m.count}번 남았어요${mRewOff(m) ? (m.sh ? ` · 🎁 모두 🐚${m.sh}` : '') : rw ? ` · 🎁 ${rw.icon} ${rw.name}` : ''}`));
   }
   if (!ms.length) mi.append(el('div', 'bb-empty', '진행 중인 미션이 없어요'));
 
@@ -8176,6 +8197,16 @@ function batchStatic(root) {
 }
 
 
+// 🏷️ 마을 이름 (1022c · 정의는 들판보다 먼저)
+const VNAME_DEF = '우리 집 마을';
+const vnameOf = () => S.vname?.name || VNAME_DEF;
+const vnW = { g: null, sign: null, lab: null, key: '', chip: null, ph: '' };
+function vnameSign() { // 입구 아치 표지 다시 그리기
+  const nm = vnameOf(); if (vnW.key === nm || !vnW.g) return; vnW.key = nm;
+  if (vnW.sign) { vnW.g.remove(vnW.sign); vnW.sign.material?.map?.dispose?.(); }
+  vnW.sign = signPlane(vnW.g, [`🏡 ${nm}`], 6.4, 0.85, 0, 4.1, 59.8, { font: nm.length > 6 ? 52 : 60, pad: 4, fg: '#3B2F2A', stroke: false }); vnW.sign.rotation.y = Math.PI;
+  vnW.lab?.userData.set([`🏡 ${nm}`, `마음에 드는 자리에서 땅을 사요 (🐚${LAND_PRICE}~, ${MAX_LOTS}곳까지)`]);
+}
 /* =====================================================================
    35. 우리 집 마을 (넓은 들판) — 마음에 드는 자리에 서서 🐚 조개돈으로 땅을 사고, 집을 짓고 꾸며요.
    (한 사람 한 곳. 이름은 저장하지 않아요. 땅에는 옷 색 깃발과 동물 배지만. 친구 땅은 구경만)
@@ -8402,8 +8433,8 @@ function buildHomeVillage() {
   // 입구 아치와 표지
   for (const x of [-3.3, 3.3]) { cyl(g, 0.3, 4.2, 0xF4A6C2, x, 2.1, 60); ball(g, 0.45, C.gold, x, 4.4, 60, o); }
   box(g, 7.4, 0.9, 0.35, 0xF4A6C2, 0, 4.1, 60, o);
-  signPlane(g, ['🏡 우리 집 마을'], 6.4, 0.85, 0, 4.1, 59.8, { font: 60, pad: 4, fg: '#3B2F2A', stroke: false }).rotation.y = Math.PI;
-  makeLabel(g, ['🏡 우리 집 마을', `마음에 드는 자리에서 땅을 사요 (🐚${LAND_PRICE}~, ${MAX_LOTS}곳까지)`], 1.5, 0, 6.6, 60);
+  vnW.g = new THREE.Group(); vnW.g.name = 'VillageNameSign'; scene.add(vnW.g); vnameSign(); // 🏷️ 마을 이름 (투표로 정해요)
+  vnW.lab = makeLabel(vnW.g, [`🏡 ${vnameOf()}`, `마음에 드는 자리에서 땅을 사요 (🐚${LAND_PRICE}~, ${MAX_LOTS}곳까지)`], 1.5, 0, 6.6, 60);
   // 큰길 가로등, 가장자리 나무 (흔들 수 있어요)
   for (let x = -84; x <= 56; x += 28) lantern(g, x + 7, 62.2, 2.4);
   for (const [x, z] of [[-89, 152], [-70, 152], [-42, 152], [-14, 152], [14, 152], [42, 152], [-89, 110], [-89, 70]]) makeTree(x, z, g);
@@ -10172,7 +10203,7 @@ function fillFestAdmin() {
   $('tpFestEnd').disabled = !on;
 }
 function initFestAdmin() {
-  $('tpFestK').onchange = () => { const k = $('tpFestK').value; $('tpFestGoal').value = k === 'parade' ? 20 : k === 'fish' ? 30 : 10; $('tpFestGoal').disabled = k === 'house' || k === 'hunt'; };
+  $('tpFestK').onchange = () => {}; // 1022b: 행사는 예쁜 집 자랑 대회만
   $('tpFestK').onchange();
   $('tpFestGo').onclick = async () => {
     const k = $('tpFestK').value, min = +$('tpFestMin').value || 8, goal = clamp(Math.round(+$('tpFestGoal').value || 10), 1, 300);
@@ -13561,24 +13592,35 @@ function printRecord(id) {
 // ---------- 선생님 관리 화면 — 🏫 학급회의 ----------
 function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hidden'); fillTeacherPanel(); tpShowFor($('tpMeetSec')); setTimeout(() => $('tpMeetSec')?.scrollIntoView({ block: 'start' }), 80); }
 // 🗂️ 선생님 관리 화면 탭: 제목(h3)마다 묶어서 카테고리 탭으로 보여요 (고른 탭은 이 기기에 기억)
-const TP_TABS = [
-  ['class', '🧑‍🏫 수업', /수업 도구|학급회의|선생님 모습|게시판 공지|닉네임|감사 게시판|건의함/],
-  ['mission', '🎯 미션·투표', /공동 미션|완료한 마을 미션|보상 투표|제안 투표/],
-  ['play', '🎮 놀이', /숨바꼭질|벽화|건물 안 활동|온실/],
-  ['village', '🏯 마을', /역사 마을|성 공방전|서당 문제|수학 광산|가게와 반 기부|우리 집 마을/],
-  ['setup', '⚙️ 설정', /상태 파일|초기화|계절·시간/],
-];
+const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투표'], ['village', '🏘️ 마을'], ['play', '🎮 놀이'], ['setup', '⚙️ 설정']];
+// 1022b: 탭마다 보여 줄 순서 (제목으로 찾아요) · 마을 탭은 마을별 묶음 · 목록에 없는 것(선생님 모습·게시판 공지·업데이트 투표·마을 미션 기록·보상 투표 등)은 숨겨요
+const TP_LAYOUT = {
+  class: [/수업 도구/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
+  mission: [/공동 미션 \(/, /히든 미션/],
+  village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', []], ['⛏️ 수학 마을', [/수학 광산/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
+  play: [/성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /행사/],
+  setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
+};
 function initTpTabs() {
   const form = $('tpForm'); if (!form || $('tpTabs')) return;
   const secs = []; let cur = null;
   for (const el of [...form.childNodes]) {
-    if (el.nodeType === 1 && el.tagName === 'H3') { const t = el.textContent; cur = document.createElement('div'); cur.className = 'tp-sec'; cur.dataset.tab = (TP_TABS.find(([, , re]) => re.test(t)) || TP_TABS[0])[0]; form.insertBefore(cur, el); secs.push(cur); }
+    if (el.nodeType === 1 && el.tagName === 'H3') { cur = document.createElement('div'); cur.className = 'tp-sec'; cur.dataset.tab = 'gone'; form.insertBefore(cur, el); secs.push(cur); }
     if (cur) cur.appendChild(el);
   }
+  { const row = $('tpRuleCheck')?.parentNode, res = $('tpRuleResult'); if (row) { const sec = document.createElement('div'); sec.className = 'tp-sec'; sec.dataset.tab = 'gone'; const h = document.createElement('h3'); h.textContent = '🔎 Firebase 규칙 점검'; sec.append(h, row, res); form.appendChild(sec); secs.push(sec); } }
+  const title = (x) => x.querySelector('h3')?.textContent || '', used = new Set();
+  const take = (re, tab) => { for (const x of secs) if (!used.has(x) && re.test(title(x)) && x.querySelector('h3')?.style.display !== 'none') { used.add(x); x.dataset.tab = tab; form.appendChild(x); } };
+  for (const [tab] of TP_TABS) for (const it of TP_LAYOUT[tab]) {
+    if (Array.isArray(it)) { const [name, res] = it, g = document.createElement('div'); g.className = 'tp-sec tp-grp'; g.dataset.tab = tab; const h = document.createElement('h3'); h.textContent = name; h.className = 'tp-grp-h'; g.append(h); form.appendChild(g);
+      const before = used.size; res.forEach(re => take(re, tab)); if (used.size === before) g.append(el2('p', 'hint', '아직 따로 정할 것이 없어요.')); }
+    else take(it, tab);
+  }
+  for (const x of secs) if (!used.has(x)) { x.dataset.tab = 'gone'; x.hidden = true; form.appendChild(x); }
   const bar = document.createElement('div'); bar.id = 'tpTabs'; bar.setAttribute('role', 'tablist'); bar.setAttribute('aria-label', '관리 화면 카테고리');
   for (const [k, label] of TP_TABS) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tp-tab'; b.dataset.tab = k; b.setAttribute('role', 'tab'); b.textContent = label; b.onclick = () => tpTab(k, true); bar.appendChild(b); }
   form.parentNode.insertBefore(bar, form);
-  { const setup = secs.find(x => x.dataset.tab === 'setup'), row = $('tpRuleCheck')?.parentNode, res = $('tpRuleResult'); if (setup && row) { const sec = document.createElement('div'); sec.className = 'tp-sec'; sec.dataset.tab = 'setup'; const h = document.createElement('h3'); h.textContent = '🔎 Firebase 규칙 점검'; sec.append(h, row, res); form.insertBefore(sec, setup); } } // 규칙 점검은 ⚙️ 설정 탭으로
+  $('tpPraiseOpen')?.addEventListener('click', () => { closeModals(); openPraise(); });
   tpTab(store.get('sv-tptab') || 'class');
 }
 function tpTab(k, user) {
@@ -15971,6 +16013,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1022c', d: '10월 22일', items: ['🏷️ 우리 집 마을의 새 이름을 함께 정해요! 선생님이 열면 이름 후보를 내고 투표해요'] },
+  { id: '1022b', d: '10월 22일', items: ['🎯 공동 미션 보상이 🐚 조개돈으로 바뀌었어요 (참여한 친구 모두)'] },
   { id: '1021f', d: '10월 21일', items: ['👫 친구 배에 함께 타요! 바다에서 친구 배 가까이 가서 E → 빈 자리에 타요 (뗏목 1 · 나룻배 2 · 돛단배 3 · 해적선 5자리)', '⛵ 배 모양이 예뻐졌어요 (속이 빈 배 · 돛 · 난간 · 대포)', '👗 펫 가게에 펫 옷! 이달의 계절 옷 · 마을 테마 옷(과거시험·수레 레이스·영어 보물찾기·배 만들기로 열려요)'] },
   { id: '1021e', d: '10월 21일', items: ['💰 🌳 마당·가구 가게에서 가구와 마당 장식을 팔 수 있어요 (산 값의 절반)', '👤 같은 반 코드 + 같은 닉네임이면 다른 기기에서도 같은 계정이에요 (집·가방·조개돈 그대로)'] },
   { id: '1021d', d: '10월 21일', items: ['📜 역사 마을 서당 옆 기와집이 과거시험장이 됐어요! 선생님이 문제를 내면 열려요 · 안에서는 선비옷 🎩 · 장원급제하면 시험장 앞 방에 이름이 걸리고 그 주 동안 이름표에 🎓장원'] },
@@ -16103,7 +16147,7 @@ function fillIdeaAdmin() {
     row.append(el2('span', 'sg-name', `${x.ok ? '✅' : '🆕'} ${x.t}`), el2('span', 'hint', when));
     const ok = el2('button', 'btn', x.ok ? '↩️' : '✅'); ok.title = x.ok ? '새 건의로 되돌리기' : '읽었어요'; ok.onclick = () => adminDo({ [`idea/${x.k}/ok`]: !x.ok }, x.ok ? '🆕 새 건의로 되돌렸어요' : '✅ 읽음으로 표시했어요');
     const del = el2('button', 'btn danger', '🗑️'); del.title = '지우기'; del.onclick = () => adminDo({ [`idea/${x.k}`]: null }, '🗑️ 건의를 지웠어요');
-    const pick = el2('button', 'btn', '➕ 후보'); pick.title = '업데이트 투표 후보로'; pick.disabled = !!S.upvote?.open || upw.cands.length >= 4 || upw.cands.some(c => c.k === x.k);
+    const pick = el2('button', 'btn', '➕ 후보'); pick.hidden = true; /* 1022b 업데이트 투표 없앰 */ pick.title = '업데이트 투표 후보로'; pick.disabled = !!S.upvote?.open || upw.cands.length >= 4 || upw.cands.some(c => c.k === x.k);
     pick.onclick = () => { upw.cands.push({ t: x.t.slice(0, 60), u: x.k.slice(0, x.k.lastIndexOf('_')), k: x.k }); box.dataset.key = ''; fillIdeaAdmin(); fillUpAdmin(true); };
     row.append(pick, ok, del); box.append(row);
   }
@@ -20946,6 +20990,62 @@ function boardRemotes(dt) { // updateRemotes 다음: 배에 탄 친구들을 선
   { let d = h + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 1.5); }
   const [N, nd] = isleNear(p), t = nd < 4.5 ? `${N.icon} ${N.n} 옆이에요!` : p.x < 84 ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`; if ($('boardDir').textContent !== t) $('boardDir').textContent = t;
 }
+// ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
+// state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
+function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
+function openVname() {
+  openLife('🏷️ 마을 이름 정하기', (box) => {
+    box.textContent = ''; const V = S.vname || {}, me = backend.uid, ph = V.ph;
+    box.append(el2('p', 'hint', `들판에 땅을 사고 집을 짓는 우리 마을의 이름을 함께 정해요. 지금 이름: 🏡 ${vnameOf()}`));
+    if (ph === 'collect') {
+      box.append(el2('p', 'lp-big', '📝 이름 후보를 내요 (한 사람 하나 · 8글자까지)'));
+      const inp = el2('input', 'tinput', null); inp.maxLength = 8; inp.placeholder = '예: 햇살 마을'; inp.value = V.c?.[me] || ''; inp.autocomplete = 'off';
+      const b = el2('button', 'btn', V.c?.[me] ? '✏️ 바꾸기' : '📝 내기'); b.style.background = '#FFD23C';
+      b.onclick = async () => { const t = cleanNick(inp.value); if (!t) return; if (nickBad(t)) { toast('🙅 친구가 기분 나쁠 수 있는 말은 쓸 수 없어요', 'warn'); return; } const r = await backend.vnameSet('c', t); if (r.ok) { playSfx('pick'); toast(`📝 "${t}" 후보를 냈어요!`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 내지 못했어요 (후보 받기가 끝났을 수 있어요)', 'warn'); };
+      inp.onkeydown = (e) => { if (e.key === 'Enter' && !e.isComposing) b.click(); };
+      box.append(inp, el2('div', 'row-center', null)); box.lastChild.append(b);
+      const list = Object.values(V.c || {}); box.append(el2('p', 'hint', list.length ? `지금까지 나온 후보 ${list.length}개: ${list.join(' · ')}` : '아직 후보가 없어요. 첫 번째로 내 봐요!'));
+      return;
+    }
+    if (ph === 'vote') {
+      const mine = V.v?.[me], t = vnameTally();
+      box.append(el2('p', 'lp-big', '🗳️ 마음에 드는 이름에 투표해요 (한 사람 한 표 · 마감 전에는 바꿀 수 있어요)'));
+      for (const [k, n] of t) { const b = el2('button', 'btn', `${mine === k ? '✅ ' : ''}🏡 ${V.c[k]}${mine ? ` · ${n}표` : ''}`); b.style.cssText = `display:block;width:100%;margin:6px 0;font-size:19px;background:${mine === k ? '#FFE066' : '#fff'}`;
+        b.onclick = async () => { const r = await backend.vnameSet('v', k); if (r.ok) { playSfx('pick'); toast(`🗳️ "${V.c[k]}"에 투표했어요`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 투표하지 못했어요', 'warn'); }; box.append(b); }
+      if (!mine) box.append(el2('p', 'hint', '투표하면 지금까지 표 수가 보여요.'));
+      return;
+    }
+    box.append(el2('p', 'lp-big', V.ph === 'done' ? `🎉 우리 마을 이름은 "🏡 ${vnameOf()}"!` : '지금은 이름 정하기를 하고 있지 않아요.'));
+  });
+}
+function fillVnameAdmin() {
+  const box = $('tpVname'); if (!box || !isTeacher) return; const V = S.vname || {}, key = JSON.stringify(V); if (box.dataset.key === key) return; box.dataset.key = key; box.textContent = '';
+  const grpH = [...document.querySelectorAll('.tp-grp-h')].find(h => h.dataset.vn || /이름 미정|🏡/.test(h.textContent)); if (grpH) { grpH.dataset.vn = 1; grpH.textContent = S.vname?.name ? `🏡 ${S.vname.name} (예전 우리 집 마을)` : '🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)'; }
+  box.append(el2('p', 'hint', `지금 이름: 🏡 ${vnameOf()}${V.ph === 'collect' ? ' · 📝 후보 받는 중' : V.ph === 'vote' ? ' · 🗳️ 투표 중' : ''}`));
+  const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = fn; row.append(b); return b; };
+  if (!V.ph || V.ph === 'done') B('📝 이름 후보 받기 시작', '#FFD23C', () => adminDo({ vname: { ph: 'collect', name: V.name || '', at: Date.now() } }, '📝 마을 이름 후보를 받아요! 학생 화면에 알림이 떠요'));
+  if (V.ph === 'collect') { const n = Object.keys(V.c || {}).length;
+    for (const [u, t] of Object.entries(V.c || {})) { const x = el2('button', 'btn', `✖ ${t}`); x.title = '이 후보 지우기'; x.style.cssText = 'background:#fff;font-size:15px;padding:5px 9px'; x.onclick = () => adminDo({ [`vname/c/${u}`]: null }, `✖ "${t}" 후보를 지웠어요`); box.append(x); }
+    if (!n) box.append(el2('p', 'vempty', '아직 후보가 없어요'));
+    B(`🗳️ 투표 시작 (후보 ${n}개)`, '#FFD23C', () => { if (n < 2) { toast('후보가 2개 이상 있어야 해요', 'warn'); return; } adminDo({ 'vname/ph': 'vote', 'vname/v': null }, '🗳️ 마을 이름 투표를 시작했어요!'); }); }
+  if (V.ph === 'vote') { const t = vnameTally(), tot = t.reduce((a, [, n]) => a + n, 0); for (const [k, n] of t) box.append(el2('div', 'rank-row', `🏡 ${V.c[k]} · ${n}표`)); box.append(el2('p', 'hint', `모두 ${tot}명 투표했어요`));
+    B('⏹ 마감하고 이름 정하기', '#FFD23C', async () => { const top = t[0]; if (!top || !top[1]) { toast('아직 표가 없어요', 'warn'); return; } const ties = t.filter(([, n]) => n === top[1]); const name = V.c[top[0]];
+      if (ties.length > 1 && !(await confirmAction({ title: '🤝 동점이에요', body: `${ties.map(([k]) => V.c[k]).join(', ')}이(가) ${top[1]}표로 같아요.\n"${name}"(으)로 정할까요? (취소하면 투표를 이어 가요)`, okText: '정하기' }))) return;
+      adminDo({ 'vname/ph': 'done', 'vname/name': name.slice(0, 10) }, `🎉 우리 마을 이름은 "${name}"!`); }); }
+  if (V.ph === 'collect' || V.ph === 'vote') B('그만두기', '#fff', () => adminDo({ 'vname/ph': 'done' }, '이름 정하기를 그만뒀어요 (이름은 그대로)'));
+  if (V.name) B('↩️ 처음 이름(우리 집 마을)으로', '#fff', () => adminDo({ 'vname/name': '' }, '↩️ 이름을 처음으로 되돌렸어요'));
+  box.append(row);
+}
+function vnameTick() { // 1초마다: 표지 · 알림 칩 · 단계가 바뀌면 알림
+  vnameSign(); const V = S.vname || {}, ph = joined ? (V.ph || '') : '';
+  if (vnW.chip) { const show = ph === 'collect' || ph === 'vote', t = ph === 'collect' ? '🏷️ 마을 이름 후보를 내요!' : '🗳️ 마을 이름 투표 중!'; vnW.chip.classList.toggle('hidden', !show); if (vnW.chip.textContent !== t) vnW.chip.textContent = t; }
+  if (stateLoaded && ph !== vnW.ph) { if (vnW.ph !== '' || ph === 'collect' || ph === 'vote') { if (ph === 'collect') toast('🏷️ 우리 마을(예전 우리 집 마을) 이름 후보를 받아요! 왼쪽 아래 버튼을 눌러요', 'info'); if (ph === 'vote') toast('🗳️ 마을 이름 투표가 시작됐어요!', 'info'); if (ph === 'done' && V.name && vnW.ph) showBanner('🎉 우리 마을 이름이 정해졌어요!', `🏡 ${V.name}`, 6000); } vnW.ph = ph; }
+  if (isTeacher && !$('teacherPanel').classList.contains('hidden')) fillVnameAdmin();
+}
+function initVname() {
+  const c = document.createElement('button'); c.id = 'vnameChip'; c.className = 'btn sticker hidden'; c.onclick = openVname; document.body.append(c); vnW.chip = c;
+  setInterval(() => { try { vnameTick(); } catch (e) { } }, 1000);
+}
 // ================= 🎲 반월쉼터 (1021a): 보드게임 방 · 앉아서 보드게임 웹앱 하기 =================
 // 마을 건물(광장 북서쪽) → 들어가면 방 고르기 → 게임마다 꾸민 방(ROOMS bg1·bg2) → 탁자에서 E: 앉아서 게임 화면(iframe) · 새 게임은 BOARD_GAMES에 한 줄 + 방 꾸미기
 const BG_HOUSE = { x: -24, z: -27, w: 10, d: 8 };
@@ -21013,7 +21113,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard();
+buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
 buildPretty();
 buildMountain();
 buildQuizBoard();
