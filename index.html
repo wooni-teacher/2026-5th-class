@@ -1429,8 +1429,9 @@
     <p class="hint">학생들이 머리 위 말풍선으로 짧게(30자) 이야기해요. 나쁜 말은 막고, 대화는 저장하지 않아요 (한 사람당 마지막 한 줄만 1분 동안 있다가 저절로 지워져요). 수업 중에는 꺼 두세요.</p>
     <div id="tpChat"></div>
 
-    <h3>🙈 변신 숨바꼭질 (메인 마을)</h3>
-    <p class="hint">참가자를 모은 뒤 시작하면 참가자 중 1명이 술래가 돼요. 숨기 40초 → 찾기 3분. 숨는 사람은 마을 물건으로 변신해요.</p>
+    <h3>🙈 변신 숨바꼭질 (마을을 골라요)</h3>
+    <p class="hint">마을을 고르고 참가자를 모은 뒤 시작하면, 참가자가 모두 그 마을로 옮겨지고 술래를 뽑아요. 숨기 40초 → 찾기 3분. 숨는 사람은 그 마을에 어울리는 물건으로 변신하고, 그 마을 울타리 안에서만 숨어요.</p>
+    <div class="row-center wrap"><label style="font-size:16px">🗺️ 숨바꼭질 마을 <select id="tpHideV" class="tinput" style="width:auto"><option value="main">🏫 메인 마을</option><option value="hv">🏯 역사 마을</option><option value="ev">🗽 영어 마을</option><option value="math">⛏️ 수학 마을</option><option value="field">🏡 들판 마을 (예전 우리 집 마을)</option></select></label></div>
     <p class="hint" id="tpHideNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><button class="btn" id="tpHideMe" style="background:#fff">🧑‍🏫 선생님도 참가</button><div id="tpHidePick" class="row-center wrap" style="width:100%"></div><label class="sr-only" for="tpHideSk">술래 수</label><select id="tpHideSk" class="tinput" style="width:auto"><option value="1" selected>술래 1명</option><option value="2">술래 2명</option><option value="3">술래 3명</option></select><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
 
@@ -16013,6 +16014,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1022d', d: '10월 22일', items: ['🙈 숨바꼭질을 마을마다 해요! 메인 · 역사 · 영어 · 수학 · 들판 마을 중 선생님이 고르면 시작할 때 모두 그 마을로 옮겨져요 (마을마다 변신 물건이 달라요)'] },
   { id: '1022c', d: '10월 22일', items: ['🏷️ 우리 집 마을의 새 이름을 함께 정해요! 선생님이 열면 이름 후보를 내고 투표해요'] },
   { id: '1022b', d: '10월 22일', items: ['🎯 공동 미션 보상이 🐚 조개돈으로 바뀌었어요 (참여한 친구 모두)'] },
   { id: '1021f', d: '10월 21일', items: ['👫 친구 배에 함께 타요! 바다에서 친구 배 가까이 가서 E → 빈 자리에 타요 (뗏목 1 · 나룻배 2 · 돛단배 3 · 해적선 5자리)', '⛵ 배 모양이 예뻐졌어요 (속이 빈 배 · 돛 · 난간 · 대포)', '👗 펫 가게에 펫 옷! 이달의 계절 옷 · 마을 테마 옷(과거시험·수레 레이스·영어 보물찾기·배 만들기로 열려요)'] },
@@ -17297,6 +17299,16 @@ const PROPS = [null, // 변신할 수 있는 물건 10가지
   { icon: '🧺', name: '과일 바구니', t: 10 }, { icon: '🏺', name: '장독대', t: 17 }, { icon: '🍊', name: '과일나무', t: 12 }, { icon: '🐦', name: '솟대', t: 19 },
 ];
 const hide = { prop: 0, rewarded: '', endSent: '', bar: false, potion: false, sneakUntil: 0, radarUntil: 0, beepAt: 0 };
+// 🗺️ 1022d: 마을별 숨바꼭질 (state/hide/v) — 시작하면 참가자가 그 마을로 옮겨지고, 그 마을 울타리 안에서 숨어요 · 마을마다 어울리는 물건으로 변신
+const HIDE_VIL = {
+  main: { n: '🏫 메인 마을', at: () => [0, -9], in: (x, z) => inTown(x, z), props: [1, 2, 3, 4, 5, 6, 7, 9] },
+  hv: { n: '🏯 역사 마을', at: () => [HV.x0 + 6, 0], in: (x, z) => inHV(x, z), props: [1, 5, 6, 8, 9, 10] },
+  ev: { n: '🗽 영어 마을', at: () => [EV.bus[0] + 3, 0], in: (x, z) => inEV(x, z), props: [1, 2, 3, 4, 6, 7] },
+  math: { n: '⛏️ 수학 마을', at: () => [MV.station[0] + 4, MV.station[1] + 1], in: (x, z) => inMath(x, z), props: [1, 3, 5, 6, 7, 9] },
+  field: { n: '🏡 들판 마을', at: () => [0, 68], in: (x, z) => inField(x, z), props: [1, 2, 3, 4, 6, 7, 9, 10] },
+};
+const hideVil = () => HIDE_VIL[S.hide?.v] || HIDE_VIL.main;
+const hideVilName = (k) => k === 'field' ? `🏡 ${vnameOf()}` : (HIDE_VIL[k] || HIDE_VIL.main).n;
 const hidePick = new Set(); // 🧑‍🏫 술래로 정한 참가자
 // 🛠️ 숨바꼭질 도구 (마을 가게 · 🐚 · 한 게임에 도구마다 한 번)
 const HIDE_ITEMS = {
@@ -17377,7 +17389,7 @@ function updateHide(dt) {
   const canProp = hideOn() && hideIn(me) && !iAmSeeker() && !hideFound(me);
   if (!canProp && hide.prop) hide.prop = 0;
   disguise(player.avatar, hide.prop);
-  if (hideLocked() && !hide.prop) { hide.prop = 1 + Math.floor(Math.random() * (PROPS.length - 1)); toast(`🎲 변신을 안 해서 ${PROPS[hide.prop].icon} ${PROPS[hide.prop].name}(으)로 바뀌었어요!`, 'info'); }
+  if (hideLocked() && !hide.prop) { const ps = hideVil().props; hide.prop = ps[Math.floor(Math.random() * ps.length)]; toast(`🎲 변신을 안 해서 ${PROPS[hide.prop].icon} ${PROPS[hide.prop].name}(으)로 바뀌었어요!`, 'info'); }
   for (const [uid, r] of remotes) { const p = hideOn() && hideIn(uid) && !hideFound(uid) && !isSeeker(uid) ? (r.target.p | 0) : 0; disguise(r.a, p >= 1 && p < PROPS.length ? p : 0); }
   // 술래 눈 가리기
   const blind = hideBlind();
@@ -17392,7 +17404,9 @@ function updateHide(dt) {
     else if (h.ph === 'seek' && (!left.length || now >= h.t2)) { hide.endSent = h.id; backend.hideSet({ ph: 'end', win: left.length ? 'hide' : 'seek' }); }
   }
   // 숨는 사람이 울타리 밖으로 나가면 안내
-  if (canProp && !inTown(player.pos.x, player.pos.z) && performance.now() - (hide.warnAt || 0) > 6000) { hide.warnAt = performance.now(); toast('🙈 숨바꼭질은 마을 울타리 안에서만 해요! 안으로 돌아와요', 'warn'); }
+  if (canProp && !hideVil().in(player.pos.x, player.pos.z) && performance.now() - (hide.warnAt || 0) > 6000) { hide.warnAt = performance.now(); toast(`🙈 숨바꼭질은 ${hideVilName(S.hide?.v)} 안에서만 해요! 안으로 돌아와요`, 'warn'); }
+  // 🗺️ 시작되면 참가자는 그 마을로 (한 판에 한 번)
+  if (h && h.ph === 'hide' && hideIn(me) && hide.tpId !== h.id && !hv.travel) { hide.tpId = h.id; const V = hideVil(); if (!V.in(player.pos.x, player.pos.z)) { const [tx, tz] = V.at(); if (sail.on || sea.on) boatQuiet(); if (cart.on) cartEnd(false); if (boardW.on) boardEnd(''); closeModals(); player.pos.set(tx + (Math.random() - 0.5) * 3, 0.15, tz + (Math.random() - 0.5) * 3); player.vy = 0; toast(`🗺️ ${hideVilName(h.v)}(으)로 왔어요! 여기서 숨바꼭질을 해요`, 'info'); } }
 }
 function renderHideBar() {
   const h = S.hide, me = backend?.uid, bar = $('hideBar');
@@ -17401,7 +17415,7 @@ function renderHideBar() {
   if (!show) return;
   const now = backend.now(), hiders = Object.keys(h.in || {}).filter(u => !isSeeker(u)), found = hiders.filter(hideFound).length, nsk = Object.keys(h.in || {}).filter(isSeeker).length;
   let title = '', sub = '';
-  if (h.ph === 'join') { title = '🙈 변신 숨바꼭질 참가자 모집 중'; sub = `참가 ${Object.keys(h.in || {}).length}명 · 선생님이 시작하면 술래를 뽑아요`; }
+  if (h.ph === 'join') { title = `🙈 변신 숨바꼭질 참가자 모집 중 · ${hideVilName(h.v)}`; sub = `참가 ${Object.keys(h.in || {}).length}명 · 선생님이 시작하면 모두 ${hideVilName(h.v)}(으)로 옮겨지고 술래를 뽑아요`; }
   else if (h.ph === 'hide') { title = iAmSeeker() ? `🙈 나는 술래!${nsk > 1 ? ` (술래 ${nsk}명)` : ''} 눈을 감고 있어요` : hideIn(me) ? '🏃 숨어요! 물건으로 변신하고 자리를 잡아요 (찾기가 시작되면 못 움직여요)' : '🙈 숨바꼭질 중 (구경해요)'; sub = `찾기 시작까지 ${Math.max(0, Math.ceil((h.t1 - now) / 1000))}초`; }
   else if (h.ph === 'seek') { title = iAmSeeker() ? '🔍 술래! 변신한 친구를 찾아요' : hideFound(me) ? '👻 찾혔어요! 구경하며 응원해요' : hideIn(me) ? '🧊 그 자리에서 꼼짝 마! 들키지 않게 숨어 있어요' : '🔍 숨바꼭질 중 (구경해요)'; sub = `찾은 친구 ${found} / ${hiders.length} · 남은 시간 ${Math.max(0, Math.ceil((h.t2 - now) / 1000))}초`; }
   else { title = h.win === 'seek' ? '🎉 술래가 모두 찾았어요!' : '🎉 숨은 친구들이 이겼어요!'; sub = `찾은 친구 ${found} / ${hiders.length}`; }
@@ -17412,7 +17426,7 @@ function renderHideBar() {
   $('hideProps').classList.toggle('hidden', !picking);
   if (picking && $('hideProps').dataset.p !== String(hide.prop)) {
     $('hideProps').dataset.p = String(hide.prop); $('hideProps').textContent = '';
-    PROPS.forEach((d, i) => { const b = el2('button', 'btn hide-prop' + (hide.prop === i ? ' on' : ''), d ? d.icon : '🙂'); b.title = d ? `${d.name}으로 변신` : '원래 모습'; b.setAttribute('aria-label', b.title); b.onclick = () => { hide.prop = i; if (hide.potion && S.hide?.ph === 'seek' && i) { hide.potion = false; $('hideProps').dataset.p = ''; toast(`🎭 ${d.name}(으)로 바뀌었어요!`, 'success'); } if (i) { playSfx('plop'); burst(player.pos.clone().setY(1), [0xFFFFFF, C.gold], 20, 3, 2); } renderHideBar(); }; $('hideProps').append(b); });
+    PROPS.forEach((d, i) => { if (i && !hideVil().props.includes(i)) return; const b = el2('button', 'btn hide-prop' + (hide.prop === i ? ' on' : ''), d ? d.icon : '🙂'); b.title = d ? `${d.name}으로 변신` : '원래 모습'; b.setAttribute('aria-label', b.title); b.onclick = () => { hide.prop = i; if (hide.potion && S.hide?.ph === 'seek' && i) { hide.potion = false; $('hideProps').dataset.p = ''; toast(`🎭 ${d.name}(으)로 바뀌었어요!`, 'success'); } if (i) { playSfx('plop'); burst(player.pos.clone().setY(1), [0xFFFFFF, C.gold], 20, 3, 2); } renderHideBar(); }; $('hideProps').append(b); });
   }
   // 술래: 가까운 변신 친구가 있으면 찾았다 버튼
   let target = null;
@@ -17470,7 +17484,7 @@ function fillNickAdmin(force) {
 }
 function fillHideAdmin() {
   const h = S.hide, n = Object.keys(h?.in || {}).length;
-  $('tpHideNow').textContent = !h ? '지금 숨바꼭질을 하고 있지 않아요' : h.ph === 'join' ? `참가자 모집 중 (${n}명)` : h.ph === 'end' ? `끝났어요 (${h.win === 'seek' ? '술래 승리' : '숨은 친구 승리'})` : `${h.ph === 'hide' ? '숨는 중' : '찾는 중'} · 참가 ${n}명`;
+  $('tpHideNow').textContent = !h ? '지금 숨바꼭질을 하고 있지 않아요' : `${hideVilName(h.v)} · ` + ( h.ph === 'join' ? `참가자 모집 중 (${n}명)` : h.ph === 'end' ? `끝났어요 (${h.win === 'seek' ? '술래 승리' : '숨은 친구 승리'})` : `${h.ph === 'hide' ? '숨는 중' : '찾는 중'} · 참가 ${n}명`);
   $('tpHideStart').disabled = !h || h.ph !== 'join' || n < Math.max(+($('tpHideSk')?.value || 1), hidePick.size) + 1;
   { const box = $('tpHidePick'), ids = h?.ph === 'join' ? Object.keys(h.in || {}) : []; for (const u of [...hidePick]) if (!ids.includes(u)) hidePick.delete(u); // 🙋 술래 지정 (참가자 이름을 눌러요)
     const key = JSON.stringify([ids, [...hidePick], ids.map(u => nickOf(u, remotes.get(u)?.target))]); if (box.dataset.k !== key) { box.dataset.k = key; box.textContent = '';
@@ -17484,7 +17498,7 @@ function initHideUI() {
   $('hideJoin').onclick = () => backend.hideJoin();
   $('hideFind').onclick = hideFindNow;
   addEventListener('keydown', e => { if (e.key.toLowerCase() === 'f' && !e.repeat && !$('hideFind').classList.contains('hidden') && !$('hideFind').disabled && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); hideFindNow(); } });
-  $('tpHideOpen').onclick = () => adminDo({ hide: { ph: 'join', id: Date.now().toString(36), in: isTeacher ? {} : {} } }, '🙈 숨바꼭질 참가자를 모아요');
+  $('tpHideOpen').onclick = () => { const v = $('tpHideV')?.value || 'main'; adminDo({ hide: { ph: 'join', id: Date.now().toString(36), v, in: {} } }, `🙈 ${hideVilName(v)} 숨바꼭질 참가자를 모아요`); };
   $('tpHideStart').onclick = () => {
     const h = S.hide, ids = Object.keys(h?.in || {}), picked = [...hidePick].filter(u => ids.includes(u)), k = Math.min(3, Math.max(+($('tpHideSk')?.value || 1), picked.length)); if (!h || ids.length < k + 1) { toast(`술래 ${k}명이면 참가자가 ${k + 1}명 넘어야 해요`, 'warn'); return; }
     const sks = [...picked, ...hShuffle(ids.filter(u => !picked.includes(u)))].slice(0, k), now = backend.now(); hidePick.clear(); // 🙋 고른 친구가 먼저 술래, 모자라면 무작위
