@@ -8980,6 +8980,7 @@ const bag = (() => {
   try { const s = JSON.parse(raw || 'null'); if (s && s.m) Object.assign(b, s, { m: { ...b.m, ...s.m } }); } catch { /* 망가지면 새 가방 */ }
   return b;
 })();
+{ let fix = false; for (const o of [bag.m, bag.c, bag.f]) if (o && typeof o === 'object') for (const [k, v] of Object.entries(o)) if (typeof v === 'number' && (v < 0 || !Number.isFinite(v))) { o[k] = 0; fix = true; } if (fix) setTimeout(() => saveBag(), 0); } // 1023d: 이미 -가 된 재료는 0으로 고쳐요
 function saveBag() { bag._at = Date.now(); store.set(BAG_KEY, JSON.stringify(bag)); renderCoinChip(); }
 // 👤 1021e 닉네임 계정: 가방을 rooms/{반}/bags/{uid}에도 저장 → 다른 기기에서 같은 닉네임으로 들어오면 이어서 써요
 const bagW = { up: 0, timer: null };
@@ -9024,7 +9025,7 @@ function hasNeed(need) {
 }
 function takeNeed(need) { // 곤충·물고기는 값이 싼 것부터 써요
   for (const [k, n] of Object.entries(need)) {
-    if (!KIND_CH[k]) { bag.m[k] -= n; continue; }
+    if (!KIND_CH[k]) { bag.m[k] = Math.max(0, (bag.m[k] || 0) - n); continue; }
     let left = n;
     const ids = Object.keys(bag.c).filter(id => id[0] === KIND_CH[k] && bag.c[id] > 0).sort((a, b) => CRITTER[a].price - CRITTER[b].price);
     for (const id of ids) { while (left > 0 && bag.c[id] > 0) { bag.c[id]--; left--; } if (!bag.c[id]) delete bag.c[id]; }
@@ -9659,7 +9660,11 @@ function openShop() {
     box.append(el2('p', 'vempty', saveNote()));
   });
 }
+let sellBusy = false; // 1023d: 팔기 버튼을 빠르게 두 번 누르면 같은 물건을 두 번 빼서 재료가 -가 되던 문제
 async function sell(r, n) { // 반 동전은 값만큼, 내 조개돈은 절반 · 하루 가게 예산 · 오늘 많이 판 물건은 값이 내려가요
+  if (sellBusy) return; sellBusy = true; try { await sellOnce(r, n); } finally { sellBusy = false; }
+}
+async function sellOnce(r, n) {
   const have = r.mat ? bag.m[r.key] : bag.c[r.key];
   n = Math.min(n, have || 0); if (!n) return;
   const cap = capNow(), left = cap ? cap - earnToday() : Infinity;
@@ -9669,7 +9674,7 @@ async function sell(r, n) { // 반 동전은 값만큼, 내 조개돈은 절반 
   if (!k) { toast(`🏪 오늘 가게 예산이 🐚${left}밖에 안 남아서 이 물건은 팔 수 없어요. 내일 또 와요!`, 'warn'); return; }
   const ok = await earnCoins(coins);
   if (!ok) { refillLife(); return; }
-  if (r.mat) bag.m[r.key] -= k; else { bag.c[r.key] -= k; if (!bag.c[r.key]) delete bag.c[r.key]; }
+  if (r.mat) bag.m[r.key] = Math.max(0, (bag.m[r.key] || 0) - k); else { bag.c[r.key] = Math.max(0, (bag.c[r.key] || 0) - k); if (!bag.c[r.key]) delete bag.c[r.key]; }
   bag.sold[r.key] = c0 + k; bag.earn.n += shells;
   earnShell(shells);
   guideDone('sell'); playSfx('coin');
@@ -14698,12 +14703,17 @@ function hpetUpdate(dt) {
     if (hpw.patI) hpw.patI.pos.set(near ? m.position.x : 0, near ? 1 : -99, m.position.z);
   } else if (hpw.patI) hpw.patI.pos.set(0, -99, 0);
   // 같이 산책: 나와 친구 뒤를 따라와요
-  const want = new Map(); { const d = hpDecode(hpetCode()); if (d) d.ow = hpetOw(); if (d && !homeRegion()) want.set('me', [player.avatar?.g, d]); }
-  for (const [u, r] of remotes) { const d = hpDecode(r.target?.e); if (d) d.ow = (r.target?.f | 0) % 16; if (d && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, d]); }
+  const want = new Map(); { const d = hpDecode(hpetCode()); if (d) d.ow = hpetOw(); if (d && !homeRegion()) want.set('me', [player.avatar?.g, d, player.avatar]); }
+  for (const [u, r] of remotes) { const d = hpDecode(r.target?.e); if (d) d.ow = (r.target?.f | 0) % 16; if (d && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, d, r.a]); }
   for (const [u, f] of hpw.follow) { const w = want.get(u); if (!w || w[1].k !== f.d.k || w[1].acc !== f.d.acc || w[1].spark !== f.d.spark || w[1].heart !== f.d.heart || (w[1].ow | 0) !== (f.d.ow | 0)) { scene.remove(f.g); hpw.follow.delete(u); } }
-  for (const [u, [ag, d]] of want) {
+  for (const [u, [ag, d, av]] of want) {
     if (!ag) continue; let f = hpw.follow.get(u);
     if (!f) { f = { g: hpetModel(d.k, d.acc, d.spark, d.ow | 0), d }; f.g.userData.heart = d.heart; f.g.position.copy(ag.position); scene.add(f.g); hpw.follow.set(u, f); }
+    if (av?.rideK === 'car' && av.rideG?.g) { // 🚗 1023d: 자동차를 타면 펫도 뒷자리에 같이 타요
+      if (!av.rideG.petSeat) { const ps = new THREE.Group(), o = { solid: false }; box(ps, 0.8, 0.16, 0.5, 0xE2584A, 0, 0, 0, o); box(ps, 0.8, 0.3, 0.06, 0xC0392B, 0, 0.18, -0.24, o); box(ps, 0.7, 0.05, 0.4, 0xF4E6C8, 0, 0.09, 0, o); ps.position.set(0, 0.86, -0.95); av.rideG.g.add(ps); av.rideG.petSeat = ps; }
+      av.rideG.g.updateMatrixWorld(true); const sp = av.rideG.g.localToWorld(new V3(0, 0.98, -0.95)); f.g.position.copy(sp); f.g.rotation.y = ag.rotation.y; f.g.scale.setScalar(0.8); hpetAnim(f.g, dt, false); f.seat = true; continue;
+    }
+    if (f.seat) { f.seat = false; f.g.scale.setScalar(1); }
     const back = new V3(Math.sin(ag.rotation.y + 2.4) * 1.3, 0, Math.cos(ag.rotation.y + 2.4) * 1.3).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
     if (dd > 12) f.g.position.copy(back); const mv = dd > 0.35; if (mv) { const sp = Math.min(dd * 3, 9); f.g.position.x += dx / dd * sp * dt; f.g.position.z += dz / dd * sp * dt; f.g.rotation.y = Math.atan2(dx, dz); }
     f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8); hpetAnim(f.g, dt, mv);
