@@ -1350,6 +1350,10 @@
     <div class="row-center wrap" style="margin-top:6px"><label for="tpRestAuto" class="hint" style="margin:0">⏰ 오래 하면 자동으로 쉬기</label><select id="tpRestAuto" class="tinput" style="width:auto"><option value="0">끄기</option><option value="15">15분마다</option><option value="20">20분마다</option><option value="30">30분마다</option><option value="40">40분마다</option></select><select id="tpRestLen" class="tinput" style="width:auto"><option value="60">1분 쉬기</option><option value="90">1분 30초 쉬기</option><option value="120">2분 쉬기</option></select></div>
     <p class="hint">쉬는 시간에는 학생 화면이 모두 가려지고 눈·몸 쉬기 안내가 나와요. ⏰ 자동 쉬기는 학생마다 쉬지 않고 한 시간을 세어서, 정한 시간이 지나면 그 학생 화면만 잠깐 가려요 (공방전·숨바꼭질 같은 놀이 중이면 놀이가 끝날 때까지 조금 기다려 줘요).</p>
 
+    <h3>😀 이모티콘 확인</h3>
+    <p class="hint">학생이 12×12 칸에 그린 이모티콘이에요. ✅를 눌러야 학생이 쓸 수 있고, 쓰면 친구들 화면에도 보여요. (얼굴 꾸미기 이모티콘은 정해진 모양이라 확인이 필요 없어요)</p>
+    <div id="tpEmo"></div>
+
     <h3>🙋 발표 칭찬 · ⭐ 능력치 주기</h3>
     <p class="hint">오른쪽 아래 🙋 버튼과 같아요. 발표한 학생 칭찬(🐚 + 반 발표 목표), 학생을 골라 능력치 주기, 📝 우리 반 명단 저장을 해요.</p>
     <div class="row-center"><button class="btn" id="tpPraiseOpen" style="background:#FFE9A8">🙋 발표 칭찬 · ⭐ 능력치 주기 열기</button></div>
@@ -1428,6 +1432,10 @@
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpBlkRefill" style="background:#fff">⛰️ 블록 산 다시 채우기</button><button class="btn danger" id="tpMathReset">⛏️ 광산 마을 처음으로</button></div>
+
+    <h3>🐉 펫 체육관 보스 레이드</h3>
+    <p class="hint">보스를 부르면 우리 반이 함께 체력을 깎아요 (한 사람 하루 3번 · 한 번에 8턴). 물리치면 도전한 학생 모두 🐚 150 + 펫 경험치, 마지막 한 방은 🐚 50 더. 학생 화면에는 많이 깎은 5명만 보여요.</p>
+    <div id="tpRaid"></div>
 
     <h3>🏟️ 펫 체육관 관장 속성</h3>
     <p class="hint">1단계 우리 마을 · 2단계 수학 광산 마을 · 3단계 역사 마을 · 4단계 영어 마을. 속성을 바꾸면 관장 펫이 그 속성으로 바뀌어요.</p>
@@ -2115,7 +2123,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2152,6 +2160,8 @@ function normalize(v) {
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {}, fall: toObj(v.siege.fall), cc: toObj(v.siege.cc), kd: toObj(v.siege.kd) } : null,
     roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
+    emo: Object.fromEntries(Object.entries(plainObj(v.emo)).filter(([k, x]) => /^[A-Za-z0-9_-]{3,60}$/.test(k) && x && typeof x.p === 'string' && /^[0-8]{144}$/.test(x.p)).slice(0, 200).map(([k, x]) => [k, { p: x.p, ok: x.ok === true, nm: typeof x.nm === 'string' ? x.nm.slice(0, 12) : '', at: +x.at || 0 }])),
+    raid: v.raid && typeof v.raid === 'object' && v.raid.r ? { r: String(v.raid.r), k: String(v.raid.k || 'fire'), lv: isInt(v.raid.lv, 1, 30) ? v.raid.lv : 18, hp: Math.max(0, +v.raid.hp || 0), max: Math.max(1, +v.raid.max || 1), at: +v.raid.at || 0, last: typeof v.raid.last === 'string' ? v.raid.last.slice(0, 12) : '', by: plainObj(v.raid.by), nm: plainObj(v.raid.nm) } : null,
     hm: v.hm && typeof v.hm === 'object' ? { r: String(v.hm.r || ''), sh: isInt(v.hm.sh, 0, 300) ? v.hm.sh : 50, on: plainObj(v.hm.on), hint: plainObj(v.hm.hint), got: Object.fromEntries(Object.entries(plainObj(v.hm.got)).map(([k, x]) => [k, plainObj(x)])) } : null,
     vname: v.vname && typeof v.vname === 'object' ? { ph: ['collect', 'vote', 'done'].includes(v.vname.ph) ? v.vname.ph : '', name: typeof v.vname.name === 'string' ? v.vname.name.slice(0, 10) : '', c: Object.fromEntries(Object.entries(plainObj(v.vname.c)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string' && t).map(([u, t]) => [u, t.slice(0, 8)])), v: Object.fromEntries(Object.entries(plainObj(v.vname.v)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string')) } : null,
     gw: v.gw && typeof v.gw === 'object' ? { open: v.gw.open === true, n: v.gw.n | 0, title: String(v.gw.title || '').slice(0, 30), cur: v.gw.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.gw.ph) ? v.gw.ph : 'wait', qs: Object.values(toObj(v.gw.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)) })), rev: Object.fromEntries(Object.entries(toObj(v.gw.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), res: v.gw.res ? { sc: plainObj(v.gw.res.sc), top: String(v.gw.res.top || '').slice(0, 12), tsc: v.gw.res.tsc | 0 } : null } : null,
@@ -2472,6 +2482,9 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     },
     async chatSend(t, nm) { chatRemote({ me: { t, nm, at: Date.now() } }); return { ok: true }; },
     async earnPut(o) { (st._earn ||= {}).me = { ...o, at: Date.now() }; return { ok: true }; },
+    async emoPost(p, nm) { (st.emo ||= {})[`me_${Date.now().toString(36)}`] = { p, nm, ok: false, at: Date.now() }; emit(); return { ok: true }; },
+    async emoDel(k) { if (st.emo) delete st.emo[k]; emit(); return { ok: true }; },
+    async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
     async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
@@ -2953,6 +2966,12 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     acct, async bagGet() { try { return (await D.get(R(`bags/${uid}`))).val(); } catch (e) { return null; } }, async bagAt() { try { return (await D.get(R(`bags/${uid}/at`))).val() || 0; } catch (e) { return -1; } }, async bagPut(j, at) { try { await D.set(R(`bags/${uid}`), { j, at, nk: cleanNick(myNick) || '' }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎒 닉네임 계정 가방 (다른 기기에서 이어서)
     async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
     async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async emoPost(p, nm) { try { await D.set(R(`state/emo/${uid}_${Date.now().toString(36)}`), { p, nm, ok: false, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 😀 도트 이모티콘 (선생님 확인 전에는 ok: false)
+    async emoDel(k) { try { await D.set(R(`state/emo/${k}`), null); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async raidHit(d, nm) { // 🐉 보스 체력 깎기 (줄어드는 쪽만 · 규칙이 막아요) · 내 기록 · 0이 되면 마지막 한 방
+      try { const r = await D.runTransaction(R('state/raid/hp'), c => typeof c === 'number' && c > 0 ? Math.max(0, c - Math.min(3000, d)) : undefined); if (!r.committed) return { ok: false }; const hp = r.snapshot.val();
+        await D.runTransaction(R(`state/raid/by/${uid}`), c => (c || 0) + Math.min(3000, d)).catch(() => {}); await D.set(R(`state/raid/nm/${uid}`), nm).catch(() => {});
+        if (hp === 0) await D.runTransaction(R('state/raid/last'), c => c ? undefined : nm).catch(() => {}); return { ok: true, hp }; } catch (e) { return { ok: false }; } },
     async hmGot(k, nm) { try { await D.set(R(`state/hm/got/${k}/${uid}`), nm); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🕵️ 히든 미션 찾음 (선생님이 봐요)
     async vnameSet(kind, val) { try { await D.set(R(`state/vname/${kind}/${uid}`), val); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏷️ 마을 이름 후보·투표 // 📜 과거시험 답 (문제가 열려 있을 때만)
     async earnClear() { try { await D.set(R('earn'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
@@ -4120,10 +4139,10 @@ function fillChatAdmin() {
 }
 function initEmotes() {
   const bar = $('emoteBar'), btn = $('emoteBtn');
-  const toggle = (show = bar.classList.contains('hidden')) => { bar.classList.toggle('hidden', !show); btn.setAttribute('aria-expanded', show); if (show) bar.querySelector('button')?.focus(); };
+  const toggle = (show = bar.classList.contains('hidden')) => { if (show) try { renderEmoBar(); } catch (e) { console.warn(e); } bar.classList.toggle('hidden', !show); btn.setAttribute('aria-expanded', show); if (show) bar.querySelector('button')?.focus(); };
   btn.onclick = () => { if (joined) toggle(); }; initChat();
   $('rideBtn').onclick = () => openRides(); initFlyBar(); // 🚲 탈것 가게 · 타기/내리기 · 🐲 날기 버튼
-  bar.querySelectorAll('button').forEach(b => b.onclick = () => {
+  bar.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => {
     if (!joined || isFrozen() || onCooldown('emote', 0.8)) return;
     if (life.fishing) endFishing();
     playAct(player.avatar, b.dataset.k); toggle(false); btn.focus();
@@ -4397,6 +4416,7 @@ function sendPresence(time) {
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
+  if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } } // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
@@ -4808,7 +4828,7 @@ function applyState(st) {
   syncThx(prev, first);
   syncHide(prev, first);
   if (S.chatOff && !isTeacher && !$('chatBox').classList.contains('hidden')) chatShow(false);
-  readTreeSync(); pbSync(); pgSync(); if (JSON.stringify([prev.pgb, prev.pgq]) !== JSON.stringify([S.pgb, S.pgq])) pgPanelRefresh(); syncPest(prev, first); renderPots(false); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🪴 내 화분') refillLife();
+  readTreeSync(); pbSync(); pgSync(); try { raidSync(prev); if (JSON.stringify(prev.emo) !== JSON.stringify(S.emo)) { if (!$('teacherPanel').classList.contains('hidden')) fillEmoAdmin(); const mineOk = emoMinePix().filter(x => x.ok).map(x => x.k), was = Object.entries(prev.emo || {}).filter(([k, x]) => x?.ok && k.startsWith(backend.uid + '_')).map(([k]) => k); if (!isTeacher && mineOk.some(k => !was.includes(k))) toast('😀 선생님이 내 그림 이모티콘을 확인해 주셨어요! 😊 몸짓 창에서 써 봐요', 'success'); } } catch (e) { console.warn(e); } if (JSON.stringify([prev.pgb, prev.pgq]) !== JSON.stringify([S.pgb, S.pgq])) pgPanelRefresh(); syncPest(prev, first); renderPots(false); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🪴 내 화분') refillLife();
   renderRooms(false); if (!$('teacherPanel').classList.contains('hidden')) fillRoomAdmin();
   syncMural(prev, first);
   syncMeeting(prev, first);
@@ -5664,7 +5684,7 @@ function fillTeacherPanel() {
   $('tpNote').textContent = backend?.mode === 'firebase'
     ? '학생 화면에는 보이지 않아요. 바꾼 내용은 같은 반 코드로 들어온 모두에게 바로 반영돼요.'
     : '학생 화면에는 보이지 않아요. 지금은 이 브라우저에만 저장돼요 (다른 기기와 공유 안 됨).';
-  fillMissionAdmin(); try { fillHmAdmin(); } catch (e) { console.warn(e); }
+  fillMissionAdmin(); try { fillHmAdmin(); fillRaidAdmin(); fillEmoAdmin(); } catch (e) { console.warn(e); }
   tpReward = 'arch'; // 1022b: 미션 보상은 🐚 조개돈 (장소·꾸미기 없음 · arch는 보이지 않는 자리표)
   const t = tally();
   $('tpVote').textContent = !t.total ? '🗳️ 아직 투표가 없어요'
@@ -10361,7 +10381,13 @@ const RIDES = [
   { k: 'cloud', icon: '☁️', name: '구름', price: 26000, mul: 1.45, desc: '둥실둥실 떠다녀요 · 빠르기 +45%' },
   { k: 'dino', icon: '🦖', name: '공룡', price: 32000, mul: 1.5, desc: '쿵쿵 큰 공룡 · 빠르기 +50%' },
   { k: 'dragon', icon: '🐉', name: '용', price: 45000, mul: 1.6, desc: '날개를 펄럭이며 날아요 · 빠르기 +60%' },
+  // 👫 1023e 함께 타는 탈것: 친구가 가까이에서 E로 뒷자리에 타요 (v는 15~17 · 11 하늘 용 · 12 배 · 13 수레 · 14는 비워 둬요)
+  { k: 'tandem', icon: '🚲', name: '2인용 자전거', price: 12000, mul: 1.3, v: 15, duo: { seats: [[0, -0.78]], pseat: 1.0, ppose: 'pedal' }, desc: '👫 친구 1명이 뒷자리에 타요 · 빠르기 +30%' },
+  { k: 'wagon', icon: '🐴', name: '마차', price: 24000, mul: 1.35, v: 16, duo: { seats: [[-0.36, -1.05], [0.36, -1.05], [-0.36, -1.75], [0.36, -1.75]], pseat: 0.82, ppose: 'sit' }, desc: '👫 친구 4명까지 마차에 타요 · 빠르기 +35%' },
+  { k: 'train', icon: '🚂', name: '꼬마 기차', price: 36000, mul: 1.3, v: 17, duo: { seats: [[0, -1.55], [0, -2.25], [0, -3.25], [0, -3.95], [0, -4.95]], pseat: 0.66, ppose: 'sit' }, desc: '👫 친구 5명까지 칸에 타요 · 칙칙폭폭 · 빠르기 +30%' },
 ];
+const rideV = (R0, i) => R0.v || i + 1; // 탈것 번호 (players/{uid}/v)
+const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r]));
 const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; // 👑 공성전 왕만 (사지 않아요)
 const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
@@ -10435,13 +10461,14 @@ function rideBlockMe() { // 지금 내가 탈 수 없는 까닭 (없으면 '')
   if (isSeated(player.avatar) || kite.active || hv.travel || spec.on) return '잠깐 내렸어요';
   return '';
 }
-const myRideV = () => { const k = bag.ride; return k && rideOpen(k) && !rideBlockMe() ? (k === 'sky' ? RIDE_SKY_V : RIDE_K.indexOf(k) + 1) : 0; };
+const myRideV = () => { const k = bag.ride; return k && rideOpen(k) && !rideBlockMe() && !boardW.on ? (k === 'sky' ? RIDE_SKY_V : rideV(RIDE_BY[k], RIDE_K.indexOf(k))) : 0; };
 function rideWant(a, uid, pos, v) { // 이 친구가 지금 탈 것
   if (a.propP || !pos) return '';
   if (S.siege?.on && sgInSG(pos)) return sgIsKing(uid) && !sgHurt(uid) ? 'royal' : '';
   if (uid === backend?.uid && trRegion()) return trw.role === 'king' ? 'royal' : '';
   if ((v | 0) === RIDE_SKY_V) return uid === backend?.uid ? (skyHave() ? 'sky' : '') : 'sky'; // 🐲 친구 화면에도 날아요
-  const k = RIDES[(v | 0) - 1]?.k; return k && rideOpen(k) ? k : '';
+  { const D = duoSeatOf(uid); if (D) return 'pass_' + D.k; } // 👫 친구 탈것 뒷자리
+  const R0 = DUO_BY_V[v | 0] || ((v | 0) >= 1 && (v | 0) <= 10 ? RIDES[(v | 0) - 1] : null), k = R0?.k; return k && rideOpen(k) ? k : ''; // 11 하늘 용 · 12 배 · 13 수레는 여기서 안 읽어요
 }
 function updateRides() {
   if (!backend) return;
@@ -10484,7 +10511,7 @@ function openRides() {
       tx.append(el2('b', '', `${R0.name}${open ? ' ✅' : ''}`), el2('span', 'hint', open ? R0.desc : `${R0.desc} · 🪙${R0.price.toLocaleString()}`));
       const b = el2('button', 'btn');
       if (open) { b.textContent = on ? '내리기' : '타기'; if (!on) b.style.background = '#FFE066'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount(R0.k); refillLife(); };
-        const dc = el2('button', 'btn', '🎨'); dc.title = '꾸미기'; dc.setAttribute('aria-label', `${R0.name} 꾸미기`); dc.onclick = () => openRideDeco(R0.k); row.append(el2('span', 'ride-ic', R0.icon), tx, dc, b); box.append(row); continue; }
+        const dc = el2('button', 'btn', '🎨'); dc.title = '꾸미기'; dc.setAttribute('aria-label', `${R0.name} 꾸미기`); dc.onclick = () => openRideDeco(R0.k); row.append(el2('span', 'ride-ic', R0.icon), tx, ...(RIDE_MAIN[R0.k] ? [dc] : []), b); box.append(row); continue; }
       else {
         b.textContent = `🪙${R0.price.toLocaleString()} 열기`; b.style.background = '#CDEFC2';
         b.disabled = !coinCan(R0.price) || (!isTeacher && rideBoughtToday());
@@ -10554,6 +10581,31 @@ function rideBuild(a, k) {
     B(g, 0.86, 0.4, 0.05, 0xBFE6FF, 0, 1.1, 0.32, { rx: -0.35 }); B(g, 0.6, 0.08, 0.4, 0x3B3B46, 0, 0.58, -0.12);
     for (const x of [-0.32, 0.32]) O(g, 0.08, 0xFFF6B0, x, 0.6, 0.84); Y(g, 0.16, 0.04, 0x3B3B46, 0, 0.95, 0.15, { rx: 1.2 });
     seat = 0.62; pose = 'sit'; arms = -1.25; sh = 1.6;
+  } else if (k === 'tandem') { // 🚲 2인용 자전거
+    wheel(g, 0.4, 0.07, 0, 0.4, 0.62); wheel(g, 0.4, 0.07, 0, 0.4, -1.32);
+    B(g, 0.08, 0.08, 1.95, 0xF29B38, 0, 0.62, -0.35); for (const z of [-0.05, -0.83]) { B(g, 0.08, 0.5, 0.08, 0xF29B38, 0, 0.75, z); B(g, 0.26, 0.08, 0.36, 0x3B3B46, 0, 0.98, z); }
+    B(g, 0.08, 0.75, 0.08, 0xF29B38, 0, 0.78, 0.52, { rx: 0.25 }); B(g, 0.66, 0.05, 0.05, 0xC9CED6, 0, 1.18, 0.55); B(g, 0.5, 0.05, 0.05, 0xC9CED6, 0, 1.08, -0.45);
+    seat = 1.0; pose = 'pedal'; arms = -1.15; sh = 1.6;
+  } else if (k === 'wagon') { // 🐴 마차: 앞에 말 · 마부 자리 · 뒤에 객실
+    const q = new THREE.Group(); q.position.z = 1.55; q.scale.setScalar(0.82); g.add(q); const c = 0xF2EEE6, mane = 0x8A6A44;
+    B(q, 0.62, 0.62, 1.35, c, 0, 1.15, 0); B(q, 0.36, 0.75, 0.42, c, 0, 1.6, 0.68, { rx: -0.5 }); B(q, 0.34, 0.36, 0.62, c, 0, 1.95, 0.98, { rx: 0.25 }); for (const x of [-0.12, 0.12]) O(q, 0.045, 0x1E1E24, x * 1.5, 2.02, 1.12);
+    B(q, 0.1, 0.7, 0.18, mane, 0, 1.78, 0.55, { rx: -0.5 }); tails.push(B(q, 0.14, 0.7, 0.14, mane, 0, 1.0, -0.78, { rx: 0.5 }));
+    for (const [x, z, f] of [[-0.2, 0.52, 0], [0.2, 0.52, Math.PI], [-0.2, -0.52, Math.PI], [0.2, -0.52, 0]]) leg(q, x, 0.88, z, 0.17, 0.85, c, f, 0x3B3B46);
+    for (const x of [-0.4, 0.4]) B(g, 0.06, 0.06, 1.4, 0x7A5436, x, 0.75, 0.75);
+    B(g, 1.3, 0.12, 0.7, 0x8A5A34, 0, 0.55, 0); B(g, 1.1, 0.1, 0.4, 0x7A3B2A, 0, 0.7, -0.05); // 마부 자리
+    B(g, 1.4, 0.14, 1.9, 0x8A5A34, 0, 0.62, -1.4); for (const x of [-0.7, 0.7]) B(g, 0.08, 0.5, 1.9, 0xB8864A, x, 0.9, -1.4); B(g, 1.4, 0.5, 0.08, 0xB8864A, 0, 0.9, -2.35);
+    for (const z of [-1.05, -1.75]) B(g, 1.2, 0.12, 0.34, 0x7A3B2A, 0, 0.74, z - 0.05);
+    for (const z of [-0.65, -2.25]) for (const x of [-0.7, 0.7]) B(g, 0.06, 1.3, 0.06, 0xB8864A, x, 1.45, z); B(g, 1.5, 0.08, 1.8, 0xE2584A, 0, 2.12, -1.45); // 지붕
+    for (const [x, z] of [[-0.78, -0.75], [0.78, -0.75], [-0.78, -2.05], [0.78, -2.05]]) wheel(g, 0.42, 0.1, x, 0.42, z, 0x7A5436, 0xC9A65E);
+    seat = 0.82; pose = 'sit'; arms = -1.0; sh = 2.6;
+  } else if (k === 'train') { // 🚂 꼬마 기차: 기관차 + 객차 2칸
+    B(g, 1.0, 0.5, 1.6, 0x3B6AC8, 0, 0.55, 0.15); Y(g, 0.4, 1.0, 0x2A4E9A, 0, 0.85, 0.6, { rx: Math.PI / 2 }); Y(g, 0.14, 0.5, 0x3B3B46, 0, 1.45, 0.85); B(g, 0.95, 0.75, 0.5, 0xE2584A, 0, 1.0, -0.45); B(g, 1.05, 0.08, 0.6, 0x3B3B46, 0, 1.4, -0.45);
+    O(g, 0.1, 0xFFF6B0, 0, 0.85, 1.12); for (const z of [0.55, -0.3]) for (const x of [-0.5, 0.5]) wheel(g, 0.24, 0.1, x, 0.24, z, 0x2E2E36, 0xE2584A);
+    const cars = [[-1.9, 0xFFD23C], [-3.6, 0x5FBE5A]]; for (const [z, c] of cars) { B(g, 0.08, 0.08, 0.5, 0x3B3B46, 0, 0.35, z + 1.05); B(g, 0.95, 0.4, 1.45, c, 0, 0.5, z); B(g, 0.85, 0.08, 1.3, 0x7A3B2A, 0, 0.62, z); for (const zz of [-0.45, 0.45]) for (const x of [-0.48, 0.48]) wheel(g, 0.2, 0.08, x, 0.2, z + zz); }
+    { const sm = []; g.userData.smoke = sm; }
+    seat = 0.66; pose = 'sit'; arms = -1.2; sh = 1.6;
+  } else if (k.startsWith('pass_')) { // 👫 친구 탈것 뒷자리에 앉은 모습 (탈것 모양은 선장 쪽에 있어요)
+    const D = RIDE_BY[k.slice(5)]?.duo; seat = D?.pseat || 0.7; pose = D?.ppose || 'sit'; arms = -0.9; sh = 0.01;
   } else if (k === 'cloud') {
     for (const [x, y, z, r] of [[0, 0.35, 0, 0.5], [-0.42, 0.3, 0.15, 0.36], [0.42, 0.3, 0.15, 0.36], [0, 0.3, 0.55, 0.36], [0, 0.32, -0.5, 0.4], [-0.35, 0.28, -0.35, 0.3], [0.35, 0.28, -0.35, 0.3]]) O(g, r, 0xFFFFFF, x, y, z);
     for (const x of [-0.12, 0.12]) O(g, 0.05, 0x3B3B46, x, 0.48, 0.88);
@@ -13658,7 +13710,7 @@ function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hi
 const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투표'], ['village', '🏘️ 마을'], ['play', '🎮 놀이'], ['setup', '⚙️ 설정']];
 // 1022b: 탭마다 보여 줄 순서 (제목으로 찾아요) · 마을 탭은 마을별 묶음 · 목록에 없는 것(선생님 모습·게시판 공지·업데이트 투표·마을 미션 기록·보상 투표 등)은 숨겨요
 const TP_LAYOUT = {
-  class: [/수업 도구/, /쉬는 시간/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
+  class: [/수업 도구/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', []], ['⛏️ 수학 마을', [/수학 광산/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /행사/],
@@ -15675,6 +15727,12 @@ function buildInteriors() {
     // 📒 독서 구석 (왼쪽): 독서 나무 · 기록장 책상 · 많이 읽은 책
     const cols = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E];
     box(g, 0.6, 2.6, 4, 0x8A5A34, cx - w / 2 + 0.5, 1.3, cz - 6); for (const y of [0.5, 1.25, 2.0]) for (let b = 0; b < 8; b++) box(g, 0.4, 0.55, 0.32, cols[(b + y * 2) % 6 | 0], cx - w / 2 + 0.75, y + 0.3, cz - 7.6 + b * 0.42, o);
+    { const rx = cx - w / 2 + 2.4, rz = cz + 4; // 🐉 보스 레이드 석상 (1023e)
+      cyl(g, 1.2, 0.5, 0x6E6A80, rx, 0.25, rz); cyl(g, 0.9, 0.3, 0x8A7AB0, rx, 0.65, rz); mesh(new THREE.TorusGeometry(1.0, 0.06, 6, 32), g, 1, 1, 1, 0xB07AFF, rx, 0.82, rz, { solid: false, rx: -Math.PI / 2, emissive: 0.8 });
+      mesh(SPH_LO, g, 0.55, 0.7, 0.55, 0x5A3A8A, rx, 1.4, rz, { solid: false, flat: true, emissive: 0.25 }); for (const s2 of [-1, 1]) mesh(CONE, g, 0.12, 0.45, 0.12, 0xF2D25C, rx + s2 * 0.25, 2.1, rz, { solid: false });
+      for (const s2 of [-1, 1]) mesh(SPH_LO, g, 0.6, 0.08, 0.35, 0x7A5AB0, rx + s2 * 0.6, 1.6, rz - 0.1, { solid: false, flat: true });
+      raidW.label = makeLabel(g, ['🐉 보스 레이드', '선생님이 보스를 부르면 열려요'], 0.62, rx, 3.1, rz);
+      addInteract({ pos: new V3(rx + 1.6, 1, rz), r: 2.6, text: () => roomNow() === 'lib' ? ['보스 레이드 🐉', raidOn() ? `❤️ ${S.raid.hp.toLocaleString()} 남음 · 우리 반 함께` : '보스 정보 보기'] : null, run: openRaid }); }
     bld.leafs = []; // (1017f) 체육관 안 독서 나무는 없앴어요 → 옛 텃밭 자리의 🌳 독서 나무
     buildPlazaRead(); // 📒 독서 책상은 광장으로 옮겼어요 (1019b)
   }
@@ -16087,6 +16145,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1023e', d: '10월 23일', items: ['👫 함께 타는 탈것: 2인용 자전거 · 마차 · 꼬마 기차 (친구 곁에서 E로 같이 타요)', '🐉 펫 체육관 보스 레이드! 선생님이 보스를 부르면 우리 반이 함께 물리쳐요', '😀 나만의 이모티콘: 😊 몸짓 창 → ✏️ 만들기 (얼굴 꾸미기 · 도트 그리기)'] },
   { id: '1023c', d: '10월 23일', items: ['😌 쉬는 시간이 생겼어요! 선생님이 쉬는 시간을 주시거나, 오래 놀면 잠깐 눈과 몸을 쉬어요'] },
   { id: '1022f', d: '10월 22일', items: ['⚔️ 성 공방전이 바뀌었어요! 👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이 · 전반전/작전 시간/후반전 · 🚩 성을 함락하면 상대가 포로가 돼요', '🏰 성에 동서남북 성문 4개와 해자가 생겼어요. 🛶 나루에서 배를 타고 건너요', '🙈 숨바꼭질 변신 물건이 마을마다 달라요 · 💌 감사 게시판에 히든 미션 쪽지가 붙어요'] },
   { id: '1022e', d: '10월 22일', items: ['🕵️ 히든 미션이 숨어 있어요! 마을 곳곳에서 이것저것 해 보면 깜짝 미션을 찾을 수 있어요 (찾으면 🐚)'] },
@@ -17701,20 +17760,20 @@ function pbStep(B, ch, rng) { // ch = [A가 고른 기술 번호, B가 고른 �
   const r0 = rng(); ord.sort((a, b) => pri(b) - pri(a) || sp(b) - sp(a) || (r0 < 0.5 ? -1 : 1) * (a - b));
   for (const i of ord) {
     if (B.over >= 0) break;
-    const me = pbMon(B.s[i]), fo = pbMon(B.s[1 - i]), k = mvOf(i), M = PMOVE[k], who = `${CRITTER[me.id].name}`;
+    const me = pbMon(B.s[i]), fo = pbMon(B.s[1 - i]), k = mvOf(i), M = PMOVE[k], who = `${me.nm || CRITTER[me.id].name}`;
     if (!me || me.hp <= 0) continue;
     ev.push({ s: i, k: 'use', t: `${who}의 ${M.n}!`, mt: M.t, mv: k });
     if (M.acc && rng() * 100 >= M.acc) { ev.push({ s: i, k: 'miss', t: '빗나갔어요!' }); continue; }
     if (M.fx === 'heal') { const h = Math.min(me.max - me.hp, Math.round(me.max * 0.4)); me.hp += h; ev.push({ s: i, k: 'heal', t: `체력을 ${h} 회복했어요`, hp: [B.s[0].mons.map(m => m.hp), B.s[1].mons.map(m => m.hp)] }); continue; }
     if (M.fx === 'atkUp') { me.sa = Math.min(2, me.sa + 1); ev.push({ s: i, k: 'buff', t: '공격이 올라갔어요!' }); continue; }
     if (M.fx === 'defUp') { me.sd = Math.min(2, me.sd + 1); ev.push({ s: i, k: 'buff', t: '방어가 올라갔어요!' }); continue; }
-    if (M.fx === 'defDown') { fo.sd = Math.max(-2, fo.sd - 1); ev.push({ s: 1 - i, k: 'debuff', t: `${CRITTER[fo.id].name}의 방어가 내려갔어요!` }); continue; }
+    if (M.fx === 'defDown') { fo.sd = Math.max(-2, fo.sd - 1); ev.push({ s: 1 - i, k: 'debuff', t: `${fo.nm || CRITTER[fo.id].name}의 방어가 내려갔어요!` }); continue; }
     const eff = petEff(M.t, petType(fo.id)), stab = M.t === petType(me.id) ? 1.2 : 1, crit = rng() < 1 / 16 ? 1.5 : 1;
     const dmg = Math.max(1, Math.round(M.pw * (me.atk * pbStage(me.sa)) / (fo.def * pbStage(fo.sd) + 8) * 0.55 * eff * stab * crit * (0.85 + rng() * 0.15)));
     fo.hp = Math.max(0, fo.hp - dmg);
     ev.push({ s: 1 - i, k: 'hit', d: dmg, eff, crit: crit > 1, t: `${crit > 1 ? '급소에 맞았어요! ' : ''}${eff > 1 ? '효과가 굉장했어요! ' : eff < 1 ? '효과가 별로였어요… ' : ''}${dmg} 피해`, hp: [B.s[0].mons.map(m => m.hp), B.s[1].mons.map(m => m.hp)] });
     if (fo.hp <= 0) {
-      ev.push({ s: 1 - i, k: 'faint', t: `${CRITTER[fo.id].name}이(가) 쓰러졌어요!` });
+      ev.push({ s: 1 - i, k: 'faint', t: `${fo.nm || CRITTER[fo.id].name}이(가) 쓰러졌어요!` });
       const sd = B.s[1 - i], nx = sd.mons.findIndex(m => m.hp > 0);
       if (nx < 0) { B.over = i; ev.push({ s: i, k: 'win', t: `${B.s[i].name} 승리!` }); }
       else { sd.cur = nx; ev.push({ s: 1 - i, k: 'next', cur: nx, t: `${sd.name}: 가라, ${CRITTER[sd.mons[nx].id].name}!` }); }
@@ -17819,7 +17878,7 @@ function pbCard(el, m, side) { // 🪪 이름표: 같은 펫이면 체력 막대
   if (!m) { el.textContent = ''; el.dataset.id = ''; return; }
   const c = CRITTER[m.id], t = PT[petType(m.id)];
   if (el.dataset.id !== m.id) { el.dataset.id = m.id; el.textContent = '';
-    const top = el2('div', 'pb-name'); top.append(el2('b', '', c.name), el2('span', 'pb-type', `${t.i} ${t.n}`), el2('span', 'pb-lv', `Lv${m.lv}`)); el.append(top);
+    const top = el2('div', 'pb-name'); top.append(el2('b', '', m.nm || c.name), el2('span', 'pb-type', `${t.i} ${t.n}`), el2('span', 'pb-lv', `Lv${m.lv}`)); el.append(top);
     const bar = el2('div', 'pb-hp'), tr = el2('div', 'pb-hptr'); tr.append(el2('b', 'pb-ghost'), el2('i', '')); bar.append(el2('span', 'pb-hpl', 'HP'), tr); el.append(bar, el2('div', 'pb-hpt', ''), el2('div', 'pb-dots', '')); }
   const r = Math.max(0, m.hp / m.max), fill = el.querySelector('.pb-hp i'), gh = el.querySelector('.pb-ghost'); fill.style.width = `${r * 100}%`; gh.style.width = `${r * 100}%`; // 줄어든 만큼 잠깐 빨갛게 남았다가 따라와요 fill.style.background = r > 0.5 ? 'linear-gradient(#7EE07A,#3FAF4A)' : r > 0.2 ? 'linear-gradient(#FFE066,#E8B400)' : 'linear-gradient(#FF8A7A,#E2584A)';
   el.querySelector('.pb-hpt').textContent = `${m.hp} / ${m.max}${m.sa ? ` · 공격${m.sa > 0 ? '↑' : '↓'}` : ''}${m.sd ? ` · 방어${m.sd > 0 ? '↑' : '↓'}` : ''}`;
@@ -17938,7 +17997,7 @@ function pb3SetMon(side, m) { // side 0 = 나 · 1 = 상대
   if (cur && cur.userData.id === m?.id) { cur.userData.alive = m.hp > 0; return; }
   if (cur) pb3.scene.remove(cur); pb3.mons[side] = null; if (!m) return;
   const g = pb3Pet(m.id), p = PB3_POS[side], o = PB3_POS[1 - side]; g.position.copy(p); g.rotation.y = Math.atan2(o.x - p.x, o.z - p.z); g.userData.alive = m.hp > 0; g.userData.base = p.clone(); g.userData.ry = g.rotation.y;
-  g.scale.setScalar(side ? 1.1 : 1.0); g.userData.sc = g.scale.x; pb3.scene.add(g); pb3.mons[side] = g;
+  g.scale.setScalar(m.boss ? 1.9 : side ? 1.1 : 1.0); g.userData.sc = g.scale.x; // 🐉 보스는 크게 pb3.scene.add(g); pb3.mons[side] = g;
   pb3Tween(450, (k) => { const s = g.userData.sc * (k < 0.7 ? k / 0.7 * 1.12 : 1.12 - (k - 0.7) / 0.3 * 0.12); g.scale.setScalar(Math.max(0.01, s)); });
   if (m.hp <= 0) { g.visible = false; }
 }
@@ -18041,14 +18100,15 @@ function pbRun(ch, seed) { // 계산은 한 번에 · 화면은 처음 값에서
   const ev = pbStep(B, ch, pbRng(seed)), fin = B.s.map(s => s.mons.map(m => m.hp)), fcur = B.s.map(s => s.cur), over = B.over;
   B.s.forEach((s, i) => { s.mons.forEach((m, j) => { m.hp = snap[i][j]; }); s.cur = curs[i]; }); B.over = -1;
   pb.busy = true; pbRender();
-  pbAnim(ev, () => { B.s.forEach((s, i) => { s.mons.forEach((m, j) => { m.hp = fin[i][j]; }); s.cur = fcur[i]; }); B.over = over; pb.busy = false; pbRender(); if (over >= 0) pbEnd(); });
+  pbAnim(ev, () => { B.s.forEach((s, i) => { s.mons.forEach((m, j) => { m.hp = fin[i][j]; }); s.cur = fcur[i]; }); B.over = over; pb.busy = false; if (over < 0 && pb.mode === 'raid' && B.turn >= RAID_TURNS) { B.over = 9; pbRender(); pbEnd(); return; } pbRender(); if (over >= 0) pbEnd(); }); // 🐉 레이드는 8턴까지
 }
 function pbChoose(i) {
   if (pb.busy || !pb.B || pb.B.over >= 0) return;
-  if (pb.mode === 'npc') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); pbRun([i, ai], seed); return; }
+  if (pb.mode === 'npc' || pb.mode === 'raid') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); pbRun([i, ai], seed); return; }
   if (pb.mode === 'pvp') { pb.busy = true; pbRender(); $('pbLog').textContent = '⏳ 친구가 고르기를 기다려요…'; pb.waitAt = performance.now(); backend.pbChoose(pb.mid, pb.B.turn, i).then(r => { if (!r.ok) { pb.busy = false; pbRender(); toast('⚠️ 기술을 보내지 못했어요', 'warn'); } }); }
 }
 function pbEnd() {
+  if (pb.mode === 'raid') { raidEnd(); return; }
   const B = pb.B, won = B.over === pb.me, foe = B.s[1 - pb.me], mine = B.s[pb.me];
   const fl = foe.mons.reduce((t, m) => t + m.lv, 0), gain = Math.round(fl * (won ? 4 : 2)), ups = [];
   for (const m of mine.mons) { const u = petGainXp(m.id, gain); if (u) ups.push(u); }
@@ -18066,6 +18126,7 @@ function pbEnd() {
   pbRender();
 }
 function pbClose() {
+  if (pb.mode === 'raid' && pb.B && pb.B.over < 0) { const B = pb.B, d = Math.max(0, B.raidHp0 - B.s[1].mons[0].hp); if (d > 0 && S.raid?.r === B.raidR) backend.raidHit(d, raidName()).then(r => r.ok && toast(`🐉 보스에게 ${d} 피해를 줬어요`, 'success')); } // 중간에 나가도 준 피해는 남아요
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.mid) backend.pbChoose(pb.mid, pb.B.turn, -1); // 🏳️ 그만하기 = 지기
   if (pb.mode === 'npc') pgRelease(); // ⏳ 관장 자리를 다음 친구에게
   $('pbPanel').classList.add('hidden'); pb.B = null; pb.mode = ''; pb.mid = ''; pb3Stop(); document.body.classList.remove('in-pb'); renderer.toneMappingExposure = 1.02;
@@ -18086,6 +18147,77 @@ function pbStartPvp(mid, m) {
   const me = backend.uid, i = m.a === me ? 0 : 1;
   const B = { s: [pbSide(Object.values(m.ta || {}), m.na || '친구'), pbSide(Object.values(m.tb || {}), m.nb || '친구')], over: -1, turn: 0 };
   pb.mid = mid; pb.foeUid = i ? m.a : m.b; pbOpenBattle(B, 'pvp', i);
+}
+// ================= 🐉 펫 보스 레이드 (1023e · 반 협동) =================
+// 선생님이 보스를 열면(state/raid) 우리 반이 함께 보스 체력을 깎아요 · 한 사람은 하루 3번 도전 · 한 번에 8턴까지
+// 보스를 쓰러뜨리면 도전한 친구 모두 🐚 + 펫 경험치 · 마지막 한 방을 넣은 친구는 이름이 남고 🐚 더
+// state/raid { r, k 속성, lv, hp, max, at, last 마지막 한 방 이름, by{기기: 준 피해}, nm{기기: 이름} } · 이 기기 bag.raidN {d, n} · bag.raidClaim = r
+const RAID_BOSS = { fire: ['r2', '🔥 화산의 황금용왕'], water: ['r3', '💧 바다의 수정거북왕'], grass: ['r5', '🌱 숲의 요정여왕'], elec: ['r4', '⚡ 천둥의 번개대왕'], wind: ['r1', '🌪️ 하늘의 무지개나비'], earth: ['r6', '🪨 땅속의 바위장군'] };
+const RAID_TM = { fire: 'tm6', water: 'tm7', grass: 'tm8', elec: 'tm9', wind: 'tm10', earth: 'tm11' };
+const RAID_TURNS = 8, RAID_DAY = 3, RAID_SHELL = 150, RAID_LAST = 50, RAID_XP = 60;
+const raidOn = () => !!S.raid?.r && S.raid.hp > 0;
+const raidLeft = () => RAID_DAY - (bag.raidN?.d === dayNum() ? bag.raidN.n | 0 : 0);
+const raidName = () => (rosterOf(backend?.uid) || cleanNick(myNick) || '친구').slice(0, 12);
+function raidTop(n = 5) { const R0 = S.raid || {}; return Object.entries(R0.by || {}).filter(([, d]) => d > 0).sort((a, b) => b[1] - a[1]).slice(0, n).map(([u, d]) => [R0.nm?.[u] || '친구', d, u]); }
+function raidBossSide() {
+  const R0 = S.raid, t = RAID_BOSS[R0.k] ? R0.k : 'fire', [id, nm] = RAID_BOSS[t], st = petStats(id, R0.lv || 18);
+  return { name: nm, cur: 0, mons: [{ id, nm, boss: true, lv: R0.lv || 18, mv: ['tackle', PTYPE_MV[t][0], PTYPE_MV[t][1], RAID_TM[t]], hp: R0.hp, max: R0.max, atk: Math.round(st.atk * 1.15), def: Math.round(st.def * 1.3), spd: Math.round(st.spd * 0.8), sa: 0, sd: 0 }] };
+}
+function openRaid() {
+  openLife('🐉 펫 보스 레이드', (box) => {
+    box.textContent = ''; const R0 = S.raid;
+    if (!R0?.r) { box.append(el2('p', 'vempty', '지금은 보스가 없어요. 선생님이 보스를 부르면 우리 반이 함께 물리쳐요!')); return; }
+    const t = RAID_BOSS[R0.k] ? R0.k : 'fire', [, nm] = RAID_BOSS[t], weak = Object.keys(PSTRONG).filter(a => PSTRONG[a].includes(t)).map(a => `${PT[a].i}${PT[a].n}`).join(' · ');
+    box.append(el2('p', 'lp-big', `${nm} · Lv${R0.lv || 18}`));
+    const bar = el2('div', ''), f = el2('div', ''); bar.style.cssText = 'height:18px;border-radius:9px;background:#EDE6DA;overflow:hidden;margin:6px 0;border:2px solid var(--ink)'; f.style.cssText = `height:100%;width:${Math.round(R0.hp / R0.max * 100)}%;background:linear-gradient(#FF8A7A,#E2584A)`; bar.append(f); bar.setAttribute('role', 'progressbar'); bar.setAttribute('aria-label', '보스 체력'); box.append(bar);
+    box.append(el2('p', 'hint', R0.hp > 0 ? `❤️ ${R0.hp.toLocaleString()} / ${R0.max.toLocaleString()} · 약점: ${weak} 기술은 효과가 굉장해요!` : `🎉 우리 반이 보스를 물리쳤어요!${R0.last ? ` 마지막 한 방: ${R0.last}` : ''}`));
+    box.append(el2('p', 'hint', `👫 우리 반 모두가 함께 체력을 깎아요. 한 번 도전하면 ${RAID_TURNS}턴 동안 싸우고, 준 피해만큼 보스 체력이 줄어요. 물리치면 도전한 친구 모두 🐚 ${RAID_SHELL} + 펫 경험치, 마지막 한 방은 🐚 ${RAID_LAST} 더!`));
+    const top = raidTop(); if (top.length) { box.append(el2('h3', 'lp-sec', '🏅 많이 깎은 친구 (5명까지)')); top.forEach(([n, d], i) => box.append(el2('div', 'lp-row', `${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${n} · ${d.toLocaleString()}`))); }
+    const mine = S.raid.by?.[backend.uid] | 0; if (mine) box.append(el2('p', 'hint', `내가 준 피해: ${mine.toLocaleString()}`));
+    if (R0.hp > 0) {
+      const can = !isTeacher && raidLeft() > 0 && petSnap().length > 0, b = el2('button', 'btn', isTeacher ? '🧑‍🏫 선생님은 지켜봐요' : raidLeft() > 0 ? `⚔️ 도전하기 (오늘 ${raidLeft()}/${RAID_DAY}번 남음)` : '오늘은 다 도전했어요. 내일 또 와요!');
+      b.style.background = '#FFD23C'; b.disabled = !can; b.onclick = raidStart; const row = el2('div', 'row-center'); row.append(b); box.append(row);
+      if (!isTeacher && !petSnap().length) box.append(el2('p', 'hint', '🩺 펫 센터에서 펫을 먼저 데려와 팀에 넣어요'));
+    }
+  });
+}
+function raidStart() {
+  if (!raidOn() || raidLeft() <= 0 || !petSnap().length || pb.B) return;
+  bag.raidN = { d: dayNum(), n: (bag.raidN?.d === dayNum() ? bag.raidN.n | 0 : 0) + 1 }; saveBag();
+  const B = { s: [pbSide(petSnap(), raidName()), raidBossSide()], over: -1, turn: 0, raidHp0: S.raid.hp, raidR: S.raid.r };
+  pb.seed = (Math.random() * 1e9) | 0; pbOpenBattle(B, 'raid', 0); $('pbLog').textContent = `🐉 ${B.s[1].name}: "우리 반 모두 덤벼라!" · ${RAID_TURNS}턴 동안 최대한 많이 깎아요!`;
+}
+async function raidEnd() { // 🐉 배틀이 끝나면 준 피해를 반 보스 체력에 더해요
+  const B = pb.B, boss = B.s[1].mons[0], dealt = Math.max(0, B.raidHp0 - boss.hp), mine = B.s[0];
+  const gain = Math.round((dealt / 10 + 20)), ups = []; for (const m of mine.mons) { const u = petGainXp(m.id, gain); if (u) ups.push(u); } saveBag();
+  let msg = `🐉 보스에게 ${dealt.toLocaleString()} 피해를 줬어요!`;
+  if (dealt > 0 && S.raid?.r === B.raidR) { const r = await backend.raidHit(dealt, raidName()); if (r.ok && r.hp === 0) msg += ' 💥 마지막 한 방!'; else if (!r.ok) msg += ' (⚠️ 저장하지 못했어요)'; }
+  $('pbLog').textContent = `${msg} · 경험치 +${gain}${ups.length ? ` · ⬆️ ${ups.join(', ')}` : ''}`; pbRender();
+}
+function raidSync(prev) { // 보스를 물리치면 도전한 친구 모두 보상 (한 번)
+  const R0 = S.raid, pr = prev?.raid;
+  if (R0?.r && pr?.r === R0.r && pr.hp > 0 && R0.hp === 0 && joined) { showBanner('🎉 우리 반이 보스를 물리쳤어요!', `${RAID_BOSS[R0.k]?.[1] || '보스'} 격파!${R0.last ? `\n💥 마지막 한 방: ${R0.last}` : ''}`, 6000); playSfx('fanfare'); burst(player.pos.clone().setY(3), RAINBOW, 70, 6, 3); }
+  if (R0?.r && R0.hp === 0 && !isTeacher && joined && bag.raidClaim !== R0.r && (R0.by?.[backend?.uid] | 0) > 0) {
+    bag.raidClaim = R0.r; const last = R0.last && R0.last === raidName(), sh = RAID_SHELL + (last ? RAID_LAST : 0); earnShell(sh, 'm'); const ups = []; for (const id of bag.pteam) { const u = petGainXp(id, RAID_XP); if (u) ups.push(u); } saveBag();
+    setTimeout(() => toast(`🐉 보스 레이드 보상! 🐚 +${sh}${last ? ' (💥 마지막 한 방)' : ''} · 펫 경험치 +${RAID_XP}${ups.length ? ` · ${ups.join(', ')}` : ''}`, 'success'), 1500);
+  }
+  if (raidW.label) { const t = R0?.r ? (R0.hp > 0 ? [`🐉 ${RAID_BOSS[R0.k]?.[1] || '보스'}`, `❤️ ${R0.hp.toLocaleString()} / ${R0.max.toLocaleString()} · E로 도전`] : ['🎉 보스 격파!', R0.last ? `💥 ${R0.last}` : '우리 반 승리']) : ['🐉 보스 레이드', '선생님이 보스를 부르면 열려요']; const k = t.join('|'); if (raidW.lk !== k) { raidW.lk = k; raidW.label.userData.set(t); } }
+  if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🐉 펫 보스 레이드' && JSON.stringify(pr) !== JSON.stringify(R0) && !lifeTyping()) refillLife();
+  if (!$('teacherPanel').classList.contains('hidden')) fillRaidAdmin();
+}
+const raidW = { label: null, lk: '', key: '' };
+function fillRaidAdmin() {
+  const box = $('tpRaid'); if (!box || !isTeacher) return; const R0 = S.raid, key = JSON.stringify(R0); if (box.dataset.key === key) return; box.dataset.key = key; box.textContent = '';
+  if (R0?.r) {
+    box.append(el2('p', 'lp-big', `${RAID_BOSS[R0.k]?.[1]} · Lv${R0.lv} · ❤️ ${R0.hp.toLocaleString()} / ${R0.max.toLocaleString()}${R0.hp === 0 ? ` · 🎉 격파 (마지막 한 방: ${R0.last || '-'})` : ''}`));
+    const all = Object.entries(R0.by || {}).filter(([, d]) => d > 0).sort((a, b) => b[1] - a[1]); box.append(el2('p', 'hint', all.length ? `도전한 친구 ${all.length}명: ${all.map(([u, d]) => `${R0.nm?.[u] || '친구'} ${d}`).join(' · ')}` : '아직 아무도 도전하지 않았어요'));
+    const b = el2('button', 'btn danger', '🏁 보스 레이드 끝내기'); b.onclick = async () => { if (await confirmAction({ title: '🏁 보스 레이드를 끝낼까요?', body: '보스와 기록이 지워져요. (이미 받은 보상은 그대로예요)', okText: '끝내기' })) adminDo({ raid: null }, '🏁 보스 레이드를 끝냈어요'); }; const row = el2('div', 'row-center'); row.append(b); box.append(row); return;
+  }
+  const mk = (opts, id) => { const s = document.createElement('select'); s.className = 'tinput'; s.style.width = 'auto'; s.id = id; for (const [v, t] of opts) s.append(new Option(t, v)); return s; };
+  const sk = mk(Object.entries(RAID_BOSS).map(([k, [, n]]) => [k, n]), 'tpRaidK'), sl = mk([[10, '쉬움 (Lv10)'], [18, '보통 (Lv18)'], [26, '어려움 (Lv26)']], 'tpRaidLv'), sh = mk([[3000, '체력 3,000 (하루)'], [8000, '체력 8,000 (2~3일)'], [15000, '체력 15,000 (일주일)']], 'tpRaidHp');
+  sl.value = '18'; sh.value = '8000'; const row = el2('div', 'row-center wrap'); row.append(sk, sl, sh); box.append(row);
+  const go = el2('button', 'btn', '🐉 보스 부르기'); go.style.background = '#FFD23C'; go.onclick = () => { const hp = +sh.value; adminDo({ raid: { r: Date.now().toString(36), k: sk.value, lv: +sl.value, hp, max: hp, at: backend.now() } }, `🐉 ${RAID_BOSS[sk.value][1]}이(가) 나타났어요!`); };
+  const r2 = el2('div', 'row-center'); r2.append(go); box.append(r2);
 }
 // ⏳ 관장은 한 번에 한 명: state/pgb/{단계} = {u, nm, at, hb(살아 있음 · 15초마다), end?} · 줄 서기 state/pgq/{단계}/{기기} = 줄 선 시각
 const PG_STALE = 60000, pgRoomOf = (n) => PG_ROOM[n - 1];
@@ -21271,60 +21403,76 @@ function gwTick(dt) {
   if (isTeacher && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험 진행') { const k = JSON.stringify([G.ph, G.cur, Object.keys(S.gwa || {}).length, Object.values(S.gwa || {}).map(v => Object.keys(v?.a || {}).length).join()]); if (k !== gw.aKey) { gw.aKey = k; if (!lifeTyping()) refillLife(); } }
 }
 // 👫 함께 배 타기 (1021f): 친구 배(선장) 가까이에서 E → 빈 자리에 타요 · 선장이 움직이면 같이 가요 · 친구 화면에도 그 자리에 보여요 (players/{uid}/bo = "선장uid:자리")
-const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null };
+const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null, duo: '', dv: 0 };
 const boardSeatsOf = (q) => BOAT_SEATS[Math.min(3, Math.floor((q | 0) / 25))] || BOAT_SEATS[0];
+const boardSeatsV = (v, q) => DUO_BY_V[v | 0]?.duo.seats || boardSeatsOf(q); // 👫 1023e: 배 또는 함께 타는 탈것
+function duoSeatOf(uid) { // 이 친구가 함께 타는 탈것 뒷자리에 앉아 있으면 그 탈것
+  if (uid === backend?.uid) return boardW.on && boardW.duo ? RIDE_BY[boardW.duo] : null;
+  const r = remotes.get(uid), bo = String(r?.target?.bo || ''), i = bo.lastIndexOf(':'); if (i <= 0) return null;
+  const cap = bo.slice(0, i), cv = cap === backend?.uid ? myRideV() : (remotes.get(cap)?.target?.v | 0); return DUO_BY_V[cv] || null;
+}
 function boardTaken(cap) { const t = new Set(); for (const [, r] of remotes) { const bo = String(r.target?.bo || ''), i = bo.lastIndexOf(':'); if (i > 0 && bo.slice(0, i) === cap) t.add(+bo.slice(i + 1)); } return t; }
 function boardPos(ag, s) { const h = ag.rotation.y; return [ag.position.x + s[0] * Math.cos(h) + s[1] * Math.sin(h), ag.position.z - s[0] * Math.sin(h) + s[1] * Math.cos(h), h]; }
 function initBoard() {
-  boardW.it = addInteract({ pos: new V3(0, -99, 0), r: 4.6, text: () => { const c = boardW.cand; if (!c) return null; const [u, r] = c, n = boardSeatsOf(r.target?.q).length, left = n - boardTaken(u).size; return [`⛵ ${nickOf(u, r.target) || '친구'}의 배에 타기`, left > 0 ? `빈 자리 ${left}/${n}` : '자리가 꽉 찼어요']; }, run: boardJoin });
+  boardW.it = addInteract({ pos: new V3(0, -99, 0), r: 4.6, text: () => { const c = boardW.cand; if (!c) return null; const [u, r] = c, v = r.target?.v | 0, D = DUO_BY_V[v], n = boardSeatsV(v, r.target?.q).length, left = n - boardTaken(u).size; return [`${D ? D.icon : '⛵'} ${nickOf(u, r.target) || '친구'}의 ${D ? D.name : '배'}에 타기`, left > 0 ? `빈 자리 ${left}/${n}` : '자리가 꽉 찼어요']; }, run: boardJoin });
   const hud = document.createElement('div'); hud.id = 'boardHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:18px';
   hud.innerHTML = '<b id="boardName">⛵</b><span id="boardDir"></span><button class="btn" id="boardLandBtn" style="background:#FFE066;font-size:15px;padding:4px 10px">⚓ 내리기</button>'; document.body.append(hud); boardW.hud = hud; $('boardLandBtn').onclick = boardLand;
 }
-function boardFind() { // 가까운 친구 배 (매 프레임 가볍게)
+function boardFind() { // 가까운 친구 배 · 함께 타는 탈것 (매 프레임 가볍게)
   boardW.cand = null; if (!joined || sail.on || sea.on || boardW.on || cart.on || hv.travel) { boardW.it.pos.set(0, -99, 0); return; }
-  let best = null, bd = 4.6; for (const [u, r] of remotes) { if ((r.target?.v | 0) !== BOAT_V) continue; const d = Math.hypot(r.a.g.position.x - player.pos.x, r.a.g.position.z - player.pos.z); if (d < bd) { bd = d; best = [u, r]; } }
+  let best = null, bd = 4.6; for (const [u, r] of remotes) { const v = r.target?.v | 0; if (v !== BOAT_V && !DUO_BY_V[v]) continue; if (DUO_BY_V[v] && !rideOpen(DUO_BY_V[v].k)) continue; const d = Math.hypot(r.a.g.position.x - player.pos.x, r.a.g.position.z - player.pos.z); if (d < bd) { bd = d; best = [u, r]; } }
   boardW.cand = best; if (best) boardW.it.pos.set(best[1].a.g.position.x, 1, best[1].a.g.position.z); else boardW.it.pos.set(0, -99, 0);
 }
 function boardJoin() {
-  const c = boardW.cand; if (!c || boardW.on || isFrozen()) return; const [u, r] = c, seats = boardSeatsOf(r.target?.q), taken = boardTaken(u);
-  const seat = seats.findIndex((_, i) => !taken.has(i)); if (seat < 0) { toast('⛵ 자리가 꽉 찼어요. 더 큰 배를 가진 친구를 찾아봐요', 'warn'); return; }
-  if (bag.ride) { bag.ride = ''; saveBag(); } closeModals(); Object.assign(boardW, { on: true, cap: u, seat, last: null });
-  $('boardName').textContent = `⛵ ${nickOf(u, r.target) || '친구'}의 배`; boardW.hud.classList.remove('hidden'); playSfx('pick');
-  toast(`⛵ ${nickOf(u, r.target) || '친구'}의 배에 탔어요! 선장이 가는 곳으로 같이 가요 (섬·모래사장 옆에서 ⚓ 내리기)`, 'success');
+  const c = boardW.cand; if (!c || boardW.on || isFrozen()) return; const [u, r] = c, v = r.target?.v | 0, D = DUO_BY_V[v], seats = boardSeatsV(v, r.target?.q), taken = boardTaken(u);
+  const seat = seats.findIndex((_, i) => !taken.has(i)); if (seat < 0) { toast(D ? `${D.icon} 자리가 꽉 찼어요` : '⛵ 자리가 꽉 찼어요. 더 큰 배를 가진 친구를 찾아봐요', 'warn'); return; }
+  if (bag.ride) { bag.ride = ''; saveBag(); } closeModals(); Object.assign(boardW, { on: true, cap: u, seat, last: null, duo: D ? D.k : '', dv: v });
+  const nm = nickOf(u, r.target) || '친구';
+  $('boardName').textContent = D ? `${D.icon} ${nm}의 ${D.name}` : `⛵ ${nm}의 배`; $('boardLandBtn').textContent = D ? '🚶 내리기' : '⚓ 내리기'; boardW.hud.classList.remove('hidden'); playSfx('pick');
+  toast(D ? `${D.icon} ${nm}의 ${D.name}에 탔어요! 친구가 가는 곳으로 같이 가요` : `⛵ ${nm}의 배에 탔어요! 선장이 가는 곳으로 같이 가요 (섬·모래사장 옆에서 ⚓ 내리기)`, 'success');
 }
 function boardEnd(msg, to) {
-  boardW.on = false; boardW.hud?.classList.add('hidden'); boardW.last = null;
+  boardW.on = false; boardW.hud?.classList.add('hidden'); boardW.last = null; boardW.duo = ''; boardW.dv = 0;
   if (to) { player.pos.set(to[0], 0.35, to[1]); player.vy = 0; } if (msg) toast(msg, 'info');
 }
+function duoOff() { // 함께 타는 탈것에서 옆으로 내려요
+  const p = player.pos, h = player.heading; for (const s2 of [1, -1, 2, -2]) { const x = p.x + Math.cos(h) * 1.4 * s2, z = p.z - Math.sin(h) * 1.4 * s2; if (canStand(x, z)) return [x, z]; } return [p.x, p.z];
+}
 function boardLand() {
-  if (!boardW.on) return; const p = player.pos, rc = remotes.get(boardW.cap), hull = Math.min(3, Math.floor((rc?.target?.q | 0) / 25)), [N, nd] = isleNear(p);
+  if (!boardW.on) return; const p = player.pos;
+  if (boardW.duo) { boardEnd(`🚶 ${RIDE_BY[boardW.duo]?.name || '탈것'}에서 내렸어요`, duoOff()); playSfx('pick'); return; }
+  const rc = remotes.get(boardW.cap), hull = Math.min(3, Math.floor((rc?.target?.q | 0) / 25)), [N, nd] = isleNear(p);
   if (nd < 4.5) { if (hull < N.minH) { toast(`🌊 ${N.icon} ${N.n} 둘레는 파도가 세서 ${BOAT_H[N.minH].n} 이상만 닿아요`, 'warn'); return; } const a = Math.atan2(p.z - N.cz, p.x - N.cx); boardEnd(`${N.icon} ${N.n}에 내렸어요!`, [N.cx + Math.cos(a) * (N.r - 2.6), N.cz + Math.sin(a) * (N.r - 2.6)]); playSfx('pick'); return; }
   if (p.x < 84 && p.z > BEACH.z0 + 2 && p.z < BEACH.z1 - 2) { boardEnd('🏖️ 바닷가에 내렸어요', [77.2, p.z]); playSfx('pick'); return; }
   toast('⚓ 육지 가까이(모래사장이나 섬 옆) 가야 내릴 수 있어요', 'warn');
 }
-function boardRemotes(dt) { // updateRemotes 다음: 배에 탄 친구들을 선장 배 자리에 · 내가 탔으면 나도
+function boardRemotes(dt) { // updateRemotes 다음: 배·함께 타는 탈것에 탄 친구들을 선장 자리에 · 내가 탔으면 나도
   const me = backend?.uid; if (!me) return; const cur = new Set();
   for (const [u, r] of remotes) { const bo = String(r.target?.bo || ''), i = bo.lastIndexOf(':'); if (i <= 0) continue; const cap = bo.slice(0, i), seat = +bo.slice(i + 1);
-    let cg = null, q = 0; if (cap === me) { if (sail.on) { cg = player.avatar?.g; q = boatQ(); } } else { const rc = remotes.get(cap); if (rc && (rc.target?.v | 0) === BOAT_V) { cg = rc.a.g; q = rc.target.q | 0; } }
-    if (!cg) continue; const s = boardSeatsOf(q)[seat] || boardSeatsOf(q)[0], [x, z, h] = boardPos(cg, s); r.pos.set(x, cg.position.y, z); r.a.g.position.set(x, cg.position.y, z); r.a.g.rotation.y = h; r.heading = h;
-    if (cap === me) { cur.add(u); if (!boardW.seen.has(u)) { boardW.seen.set(u, 1); toast(`🙋 ${nickOf(u, r.target) || '친구'}이(가) 내 배에 탔어요!`, 'success'); } } }
+    let cg = null, q = 0, dv = 0, cy = 0; if (cap === me) { if (sail.on) { cg = player.avatar?.g; q = boatQ(); } else if (DUO_BY_V[myRideV()]) { cg = player.avatar?.g; dv = myRideV(); cy = player.pos.y; } }
+    else { const rc = remotes.get(cap), rv = rc?.target?.v | 0; if (rc && rv === BOAT_V) { cg = rc.a.g; q = rc.target.q | 0; } else if (rc && DUO_BY_V[rv]) { cg = rc.a.g; dv = rv; cy = rc.pos.y; } }
+    if (!cg) continue; const ss = boardSeatsV(dv, q), s = ss[seat] || ss[0], [x, z, h] = boardPos(cg, s);
+    if (dv) { r.pos.set(x, cy, z); r.a.g.position.set(x, cy + (r.a.rideLift || 0), z); } else { r.pos.set(x, cg.position.y, z); r.a.g.position.set(x, cg.position.y, z); } r.a.g.rotation.y = h; r.heading = h;
+    if (cap === me) { cur.add(u); if (!boardW.seen.has(u)) { boardW.seen.set(u, 1); toast(`🙋 ${nickOf(u, r.target) || '친구'}이(가) 내 ${dv ? DUO_BY_V[dv].name : '배'}에 탔어요!`, 'success'); } } }
   for (const u of [...boardW.seen.keys()]) if (!cur.has(u)) boardW.seen.delete(u);
   boardW.crew = cur.size;
   if (!boardW.on) return;
-  const p = player.pos;
+  const p = player.pos, duo = !!boardW.duo;
   if (boardW.last && Math.hypot(p.x - boardW.last[0], p.z - boardW.last[1]) > 6) { boardEnd(''); return; } // 다른 곳으로 옮겨졌어요
   const rc = remotes.get(boardW.cap);
   if (rc) { // 👫 1022a: 두 친구가 같은 자리를 고르면(거의 동시에 탔을 때) 기기 번호가 뒤인 쪽이 빈 자리로 옮겨요
-    const seats = boardSeatsOf(rc.target?.q), mine = new Map();
+    const seats = boardSeatsV(boardW.dv, rc.target?.q), mine = new Map();
     for (const [u, r] of remotes) { const bo = String(r.target?.bo || ''), i = bo.lastIndexOf(':'); if (i > 0 && bo.slice(0, i) === boardW.cap) mine.set(+bo.slice(i + 1), u); }
     const who = mine.get(boardW.seat);
-    if ((who && who < me) || boardW.seat >= seats.length) { const free = seats.findIndex((_, k) => !mine.has(k)); if (free >= 0) boardW.seat = free; else { boardEnd('⛵ 자리가 꽉 차서 내렸어요', [ISLE.dock[0] - 2.5, ISLE.dock[1]]); return; } }
+    if ((who && who < me) || boardW.seat >= seats.length) { const free = seats.findIndex((_, k) => !mine.has(k)); if (free >= 0) boardW.seat = free; else { boardEnd('자리가 꽉 차서 내렸어요', duo ? duoOff() : [ISLE.dock[0] - 2.5, ISLE.dock[1]]); return; } }
   }
-  if (!rc) { boardEnd('🛟 선장이 마을을 나가서 바닷가로 돌아왔어요', [ISLE.dock[0] - 2.5, ISLE.dock[1]]); return; }
-  if ((rc.target?.v | 0) !== BOAT_V) { const cp = rc.a.g.position; boardEnd('⚓ 선장이 내려서 같이 내렸어요', canStand(cp.x + 1.2, cp.z) ? [cp.x + 1.2, cp.z] : [cp.x, cp.z]); return; }
-  const s = boardSeatsOf(rc.target.q)[boardW.seat] || boardSeatsOf(rc.target.q)[0], [x, z, h] = boardPos(rc.a.g, s);
-  p.set(x, rc.a.g.position.y, z); player.vy = 0; player.heading = h; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = h; boardW.last = [x, z];
+  if (!rc) { boardEnd(duo ? '🚶 친구가 마을을 나가서 내렸어요' : '🛟 선장이 마을을 나가서 바닷가로 돌아왔어요', duo ? duoOff() : [ISLE.dock[0] - 2.5, ISLE.dock[1]]); return; }
+  if ((rc.target?.v | 0) !== (duo ? boardW.dv : BOAT_V)) { const cp = rc.a.g.position; boardEnd(duo ? '🚶 친구가 내려서 같이 내렸어요' : '⚓ 선장이 내려서 같이 내렸어요', duo ? duoOff() : canStand(cp.x + 1.2, cp.z) ? [cp.x + 1.2, cp.z] : [cp.x, cp.z]); return; }
+  const ss = boardSeatsV(boardW.dv, rc.target.q), s = ss[boardW.seat] || ss[0], [x, z, h] = boardPos(rc.a.g, s);
+  if (duo) { p.set(x, rc.pos.y, z); player.avatar.g.position.set(x, rc.pos.y + (player.avatar.rideLift || 0), z); } else { p.set(x, rc.a.g.position.y, z); player.avatar.g.position.copy(p); }
+  player.vy = 0; player.heading = h; player.avatar.g.rotation.y = h; boardW.last = [x, z];
   { let d = h + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 1.5); }
+  if (duo) { const t = '👫 함께 타는 중'; if ($('boardDir').textContent !== t) $('boardDir').textContent = t; return; }
   const [N, nd] = isleNear(p), t = nd < 4.5 ? `${N.icon} ${N.n} 옆이에요!` : p.x < 84 ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`; if ($('boardDir').textContent !== t) $('boardDir').textContent = t;
 }
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
@@ -21457,6 +21605,146 @@ function fillHmAdmin() {
     const h = el2('button', 'btn', hi ? '💡 힌트 공개 중' : '💡 힌트 공개'); h.style.background = hi ? '#FFE9A8' : '#fff'; h.disabled = !on; h.onclick = () => adminDo({ [`hm/hint/${m.k}`]: hi ? null : true }, hi ? '💡 힌트를 다시 숨겼어요' : `💡 "${m.hint}" 힌트를 공개했어요`);
     for (const x of [t, h]) { x.style.whiteSpace = 'nowrap'; x.style.flex = 'none'; } row.append(t, h); box.append(row); }
 }
+// ================= 😀 나만의 이모티콘 (1023e) =================
+// ① 얼굴 꾸미기: 얼굴색·눈·입·장식을 골라 4칸에 저장 (코드 0~4095) — 이 기기 bag.emoF
+// ② 도트 그리기: 12×12 칸에 색칠 → 선생님 확인 뒤 쓸 수 있어요 — state/emo/{기기_시각} { p 144글자(0 빈칸 · 1~8 색), ok, nm, at }
+// 쓰면 머리 위에 3.5초 동안 떠요 (players/{uid}/em = "f코드:번호" 또는 "p열쇠:번호")
+const EMO_BASE = ['#FFD23C', '#FFB4C8', '#9FD3FF', '#9EE08A', '#C9A6FF', '#FFA45C', '#F4F4F4', '#FF7A6A'];
+const EMO_EYES = ['동글', '웃는 눈', '반짝', '윙크', '졸린 눈', '어질', '하트 눈', '별 눈'];
+const EMO_MOUTH = ['미소', '하하', '놀람', '무표정', '시무룩', '메롱', '고양이', '이히'];
+const EMO_EXTRA = ['없음', '발그레', '눈물', '땀', '하트', '반짝이', '화남', '쿨쿨'];
+const EMO_PAL = [null, '#2B1E16', '#FFFFFF', '#E2584A', '#FFA45C', '#FFD23C', '#5FBE5A', '#4A9AE8', '#C9A6FF'];
+const EMO_N = 12, EMO_MAX_P = 3;
+bag.emoF ||= [0 * 512 + 1 * 64 + 1 * 8 + 1, 6 * 512 + 6 * 64 + 0 * 8 + 4];
+const emoCode = (b, e, m, x) => (b & 7) * 512 + (e & 7) * 64 + (m & 7) * 8 + (x & 7);
+const emoParts = (c) => [(c >> 9) & 7, (c >> 6) & 7, (c >> 3) & 7, c & 7];
+const EMO_CV = new Map();
+function emoFaceCanvas(code, S = 128) {
+  const key = `f${code}_${S}`; if (EMO_CV.has(key)) return EMO_CV.get(key);
+  const cv = document.createElement('canvas'); cv.width = cv.height = S; const x = cv.getContext('2d'), k = S / 128, [b, e, m, ex] = emoParts(code), ink = '#3B2A1E';
+  x.scale(k, k); x.lineCap = 'round'; x.lineJoin = 'round';
+  x.fillStyle = EMO_BASE[b]; x.strokeStyle = ink; x.lineWidth = 5; x.beginPath(); x.arc(64, 66, 54, 0, Math.PI * 2); x.fill(); x.stroke();
+  x.fillStyle = 'rgba(255,255,255,.35)'; x.beginPath(); x.ellipse(46, 38, 18, 10, -0.5, 0, Math.PI * 2); x.fill();
+  const dot = (cx, cy, r, c = ink) => { x.fillStyle = c; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill(); };
+  const heart = (cx, cy, s, c) => { x.fillStyle = c; x.beginPath(); x.moveTo(cx, cy + s * 0.9); x.bezierCurveTo(cx - s * 1.6, cy - s * 0.3, cx - s * 0.6, cy - s * 1.4, cx, cy - s * 0.45); x.bezierCurveTo(cx + s * 0.6, cy - s * 1.4, cx + s * 1.6, cy - s * 0.3, cx, cy + s * 0.9); x.fill(); };
+  const star = (cx, cy, r, c) => { x.fillStyle = c; x.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; x.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } x.closePath(); x.fill(); };
+  x.lineWidth = 5; x.strokeStyle = ink;
+  for (const s of [-1, 1]) { const cx = 64 + s * 20, cy = 58; // 👀
+    if (e === 0) dot(cx, cy, 7);
+    else if (e === 1) { x.beginPath(); x.arc(cx, cy + 4, 8, Math.PI * 1.1, Math.PI * 1.9); x.stroke(); }
+    else if (e === 2) { dot(cx, cy, 11); dot(cx - 3, cy - 4, 4, '#FFFFFF'); dot(cx + 4, cy + 4, 2, '#FFFFFF'); }
+    else if (e === 3) { if (s < 0) dot(cx, cy, 7); else { x.beginPath(); x.moveTo(cx - 8, cy); x.lineTo(cx + 2, cy - 5); x.moveTo(cx - 8, cy); x.lineTo(cx + 2, cy + 5); x.stroke(); } }
+    else if (e === 4) { x.beginPath(); x.moveTo(cx - 9, cy + 2); x.lineTo(cx + 9, cy + 2); x.stroke(); }
+    else if (e === 5) { x.beginPath(); x.moveTo(cx - 7, cy - 7); x.lineTo(cx + 7, cy + 7); x.moveTo(cx + 7, cy - 7); x.lineTo(cx - 7, cy + 7); x.stroke(); }
+    else if (e === 6) heart(cx, cy, 10, '#E2384A');
+    else star(cx, cy, 12, '#F2B400');
+  }
+  x.lineWidth = 5; // 👄
+  if (m === 0) { x.beginPath(); x.arc(64, 78, 16, 0.2 * Math.PI, 0.8 * Math.PI); x.stroke(); }
+  else if (m === 1) { x.fillStyle = '#7A2A22'; x.beginPath(); x.moveTo(44, 80); x.quadraticCurveTo(64, 112, 84, 80); x.closePath(); x.fill(); x.stroke(); x.fillStyle = '#FF8A9A'; x.beginPath(); x.ellipse(64, 96, 9, 5, 0, 0, Math.PI * 2); x.fill(); }
+  else if (m === 2) { x.fillStyle = '#7A2A22'; x.beginPath(); x.ellipse(64, 92, 8, 11, 0, 0, Math.PI * 2); x.fill(); x.stroke(); }
+  else if (m === 3) { x.beginPath(); x.moveTo(50, 92); x.lineTo(78, 92); x.stroke(); }
+  else if (m === 4) { x.beginPath(); x.arc(64, 104, 16, 1.2 * Math.PI, 1.8 * Math.PI); x.stroke(); }
+  else if (m === 5) { x.beginPath(); x.arc(64, 82, 14, 0.15 * Math.PI, 0.85 * Math.PI); x.stroke(); x.fillStyle = '#FF7A8A'; x.beginPath(); x.ellipse(70, 98, 7, 9, 0, 0, Math.PI * 2); x.fill(); x.stroke(); }
+  else if (m === 6) { x.beginPath(); x.arc(56, 86, 8, 0.1 * Math.PI, 0.9 * Math.PI); x.arc(72, 86, 8, 0.1 * Math.PI, 0.9 * Math.PI); x.stroke(); }
+  else { x.fillStyle = '#FFFFFF'; x.beginPath(); x.roundRect ? x.roundRect(46, 82, 36, 16, 6) : x.rect(46, 82, 36, 16); x.fill(); x.stroke(); x.beginPath(); x.moveTo(46, 90); x.lineTo(82, 90); for (const xx of [55, 64, 73]) { x.moveTo(xx, 82); x.lineTo(xx, 98); } x.lineWidth = 2.5; x.stroke(); }
+  // ✨ 장식
+  if (ex === 1) for (const s of [-1, 1]) { x.fillStyle = 'rgba(255,100,130,.55)'; x.beginPath(); x.ellipse(64 + s * 36, 80, 11, 7, 0, 0, Math.PI * 2); x.fill(); }
+  else if (ex === 2) { x.fillStyle = '#6EC1FF'; x.beginPath(); x.moveTo(40, 66); x.quadraticCurveTo(32, 84, 40, 88); x.quadraticCurveTo(48, 84, 40, 66); x.fill(); }
+  else if (ex === 3) { x.fillStyle = '#9ED8FF'; x.strokeStyle = '#4A9AE8'; x.lineWidth = 3; x.beginPath(); x.moveTo(100, 22); x.quadraticCurveTo(88, 44, 100, 48); x.quadraticCurveTo(112, 44, 100, 22); x.fill(); x.stroke(); }
+  else if (ex === 4) heart(104, 24, 12, '#FF4A6A');
+  else if (ex === 5) { star(106, 24, 11, '#FFE066'); star(20, 34, 7, '#FFE066'); }
+  else if (ex === 6) { x.strokeStyle = '#E2384A'; x.lineWidth = 5; for (const [a, b2, c, d] of [[96, 18, 104, 30], [112, 18, 104, 30], [96, 42, 104, 30], [112, 42, 104, 30]]) { x.beginPath(); x.moveTo(a, b2); x.quadraticCurveTo(104, 30, c, d); x.stroke(); } }
+  else if (ex === 7) { x.fillStyle = ink; x.font = '800 22px sans-serif'; x.fillText('z', 96, 30); x.font = '800 16px sans-serif'; x.fillText('z', 110, 16); }
+  EMO_CV.set(key, cv); return cv;
+}
+function emoPixCanvas(p, S = 120) {
+  const key = `p${p}_${S}`; if (EMO_CV.has(key)) return EMO_CV.get(key);
+  const cv = document.createElement('canvas'); cv.width = cv.height = S; const x = cv.getContext('2d'), c = S / EMO_N;
+  for (let i = 0; i < EMO_N * EMO_N; i++) { const v = +p[i] || 0; if (!v) continue; x.fillStyle = EMO_PAL[v]; x.fillRect((i % EMO_N) * c, Math.floor(i / EMO_N) * c, Math.ceil(c), Math.ceil(c)); }
+  if (EMO_CV.size > 200) EMO_CV.clear(); EMO_CV.set(key, cv); return cv;
+}
+const emoList = () => Object.entries(S.emo || {}).map(([k, v]) => ({ k, ...v })).filter(x => typeof x.p === 'string' && x.p.length === EMO_N * EMO_N);
+const emoMinePix = () => emoList().filter(x => backend?.uid && x.k.startsWith(backend.uid + '_'));
+const emoW = { em: '', seq: 0, until: 0, seen: new Map() };
+function emoCanvasOf(em) { // "f123:4" · "p열쇠:4"
+  const s = String(em || ''), i = s.lastIndexOf(':'), id = i > 0 ? s.slice(0, i) : s;
+  if (/^f\d{1,4}$/.test(id)) return emoFaceCanvas(+id.slice(1) & 4095);
+  if (id[0] === 'p') { const e = S.emo?.[id.slice(1)]; if (e?.ok && typeof e.p === 'string') return emoPixCanvas(e.p); }
+  return null;
+}
+function emoShow(a, em) { // 머리 위에 3.5초
+  const cv = emoCanvasOf(em); if (!a || !cv) return;
+  if (a.emoSp) { a.g.remove(a.emoSp); a.emoSp.material.map.dispose(); a.emoSp.material.dispose(); }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
+  sp.scale.set(1.1, 1.1, 1); sp.position.set(0, a.tcode ? 4.6 : 4.1, 0); a.g.add(sp); a.emoSp = sp; a.emoT = 3.5;
+}
+function emoUse(id) {
+  if (!joined || isFrozen() || onCooldown('emote', 0.8)) return;
+  emoW.seq = (emoW.seq + 1) % 10; emoW.em = `${id}:${emoW.seq}`; emoW.until = performance.now() + 4000; emoShow(player.avatar, emoW.em); playSfx('pick');
+  $('emoteBar').classList.add('hidden');
+}
+function emoTick(dt) { // 친구 이모티콘 보이기 · 시간이 지나면 지우기
+  if (emoW.em && performance.now() > emoW.until) emoW.em = '';
+  for (const [u, r] of remotes) { const em = r.target?.em || ''; if (em && emoW.seen.get(u) !== em) emoShow(r.a, em); emoW.seen.set(u, em); }
+  const fade = (a) => { if (!a?.emoSp) return; a.emoT -= dt; const k = a.emoT; a.emoSp.position.y = (a.tcode ? 4.6 : 4.1) + Math.sin(time * 4) * 0.06; if (k < 0.4) a.emoSp.material.opacity = Math.max(0, k / 0.4); if (k <= 0) { a.g.remove(a.emoSp); a.emoSp.material.map.dispose(); a.emoSp.material.dispose(); a.emoSp = null; } };
+  fade(player.avatar); for (const [, r] of remotes) fade(r.a);
+}
+function renderEmoBar() { // 몸짓 창 아래에 내 이모티콘
+  const bar = $('emoteBar'); bar.querySelectorAll('.emo-mine').forEach(b => b.remove());
+  const add = (id, cv, label) => { const b = el2('button', 'btn emo emo-mine'); const im = document.createElement('img'); im.src = cv.toDataURL(); im.alt = ''; im.style.cssText = 'width:30px;height:30px;image-rendering:pixelated'; b.append(im, el2('span', '', label)); b.onclick = () => emoUse(id); bar.append(b); };
+  bag.emoF.slice(0, 4).forEach((c, i) => add(`f${c}`, emoFaceCanvas(c, 64), `내 얼굴${i + 1}`));
+  emoMinePix().filter(x => x.ok).slice(0, EMO_MAX_P).forEach((x, i) => add(`p${x.k}`, emoPixCanvas(x.p, 60), `내 그림${i + 1}`));
+  const mk = el2('button', 'btn emo emo-mine', '✏️'); mk.append(el2('span', '', '만들기')); mk.onclick = () => { bar.classList.add('hidden'); openEmoMaker(); }; bar.append(mk);
+}
+const emoMk = { b: 0, e: 1, m: 0, x: 1, tab: 'face', pix: '0'.repeat(EMO_N * EMO_N), col: 1, nm: '' };
+function openEmoMaker() {
+  openLife('😀 나만의 이모티콘', (box) => {
+    box.textContent = ''; const tabs = el2('div', 'row-center wrap');
+    for (const [k, t] of [['face', '🎨 얼굴 꾸미기'], ['pix', '🖌️ 도트 그리기']]) { const b = el2('button', 'btn', t); b.style.background = emoMk.tab === k ? '#FFD23C' : '#fff'; b.onclick = () => { emoMk.tab = k; refillLife(); }; tabs.append(b); }
+    box.append(tabs);
+    if (emoMk.tab === 'face') {
+      const code = emoCode(emoMk.b, emoMk.e, emoMk.m, emoMk.x), pv = document.createElement('img'); pv.src = emoFaceCanvas(code, 128).toDataURL(); pv.alt = '만든 얼굴 미리보기'; pv.style.cssText = 'width:110px;height:110px;display:block;margin:6px auto';
+      box.append(pv);
+      const row = (title, list, key, sw) => { const r = el2('div', ''); r.append(el2('p', 'hint', title)); const w = el2('div', 'row-center wrap'); w.style.gap = '4px';
+        list.forEach((t, i) => { const b = el2('button', 'btn', ''); b.style.cssText = `padding:4px 8px;font-size:14px;background:${emoMk[key] === i ? '#FFE9A8' : '#fff'}${emoMk[key] === i ? ';outline:3px solid var(--ink)' : ''}`;
+          if (sw) { b.style.background = t; b.style.width = '34px'; b.style.height = '30px'; b.setAttribute('aria-label', `얼굴색 ${i + 1}`); } else { const im = document.createElement('img'); const c2 = key === 'e' ? emoCode(emoMk.b, i, 3, 0) : key === 'm' ? emoCode(emoMk.b, 0, i, 0) : emoCode(emoMk.b, emoMk.e, emoMk.m, i); im.src = emoFaceCanvas(c2, 48).toDataURL(); im.alt = ''; im.style.cssText = 'width:28px;height:28px;vertical-align:middle'; b.append(im, document.createTextNode(' ' + t)); }
+          b.onclick = () => { emoMk[key] = i; refillLife(); }; w.append(b); }); r.append(w); box.append(r); };
+      row('얼굴색', EMO_BASE, 'b', true); row('👀 눈', EMO_EYES, 'e'); row('👄 입', EMO_MOUTH, 'm'); row('✨ 장식', EMO_EXTRA, 'x');
+      box.append(el2('p', 'hint', '마음에 들면 아래 칸에 저장해요. 저장한 얼굴은 😊 몸짓 창에서 바로 쓸 수 있어요.'));
+      const slots = el2('div', 'row-center wrap');
+      for (let i = 0; i < 4; i++) { const c = bag.emoF[i], b = el2('button', 'btn', ''); b.style.background = '#fff'; if (c != null) { const im = document.createElement('img'); im.src = emoFaceCanvas(c, 48).toDataURL(); im.alt = ''; im.style.cssText = 'width:30px;height:30px;vertical-align:middle'; b.append(im); } b.append(document.createTextNode(` ${i + 1}칸에 저장`)); b.onclick = () => { bag.emoF[i] = code; bag.emoF = bag.emoF.filter(v => v != null).slice(0, 4); saveBag(); renderEmoBar(); toast(`😀 ${i + 1}칸에 저장했어요!`, 'success'); refillLife(); }; slots.append(b); }
+      box.append(slots); const tryB = el2('button', 'btn', '👀 지금 써 보기'); tryB.onclick = () => { closeLife(); emoUse(`f${code}`); }; const r3 = el2('div', 'row-center'); r3.append(tryB); box.append(r3);
+      return;
+    }
+    // 🖌️ 도트 그리기
+    box.append(el2('p', 'hint', `12×12 칸에 색칠해 나만의 이모티콘을 그려요. 선생님이 확인하면 쓸 수 있어요 (한 사람 ${EMO_MAX_P}개까지). 친구가 기분 나쁠 그림은 확인을 받을 수 없어요.`));
+    const cv = document.createElement('canvas'), SZ = Math.min(312, window.innerWidth - 80); cv.width = cv.height = SZ; cv.style.cssText = `width:${SZ}px;height:${SZ}px;display:block;margin:6px auto;touch-action:none;border:3px solid var(--ink);border-radius:8px;background:repeating-conic-gradient(#EEE 0 25%, #FFF 0 50%) 0 0/26px 26px;cursor:crosshair`;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', '도트 그림판');
+    const draw = () => { const x = cv.getContext('2d'), c = SZ / EMO_N; x.clearRect(0, 0, SZ, SZ); for (let i = 0; i < EMO_N * EMO_N; i++) { const v = +emoMk.pix[i]; if (v) { x.fillStyle = EMO_PAL[v]; x.fillRect((i % EMO_N) * c, Math.floor(i / EMO_N) * c, c, c); } } x.strokeStyle = 'rgba(0,0,0,.12)'; x.lineWidth = 1; for (let k = 1; k < EMO_N; k++) { x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c, SZ); x.moveTo(0, k * c); x.lineTo(SZ, k * c); x.stroke(); } };
+    const paint = (ev) => { const rc = cv.getBoundingClientRect(), cx = Math.floor((ev.clientX - rc.left) / rc.width * EMO_N), cy = Math.floor((ev.clientY - rc.top) / rc.height * EMO_N); if (cx < 0 || cy < 0 || cx >= EMO_N || cy >= EMO_N) return; const i = cy * EMO_N + cx, a = emoMk.pix.split(''); if (a[i] === String(emoMk.col)) return; a[i] = String(emoMk.col); emoMk.pix = a.join(''); draw(); };
+    let down = false; cv.addEventListener('pointerdown', ev => { down = true; try { cv.setPointerCapture(ev.pointerId); } catch (e) { } paint(ev); }); cv.addEventListener('pointermove', ev => { if (down) paint(ev); }); for (const t of ['pointerup', 'pointercancel']) cv.addEventListener(t, () => { down = false; });
+    draw(); box.append(cv);
+    const pal = el2('div', 'row-center wrap'); pal.style.gap = '4px';
+    EMO_PAL.forEach((c, i) => { const b = el2('button', 'btn', i ? '' : '🧽'); b.style.cssText = `width:38px;height:34px;padding:0;background:${c || '#fff'}${emoMk.col === i ? ';outline:4px solid var(--ink)' : ''}`; b.setAttribute('aria-label', i ? `색 ${i}` : '지우개'); b.onclick = () => { emoMk.col = i; pal.querySelectorAll('button').forEach((x, j) => { x.style.outline = j === i ? '4px solid var(--ink)' : ''; }); }; pal.append(b); });
+    box.append(pal);
+    const acts = el2('div', 'row-center wrap'); const clr = el2('button', 'btn', '🗑️ 모두 지우기'); clr.style.background = '#fff'; clr.onclick = () => { emoMk.pix = '0'.repeat(EMO_N * EMO_N); draw(); };
+    const mine = emoMinePix(), send = el2('button', 'btn', `📮 선생님께 보내기 (${mine.length}/${EMO_MAX_P})`); send.style.background = '#FFD23C'; send.disabled = mine.length >= EMO_MAX_P;
+    send.onclick = async () => { if ((emoMk.pix.match(/[1-8]/g) || []).length < 6) { toast('🖌️ 조금 더 그려 봐요 (6칸 이상)', 'info'); return; } const r = await backend.emoPost(emoMk.pix, raidName()); if (r.ok) { toast('📮 선생님께 보냈어요! 확인을 받으면 몸짓 창에 생겨요', 'success'); emoMk.pix = '0'.repeat(EMO_N * EMO_N); refillLife(); } else toast('⚠️ 보내지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); };
+    acts.append(clr, send); box.append(acts);
+    if (mine.length) { box.append(el2('h3', 'lp-sec', '내 그림')); const w = el2('div', 'row-center wrap'); for (const x of mine) { const c2 = el2('div', 'sticker'); c2.style.cssText = 'padding:6px;text-align:center;font-size:13px'; const im = document.createElement('img'); im.src = emoPixCanvas(x.p, 60).toDataURL(); im.alt = ''; im.style.cssText = 'width:48px;height:48px;image-rendering:pixelated;display:block;margin:auto'; const del = el2('button', 'btn', '🗑️'); del.style.cssText = 'padding:2px 6px;font-size:12px;background:#fff'; del.setAttribute('aria-label', '이 그림 지우기'); del.onclick = async () => { await backend.emoDel(x.k); refillLife(); renderEmoBar(); }; c2.append(im, el2('div', '', x.ok ? '✅ 쓸 수 있어요' : '⏳ 확인 기다리는 중'), del); w.append(c2); } box.append(w); }
+  });
+}
+function fillEmoAdmin() {
+  const box = $('tpEmo'); if (!box || !isTeacher) return; const L = emoList(), key = JSON.stringify(L.map(x => [x.k, x.ok])); if (box.dataset.key === key) return; box.dataset.key = key; box.textContent = '';
+  const wait = L.filter(x => !x.ok), ok = L.filter(x => x.ok);
+  box.append(el2('p', 'hint', `확인을 기다리는 그림 ${wait.length}개 · 쓸 수 있는 그림 ${ok.length}개`));
+  const card = (x) => { const c = el2('div', 'sticker'); c.style.cssText = 'padding:6px;text-align:center;font-size:13px;display:inline-block;margin:3px'; const im = document.createElement('img'); im.src = emoPixCanvas(x.p, 72).toDataURL(); im.alt = `${x.nm || '학생'}의 그림`; im.style.cssText = 'width:64px;height:64px;image-rendering:pixelated;display:block;margin:auto;background:#F4F4F4'; c.append(im, el2('div', '', x.nm || '학생'));
+    const r = el2('div', 'row-center'); r.style.margin = '2px 0 0'; if (!x.ok) { const y = el2('button', 'btn', '✅'); y.setAttribute('aria-label', '쓸 수 있게 하기'); y.style.cssText = 'padding:2px 8px;background:#CDEFC2'; y.onclick = () => adminDo({ [`emo/${x.k}/ok`]: true }, '😀 그림을 쓸 수 있게 했어요'); r.append(y); } else { const h = el2('button', 'btn', '숨기기'); h.style.cssText = 'padding:2px 6px;font-size:12px;background:#fff'; h.onclick = () => adminDo({ [`emo/${x.k}/ok`]: false }, '😀 그림을 숨겼어요'); r.append(h); }
+    const d = el2('button', 'btn', '🗑️'); d.setAttribute('aria-label', '지우기'); d.style.cssText = 'padding:2px 8px;background:#fff'; d.onclick = () => adminDo({ [`emo/${x.k}`]: null }, '🗑️ 그림을 지웠어요'); r.append(d); c.append(r); return c; };
+  if (wait.length) { const w = el2('div', ''); wait.forEach(x => w.append(card(x))); box.append(w); if (wait.length > 1) { const all = el2('button', 'btn', `✅ ${wait.length}개 모두 쓸 수 있게`); all.onclick = () => adminDo(Object.fromEntries(wait.map(x => [`emo/${x.k}/ok`, true])), '😀 모두 쓸 수 있게 했어요'); const rr = el2('div', 'row-center'); rr.append(all); box.append(rr); } }
+  if (ok.length) { box.append(el2('p', 'hint', '쓸 수 있는 그림')); const w = el2('div', ''); ok.forEach(x => w.append(card(x))); box.append(w); }
+}
 // ================= 🎲 반월쉼터 (1021a): 보드게임 방 · 앉아서 보드게임 웹앱 하기 =================
 // 마을 건물(광장 북서쪽) → 들어가면 방 고르기 → 게임마다 꾸민 방(ROOMS bg1·bg2) → 탁자에서 E: 앉아서 게임 화면(iframe) · 새 게임은 BOARD_GAMES에 한 줄 + 방 꾸미기
 const BG_HOUSE = { x: -24, z: -27, w: 10, d: 8 };
@@ -21550,7 +21838,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateHunt(dt); gwTick(dt); hmTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
