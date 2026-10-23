@@ -626,6 +626,14 @@
   #guideChip > div:first-child { display: flex; justify-content: space-between; align-items: center; font-size: 14px; opacity: .8; }
   #guideClose { border: 0; background: none; font-size: 16px; padding: 0 2px; cursor: pointer; }
   body:not(:has(#miniBtn:not(.hidden))) #guideChip { top: calc(10px + var(--safe-top)); }
+  #restOv { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: linear-gradient(160deg, #BFE7D2, #CFE3FF 60%, #FFE9C8); padding: 16px; }
+  #restOv .rest-card { max-width: 520px; width: 100%; text-align: center; padding: 26px 22px; }
+  #restOv h2 { font-size: 34px; margin: 0 0 6px; }
+  #restOv .rest-time { font-size: 56px; font-weight: 900; letter-spacing: 2px; margin: 8px 0; color: var(--ink); }
+  #restOv .rest-tip { font-size: 22px; font-weight: 800; min-height: 64px; display: grid; place-items: center; margin: 10px 0; }
+  #restOv .rest-emo { font-size: 72px; line-height: 1; animation: restBob 3s ease-in-out infinite; }
+  @keyframes restBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @media (prefers-reduced-motion: reduce) { #restOv .rest-emo { animation: none; } }
   #freezeBar { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(40, 50, 80, .28); pointer-events: none; }
   #freezeBar .sticker { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 34px; background: var(--sun); font-size: 22px; }
   #freezeBar b { font-size: 40px; }
@@ -966,6 +974,7 @@
   <div><span id="guideStep"></span><button id="guideClose" aria-label="첫걸음 안내 끄기">✕</button></div>
   <div id="guideText"></div>
 </div>
+<div id="restOv" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="restTitle"><div class="rest-card sticker"><div class="rest-emo" id="restEmo">😌</div><h2 id="restTitle">쉬는 시간이에요</h2><p class="hint" id="restWhy"></p><div class="rest-time" id="restTime">3:00</div><div class="rest-tip" id="restTip"></div><p class="hint">화면에서 눈을 떼고 몸을 움직여요. 시간이 끝나면 저절로 마을로 돌아가요.</p></div></div>
 <div id="freezeBar" class="hidden" role="alert"><div class="sticker"><b>✋ 잠깐 멈춤!</b><span>선생님 이야기를 들어요</span></div></div>
 <button id="ctfCatch" class="btn hidden" aria-label="잡기">🖐️ 잡기</button>
 <div id="homeBar" class="sticker hidden" role="group" aria-label="집 안"><b id="hbTitle"></b>
@@ -1334,6 +1343,12 @@
     </div>
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
     <p class="hint" style="margin-top:6px">선생님 화면 왼쪽에도 모이기·멈춤 버튼이 있어요. 멈춤은 10분이 지나면 저절로 풀려요.</p>
+
+    <h3>😌 쉬는 시간</h3>
+    <p class="hint" id="tpRestNow"></p>
+    <div class="row-center wrap"><button class="btn" data-rest="3" style="background:#CDEFC2">😌 3분 쉬기</button><button class="btn" data-rest="5" style="background:#CDEFC2">😌 5분 쉬기</button><button class="btn" data-rest="10" style="background:#CDEFC2">😌 10분 쉬기</button><button class="btn hidden" id="tpRestEnd" style="background:#fff">▶️ 쉬는 시간 끝내기</button></div>
+    <div class="row-center wrap" style="margin-top:6px"><label for="tpRestAuto" class="hint" style="margin:0">⏰ 오래 하면 자동으로 쉬기</label><select id="tpRestAuto" class="tinput" style="width:auto"><option value="0">끄기</option><option value="15">15분마다</option><option value="20">20분마다</option><option value="30">30분마다</option><option value="40">40분마다</option></select><select id="tpRestLen" class="tinput" style="width:auto"><option value="60">1분 쉬기</option><option value="90">1분 30초 쉬기</option><option value="120">2분 쉬기</option></select></div>
+    <p class="hint">쉬는 시간에는 학생 화면이 모두 가려지고 눈·몸 쉬기 안내가 나와요. ⏰ 자동 쉬기는 학생마다 쉬지 않고 한 시간을 세어서, 정한 시간이 지나면 그 학생 화면만 잠깐 가려요 (공방전·숨바꼭질 같은 놀이 중이면 놀이가 끝날 때까지 조금 기다려 줘요).</p>
 
     <h3>🙋 발표 칭찬 · ⭐ 능력치 주기</h3>
     <p class="hint">오른쪽 아래 🙋 버튼과 같아요. 발표한 학생 칭찬(🐚 + 반 발표 목표), 학생을 골라 능력치 주기, 📝 우리 반 명단 저장을 해요.</p>
@@ -11457,7 +11472,36 @@ function updateMountain(dt) {
    · 첫걸음 안내: 상자 줍기 → 짓기 → 모으기 → 팔기를 한 단계씩 (이 기기에만 기억)
    ===================================================================== */
 const FREEZE_MAX = 10 * 60 * 1000;
-const isFrozen = () => !!(joined && !isTeacher && S.control?.freeze && backend && backend.now() - S.control.freeze < FREEZE_MAX);
+/* 😌 1023c 쉬는 시간: ① 선생님이 켜는 반 전체 쉬기 state/control/rest = 끝나는 시각 ② ⏰ 자동 쉬기 state/control/ra = 분(0 끄기) · rl = 초
+   자동 쉬기는 기기마다 '쉬지 않고 한 시간'(rw.play)을 세요. 화면을 3분 넘게 안 보면(탭 숨김) 쉰 걸로 쳐요 */
+const REST_TIPS = [['👀', '창밖 먼 곳을 20초 동안 바라봐요'], ['🙆', '두 팔을 머리 위로 쭉 펴고 기지개를 켜요'], ['😑', '눈을 꼭 감았다가 천천히 떠요 (5번)'], ['🚰', '물을 한 모금 마셔요'], ['🔄', '목을 천천히 왼쪽·오른쪽으로 돌려요'], ['🧍', '자리에서 일어나 제자리 걸음을 해요'], ['🤲', '손가락을 쥐었다 폈다 해요 (10번)'], ['🌬️', '코로 숨을 깊게 들이쉬고 입으로 천천히 내쉬어요']];
+const rw = { play: 0, until: 0, shown: false, hidAt: 0, tipI: -1, waitT: 0, why: '' };
+const restClassOn = () => !!S.control?.rest && backend && backend.now() < S.control.rest;
+const restAutoMin = () => +S.control?.ra || 0;
+const restBusy = () => ['in-siege', 'in-hide', 'in-ctf', 'in-play', 'in-pb'].some(c => document.body.classList.contains(c)); // 팀 놀이 중
+document.addEventListener('visibilitychange', () => { if (document.hidden) rw.hidAt = performance.now(); else if (rw.hidAt && performance.now() - rw.hidAt > 180000) rw.play = 0; });
+function updateRest(dt) {
+  if (!joined || isTeacher) { if (rw.shown) { rw.shown = false; $('restOv').classList.add('hidden'); } return; }
+  const cls = restClassOn(), self = rw.until > performance.now();
+  if (!cls && !self && !document.hidden) { // ⏰ 쉬지 않고 한 시간
+    rw.play += dt; const lim = restAutoMin() * 60;
+    if (lim && rw.play >= lim) { if (restBusy() && rw.waitT < 600) rw.waitT += dt; else { rw.until = performance.now() + (+S.control?.rl || 90) * 1000; rw.why = `⏰ ${restAutoMin()}분 동안 열심히 놀았어요!`; rw.waitT = 0; rw.play = 0; } }
+  }
+  if (cls) rw.play = 0;
+  const on = cls || rw.until > performance.now();
+  if (on !== rw.shown) {
+    rw.shown = on; $('restOv').classList.toggle('hidden', !on);
+    if (on) { playSfx('bell'); if (placing.active) stopPlacing(); if (life.fishing) endFishing(); $('emoteBar').classList.add('hidden'); for (const k in keys) keys[k] = false; joy.x = joy.y = 0; rw.tipI = -1; }
+    else { rw.play = 0; rw.until = 0; toast('▶️ 잘 쉬었어요! 다시 마을로 돌아왔어요', 'success'); }
+  }
+  if (!on) return;
+  const left = Math.max(0, Math.ceil(cls ? (S.control.rest - backend.now()) / 1000 : (rw.until - performance.now()) / 1000));
+  const t = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; if ($('restTime').textContent !== t) $('restTime').textContent = t;
+  const why = cls ? '🧑‍🏫 선생님이 쉬는 시간을 주셨어요' : rw.why; if ($('restWhy').textContent !== why) $('restWhy').textContent = why;
+  const ti = Math.floor(performance.now() / 15000) % REST_TIPS.length; if (ti !== rw.tipI) { rw.tipI = ti; $('restEmo').textContent = REST_TIPS[ti][0]; $('restTip').textContent = REST_TIPS[ti][1]; }
+}
+const isResting = () => rw.shown;
+const isFrozen = () => !!(joined && !isTeacher && ((S.control?.freeze && backend && backend.now() - S.control.freeze < FREEZE_MAX) || rw.shown)); // 😌 쉬는 시간에도 멈춰요
 let frozenShown = false;
 function syncControl(prev, first) {
   const g = S.control?.gather || 0, pg = prev.control?.gather || 0;
@@ -11523,9 +11567,16 @@ function fillControlAdmin() {
   const on = freezeOn();
   $('tpCtrlNow').textContent = (on ? '✋ 지금 학생들이 멈춰 있어요' : '학생들이 자유롭게 움직이고 있어요') + (backend?.mode === 'firebase' ? '' : ' · Firebase가 없어서 이 브라우저에서만 돼요');
   $('tpFreeze').textContent = on ? '▶️ 다시 움직이기' : '✋ 잠깐 멈춤';
+  { const on2 = !!S.control?.rest && backend.now() < S.control.rest, left = on2 ? Math.ceil((S.control.rest - backend.now()) / 60000) : 0;
+    $('tpRestNow').textContent = on2 ? `😌 지금 쉬는 시간이에요 (약 ${left}분 남음)` : `학생들이 마을에 있어요${restAutoMin() ? ` · ⏰ 자동 쉬기: ${restAutoMin()}분마다 ${(+S.control?.rl || 90) >= 120 ? '2분' : (+S.control?.rl || 90) >= 90 ? '1분 30초' : '1분'}` : ' · ⏰ 자동 쉬기 꺼짐'}`;
+    $('tpRestEnd').classList.toggle('hidden', !on2); if (document.activeElement !== $('tpRestAuto')) $('tpRestAuto').value = String(restAutoMin()); if (document.activeElement !== $('tpRestLen')) $('tpRestLen').value = String(+S.control?.rl || 90); }
   $('tpLite').textContent = S.control?.lite ? '🪶 학생 화질: 모두 가볍게 (끄기)' : '🪶 학생 화질 모두 가볍게';
 }
 function initControlUI() {
+  for (const b of document.querySelectorAll('[data-rest]')) b.onclick = () => { const m = +b.dataset.rest; adminDo({ 'control/rest': backend.now() + m * 60000 }, `😌 ${m}분 쉬는 시간을 시작했어요 (학생 화면이 모두 가려져요)`); setTimeout(fillControlAdmin, 300); };
+  $('tpRestEnd').onclick = () => { adminDo({ 'control/rest': 0 }, '▶️ 쉬는 시간을 끝냈어요'); setTimeout(fillControlAdmin, 300); };
+  $('tpRestAuto').onchange = () => adminDo({ 'control/ra': +$('tpRestAuto').value }, +$('tpRestAuto').value ? `⏰ ${$('tpRestAuto').value}분마다 자동으로 쉬어요` : '⏰ 자동 쉬기를 껐어요');
+  $('tpRestLen').onchange = () => adminDo({ 'control/rl': +$('tpRestLen').value }, '⏰ 자동 쉬기 길이를 바꿨어요');
   for (const id of ['tbGather', 'tpGather']) $(id).onclick = teacherGather;
   $('tpCamp').onclick = () => adminDo({ 'control/camp': Date.now(), 'areas/forest': true }, '🔥 모두 숲속 캠프 모닥불로 불렀어요 (캠프 열림)');
   for (const id of ['tbFreeze', 'tpFreeze']) $(id).onclick = () => teacherFreeze(!freezeOn());
@@ -13602,7 +13653,7 @@ function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hi
 const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투표'], ['village', '🏘️ 마을'], ['play', '🎮 놀이'], ['setup', '⚙️ 설정']];
 // 1022b: 탭마다 보여 줄 순서 (제목으로 찾아요) · 마을 탭은 마을별 묶음 · 목록에 없는 것(선생님 모습·게시판 공지·업데이트 투표·마을 미션 기록·보상 투표 등)은 숨겨요
 const TP_LAYOUT = {
-  class: [/수업 도구/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
+  class: [/수업 도구/, /쉬는 시간/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', []], ['⛏️ 수학 마을', [/수학 광산/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /행사/],
@@ -16026,6 +16077,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1023c', d: '10월 23일', items: ['😌 쉬는 시간이 생겼어요! 선생님이 쉬는 시간을 주시거나, 오래 놀면 잠깐 눈과 몸을 쉬어요'] },
   { id: '1022f', d: '10월 22일', items: ['⚔️ 성 공방전이 바뀌었어요! 👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이 · 전반전/작전 시간/후반전 · 🚩 성을 함락하면 상대가 포로가 돼요', '🏰 성에 동서남북 성문 4개와 해자가 생겼어요. 🛶 나루에서 배를 타고 건너요', '🙈 숨바꼭질 변신 물건이 마을마다 달라요 · 💌 감사 게시판에 히든 미션 쪽지가 붙어요'] },
   { id: '1022e', d: '10월 22일', items: ['🕵️ 히든 미션이 숨어 있어요! 마을 곳곳에서 이것저것 해 보면 깜짝 미션을 찾을 수 있어요 (찾으면 🐚)'] },
   { id: '1022d', d: '10월 22일', items: ['🙈 숨바꼭질을 마을마다 해요! 메인 · 역사 · 영어 · 수학 · 들판 마을 중 선생님이 고르면 시작할 때 모두 그 마을로 옮겨져요 (마을마다 변신 물건이 달라요)'] },
@@ -21499,7 +21551,7 @@ function loop() {
   updateFund(dt);
   if (joined) updateHome(dt);
   updateFx(dt); grassWind.value = time; waterTime.value = time;
-  updateControl(); updateMap(dt); if (joined) renderGuide();
+  updateControl(); updateRest(dt); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
   if (!joined) renderPreview(dt);
   updatePretty(dt);
