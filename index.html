@@ -15391,16 +15391,226 @@ function drawShape(Q) { // 🧩 도형 그림 (캔버스)
   else if (Q.sh === 'rho') { const cx = x0 + 110, cy = y0 - 70, a = Math.min(100, Q.w * 9), b = Math.min(65, Q.h * 6); P([[cx - a, cy], [cx, cy - b], [cx + a, cy], [cx, cy + b]]); dash(cx - a, cy, cx + a, cy); dash(cx, cy - b, cx, cy + b); T(`${Q.w} cm`, cx + a / 2, cy - 8, '#E2584A'); T(`${Q.h} cm`, cx + 30, cy + b / 2 + 4, '#E2584A'); }
   return cv;
 }
-function mathQuiz(title, Q, onRight, extra) { // 4지선다 창 (맞히면 onRight)
+function mathQuiz(title, Q, onRight, extra, onWrong) { // 4지선다 창 (맞히면 onRight · 틀리면 onWrong)
   openLife(title, (box) => {
     box.textContent = ''; if (extra) extra(box);
-    if (Q.sh) box.append(drawShape(Q));
+    if (Q.sh) box.append(drawShape(Q)); else if (Q.cv) box.append(Q.cv());
     box.append(el2('p', 'lp-big', Q.q));
-    const fb = el2('p', 'hint', `💡 ${Q.tip}`), grid = el2('div', 'mx-opts'); let done = false;
+    const fb = el2('p', 'hint', Q.hideTip ? '🤔 틀리면 💡 힌트가 나와요' : `💡 ${Q.tip}`), grid = el2('div', 'mx-opts'); let done = false;
     for (const o of Q.opts) { const b = el2('button', 'btn mx-opt', `${o}${Q.unit ? ' ' + Q.unit : ''}`);
-      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); addStat('math', 3); onRight(); } else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = `🤔 다시 생각해 봐요 · 💡 ${Q.tip}`; } };
+      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); addStat('math', 3); onRight(); } else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = `🤔 다시 생각해 봐요 · 💡 ${Q.tip}`; onWrong?.(); } };
       grid.append(b); }
     box.append(grid, fb);
+  });
+}
+/* ---------- 🪞 대칭 거울 공방 (1023g · 5-2 3단원 합동과 대칭) ----------
+   개념(알짜 정리) + 문제(3.1.1 도형의 합동 외 3단원 문제지)를 그림 없이 풀 수 있게 다듬었어요 · 정다각형 대칭축 문제는 그림과 함께
+   맞히면 🐚 + 🧮 수학력 +3 · 10문제 도전을 끝까지 하면 🐚 더 */
+const SYM_Q = [
+  // 📘 개념 (알짜 정리)
+  ['모양과 크기가 같아서 포개었을 때 완전히 겹치는 두 도형을 서로 무엇이라고 할까요?', '합동', ['대칭', '닮음', '평행'], '모양과 크기가 같아 완전히 겹치면 합동이에요'],
+  ['서로 합동인 두 도형을 포개었을 때 겹치는 변을 무엇이라고 할까요?', '대응변', ['대응점', '대응각', '대칭축'], '겹치는 점 = 대응점 · 겹치는 변 = 대응변 · 겹치는 각 = 대응각'],
+  ['서로 합동인 두 도형을 포개었을 때 겹치는 각을 무엇이라고 할까요?', '대응각', ['대응변', '대응점', '대칭각'], '겹치는 각 = 대응각'],
+  ['서로 합동인 두 도형에서 대응변의 길이와 대응각의 크기는 어떠할까요?', '각각 같아요', ['대응변만 같아요', '대응각만 같아요', '서로 달라요'], '합동인 두 도형은 대응변의 길이와 대응각의 크기가 각각 같아요'],
+  ['한 직선을 따라 접었을 때 완전히 겹치는 도형을 무엇이라고 할까요?', '선대칭도형', ['점대칭도형', '합동인 도형', '정다각형'], '접어서 겹치면 선대칭도형, 180° 돌려서 겹치면 점대칭도형'],
+  ['선대칭도형에서 접는 기준이 되는 직선을 무엇이라고 할까요?', '대칭축', ['대칭의 중심', '대각선', '대응변'], '선대칭도형의 그 직선 = 대칭축'],
+  ['선대칭도형에서 대응점끼리 이은 선분은 대칭축과 어떻게 만날까요?', '수직으로 만나요', ['평행해요', '45°로 만나요', '만나지 않아요'], '대응점끼리 이은 선분은 대칭축과 수직으로 만나요'],
+  ['선대칭도형에서 각각의 대응점에서 대칭축까지의 거리는 어떠할까요?', '서로 같아요', ['한쪽이 2배예요', '서로 달라요', '항상 1 cm예요'], '대칭축은 대응점끼리 이은 선분을 똑같이 둘로 나눠요'],
+  ['어떤 점을 중심으로 몇 도 돌렸을 때 처음 도형과 완전히 겹치면 점대칭도형일까요?', '180°', ['90°', '360°', '45°'], '반 바퀴(180°) 돌려서 겹치면 점대칭도형이에요'],
+  ['점대칭도형에서 돌리는 기준이 되는 점을 무엇이라고 할까요?', '대칭의 중심', ['대칭축', '꼭짓점', '대응점'], '점대칭도형의 그 점 = 대칭의 중심'],
+  ['점대칭도형에서 대칭의 중심은 대응점끼리 이은 선분을 어떻게 나눌까요?', '똑같이 둘로 나눠요', ['셋으로 나눠요', '나누지 않아요', '2:1로 나눠요'], '대칭의 중심은 대응점끼리 이은 선분을 똑같이 둘로 나눠요'],
+  ['점대칭도형에서 대칭의 중심은 몇 개일까요?', '1개', ['2개', '4개', '셀 수 없이 많아요'], '대칭의 중심은 항상 1개예요 (대응점끼리 이은 선분들이 만나는 점)'],
+  // 🗣️ 바르게 말한 것 · 잘못 말한 것
+  ['합동에 대해 바르게 말한 것은 어느 것일까요?', '두 도형을 포개었을 때 완전히 겹치면 서로 합동이에요', ['넓이가 같으면 두 도형은 항상 합동이에요', '한 도형을 크게 확대한 도형은 원래 도형과 합동이에요', '변의 수가 같으면 두 도형은 항상 합동이에요'], '합동은 모양과 크기가 모두 같아야 해요'],
+  ['합동에 대해 바르게 말한 것은 어느 것일까요?', '합동인 두 도형은 넓이와 둘레가 같아요', ['각의 크기가 모두 같은 두 삼각형은 항상 합동이에요', '합동인 두 도형은 넓이가 다를 수 있어요', '조금만 겹쳐도 합동이에요'], '각의 크기가 같아도 크기가 다를 수 있어요'],
+  ['합동에 대해 잘못 말한 것은 어느 것일까요?', '둘레가 같으면 두 도형은 항상 합동이에요', ['합동인 두 도형은 모양과 크기가 같아요', '뒤집어서 완전히 겹쳐도 합동이에요', '합동인 두 도형은 대응각의 크기가 같아요'], '둘레가 같아도 모양이나 크기가 다를 수 있어요'],
+  ['다음 중 항상 서로 합동이 아닌 것은 어느 것일까요?', '넓이가 같은 두 직사각형', ['둘레가 같은 두 정삼각형', '넓이가 같은 두 정사각형', '반지름이 같은 두 원'], '가로 8·세로 3과 가로 6·세로 4는 넓이가 같지만 합동이 아니에요'],
+  ['사각형의 두 대각선을 따라 자르면 네 삼각형이 생겨요. 네 삼각형이 항상 서로 합동인 사각형은?', '마름모', ['사다리꼴', '평행사변형', '직사각형'], '마름모와 정사각형은 두 대각선이 서로를 수직으로 똑같이 나눠요'],
+  // 🔢 합동 계산
+  ['두 사각형 ㄱㄴㄷㄹ과 ㅁㅂㅅㅇ은 서로 합동이에요. 변 ㅂㅅ이 4 cm일 때, 대응변인 변 ㄴㄷ은 몇 cm일까요?', '4', ['8', '2', '6'], '대응변의 길이는 같아요', 'cm'],
+  ['삼각형 ㄱㄴㄷ과 삼각형 ㄹㅁㅂ은 서로 합동이에요. 각 ㄱㄷㄴ이 45°일 때, 대응각인 각 ㄹㅂㅁ은 몇 도일까요?', '45', ['90', '135', '55'], '대응각의 크기는 같아요', '°'],
+  ['두 사각형은 서로 합동이에요. 한 사각형의 세 각이 100°, 115°, 75°일 때, 나머지 한 각의 대응각은 몇 도일까요?', '70', ['80', '60', '110'], '사각형의 네 각의 합은 360° → 360 − 100 − 115 − 75'],
+  ['합동인 두 삼각형이 있어요. 한 삼각형의 두 각이 40°와 50°일 때, 다른 삼각형에서 남은 한 각의 대응각은 몇 도일까요?', '90', ['80', '100', '50'], '삼각형의 세 각의 합은 180° → 180 − 40 − 50', '°'],
+  ['삼각형 ㄱㄴㄷ과 삼각형 ㄹㄷㄴ은 서로 합동이에요. 삼각형 ㄱㄴㄷ의 둘레가 23 cm이고 변 ㄱㄴ이 4 cm, 변 ㄴㄷ이 8 cm일 때 변 ㄴㄹ은 몇 cm일까요?', '11', ['12', '15', '19'], '(변 ㄴㄹ) = (변 ㄷㄱ) = 23 − (4 + 8)', 'cm'],
+  ['서로 합동인 두 삼각형에서 대응변은 모두 몇 쌍일까요?', '3', ['2', '4', '6'], '삼각형은 변이 3개 → 대응변 3쌍 (대응점·대응각도 3쌍)', '쌍'],
+  ['서로 합동인 두 사각형에서 대응각은 모두 몇 쌍일까요?', '4', ['3', '2', '8'], '사각형은 각이 4개 → 대응각 4쌍', '쌍'],
+  ['삼각형 ㄱㄴㄷ과 ㄹㅁㅂ은 합동이에요. 변 ㄴㄷ이 7 cm이고 각 ㄱㄴㄷ이 100°일 때, 변 ㅁㅂ과 각 ㄹㅁㅂ을 차례로 나타낸 것은?', '7 cm, 100°', ['13 cm, 100°', '7 cm, 80°', '14 cm, 50°'], '대응변의 길이와 대응각의 크기는 같아요'],
+  // 🦋 선대칭도형
+  ['선대칭도형에서 점 ㄱ에서 대칭축까지의 거리가 3 cm예요. 점 ㄱ의 대응점에서 대칭축까지의 거리는 몇 cm일까요?', '3', ['6', '1.5', '9'], '대응점에서 대칭축까지의 거리는 서로 같아요', 'cm'],
+  ['선대칭도형에서 대응점 ㄴ과 ㄷ을 이은 선분을 대칭축이 점 ㅂ에서 만나요. 선분 ㅂㄷ이 5 cm이면 선분 ㄴㄷ은 몇 cm일까요?', '10', ['5', '15', '2.5'], '대칭축은 대응점끼리 이은 선분을 똑같이 둘로 나눠요 → 5 + 5', 'cm'],
+  ['선분 ㄱㄹ을 대칭축으로 하는 선대칭도형 삼각형 ㄱㄴㄷ에서 변 ㄱㄴ이 8 cm일 때 변 ㄱㄷ은 몇 cm일까요?', '8', ['4', '16', '6'], '변 ㄱㄷ의 대응변은 변 ㄱㄴ이에요', 'cm'],
+  ['선분 ㄱㄹ을 대칭축으로 하는 선대칭도형 삼각형 ㄱㄴㄷ에서 각 ㄱㄴㄹ이 55°일 때 각 ㄱㄷㄹ은 몇 도일까요?', '55', ['35', '65', '90'], '각 ㄱㄷㄹ의 대응각은 각 ㄱㄴㄹ이에요', '°'],
+  ['선분 ㄱㄹ을 대칭축으로 하는 선대칭도형 삼각형 ㄱㄴㄷ에서 각 ㄱㄴㄷ이 55°일 때 각 ㄷㄱㄹ은 몇 도일까요? (선분 ㄱㄹ은 변 ㄴㄷ과 수직이에요)', '35', ['55', '45', '125'], '각 ㄱㄹㄷ = 90° · 각 ㄱㄷㄹ = 55° → 180 − 90 − 55', '°'],
+  ['선대칭도형에서 점 ㄴ과 대응점 ㄹ은 대칭축에서 각각 4 cm, 점 ㅇ과 대응점 ㅂ은 각각 3 cm 떨어져 있어요. 선분 ㄴㄹ과 선분 ㅇㅂ의 길이의 합은 몇 cm일까요?', '14', ['7', '12', '10'], '(4 × 2) + (3 × 2)', 'cm'],
+  ['대칭축의 한쪽에 있는 변이 9 cm, 7 cm이고, 대칭축이 밑변을 둘로 나눈 한쪽이 4 cm인 선대칭도형(오각형)의 둘레는 몇 cm일까요?', '40', ['20', '36', '44'], '한쪽 길이의 합을 2배 → (9 + 7 + 4) × 2', 'cm'],
+  ['정구각형의 대칭축의 수와 정육각형의 대칭축의 수의 곱을 구하세요.', '54', ['15', '45', '36'], '정■각형의 대칭축은 ■개 → 9 × 6'],
+  ['정오각형, 직사각형, 정육각형의 대칭축의 수를 모두 더하면?', '13', ['15', '11', '12'], '정오각형 5개 + 직사각형 2개 + 정육각형 6개', '개'],
+  ['다음 글자 중 선대칭도형인 것은 모두 몇 개일까요?  ㄷ ㄹ ㅂ ㅋ ㅎ', '3', ['2', '4', '5'], 'ㄷ, ㅂ, ㅎ은 접어서 완전히 겹쳐요', '개'],
+  ['원의 대칭축은 몇 개일까요?', '셀 수 없이 많아요', ['1개', '2개', '4개'], '원의 중심을 지나는 직선은 모두 대칭축이에요'],
+  ['직사각형의 대칭축은 몇 개일까요?', '2', ['4', '1', '0'], '가로 가운데, 세로 가운데 두 개예요 (대각선은 대칭축이 아니에요)', '개'],
+  ['마름모의 대칭축은 몇 개일까요?', '2', ['4', '1', '0'], '두 대각선이 대칭축이에요', '개'],
+  ['다음 중 선대칭도형이 아닌 것은 어느 것일까요?', '평행사변형 (직사각형·마름모가 아닌)', ['이등변삼각형', '정사각형', '정오각형'], '보통 평행사변형은 어떤 직선으로 접어도 겹치지 않아요 (점대칭도형이에요)'],
+  // 🔄 점대칭도형
+  ['점 ㅇ을 대칭의 중심으로 하는 점대칭도형에서 선분 ㅇㄹ이 5 cm일 때, 점 ㄹ의 대응점 ㄴ까지의 선분 ㄴㅇ은 몇 cm일까요?', '5', ['10', '2.5', '7'], '대칭의 중심은 대응점끼리 이은 선분을 똑같이 둘로 나눠요', 'cm'],
+  ['점 ㅅ을 대칭의 중심으로 하는 점대칭도형에서 선분 ㄱㅅ이 9 cm일 때, 대응점끼리 이은 선분 ㄱㄹ은 몇 cm일까요?', '18', ['9', '12', '21'], '(선분 ㄱㄹ) = (선분 ㄱㅅ) + (선분 ㅅㄹ) = 9 + 9', 'cm'],
+  ['점 ㅇ을 대칭의 중심으로 하는 점대칭도형에서 선분 ㅇㄹ이 8 cm예요. 점 ㄱ과 점 ㄹ이 대응점일 때 선분 ㄱㄹ은 몇 cm일까요?', '16', ['8', '4', '12'], '8 × 2', 'cm'],
+  ['점대칭도형에서 변 ㄹㄷ이 8 cm이고, 변 ㄱㅂ이 변 ㄹㄷ의 대응변일 때 변 ㄱㅂ은 몇 cm일까요?', '8', ['5', '16', '4'], '대응변의 길이는 같아요', 'cm'],
+  ['점 ㅇ을 대칭의 중심으로 하는 점대칭도형에서 변 ㅁㅂ이 3 cm, 선분 ㄴㅁ이 16 cm예요. 변 ㄴㄷ이 변 ㅁㅂ의 대응변일 때 (변 ㄴㄷ) + (선분 ㄴㅇ)은?', '11', ['19', '8', '13'], '변 ㄴㄷ = 3 cm · 선분 ㄴㅇ = 16 ÷ 2 = 8 cm', 'cm'],
+  ['마름모 ㄱㄴㄷㄹ은 점 ㅇ을 대칭의 중심으로 하는 점대칭도형이에요. 두 대각선의 길이의 곱이 180이고 선분 ㄴㅇ이 9 cm일 때 선분 ㄷㅇ은 몇 cm일까요?', '5', ['10', '9', '20'], '선분 ㄴㄹ = 18 → 선분 ㄱㄷ = 180 ÷ 18 = 10 → 선분 ㄷㅇ = 10 ÷ 2', 'cm'],
+  ['다음 중 점대칭도형인 것은 어느 것일까요?', '평행사변형', ['사다리꼴', '정오각형', '이등변삼각형'], '평행사변형, 마름모, 정육각형은 180° 돌리면 겹쳐요'],
+  ['다음 중 점대칭도형인 것은 어느 것일까요?', '정육각형', ['정오각형', '하트 모양', '정삼각형'], '변이 짝수 개인 정다각형은 점대칭도형이에요'],
+  ['다음 중 선대칭도형이면서 점대칭도형인 것은 어느 것일까요?', '정사각형', ['정삼각형', '사다리꼴', '평행사변형 (직사각형·마름모가 아닌)'], '정사각형은 접어도, 180° 돌려도 겹쳐요'],
+  ['디지털 시계로 오전 3시와 오전 6시 사이의 시각 중 점대칭도형인 시각은?', '오전 5시 50분 (05:50)', ['오전 3시 30분 (03:30)', '오전 4시 40분 (04:40)', '오전 5시 20분 (05:20)'], '05:50을 180° 돌리면 다시 05:50이 돼요'],
+  ['스위스, 이스라엘, 자메이카, 베트남 국기 중 점대칭도형이 아닌 국기는? (색깔까지 생각해요)', '베트남', ['스위스', '이스라엘', '자메이카'], '베트남 국기의 별은 180° 돌리면 거꾸로 서요'],
+  ['밑변 14 cm, 높이 8 cm인 삼각형을 한 변의 가운데 점을 대칭의 중심으로 하여 점대칭도형을 완성했어요. 완성한 도형의 넓이는 몇 cm²일까요?', '112', ['56', '224', '84'], '삼각형 넓이 14 × 8 ÷ 2 = 56 → 완성한 도형은 2배', 'cm²'],
+  ['직사각형의 두 대각선이 만나는 점 ㅇ이 대칭의 중심이에요. 각 ㅇㄴㄷ과 각 ㅇㄷㄴ이 각각 42°일 때 각 ㄴㅇㄷ은 몇 도일까요?', '96', ['84', '42', '138'], '삼각형의 세 각의 합은 180° → 180 − 42 − 42', '°'],
+  ['다음 알파벳 중 선대칭도형이면서 점대칭도형인 것은?', 'H', ['A', 'S', 'T'], 'H는 접어도, 180° 돌려도 겹쳐요 (S는 점대칭만)'],
+  ['다음 알파벳 중 점대칭도형인 것은?', 'N', ['A', 'M', 'T'], 'N을 180° 돌리면 다시 N이에요'],
+];
+const SYM_N = (n) => ['', '', '', '정삼각형', '정사각형', '정오각형', '정육각형', '정칠각형', '정팔각형'][n];
+function symPolyQ() { // 정다각형 대칭축 · 점대칭 (그림과 함께)
+  const n = ri(3, 8), kind = ri(0, 1);
+  if (kind === 0) return { q: `${SYM_N(n)}의 대칭축은 몇 개일까요?`, ans: String(n), opts: mcqOpts(String(n), [n - 1, n + 1, n * 2, 2]), unit: '개', hideTip: true, tip: '정■각형의 대칭축은 ■개예요 (꼭짓점·변의 가운데를 지나는 직선)', cv: () => symDrawPoly(n, true) };
+  const yes = n % 2 === 0; return { q: `${SYM_N(n)}은 점대칭도형일까요?`, ans: yes ? '네, 점대칭도형이에요' : '아니요, 점대칭도형이 아니에요', opts: shuf(['네, 점대칭도형이에요', '아니요, 점대칭도형이 아니에요']), tip: '변이 짝수 개인 정다각형만 180° 돌렸을 때 겹쳐요', hideTip: true, cv: () => symDrawPoly(n, false) };
+}
+function symDrawPoly(n, axes) {
+  const cv = document.createElement('canvas'); cv.width = 260; cv.height = 200; cv.style.cssText = 'width:min(260px,70vw);display:block;margin:6px auto;background:#FFFDF6;border-radius:12px;border:1.5px solid #E8DCC0';
+  const c = cv.getContext('2d'), cx = 130, cy = 104, r = 78, P = Array.from({ length: n }, (_, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; });
+  c.fillStyle = '#CFE3FF'; c.strokeStyle = '#3B5A8A'; c.lineWidth = 3; c.beginPath(); P.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fill(); c.stroke();
+  if (!axes) { c.fillStyle = '#E2584A'; c.beginPath(); c.arc(cx, cy, 4, 0, Math.PI * 2); c.fill(); }
+  return cv;
+}
+function symQuestion() { // 같은 문제가 자주 나오지 않게 (최근 15문제는 피해요)
+  bag.symSeen ||= []; if (Math.random() < 0.18) return symPolyQ();
+  let i, t = 0; do { i = ri(0, SYM_Q.length - 1); t++; } while (bag.symSeen.includes(i) && t < 30);
+  bag.symSeen = [...bag.symSeen, i].slice(-15); const [q, ans, wrongs, tip, unit] = SYM_Q[i];
+  return { q, ans, opts: shuf([ans, ...wrongs]), tip, hideTip: true, ...(unit ? { unit } : {}) };
+}
+const symW = { run: 0, ok: 0, n: 0 };
+function openSymShop() {
+  openLife('🪞 대칭 거울 공방', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', '5학년 2학기 3단원 「합동과 대칭」 문제예요. 합동 · 대응점·대응변·대응각 · 선대칭도형 · 점대칭도형을 연습해요. 맞히면 🐚 + 🧮 수학력!'));
+    const tip = el2('div', 'sticker'); tip.style.cssText = 'padding:10px;font-size:15px;line-height:1.55;text-align:left;margin:6px 0';
+    tip.innerHTML = '📘 <b>꼭 기억해요</b><br>· <b>합동</b>: 모양과 크기가 같아 포개면 완전히 겹쳐요 → 대응변의 길이·대응각의 크기가 같아요<br>· <b>선대칭도형</b>: 한 직선(대칭축)을 따라 접으면 겹쳐요 → 대응점을 이은 선분은 대칭축과 <b>수직</b>, 대칭축까지 거리가 <b>같아요</b><br>· <b>점대칭도형</b>: 한 점(대칭의 중심)을 중심으로 <b>180°</b> 돌리면 겹쳐요 → 대칭의 중심이 대응점을 이은 선분을 <b>똑같이 둘로</b> 나눠요';
+    box.append(tip);
+    const row = el2('div', 'row-center wrap');
+    const one = el2('button', 'btn lp-btn', '🪞 한 문제 풀기'); one.style.background = '#CDE3FF'; one.onclick = () => symAsk(false);
+    const ten = el2('button', 'btn lp-btn', '🏆 10문제 도전'); ten.style.background = '#FFD23C'; ten.onclick = () => { Object.assign(symW, { run: 1, ok: 0, n: 0 }); symAsk(true); };
+    row.append(one, ten); box.append(row);
+    { const r2 = el2('div', 'row-center wrap'), d = el2('button', 'btn lp-btn', '🦋 데칼코마니 완성하기'), p = el2('button', 'btn lp-btn', '🔍 대응 짝 찾기'); d.style.background = '#E6DCFF'; p.style.background = '#FFE3EC'; d.onclick = () => openDeca(null); p.onclick = () => openPair(null); r2.append(d, p); box.append(r2); box.append(el2('p', 'hint', '🦋 대칭축 반대쪽을 칠해 선대칭도형 완성 · 🔍 돌리거나 뒤집은 합동 도형에서 대응점·대응변·대응각 찾기')); }
+    if (bag.symBest) box.append(el2('p', 'hint', `🏆 내 10문제 도전 최고 기록: ${bag.symBest}/10`));
+  });
+}
+function symAsk(run) {
+  const Q = symQuestion(); let first = true;
+  const head = (box) => { if (run) box.append(el2('p', 'hint', `🏆 10문제 도전 · ${symW.n + 1}번째 문제 · 맞힌 문제 ${symW.ok}개 (처음에 맞혀야 점수가 올라요)`)); };
+  const QQ = { ...Q, opts: Q.opts.map(o => o) };
+  mathQuiz(run ? '🏆 10문제 도전' : '🪞 대칭 거울 공방', QQ, () => {
+    const got = giveShellCapped(run ? 4 : 5); if (run && first) symW.ok++;
+    if (!run) { toast(got ? `🐚 +${got}!` : '정답! (오늘 조개 예산은 다 찼어요)', 'success'); setTimeout(openSymShop, 900); return; }
+    symW.n++; if (symW.n < 10) { setTimeout(() => symAsk(true), 800); return; }
+    const bonus = symW.ok >= 10 ? 30 : symW.ok >= 8 ? 15 : symW.ok >= 5 ? 5 : 0, g2 = bonus ? giveShellCapped(bonus) : 0; if (!bag.symBest || symW.ok > bag.symBest) bag.symBest = symW.ok; saveBag();
+    if (symW.ok >= 8) { playSfx('fanfare'); burst(player.pos.clone().setY(2.5), RAINBOW, 60, 5, 3); }
+    showBanner(`🏆 10문제 도전 끝! ${symW.ok}/10`, symW.ok >= 10 ? '모두 처음에 맞혔어요! 대칭 박사 🎓' : symW.ok >= 8 ? '아주 잘했어요!' : '틀린 문제는 💡 힌트를 다시 읽어 봐요', 4500);
+    if (g2) toast(`🎁 도전 보너스 🐚 +${g2}`, 'success'); symW.run = 0; setTimeout(openSymShop, 1200);
+  }, head, () => { first = false; });
+}
+/* ---------- 🦋 데칼코마니 완성하기 · 🔍 대응 짝 찾기 (1023h · 대칭 거울 공방) ---------- */
+const DECA = { W: 10, H: 8, PRE: [ // 대칭축 왼쪽(세로 축) 반쪽 그림 · 줄마다 5칸 (축 쪽이 오른쪽 끝)
+  ['00000', '00110', '01111', '01111', '00111', '00011', '00001', '00000'], // 하트
+  ['00000', '11000', '11100', '01110', '00111', '01110', '11100', '11000'], // 나비
+  ['00001', '00011', '00111', '01111', '00011', '00111', '01111', '00001'], // 나무
+  ['00000', '00001', '00011', '00111', '01111', '00111', '00101', '00101'], // 집
+  ['00001', '00011', '00011', '00111', '00111', '01111', '11011', '10001'], // 로켓
+], NAME: ['💗 하트', '🦋 나비', '🌲 나무', '🏠 집', '🚀 로켓', '🎲 무작위 모양'] };
+function decaMake() { // { axis: 'v'|'h', given: Set, want: Set (학생이 칠할 칸) , name }
+  const pi = ri(0, DECA.PRE.length), axis = Math.random() < 0.65 ? 'v' : 'h', W = DECA.W, H = DECA.H, giv = new Set();
+  if (pi < DECA.PRE.length) { const rows = DECA.PRE[pi]; rows.forEach((r, y) => [...r].forEach((c, x) => { if (c === '1' && (axis === 'v' || x >= 1)) giv.add(axis === 'v' ? `${x},${y}` : `${y + 1},${x - 1}`); })); } // h축이면 돌려서 위쪽 반(0~3줄)에
+  else { let x = axis === 'v' ? 4 : ri(2, 7), y = axis === 'v' ? ri(2, 5) : 3; for (let k = 0; k < 13; k++) { giv.add(`${x},${y}`); const d = [[1, 0], [-1, 0], [0, 1], [0, -1]][ri(0, 3)]; x = Math.max(0, Math.min(axis === 'v' ? 4 : W - 1, x + d[0])); y = Math.max(0, Math.min(axis === 'v' ? H - 1 : 3, y + d[1])); } }
+  const mir = (k) => { const [x, y] = k.split(',').map(Number); return axis === 'v' ? `${W - 1 - x},${y}` : `${x},${H - 1 - y}`; };
+  const want = new Set([...giv].map(mir)); return { axis, giv, want, mine: new Set(), name: DECA.NAME[pi], mir, tries: 0, done: false };
+}
+function openDeca(D) {
+  D ||= decaMake();
+  openLife('🦋 데칼코마니 완성하기', (box) => {
+    box.textContent = ''; const W = DECA.W, H = DECA.H;
+    box.append(el2('p', 'hint', `${D.name} · 빨간 선이 대칭축이에요. ${D.axis === 'v' ? '오른쪽' : '아래쪽'} 칸을 눌러 칠해서 선대칭도형을 완성해요. 대칭축에서 같은 거리에 있는 칸을 찾아요!`));
+    const SZ = Math.min(340, window.innerWidth - 70), c = SZ / W, cv = document.createElement('canvas'); cv.width = SZ; cv.height = c * H; cv.style.cssText = `width:${SZ}px;height:${c * H}px;display:block;margin:6px auto;touch-action:none;border:2.5px solid var(--ink);border-radius:8px;background:#FFFDF6;cursor:pointer`;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', '데칼코마니 모눈');
+    let bad = new Set(), fold = -1;
+    const draw = () => { const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height);
+      for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) { const k = `${xx},${yy}`, gv = D.giv.has(k), mn = D.mine.has(k);
+        if (gv) x.fillStyle = '#7A5AD8'; else if (mn) x.fillStyle = bad.has(k) ? '#F28A7A' : '#B9A2F2'; else if (bad.has(k)) x.fillStyle = 'rgba(242,138,122,.35)'; else continue; x.fillRect(xx * c + 1, yy * c + 1, c - 2, c - 2); }
+      x.strokeStyle = 'rgba(0,0,0,.12)'; x.lineWidth = 1; for (let k = 1; k < W; k++) { x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c, H * c); x.stroke(); } for (let k = 1; k < H; k++) { x.beginPath(); x.moveTo(0, k * c); x.lineTo(W * c, k * c); x.stroke(); }
+      x.strokeStyle = '#E2384A'; x.lineWidth = 3.5; x.beginPath(); if (D.axis === 'v') { x.moveTo(W / 2 * c, -2); x.lineTo(W / 2 * c, H * c + 2); } else { x.moveTo(-2, H / 2 * c); x.lineTo(W * c + 2, H / 2 * c); } x.stroke();
+      if (fold >= 0) { const k = Math.sin(Math.min(1, fold) * Math.PI); x.save(); x.globalAlpha = 0.55; x.fillStyle = '#FFE066'; if (D.axis === 'v') x.fillRect(W / 2 * c, 0, W / 2 * c * (1 - k), H * c); else x.fillRect(0, H / 2 * c, W * c, H / 2 * c * (1 - k)); x.restore(); } };
+    let painting = null; const cellAt = (ev) => { const rc = cv.getBoundingClientRect(), xx = Math.floor((ev.clientX - rc.left) / rc.width * W), yy = Math.floor((ev.clientY - rc.top) / rc.height * H); if (xx < 0 || yy < 0 || xx >= W || yy >= H) return null; if (D.axis === 'v' ? xx < W / 2 : yy < H / 2) return null; return `${xx},${yy}`; };
+    const paint = (k) => { if (!k || D.done) return; if (painting === null) painting = !D.mine.has(k); if (painting) D.mine.add(k); else D.mine.delete(k); bad = new Set(); draw(); };
+    cv.addEventListener('pointerdown', ev => { painting = null; try { cv.setPointerCapture(ev.pointerId); } catch (e) { } paint(cellAt(ev)); }); cv.addEventListener('pointermove', ev => { if (ev.buttons || ev.pressure) { const k = cellAt(ev); if (k && painting !== null && (painting !== D.mine.has(k))) paint(k); } });
+    for (const t of ['pointerup', 'pointercancel']) cv.addEventListener(t, () => { painting = null; });
+    draw(); box.append(cv);
+    const fb = el2('p', 'hint', D.done ? '🎉 완성!' : ''), row = el2('div', 'row-center wrap');
+    const chk = el2('button', 'btn', '✅ 다 그렸어요'); chk.style.background = '#FFD23C';
+    chk.onclick = () => { if (D.done) return; D.tries++; const miss = [...D.want].filter(k => !D.mine.has(k)), extra = [...D.mine].filter(k => !D.want.has(k));
+      if (!miss.length && !extra.length) { D.done = true; playSfx('right'); const t0 = performance.now(); const step = () => { fold = (performance.now() - t0) / 900; draw(); if (fold < 1) requestAnimationFrame(step); else { fold = -1; draw(); } }; requestAnimationFrame(step);
+        const got = giveShellCapped(D.tries === 1 ? 6 : 3); addStat('math', D.tries === 1 ? 4 : 2); burst(player.pos.clone().setY(2.4), [0xB9A2F2, 0xFFE066, 0xFFFFFF], 40, 4, 2.5);
+        fb.textContent = `🎉 접었더니 완전히 겹쳐요! 선대칭도형 완성${D.tries === 1 ? ' (한 번에!)' : ''}${got ? ` · 🐚 +${got}` : ''} · 🧮 수학력 +${D.tries === 1 ? 4 : 2}`; chk.disabled = true; nxt.style.background = '#CDEFC2'; return; }
+      playSfx('wrong'); bad = new Set([...extra, ...miss]); draw(); fb.textContent = `🤔 ${miss.length ? `빠진 칸 ${miss.length}개` : ''}${miss.length && extra.length ? ' · ' : ''}${extra.length ? `더 칠한 칸 ${extra.length}개` : ''} (빨간 칸을 확인해요) · 💡 대응점은 대칭축에서 같은 거리, 반대쪽에 있어요`; };
+    const clr = el2('button', 'btn', '🧽 지우기'); clr.style.background = '#fff'; clr.onclick = () => { if (D.done) return; D.mine.clear(); bad = new Set(); draw(); };
+    const nxt = el2('button', 'btn', '➡️ 다른 그림'); nxt.style.background = '#fff'; nxt.onclick = () => openDeca(null);
+    const back = el2('button', 'btn', '🪞 공방으로'); back.style.background = '#fff'; back.onclick = openSymShop;
+    row.append(chk, clr, nxt, back); box.append(row, fb);
+  });
+}
+// 🔍 대응 짝 찾기: 합동인 두 도형 (오른쪽은 돌리거나 뒤집었어요) · 대응점 · 대응변 · 대응각을 눌러서 찾기 · 5문제
+const PAIR_L = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ'];
+function pairMake() {
+  const n = ri(3, 4) + (Math.random() < 0.2 ? 1 : 0); let P;
+  for (let t = 0; t < 40; t++) { // 변 길이가 서로 다른 볼록 다각형 (대응이 하나로 정해지게)
+    const angs = Array.from({ length: n }, () => Math.random()).sort(); let acc = 0; const step = angs.map((a, i) => { acc += 0.6 + a; return acc; }), tot = acc;
+    P = step.map((s, i) => { const a = s / tot * Math.PI * 2, r = 0.7 + Math.random() * 0.45; return [Math.cos(a) * r, Math.sin(a) * r]; });
+    const L = P.map((p, i) => Math.hypot(p[0] - P[(i + 1) % n][0], p[1] - P[(i + 1) % n][1])), ok = L.every((a, i) => L.every((b, j) => i === j || Math.abs(a - b) > 0.12)) && Math.min(...L) > 0.45;
+    if (ok) break; }
+  const flip = Math.random() < 0.5, rot = [Math.PI / 2, Math.PI, Math.PI * 1.5, ri(30, 330) * Math.PI / 180][ri(0, 3)];
+  const Q = P.map(([x, y]) => { const xx = flip ? -x : x; return [xx * Math.cos(rot) - y * Math.sin(rot), xx * Math.sin(rot) + y * Math.cos(rot)]; });
+  const start = ri(0, n - 1), dir = flip ? -1 : 1, lab2 = Array(n); for (let k = 0; k < n; k++) lab2[(start + dir * k + n * 2) % n] = PAIR_L[n + k]; // 오른쪽 도형 이름: 한 꼭짓점부터 차례로
+  return { n, P, Q, lab1: PAIR_L.slice(0, n), lab2, found: [], q: 0, ok: 0, cur: null };
+}
+function pairAsk(G) { const t = ri(0, 2), i = ri(0, G.n - 1); G.cur = { t, i, miss: 0 }; return G.cur; }
+function openPair(G) {
+  if (!G) { G = pairMake(); pairAsk(G); }
+  openLife('🔍 대응 짝 찾기', (box) => {
+    box.textContent = ''; const { n, lab1, lab2 } = G, C = G.cur, L1 = (i) => lab1[(i + n) % n], L2 = (i) => lab2[(i + n) % n];
+    box.append(el2('p', 'hint', `두 도형은 서로 합동이에요. 오른쪽 도형은 돌리거나 뒤집어 놓았어요. ${G.q + 1}/5번째 · 맞힌 문제 ${G.ok}개`));
+    const ask = C.t === 0 ? `점 ${L1(C.i)}의 대응점을 오른쪽 도형에서 눌러요` : C.t === 1 ? `변 ${L1(C.i)}${L1(C.i + 1)}의 대응변을 오른쪽 도형에서 눌러요` : `각 ${L1(C.i - 1)}${L1(C.i)}${L1(C.i + 1)}의 대응각(꼭짓점)을 오른쪽 도형에서 눌러요`;
+    box.append(el2('p', 'lp-big', ask));
+    const SZ = Math.min(360, window.innerWidth - 60), Hh = Math.round(SZ * 0.6), cv = document.createElement('canvas'); cv.width = SZ; cv.height = Hh; cv.style.cssText = `width:${SZ}px;height:${Hh}px;display:block;margin:6px auto;border:2px solid #E8DCC0;border-radius:12px;background:#FFFDF6;cursor:pointer;touch-action:manipulation`;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', '합동인 두 도형');
+    const sc = SZ * 0.19, c1 = [SZ * 0.25, Hh * 0.52], c2 = [SZ * 0.74, Hh * 0.52], pt1 = (i) => [c1[0] + G.P[(i + n) % n][0] * sc, c1[1] + G.P[(i + n) % n][1] * sc], pt2 = (i) => [c2[0] + G.Q[(i + n) % n][0] * sc, c2[1] + G.Q[(i + n) % n][1] * sc];
+    const COLS = ['#E2584A', '#4A9AE8', '#5FBE5A', '#F08A24', '#9A5AD8'];
+    let flash = null;
+    const draw = () => { const x = cv.getContext('2d'); x.clearRect(0, 0, SZ, Hh); x.lineJoin = 'round';
+      for (const [pt, fill] of [[pt1, '#CFE3FF'], [pt2, '#FFE3EC']]) { x.fillStyle = fill; x.strokeStyle = '#3B5A8A'; x.lineWidth = 3; x.beginPath(); for (let i = 0; i < n; i++) { const [a, b] = pt(i); i ? x.lineTo(a, b) : x.moveTo(a, b); } x.closePath(); x.fill(); x.stroke(); }
+      const hl = (pt, i, col, kind) => { x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 6; if (kind === 1) { const [a, b] = pt(i), [c, d] = pt(i + 1); x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); } else { const [a, b] = pt(i); x.beginPath(); x.arc(a, b, 9, 0, Math.PI * 2); x.fill(); } };
+      G.found.forEach((f, k) => { hl(pt1, f.i, COLS[k % 5], f.t === 1 ? 1 : 0); hl(pt2, f.i, COLS[k % 5], f.t === 1 ? 1 : 0); });
+      hl(pt1, C.i, '#FFB400', C.t === 1 ? 1 : 0); if (C.t === 2) { const [a, b] = pt1(C.i); x.strokeStyle = '#FFB400'; x.lineWidth = 3; x.beginPath(); x.arc(a, b, 18, 0, Math.PI * 2); x.stroke(); }
+      if (flash) hl(pt2, flash.i, flash.ok ? '#3FAF4A' : '#E2384A', flash.t);
+      x.font = `800 ${Math.round(SZ / 20)}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+      for (const [pt, cc, lab] of [[pt1, c1, L1], [pt2, c2, L2]]) for (let i = 0; i < n; i++) { const [a, b] = pt(i), dx = a - cc[0], dy = b - cc[1], d = Math.hypot(dx, dy) || 1; x.fillStyle = '#3B2F2A'; x.fillText(lab(i), a + dx / d * 16, b + dy / d * 16); } };
+    draw(); box.append(cv);
+    const fb = el2('p', 'hint', '💡 합동인 두 도형을 머릿속으로 돌리거나 뒤집어 포개 봐요. 변의 길이·각의 모양을 비교하면 쉬워요');
+    cv.addEventListener('pointerdown', (ev) => { if (G.lock) return; const rc = cv.getBoundingClientRect(), px = (ev.clientX - rc.left) / rc.width * SZ, py = (ev.clientY - rc.top) / rc.height * Hh;
+      let best = -1, bd = 1e9; for (let i = 0; i < n; i++) { const [a, b] = C.t === 1 ? (() => { const p = pt2(i), q = pt2(i + 1); return [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]; })() : pt2(i), d = Math.hypot(a - px, b - py); if (d < bd) { bd = d; best = i; } }
+      if (best < 0 || bd > SZ * 0.14) return;
+      const ok = best === C.i; flash = { i: best, ok, t: C.t === 1 ? 1 : 0 }; draw();
+      if (!ok) { C.miss++; playSfx('wrong'); fb.textContent = C.t === 1 ? `🤔 ${L2(best)}${L2(best + 1)}은(는) 아니에요. 변의 길이를 비교해 봐요` : `🤔 점 ${L2(best)}은(는) 아니에요. 이웃한 변의 길이를 비교해 봐요`; setTimeout(() => { flash = null; draw(); }, 700); return; }
+      G.lock = true; playSfx('right'); if (!C.miss) G.ok++; G.found.push({ t: C.t, i: C.i }); addStat('math', C.miss ? 1 : 2); const got = C.miss ? 0 : giveShellCapped(2);
+      fb.textContent = `⭕ 맞았어요! ${C.t === 0 ? `점 ${L1(C.i)} ↔ 점 ${L2(C.i)}` : C.t === 1 ? `변 ${L1(C.i)}${L1(C.i + 1)} ↔ 변 ${L2(C.i)}${L2(C.i + 1)}` : `각 ${L1(C.i - 1)}${L1(C.i)}${L1(C.i + 1)} ↔ 각 ${L2(C.i - 1)}${L2(C.i)}${L2(C.i + 1)}`}${got ? ` · 🐚 +${got}` : ''}`;
+      setTimeout(() => { G.lock = false; G.q++; if (G.q >= 5) { const bonus = G.ok >= 5 ? 10 : G.ok >= 3 ? 4 : 0, g2 = bonus ? giveShellCapped(bonus) : 0; showBanner(`🔍 대응 짝 찾기 ${G.ok}/5`, G.ok >= 5 ? '모두 한 번에 찾았어요! 합동 탐정 🕵️' : '대응점 → 대응변 → 대응각 순서로 생각해 봐요', 4000); if (g2) toast(`🎁 보너스 🐚 +${g2}`, 'success'); openSymShop(); return; }
+        if (G.q === 2 || G.q === 4) { const keep = { q: G.q, ok: G.ok }; G = Object.assign(pairMake(), keep); } pairAsk(G); openPair(G); }, 1300); });
+    const row = el2('div', 'row-center wrap'); const back = el2('button', 'btn', '🪞 공방으로'); back.style.background = '#fff'; back.onclick = openSymShop; row.append(back);
+    box.append(fb, row);
   });
 }
 function openGemShop() { // 💎 보석 가공소 (1017k: 문제를 풀면 🐚 · 특별 가구는 🐚로)
@@ -15465,6 +15675,14 @@ function buildMathExtras(g) {
     for (let i = 0; i < N * N; i++) { const m = new THREE.Mesh(BOX, M(MOSAIC_C[0])); m.scale.set(S2 - 0.08, 0.06, S2 - 0.08); m.position.set(((N - 1) / 2 - i % N) * S2, 0.11, ((N - 1) / 2 - Math.floor(i / N)) * S2); /* 큰길에서 남쪽을 볼 때 칠하기 창과 같은 모양 */ m.userData.solid = false; mg.add(m); mv.moCells.push(m); }
     makeLabel(mg, ['🎨 우리 반 모자이크'], 0.9, 0, 1.6, -N * S2 / 2 - 0.6);
     addInteract({ pos: new V3(MX.mo[0], 0.5, MX.mo[1] - N * S2 / 2 - 0.8), r: 3, text: () => mathRegion() ? ['모자이크 칠하기 🎨', `한 칸 🐚${TILE_SH}`] : null, run: openMosaic }); }
+  // 🪞 대칭 거울 공방 (1023g · 합동과 대칭)
+  { const q = new THREE.Group(); q.position.set(1188, 0, 28); g.add(q);
+    box(q, 5.2, 0.3, 4.2, 0xE8DCC8, 0, 0.15, 0, o); for (const [x, z] of [[-2.3, -1.8], [2.3, -1.8], [-2.3, 1.8], [2.3, 1.8]]) cyl(q, 0.16, 3, 0xF4F4F4, x, 1.6, z);
+    mesh(GABLE, q, 6, 1.4, 5, 0x7A5AB0, 0, 3.1, 0, { solid: false, ry: Math.PI / 2 });
+    box(q, 2.2, 2.4, 0.18, 0xC9A65E, 0, 1.6, 0.6); box(q, 1.9, 2.1, 0.05, 0xDDEEFF, 0, 1.6, 0.48, { solid: false, emissive: 0.35 }); // 큰 거울
+    for (const s2 of [-1, 1]) { mesh(SPH_LO, q, 0.55, 0.75, 0.1, 0xFF9AC0, s2 * 0.55, 1.85, 0.32, { solid: false, flat: true }); mesh(SPH_LO, q, 0.38, 0.5, 0.1, 0xFFD23C, s2 * 0.45, 1.2, 0.32, { solid: false, flat: true }); } box(q, 0.1, 1.3, 0.12, 0x3B2F2A, 0, 1.55, 0.3, o); // 🦋 대칭 나비
+    makeLabel(q, ['🪞 대칭 거울 공방', '합동과 대칭 문제'], 1.0, 0, 5.0, 0);
+    addInteract({ pos: new V3(1188, 1, 28 - 2.8), r: 3, text: () => mathRegion() ? ['합동과 대칭 문제 🪞', '대칭 거울 공방'] : null, run: openSymShop }); }
   // ⚖️ 균형 저울 다리: 계단 + 출발대 · (틈) · 균형의 탑
   { const B = MX.br, z = B.z;
     box(g, B.x1 - B.x0, B.h, 4, 0x9A9286, (B.x0 + B.x1) / 2, B.h / 2, z);                         // 출발대
@@ -16151,6 +16369,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1023h', d: '10월 23일', items: ['🪞 대칭 거울 공방에 🦋 데칼코마니 완성하기 · 🔍 대응 짝 찾기가 생겼어요!'] },
+  { id: '1023g', d: '10월 23일', items: ['🪞 수학 광산 마을에 대칭 거울 공방이 생겼어요! 합동과 대칭 문제를 풀고 🏆 10문제 도전도 해 봐요'] },
   { id: '1023e', d: '10월 23일', items: ['👫 함께 타는 탈것: 2인용 자전거 · 마차 · 꼬마 기차 (친구 곁에서 E로 같이 타요)', '🐉 펫 체육관 보스 레이드! 선생님이 보스를 부르면 우리 반이 함께 물리쳐요', '😀 나만의 이모티콘: 😊 몸짓 창 → ✏️ 만들기 (얼굴 꾸미기 · 도트 그리기)'] },
   { id: '1023c', d: '10월 23일', items: ['😌 쉬는 시간이 생겼어요! 선생님이 쉬는 시간을 주시거나, 오래 놀면 잠깐 눈과 몸을 쉬어요'] },
   { id: '1022f', d: '10월 22일', items: ['⚔️ 성 공방전이 바뀌었어요! 👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이 · 전반전/작전 시간/후반전 · 🚩 성을 함락하면 상대가 포로가 돼요', '🏰 성에 동서남북 성문 4개와 해자가 생겼어요. 🛶 나루에서 배를 타고 건너요', '🙈 숨바꼭질 변신 물건이 마을마다 달라요 · 💌 감사 게시판에 히든 미션 쪽지가 붙어요'] },
@@ -19312,7 +19532,7 @@ function initHistAdmin() {
 const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
-  math: { icon: '🧮', name: '수학력', where: '수학 광산 식 만들기 · 도형 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
+  math: { icon: '🧮', name: '수학력', where: '수학 광산 식 만들기 · 도형 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
   read: { icon: '📚', name: '독서력', where: '광장 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 bag.stat ||= {};
@@ -19360,7 +19580,7 @@ function openStats() {
 // ❓ 능력치 점수 얻는 방법 (학생 안내 · 1017c)
 const STAT_GUIDE = {
   eng: [['🗽 영어 마을 구역 놀이 · 🏋️ 영어 훈련소', '고르기 정답 +1 · 쓰기 정답 +2 · 한 판 통과 +3 (쓰기 1개마다 +1 더)'], ['🧭 영어 미로', '칸 도착 +2 × 단계 · 통과 +3 × 단계 (Level 3이 제일 많아요)'], ['🔨 천막 두더지 (영어 단어)', '잡은 단어 수의 절반']],
-  math: [['⛏️ 수학 광산 식 만들기', '한 문제 +4'], ['🧩 도형 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
+  math: [['⛏️ 수학 광산 식 만들기', '한 문제 +4'], ['🧩 도형 공방', '한 문제 +3'], ['🪞 대칭 거울 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
   soc: [['🏯 역사의 길 시대 퀴즈', '처음 보는 문제 한 번에 정답 +4 · 다시 맞히면 +2'], ['🏛️ 역사 박물관 연표 맞추기', '쉬움 +5 · 보통 +8 · 어려움 +12 (한 번에 맞히면 +3 더)']],
   read: [['📒 광장 독서 책상 (분수 남서쪽)', '책을 다 읽고 선생님께 확인받은 뒤 기록해요'], ['📖 줄글책', '쪽수 그대로 (100쪽 = 100점)'], ['🖼️ 그림이 많은 책 · 💬 만화책 · 🧸 그림책', '쪽수 × 0.7 · × 0.4 · × 0.5'], ['🎁 완독 보너스', '책 한 권 기록할 때마다 +10']],
 };
