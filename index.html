@@ -1198,6 +1198,7 @@
       <li><span class="em">🪙</span>광장 분수 앞에서 E를 누르면 게임 건의를 적어 동전처럼 던질 수 있어요 (하루 3번 · 선생님이 읽어요)</li>
       <li><span class="em">🌀</span>학교 앞 길의 마을 포털에서 E를 누르면 역사·수학·영어 마을로 한 번에 가요. 각 마을의 🌀 광장 포털을 타면 우리 마을 광장으로 돌아와요</li>
       <li><span class="em">🌀</span>학교 앞 🌀 마을 포털을 타면 🗽 영어 마을(그리고 역사·수학 마을)에 가요. 구역 6곳(Lesson 7~12) 주민에게 E를 눌러 듣고·고르고·문장을 만들어요</li>
+      <li><span class="em">🔔</span>영어 마을 🔔 골든벨 홀: 선생님이 골든벨을 열면 방석에 앉아 문제를 풀어요. 틀리면 탈락, 끝까지 살아남으면 골든벨!</li>
     </ol>
   </details>
   <p class="keys">움직이기: WASD 또는 방향키 / 점프: 스페이스 / 누르기: E / 공동 미션: B / 몸짓: Q / 지도: M</p>
@@ -1362,6 +1363,10 @@
 
     <h3>📜 과거시험장</h3>
     <p class="hint">역사 마을 서당 옆 과거시험장 안, 어좌 앞에서 📜 과거시험 진행을 눌러 문제를 올리고 진행해요. 문제를 올리면 시험장이 열리고, 정답은 문제를 올린 이 기기에만 남아요.</p>
+
+    <h3>🔔 영어 골든벨</h3>
+    <p class="hint">영어 마을 남쪽 🔔 골든벨 홀 무대 앞(또는 아래 버튼)에서 문제 은행을 올리고, 출제할 단원(Lesson)·문제 수·제한 시간을 골라 골든벨을 열어요. 틀리면 탈락, 끝까지 남은 친구가 골든벨을 울려요. 문제 은행과 정답은 이 기기에만 남아요.</p>
+    <div class="row-center"><button class="btn" id="tpEgOpen" style="background:#FFE9A8">🔔 골든벨 진행판 열기</button></div>
 
     <h3 id="tpMeetSec">🏫 학급회의 (학교 건물 안 교실)</h3>
     <p class="hint" id="tpMeetNow"></p>
@@ -2130,7 +2135,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, eg: null, ega: {}, egc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2175,6 +2180,9 @@ function normalize(v) {
     gw: v.gw && typeof v.gw === 'object' ? { open: v.gw.open === true, n: v.gw.n | 0, title: String(v.gw.title || '').slice(0, 30), cur: v.gw.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.gw.ph) ? v.gw.ph : 'wait', qs: Object.values(toObj(v.gw.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)) })), rev: Object.fromEntries(Object.entries(toObj(v.gw.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), res: v.gw.res ? { sc: plainObj(v.gw.res.sc), top: String(v.gw.res.top || '').slice(0, 12), tsc: v.gw.res.tsc | 0 } : null } : null,
     gwa: Object.fromEntries(Object.entries(plainObj(v.gwa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     gwc: v.gwc && typeof v.gwc === 'object' ? { n: v.gwc.n | 0, name: String(v.gwc.name || '').slice(0, 12), uid: String(v.gwc.uid || ''), w: v.gwc.w | 0, sc: v.gwc.sc | 0 } : null,
+    eg: v.eg && typeof v.eg === 'object' ? { open: v.eg.open === true, n: v.eg.n | 0, title: String(v.eg.title || '').slice(0, 30), us: Object.values(toObj(v.eg.us)).slice(0, 12).map(x => String(x).slice(0, 16)), cur: v.eg.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.eg.ph) ? v.eg.ph : 'wait', lim: Math.min(120, Math.max(0, v.eg.lim | 0)), qt: +v.eg.qt || 0, qs: Object.values(toObj(v.eg.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), s: String(q?.s || '').slice(0, 160) })), rev: Object.fromEntries(Object.entries(toObj(v.eg.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.eg.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.eg.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.eg.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])) } : null,
+    ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
+    egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0 } : null,
     sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read'].filter(k => isInt(x[k], 0, 1000000)).map(k => [k, x[k]]))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
@@ -2498,7 +2506,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -2984,6 +2992,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     acct, async bagGet() { try { return (await D.get(R(`bags/${uid}`))).val(); } catch (e) { return null; } }, async bagAt() { try { return (await D.get(R(`bags/${uid}/at`))).val() || 0; } catch (e) { return -1; } }, async bagPut(j, at) { try { await D.set(R(`bags/${uid}`), { j, at, nk: cleanNick(myNick) || '' }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎒 닉네임 계정 가방 (다른 기기에서 이어서)
     async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
     async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async egAnswer(o) { try { await D.set(R(`state/ega/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async emoPost(p, nm) { try { await D.set(R(`state/emo/${uid}_${Date.now().toString(36)}`), { p, nm, ok: false, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 😀 도트 이모티콘 (선생님 확인 전에는 ok: false)
     async emoDel(k) { try { await D.set(R(`state/emo/${k}`), null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async raidHit(d, nm) { // 🐉 보스 체력 깎기 (줄어드는 쪽만 · 규칙이 막아요) · 내 기록 · 0이 되면 마지막 한 방
@@ -11724,7 +11733,7 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ...MINES.map(m => ['📘', m.x, MS.hz]), ['🧮', MS.cw[0], MS.cw[1]], ['🏟️', MS.gym[0], MS.gym[1]], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
+const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ['🔔', EG_HALL.x, EG_HALL.z], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ...MINES.map(m => ['📘', m.x, MS.hz]), ['🧮', MS.cw[0], MS.cw[1]], ['🏟️', MS.gym[0], MS.gym[1]], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ['🌀', HV.x0 + 11, -8.5], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['🌀', PORTAL.x, PORTAL.z], ['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
@@ -11758,7 +11767,7 @@ function drawEvMapBase() { // 영어 마을 지도
   c.fillStyle = '#8ACB64'; c.fillRect(0, 0, W, H);
   rect(EV.x0, EV.z0, EV.x1, EV.z1, '#A9D18A'); rect(EV.x0, -3, EV.x1, 3, '#E3D6BC');
   for (const Z of EV_Z) { rect(Z.npc[0] - 2, Math.min(0, Math.sign(Z.z) * 14), Z.npc[0] + 2, Math.max(0, Math.sign(Z.z) * 14), '#E3D6BC'); rect(Z.x - 11, Z.z - 9, Z.x + 11, Z.z + 9, '#C9E3A8'); }
-  rect(EV_POOL[0] - EV_POOL[2], EV_POOL[1] - EV_POOL[3], EV_POOL[0] + EV_POOL[2], EV_POOL[1] + EV_POOL[3], '#5AB4E6');
+  rect(EV_POOL[0] - EV_POOL[2], EV_POOL[1] - EV_POOL[3], EV_POOL[0] + EV_POOL[2], EV_POOL[1] + EV_POOL[3], '#5AB4E6'); rect(EG_HALL.x - 6, EG_HALL.z - 3.5, EG_HALL.x + 6, EG_HALL.z + 3.5, '#F2C230');
   rect(MZP.x0, MZP.z0, MZP.x1, MZP.z1, '#B9D79A'); rect(EV.x1 - 2, MZP.gz - 2, MZP.x0 + 4, MZP.gz + 2, '#E3D6BC'); rect(MZP.x0, -3, MZP.x1, 3, '#E3D6BC');
   for (const L of MZL) { const MZ = L.M, MAZE = L.maze, mzCell = (r, c) => mzCellL(L, r, c);
   rect(MZ.x0, MZ.z0, MZ.x0 + MZ.cols * MZ.cs, MZ.z0 + MZ.rows * MZ.cs, '#D8CBA4'); c.fillStyle = '#3E8A45';
@@ -13738,7 +13747,7 @@ const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투�
 const TP_LAYOUT = {
   class: [/수업 도구/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
-  village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', []], ['⛏️ 수학 마을', [/수학 광산/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
+  village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['⛏️ 수학 마을', [/수학 광산/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
   setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
@@ -13762,6 +13771,7 @@ function initTpTabs() {
   for (const [k, label] of TP_TABS) { const b = document.createElement('button'); b.type = 'button'; b.className = 'tp-tab'; b.dataset.tab = k; b.setAttribute('role', 'tab'); b.textContent = label; b.onclick = () => tpTab(k, true); bar.appendChild(b); }
   form.parentNode.insertBefore(bar, form);
   $('tpPraiseOpen')?.addEventListener('click', () => { closeModals(); openPraise(); });
+  $('tpEgOpen')?.addEventListener('click', () => { closeModals(); openEgAdmin(); });
   tpTab(store.get('sv-tptab') || 'class');
 }
 function tpTab(k, user) {
@@ -16798,6 +16808,7 @@ const ROOMS = {
   bg1: { name: '과일 할리갈리 방', icon: '🍓', cx: 1515, cz: -86, w: 22, d: 18, wall: 0xFFF4C8, floor: 0xE8C890, site: null }, // 🎲 반월쉼터 (1021a)
   bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
   gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
+  egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
 const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.7, '그림과 글이 반반'], ['💬', '만화책', 0.4, '말풍선 만화'], ['🧸', '그림책', 0.5, '그림이 대부분']]; // 📚 독서력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
@@ -16970,6 +16981,7 @@ async function enterRoom(id) {
   await sleep(300); $('travelFx').classList.add('hidden'); hv.travel = false;
   if (id === 'mus') { toast('🏛️ 역사 박물관이에요! 양쪽 전시실에서 연표 보고 사건을 차례대로 놓아요', 'info'); return; }
   if (id === 'gw') { toast(gwOpen() ? `📜 ${S.gw.title || '과거시험'}! 빈 자리(서안)에 앉아 시험지를 펴요` : '📜 과거시험장이에요. 선생님은 앞쪽에서 문제를 올려 시험장을 열어요', 'info'); return; }
+  if (id === 'egb') { toast(egOpen() ? `🔔 ${S.eg.title || '영어 골든벨'}! 빈 방석에 앉아 골든벨 문제지를 펴요` : '🔔 영어 골든벨 홀이에요. 선생님은 무대 앞에서 문제를 올려 골든벨을 열어요', 'info'); return; }
   if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
   toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
@@ -16986,6 +16998,7 @@ async function exitRoom(id) {
   else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz, gr = 0] = PG_SPOT[+id[2]]; x = gx + Math.sin(gr) * 5.4; z = gz + Math.cos(gr) * 5.4; h = gr; } // 🏟️ 마을 체육관 문 앞
   else if (id === 'etr') { x = 1796.2; z = -0.2; h = -Math.PI / 2; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 영어 마을 훈련소 문 앞
   else if (id === 'gw') { x = GW_HOUSE.x; z = GW_HOUSE.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 📜 과거시험장 문 앞
+  else if (id === 'egb') { x = EG_HALL.x; z = EG_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🔔 골든벨 홀 문 앞
   else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
   else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
@@ -17269,6 +17282,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1024l', d: '10월 24일 (밤)', items: ['🔔 영어 마을에 영어 골든벨 홀이 생겼어요! 선생님이 문제를 내면 방석에 앉아 한 문제씩 풀어요 · 틀리면 탈락, 끝까지 살아남으면 🔔 골든벨!', '🔊 듣기 문제도 나와요 · 내 화면의 🔊 듣기 버튼으로 다시 들을 수 있어요'] },
   { id: '1024k', d: '10월 24일 (밤)', items: ['🏯 역사 마을에 장승·볏가리·지게·항아리·돌담, 🗽 영어 마을에 핫도그 수레·신호등·꽃 화분·택시·생울타리가 생겼어요 → 숨바꼭질 숨을 곳이 많아졌어요!', '🏸 배드민턴은 이제 랭킹 점수 없이 즐겨요'] },
   { id: '1024j', d: '10월 24일 (밤)', items: ['🦎 히로를 더 닮게 다듬었어요: 눈은 작게 · 다리는 짧고 둥글게 · 등에 무늬'] },
   { id: '1024i', d: '10월 24일 (밤)', items: ['🦎 우리 반 도마뱀 히로가 펫이 됐어요! 해변 🐾 펫 가게에서 무료로 데려와 같이 산책해요 (몸을 S자로 흔들며 걷고, 가끔 혀로 눈을 핥아요 👅)'] },
@@ -17925,7 +17939,7 @@ function buildEnglishVillage() {
   { const bx = EV.cx - 10, bz = 9.5; // 🏁 클리어 게시판 (큰길 북쪽 · 레슨 길 사이)
     for (const sx of [-2.4, 2.4]) box(g, 0.25, 3.2, 0.25, C.wood, bx + sx, 1.6, bz); box(g, 5.4, 2.4, 0.2, 0xFFF3DC, bx, 2.2, bz, o); box(g, 5.8, 0.3, 0.4, 0x7A4A2A, bx, 3.5, bz, o);
     makeLabel(g, ['🏁 영어 마을 클리어 게시판'], 1.1, bx, 4.6, bz); ev.clearAt = [bx, bz]; }
-  for (const [x, z] of [[1700, -12], [1700, 12], [1732, -10], [1768, -10], [1732, 10], [1768, 10], [1806, -12], [1806, 12], [1696, -40], [1696, 40], [1804, 42], [1730, 42], [1768, 42]]) makeTree(x, z, g);
+  for (const [x, z] of [[1700, -12], [1700, 12], [1732, -10], [1768, -10], [1732, 10], [1806, -12], [1806, 12], [1696, -40], [1696, 40], [1804, 42], [1730, 42], [1768, 42]]) makeTree(x, z, g);
   for (let x = EV.x0 + 8; x < EV.x1 - 4; x += 16) for (const s of [-1, 1]) { cyl(g, 0.09, 3.4, 0x3B3F46, x, 1.7, s * 4.4, o); ball(g, 0.3, 0xFFF3C4, x, 3.5, s * 4.4, { solid: false, emissive: 0.5 }); } // 가로등
   // 구역 공통: 간판 + 별 깃발
   for (const Z of EV_Z) {
@@ -22762,6 +22776,327 @@ function gwTick(dt) {
   if (!isTeacher && G.open && roomNow() === 'gw') { const k = JSON.stringify([G.n, G.cur, G.ph]); if (k !== gw.sKey) { const open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험지'; if (open || G.ph === 'q') openGwExam(); else gw.sKey = k; } }
   if (isTeacher && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📜 과거시험 진행') { const k = JSON.stringify([G.ph, G.cur, Object.keys(S.gwa || {}).length, Object.values(S.gwa || {}).map(v => Object.keys(v?.a || {}).length).join()]); if (k !== gw.aKey) { gw.aKey = k; if (!lifeTyping()) refillLife(); } }
 }
+// ================= 🔔 영어 골든벨 (1024l · 영어 마을 골든벨 홀) =================
+// 선생님이 단원(Lesson)별 문제 은행을 올리고 → 출제 단원·문제 수·제한 시간을 골라 골든벨을 열어요
+// 한 문제씩 칠판에 나오고, 틀리거나 답을 안 내면 탈락! 끝까지 남은 친구들이 🔔 골든벨을 울려요 (선생님은 🔄 패자부활도 할 수 있어요)
+// · 정답은 문제를 올린 선생님 기기에만 (bag.egBank 문제 은행 · bag.egKey 이번 판 정답) · 채점·탈락 판정도 선생님 기기에서
+// · 저장: state/eg {open, n, title, us 단원, qs [{q, t, o, s 듣기}], cur, ph wait|q|rev|end, rev, p 참가 {uid: 이름}, out {uid: 탈락 문제}, lim 초, qt, win} · state/ega/{uid} {r, nm, a, t} · state/egc {n, names, c, w}
+const EG_HALL = { x: 1768, z: 11 }; // 🗽 영어 마을 남쪽 길가 (우리 집과 캠핑장 사이)
+const EG_DEF = `# Lesson 7
+문제: '수영했다'를 영어로 쓰면? (swim의 과거형)
+정답: swam
+
+문제: 듣고 알맞은 그림을 골라요.
+듣기: I rode in a boat. It was fun.
+보기: 🚤 보트 타기 / 🎪 축제 가기 / 🍉 수박 먹기 / 📸 사진 찍기
+정답: 1
+
+문제: I ___ to a music festival. 빈칸에 알맞은 말은?
+보기: go / went / goed
+정답: 2
+
+문제: What did you do during the vacation? 에 알맞은 대답은?
+보기: I visited Dokdo. / It's 10,000 won. / Go straight. / I want to go hiking.
+정답: 1
+
+# Lesson 8
+문제: '안경'을 영어로 쓰면?
+정답: glasses
+
+문제: 듣고 알맞은 사람을 골라요.
+듣기: He has short curly hair and he is wearing glasses.
+보기: 짧은 곱슬머리에 안경 / 긴 생머리에 원피스 / 짧은 생머리에 모자 / 긴 곱슬머리에 안경
+정답: 1
+
+문제: He has long straight hair. 는 '그는 긴 곱슬머리이다'라는 뜻이다.
+보기: OX
+정답: X
+
+문제: What does he look like? 의 뜻은?
+보기: 그는 무엇을 좋아하니? / 그는 어떻게 생겼니? / 그는 어디에 있니? / 그는 무엇을 했니?
+정답: 2
+
+# Lesson 9
+문제: '왼쪽'을 영어로 쓰면?
+정답: left
+
+문제: 듣고 알맞은 길 안내를 골라요.
+듣기: Go straight and turn right.
+보기: ⬆️ 직진 → ➡️ 오른쪽 / ⬆️ 직진 → ⬅️ 왼쪽 / ⬅️ 왼쪽 → ⬆️ 직진 / ➡️ 오른쪽 → ⬅️ 왼쪽
+정답: 1
+
+문제: Where is the baseball park? 는 길을 묻는 말이다.
+보기: OX
+정답: O
+
+문제: It's on your left. 의 뜻은?
+보기: 오른편에 있어요 / 왼편에 있어요 / 앞에 있어요 / 뒤에 있어요
+정답: 2
+
+# Lesson 10
+문제: '양말'을 영어로 쓰면?
+정답: socks
+
+문제: 듣고 값을 골라요.
+듣기: They're 10,000 won.
+보기: 1,000원 / 10,000원 / 100,000원 / 5,000원
+정답: 2
+
+문제: How much ___ this cap? 빈칸에 알맞은 말은?
+보기: is / are / do
+정답: 1
+
+문제: What size do you want? 에 알맞은 대답은?
+보기: Small, please. / I went camping. / Turn left. / That's a good idea.
+정답: 1
+
+# Lesson 11
+문제: '부엌'을 영어로 쓰면?
+정답: kitchen
+
+문제: 듣고 알맞은 곳을 골라요.
+듣기: There is a pot in the kitchen.
+보기: 🍳 부엌 / 🛏️ 침실 / 🛁 욕실 / 🌷 정원
+정답: 1
+
+문제: There ___ many books in the bedroom. 빈칸에 알맞은 말은?
+보기: is / are / am
+정답: 2
+
+문제: bathroom 은 '침실'이라는 뜻이다.
+보기: OX
+정답: X
+
+# Lesson 12
+문제: '낚시'를 영어로 쓰면?
+정답: fishing
+
+문제: 듣고 하고 싶은 일을 골라요.
+듣기: I want to go hiking.
+보기: 🥾 하이킹 / 🎣 낚시 / ⛺ 캠핑 / 🎸 기타 치기
+정답: 1
+
+문제: Let's go camping. 에 알맞은 대답은?
+보기: That's a good idea. / They're 5,000 won. / He has blue eyes. / It's on your right.
+정답: 1
+
+문제: What do you want to do? 의 뜻은?
+보기: 너는 무엇을 했니? / 너는 무엇을 하고 싶니? / 너는 어디에 가니? / 너는 무엇을 사고 싶니?
+정답: 2`;
+const egUnit = (s) => { const m = /\d+/.exec(String(s || '')); return (m ? m[0] : String(s || '').trim()).slice(0, 16); };
+const egUL = (u) => /^\d+$/.test(u) ? `Lesson ${u}` : (u || '단원 없음');
+function egParse(txt) { // "# Lesson 7" 줄(또는 [7단원], 문제 안의 단원: 7)로 단원을 나누고, 문제마다 빈 줄 · 문제:/보기:/정답:/듣기:
+  const out = [], errs = []; let unit = '', buf = [], bi = 0;
+  const flush = () => {
+    const b = buf.join('\n').trim(); buf = []; if (!b) return; bi++; let u = unit, s = '';
+    const lines = b.split('\n').filter(ln => { let m = /^\s*단원\s*[:：]\s*(.+)$/.exec(ln); if (m) { u = egUnit(m[1]); return false; } m = /^\s*듣기\s*[:：]\s*(.+)$/.exec(ln); if (m) { s = m[1].trim().slice(0, 160); return false; } return true; });
+    const r = gwParse(lines.join('\n')); r.errs.forEach(e => errs.push(`${egUL(u)} ${bi}번째 문제: ${e.replace(/^\d+번:\s*/, '')}`)); r.qs.forEach(q => out.push({ ...q, u, s }));
+  };
+  for (const ln of String(txt || '').replace(/\r/g, '').split('\n')) {
+    const h = /^\s*#+\s*(.+)$/.exec(ln) || /^\s*\[(.+)\]\s*$/.exec(ln); if (h) { flush(); unit = egUnit(h[1]); continue; }
+    if (!ln.trim()) { flush(); continue; } buf.push(ln);
+  }
+  flush(); return { qs: out.slice(0, 400), errs };
+}
+const eg = { tex: null, cvs: null, bKey: '', sKey: '', seenN: 0, champ: null, entry: null, draft: null, sel: null, cnt: 20, lim: 20, mix: true, marks: new Map(), aKey: '', said: '' };
+const egOpen = () => !!S.eg?.open;
+const egHall = (p) => { const R = ROOMS.egb; return !!R && Math.abs(p.x - R.cx) <= R.w / 2 + 0.5 && Math.abs(p.z - R.cz) <= R.d / 2 + 0.5; };
+const egAlive = (G, u) => !!G?.p?.[u] && G.out?.[u] == null;
+const egAliveN = (G) => Object.keys(G?.p || {}).filter(u => G.out?.[u] == null).length;
+const egLeft = (G) => G?.ph === 'q' && G.lim ? Math.max(0, Math.ceil((G.qt + G.lim * 1000 - Date.now()) / 1000)) : -1;
+const egSayText = (Q) => Q?.s || '';
+function egBell() { // 🔔 금빛 종 (LatheGeometry)
+  const pts = [[0, 1.5], [0.18, 1.48], [0.32, 1.4], [0.42, 1.2], [0.48, 0.9], [0.55, 0.55], [0.68, 0.25], [0.86, 0.06], [0.9, 0], [0.82, 0.02]].map(([x, y]) => new THREE.Vector2(x, y));
+  const g = new THREE.Group(), mat = new THREE.MeshStandardMaterial({ color: 0xF2C230, metalness: 0.55, roughness: 0.3, emissive: 0x6A4A00, emissiveIntensity: 0.35, side: THREE.DoubleSide });
+  const b = new THREE.Mesh(new THREE.LatheGeometry(pts, 28), mat); g.add(b);
+  const k = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 8), mat); k.position.y = 0.05; g.add(k); // 종 추
+  const t = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.05, 6, 14), mat); t.position.y = 1.58; g.add(t); // 고리
+  return g;
+}
+function buildEgHall() {
+  // 바깥: 영어 마을 남쪽 길가 골든벨 홀 (문은 북쪽 큰길을 봐요)
+  const out = new THREE.Group(); out.name = 'EgHallOut'; scene.add(out); const o = { solid: false }, { x, z } = EG_HALL, fz = z - 3.5;
+  box(out, 12, 4.2, 7, 0xFFF3D6, x, 2.1, z); box(out, 12.8, 0.45, 7.8, 0x2F4F8F, x, 4.42, z, o); box(out, 12.9, 0.18, 7.9, 0xF2C230, x, 4.12, z, o);
+  box(out, 2.2, 2.7, 0.14, 0x7A4A2A, x, 1.35, fz - 0.03, o); ball(out, 0.09, 0xF2C230, x + 0.7, 1.3, fz - 0.14, o); // 문
+  for (const sx of [-1, 1]) { box(out, 2.4, 1.4, 0.12, 0xBFE3F7, x + sx * 3.8, 2.2, fz - 0.03, o); box(out, 2.6, 0.14, 0.2, 0xFFFFFF, x + sx * 3.8, 1.45, fz - 0.06, o); }
+  const sg = signPlane(out, ['🔔 English Golden Bell'], 6.2, 0.8, x, 3.55, fz - 0.1, { font: 48, pad: 4, fg: '#FFF6D8', bg: '#2F4F8F', stroke: false }); sg.rotation.y = Math.PI;
+  const bell = egBell(); bell.scale.setScalar(1.25); bell.position.set(x, 4.65, z); out.add(bell); eg.roofBell = bell;
+  { const bx = x - 7.6, bz = fz + 0.4; for (const sx of [-1.1, 1.1]) box(out, 0.18, 2.4, 0.18, 0x2F4F8F, bx + sx, 1.2, bz); box(out, 2.5, 1.4, 0.1, 0xFFF6D8, bx, 1.7, bz, o); box(out, 2.7, 0.16, 0.26, 0xF2C230, bx, 2.48, bz, o);
+    eg.champ = makeLabel(out, [''], 0.8, bx, 3.4, bz); }
+  eg.entry = makeLabel(out, [''], 0.9, x, 7.4, fz);
+  addInteract({ pos: new V3(x, 1, fz - 1.3), r: 2.8, text: () => evRegion() ? (egOpen() ? ['🔔 골든벨 홀 들어가기', `${S.eg.title || '영어 골든벨'} 중!`] : isTeacher ? ['🔔 골든벨 홀 (선생님)', '들어가서 문제를 내요'] : ['🔔 골든벨 홀', '선생님이 골든벨을 열면 도전해요']) : null, run: () => { if (!egOpen() && !isTeacher) { toast('🔔 아직 골든벨이 열리지 않았어요. 선생님이 문제를 내면 열려요', 'info'); return; } enterRoom('egb'); } });
+  registerSolids(out, 'egout');
+  // 안: 무대 · 큰 금종 · 큰 칠판 · 방석 20자리
+  const g = new THREE.Group(); g.name = 'EgHall'; scene.add(g); const R = ROOMS.egb; roomShell(g, R); const fzr = R.cz - R.d / 2;
+  box(g, 16, 0.5, 3.6, 0x2F4F8F, R.cx, 0.25, fzr + 2.0); box(g, 16.2, 0.06, 3.8, 0xF2C230, R.cx, 0.53, fzr + 2.0, o); // 무대
+  eg.cvs = document.createElement('canvas'); eg.cvs.width = 1024; eg.cvs.height = 600; eg.tex = new THREE.CanvasTexture(eg.cvs); eg.tex.colorSpace = THREE.SRGBColorSpace;
+  box(g, 9.4, 5.4, 0.2, 0xF2C230, R.cx, 3.35, fzr + 0.3, o); { const m = new THREE.Mesh(new THREE.PlaneGeometry(9.0, 5.27), new THREE.MeshBasicMaterial({ map: eg.tex, toneMapped: false })); m.position.set(R.cx, 3.35, fzr + 0.42); g.add(m); }
+  for (const sx of [-1, 1]) { const b2 = egBell(); b2.scale.setScalar(1.5); b2.position.set(R.cx + sx * 6.6, 0.55, fzr + 1.6); g.add(b2); if (sx > 0) eg.bigBell = b2; }
+  for (let i = 0; i < 14; i++) ball(g, 0.12, [0xFF6B6B, 0xFFD23C, 0x6BCB77, 0x4D96FF][i % 4], R.cx - 13 + i * 2, 2.85, fzr + 0.25, { solid: false, emissive: 0.5 }); // 전구 줄
+  addInteract({ pos: new V3(R.cx, 1, fzr + 4.6), r: 2.6, text: () => isTeacher ? ['🔔 골든벨 진행 (선생님)', egOpen() ? '문제 내기 · 정답 공개 · 패자부활' : '문제 은행을 올리고 단원을 골라요'] : null, run: openEgAdmin });
+  const cols = [-8, -4, 0, 4, 8], rows = [7.0, 10.0, 13.0, 16.0], mc = [0xFF8FB1, 0x7FC8F8, 0xFFD23C, 0x8FD694, 0xC9A0FF];
+  rows.forEach((rz, ri) => cols.forEach((cx, ci) => { const dx = R.cx + cx, dz = fzr + rz; box(g, 1.1, 0.1, 1.1, mc[(ri + ci) % 5], dx, 0.06, dz, o); box(g, 0.9, 0.62, 0.05, 0xFFFFFF, dx, 0.42, dz - 0.62, o); box(g, 0.94, 0.06, 0.2, 0x2F4F8F, dx, 0.1, dz - 0.62, o); // 방석 · 작은 화이트보드
+    addInteract({ pos: new V3(dx, 1, dz), r: 1.2, text: () => roomNow() === 'egb' ? ['🔔 자리에 앉기', egOpen() ? '골든벨 문제지를 펴요' : '골든벨을 기다려요'] : null, run: () => { player.pos.set(dx, 0.15, dz + 0.1); player.vy = 0; player.heading = Math.PI; player.avatar.g.rotation.y = Math.PI; camYaw = 0; camPitch = 0.42; playAct(player.avatar, 'sit'); if (egOpen()) openEgPlay(); } }); }));
+  makeLabel(g, ['🔔 영어 골든벨'], 0.9, R.cx, 6.6, fzr + 1.0);
+  registerSolids(g, 'egin');
+}
+function egDrawBoard() { try { egDrawBoard0(); } finally { if (eg.tex) eg.tex.needsUpdate = true; } }
+function egDrawBoard0() {
+  const G = S.eg, left = egLeft(G), key = JSON.stringify([G?.open, G?.n, G?.cur, G?.ph, G?.rev?.[G?.cur], egAliveN(G), Object.keys(G?.p || {}).length, left, Object.keys(G?.win || {}).length]); if (key === eg.bKey || !eg.cvs) return; eg.bKey = key;
+  const c = eg.cvs.getContext('2d'); c.fillStyle = '#16264A'; c.fillRect(0, 0, 1024, 600); c.strokeStyle = '#F2C230'; c.lineWidth = 12; c.strokeRect(8, 8, 1008, 584);
+  c.fillStyle = '#FFF6D8'; c.textBaseline = 'top'; const F = (n) => `700 ${n}px Pretendard, sans-serif`;
+  if (!G?.open) { c.font = F(70); c.textAlign = 'center'; c.fillText('🔔 English Golden Bell', 512, 190); c.font = F(36); c.fillText('선생님이 문제를 내면 골든벨이 열려요', 512, 300); return; }
+  const qs = G.qs || [], Q = qs[G.cur], pn = Object.keys(G.p || {}).length, an = egAliveN(G);
+  c.textAlign = 'left'; c.font = F(32); c.fillStyle = '#F2C230'; c.fillText(`${G.title || '영어 골든벨'}${G.us?.length ? ' · ' + G.us.map(egUL).join(', ') : ''}`.slice(0, 46), 36, 28);
+  if (G.ph === 'end') { const w = Object.values(G.win || {}); c.textAlign = 'center'; c.font = F(64); c.fillStyle = '#FFE066'; c.fillText(w.length ? '🔔 골든벨을 울렸어요! 🔔' : '🔔 이번엔 아무도 못 울렸어요', 512, 150);
+    c.font = F(w.length > 6 ? 40 : 56); c.fillStyle = '#FFF6D8'; gwWrap(c, w.join(' · ') || '다음에 다시 도전해요!', 512, 260, 920, w.length > 6 ? 50 : 66, 4); return; }
+  if (G.ph === 'wait' || !Q) { c.textAlign = 'center'; c.font = F(54); c.fillText('곧 1번 문제가 나와요', 512, 220); c.font = F(34); c.fillText(`모두 ${qs.length}문제 · 틀리면 탈락! 끝까지 살아남아요`, 512, 310); return; }
+  c.textAlign = 'right'; c.font = F(34); c.fillStyle = '#F2C230'; c.fillText(`${G.cur + 1} / ${qs.length}`, 988, 28);
+  c.font = F(30); c.fillStyle = '#9FE0A8'; c.fillText(pn ? `🙋 살아남은 친구 ${an} / ${pn}` : '🙋 1번 문제에 답하면 참가!', 988, 72); c.textAlign = 'left';
+  if (left >= 0) { c.font = F(44); c.fillStyle = left <= 5 ? '#FF8A80' : '#FFF6D8'; c.fillText(`⏱️ ${left}`, 36, 66); }
+  const big = Q.q.length > 80; c.fillStyle = '#FFF6D8'; c.font = F(big ? 34 : 44); const nl = gwWrap(c, `${G.cur + 1}. ${Q.q}`, 36, 128, 952, big ? 44 : 56, 5);
+  let y = 136 + nl * (big ? 44 : 56) + 10;
+  if (Q.s) { c.fillStyle = '#9FD8FF'; c.font = F(34); c.fillText('🔊 잘 듣고 답해요 (내 화면의 🔊 듣기)', 60, y); y += 50; }
+  c.fillStyle = '#FFF6D8'; c.font = F(Q.t === 'ox' ? 64 : 32);
+  if (Q.t === 'ox') { c.textAlign = 'center'; c.fillText('⭕        ❌', 512, y); c.textAlign = 'left'; }
+  else if (Q.t === 'mc') Q.o.forEach((op, i) => { if (y < 530) { gwWrap(c, `${i + 1}) ${op}`, 60, y, 920, 38, 1); y += 42; } });
+  else { c.fillStyle = '#BFD8F0'; c.fillText('✍️ 답을 영어로 적어요 (주관식)', 60, y); }
+  if (G.ph === 'rev') { c.fillStyle = '#FFE066'; c.fillRect(0, 528, 1024, 72); c.fillStyle = '#1E2A44'; c.font = F(38); c.textAlign = 'center'; c.fillText(`정답: ${G.rev?.[G.cur] || ''}`, 512, 542); }
+}
+function openEgPlay() {
+  if (!egOpen()) { toast('🔒 지금은 골든벨이 열리지 않았어요', 'info'); return; }
+  eg.sKey = JSON.stringify([S.eg.n, S.eg.cur, S.eg.ph]);
+  openLife('🔔 골든벨 문제지', (box) => {
+    box.textContent = ''; const G = S.eg, qs = G.qs || [], Q = qs[G.cur], me = backend.uid, mine = S.ega?.[me]?.r === G.n ? S.ega[me] : null, inP = !!G.p?.[me], out = G.out?.[me];
+    box.append(el2('p', 'lp-big', `${G.title || '영어 골든벨'}`));
+    const st = inP ? (out == null ? el2('p', 'hint', '🙋 살아 있어요! 끝까지 버텨요') : el2('p', 'err', `😢 ${out + 1}번 문제에서 탈락했어요 · 계속 풀며 연습하고 친구를 응원해요 (선생님이 패자부활을 하면 다시 살아나요)`)) : G.ph !== 'wait' && G.cur > 0 ? el2('p', 'hint', '👀 이번 판은 구경하며 연습해요 (선생님이 패자부활을 하면 같이 참가해요)') : null;
+    if (G.ph === 'end') { const w = Object.values(G.win || {}); box.append(el2('p', 'lp-big', w.length ? `🔔 골든벨: ${w.join(', ')}` : '🔔 이번엔 아무도 못 울렸어요'), el2('p', 'hint', G.win?.[me] ? '🎉 내가 골든벨을 울렸어요!' : inP ? `${out != null ? out + 1 : qs.length}번 문제까지 도전했어요` : '이번 판에는 참가하지 않았어요')); return; }
+    if (G.ph === 'wait' || !Q) { box.append(el2('p', 'hint', `모두 ${qs.length}문제예요. 앞 칠판에 1번 문제가 나오면 여기서 답해요. 1번 문제에 답하면 참가!`)); return; }
+    if (st) box.append(st);
+    const left = egLeft(G); box.append(el2('p', 'hint', `${G.cur + 1} / ${qs.length}번 문제 · ${G.ph === 'q' ? `답을 고르거나 적고 제출해요 (마감 전엔 바꿀 수 있어요)${left >= 0 ? ` · ⏱️ ${left}초` : ''}` : '정답 공개!'}`));
+    const qp = el2('p', 'lp-big', `${G.cur + 1}. ${Q.q}`); qp.style.whiteSpace = 'pre-line'; box.append(qp);
+    if (Q.s) { const sb = el2('button', 'btn', '🔊 듣기'); sb.style.background = '#BFE3F7'; sb.onclick = () => sayEn(Q.s); const r0 = el2('div', 'row-center'); r0.append(sb); box.append(r0); if (G.ph === 'rev') box.append(el2('p', 'hint', `🔊 ${Q.s}`)); }
+    const my = mine?.a?.[G.cur], send = async (v) => { if (G.ph !== 'q' || (G.lim && egLeft(S.eg) === 0)) { toast('⏱️ 시간이 끝났어요', 'warn'); return; } const r = await backend.egAnswer({ r: G.n, nm: (rosterOf(me) || cleanNick(myNick) || '친구').slice(0, 12), a: { ...(mine?.a || {}), [G.cur]: String(v).slice(0, 40) }, t: { ...(mine?.t || {}), [G.cur]: Date.now() } }); if (r.ok) { playSfx('pick'); toast(`🔔 제출했어요: ${v}`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 제출하지 못했어요 (마감됐을 수 있어요)', 'warn'); };
+    if (G.ph === 'rev') { const key = G.rev?.[G.cur] || ''; const ok = my != null && (Q.t === 'sa' ? key.split('/').some(k => gwNorm(k) === gwNorm(my)) : Q.t === 'mc' ? key.startsWith(`${my}번`) : key === my);
+      box.append(el2('p', 'lp-big', `정답: ${key}`), el2('p', 'hint', my == null ? '답을 내지 않았어요' : `내 답: ${Q.t === 'mc' ? `${my}번 ${Q.o[+my - 1] || ''}` : my} ${ok ? '⭕' : '❌'}`)); if (inP) box.append(el2('p', 'lp-big', out == null ? '🙋 살아남았어요!' : out === G.cur ? '😢 탈락…' : '')); return; }
+    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 영어로 적어요'; inp.value = my || ''; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); const b = el2('button', 'btn', '🔔 제출'); b.style.background = '#FFD23C';
+      b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (nickBad(v) || thxBadWord(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; inp.onkeydown = (e) => { if (e.key === 'Enter') b.onclick(); }; const rw = el2('div', 'row-center wrap'); rw.append(inp, b); box.append(rw); }
+    else { const grid = el2('div', 'mx-opts'); Q.o.forEach((op, i) => { const v = Q.t === 'ox' ? op : String(i + 1), b = el2('button', 'btn mx-opt', Q.t === 'ox' ? (op === 'O' ? '⭕ O' : '❌ X') : `${i + 1}) ${op}`); if (my === v) b.style.background = '#FFE066'; b.onclick = () => send(v); grid.append(b); }); box.append(grid); }
+    if (my != null) box.append(el2('p', 'hint', `✅ 제출한 답: ${Q.t === 'mc' ? `${my}번` : my}`));
+  });
+}
+function egUnitsOf(qs) { const m = new Map(); for (const q of qs) m.set(q.u, (m.get(q.u) || 0) + 1); return [...m].sort((a, b) => (+a[0] || 999) - (+b[0] || 999) || String(a[0]).localeCompare(String(b[0]))); }
+function openEgAdmin() {
+  if (!isTeacher) return;
+  openLife('🔔 골든벨 진행', (box) => {
+    box.textContent = ''; const G = S.eg, key = bag.egKey;
+    if (!G?.open) {
+      const n = Math.max(S.eg?.n || 0, S.egc?.n || 0) + 1;
+      box.append(el2('p', 'hint', '① 문제 은행을 올려요: "# Lesson 7"처럼 단원 줄을 쓰고, 그 아래 문제마다 빈 줄로 나눠 "문제: / 보기: / 정답:"으로 적어요. 보기가 없으면 주관식(정답 여러 개는 / 로), 보기: OX 이면 O·X 문제, "듣기: 영어 문장"을 넣으면 학생 화면에서 🔊 소리로 들려줘요. ② 출제할 단원과 문제 수를 골라 골든벨을 열어요. 문제 은행과 정답은 이 선생님 기기에만 남아요.'));
+      const ta = document.createElement('textarea'); ta.className = 'tinput'; ta.rows = 10; ta.style.cssText = 'width:100%;font-size:14px'; ta.value = eg.draft ?? bag.egBank ?? EG_DEF; ta.oninput = () => { eg.draft = ta.value; renderUnits(); };
+      const err = el2('p', 'err', ''), uw = el2('div', 'row-center wrap'), info = el2('p', 'hint', '');
+      const ti = el2('input', 'tinput', null); ti.maxLength = 30; ti.value = eg.draftT || `제${n}회 영어 골든벨`; ti.oninput = () => { eg.draftT = ti.value; };
+      const opt = el2('div', 'row-center wrap'), sel = (lbl, vals, cur, fn, fmt) => { const l = el2('label', null, lbl); l.style.fontSize = '15px'; const s = el2('select', 'tinput', null); s.style.width = 'auto'; for (const v of vals) { const op = document.createElement('option'); op.value = v; op.textContent = fmt(v); if (v === cur) op.selected = true; s.append(op); } s.onchange = () => fn(+s.value); l.append(' ', s); opt.append(l); };
+      sel('문제 수', [5, 10, 15, 20, 30, 40], eg.cnt, (v) => { eg.cnt = v; renderUnits(); }, (v) => `${v}문제`);
+      sel('제한 시간', [0, 10, 15, 20, 30, 45], eg.lim, (v) => { eg.lim = v; }, (v) => v ? `${v}초` : '없음 (선생님이 마감)');
+      { const l = el2('label', null, ''); l.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = eg.mix; cb.onchange = () => { eg.mix = cb.checked; }; l.append(cb, ' 문제 섞기'); opt.append(l); }
+      let parsed = { qs: [], errs: [] };
+      function renderUnits() {
+        parsed = egParse(ta.value); uw.textContent = ''; const us = egUnitsOf(parsed.qs);
+        if (!eg.sel) eg.sel = new Set(bag.egSel || us.map(([u]) => u));
+        for (const [u, c] of us) { const on = eg.sel.has(u), b = el2('button', 'btn', `${on ? '✅' : '⬜'} ${egUL(u)} (${c})`); b.style.background = on ? '#CDEFC2' : '#fff'; b.onclick = () => { if (eg.sel.has(u)) eg.sel.delete(u); else eg.sel.add(u); renderUnits(); }; uw.append(b); }
+        const pool = parsed.qs.filter(q => eg.sel.has(q.u)).length;
+        info.textContent = us.length ? `출제 단원에서 ${Math.min(pool, eg.cnt)}문제를 내요 (고른 단원 문제 ${pool}개 · 문제 은행 모두 ${parsed.qs.length}개)` : '문제가 없어요';
+        err.textContent = parsed.errs.slice(0, 3).join(' · ');
+      }
+      const row = el2('div', 'row-center wrap');
+      const sv = el2('button', 'btn', '💾 문제 은행 저장'); sv.style.background = '#fff'; sv.onclick = () => { bag.egBank = ta.value; bag.egSel = [...(eg.sel || [])]; saveBag(); toast('💾 이 기기에 문제 은행을 저장했어요', 'success'); };
+      const def = el2('button', 'btn', '📄 예시 문제 (Lesson 7~12)'); def.style.background = '#fff'; def.onclick = () => { ta.value = eg.draft = EG_DEF; eg.sel = null; bag.egSel = null; renderUnits(); };
+      const go = el2('button', 'btn', '🔔 출제하고 골든벨 열기'); go.style.background = '#FFD23C';
+      go.onclick = async () => {
+        renderUnits(); if (parsed.errs.length) return; let pool = parsed.qs.filter(q => eg.sel.has(q.u)); if (!pool.length) { err.textContent = '출제할 단원을 골라요'; return; }
+        if (eg.mix) pool = evShuffle(pool); const qs = pool.slice(0, Math.min(40, eg.cnt)), us = egUnitsOf(qs).map(([u]) => u).slice(0, 12);
+        bag.egKey = { n, a: qs.map(q => q.a), show: qs.map(q => q.show), t: qs.map(q => q.t), fix: {} }; bag.egBank = ta.value; bag.egSel = [...eg.sel]; saveBag();
+        const ok = await backend.adminUpdate({ eg: { open: true, n, title: (ti.value.trim() || `제${n}회 영어 골든벨`).slice(0, 30), us, qs: qs.map(q => ({ q: q.q, t: q.t, o: q.o, s: q.s || '' })), cur: 0, ph: 'wait', lim: eg.lim, at: Date.now() }, ega: null });
+        if (!ok.ok) { err.textContent = '⚠️ 올리지 못했어요. database.rules.json을 다시 게시해 주세요'; return; } playSfx('fanfare'); toast(`🔔 ${n}회 영어 골든벨이 열렸어요! (${qs.length}문제)`, 'success'); setTimeout(refillLife, 300); };
+      row.append(def, sv, go);
+      box.append(el2('h3', 'lp-sec', '골든벨 이름'), ti, el2('h3', 'lp-sec', '문제 은행'), ta, err, el2('h3', 'lp-sec', '출제 단원 (눌러서 고르기)'), uw, info, opt, row);
+      renderUnits();
+      if (S.egc?.names) box.append(el2('p', 'hint', `지난 골든벨: 제${S.egc.n}회 ${S.egc.names}`));
+      return;
+    }
+    const qs = G.qs || [], Q = qs[G.cur], noKey = !key || key.n !== G.n, subs = Object.entries(S.ega || {}).filter(([, v]) => v?.r === G.n), pn = Object.keys(G.p || {}).length;
+    box.append(el2('p', 'lp-big', `${G.title} · ${G.ph === 'wait' ? '시작 전' : G.ph === 'end' ? '끝' : `${G.cur + 1} / ${qs.length}번`}${pn ? ` · 🙋 ${egAliveN(G)}/${pn}명` : ''}`));
+    if (noKey) box.append(el2('p', 'err', '⚠️ 이 기기에 정답이 없어요. 문제를 올린 선생님 기기에서 진행해요.'));
+    if (Q && G.ph !== 'wait' && G.ph !== 'end') { const qp = el2('p', 'hint', `${G.cur + 1}. ${Q.q}${Q.s ? `\n🔊 ${Q.s}` : ''}`); qp.style.whiteSpace = 'pre-line'; box.append(qp); if (key && !noKey) box.append(el2('p', 'hint', `🔑 정답: ${key.show?.[G.cur] || ''}`));
+      const n2 = subs.filter(([, v]) => v.a?.[G.cur] != null).length; box.append(el2('p', 'hint', `✋ 답을 낸 친구: ${n2}명${G.ph === 'q' && egLeft(G) >= 0 ? ` · ⏱️ ${egLeft(G)}초 (끝나면 자동 마감)` : ''}`)); }
+    const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = fn; row.append(b); return b; };
+    const last = G.cur >= qs.length - 1, sayB = () => { if (Q?.s) B('🔊 문장 들려주기', '#BFE3F7', () => sayEn(Q.s)); };
+    if (G.ph === 'wait') B('▶ 1번 문제 내기', '#FFD23C', () => egAsk(0));
+    if (G.ph === 'q') { B('⏹ 마감하고 정답 공개', '#FFD23C', () => egReveal()); sayB(); }
+    if (G.ph === 'rev' && !last) B(`▶ ${G.cur + 2}번 문제 내기`, '#FFD23C', () => egAsk(G.cur + 1));
+    if (G.ph === 'rev') B(last ? '🏁 골든벨 결과 발표' : '🏁 여기서 끝내고 결과 발표', last ? '#FFD23C' : '#fff', () => egFinish());
+    if (G.ph === 'rev' && pn) B('🔄 패자부활 (모두 다시 살아나요)', '#E3F0FF', async () => { if (!await confirmAction({ title: '패자부활 할까요?', body: '탈락한 친구와 늦게 온 친구(답을 한 번이라도 낸 친구)가 모두 다시 참가해요.', okText: '부활!' })) return; const p = { ...(G.p || {}) }; for (const [u, v] of subs) p[u] ||= (v.nm || '친구').slice(0, 12); adminDo({ 'eg/p': p, 'eg/out': null }, '🔄 패자부활! 모두 다시 도전해요').then(() => setTimeout(refillLife, 300)); });
+    if (G.ph === 'end') B('🔒 골든벨 홀 닫기', '#fff', () => adminDo({ 'eg/open': false }, '🔒 골든벨 홀을 닫았어요').then(() => setTimeout(refillLife, 300)));
+    B('🗑️ 골든벨 그만두기', '#fff', async () => { if (await confirmAction({ title: '골든벨을 그만둘까요?', body: '이번 골든벨이 사라지고 홀이 닫혀요. (지난 기록은 그대로)', okText: '그만두기' })) adminDo({ eg: { open: false, n: G.n, ph: 'end' }, ega: null }, '🗑️ 골든벨을 그만뒀어요').then(() => setTimeout(refillLife, 300)); });
+    box.append(row);
+    if (G.ph === 'rev' && Q?.t === 'sa' && !noKey) { // ✍️ 주관식: 눌러서 맞음·틀림을 바꾸면 탈락도 다시 정해요
+      const i = G.cur, m = new Map(); for (const [, v] of subs) { const a = v.a?.[i]; if (a != null) m.set(a, (m.get(a) || 0) + 1); }
+      if (m.size) { box.append(el2('h3', 'lp-sec', '✍️ 주관식 답 확인 (눌러서 맞음·틀림 바꾸기)')); const rw = el2('div', 'row-center wrap');
+        for (const [a, c] of m) { const fx = key.fix?.[i]?.[a], ok = fx != null ? fx : gwOk(Q, key.a[i], a), b = el2('button', 'btn', `${ok ? '⭕' : '❌'} ${a} (${c})`); b.style.background = ok ? '#CDEFC2' : '#F6C9C0'; b.onclick = () => { ((key.fix ||= {})[i] ||= {})[a] = !ok; saveBag(); egRegrade(); }; rw.append(b); }
+        box.append(rw); } }
+    if (pn && G.ph !== 'wait') { box.append(el2('h3', 'lp-sec', `🙋 참가 ${pn}명`)); const rw = el2('div', 'row-center wrap'); for (const [u, nm] of Object.entries(G.p).sort((a, b) => (G.out?.[a[0]] ?? 999) < (G.out?.[b[0]] ?? 999) ? 1 : -1)) { const o2 = G.out?.[u]; const sp = el2('span', null, `${o2 == null ? (G.win?.[u] ? '🔔' : '🙋') : '💤'} ${nm}${o2 != null ? ` (${o2 + 1}번)` : ''}`); sp.style.cssText = `display:inline-block;padding:3px 9px;margin:2px;border-radius:12px;font-size:15px;background:${o2 == null ? '#CDEFC2' : '#E6E6E6'}`; rw.append(sp); } box.append(rw); }
+  });
+}
+function egAsk(i) { // ▶ i번 문제 내기
+  const G = S.eg; if (!G) return; const upd = { 'eg/ph': 'q', 'eg/cur': i, 'eg/qt': Date.now() };
+  adminDo(upd, `▶ ${i + 1}번 문제!`).then(() => { const Q = G.qs?.[i]; if (Q?.s && roomNow() === 'egb') setTimeout(() => sayEn(Q.s), 600); setTimeout(refillLife, 300); });
+}
+function egJudge(G, key, i) { // 이번 문제로 참가자·탈락자 정하기 (선생님 기기)
+  const Q = G.qs[i], p = { ...(G.p || {}) }, out = { ...(G.out || {}) };
+  const subs = Object.entries(S.ega || {}).filter(([, v]) => v?.r === G.n);
+  if (i === 0 || !Object.keys(p).length) for (const [u, v] of subs) if (v.a?.[i] != null && !p[u]) p[u] = (v.nm || '친구').slice(0, 12); // 처음 답한 문제에서 참가
+  for (const u of Object.keys(p)) { if (out[u] != null && out[u] !== i) continue; const a = S.ega?.[u]?.r === G.n ? S.ega[u].a?.[i] : null; const fx = a != null ? key.fix?.[i]?.[a] : null; const ok = a != null && (fx != null ? fx : gwOk(Q, key.a[i], a)); if (ok) delete out[u]; else out[u] = i; }
+  return { p, out };
+}
+async function egReveal() {
+  const G = S.eg, key = bag.egKey; if (!G || G.ph !== 'q') return; if (!key || key.n !== G.n) { toast('⚠️ 이 기기에 정답이 없어요', 'warn'); return; }
+  const i = G.cur, { p, out } = egJudge(G, key, i), was = egAliveN(G), now = Object.keys(p).filter(u => out[u] == null).length;
+  if (await adminDo({ 'eg/ph': 'rev', [`eg/rev/${i}`]: key.show[i] || '', 'eg/p': p, 'eg/out': out }, `📣 정답 공개! 🙋 ${now}명 살아남았어요${was && was > now ? ` (${was - now}명 탈락)` : ''}`)) setTimeout(refillLife, 300);
+}
+async function egRegrade() { // 주관식 맞음·틀림을 바꾼 뒤
+  const G = S.eg, key = bag.egKey; if (!G || G.ph !== 'rev' || !key || key.n !== G.n) return; const { p, out } = egJudge(G, key, G.cur);
+  if (await adminDo({ 'eg/p': p, 'eg/out': out }, '✍️ 채점을 고쳤어요')) setTimeout(refillLife, 300);
+}
+async function egFinish() {
+  const G = S.eg; if (!G) return; const win = {}; for (const [u, nm] of Object.entries(G.p || {})) if (G.out?.[u] == null) win[u] = nm;
+  const names = Object.values(win), upd = { 'eg/ph': 'end', 'eg/win': names.length ? win : null };
+  if (names.length) upd.egc = { n: G.n, names: names.join(', ').slice(0, 60), c: names.length, w: weekNum(), at: Date.now() };
+  if (await adminDo(upd, names.length ? `🔔 골든벨! ${names.slice(0, 5).join(', ')}${names.length > 5 ? ` 외 ${names.length - 5}명` : ''}` : '🏁 이번엔 아무도 못 울렸어요')) { playSfx('fanfare'); setTimeout(refillLife, 300); }
+}
+function egMark(a, kind) { // 머리 위 🙋 살아 있음 · 💤 탈락 (골든벨 홀 안에서만)
+  if ((a.egKind || '') === kind) return; a.egKind = kind;
+  if (!kind) { if (a.egM) a.egM.visible = false; return; }
+  if (!a.egM) { a.egM = makeLabel(a.g, [''], 0.55, 0, 3.95, 0); }
+  a.egM.visible = true; a.egM.userData.set([kind === 'win' ? '🔔 골든벨' : kind === 'on' ? '🙋 도전 중' : '💤 탈락']);
+}
+function egTick(dt) {
+  if (eg.bigBell) { const G0 = S.eg, ring = G0?.ph === 'end' && Object.keys(G0.win || {}).length; eg.ringT = (eg.ringT || 0) + dt; const sw = ring ? Math.sin(eg.ringT * 9) * 0.35 : Math.sin(eg.ringT * 1.2) * 0.04; eg.bigBell.rotation.z = sw; if (eg.roofBell) eg.roofBell.rotation.z = egOpen() ? Math.sin(eg.ringT * 3) * 0.12 : 0; }
+  if ((eg.t = (eg.t || 0) - dt) > 0) return; eg.t = 0.4;
+  const G = S.eg, kindOf = (u, pos) => !G?.open || G.ph === 'wait' || !pos || !egHall(pos) || !G.p?.[u] ? '' : G.win?.[u] ? 'win' : G.out?.[u] == null ? 'on' : 'out';
+  if (player.avatar) egMark(player.avatar, joined ? kindOf(backend?.uid, player.pos) : '');
+  for (const [u, r] of remotes) if (r.a) egMark(r.a, kindOf(u, r.a.g.position));
+  if (roomNow() === 'egb' || eg.bKey === '') egDrawBoard();
+  if (eg.champ) { const c = S.egc, t = c?.names ? [`🔔 제${c.n}회 골든벨`, c.names.length > 16 ? c.names.slice(0, 15) + '…' : c.names] : ['🔔 골든벨 명예의 전당', '아직 없어요']; const k = t.join('|'); if (eg.champK !== k) { eg.champK = k; eg.champ.userData.set(t); } }
+  if (eg.entry) { const t = egOpen() ? ['🔔 지금 영어 골든벨 중!', '들어와서 도전해요'] : ['🔔 영어 골든벨 홀', '선생님이 문제를 내면 열려요']; const k = t.join('|'); if (eg.entryK !== k) { eg.entryK = k; eg.entry.userData.set(t); } }
+  if (!joined || !G) return;
+  if (G.open && G.n !== eg.seenN && stateLoaded) { if (eg.seenN && !isTeacher) toast(`🔔 ${G.title || '영어 골든벨'}이 열렸어요! 영어 마을 골든벨 홀로 와요`, 'info'); eg.seenN = G.n; }
+  if (!isTeacher && G.ph === 'end' && bag.egDone !== G.n && G.p) { bag.egDone = G.n; const me = backend.uid; if (G.p[me]) { const o = G.out?.[me], s = o != null ? o : (G.qs || []).length; if (s) { addStat('eng', Math.min(30, s * 2), true); earnShell(Math.min(40, s * 3)); } if (G.win?.[me]) { earnShell(60); burst(player.pos.clone().setY(2), RAINBOW, 60, 6, 3); showBanner('🔔 골든벨을 울렸어요!', `끝까지 살아남았어요 · 🐚 +${60 + Math.min(40, s * 3)}`, 6000); } } saveBag(); }
+  if (!isTeacher && G.open && roomNow() === 'egb') { const k = JSON.stringify([G.n, G.cur, G.ph]); if (k !== eg.sKey) { const open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지'; if (open || G.ph === 'q') { openEgPlay(); const Q = G.qs?.[G.cur]; if (G.ph === 'q' && Q?.s && eg.said !== k) { eg.said = k; setTimeout(() => sayEn(Q.s), 500); } } else eg.sKey = k; }
+    else if (G.ph === 'q' && G.lim && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지') { const l = egLeft(G); if (l !== eg.lastL) { eg.lastL = l; refillLife(); } } }
+  if (isTeacher) { const key = bag.egKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + G.lim * 1000 + 1500 && !eg.autoBusy) { eg.autoBusy = true; egReveal().finally(() => { setTimeout(() => { eg.autoBusy = false; }, 2000); }); }
+    if (G.open && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 진행') { const k = JSON.stringify([G.ph, G.cur, egAliveN(G), Object.keys(S.ega || {}).length, Object.values(S.ega || {}).map(v => Object.keys(v?.a || {}).length).join(), G.ph === 'q' ? egLeft(G) : 0]); if (k !== eg.aKey) { eg.aKey = k; if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') refillLife(); } } }
+}
 // 👫 함께 배 타기 (1021f): 친구 배(선장) 가까이에서 E → 빈 자리에 타요 · 선장이 움직이면 같이 가요 · 친구 화면에도 그 자리에 보여요 (players/{uid}/bo = "선장uid:자리")
 const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null, duo: '', dv: 0 };
 const boardSeatsOf = (q) => BOAT_SEATS[Math.min(3, Math.floor((q | 0) / 25))] || BOAT_SEATS[0];
@@ -23172,7 +23507,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildSand(); buildShopStreet(); buildVilDecor('hv'); buildVilDecor('ev'); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
+buildBeach(); buildSand(); buildShopStreet(); buildVilDecor('hv'); buildEgHall(); buildVilDecor('ev'); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -23198,7 +23533,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); egTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
