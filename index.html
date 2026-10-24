@@ -10047,7 +10047,7 @@ function rkPick() { // 아직 없는 보상 중에서 무작위 (종류를 골�
   if (kinds.length) { const l = left(kinds[0]); return l[Math.floor(Math.random() * l.length)]; }
   return '';
 }
-const RANK_EXTRA = { bdm: { icon: '🏸', name: '배드민턴' } }; // 🏸 배드민턴 랭킹 (능력치 합계에는 넣지 않아요)
+const RANK_EXTRA = {}; // (1024k: 🏸 배드민턴 랭킹·보상은 없앴어요)
 const rankCats = () => ({ ...STATS, ...RANK_EXTRA });
 const weekNum = () => Math.floor((dayNum() + 3) / 7); // 월요일에 바뀌어요 (한국 시간)
 const rankW = { t: 0, sent: '', checked: 0 };
@@ -10098,7 +10098,7 @@ function openRank() {
   if (!joined) return; rankPush();
   openLife('🏆 이번 주 능력치 랭킹', (box) => {
     box.textContent = ''; const w = weekNum(), me = backend.uid;
-    box.append(el2('p', 'hint', `이번 주(월~일)에 퀴즈·공부로 오른 능력치 점수와 🏸 배드민턴 점수예요. 능력치마다 1~5등만 보여 주고, 내 순위는 나만 봐요. 월요일에 새로 시작하고, 지난주 1~3등은 이름표 칭호 · 🐚 조개돈 · ⭐ 탈것 꾸미기 전용 아이템을 받아요.`));
+    box.append(el2('p', 'hint', `이번 주(월~일)에 퀴즈·공부로 오른 능력치 점수예요. 능력치마다 1~5등만 보여 주고, 내 순위는 나만 봐요. 월요일에 새로 시작하고, 지난주 1~3등은 이름표 칭호 · 🐚 조개돈 · ⭐ 탈것 꾸미기 전용 아이템을 받아요.`));
     const grid = el2('div', 'rank-grid');
     { const top = rankList(w, 'sum')[0], last = rankList(w - 1, 'sum')[0], bx = el2('div', 'rk-sky'); // 🐲 능력치 합계 1등 = 하늘을 나는 용
       bx.append(el2('b', '', '🐲 능력치 합계 1등은 하늘을 나는 용!'), el2('span', '', `이번 주 1등: ${top ? `${rankNick(top[0], top[2])} · ${top[1]}점` : '아직 없어요'}${last ? ` · 지난주: ${rankNick(last[0], last[2])}` : ''}`));
@@ -17269,6 +17269,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1024k', d: '10월 24일 (밤)', items: ['🏯 역사 마을에 장승·볏가리·지게·항아리·돌담, 🗽 영어 마을에 핫도그 수레·신호등·꽃 화분·택시·생울타리가 생겼어요 → 숨바꼭질 숨을 곳이 많아졌어요!', '🏸 배드민턴은 이제 랭킹 점수 없이 즐겨요'] },
   { id: '1024j', d: '10월 24일 (밤)', items: ['🦎 히로를 더 닮게 다듬었어요: 눈은 작게 · 다리는 짧고 둥글게 · 등에 무늬'] },
   { id: '1024i', d: '10월 24일 (밤)', items: ['🦎 우리 반 도마뱀 히로가 펫이 됐어요! 해변 🐾 펫 가게에서 무료로 데려와 같이 산책해요 (몸을 S자로 흔들며 걷고, 가끔 혀로 눈을 핥아요 👅)'] },
   { id: '1024h', d: '10월 24일 (밤)', items: ['🐾 데리고 다니는 동료 펫이 체육관 배틀처럼 입체 3D 펫으로 바뀌었어요! 날개를 파닥이고 꼬리를 흔들며 따라와요 (들판 야생 펫도 3D)'] },
@@ -18230,7 +18231,7 @@ function bdmStop(silent) {
 function bdmEnd(won, m) {
   bdm.done = true; bdm.msg = won ? '🏆 이겼어요! 멋진 경기!' : '👏 좋은 경기였어요!'; bdm.msgT = 4;
   const myT = bdmTeam(bdm.slot), vsAi = BDM_SLOTS.filter(k => m.s?.[k] && bdmTeam(k) !== myT).every(k => m.s[k].u === 'ai');
-  { const pt = vsAi ? (won ? (m.lv ? 2 : 1) : 0) : (won ? 4 : 2); if (pt) { rankAdd('bdm', pt); toast(`🏸 배드민턴 랭킹 +${pt}점`, 'info'); } } // 🏸 이기면 더 많이 (친구 경기는 져도 +2)
+  /* 1024k: 배드민턴 랭킹 점수 없음 */ // 🏸 이기면 더 많이 (친구 경기는 져도 +2)
   if (!vsAi || won || bdm.hits >= 10) earnMat(vsAi ? (won ? '배드민턴 승리' : '배드민턴 끝까지 하기') : `친구와 배드민턴 ${m.n === 4 ? '복식' : '단식'}`);
   burst(player.pos.clone().add(new V3(0, 2, 0)), RAINBOW, 40, 4, 2); playSfx('fanfare'); bdmRender();
   setTimeout(() => { if (bdm.on && bdm.done) bdmStop(true); }, 4200);
@@ -18529,6 +18530,9 @@ const PROPS = [null, // 변신할 수 있는 물건 10가지
   { icon: '🌾', name: '건초 더미', t: 'hay' }, { icon: '🧑‍🌾', name: '허수아비', t: 'scare' }, { icon: '🌻', name: '해바라기', t: 'sun' }, { icon: '🪣', name: '우물', t: 'well' }, { icon: '🥕', name: '채소 상자', t: 'veg' },
   // 1024a: ⛏️ 광산 마을 물건 (32~35)
   { icon: '⛏️', name: '곡괭이 걸이', t: 'pick' }, { icon: '🪵', name: '갱도 버팀목', t: 'prop' }, { icon: '🚧', name: '광산 안내판', t: 'msign' }, { icon: '🪨', name: '광석 더미', t: 'ore' },
+  // 1024k: 🏯 역사 마을 (36~39) · 🗽 영어 마을 (40~43)
+  { icon: '🗿', name: '장승', t: 'jang' }, { icon: '🌾', name: '볏가리', t: 'byeot' }, { icon: '🪵', name: '지게', t: 'jige' }, { icon: '🏺', name: '항아리 더미', t: 'jars' },
+  { icon: '🌭', name: '핫도그 수레', t: 'hotdog' }, { icon: '🚦', name: '신호등', t: 'signal' }, { icon: '🌷', name: '꽃 화분대', t: 'planter' }, { icon: '🚕', name: '택시', t: 'taxi' },
 ];
 function propCustom(k, g) { // 🙈 1022f 마을별 변신 물건 모양 (모두 몸을 막지 않아요)
   const o = { solid: false }, f = { solid: false, flat: true };
@@ -18552,6 +18556,14 @@ function propCustom(k, g) { // 🙈 1022f 마을별 변신 물건 모양 (모두
   else if (k === 'scare') { cyl(g, 0.06, 1.9, 0x7A5436, 0, 0.95, 0, o); box(g, 1.5, 0.08, 0.08, 0x7A5436, 0, 1.4, 0, o); box(g, 0.6, 0.7, 0.3, 0x4A9AE8, 0, 1.3, 0, o); ball(g, 0.25, 0xE8CC80, 0, 1.9, 0, o); mesh(CONE, g, 0.4, 0.3, 0.4, 0xC9A65E, 0, 2.2, 0, o); }
   else if (k === 'sun') { cyl(g, 0.05, 1.7, 0x5FA040, 0, 0.85, 0, o); for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; mesh(SPH_LO, g, 0.14, 0.24, 0.05, 0xFFD23C, Math.cos(a) * 0.32, 1.75 + Math.sin(a) * 0.32, 0.05, f); } cyl(g, 0.2, 0.08, 0x6A4A2A, 0, 1.75, 0.08, { solid: false, rx: Math.PI / 2 }); for (const s2 of [-1, 1]) mesh(SPH_LO, g, 0.2, 0.05, 0.12, 0x5FA040, s2 * 0.2, 0.9, 0, f); }
   else if (k === 'well') { cyl(g, 0.75, 0.7, 0xA8A294, 0, 0.35, 0, o); cyl(g, 0.6, 0.05, 0x3E8FD6, 0, 0.66, 0, o); for (const s2 of [-1, 1]) cyl(g, 0.06, 1.4, 0x7A5436, s2 * 0.7, 1.1, 0, o); mesh(GABLE, g, 1.7, 0.5, 0.9, 0xC9A65E, 0, 1.8, 0, { solid: false, ry: Math.PI / 2 }); cyl(g, 0.12, 0.2, 0x8A5A34, 0, 1.2, 0, o); }
+  else if (k === 'jang') { cyl(g, 0.22, 1.9, 0x8A5A34, 0, 0.95, 0, o); mesh(SPH_MID, g, 0.3, 0.34, 0.28, 0x9C6A3E, 0, 1.95, 0, f); for (const sx of [-0.1, 0.1]) ball(g, 0.06, 0xFFFFFF, sx, 2.0, 0.24, o); for (const sx of [-0.1, 0.1]) ball(g, 0.03, 0x1E1E24, sx, 2.0, 0.29, o); box(g, 0.22, 0.05, 0.04, 0xC0392B, 0, 1.8, 0.27, o); cyl(g, 0.34, 0.1, 0x2A2A30, 0, 2.3, 0, o); cyl(g, 0.16, 0.3, 0x2A2A30, 0, 2.45, 0, o); box(g, 0.14, 0.9, 0.03, 0xF4E6C8, 0, 1.0, 0.22, o); }
+  else if (k === 'byeot') { cyl(g, 0.55, 0.9, 0xD9B85A, 0, 0.45, 0, { solid: false, surf: 'straw' }); mesh(CONE, g, 0.6, 0.8, 0.6, 0xC9A64A, 0, 1.3, 0, { solid: false, surf: 'straw' }); cyl(g, 0.57, 0.06, 0x8A6A2A, 0, 0.75, 0, o); }
+  else if (k === 'jige') { for (const sx of [-0.25, 0.25]) box(g, 0.08, 1.5, 0.08, 0x8A5A34, sx, 0.75, 0, { solid: false, rz: -sx * 0.25 }); for (const y of [0.5, 0.95]) box(g, 0.6, 0.06, 0.06, 0x7A4A2A, 0, y, 0, o); for (let i = 0; i < 5; i++) cyl(g, 0.05, 0.9, 0x9C6A3E, -0.2 + i * 0.1, 1.2, -0.12, { solid: false, rz: Math.PI / 2 - 0.2 + i * 0.1 }); cyl(g, 0.03, 0.9, 0x7A4A2A, 0.35, 0.45, 0.2, { solid: false, rz: 0.3 }); }
+  else if (k === 'jars') { for (const [x, z, s2] of [[0, 0, 0.42], [0.55, 0.15, 0.32], [-0.5, 0.1, 0.34], [0.1, -0.5, 0.28]]) { mesh(SPH_MID, g, s2, s2 * 1.15, s2, 0x5A3A26, x, s2 * 1.05, z, o); cyl(g, s2 * 0.55, 0.06, 0x3E2618, x, s2 * 2.15, z, o); } }
+  else if (k === 'hotdog') { box(g, 1.3, 0.8, 0.8, 0xE2584A, 0, 0.75, 0, o); box(g, 1.32, 0.12, 0.82, 0xFFFFFF, 0, 1.0, 0, o); for (const x of [-0.45, 0.45]) mesh(CYL, g, 0.25, 0.08, 0.25, 0x3B3F46, x, 0.25, 0.42, { solid: false, rx: Math.PI / 2 }); cyl(g, 0.04, 1.2, 0x8C95A3, 0, 1.6, 0, o); mesh(CONE, g, 0.9, 0.35, 0.9, 0xFFD23C, 0, 2.3, 0, o); box(g, 0.5, 0.12, 0.14, 0xD98A3A, 0.2, 1.12, 0, o); }
+  else if (k === 'signal') { cyl(g, 0.06, 2.4, 0x3B3F46, 0, 1.2, 0, o); box(g, 0.32, 0.85, 0.24, 0x2A2A30, 0, 2.3, 0, o); for (const [y, c] of [[2.58, 0xE2384A], [2.3, 0xFFD23C], [2.02, 0x3FB868]]) ball(g, 0.09, c, 0, y, 0.12, { solid: false, emissive: 0.6 }); }
+  else if (k === 'planter') { box(g, 1.4, 0.5, 0.6, 0x9A6A44, 0, 0.25, 0, o); box(g, 1.3, 0.08, 0.5, 0x5A3A22, 0, 0.5, 0, o); for (let i = 0; i < 7; i++) { cyl(g, 0.02, 0.3, 0x3E8A44, -0.55 + i * 0.18, 0.65, (i % 2) * 0.15 - 0.07, o); ball(g, 0.08, [0xFF7AA8, 0xFFD23C, 0xE2384A, 0xB58CF0][i % 4], -0.55 + i * 0.18, 0.82, (i % 2) * 0.15 - 0.07, o); } }
+  else if (k === 'taxi') { box(g, 1.1, 0.5, 2.0, 0xF5C531, 0, 0.45, 0, o); box(g, 0.9, 0.4, 1.0, 0xF5C531, 0, 0.9, -0.1, o); box(g, 0.92, 0.3, 0.96, 0xBFE4FF, 0, 0.92, -0.1, o); box(g, 0.4, 0.14, 0.2, 0xFFFFFF, 0, 1.17, -0.1, o); for (const x of [-0.5, 0.5]) for (const z2 of [-0.65, 0.65]) mesh(CYL, g, 0.22, 0.14, 0.22, 0x2A2A30, x, 0.22, z2, { solid: false, rz: Math.PI / 2 }); for (let i = 0; i < 5; i++) box(g, 0.08, 0.08, 0.02, i % 2 ? 0x2A2A30 : 0xFFFFFF, -0.16 + i * 0.08, 0.5, 1.01, o); }
   else if (k === 'pick') { box(g, 1.4, 0.12, 0.12, 0x7A5436, 0, 1.3, 0, o); for (const x of [-0.6, 0.6]) cyl(g, 0.06, 1.35, 0x7A5436, x, 0.67, 0, o); for (const x of [-0.3, 0.3]) { cyl(g, 0.04, 1.0, 0x9C6A3E, x, 0.85, 0.1, { solid: false, rz: x * 0.4 }); box(g, 0.55, 0.1, 0.1, 0x8C95A3, x + x * 0.4, 1.32, 0.1, { solid: false, rz: 0.15 }); } }
   else if (k === 'prop') { for (const x of [-0.65, 0.65]) box(g, 0.24, 1.9, 0.24, 0x7A5234, x, 0.95, 0, o); box(g, 1.7, 0.26, 0.3, 0x6E4A2C, 0, 1.95, 0, o); ball(g, 0.14, 0xFFD27A, 0, 1.7, 0.15, { solid: false, emissive: 0.8 }); }
   else if (k === 'msign') { for (const x of [-0.5, 0.5]) cyl(g, 0.05, 1.2, 0x7A5436, x, 0.6, 0, o); box(g, 1.3, 0.6, 0.08, 0xFFD23C, 0, 1.1, 0, o); for (let i = 0; i < 4; i++) box(g, 0.14, 0.62, 0.09, 0x2A2A2A, -0.45 + i * 0.3, 1.1, 0.01, { solid: false, rz: 0.6 }); }
@@ -18562,11 +18574,36 @@ const hide = { prop: 0, rewarded: '', endSent: '', bar: false, potion: false, sn
 // 🗺️ 1022d: 마을별 숨바꼭질 (state/hide/v) — 시작하면 참가자가 그 마을로 옮겨지고, 그 마을 울타리 안에서 숨어요 · 마을마다 어울리는 물건으로 변신
 const HIDE_VIL = {
   main: { n: '🏫 메인 마을', at: () => [0, -9], in: (x, z) => inTown(x, z), props: [1, 2, 3, 4, 6, 11, 12, 13] }, // 🌳 나무 · 🪑 벤치 · 💡 가로등 · 🪴 화분 · 📦 상자 · 🗑️ 휴지통 · 🥤 자판기 · 🚲 자전거
-  hv: { n: '🏯 역사 마을', at: () => [HV.x0 + 6, 0], in: (x, z) => inHV(x, z), props: [5, 8, 10, 14, 15, 16, 17] }, // 🏮 돌 등불 · 🏺 장독대 · 🐦 솟대 · 🪵 장작 · 🥁 큰북 · 🪨 맷돌 · 🏮 청사초롱
-  ev: { n: '🗽 영어 마을', at: () => [EV.bus[0] + 3, 0], in: (x, z) => inEV(x, z), props: [2, 3, 18, 19, 20, 21, 11] }, // 🪑 벤치 · 💡 가로등 · 📮 우체통 · ☎️ 전화 부스 · 🚒 소화전 · 📰 가판대 · 🗑️ 휴지통
+  hv: { n: '🏯 역사 마을', at: () => [HV.x0 + 6, 0], in: (x, z) => inHV(x, z), props: [5, 8, 10, 14, 15, 16, 17, 36, 37, 38, 39] }, // 🏮 돌 등불 · 🏺 장독대 · 🐦 솟대 · 🪵 장작 · 🥁 큰북 · 🪨 맷돌 · 🏮 청사초롱
+  ev: { n: '🗽 영어 마을', at: () => [EV.bus[0] + 3, 0], in: (x, z) => inEV(x, z), props: [2, 3, 18, 19, 20, 21, 11, 40, 41, 42, 43] }, // 🪑 벤치 · 💡 가로등 · 📮 우체통 · ☎️ 전화 부스 · 🚒 소화전 · 📰 가판대 · 🗑️ 휴지통
   math: { n: '⛏️ 수학 마을', at: () => [MV.station[0] + 4, MV.station[1] + 1], in: (x, z) => inMath(x, z), props: [22, 23, 24, 25, 26, 32, 33, 34, 35] }, // 🛒 광석 수레 · 💎 수정 바위 · 🛢️ 나무 통 · 🔦 광산 등불 · ⛰️ 바위 · ⛏️ 곡괭이 걸이 · 🪵 갱도 버팀목 · 🚧 안내판 · 🪨 광석 더미 (1024a)
   field: { n: '🏡 들판 마을', at: () => [0, 68], in: (x, z) => inField(x, z), props: [1, 9, 7, 27, 28, 29, 30, 31] }, // 🌳 나무 · 🍊 과일나무 · 🧺 바구니 · 🌾 건초 · 🧑‍🌾 허수아비 · 🌻 해바라기 · 🪣 우물 · 🥕 채소 상자
 };
+// 🙈 1024k 역사 마을 · 영어 마을 꾸밈 — 숨바꼭질 변신 물건과 같은 모양을 곳곳에 (숨기 좋게) + 몸을 숨길 수 있는 담·울타리
+const VIL_DECOR = {
+  hv: { at: [HV.x0, HV.x1, HV.z0, HV.z1], ok: (x, z) => inHV(x, z) && Math.abs(x - 520) > 3.8 && Math.abs(z) > 3.8, n: 38 },
+  ev: { at: [EV.x0, EV.x1, EV.z0, EV.z1], ok: (x, z) => inEV(x, z) && Math.abs(z) > 5.2 && Math.abs(z) < 44, n: 40 },
+};
+const vdw = { g: {} };
+function buildVilDecor(k) {
+  const V = VIL_DECOR[k], [x0, x1, z0, z1] = V.at, g = new THREE.Group(); g.name = 'VilDecor_' + k; scene.add(g); vdw.g[k] = g; const o = { solid: false };
+  let sd = k === 'hv' ? 1590 : 1776; const r = () => (sd = (sd * 9301 + 49297) % 233280) / 233280, placed = [];
+  const near = (x, z, rad) => { for (const c of colliders) { const b = c.box; if (x > b.min.x - rad && x < b.max.x + rad && z > b.min.z - rad && z < b.max.z + rad && b.max.y > 0.3) return true; }
+    for (const it of interactables) { const p = it.pos; if (p && p.y > -50 && Math.abs(p.x - x) < 3.4 + rad && Math.abs(p.z - z) < 3.4 + rad) return true; }
+    return placed.some(([px, pz, pr]) => Math.hypot(px - x, pz - z) < pr + rad + 1.0); };
+  const spot = (rad) => { for (let t = 0; t < 300; t++) { const x = x0 + 2 + r() * (x1 - x0 - 4), z = z0 + 2 + r() * (z1 - z0 - 4); if (V.ok(x, z) && V.ok(x + rad, z + rad) && V.ok(x - rad, z - rad) && !near(x, z, rad)) { placed.push([x, z, rad]); return [x, z]; } } return null; };
+  // 담·울타리 (몸을 숨길 수 있어요 · 부딪혀요)
+  for (let i = 0; i < 9; i++) { const p = spot(2.2); if (!p) break; const q = new THREE.Group(); q.position.set(p[0], 0, p[1]); q.rotation.y = r() < 0.5 ? 0 : Math.PI / 2; g.add(q);
+    if (k === 'hv') { if (i % 3 === 2) { cyl(q, 1.0, 1.3, 0xD9B85A, 0, 0.65, 0, { surf: 'straw' }); mesh(CONE, q, 1.05, 0.7, 1.05, 0xC9A64A, 0, 1.6, 0, { solid: false, surf: 'straw' }); } // 짚더미
+      else { box(q, 3.4, 1.25, 0.6, 0x9A9286, 0, 0.62, 0); for (let s2 = -1.4; s2 <= 1.4; s2 += 0.7) mesh(SPH_LO, q, 0.36, 0.28, 0.34, [0x8E8678, 0xA59D90, 0x7E776C][Math.abs(Math.round(s2 * 10)) % 3], s2, 0.95, 0.12, { solid: false, flat: true }); mesh(GABLE, q, 3.7, 0.35, 0.9, 0x4A4A52, 0, 1.25, 0, { solid: false, ry: Math.PI / 2 }); } } // 돌담 (기와 얹음)
+    else { if (i % 3 === 2) { for (const [dx, dy, s2] of [[0, 0, 1], [0.95, 0, 0.9], [0.45, 0.95, 0.85]]) { box(q, s2, s2, s2, 0xC08A54, dx - 0.4, dy + s2 / 2, 0); box(q, s2 + 0.02, 0.12, s2 + 0.02, 0xE8D29A, dx - 0.4, dy + s2 * 0.55, 0, o); } } // 📦 배달 상자 더미
+      else { box(q, 3.2, 1.3, 0.9, C.hedge || 0x3E8A44, 0, 0.65, 0); for (let s2 = -1.2; s2 <= 1.2; s2 += 0.8) ball(q, 0.12, [0xFF7AA8, 0xFFFFFF, 0xFFD23C][Math.abs(Math.round(s2 * 5)) % 3], s2, 1.32, 0.3, o); } } } // 🌳 생울타리 (꽃)
+  // 변신 물건과 같은 모양 (몸은 막지 않아요)
+  const ps = HIDE_VIL[k].props;
+  for (let i = 0; i < V.n; i++) { const p = spot(1.0); if (!p) break; const pm = propModel(ps[i % ps.length]); pm.position.set(p[0], 0, p[1]); pm.rotation.y = r() * Math.PI * 2; g.add(pm); }
+  registerSolids(g, 'static'); batchStatic(g); g.visible = false;
+}
+function updateVilDecor() { const x = player.pos.x, c = joined ? x : camera.position.x; if (vdw.g.hv) vdw.g.hv.visible = c > 400 && c < 640; if (vdw.g.ev) vdw.g.ev.visible = c > 1600 && c < 1900; }
 const hideVil = () => HIDE_VIL[S.hide?.v] || HIDE_VIL.main;
 const hideVilName = (k) => k === 'field' ? `🏡 ${vnameOf()}` : (HIDE_VIL[k] || HIDE_VIL.main).n;
 const hidePick = new Set(); // 🧑‍🏫 술래로 정한 참가자
@@ -23135,7 +23172,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildSand(); buildShopStreet(); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
+buildBeach(); buildSand(); buildShopStreet(); buildVilDecor('hv'); buildVilDecor('ev'); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -23161,7 +23198,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateBuddy(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
