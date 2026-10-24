@@ -1440,6 +1440,10 @@
     <p class="hint">보스를 부르면 우리 반이 함께 체력을 깎아요 (한 사람 하루 3번 · 한 번에 8턴). 물리치면 도전한 학생 모두 🐚 150 + 펫 경험치, 마지막 한 방은 🐚 50 더. 학생 화면에는 많이 깎은 5명만 보여요.</p>
     <div id="tpRaid"></div>
 
+    <h3>🏰 모래성</h3>
+    <p class="hint">바닷가 남쪽 모래사장: 🏰 우리 반 모래성(언제나 함께 쌓기 · 🌊 파도로 지우기) · 🏆 모래성 대회(모둠 터 ①~④ · 정한 시간 동안 쌓고 1분 투표 · 1등 모둠에 많이 쌓은 학생 🐚30, 참여 🐚10)</p>
+    <div id="tpSand"></div>
+
     <h3>🏟️ 펫 체육관 관장 속성</h3>
     <p class="hint">1단계 우리 마을 · 2단계 수학 광산 마을 · 3단계 역사 마을 · 4단계 영어 마을. 속성을 바꾸면 관장 펫이 그 속성으로 바뀌어요.</p>
     <div id="tpPgym"></div>
@@ -2126,7 +2130,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2155,6 +2159,7 @@ function normalize(v) {
     ...(() => { const m = migrateLots(v.plots, v.plotOwner); return { plots: Object.fromEntries(Object.entries(m.plots).map(([n, pl]) => [n, { ...pl, items: pl.items || {} }])), plotOwner: m.owner }; })(),
     plotExtra: v.plotExtra || {},
     math: v.math || {},
+    sand: { c: plainObj(v.sand?.c), p: plainObj(v.sand?.p), ev: v.sand?.ev && typeof v.sand.ev === 'object' && v.sand.ev.r ? { r: String(v.sand.ev.r), t1: +v.sand.ev.t1 || 0, t2: +v.sand.ev.t2 || 0 } : null, v: plainObj(v.sand?.v) }, // 🏰 1024e 모래성
     thx: v.thx || {},
     read: v.read || {}, art: v.art || {}, gym: v.gym || {},
     hide: v.hide ? { ...v.hide, in: v.hide.in || {}, f: v.hide.f || {} } : null,
@@ -2395,6 +2400,9 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async thxPost(t, d) { st.thx ||= {}; st.thx[`me_${Date.now().toString(36)}`] = { t, d, ok: false, at: Date.now() }; emit(); return { ok: true }; },
     async mathOre(id) { st.math ||= {}; st.math[id] = (st.math[id] || 0) + 1; emit(); return { ok: true }; },
     async mathMo(i, c) { ((st.math ||= {}).mo ||= {})[i] = c; emit(); return { ok: true }; },
+    async sandPut(path, ch, h) { st.sand ||= {}; const ks = path.split('/'); let o = st.sand; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); const k = ks[ks.length - 1], cur = o[k] || ''; if (cur.length >= h || (cur && 'efgh'.includes(cur[cur.length - 1]))) return { ok: false, reason: 'full' }; o[k] = cur + ch; emit(); return { ok: true, len: o[k].length }; },
+    async sandPop(path, len) { const ks = path.split('/'); let o = st.sand || {}; for (const k of ks.slice(0, -1)) o = o?.[k]; const k = ks[ks.length - 1], cur = o?.[k] || ''; if (cur.length !== len) return { ok: false }; if (len <= 1) delete o[k]; else o[k] = cur.slice(0, -1); emit(); return { ok: true }; },
+    async sandVote(r, n) { st.sand ||= {}; ((st.sand.v ||= {})[r] ||= {}).me = n; emit(); return { ok: true }; },
     async mathBlock(id) { st.math ||= {}; st.math.blk ||= {}; const t = st.math.blk[id]; if (t && Date.now() - t < BM.respawn) return { ok: false, reason: 'taken' }; st.math.blk[id] = Date.now(); emit(); return { ok: true }; },
     async addMission(m) { st.missions ||= {}; st.missions[m.id] = { ...m, done: {} }; emit(); return { ok: true }; },
     async joinMission(mid) {
@@ -2846,6 +2854,13 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       catch (e) { return { ok: false, reason: 'taken' }; }
     },
     async mathMo(i, c) { try { await D.set(R(`state/math/mo/${i}`), c); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🧩 반 모자이크 한 칸
+    async sandPut(path, ch, h) { // 🏰 모래성 칸에 블록 한 개 (친구와 동시에 쌓아도 차례로)
+      try { let len = 0; const r = await D.runTransaction(R(`state/sand/${path}`), cur => { cur = cur || ''; if (cur.length >= h || (cur && 'efgh'.includes(cur[cur.length - 1]))) return undefined; len = cur.length + 1; return cur + ch; }); return r.committed ? { ok: true, len } : { ok: false, reason: 'full' }; }
+      catch (e) { return { ok: false }; } },
+    async sandPop(path, len) { // ↩️ 방금 쌓은 것 (그 위에 친구가 안 쌓았을 때만)
+      try { const r = await D.runTransaction(R(`state/sand/${path}`), cur => { if (!cur || cur.length !== len) return undefined; return len <= 1 ? null : cur.slice(0, -1); }); return { ok: r.committed }; }
+      catch (e) { return { ok: false }; } },
+    async sandVote(r, n) { try { await D.set(R(`state/sand/v/${r}/${uid}`), n); return { ok: true }; } catch (e) { return { ok: false }; } },
     async mathOre(id) { // ⛏️ 광산: 반 전체 광석 수 +1 (친구와 동시에 캐도 합쳐져요)
       try { const r = await D.runTransaction(R(`state/math/${id}`), cur => (cur || 0) + 1); return { ok: r.committed }; }
       catch (e) { return { ok: false }; }
@@ -3032,7 +3047,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     },
   };
   for (const k of ['chatSend', 'pickCrate', 'build', 'garden', 'placeDeco', 'ringBell', 'placeDecor', 'contribute', 'propose', 'vote', 'resetVote',
-    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'evClear', 'stageAct', 'stageClap', 'rideBuy', 'mathMo', 'attrClaim', 'attrQueue', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'pbOpen', 'pbMatch', 'pbChoose', 'pbDel', 'pgLock', 'pgLockHb', 'pgLockEnd', 'pgQueueSet', 'hideFind', 'hideJam', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
+    'startMission', 'addMission', 'joinMission', 'mathOre', 'mathBlock', 'sandPut', 'sandPop', 'sandVote', 'thxPost', 'ideaPost', 'upVote', 'coinEvent', 'evClear', 'stageAct', 'stageClap', 'rideBuy', 'mathMo', 'attrClaim', 'attrQueue', 'festVote', 'festAdd', 'festFind', 'festLap', 'readLog', 'artPost', 'gymAdd', 'gymJc', 'hideSet', 'hideJoin', 'pbOpen', 'pbMatch', 'pbChoose', 'pbDel', 'pgLock', 'pgLockHb', 'pgLockEnd', 'pgQueueSet', 'hideFind', 'hideJam', 'potSet', 'pestStart', 'pestGot', 'matEarn', 'hvEarn', 'histRight', 'histBuild', 'sgJoin', 'sgRole', 'sgShot', 'sgFx', 'sgHit', 'sgLoot', 'sgFix', 'sgRebuild', 'sgCat', 'sgHurtSet', 'sgDamage', 'sgHpSet', 'sgArmSet', 'sgHeal', 'sgRevive', 'sgSpend', 'sgGain', 'sgLevel', 'sgBuff', 'sgSkillBuff', 'sgKingDown', 'sgPBuffSet', 'sgBar', 'sgBarHit', 'sgInc', 'startActivity', 'joinActivity', 'quizPick', 'paintMural', 'meetVote', 'meetLike', 'ctfTake', 'ctfDrop', 'ctfScore', 'ctfJoin', 'ctfCatch', 'ctfFree', 'fundGive', 'homeSet', 'hvPick', 'hvBuild', 'kiteFinish', 'addThanks', 'rewardVote', 'jumpFinish', 'openArea', 'starFinish', 'memFinish', 'dropFinish', 'patFinish', 'claimPlot', 'claimPlotExtra', 'setHouse', 'plotPlace', 'plotRemove', 'addCoins', 'donate', 'adminUpdate', 'importState']) {
     if (api[k]) api[k] = needOnline(api[k].bind(api));
   }
   return api;
@@ -4421,7 +4436,8 @@ function sendPresence(time) {
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
-  { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } } // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
+  { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
+  { const bd = buddyCode(); if (bd) d.bd = bd; } // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -4827,7 +4843,7 @@ function applyState(st) {
   syncQuiz(prev, first);
   syncHanok(prev, first);
   syncHist(prev, first); syncSiege(prev, first);
-  syncMath(prev, first);
+  syncMath(prev, first); syncSand(prev, first);
   syncThx(prev, first);
   syncHide(prev, first);
   if (S.chatOff && !isTeacher && !$('chatBox').classList.contains('hidden')) chatShow(false);
@@ -5687,7 +5703,7 @@ function fillTeacherPanel() {
   $('tpNote').textContent = backend?.mode === 'firebase'
     ? '학생 화면에는 보이지 않아요. 바꾼 내용은 같은 반 코드로 들어온 모두에게 바로 반영돼요.'
     : '학생 화면에는 보이지 않아요. 지금은 이 브라우저에만 저장돼요 (다른 기기와 공유 안 됨).';
-  fillMissionAdmin(); try { fillHmAdmin(); fillRaidAdmin(); fillEmoAdmin(); } catch (e) { console.warn(e); }
+  fillMissionAdmin(); try { fillHmAdmin(); fillRaidAdmin(); fillEmoAdmin(); fillSandAdmin(); } catch (e) { console.warn(e); }
   tpReward = 'arch'; // 1022b: 미션 보상은 🐚 조개돈 (장소·꾸미기 없음 · arch는 보이지 않는 자리표)
   const t = tally();
   $('tpVote').textContent = !t.total ? '🗳️ 아직 투표가 없어요'
@@ -13723,7 +13739,7 @@ const TP_LAYOUT = {
   class: [/수업 도구/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', []], ['⛏️ 수학 마을', [/수학 광산/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
-  play: [/성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /행사/],
+  play: [/성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
   setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
 function initTpTabs() {
@@ -14819,7 +14835,7 @@ function openHomePet() {
     const care = el2('div', 'row-center wrap'); for (const [ck, C2] of Object.entries(HPET_CARE)) { const left = C2.max - (day[ck] | 0), b = el2('button', 'btn', `${C2.icon} ${C2.n}${C2.sh ? ` 🐚${C2.sh}` : ''} (${left})`); b.disabled = left <= 0; b.style.background = left > 0 ? '#FFF3C4' : '#fff'; b.onclick = () => hpetCare(ck); care.append(b); } box.append(care);
     const row = el2('div', 'row-center wrap');
     if (lv >= 1) { const nb = el2('button', 'btn', '🏷️ 이름 짓기'); nb.style.background = '#fff'; nb.onclick = () => { const inp = el2('input', 'tinput'); inp.maxLength = 6; inp.value = p.n || ''; inp.placeholder = '6글자까지'; const ok = el2('button', 'btn', '저장'); ok.onclick = () => { const v = cleanNick(inp.value).slice(0, 6); if (nickBad(v)) { toast('🙅 고운 이름으로 지어 줘요', 'warn'); return; } p.n = v; saveBag(); hpetSync(); refillLife(); }; nb.replaceWith(inp, ok); inp.focus(); }; row.append(nb); }
-    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; saveBag(); hpetSync(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요! (산책하는 동안 집은 비어요)` : `🏠 ${H.icon} 이제 집 안에서 기다려요 · 밖에서는 따라오지 않아요`, 'info'); refillLife(); }; row.append(wb); }
+    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; if (bag.hpet.walk && bag.pbuddy) { bag.pbuddy = ''; toast('🐾 동료 펫은 펫 센터에서 쉬어요 (한 번에 한 마리만)', 'info'); } saveBag(); hpetSync(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요! (산책하는 동안 집은 비어요)` : `🏠 ${H.icon} 이제 집 안에서 기다려요 · 밖에서는 따라오지 않아요`, 'info'); refillLife(); }; row.append(wb); }
     if (lv >= 5) { const tb = el2('button', 'btn', '🐾 재주 부리기'); tb.style.background = '#fff'; tb.onclick = hpetTrick; row.append(tb); }
     box.append(row);
     { const ac = el2('div', 'row-center wrap'); ac.append(el2('span', 'hint', '꾸미기:')); HPET_ACC.forEach((A, i) => { const b = el2('button', 'btn', `${A.icon} ${A.n}${lv < A.lv ? ` 🔒Lv${A.lv}` : ''}`); b.disabled = lv < A.lv; b.style.background = (p.acc | 0) === i ? '#FFE066' : '#fff'; b.onclick = () => { p.acc = i; saveBag(); hpetSync(); refillLife(); }; ac.append(b); }); box.append(ac); }
@@ -15437,7 +15453,7 @@ function mrQuiz() {
       b.onclick = () => { if (mrail.answered) return; mrail.answered = true; const ok = op === Q.ans; b.style.background = ok ? '#BDE8B0' : '#F6C9C0';
         if (!ok) { btns.find(([o]) => o === Q.ans)?.[1].style.setProperty('background', '#BDE8B0'); fb.textContent = `💡 ${Q.tip}`; }
         playSfx(ok ? 'right' : 'wrong');
-        if (ok) { const r = mqReward(mrail.id, mrail.lv); mrail.sh += r.got; addStat('math', mqStOf(mrail.id, mrail.lv));
+        if (ok) { const r = mqReward(mrail.id, mrail.lv); mrail.sh += r.got; addStat('math', mqStOf(mrail.id, mrail.lv)); { const bid = buddyId(); if (bid) { const u = petGainXp(bid, 3); saveBag(); if (u) toast(`🐾 ${u}`, 'success'); } }
           const vg = mc.veins?.[mrail.id]?.[i]; if (vg) burst(vg.position.clone().setY(vg.position.y + 1.2), [m.color, MC_THEME[mrail.id].acc, 0xFFFFFF], 50, 5, 3);
           const ore = mrail.g?.userData.ore; if (ore) mesh(SPH_LO, ore, 0.24, 0.2, 0.24, m.color, (ore.children.length % 3 - 1) * 0.35, 0.1 + Math.floor(ore.children.length / 3) * 0.18, 0, { solid: false, flat: true, emissive: 0.3 }); }
         setTimeout(() => mrGo(ok), ok ? 700 : 2400); };
@@ -18843,7 +18859,7 @@ function pbAi(B, i, rng) { // 🤖 관장: 가장 센 기술을 주로, 체력�
 const pb = { B: null, mode: '', lead: -1, me: 0, busy: false, mid: '', turnDone: -1, seed: 0, rng: null, waitAt: 0, openAt: 0, foeUid: '' };
 function pbOpenBattle(B, mode, me) {
   closeModals(); pb.B = B; pb.mode = mode; pb.me = me; pb.busy = false; pb.turnDone = -1; pb.waitAt = performance.now(); pb3Start(); document.body.classList.add('in-pb');
-  $('pbPanel').classList.remove('hidden'); $('pbLog').textContent = mode === 'npc' ? `${B.s[1 - me].name}: "${pbLeaders()[pb.lead].line}"` : `⚔️ ${B.s[1 - me].name}와(과) 대전 시작!`;
+  $('pbPanel').classList.remove('hidden'); $('pbLog').textContent = mode === 'npc' ? `${B.s[1 - me].name}: "${pbLeaders()[pb.lead].line}"` : mode === 'wild' ? `❗ ${B.s[1].name}이(가) 나타났어요!` : `⚔️ ${B.s[1 - me].name}와(과) 대전 시작!`;
   pbRender(); playSfx('cheer');
 }
 // ---------- 🎨 펫 그림 (캔버스로 한 번 그려 두고 써요 · 귀여운 큰 눈 · 속성 장식) ----------
@@ -19155,7 +19171,7 @@ function pbRun(ch, seed) { // 계산은 한 번에 · 화면은 처음 값에서
 }
 function pbChoose(i) {
   if (pb.busy || !pb.B || pb.B.over >= 0) return;
-  if (pb.mode === 'npc' || pb.mode === 'raid') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); pbRun([i, ai], seed); return; }
+  if (pb.mode === 'npc' || pb.mode === 'raid' || pb.mode === 'wild') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); pbRun([i, ai], seed); return; }
   if (pb.mode === 'pvp') { pb.busy = true; pbRender(); $('pbLog').textContent = '⏳ 친구가 고르기를 기다려요…'; pb.waitAt = performance.now(); backend.pbChoose(pb.mid, pb.B.turn, i).then(r => { if (!r.ok) { pb.busy = false; pbRender(); toast('⚠️ 기술을 보내지 못했어요', 'warn'); } }); }
 }
 function pbEnd() {
@@ -19168,6 +19184,8 @@ function pbEnd() {
     pgRelease(); const L = pbLeaders()[pb.lead];
     if (won && bag.pbadge === pb.lead) { bag.pbadge = pb.lead + 1; earnShell(L.shell); msg += ` 배지 획득: ${L.badge}! 🐚 +${L.shell}`; burst(player.pos.clone().setY(2), RAINBOW, 60, 5, 3); }
     else if (won) { const g = giveShellCapped(10); if (g) msg += ` 🐚 +${g}`; }
+  } else if (pb.mode === 'wild') { // 🌾 야생 펫 (1024e)
+    if (won) { const g = giveShellCapped(6); if (g) msg += ` 🐚 +${g}`; const id = buddyId(); if (id) { const u = petGainXp(id, 8); if (u) ups.push(u); msg += ` · 🐾 동료 보너스 경험치 +8`; } } else msg = '💨 야생 펫이 도망갔어요! 다음엔 이겨 봐요';
   } else if (pb.mode === 'pvp') {
     if (bag.pvpDay?.d !== dayNum()) bag.pvpDay = { d: dayNum(), n: 0 };
     if (bag.pvpDay.n < 5) { bag.pvpDay.n++; const g = giveShellCapped(won ? 15 : 5); if (g) msg += ` 🐚 +${g}`; }
@@ -19235,7 +19253,7 @@ function openRaid() {
 function raidStart() {
   if (!raidOn() || raidLeft() <= 0 || !petSnap().length || pb.B) return;
   bag.raidN = { d: dayNum(), n: (bag.raidN?.d === dayNum() ? bag.raidN.n | 0 : 0) + 1 }; saveBag();
-  const B = { s: [pbSide(petSnap(), raidName()), raidBossSide()], over: -1, turn: 0, raidHp0: S.raid.hp, raidR: S.raid.r };
+  const B = { s: [pbSide(petSnapB(), raidName()), raidBossSide()], over: -1, turn: 0, raidHp0: S.raid.hp, raidR: S.raid.r };
   pb.seed = (Math.random() * 1e9) | 0; pbOpenBattle(B, 'raid', 0); $('pbLog').textContent = `🐉 ${B.s[1].name}: "우리 반 모두 덤벼라!" · ${RAID_TURNS}턴 동안 최대한 많이 깎아요!`;
 }
 async function raidEnd() { // 🐉 배틀이 끝나면 준 피해를 반 보스 체력에 더해요
@@ -19257,6 +19275,224 @@ function raidSync(prev) { // 보스를 물리치면 도전한 친구 모두 보�
   if (!$('teacherPanel').classList.contains('hidden')) fillRaidAdmin();
 }
 const raidW = { label: null, lk: '', key: '' };
+// ================= 🏰 모래성 (1024e · 바닷가 모래사장) =================
+// ① 🏰 반 모래성: 우리 반이 함께 블록을 쌓아요 (8×8칸 · 4층) · 누가 쌓았는지는 남기지 않아요 · 🌊 파도(선생님)가 오면 새로
+// ② 🏆 모래성 대회: 선생님이 시작하면 모둠 터 4곳(6×6칸 · 3층)에 정해진 시간 동안 쌓고 → 1분 동안 투표 → 1등 모둠 🐚
+// 저장: state/sand/c/{i_j} = 아래부터 블록 글자('aab'…) · state/sand/p/{1~4}/{i_j} · state/sand/ev {r, t1(쌓기 끝), t2(투표 끝)} · state/sand/v/{r}/{uid} = 터 번호
+const SAND = { c: { x: 69, z: -2, n: 8, s: 1.0, h: 4 }, p: [-54, -47.5, -41, -34.5].map(z => ({ x: 70, z, n: 6, s: 0.9, h: 3 })) };
+const SAND_B = [
+  { c: 'a', n: '모래 블록', icon: '🟫' }, { c: 'b', n: '젖은 모래', icon: '🟤' }, { c: 'c', n: '성벽', icon: '🧱' }, { c: 'd', n: '둥근 탑', icon: '🗼' },
+  { c: 'e', n: '뾰족 지붕', icon: '🔺' }, { c: 'f', n: '깃발', icon: '🚩' }, { c: 'g', n: '조개', icon: '🐚' }, { c: 'h', n: '불가사리', icon: '⭐' },
+];
+const SAND_TOP = 'efgh'; // 이 위에는 더 못 쌓아요
+const SAND_STAGE = [0, 10, 25, 45, 70, 100];
+const sandW = { g: {}, key: {}, ui: null, site: null, sel: 'a', last: null, busy: false, cd: 0, stage: -1, evKey: '', voted: '', labels: {} };
+const sandCells = (site) => site === 'c' ? (S.sand?.c || {}) : (S.sand?.p?.[site] || {});
+const sandCfg = (site) => site === 'c' ? SAND.c : SAND.p[(+site) - 1];
+const sandCount = (cells) => Object.values(cells).reduce((a, v) => a + (typeof v === 'string' ? v.length : 0), 0);
+const sandStage = () => { const n = sandCount(sandCells('c')); let k = 0; SAND_STAGE.forEach((t, i) => { if (n >= t) k = i; }); return k; };
+const sandEv = () => { const e = S.sand?.ev; return e && e.r ? e : null; };
+const sandPhase = () => { const e = sandEv(); if (!e || !backend) return ''; const t = backend.now(); return t < e.t1 ? 'build' : t < e.t2 ? 'vote' : 'done'; };
+const inSandSite = (site, x, z, pad = 0) => { const C = sandCfg(site), h = C.n * C.s / 2 + pad; return Math.abs(x - C.x) <= h && Math.abs(z - C.z) <= h; };
+function sandPiece(g, ch, x, y, z, s) { // 블록 한 개
+  const o = { solid: false }, f = { solid: false, flat: true };
+  if (ch === 'a') box(g, s * 0.98, s, s * 0.98, 0xE6CC8E, x, y + s / 2, z, o);
+  else if (ch === 'b') box(g, s * 0.98, s, s * 0.98, 0xC9A86A, x, y + s / 2, z, o);
+  else if (ch === 'c') { box(g, s * 0.98, s * 0.7, s * 0.98, 0xDCC184, x, y + s * 0.35, z, o); for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(g, s * 0.28, s * 0.3, s * 0.28, 0xDCC184, x + dx * s * 0.33, y + s * 0.85, z + dz * s * 0.33, o); }
+  else if (ch === 'd') { cyl(g, s * 0.42, s, 0xE8D29A, x, y + s / 2, z, o); for (let k = 0; k < 6; k++) box(g, s * 0.16, s * 0.22, s * 0.16, 0xE8D29A, x + Math.cos(k * 1.05) * s * 0.36, y + s * 1.08, z + Math.sin(k * 1.05) * s * 0.36, o); }
+  else if (ch === 'e') mesh(CONE, g, s * 0.5, s * 0.9, s * 0.5, 0xD9B070, x, y + s * 0.45, z, o);
+  else if (ch === 'f') { cyl(g, 0.03, s * 1.2, 0x7A5436, x, y + s * 0.6, z, o); box(g, s * 0.45, s * 0.28, 0.03, 0xE2584A, x + s * 0.24, y + s * 1.05, z, o); }
+  else if (ch === 'g') { mesh(SPH_LO, g, s * 0.32, s * 0.16, s * 0.28, 0xFFB4C8, x, y + s * 0.1, z, f); for (let k = -1; k <= 1; k++) box(g, 0.02, s * 0.12, s * 0.3, 0xE88AA8, x + k * s * 0.1, y + s * 0.16, z, { solid: false, ry: k * 0.35 }); }
+  else if (ch === 'h') { for (let k = 0; k < 5; k++) box(g, s * 0.12, s * 0.06, s * 0.38, 0xF08A24, x + Math.sin(k * 1.257) * s * 0.17, y + 0.05, z + Math.cos(k * 1.257) * s * 0.17, { solid: false, ry: k * 1.257 }); ball(g, s * 0.1, 0xF08A24, x, y + 0.06, z, o); }
+}
+function sandDispose(g) { const shared = [BOX, CYL, SPH, SPH_LO, SPH_MID, GABLE, PYR, TAPER, CONE]; g.traverse(m => { if (m.isMesh && !shared.includes(m.geometry)) m.geometry.dispose(); }); }
+function sandRender(site, force) {
+  const cells = sandCells(site), key = JSON.stringify(cells); if (!force && sandW.key[site] === key) return; sandW.key[site] = key;
+  const C = sandCfg(site); if (sandW.g[site]) { scene.remove(sandW.g[site]); sandDispose(sandW.g[site]); }
+  const g = new THREE.Group(); g.name = 'Sand_' + site; scene.add(g); sandW.g[site] = g;
+  for (const [k, v] of Object.entries(cells)) { if (typeof v !== 'string') continue; const [i, j] = k.split('_').map(Number), x = C.x + (i - (C.n - 1) / 2) * C.s, z = C.z + (j - (C.n - 1) / 2) * C.s;
+    for (let y = 0; y < v.length; y++) sandPiece(g, v[y], x, y * C.s, z, C.s); }
+  batchStatic(g);
+}
+function buildSand() {
+  const g = new THREE.Group(); g.name = 'SandSites'; scene.add(g); const o = { solid: false };
+  const pad = (C, col, rope) => { const w = C.n * C.s; box(g, w + 0.6, 0.06, w + 0.6, col, C.x, 0.03, C.z, o); for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) cyl(g, 0.07, 0.8, 0x8A5A34, C.x + dx * (w / 2 + 0.4), 0.4, C.z + dz * (w / 2 + 0.4), o);
+    if (rope) for (const [ww, dd, xx, zz] of [[w + 0.8, 0.03, 0, -(w / 2 + 0.4)], [w + 0.8, 0.03, 0, w / 2 + 0.4], [0.03, w + 0.8, -(w / 2 + 0.4), 0], [0.03, w + 0.8, w / 2 + 0.4, 0]]) box(g, ww, 0.03, dd, 0xC0392B, C.x + xx, 0.65, C.z + zz, o); };
+  pad(SAND.c, 0xEBD7A0, true);
+  { const C = SAND.c, bk = new THREE.Group(); bk.position.set(C.x - 5.4, 0, C.z + 3); g.add(bk); cyl(bk, 0.35, 0.5, 0x4A9AE8, 0, 0.25, 0, o); cyl(bk, 0.37, 0.05, 0x2F6EB8, 0, 0.5, 0, o); box(bk, 0.5, 0.06, 0.12, 0xE2584A, 0.45, 0.1, 0.3, { solid: false, ry: 0.5 }); } // 🪣 양동이 · 삽
+  sandW.labels.c = makeLabel(g, ['🏰 우리 반 모래성'], 1.0, SAND.c.x, 5.6, SAND.c.z);
+  addInteract({ pos: new V3(SAND.c.x - 4.6, 1, SAND.c.z), r: 3.4, text: () => ['🏰 모래성 쌓기', `우리 반 함께 · ${sandCount(sandCells('c'))}개`], run: () => openSandUI('c') });
+  SAND.p.forEach((C, k) => { pad(C, 0xE3CC92, false); const n = k + 1, fl = new THREE.Group(); fl.position.set(C.x - C.n * C.s / 2 - 0.9, 0, C.z); g.add(fl); cyl(fl, 0.05, 2.2, 0x8A5A34, 0, 1.1, 0, o); box(fl, 0.03, 0.5, 0.8, [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C][k], 0, 1.95, 0.42, o);
+    sandW.labels['p' + n] = makeLabel(g, [`${'①②③④'[k]} 모둠 터`], 0.8, C.x, 3.8, C.z);
+    addInteract({ pos: new V3(C.x - C.n * C.s / 2 - 1.2, 1, C.z), r: 3.0, text: () => sandPhase() === 'build' ? [`🏰 ${'①②③④'[k]} 모둠 모래성 쌓기`, `남은 시간 ${sandLeft()}`] : sandPhase() === 'vote' ? ['🗳️ 모래성 투표하기', '마음에 드는 모래성은?'] : null, run: () => sandPhase() === 'vote' ? openSandVote() : openSandUI(String(n)) }); });
+  makeLabel(g, ['🏆 모래성 대회장', '선생님이 대회를 열면 모둠 터에 쌓아요'], 0.9, 64.5, 7.2, -44);
+  batchStatic(g);
+  sandRender('c', true); for (let k = 1; k <= 4; k++) sandRender(String(k), true);
+  const ui = document.createElement('div'); ui.id = 'sandUI'; ui.className = 'sticker hidden';
+  ui.style.cssText = 'position:fixed;right:10px;top:calc(76px + var(--safe-top, 0px));z-index:12;padding:8px 10px;width:min(92vw,330px);max-height:calc(100vh - 170px);overflow:auto;display:flex;flex-direction:column;gap:6px;align-items:center'; // 모래성이 가리지 않게 오른쪽 위
+  document.body.append(ui); sandW.ui = ui;
+}
+const sandLeft = () => { const e = sandEv(); if (!e || !backend) return ''; const ms = Math.max(0, (sandPhase() === 'build' ? e.t1 : e.t2) - backend.now()); return `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`; };
+function openSandUI(site) {
+  if (site !== 'c' && sandPhase() !== 'build') { toast(sandEv() ? '⏰ 쌓는 시간이 끝났어요' : '🏆 모래성 대회는 선생님이 열면 시작해요. 지금은 위쪽 🏰 우리 반 모래성에 쌓아요!', 'info'); return; }
+  closeModals(); sandW.site = site; sandFill();
+}
+function closeSandUI() { sandW.site = null; sandW.ui?.classList.add('hidden'); }
+function sandFill() {
+  const ui = sandW.ui, site = sandW.site; if (!ui || !site) return; const C = sandCfg(site), cells = sandCells(site); ui.classList.remove('hidden'); ui.textContent = '';
+  const top = el2('div', 'row-center', null); top.style.cssText = 'gap:6px;width:100%;justify-content:space-between';
+  top.append(el2('b', '', site === 'c' ? `🏰 우리 반 모래성 · ${sandStage()}단계 · ${sandCount(cells)}개` : `🏰 ${'①②③④'[+site - 1]} 모둠 · ⏰ ${sandLeft()} · ${sandCount(cells)}개`));
+  const x = el2('button', 'btn', '닫기'); x.style.cssText = 'padding:2px 10px;font-size:14px;background:#fff'; x.onclick = closeSandUI; top.append(x); ui.append(top);
+  const pal = el2('div', 'row-center wrap', null); pal.style.gap = '4px';
+  for (const B of SAND_B) { const b = el2('button', 'btn', `${B.icon}`); b.title = B.n; b.setAttribute('aria-label', B.n); b.style.cssText = `font-size:18px;padding:3px 5px;background:${sandW.sel === B.c ? '#FFE066' : '#fff'};border:${sandW.sel === B.c ? '2px solid #E8A800' : ''}`; b.onclick = () => { sandW.sel = B.c; sandFill(); }; pal.append(b); }
+  { const hn = el2('div', 'hint', ''); hn.innerHTML = `<b>${SAND_B.find(b => b.c === sandW.sel).n}</b> · 칸을 누르면 위에 쌓여요 (${C.h}층까지 · 🔺🚩🐚⭐ 위는 ✖) · 🌊 오른쪽이 바다`; ui.append(pal, hn); }
+  const grid = el2('div', ''); const cs = Math.min(34, Math.floor(286 / C.n) - 3); grid.style.cssText = `display:grid;grid-template-columns:repeat(${C.n},${cs}px);gap:3px`;
+  for (let j = 0; j < C.n; j++) for (let i = 0; i < C.n; i++) { const v = cells[`${i}_${j}`] || '', b = el2('button', '', v ? SAND_B.find(x => x.c === v[v.length - 1])?.icon || '' : '');
+    const shade2 = ['#F6EBCB', '#EBD7A0', '#DCC184', '#C9A86A', '#B08E52'][Math.min(4, v.length)];
+    b.style.cssText = `width:${cs}px;height:${cs}px;border-radius:6px;border:1.5px solid #C9A86A;background:${shade2};font-size:${Math.round(cs * 0.5)}px;padding:0;cursor:pointer;position:relative`;
+    if (v.length) { const n = el2('span', '', String(v.length)); n.style.cssText = 'position:absolute;right:2px;bottom:0;font-size:10px;color:#5A4A30;font-weight:800'; b.append(n); }
+    b.setAttribute('aria-label', `${i + 1}열 ${j + 1}행 ${v.length}층`); b.onclick = () => sandPlace(site, i, j); grid.append(b); }
+  ui.append(grid);
+  const row = el2('div', 'row-center', null); row.style.gap = '6px';
+  const un = el2('button', 'btn', '↩️ 방금 쌓은 것 되돌리기'); un.style.cssText = 'font-size:14px;padding:4px 10px;background:#fff'; un.disabled = !sandW.last || sandW.last.site !== site; un.onclick = sandUndo; row.append(un);
+  if (site === 'c') { const d = bag.sandDay?.d === dayNum() ? bag.sandDay.n : 0; row.append(el2('span', 'hint', `오늘 내가 쌓은 블록 ${d} (🐚는 20개까지)`)); }
+  ui.append(row);
+}
+async function sandPlace(site, i, j) {
+  if (sandW.busy || performance.now() < sandW.cd) return; const C = sandCfg(site), k = `${i}_${j}`, cur = sandCells(site)[k] || '', ch = sandW.sel;
+  if (site !== 'c' && sandPhase() !== 'build') { toast('⏰ 쌓는 시간이 끝났어요', 'info'); closeSandUI(); return; }
+  if (site === 'c') { if (bag.sandDay?.d !== dayNum()) bag.sandDay = { d: dayNum(), n: 0 }; if (bag.sandDay.n >= 120) { toast('🏰 오늘은 충분히 쌓았어요! 내일 또 쌓아요', 'info'); return; } }
+  if (cur.length >= C.h) { toast(`🏰 이 칸은 ${C.h}층까지예요`, 'info'); return; }
+  if (cur && SAND_TOP.includes(cur[cur.length - 1])) { toast('🔺🚩🐚⭐ 위에는 더 쌓을 수 없어요', 'info'); return; }
+  sandW.busy = true; sandW.cd = performance.now() + 900;
+  const path = site === 'c' ? `c/${k}` : `p/${site}/${k}`, r = await backend.sandPut(path, ch, C.h); sandW.busy = false;
+  if (!r.ok) { toast(r.reason === 'full' ? '앗, 친구가 먼저 쌓았어요!' : '⚠️ 쌓지 못했어요 (선생님께 규칙 게시를 부탁해요)', 'warn'); return; }
+  sandW.last = { site, path, len: r.len }; playSfx('build');
+  const x = C.x + (i - (C.n - 1) / 2) * C.s, z = C.z + (j - (C.n - 1) / 2) * C.s; burst(new V3(x, r.len * C.s, z), [0xE6CC8E, 0xFFF4D6], 10, 2, 1);
+  if (site === 'c') { bag.sandDay.n++; if (bag.sandDay.n <= 20) giveShellCapped(1); }
+  else { const e = sandEv(); if (e) { if (bag.sandMine?.r !== e.r) bag.sandMine = { r: e.r, p: {} }; bag.sandMine.p[site] = (bag.sandMine.p[site] || 0) + 1; } }
+  saveBag(); sandFill();
+}
+async function sandUndo() {
+  const L = sandW.last; if (!L) return; const r = await backend.sandPop(L.path, L.len); sandW.last = null;
+  if (!r.ok) toast('↩️ 그 위에 친구가 더 쌓아서 되돌릴 수 없어요', 'info'); else { playSfx('pick'); if (L.site !== 'c' && bag.sandMine?.p?.[L.site]) bag.sandMine.p[L.site]--; else if (L.site === 'c' && bag.sandDay?.n) bag.sandDay.n--; saveBag(); }
+  sandFill();
+}
+function openSandVote() {
+  const e = sandEv(); if (!e || sandPhase() !== 'vote') return; const me = backend.uid, my = S.sand?.v?.[e.r]?.[me], mine = sandMyPlot();
+  openLife('🗳️ 모래성 투표', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', `가장 멋진 모래성에 한 표! (내가 가장 많이 쌓은 모둠에는 투표할 수 없어요) · ⏰ ${sandLeft()}`));
+    for (let n = 1; n <= 4; n++) { const b = el2('button', 'btn', `${'①②③④'[n - 1]} 모둠 모래성 · 블록 ${sandCount(sandCells(String(n)))}개${my === n ? ' ✅ 내 표' : ''}${mine === n ? ' (우리 모둠)' : ''}`); b.style.cssText = `width:100%;margin:4px 0;background:${my === n ? '#FFE066' : '#fff'}`;
+      b.disabled = !!my || mine === n || !sandCount(sandCells(String(n))); b.onclick = async () => { const r = await backend.sandVote(e.r, n); if (r.ok) { toast('🗳️ 투표했어요! 결과를 기다려요', 'success'); playSfx('pick'); } else toast('⚠️ 투표하지 못했어요', 'warn'); setTimeout(openSandVote, 300); }; box.append(b); }
+  });
+}
+function sandMyPlot() { const e = sandEv(); if (!e || bag.sandMine?.r !== e.r) return 0; let best = 0, bn = 0; for (const [k, n] of Object.entries(bag.sandMine.p || {})) if (n > bn) { bn = n; best = +k; } return best; }
+function sandResult() { const e = sandEv(); if (!e) return null; const votes = Object.values(S.sand?.v?.[e.r] || {}), cnt = [0, 0, 0, 0, 0]; for (const v of votes) if (v >= 1 && v <= 4) cnt[v]++; const mx = Math.max(...cnt.slice(1)); return { cnt, win: mx > 0 ? [1, 2, 3, 4].filter(n => cnt[n] === mx) : [] }; }
+function syncSand(prev, first) {
+  if (!sandW.ui) return;
+  sandRender('c'); for (let k = 1; k <= 4; k++) sandRender(String(k));
+  const st = sandStage(); if (!first && sandW.stage >= 0 && st > sandW.stage) { if (inBeach(player.pos.x, player.pos.z)) showBanner(`🏰 우리 반 모래성 ${st}단계!`, `함께 쌓은 블록 ${sandCount(sandCells('c'))}개`, 4000); else toast(`🏰 바닷가 우리 반 모래성이 ${st}단계가 됐어요!`, 'success'); }
+  if (!first && sandCount(sandCells('c')) === 0 && sandCount(prev?.sand?.c || {}) > 0) { if (inBeach(player.pos.x, player.pos.z)) { showBanner('🌊 파도가 모래성을 쓸어 갔어요', '새 모래성을 함께 쌓아요!', 4000); burst(new V3(SAND.c.x, 1, SAND.c.z), [0x9AD8FF, 0xFFFFFF, 0x4A9AE8], 80, 6, 3); } }
+  sandW.stage = st;
+  const e = sandEv(), ek = e ? e.r : ''; if (!first && ek && ek !== sandW.evKey) showBanner('🏆 모래성 대회 시작!', '바닷가 남쪽 모둠 터(①~④)에서 함께 쌓아요 · 끝나면 투표!', 6000); sandW.evKey = ek;
+  if (sandW.site) sandFill();
+  if (!$('teacherPanel').classList.contains('hidden')) fillSandAdmin();
+}
+function updateSand(dt) {
+  if (!sandW.ui) return; sandW.t = (sandW.t || 0) - dt; if (sandW.t > 0) return; sandW.t = 1;
+  if (sandW.site && !inSandSite(sandW.site, player.pos.x, player.pos.z, 7)) closeSandUI(); // 멀어지면 닫아요
+  if (sandW.site && sandW.site !== 'c' && sandPhase() !== 'build') closeSandUI();
+  if (sandW.site) { const b = sandW.ui.querySelector('b'); if (b && sandW.site !== 'c') b.textContent = `🏰 ${'①②③④'[+sandW.site - 1]} 모둠 · ⏰ ${sandLeft()} · ${sandCount(sandCells(sandW.site))}개`; }
+  sandW.labels.c?.userData.set([`🏰 우리 반 모래성 ${sandStage()}단계`, `블록 ${sandCount(sandCells('c'))}개 · E로 함께 쌓기`]);
+  const ph = sandPhase(), e = sandEv(), res = ph === 'done' ? sandResult() : null;
+  for (let n = 1; n <= 4; n++) sandW.labels['p' + n]?.userData.set(ph === 'build' ? [`${'①②③④'[n - 1]} 모둠 · ⏰ ${sandLeft()}`] : ph === 'vote' ? [`${'①②③④'[n - 1]} 모둠 · 🗳️ 투표 중 ${sandLeft()}`] : res ? [`${'①②③④'[n - 1]} 모둠 ${res.win.includes(n) ? '🏆 1등!' : ''} · 🗳️ ${res.cnt[n]}표`] : [`${'①②③④'[n - 1]} 모둠 터`]);
+  if (ph === 'vote' && e && sandW.voted !== e.r && inBeach(player.pos.x, player.pos.z) && !S.sand?.v?.[e.r]?.[backend.uid] && $('lifePanel').classList.contains('hidden')) { sandW.voted = e.r; openSandVote(); }
+  if (ph === 'done' && e && bag.sandRw !== e.r && res) { bag.sandRw = e.r; const mine = sandMyPlot(), myN = mine ? bag.sandMine.p[mine] : 0; let sh = 0;
+    if (mine && res.win.includes(mine) && myN >= 3) sh = giveShellCapped(30); else if (myN >= 3) sh = giveShellCapped(10); saveBag();
+    if (inBeach(player.pos.x, player.pos.z) || myN) showBanner(res.win.length ? `🏆 모래성 대회 1등: ${res.win.map(n => '①②③④'[n - 1]).join(' · ')} 모둠!` : '🏆 모래성 대회 끝!', `${[1, 2, 3, 4].map(n => `${'①②③④'[n - 1]} ${res.cnt[n]}표`).join(' · ')}${sh ? ` · 🐚 +${sh}` : ''}`, 7000); }
+}
+function fillSandAdmin() {
+  const box = $('tpSand'); if (!box || !isTeacher) return; const e = sandEv(), ph = sandPhase(), key = JSON.stringify([e, ph, sandCount(sandCells('c'))]); if (box.dataset.key === key) return; box.dataset.key = key; box.textContent = '';
+  box.append(el2('p', 'hint', `🏰 우리 반 모래성: ${sandStage()}단계 · 블록 ${sandCount(sandCells('c'))}개 · 🏆 대회: ${!e ? '열리지 않음' : ph === 'build' ? `쌓는 중 (${sandLeft()} 남음)` : ph === 'vote' ? `투표 중 (${sandLeft()} 남음)` : '결과 발표'}`));
+  const row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
+  const sel = el2('select', 'tinput', null); sel.style.width = 'auto'; for (const m of [3, 5, 7, 10]) { const op = document.createElement('option'); op.value = m; op.textContent = `${m}분 쌓기`; if (m === 5) op.selected = true; sel.append(op); }
+  const go = el2('button', 'btn', '🏆 대회 시작 (모둠 터 비우고)'); go.style.background = 'var(--leaf)'; go.style.color = '#fff';
+  go.onclick = () => { const t = backend.now(), t1 = t + (+sel.value) * 60000; adminDo({ 'sand/p': null, 'sand/v': null, 'sand/ev': { r: 's' + Math.floor(t / 1000).toString(36), t1, t2: t1 + 60000 } }, `🏆 모래성 대회 시작! ${sel.value}분 동안 쌓고 1분 투표`); };
+  const end = el2('button', 'btn', '🏁 대회 끝내기'); end.style.background = '#fff'; end.disabled = !e; end.onclick = () => adminDo({ 'sand/ev': null, 'sand/p': null, 'sand/v': null }, '🏁 모래성 대회를 정리했어요');
+  const wave = el2('button', 'btn danger', '🌊 파도 보내기 (반 모래성 지우기)'); wave.onclick = async () => { if (await confirmAction({ title: '🌊 파도를 보낼까요?', body: '우리 반 모래성이 모두 사라져요.', okText: '파도 보내기' })) adminDo({ 'sand/c': null }, '🌊 파도가 모래성을 쓸어 갔어요'); };
+  row.append(sel, go, end, wave); box.append(row);
+}
+
+// ================= 🐾 동료 펫 (1024e · 체육관 배틀 펫 데리고 다니기) =================
+// 펫 센터에서 팀 펫 한 마리를 「동료」로 정하면 내 옆을 둥실둥실 따라다녀요 (친구 화면에도 · players/{uid}/bd = '종류:Lv')
+// · 집 펫 산책과는 한 번에 하나만 · 🚴 레일바이크 뒷자리에 같이 타고 정답마다 경험치 · 🌾 들판을 걸으면 가끔 야생 펫이 도전해요 · 🐉 레이드는 동료가 먼저 나가요
+bag.pbuddy ||= '';
+const buddyId = () => (bag.pbuddy && bag.pets[bag.pbuddy] && PET[bag.pbuddy]) ? bag.pbuddy : '';
+const buddyCode = () => { const id = buddyId(); return id && joined ? `${id}:${bag.pets[id].lv}` : ''; };
+const bdw = { follow: new Map(), tex: {}, wild: null, walk: 0, lastP: null, t: 0 };
+function buddySet(id) {
+  if (bag.pbuddy === id) { bag.pbuddy = ''; saveBag(); toast('🐾 동료 펫이 펫 센터에서 쉬어요', 'info'); return; }
+  bag.pbuddy = id; let extra = '';
+  if (bag.hpet?.walk && hpCur()) { bag.hpet.walk = false; hpetSync?.(); extra = ' (집 펫은 집에서 기다려요 · 한 번에 한 마리만)'; }
+  saveBag(); playSfx('fanfare'); toast(`🐾 ${CRITTER[id].icon} ${CRITTER[id].name}이(가) 같이 다녀요!${extra}`, 'success');
+}
+function buddyTex(id) { if (!bdw.tex[id]) { const t = new THREE.TextureLoader().load(petArt(id)); t.colorSpace = THREE.SRGBColorSpace; bdw.tex[id] = t; } return bdw.tex[id]; }
+function buddyModel(id, lv) {
+  const g = new THREE.Group(), o = { solid: false }, col = new THREE.Color(PT[petType(id)].c).getHex();
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: buddyTex(id), transparent: true, depthWrite: false })); sp.scale.set(1.45, 1.45, 1); sp.position.y = 0.95; g.add(sp); g.userData.sp = sp;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 6, 24), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85 })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.06; g.add(ring); g.userData.ring = ring;
+  const sh = new THREE.Mesh(new THREE.CircleGeometry(0.38, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.04; g.add(sh);
+  makeLabel(g, [`${PT[petType(id)].i} ${CRITTER[id].name} Lv${lv}`], 0.55, 0, 1.95, 0);
+  return g;
+}
+function updateBuddy(dt) {
+  const want = new Map(), me = buddyCode();
+  if (me && !homeRegion()) want.set('me', [player.avatar?.g, me, true]);
+  for (const [u, r] of remotes) { const c = r.target?.bd; if (typeof c === 'string' && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, c, false]); }
+  for (const [u, f] of bdw.follow) { const w = want.get(u); if (!w || w[1] !== f.code) { scene.remove(f.g); bdw.follow.delete(u); } }
+  for (const [u, [ag, code, mine]] of want) {
+    if (!ag) continue; const [id, lv] = code.split(':'); if (!PET[id]) continue; let f = bdw.follow.get(u);
+    if (!f) { f = { g: buddyModel(id, +lv || 5), code, t: Math.random() * 6 }; f.g.position.copy(ag.position); scene.add(f.g); bdw.follow.set(u, f); }
+    f.t += dt; const sp = f.g.userData.sp;
+    if (mine && mrail.on && mrail.g) { // 🚴 레일바이크 뒷자리
+      mrail.g.updateMatrixWorld(true); const p = mrail.g.localToWorld(new V3(0, 0.75, -0.95)); f.g.position.copy(p); sp.position.y = 0.55 + Math.sin(f.t * 6) * 0.04; f.g.userData.ring.visible = false; continue; }
+    f.g.userData.ring.visible = true;
+    const back = new V3(Math.sin(ag.rotation.y - 2.3) * 1.5, 0, Math.cos(ag.rotation.y - 2.3) * 1.5).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
+    if (dd > 14) f.g.position.copy(back); const mv = dd > 0.35; if (mv) { const s = Math.min(dd * 3, 10); f.g.position.x += dx / dd * s * dt; f.g.position.z += dz / dd * s * dt; }
+    f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8);
+    sp.position.y = 0.95 + Math.sin(f.t * (mv ? 7 : 2.5)) * (mv ? 0.12 : 0.07); f.g.userData.ring.rotation.z += dt * 1.2;
+  }
+  buddyWild(dt);
+}
+// 🌾 야생 펫 도전: 동료와 들판을 걸으면 가끔 나타나요 (하루 6번까지 · 45초 뒤 사라져요)
+function buddyWild(dt) {
+  const id = buddyId(), p = player.pos, W = bdw.wild;
+  if (W) { W.left -= dt; W.g.userData.sp.position.y = 0.95 + Math.sin((W.left) * 4) * 0.12; W.g.rotation.y += dt;
+    if (W.left <= 0 || !inField(p.x, p.z) || !id) { scene.remove(W.g); W.act.pos.set(0, -99, 0); bdw.wild = null; } return; }
+  if (!id || !joined || pb.B || !inField(p.x, p.z) || isFrozen()) { bdw.lastP = null; return; }
+  if (bdw.lastP) bdw.walk += Math.hypot(p.x - bdw.lastP[0], p.z - bdw.lastP[1]); bdw.lastP = [p.x, p.z];
+  if (bdw.walk < 45) return; bdw.walk = 0;
+  if (bag.wildDay?.d !== dayNum()) bag.wildDay = { d: dayNum(), n: 0 }; if (bag.wildDay.n >= 6 || Math.random() > 0.45) return;
+  const pool = PET_IDS.filter(x => !isRare(x) && x !== id), wid = pool[Math.floor(Math.random() * pool.length)], lv = Math.max(3, Math.min(PB_MAXLV, bag.pets[id].lv + Math.floor(Math.random() * 3) - 1));
+  const a = player.heading + (Math.random() - 0.5) * 1.2, x = p.x + Math.sin(a) * 5, z = p.z + Math.cos(a) * 5; if (!inField(x, z)) return;
+  const g = buddyModel(wid, lv); g.position.set(x, 0, z); scene.add(g); makeLabel(g, ['❗ 야생 펫'], 0.6, 0, 2.5, 0); burst(new V3(x, 1, z), [0xFFFFFF, 0x9AE6A0], 30, 3, 2); playSfx('pick');
+  bdw.wildAct ||= addInteract({ pos: new V3(0, -99, 0), r: 2.8, text: () => bdw.wild ? ['⚔️ 야생 펫과 배틀', `${CRITTER[bdw.wild.id].name} Lv${bdw.wild.lv}`] : null, run: wildBattle });
+  bdw.wildAct.pos.set(x, 1, z); bdw.wild = { g, id: wid, lv, left: 45, act: bdw.wildAct };
+  toast(`❗ 야생 ${PT[petType(wid)].i} ${CRITTER[wid].name} Lv${lv}이(가) 나타났어요! 가까이 가서 E로 배틀 (동료 ${CRITTER[id].name}이(가) 먼저 나가요)`, 'info');
+}
+function petSnapB() { // 동료 펫이 맨 앞으로
+  const id = buddyId(), s = petSnap(); if (!id) return s; const b = { i: id, l: bag.pets[id].lv, m: bag.pets[id].mv.slice(0, 4) };
+  return [b, ...s.filter(x => x.i !== id)].slice(0, PB_TEAM);
+}
+function wildBattle() {
+  const W = bdw.wild; if (!W || pb.B) return; const team = petSnapB(); if (!team.length) return;
+  if (bag.wildDay?.d !== dayNum()) bag.wildDay = { d: dayNum(), n: 0 }; bag.wildDay.n++; saveBag();
+  const t = petType(W.id), mv = ['tackle', ...PTYPE_MV[t].slice(0, W.lv >= 10 ? 2 : 1)];
+  const B = { s: [pbSide(team, cleanNick(myNick) || '나'), pbSide([{ i: W.id, l: W.lv, m: mv }], `야생 ${CRITTER[W.id].name}`)], over: -1, turn: 0 };
+  scene.remove(W.g); W.act.pos.set(0, -99, 0); bdw.wild = null;
+  pb.seed = (Math.random() * 1e9) | 0; pbOpenBattle(B, 'wild', 0); $('pbLog').textContent = `❗ 야생 ${CRITTER[W.id].name}이(가) 덤벼들어요!`;
+}
+
 function fillRaidAdmin() {
   const box = $('tpRaid'); if (!box || !isTeacher) return; const R0 = S.raid, key = JSON.stringify(R0); if (box.dataset.key === key) return; box.dataset.key = key; box.textContent = '';
   if (R0?.r) {
@@ -19310,14 +19546,15 @@ function openPetCenter(tab = 'team') {
     box.append(tabs);
     if (tab === 'team') {
       const have = petHave();
-      box.append(el2('p', 'hint', `팀은 ${PB_TEAM}마리까지 (위에서부터 차례로 나가요). 배틀에서 이기면 경험치가 많이 쌓여요. 🏅 내 배지 ${bag.pbadge}/${PG_N}`));
+      box.append(el2('p', 'hint', `팀은 ${PB_TEAM}마리까지 (위에서부터 차례로 나가요). 배틀에서 이기면 경험치가 많이 쌓여요. 🏅 내 배지 ${bag.pbadge}/${PG_N} · 🐾 데리고 다니기: 한 마리가 옆에서 따라다녀요 (🚴 레일바이크 뒷자리 · 🌾 들판 야생 펫 도전 · 🐉 레이드 첫 번째)`));
       if (!have.length) box.append(el2('p', 'vempty', '아직 펫이 없어요. ➕ 펫 데려오기에서 잡은 생물을 펫으로 데려와요!'));
       const order = [...bag.pteam.filter(id => bag.pets[id]), ...have.filter(id => !bag.pteam.includes(id))];
       for (const id of order) petRow(box, id, (r) => {
         const inT = bag.pteam.includes(id), b = el2('button', 'btn', inT ? `⭐ 팀 ${bag.pteam.indexOf(id) + 1}번` : '팀에 넣기'); if (inT) b.style.background = '#FFE066';
         b.onclick = () => { if (inT) bag.pteam = bag.pteam.filter(x => x !== id); else if (bag.pteam.length < PB_TEAM) bag.pteam.push(id); else return toast(`팀은 ${PB_TEAM}마리까지예요. 먼저 한 마리를 빼요`, 'warn'); saveBag(); refillLife(); };
         const up = el2('button', 'btn', '⬆️'); up.title = '앞으로'; up.disabled = !inT || bag.pteam.indexOf(id) === 0; up.onclick = () => { const i = bag.pteam.indexOf(id); [bag.pteam[i - 1], bag.pteam[i]] = [bag.pteam[i], bag.pteam[i - 1]]; saveBag(); refillLife(); };
-        r.append(up, b);
+        const bb = el2('button', 'btn', bag.pbuddy === id ? '🐾 함께 다니는 중' : '🐾 데리고 다니기'); bb.style.background = bag.pbuddy === id ? '#CDEFC2' : '#fff'; bb.onclick = () => { buddySet(id); refillLife(); }; // 1024e 동료 펫
+        r.append(up, b, bb);
       });
     } else if (tab === 'adopt') {
       box.append(el2('p', 'hint', isTeacher ? '🧑‍🏫 선생님은 모든 펫을 바로 데려올 수 있어요.' : '가방에 있는 생물 1마리를 펫으로 데려와요 (한 종류에 한 마리). 곤충 채집·낚시·역사 마을에서 잡아요.'));
@@ -22863,7 +23100,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
+buildBeach(); buildSand(); buildShopStreet(); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -22889,7 +23126,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateBuddy(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
