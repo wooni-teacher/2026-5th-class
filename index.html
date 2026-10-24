@@ -7278,7 +7278,7 @@ function canStand(x, z) {
   if (boardW.on) return true; // 👫 친구 배에 탔어요 (자리는 선장 배가 정해요)
   if (sea.on || sail.on) return inWater(x, z); // 🚤⛵ 배를 타면 바다 위만 (섬·모래사장에는 못 올라가요)
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
-  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
+  if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inMineCave(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
   if (x >= FOREST.cx0 && x <= FOREST.cx1 && z >= FOREST.cz0 && z <= FOREST.cz1) return true;
   return x >= FOREST.x0 && x <= FOREST.x1 && z >= FOREST.z0 && z <= FOREST.z1;
@@ -8814,9 +8814,10 @@ function buildEnv() {
   env.fall.visible = false; scene.add(env.fall);
 }
 function applyEnv(force = false) {
-  const season = seasonNow(), night = isNight(), key = season + night;
+  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', key = season + night + mk; // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
   if (!force && key === env.key) return;
-  const first = !env.key; env.key = key;
+  const first = !env.key, snChanged = env.sn !== season + night; env.key = key; env.sn = season + night;
+  scene.fog.near = 90; scene.fog.far = 240;
   const sky = pretty.sky?.material.uniforms;
   if (sky) { sky.top.value.setHex(night ? 0x0B1640 : 0x5FB3F0); sky.bottom.value.setHex(night ? 0x2B3F73 : season === 'wi' ? 0xF2F6FA : 0xEAF7FF); }
   scene.background.setHex(night ? 0x1A2650 : 0xEAF7FF);
@@ -8837,7 +8838,8 @@ function applyEnv(force = false) {
   env.fall.visible = season !== 'su';
   env.fall.material.color.setHex(season === 'sp' ? 0xFFC2D6 : season === 'au' ? 0xE8913A : 0xFFFFFF);
   env.fall.material.size = season === 'wi' ? 0.22 : 0.32;
-  if (!first && joined) toast(`${SEASONS[season]} · ${night ? '🌙 밤' : '☀️ 낮'} 마을이에요`, 'info');
+  if (!first && joined && snChanged) toast(`${SEASONS[season]} · ${night ? '🌙 밤' : '☀️ 낮'} 마을이에요`, 'info');
+  if (mk) mcEnv(mk);
 }
 function updateEnv(dt) {
   env.t -= dt; if (env.t <= 0) { env.t = 5; applyEnv(); } // 5초마다 시각 확인
@@ -11705,7 +11707,7 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ['🛤️', MR.plat[0], MR.plat[1]], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
+const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ...MINES.map(m => ['📘', m.x, MS.hz]), ['🧮', MS.cw[0], MS.cw[1]], ['🏟️', MS.gym[0], MS.gym[1]], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ['🌀', HV.x0 + 11, -8.5], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['🌀', PORTAL.x, PORTAL.z], ['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
@@ -11758,7 +11760,7 @@ function drawMathMapBase() { // 수학 광산 마을 지도
   c.fillStyle = '#E8D7B0'; c.beginPath(); c.arc(mapX(MV.cx), mapZ(4), 9 * s, 0, Math.PI * 2); c.fill();
   for (const m of MINES) { rect(m.x - 2.2, MV.z0 - 1, m.x + 2.2, MV.z0 + 0.5, '#1E1915'); rect(m.x - 0.7, MV.z0, m.x + 0.7, MV.z0 + 9, '#9A8A70'); }
   rect(MV.station[0] - 3, -3, MV.station[0] + 1, 3, '#A8A294');
-  c.strokeStyle = '#6E4A2C'; c.lineWidth = 2; c.beginPath(); for (let k = 0; k <= 80; k++) { const P = mrAt(k / 80 * MR_L); k ? c.lineTo(mapX(P.x), mapZ(P.z)) : c.moveTo(mapX(P.x), mapZ(P.z)); } c.stroke(); // 🛤️ 광산 레일
+  for (const m of MINES) { rect(m.x - 1.2, MV.z0 + 9, m.x + 1.2, 17.5, '#E3CFA4'); rect(m.x - 4, MS.hz - 3, m.x + 4, MS.hz + 3, '#' + new THREE.Color(m.color).getHexString()); } rect(MS.cw[0] - 5, MS.cw[1] - 3.5, MS.cw[0] + 5, MS.cw[1] + 3.5, '#2F8F83'); rect(MS.gym[0] - 5, MS.gym[1] - 3.7, MS.gym[0] + 5, MS.gym[1] + 3.7, '#E2584A'); // 📘 학당 · 🧮 공방 · 🏟️ 체육관
   for (const [x, z] of [[1140, 28], [1175, 34], [1205, 30]]) rect(x - 2.5, z - 2, x + 2.5, z + 2, '#7A4A2A');
   mapUI.key = mapKey();
 }
@@ -14900,7 +14902,7 @@ function initHomeUI() {
    51. ⛏️ 수학 광산 마을 — 우리 마을 서쪽 광차 정류장에서 광차를 타고 가요 (월드 x 1105~1275)
    · 1024a: 광산 6곳 = 5-2 1~6단원 (1 수의 범위와 어림하기 · 2 분수의 곱셈 · 3 합동과 대칭 · 4 소수의 곱셈 · 5 직육면체 · 6 평균과 가능성)
      단계 5개(기본·실력(하)·실력(중)·심화(하)·심화(중))를 골라 풀어요 → MQ_LV · 문제 만들기 MQ_GEN · 오늘 열린 광산 state/math/open
-     ⛰️ 블록 산은 없애고, 마을을 크게 도는 🛤️ 광산 레일(buildMineRail)을 놓았어요 · 예전 숫자 카드 식 만들기 창(openMineOld)은 코드만 남겨 뒀어요
+     ⛰️ 블록 산은 없앴어요 · 1024b: 광산 입구 → 광산마다 다른 동굴 맵(buildMineCave) + 🚴 레일바이크 · 남쪽 📘 학당 · 🧮 혼합 계산 공방(예전 카드 식 만들기 openMineOld · CALC)
    · 내 광석은 이 기기 가방에(bag.ore), 반 전체가 캔 수는 state/math/{m1~m6} (누가 캤는지는 없어요)
    · 광산마다 광석 10개마다 한 단계씩 자라요 (5단계까지). 💎 교환소에서 광석을 조개돈으로 바꿔요 (가게 예산 안에서)
    · 문제·카드는 MINES에서 바꿀 수 있어요
@@ -15215,8 +15217,11 @@ function mqReward(id, lv) { // 한 번에 맞힌 문제 → 🐚 · 반 광석 +
 }
 function mqConcept(m) { const d = el2('details', 'sticker'); d.style.cssText = 'padding:8px 10px;margin:6px 0;text-align:left;font-size:14.5px;line-height:1.55'; const s = el2('summary', '', `📘 ${m.u}단원 알짜 개념 (눌러서 보기)`); s.style.cssText = 'cursor:pointer;font-weight:800'; d.append(s); const body = el2('div', ''); body.innerHTML = m.concept.map(t => `· ${t}`).join('<br>'); d.append(body); return d; }
 function mqStampRow() { const R = mqRec(); return MINES.map(m => `${(R.wc[m.id] || 0) >= 3 ? '✅' : '⬜'}${m.icon}`).join(' '); }
-function openMine(id) { // 광산 입구 → 단계 고르기
-  const m = MINE[id]; if (!m) return; if (!mv.mqGuide) { mv.mqGuide = true; }
+function openMine(id) { // 🚪 1024b: 마을의 광산 입구 → 열린 광산이면 동굴 안으로, 닫혔으면 개념만
+  if (!MINE[id]) return; if (mineOpen(id)) mineEnter(id); else openMineHub(id);
+}
+function openMineHub(id) { // 📜 광부의 수첩: 개념 · 단계 골라 한 문제씩
+  const m = MINE[id]; if (!m) return;
   openLife(`${m.icon} ${m.u}단원 광산 · ${m.uname}`, (box) => {
     box.textContent = ''; const R = mqRec(), open = mineOpen(id), today = mineOpenIds().includes(id);
     box.append(el2('p', open ? 'up-win' : 'hint', today ? '⛏️ 오늘 열린 광산이에요! 단계를 골라 문제를 풀어요' : open ? '🧑‍🏫 선생님은 닫힌 광산에도 들어갈 수 있어요' : `🚧 오늘은 닫혀 있어요 · 오늘 열린 광산: ${mineOpenText()}`));
@@ -15231,11 +15236,12 @@ function openMine(id) { // 광산 입구 → 단계 고르기
       + (mqLow(id) ? '<br>💤 내가 가장 덜 캔 단원이에요 → 🐚 ×1.5' : '')
       + `<br>🗓️ 이번 주 광산 도장 (단원마다 3문제): ${mqStampRow()}<br>🎁 도장 2개 🐚 +15 · 4개 🐚 +30 · 6개 🐚 +50 → 여러 단원을 골고루 풀어요!`;
     box.append(info);
-    box.append(el2('p', 'hint', `🛤️ 마을 서쪽 아래 「광산 레일」을 타면 마을을 한 바퀴 돌며 광맥 5곳에서 문제를 풀 수 있어요 · 반 전체 ${m.icon} ${mineCount(id)}개`));
+    box.append(el2('p', 'hint', `🚴 광산 안 승강장에서 레일바이크를 타면 동굴을 달리며 광맥 5곳에서 문제를 풀어요 · 📘 개념은 남쪽 ${m.u}단원 학당에서 · 반 전체 ${m.icon} ${mineCount(id)}개`));
+    if (open && mineHere() !== id) { const b = el2('button', 'btn', '⛏️ 광산 안으로 들어가기'); b.style.background = '#FFE066'; b.onclick = () => mineEnter(id); const r = el2('div', 'row-center', null); r.append(b); box.append(r); }
   });
 }
 function mqAsk(id, lv, streak) {
-  const m = MINE[id], L = MQ_LV[lv]; if (!mineOpen(id)) return openMine(id);
+  const m = MINE[id], L = MQ_LV[lv]; if (!mineOpen(id)) return openMineHub(id);
   const Q = mqMake(id, lv), sh = mqShOf(id, lv); Q.st = mqStOf(id, lv); let first = true;
   const title = `${m.icon} ${m.u}단원 · ${L.icon} ${L.n}`;
   mathQuiz(title, Q, () => {
@@ -15245,78 +15251,184 @@ function mqAsk(id, lv, streak) {
   }, (box) => {
     const row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
     row.append(el2('span', 'hint', `🐚 ${sh} · 🧮 +${Q.st} · 연속 정답 ${streak}`));
-    const b = el2('button', 'btn', '⬅️ 단계 바꾸기'); b.style.cssText = 'background:#fff;font-size:14px;padding:4px 10px'; b.onclick = () => openMine(id); row.append(b);
+    const b = el2('button', 'btn', '⬅️ 단계 바꾸기'); b.style.cssText = 'background:#fff;font-size:14px;padding:4px 10px'; b.onclick = () => openMineHub(id); row.append(b);
     box.append(row);
   }, () => { if (first) { first = false; Q.st = 0; } });
 }
 
-// ---------- 🛤️ 광산 레일 (1024a): 마을을 크게 한 바퀴 도는 높은 레일 · 광맥 5곳에서 멈춰 문제 ----------
-const MR = { x0: 1117, x1: 1268, z0: -16, z1: 38, r: 7, H: 5.2, ramp: 16, spd: 7.5, stops: [0.17, 0.34, 0.5, 0.66, 0.83], plat: [1112.6, 31] };
-const MR_SEG = (() => { const { x0, x1, z0, z1, r } = MR, P = Math.PI; return [
-  { L: z1 - z0 - 2 * r, x: x0, z: z1 - r, dx: 0, dz: -1 }, { L: P * r / 2, cx: x0 + r, cz: z0 + r, t0: P },
-  { L: x1 - x0 - 2 * r, x: x0 + r, z: z0, dx: 1, dz: 0 }, { L: P * r / 2, cx: x1 - r, cz: z0 + r, t0: 1.5 * P },
-  { L: z1 - z0 - 2 * r, x: x1, z: z0 + r, dx: 0, dz: 1 }, { L: P * r / 2, cx: x1 - r, cz: z1 - r, t0: 0 },
-  { L: x1 - x0 - 2 * r, x: x1 - r, z: z1, dx: -1, dz: 0 }, { L: P * r / 2, cx: x0 + r, cz: z1 - r, t0: 0.5 * P }]; })();
-const MR_L = MR_SEG.reduce((a, g) => a + g.L, 0);
-function mrAt(s) { s = Math.max(0, Math.min(MR_L - 1e-6, s)); for (const g of MR_SEG) { if (s <= g.L) { if (g.dx != null) return { x: g.x + g.dx * s, z: g.z + g.dz * s, tx: g.dx, tz: g.dz }; const t = g.t0 + s / MR.r; return { x: g.cx + Math.cos(t) * MR.r, z: g.cz + Math.sin(t) * MR.r, tx: -Math.sin(t), tz: Math.cos(t) }; } s -= g.L; } return { x: MR.x0, z: MR.z1 - MR.r, tx: 0, tz: -1 }; }
-const mrH = (s) => { const u = Math.max(0, Math.min(1, s / MR.ramp, (MR_L - s) / MR.ramp)); return MR.H * u * u * (3 - 2 * u); };
-const mrail = { on: false, s: 0, fi: 0, wait: false, answered: false, ok: 0, id: 'm1', lv: 0, g: null, hud: null, last: null, sh: 0 };
-function buildMineRail(g) {
-  const o = { solid: false }, tr = new THREE.Group(); tr.name = 'MineRail'; g.add(tr);
-  for (let s = 0; s < MR_L; s += 1.2) { const P = mrAt(s + 0.6), h = mrH(s + 0.6), a = Math.atan2(P.tx, P.tz), ix = P.tz, iz = -P.tx;
-    for (const ro of [-0.48, 0.48]) box(tr, 0.11, 0.1, 1.28, 0x8C8C92, P.x + ix * ro, h + 0.12, P.z + iz * ro, { solid: false, ry: a });
-    box(tr, 1.5, 0.08, 0.26, 0x6E4A2C, P.x, h + 0.03, P.z, { solid: false, ry: a }); }
-  for (let s = 6; s < MR_L - 4; s += 8) { const P = mrAt(s), h = mrH(s); if (h < 0.8) continue; const ix = P.tz, iz = -P.tx, a = Math.atan2(P.tx, P.tz); // 나무 버팀목 (몸은 막지 않아요)
-    for (const sd of [-0.85, 0.85]) box(tr, 0.22, h, 0.22, 0x7A5234, P.x + ix * sd, h / 2, P.z + iz * sd, o);
-    box(tr, 2.0, 0.2, 0.26, 0x6E4A2C, P.x, h - 0.15, P.z, { solid: false, ry: a }); box(tr, 0.12, h * 0.9, 0.12, 0x6E4A2C, P.x, h * 0.45, P.z, { solid: false, ry: a, rz: 0.5 }); }
-  MR.stops.forEach((f, i) => { const s = f * MR_L, P = mrAt(s), h = mrH(s), ix = P.tz, iz = -P.tx, x = P.x - ix * 1.6, z = P.z - iz * 1.6; // 광맥 표시 (레일 안쪽)
-    box(tr, 0.16, h + 2.2, 0.16, 0x5A3A22, x, (h + 2.2) / 2, z, o); ball(tr, 0.28, 0xFFD27A, x, h + 2.4, z, { solid: false, emissive: 0.9 });
-    for (let k = 0; k < 3; k++) mesh(CONE, tr, 0.18, 0.7, 0.18, [0x9AD8FF, 0xC9A6FF, 0xFFD23C][k], x + (k - 1) * 0.3, h + 0.35, z, { solid: false, emissive: 0.4, rz: (k - 1) * 0.3 });
-    makeLabel(tr, [`⛏️ 광맥 ${i + 1}`], 0.7, x, h + 3.2, z); });
-  // 승강장 (마을 남서쪽)
-  const [px, pz] = MR.plat; box(tr, 3.2, 0.3, 6, 0xA8A294, px, 0.15, pz, o); for (const sz of [-2.6, 2.6]) cyl(tr, 0.1, 2.6, 0x7A5234, px - 1.2, 1.3, pz + sz, o);
-  box(tr, 3.4, 0.2, 6.4, 0x7A4A2A, px, 2.7, pz, o); const park = cartModel(0x3E6AC8); park.position.set(MR.x0, 0.05, MR.z1 - MR.r + 1); park.rotation.y = Math.PI; tr.add(park);
-  makeLabel(tr, ['🛤️ 광산 레일', '오늘 열린 광산 문제를 풀며 마을 한 바퀴!'], 1.0, px, 4.2, pz);
-  addInteract({ pos: new V3(px + 1, 1, pz), r: 3.2, text: () => mrail.on || !mathRegion() ? null : ['🛤️ 광산 레일 타기', `오늘: ${mineOpenText()}`], run: openMrailPick });
-  const hud = document.createElement('div'); hud.id = 'mrHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:17px';
-  hud.innerHTML = '<b id="mrInfo"></b><button class="btn" id="mrQuit" style="background:#fff;font-size:15px;padding:4px 10px">내리기</button>'; document.body.append(hud); mrail.hud = hud;
-  $('mrQuit').onclick = () => mrEnd(false);
+// ---------- 🚴 광산 안 (1024b): 광산 입구로 들어가면 광산마다 다른 동굴 맵 · 레일바이크를 타고 광맥 5곳에서 문제 ----------
+// 동굴은 월드 x 2420~2540 · z = MC_Z0 + k × 132 에 따로 있어요 (처음 들어갈 때 만들어요) · 안에서는 하늘·안개·빛이 동굴 색으로 바뀌어요
+const MC = { cx: 2480, z0: -330, dz: 132, hw: 48, hd: 36, H: 17 };
+const MC_THEME = {
+  m1: { n: '🪨 수직선 돌 동굴', floor: 0x6E6458, wall: [0x5C544A, 0x6A6156, 0x4E473F], fog: 0x1A1612, sky: [0x14110E, 0x2A241D], amb: 0xFFD9A8, acc: 0xFFB347, tip: '수직선 기둥의 ● ○를 살펴보며 달려요' },
+  m2: { n: '🌋 구리 용암 동굴', floor: 0x4A3024, wall: [0x5A2E1E, 0x6B3A26, 0x3E2218], fog: 0x260C05, sky: [0x1E0804, 0x3A1408], amb: 0xFF9A60, acc: 0xFF6A2A, tip: '용암 위 다리를 조심조심 건너요' },
+  m3: { n: '🪞 은빛 거울 동굴', floor: 0x8C96A2, wall: [0x6E7884, 0x7E8894, 0x5E6874], fog: 0x0E1624, sky: [0x0A101C, 0x1C2A40], amb: 0xBFD8FF, acc: 0x9AD8FF, tip: '가운데 대칭축을 기준으로 양쪽이 똑같아요' },
+  m4: { n: '🟡 황금 소수점 동굴', floor: 0x6E5A3A, wall: [0x6A5232, 0x7A6040, 0x54401E], fog: 0x1E1606, sky: [0x160F04, 0x34260C], amb: 0xFFE08A, acc: 0xFFD23C, tip: '황금 더미 사이로 빙글빙글 올라가요' },
+  m5: { n: '💎 큐브 보석 동굴', floor: 0x3A4656, wall: [0x34506A, 0x2E4258, 0x405C78], fog: 0x08121E, sky: [0x060C16, 0x14263C], amb: 0x9AE6FF, acc: 0x6FD3E8, tip: '반짝이는 직육면체 보석을 찾아봐요' },
+  m6: { n: '🔮 수정 가능성 동굴', floor: 0x3E2E56, wall: [0x4A3466, 0x3A2854, 0x56407A], fog: 0x140A20, sky: [0x0E0618, 0x2A1444], amb: 0xD9B0FF, acc: 0xB58CF0, tip: '커다란 주사위와 회전판이 굴러가요' },
+};
+// 레일 코스 (동굴 가운데 기준 x, 높이, z) — 남쪽 승강장에서 출발해 동쪽 → 북쪽 → 서쪽으로 돌아와요
+const MC_COURSE = {
+  m1: [[-30, .3, 27], [-12, .3, 27], [8, 1.2, 26], [28, 3.5, 21], [38, 6, 4], [32, 4.5, -18], [10, 2, -27], [-12, 5, -25], [-30, 7.5, -16], [-38, 5, 2], [-38, 2, 16], [-35, .5, 24]],
+  m2: [[-30, .3, 27], [-12, .3, 27], [4, 1, 25], [14, 3, 14], [26, 2, 24], [38, 4, 12], [30, 6, -4], [14, 3.5, -10], [24, 5.5, -24], [0, 7, -27], [-14, 4.5, -16], [-26, 6, -27], [-38, 4, -10], [-30, 2.5, 4], [-38, 1, 17], [-35, .5, 25]],
+  m3: [[-30, .3, 27], [-12, .3, 27], [0, 1.2, 22], [12, 2, 27], [32, 4, 22], [38, 6, 6], [24, 8, -6], [36, 6, -20], [16, 4, -27], [0, 6.5, -18], [-16, 4, -27], [-36, 6, -20], [-24, 8, -6], [-38, 6, 6], [-38, 3, 18], [-35, .6, 25]],
+  m4: [[-30, .3, 27], [-12, .3, 27], [8, 1, 27], [28, 2.5, 22], [37, 4.5, 4], [26, 6.5, -14], [6, 8, -20], [-12, 9.5, -12], [-14, 10.5, 6], [2, 10, 12], [14, 8.5, 2], [6, 7, -8], [-8, 5, -4], [-26, 3.5, -22], [-39, 2.5, -4], [-37, 1, 16], [-35, .5, 25]],
+  m5: [[-30, .3, 27], [-12, .3, 27], [6, .8, 27], [22, 3, 27], [36, 5, 18], [36, 7, -2], [24, 4.5, -10], [12, 7.5, -2], [0, 4, -10], [-10, 7.5, -2], [-22, 4.5, -10], [-30, 6.5, -26], [-12, 3.5, -28], [10, 5, -28], [30, 2.5, -24], [38, 1.5, -12], [26, 1, 8], [-20, 1.5, 14], [-36, 1, 18], [-35, .5, 25]],
+  m6: [[-30, .3, 27], [-12, .3, 27], [6, 1, 25], [20, 2.5, 16], [34, 4.5, 22], [38, 6.5, 6], [26, 8, -6], [10, 6, 0], [0, 4, 12], [-12, 3, 4], [-6, 5.5, -10], [14, 7.5, -14], [34, 6, -22], [20, 4, -28], [-8, 3.5, -28], [-30, 5.5, -22], [-38, 3.5, -4], [-38, 1.5, 14], [-35, .5, 25]],
+};
+const mcCz = (id) => MC.z0 + (MINES.findIndex(m => m.id === id)) * MC.dz;
+const mineHere = () => { if (!joined) return ''; const p = player.pos; if (Math.abs(p.x - MC.cx) > MC.hw + 2) return ''; for (const m of MINES) if (Math.abs(p.z - mcCz(m.id)) <= MC.hd + 2) return m.id; return ''; };
+const inMineCave = (x, z) => { if (Math.abs(x - MC.cx) > MC.hw - 1.2) return false; for (const m of MINES) if (Math.abs(z - mcCz(m.id)) <= MC.hd - 1.2) return true; return false; };
+const mc = { built: {}, curve: {}, len: {}, groups: {}, here: '', spin: [] };
+function mcCurve(id) {
+  if (mc.curve[id]) return mc.curve[id];
+  const cz = mcCz(id), pts = MC_COURSE[id].map(([x, y, z]) => new V3(MC.cx + x, y, cz + z));
+  const c = new THREE.CatmullRomCurve3(pts, true, 'centripetal'); mc.curve[id] = c; mc.len[id] = c.getLength(); return c;
 }
-function openMrailPick() {
-  const ids = isTeacher ? MINES.map(m => m.id) : mineOpenIds(); let pick = ids.includes(mrail.id) ? mrail.id : ids[0];
-  openLife('🛤️ 광산 레일 타기', (box) => {
-    const draw = () => {
-      box.textContent = ''; box.append(el2('p', 'hint', '광산 레일을 타고 마을을 한 바퀴 돌아요. 광맥 5곳에서 멈추면 문제를 풀어요 (기회는 한 번!). 한 번에 맞히면 광산과 똑같이 🐚 · 🧮을 받고, 4문제 이상 맞히고 끝까지 타면 🐚 +10 더 (하루 3번)'));
-      box.append(el2('div', 'field', '⛏️ 어느 단원 광산?'));
-      const r1 = el2('div', 'row-center wrap', null); r1.style.gap = '6px';
-      for (const id of ids) { const m = MINE[id], b = el2('button', 'btn', `${m.icon} ${m.u}단원 ${m.uname}`); b.style.background = id === pick ? '#FFE066' : '#fff'; b.onclick = () => { pick = id; draw(); }; r1.append(b); }
-      box.append(r1, el2('div', 'field', '📶 어떤 단계?'));
-      const g = el2('div', 'mx-opts'); MQ_LV.forEach((L, i) => { const b = el2('button', 'btn mx-opt', ''); b.style.background = L.c; b.innerHTML = `${L.icon} <b>${L.n}</b><br><span style="font-size:13px">🐚 ${mqShOf(pick, i)} · 🧮 +${mqStOf(pick, i)}</span>`; b.onclick = () => mrStart(pick, i); g.append(b); });
-      box.append(g);
-    };
-    draw();
+const mcSpawn = (id) => [MC.cx - 36, mcCz(id) + 31];
+function buildMineCave(id) {
+  if (mc.built[id]) return; mc.built[id] = true;
+  const T = MC_THEME[id], m = MINE[id], cz = mcCz(id), cx = MC.cx, { hw, hd, H } = MC, o = { solid: false };
+  const g = new THREE.Group(); g.name = 'MineCave_' + id; scene.add(g); mc.groups[id] = g;
+  const rnd2 = (() => { let s = (MINES.indexOf(m) + 1) * 7919; return () => (s = (s * 9301 + 49297) % 233280) / 233280; })();
+  box(g, hw * 2 + 6, 0.3, hd * 2 + 6, T.floor, cx, -0.15, cz, o);                                      // 바닥
+  box(g, hw * 2 + 6, 1, hd * 2 + 6, T.wall[2], cx, H + 0.5, cz, o);                                    // 천장
+  for (let x = -hw; x <= hw; x += 6) for (const sz of [-1, 1]) { const h = H + rnd2() * 2; box(g, 6.4, h, 4 + rnd2() * 3, T.wall[Math.floor(rnd2() * 3)], cx + x, h / 2, cz + sz * (hd + 1.5)); } // 북·남 벽
+  for (let z = -hd; z <= hd; z += 6) for (const sx of [-1, 1]) { const h = H + rnd2() * 2; box(g, 4 + rnd2() * 3, h, 6.4, T.wall[Math.floor(rnd2() * 3)], cx + sx * (hw + 1.5), h / 2, cz + z); } // 서·동 벽
+  const tp = Array.from({ length: 240 }, (_, i) => mcCurve(id).getPointAt(i / 240)), nearT = (x, z, r = 3.6) => tp.some(q => Math.hypot(q.x - x, q.z - z) < r) || (z > cz + 26 && x < cx - 8); mc.nearT = nearT; // 레일·승강장 둘레는 비워요
+  for (let k = 0; k < 26; k++) { const a = rnd2() * Math.PI * 2, x = cx + Math.cos(a) * (hw - 3), z = cz + Math.sin(a) * (hd - 3), s = 1 + rnd2() * 2.4; if (nearT(x, z, s + 2.4)) continue; mesh(SPH_MID, g, s, s * 0.8, s, T.wall[k % 3], Math.max(cx - hw + 2, Math.min(cx + hw - 2, x)), s * 0.3, Math.max(cz - hd + 2, Math.min(cz + hd - 2, z)), { solid: false, flat: true }); } // 벽 아래 바위
+  for (let k = 0; k < 18; k++) { const x = cx - hw + 4 + rnd2() * (hw * 2 - 8), z = cz - hd + 4 + rnd2() * (hd * 2 - 8), l = 1.5 + rnd2() * 3; mesh(CONE, g, 0.5 + rnd2() * 0.6, l, 0.5 + rnd2() * 0.6, T.wall[k % 3], x, H - l / 2, z, { solid: false, rx: Math.PI }); } // 종유석
+  // 🛤️ 레일 · 침목 · 버팀목
+  const c = mcCurve(id), L = mc.len[id], N = Math.ceil(L / 1.1), tmp = new THREE.Object3D();
+  for (let i = 0; i < N; i++) {
+    const p0 = c.getPointAt(i / N), p1 = c.getPointAt((i + 1) / N), mid = p0.clone().add(p1).multiplyScalar(0.5), t = p1.clone().sub(p0), len = t.length(); t.normalize();
+    const side = new V3(t.z, 0, -t.x).normalize();
+    for (const ro of [-0.5, 0.5]) { const r = box(g, 0.11, 0.1, len + 0.06, 0x9A9AA2, mid.x + side.x * ro, mid.y + 0.13, mid.z + side.z * ro, o); r.lookAt(r.position.clone().add(t)); }
+    if (i % 1 === 0) { const s = box(g, 1.6, 0.08, 0.26, 0x6E4A2C, mid.x, mid.y + 0.03, mid.z, o); s.lookAt(s.position.clone().add(t)); }
+    if (i % 6 === 0 && mid.y > 0.9) for (const sd of [-0.75, 0.75]) box(g, 0.2, mid.y, 0.2, 0x7A5234, mid.x + side.x * sd, mid.y / 2, mid.z + side.z * sd, o);
+    if (i % 9 === 4) { const lx = mid.x - side.x * 1.4, lz = mid.z - side.z * 1.4; cyl(g, 0.06, 1.6, 0x3B3530, lx, mid.y + 0.8, lz, o); ball(g, 0.18, T.acc, lx, mid.y + 1.7, lz, { solid: false, emissive: 0.9 }); } // 등불
+  }
+  // ⛏️ 광맥 5곳 (레일 바깥쪽)
+  mc.veins ||= {}; mc.veins[id] = [];
+  MR.stops.forEach((f, i) => { const p = c.getPointAt(f), t = c.getTangentAt(f), side = new V3(t.z, 0, -t.x).normalize(), x = p.x + side.x * 2.4, z = p.z + side.z * 2.4, vg = new THREE.Group(); vg.position.set(x, p.y, z); g.add(vg);
+    mesh(SPH_MID, vg, 1.2, 1.0, 1.1, T.wall[0], 0, 0.2, 0, { solid: false, flat: true });
+    for (let k = 0; k < 5; k++) mesh(CONE, vg, 0.22, 0.9 + (k % 3) * 0.3, 0.22, k % 2 ? T.acc : m.color, (k - 2) * 0.32, 0.9, (k % 2) * 0.3 - 0.15, { solid: false, emissive: 0.6, rz: (k - 2) * 0.25 });
+    if (p.y > 0.9) box(vg, 0.3, p.y, 0.3, 0x7A5234, 0, -p.y / 2, 0, o);
+    makeLabel(vg, [`⛏️ 광맥 ${i + 1}`], 0.7, 0, 2.4, 0); mc.veins[id].push(vg); });
+  mcDeco(id, g, rnd2);
+  // 🚃 승강장 · 📜 광부의 수첩 · 🚪 나가는 문
+  const [sx, sz] = [cx - 21, cz + 30.4]; box(g, 18, 0.35, 3.2, 0xA8A294, sx, 0.17, sz, o); for (const x of [-8, 0, 8]) cyl(g, 0.12, 3, 0x7A5234, sx + x, 1.5, sz + 1.3, o); box(g, 18.4, 0.25, 3.6, 0x6E4A2C, sx, 3.05, sz + 0.2, o);
+  makeLabel(g, ['🚴 레일바이크 승강장', '단계를 골라 출발!'], 1.0, sx, 4.4, sz);
+  addInteract({ pos: new V3(sx, 1, sz), r: 4.5, text: () => mineHere() === id && !mrail.on ? ['🚴 레일바이크 타기', `${m.icon} ${m.u}단원 · 광맥 5곳`] : null, run: () => openMcPick(id) });
+  const nb = new THREE.Group(); nb.position.set(cx - 42, 0, cz + 20); g.add(nb); box(nb, 0.3, 2.6, 0.3, 0x7A5234, 0, 1.3, 0); box(nb, 3.2, 2.0, 0.15, 0xF4E6C8, 0, 2.4, 0.2, o); box(nb, 3.4, 0.2, 0.3, 0x7A5234, 0, 3.45, 0.2, o); nb.rotation.y = Math.PI / 2;
+  makeLabel(g, ['📜 광부의 수첩', '개념 · 단계별 연습'], 0.85, cx - 42, 4.4, cz + 20);
+  addInteract({ pos: new V3(cx - 40.5, 1, cz + 20), r: 3, text: () => mineHere() === id ? ['📜 광부의 수첩', '개념 보기 · 한 문제씩 풀기'] : null, run: () => openMineHub(id) });
+  const dx = cx - hw + 2.6, dz = cz + 27; box(g, 0.4, 5, 5.4, 0x5C3A22, dx, 2.5, dz, o); box(g, 0.2, 4.2, 4.2, 0xFFE9A0, dx + 0.3, 2.1, dz, { solid: false, emissive: 0.8 });
+  makeLabel(g, ['🚪 마을로 나가기'], 0.9, dx + 1, 5.6, dz);
+  addInteract({ pos: new V3(dx + 1.6, 1, dz), r: 3, text: () => mineHere() === id && !mrail.on ? ['🚪 광산 마을로 나가기', `${m.icon} 광산 입구로`] : null, run: () => mineExit() });
+  makeLabel(g, [T.n, `${m.u}단원 ${m.uname}`], 1.3, cx - 30, 7.5, cz + 22);
+  registerSolids(g, 'minecave'); batchStatic(g);
+  g.visible = false;
+}
+function mcDeco(id, g, r) { // 동굴마다 다른 꾸밈
+  const T = MC_THEME[id], cx = MC.cx, cz = mcCz(id), o = { solid: false }, P = (fx, fz) => [cx + fx, cz + fz];
+  const spots = [[-6, 14], [16, 6], [-22, 2], [8, -14], [28, -6], [-18, -14], [24, 12], [-4, -2], [32, 28], [-28, -28], [4, 31], [40, -30], [-2, 8], [20, -4], [-14, 20], [12, 18], [-30, -8], [30, -14], [-10, -20], [6, 2]].filter(([fx, fz]) => !mc.nearT(cx + fx, cz + fz, 4.2)); // 레일과 겹치지 않는 자리만
+  if (id === 'm1') { // 수직선 기둥: 눈금 · ● ○
+    for (const [fx, fz] of spots.slice(0, 7)) { const [x, z] = P(fx, fz), w = 6; box(g, w, 0.18, 0.18, 0xF4E6C8, x, 1.6, z, o); for (let k = 0; k <= 6; k++) box(g, 0.06, 0.4, 0.06, 0xF4E6C8, x - w / 2 + k, 1.6, z, o); const a = Math.floor(r() * 5); ball(g, 0.22, r() < 0.5 ? 0xE2584A : 0xFFFFFF, x - w / 2 + a, 1.85, z, { solid: false, emissive: 0.4 }); box(g, w - a, 0.08, 0.1, 0xE2584A, x - w / 2 + a + (w - a) / 2, 1.85, z, o); for (const sx of [-w / 2, w / 2]) box(g, 0.18, 1.6, 0.18, 0x7A5234, x + sx, 0.8, z, o); }
+    for (const [fx, fz] of spots.slice(7)) { const [x, z] = P(fx, fz); box(g, 1.6, 2.2, 0.4, 0x8E8678, x, 1.1, z); makeLabel(g, [String(10 + Math.floor(r() * 90))], 0.8, x, 2.8, z); }
+  } else if (id === 'm2') { // 용암 웅덩이 · 구리 관 · 피자(분수) 판
+    for (const [fx, fz] of spots.slice(0, 8)) { const [x, z] = P(fx, fz), s = 2 + r() * 2.5; cyl(g, s, 0.08, 0xFF6A1A, x, 0.05, z, { solid: false, emissive: 0.9 }); cyl(g, s + 0.4, 0.06, 0x2A1208, x, 0.02, z, o); }
+    for (const [fx, fz] of spots.slice(8)) { const [x, z] = P(fx, fz); cyl(g, 1.1, 0.15, 0xF2C230, x, 2, z, { solid: false, rx: Math.PI / 2 }); for (let k = 0; k < 4; k++) box(g, 0.05, 1.1, 0.18, 0x8A3A20, x, 2, z + 0.02, { solid: false, rz: k * Math.PI / 4 }); cyl(g, 0.1, 2, 0xB87333, x, 1, z - 0.1, o); }
+    for (let k = 0; k < 6; k++) cyl(g, 0.25, 30, 0xB87333, cx - 40 + k * 16, MC.H - 1.2, cz - 34 + (k % 2) * 2, { solid: false, rz: Math.PI / 2 });
+  } else if (id === 'm3') { // 대칭축 · 거울 · 짝꿍 수정
+    for (let z = -32; z < 32; z += 2) box(g, 0.2, 0.04, 1.1, 0xE2584A, cx, 0.03, cz + z, o);
+    for (const [fx, fz] of [[8, 12], [14, -6], [20, -20], [6, -24], [26, 4]]) for (const s of [-1, 1]) { const x = cx + s * fx, z = cz + fz; if (mc.nearT(x, z, 3.6)) continue; box(g, 0.25, 3.4, 2.4, 0x9AA4B0, x, 1.7, z); box(g, 0.08, 3, 2, 0xDDEEFF, x - s * 0.15, 1.7, z, { solid: false, emissive: 0.5 }); for (let k = 0; k < 3; k++) mesh(CONE, g, 0.25, 1 + k * 0.4, 0.25, 0x9AD8FF, x - s * (1 + k * 0.5), 0.6 + k * 0.2, z + 1.6, { solid: false, emissive: 0.5, rz: s * 0.3 }); }
+    makeLabel(g, ['↕️ 대칭축'], 0.9, cx, 3, cz + 4);
+  } else if (id === 'm4') { // 황금 더미 · 금괴 · 소수점 표지
+    for (const [fx, fz] of spots) { const [x, z] = P(fx, fz); for (let k = 0; k < 6; k++) ball(g, 0.4 + r() * 0.4, k % 2 ? 0xFFD23C : 0xE8B830, x + (r() - 0.5) * 1.8, 0.3 + r() * 0.5, z + (r() - 0.5) * 1.8, { solid: false, emissive: 0.35 }); }
+    for (const [fx, fz] of spots.slice(0, 5)) { const [x, z] = P(fx + 3, fz + 2); for (let k = 0; k < 3; k++) box(g, 0.9, 0.3, 0.45, 0xF2C230, x, 0.15 + k * 0.3, z + (k % 2) * 0.1, { solid: false, emissive: 0.4 }); }
+    for (const [fx, fz, t] of [[0, 20, '× 0.1'], [-30, -4, '× 10'], [30, -26, '0.01']]) { const [x, z] = P(fx, fz); box(g, 2.6, 1.4, 0.2, 0x5C3A22, x, 2.2, z); makeLabel(g, [t], 0.9, x, 2.2, z + 0.3); cyl(g, 0.1, 1.5, 0x5C3A22, x, 0.75, z, o); }
+  } else if (id === 'm5') { // 직육면체 보석 · 겨냥도 틀
+    for (const [fx, fz] of spots) { const [x, z] = P(fx, fz), a = 0.8 + r() * 1.6, b = 0.8 + r() * 1.6, h = 1 + r() * 2.2; box(g, a, h, b, r() < 0.5 ? 0x6FD3E8 : 0x9AE6FF, x, h / 2, z, { solid: false, emissive: 0.45, ry: r() * 1.5 }); }
+    for (const [fx, fz] of [[-8, 18], [18, -18], [-30, -12]]) { const [x, z] = P(fx, fz), s = 3; for (const [ex, ey, ez, w, h, d] of [[0, 0, -s / 2, s, 0.08, 0.08], [0, s, -s / 2, s, 0.08, 0.08], [0, 0, s / 2, s, 0.08, 0.08], [0, s, s / 2, s, 0.08, 0.08], [-s / 2, s / 2, -s / 2, 0.08, s, 0.08], [s / 2, s / 2, -s / 2, 0.08, s, 0.08], [-s / 2, s / 2, s / 2, 0.08, s, 0.08], [s / 2, s / 2, s / 2, 0.08, s, 0.08], [-s / 2, 0, 0, 0.08, 0.08, s], [s / 2, 0, 0, 0.08, 0.08, s], [-s / 2, s, 0, 0.08, 0.08, s], [s / 2, s, 0, 0.08, 0.08, s]]) box(g, w, h, d, 0xFFFFFF, x + ex, ey + 0.1, z + ez, { solid: false, emissive: 0.6 }); }
+  } else { // m6 주사위 · 회전판 · 수정
+    for (const [fx, fz] of spots.slice(0, 6)) { const [x, z] = P(fx, fz), s = 1.6; box(g, s, s, s, 0xFFFFFF, x, s / 2, z, { solid: false, ry: r() }); for (let k = 0; k < 3; k++) ball(g, 0.14, 0x3B3F46, x - 0.4 + k * 0.4, s + 0.01, z - 0.4 + k * 0.4, o); }
+    for (const [fx, fz] of spots.slice(6, 9)) { const [x, z] = P(fx, fz), w = new THREE.Group(); w.position.set(x, 2.6, z); g.add(w); for (let k = 0; k < 8; k++) box(w, 0.1, 1.2, 0.08, [0xE2584A, 0x4A9AE8, 0xFFD23C, 0x5FBE5A][k % 4], Math.sin(k * Math.PI / 4) * 0.6, Math.cos(k * Math.PI / 4) * 0.6, 0, { solid: false, rz: -k * Math.PI / 4 }); cyl(g, 0.1, 2.6, 0x5C3A22, x, 1.3, z - 0.1, o); w.name = 'mcSpin'; mc.spin.push(w); }
+    for (const [fx, fz] of spots.slice(9)) { const [x, z] = P(fx, fz); for (let k = 0; k < 5; k++) mesh(CONE, g, 0.35, 1.5 + k * 0.4, 0.35, k % 2 ? 0xB58CF0 : 0xE0B8FF, x + (k - 2) * 0.5, 0.8 + k * 0.2, z, { solid: false, emissive: 0.55, rz: (k - 2) * 0.3 }); }
+  }
+}
+function mineEnter(id) {
+  if (!mineOpen(id) || mrail.on || cart.on) return; closeModals(); buildMineCave(id);
+  const [x, z] = mcSpawn(id); player.pos.set(x, 0.15, z); player.vy = 0; player.heading = Math.PI / 2; camYaw = -Math.PI / 2; mc.from = id;
+  mcEnvCheck(); const T = MC_THEME[id]; showBanner(`${T.n}`, `${MINE[id].u}단원 ${MINE[id].uname} · 🚴 레일바이크를 타고 광맥을 찾아요!`, 4500); playSfx('fanfare');
+}
+function mineExit() {
+  const id = mineHere() || mc.from || 'm1', m = MINE[id]; if (mrail.on) mrEnd(false); closeModals();
+  player.pos.set(m.x, 0.15, MV.z0 + 6); player.vy = 0; player.heading = 0; camYaw = Math.PI; mcEnvCheck();
+}
+function mcEnvCheck() { const h = mineHere(); for (const [k, g] of Object.entries(mc.groups)) g.visible = k === h; if (h !== mc.here) { mc.here = h; applyEnv(true); } }
+function mcEnv(id) { // 동굴 안: 어두운 하늘 · 가까운 안개 · 동굴 색 빛
+  const T = MC_THEME[id], sky = pretty.sky?.material.uniforms; if (sky) { sky.top.value.setHex(T.sky[0]); sky.bottom.value.setHex(T.sky[1]); }
+  scene.background.setHex(T.fog); scene.fog.color.setHex(T.fog); scene.fog.near = 16; scene.fog.far = 78;
+  if (world.hemi) { world.hemi.intensity = 0.6; world.hemi.color.setHex(T.amb); } if (world.sun) { world.sun.intensity = 0.8; world.sun.color.setHex(T.amb); }
+  env.stars.visible = false; env.fall.visible = false;
+}
+function openMcPick(id) {
+  const m = MINE[id];
+  openLife(`🚴 레일바이크 · ${m.icon} ${m.u}단원`, (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', `동굴 레일을 따라 달리다가 광맥 5곳에서 멈추면 문제를 풀어요 (기회는 한 번!). 내리막에서는 빨라지고, 🚴 힘껏 밟기를 누르고 있으면 더 빨라져요. 한 번에 맞히면 광석과 🐚 · 🧮, 4문제 이상 맞히고 끝까지 타면 🐚 +10 더 (하루 3번)`));
+    box.append(el2('div', 'field', '📶 어떤 단계로 달릴까요?'));
+    const g = el2('div', 'mx-opts'); MQ_LV.forEach((L, i) => { const b = el2('button', 'btn mx-opt', ''); b.style.background = L.c; b.innerHTML = `${L.icon} <b>${L.n}</b><br><span style="font-size:13px">광맥마다 🐚 ${mqShOf(id, i)} · 🧮 +${mqStOf(id, i)}</span>`; b.onclick = () => mrStart(id, i); g.append(b); });
+    box.append(g, mqConcept(m));
   });
 }
+function railBike(col) { // 🚴 2인용 레일바이크 (발판이 돌아가요)
+  const g = new THREE.Group(), o = { solid: false };
+  box(g, 1.5, 0.5, 2.1, col, 0, 0.45, 0, o); box(g, 1.62, 0.1, 2.22, 0x3B3F46, 0, 0.72, 0, o); box(g, 1.3, 0.55, 0.12, col, 0, 0.95, 1.0, o);
+  for (const sx of [-0.7, 0.7]) for (const sz of [-0.7, 0.7]) mesh(CYL, g, 0.24, 0.12, 0.24, 0x2B2B30, sx, 0.24, sz, { solid: false, rz: Math.PI / 2 });
+  for (const sx of [-0.45, 0.45]) { cyl(g, 0.04, 0.7, 0x8C95A3, sx, 1.1, 0.75, o); } box(g, 1.1, 0.06, 0.06, 0x8C95A3, 0, 1.45, 0.75, o);
+  const crank = new THREE.Group(); crank.position.set(0, 0.45, 0.55); g.add(crank); for (const s of [-1, 1]) box(crank, 0.06, 0.4, 0.08, 0xE2584A, s * 0.3, s * 0.15, 0, o); g.userData.crank = crank;
+  const ore = new THREE.Group(); ore.position.set(0, 0.8, -0.75); g.add(ore); g.userData.ore = ore;
+  box(g, 0.5, 0.08, 0.08, 0xFFD23C, 0, 0.72, 1.12, { solid: false, emissive: 0.6 });
+  return g;
+}
+
+// ---------- 🚴 레일바이크 타기 (동굴 안) ----------
+const MR = { stops: [0.17, 0.34, 0.5, 0.66, 0.82] };
+const mrail = { on: false, s: 0, v: 5, fi: 0, wait: false, answered: false, ok: 0, id: 'm1', lv: 0, g: null, hud: null, last: null, sh: 0, boost: false };
+function mrHud() {
+  if (mrail.hud) return mrail.hud;
+  const hud = document.createElement('div'); hud.id = 'mrHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:17px;flex-wrap:wrap;justify-content:center';
+  hud.innerHTML = '<b id="mrInfo"></b><button class="btn" id="mrBoost" style="background:#FFE066;font-size:15px;padding:6px 12px;touch-action:none">🚴 힘껏 밟기</button><button class="btn" id="mrQuit" style="background:#fff;font-size:15px;padding:4px 10px">내리기</button>'; document.body.append(hud); mrail.hud = hud;
+  $('mrQuit').onclick = () => mrEnd(false);
+  const bt = $('mrBoost'), on = (v) => (e) => { e.preventDefault(); mrail.boost = v; bt.style.background = v ? '#FFB347' : '#FFE066'; };
+  bt.addEventListener('pointerdown', on(true)); for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) bt.addEventListener(ev, on(false));
+  addEventListener('keydown', (e) => { if (mrail.on && ['w', 'W', 'ArrowUp', 'ㅈ'].includes(e.key)) mrail.boost = true; });
+  addEventListener('keyup', (e) => { if (['w', 'W', 'ArrowUp', 'ㅈ'].includes(e.key)) mrail.boost = false; });
+  return hud;
+}
 function mrStart(id, lv) {
-  if (mrail.on || cart.on || isFrozen() || hv.travel || !joined || !mineOpen(id)) return; if (bag.ride) { bag.ride = ''; saveBag(); } closeLife();
-  Object.assign(mrail, { on: true, s: 0, fi: 0, wait: false, answered: false, ok: 0, id, lv, last: null, sh: 0 });
-  mrail.g?.parent?.remove(mrail.g); mrail.g = cartModel(0x3E6AC8); player.avatar.g.add(mrail.g);
-  mrail.hud.classList.remove('hidden'); playSfx('fanfare'); toast(`🛤️ 출발! ${MINE[id].icon} ${MINE[id].u}단원 · ${MQ_LV[lv].n} 문제가 광맥마다 기다려요`, 'info');
+  if (mrail.on || cart.on || isFrozen() || !joined || !mineOpen(id) || mineHere() !== id) return; if (bag.ride) { bag.ride = ''; saveBag(); } closeLife();
+  Object.assign(mrail, { on: true, s: 0, v: 4, fi: 0, wait: false, answered: false, ok: 0, id, lv, last: null, sh: 0, boost: false });
+  mrail.g?.parent?.remove(mrail.g); mrail.g = railBike(MINE[id].color); player.avatar.g.add(mrail.g);
+  { const t0 = mcCurve(id).getTangentAt(0); player.heading = Math.atan2(t0.x, t0.z); camYaw = player.heading + Math.PI; }
+  mrHud().classList.remove('hidden'); playSfx('fanfare'); toast(`🚴 출발! ${MINE[id].icon} ${MINE[id].u}단원 · ${MQ_LV[lv].n} · 🚴 힘껏 밟기(또는 W)를 누르면 빨라져요`, 'info');
 }
 function mrEnd(done) {
-  if (!mrail.on) return; mrail.on = false; mrail.wait = false; mrail.last = null; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrail.hud.classList.add('hidden');
+  if (!mrail.on) return; mrail.on = false; mrail.wait = false; mrail.last = null; mrail.boost = false; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrHud().classList.add('hidden');
   if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('⛏️ 광맥')) closeLife();
   if (done) {
     if (bag.mrDay?.d !== dayNum()) bag.mrDay = { d: dayNum(), n: 0 }; let b = 0; if (mrail.ok >= 4 && bag.mrDay.n < 3) { bag.mrDay.n++; b = giveShellCapped(10); }
-    if (mrail.ok >= 5) hmHit?.('cart5'); saveBag(); updateHUD(null); burst(player.pos.clone().setY(2), RAINBOW, 50, 6, 3);
-    showBanner(`🛤️ 광산 레일 완주! 광맥 ${mrail.ok}/5`, `${mrail.sh ? `문제 보상 🐚 +${mrail.sh}` : '다음엔 더 많이 맞혀 봐요'}${b ? ` · 완주 보너스 🐚 +${b}` : mrail.ok >= 4 ? ' · 오늘 완주 보너스 3번은 다 받았어요' : ' · 4문제 이상 맞히면 완주 보너스'}`, 6000);
+    if (mrail.ok >= 5) hmHit('cart5'); saveBag(); updateHUD(null); burst(player.pos.clone().setY(2), RAINBOW, 50, 6, 3);
+    showBanner(`🚴 레일바이크 완주! 광맥 ${mrail.ok}/5`, `${mrail.sh ? `문제 보상 🐚 +${mrail.sh}` : '다음엔 더 많이 맞혀 봐요'}${b ? ` · 완주 보너스 🐚 +${b}` : mrail.ok >= 4 ? ' · 오늘 완주 보너스 3번은 다 받았어요' : ' · 4문제 이상 맞히면 완주 보너스'}`, 6000);
   }
-  player.pos.set(MR.plat[0] + 1.6, 0.15, MR.plat[1]); player.vy = 0;
+  const id = mrail.id; if (mineHere() === id || done) { player.pos.set(MC.cx - 21, 0.4, mcCz(id) + 30.2); player.vy = 0; }
 }
 function mrQuiz() {
-  const Q = mqMake(mrail.id, mrail.lv), i = mrail.fi, m = MINE[mrail.id], L = MQ_LV[mrail.lv]; mrail.answered = false;
+  const Q = mqMake(mrail.id, mrail.lv), i = mrail.fi, m = MINE[mrail.id], L = MQ_LV[mrail.lv]; mrail.answered = false; playSfx('pick');
   openLife(`⛏️ 광맥 ${i + 1}/5 · ${m.icon} ${m.u}단원 ${L.n}`, (box) => {
-    box.textContent = ''; box.append(el2('p', 'hint', '기회는 한 번! 맞히면 광석과 보상을 받고, 레일은 계속 달려요'));
+    box.textContent = ''; box.append(el2('p', 'hint', '기회는 한 번! 맞히면 광석을 싣고 다시 달려요'));
     if (Q.sh) box.append(drawShape(Q)); else if (Q.cv) box.append(Q.cv());
     const qp = el2('p', 'lp-big', ''); if (Q.qh) qp.innerHTML = Q.qh; else qp.textContent = Q.q; box.append(qp);
     const grid = el2('div', 'mx-opts'), fb = el2('p', 'hint', ''), btns = [];
@@ -15324,32 +15436,41 @@ function mrQuiz() {
       b.onclick = () => { if (mrail.answered) return; mrail.answered = true; const ok = op === Q.ans; b.style.background = ok ? '#BDE8B0' : '#F6C9C0';
         if (!ok) { btns.find(([o]) => o === Q.ans)?.[1].style.setProperty('background', '#BDE8B0'); fb.textContent = `💡 ${Q.tip}`; }
         playSfx(ok ? 'right' : 'wrong');
-        if (ok) { const r = mqReward(mrail.id, mrail.lv); mrail.sh += r.got; addStat('math', mqStOf(mrail.id, mrail.lv)); }
-        setTimeout(() => mrGo(ok), ok ? 600 : 2200); };
+        if (ok) { const r = mqReward(mrail.id, mrail.lv); mrail.sh += r.got; addStat('math', mqStOf(mrail.id, mrail.lv));
+          const vg = mc.veins?.[mrail.id]?.[i]; if (vg) burst(vg.position.clone().setY(vg.position.y + 1.2), [m.color, MC_THEME[mrail.id].acc, 0xFFFFFF], 50, 5, 3);
+          const ore = mrail.g?.userData.ore; if (ore) mesh(SPH_LO, ore, 0.24, 0.2, 0.24, m.color, (ore.children.length % 3 - 1) * 0.35, 0.1 + Math.floor(ore.children.length / 3) * 0.18, 0, { solid: false, flat: true, emissive: 0.3 }); }
+        setTimeout(() => mrGo(ok), ok ? 700 : 2400); };
       grid.append(b); }
     box.append(grid, fb);
   });
 }
 function mrGo(ok) {
-  if (!mrail.on || !mrail.wait) return; mrail.wait = false; mrail.fi++; if (ok) mrail.ok++;
+  if (!mrail.on || !mrail.wait) return; mrail.wait = false; mrail.fi++; if (ok) mrail.ok++; mrail.v = 3;
   if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('⛏️ 광맥')) closeLife();
   toast(ok ? '⛏️ 정답! 광석을 실었어요' : '🤔 아쉬워요! 다음 광맥에서 다시 도전', ok ? 'success' : 'warn');
 }
 function updateMrail(dt) {
+  mcEnvCheck();
+  if (mc.here && mc.spin.length) for (const w of mc.spin) w.rotation.z += dt * 1.5;
   if (!mrail.on) return;
   const p = player.pos;
-  if (mrail.last && Math.hypot(p.x - mrail.last[0], p.z - mrail.last[1]) > 6) { mrail.on = false; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrail.hud.classList.add('hidden'); mrail.last = null; return; } // 다른 곳으로 옮겨졌어요
+  if (mineHere() !== mrail.id || (mrail.last && Math.hypot(p.x - mrail.last[0], p.z - mrail.last[1]) > 6)) { mrail.on = false; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrHud().classList.add('hidden'); mrail.last = null; return; } // 다른 곳으로 옮겨졌어요
+  const c = mcCurve(mrail.id), L = mc.len[mrail.id];
+  let t = c.getTangentAt(Math.min(0.9999, mrail.s / L));
   if (mrail.wait) { if (!mrail.answered && $('lifePanel').classList.contains('hidden')) { mrail.answered = true; mrGo(false); } }
-  else { mrail.s += MR.spd * dt; const st = MR.stops[mrail.fi] * MR_L;
-    if (mrail.fi < 5 && mrail.s >= st) { mrail.s = st; mrail.wait = true; mrQuiz(); }
-    if (mrail.s >= MR_L) { mrail.last = null; mrEnd(true); return; } }
-  const P = mrAt(mrail.s), h = mrH(mrail.s), hd = Math.atan2(P.tx, P.tz);
-  p.set(P.x, h + 0.2, P.z); player.vy = 0; player.heading = hd; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = hd; mrail.last = [P.x, P.z];
-  if (!mrail.wait) { let d = hd + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 2.2); }
-  if (mrail.g && mrail.g.parent !== player.avatar.g) player.avatar.g.add(mrail.g);
-  { const vis = mrail.wait ? 'hidden' : ''; if (mrail.hud.style.visibility !== vis) mrail.hud.style.visibility = vis; } // 문제 창과 겹치지 않게
-  const info = `${MINE[mrail.id].icon} ${MQ_LV[mrail.lv].n} · ⛏️ ${Math.min(mrail.fi + (mrail.wait ? 1 : 0), 5)}/5 · 정답 ${mrail.ok}`; if ($('mrInfo').textContent !== info) $('mrInfo').textContent = info;
+  else { // 내리막은 빨라지고 오르막은 느려져요 · 밟으면 더 빨리
+    mrail.v = Math.max(2.5, Math.min(15, mrail.v + (-9.8 * t.y * 1.1 + (mrail.boost ? 4.5 : 0) + (5.5 - mrail.v) * 0.45) * dt));
+    mrail.s += mrail.v * dt; const st = MR.stops[mrail.fi] * L;
+    if (mrail.fi < 5 && mrail.s >= st) { mrail.s = st; mrail.wait = true; mrail.v = 0; mrQuiz(); }
+    if (mrail.s >= L) { mrail.last = null; mrEnd(true); return; } }
+  const u = Math.min(0.9999, mrail.s / L), P = c.getPointAt(u); t = c.getTangentAt(u); const hd = Math.atan2(t.x, t.z);
+  p.set(P.x, P.y + 0.22, P.z); player.vy = 0; player.heading = hd; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = hd; mrail.last = [P.x, P.z];
+  if (mrail.g) { if (mrail.g.parent !== player.avatar.g) player.avatar.g.add(mrail.g); mrail.g.rotation.x = -Math.asin(Math.max(-1, Math.min(1, t.y))); const cr = mrail.g.userData.crank; if (cr) cr.rotation.x += mrail.v * dt * (mrail.boost ? 3 : 1.6); }
+  if (!mrail.wait) { let d = hd + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 2.4); }
+  { const vis = mrail.wait ? 'hidden' : ''; if (mrail.hud.style.visibility !== vis) mrail.hud.style.visibility = vis; }
+  const info = `${MINE[mrail.id].icon} ${MQ_LV[mrail.lv].n} · ⛏️ ${Math.min(mrail.fi + (mrail.wait ? 1 : 0), 5)}/5 · 정답 ${mrail.ok} · ${'▮'.repeat(Math.max(1, Math.round(mrail.v / 3)))}`; if ($('mrInfo').textContent !== info) $('mrInfo').textContent = info;
 }
+
 function fillMineOpenAdmin() { // 🧑‍🏫 오늘 열 광산
   const box = $('tpMineOpen'); if (!box) return; box.textContent = '';
   const ids = mineOpenSet() ? mineOpenIds() : [], auto = !mineOpenSet();
@@ -15460,7 +15581,7 @@ function mineMake(id) {
     if (!r.ok || r.v < 1 || r.v > 100 || nums.some(n => n < 1 || n > 99)) continue;
     if (id === 'm1' && r.v > 50) continue;
     if (id === 'm4' && mathEval(toks.filter(t => t.v !== '(' && t.v !== ')')).v === r.v) continue; // 괄호가 꼭 필요한 문제만
-    const cards = [...nums]; if (!MINE[id].all) cards.push(rnd(1, id === 'm1' ? 20 : 9)); // 쓰지 않아도 되는 카드 1장
+    const cards = [...nums]; if (!CALC[id].all) cards.push(rnd(1, id === 'm1' ? 20 : 9)); // 쓰지 않아도 되는 카드 1장
     for (let j = cards.length - 1; j > 0; j--) { const q = rnd(0, j); [cards[j], cards[q]] = [cards[q], cards[j]]; }
     return { id, target: r.v, cards, sol: sol.join(' ') };
   }
@@ -15513,25 +15634,13 @@ function buildMathVillage() {
     box(bar, 2.4, 0.6, 0.06, 0xFFD23C, 0, 2.0, 0.12, o); makeLabel(bar, ['🚧 오늘은 닫혔어요'], 0.6, 0, 2.0, 0.3, { stroke: false });
     const glow = new THREE.Group(); mg.add(glow); ball(glow, 0.35, 0xFFE9A0, 0, 4.4, 0.7, { solid: false, emissive: 1 }); for (const sx of [-1.5, 1.5]) ball(glow, 0.22, 0xFFD27A, sx, 3.2, 0.7, { solid: false, emissive: 1 });
     mv.mines[m.id] = { g: mg, crys, label, lv: -1, key: '', bar, glow };
-    addInteract({ pos: new V3(m.x, 1, Z0 + 2.4), r: 3.2, dy: 2.2, text: () => mathRegion() ? [mineOpen(m.id) ? '광산 들어가기 ⛏️' : '🚧 오늘은 닫혀 있어요 (개념 보기)', `${m.icon} ${m.u}단원 ${m.uname}`] : null, run: () => openMine(m.id) });
+    addInteract({ pos: new V3(m.x, 1, Z0 + 2.4), r: 3.2, dy: 2.2, text: () => mathRegion() ? [mineOpen(m.id) ? '광산 안으로 들어가기 ⛏️' : '🚧 오늘은 닫혀 있어요 (개념 보기)', `${m.icon} ${m.u}단원 ${m.uname}`] : null, run: () => openMine(m.id) });
   }
   // 광장 게시판
   const bd = new THREE.Group(); bd.position.set(MV.cx - 6, 0, 10.5); g.add(bd);
   for (const sx of [-1.6, 1.6]) box(bd, 0.25, 3.2, 0.25, 0x8A5A34, sx, 1.6, 0);
   box(bd, 3.6, 2, 0.2, 0xFFF3DC, 0, 2.3, 0); box(bd, 3.9, 0.25, 0.4, 0x7A4A2A, 0, 3.4, 0, o);
   mv.board = makeLabel(bd, [''], 1.1, 0, 5.0, 0);
-  // 💎 교환소 (두더지 광부 아저씨)
-  const ex = new THREE.Group(); ex.position.set(MV.cx + 9, 0, 13); g.add(ex);
-  box(ex, 4.4, 0.9, 1.6, 0x9C6A3E, 0, 0.45, 0);
-  for (const sx of [-2, 2]) cyl(ex, 0.1, 3, 0x7A4A2A, sx, 1.5, 0.6, o);
-  mesh(GABLE, ex, 5, 1.2, 2.4, 0x3E6AC8, 0, 3.0, 0.2, { solid: false, ry: Math.PI / 2 });
-  for (let k = 0; k < 4; k++) mesh(SPH_LO, ex, 0.25, 0.2, 0.25, MINES[k + 1].color, -1.4 + k * 0.9, 1.05, 0, { solid: false, emissive: 0.2 });
-  const mole = new THREE.Group(); mole.position.set(0, 0, -1.4); ex.add(mole);                       // 두더지
-  mesh(SPH_MID, mole, 0.6, 0.75, 0.55, 0x7A5A44, 0, 0.75, 0); ball(mole, 0.42, 0x7A5A44, 0, 1.55, 0, o);
-  ball(mole, 0.13, 0xFF9AC0, 0, 1.5, -0.4, o); for (const sx of [-0.15, 0.15]) ball(mole, 0.05, 0x1E1915, sx, 1.66, -0.36, o);
-  cyl(mole, 0.45, 0.25, 0xF2C230, 0, 1.92, 0, o); ball(mole, 0.12, 0xFFF3B0, 0, 1.95, -0.42, { solid: false, emissive: 0.9 }); // 광부 모자와 불빛
-  makeLabel(ex, ['💎 광석 교환소'], 1.0, 0, 4.4, 0);
-  addInteract({ pos: new V3(MV.cx + 9, 1, 11.2), r: 3, text: () => mathRegion() ? ['광석 바꾸기 💎', '교환소'] : null, run: openOreShop });
   // 정류장 (돌아가기)
   const st = new THREE.Group(); st.position.set(MV.station[0], 0, MV.station[1]); g.add(st);
   box(st, 4, 0.3, 6, 0xA8A294, -1, 0.15, 0, o);
@@ -15542,15 +15651,9 @@ function buildMathVillage() {
   if (!TRANSIT_OFF) cyl(st, 0.08, 2, 0x3B2F2A, -1, 1, -1.45, o);
   if (!TRANSIT_OFF) addInteract({ pos: new V3(MV.station[0], 1, MV.station[1] + 2), r: 2.8, text: () => mathRegion() ? ['광차 타기 🚃', '우리 마을로 돌아가기'] : null, run: () => travelTo('fromMath') });
   for (const [x, z] of [[1140, 9], [1170, 9], [1215, 9], [1250, 9], [1150, -1], [1235, -1]]) lantern(g, x, z, 2.2);
-  for (const [x, z, s] of [[1109, 40, 1], [1150, 34, 0.8], [1236, 32, 1.1], [1262, 26, 0.9], [1117, -30, 1], [1268, 18, 1.2]]) { mesh(SPH_MID, g, 1.6 * s, 1.1 * s, 1.4 * s, rock[Math.round(x) % 4], x, 0.5, z, { solid: true, flat: true }); }
-  for (const [x, z] of [[1140, 28], [1175, 34], [1205, 30]]) { // 광부 오두막
-    const hg = new THREE.Group(); hg.position.set(x, 0, z); g.add(hg);
-    box(hg, 5, 3, 4, 0xB07C50, 0, 1.5, 0); mesh(GABLE, hg, 5.6, 2, 4.6, 0x7A4A2A, 0, 3, 0, { solid: false, ry: Math.PI / 2 });
-    box(hg, 1, 1.8, 0.1, 0x5C3A22, 0, 0.9, -2.02, o); box(hg, 0.9, 0.7, 0.1, 0xFFE9A0, 1.5, 1.8, -2.02, { solid: false, emissive: 0.5 });
-  }
-  makeLabel(g, ['⛏️ 수학 광산 마을', '1~6단원 광산 · 오늘 열린 광산에서 문제를 풀어요'], 1.4, MV.cx, 7.5, 4);
+  for (const [x, z, s] of [[1109, 40, 1], [1270, 42, 1.1], [1117, -30, 1], [1268, -10, 1.2], [1110, 22, 0.9]]) { mesh(SPH_MID, g, 1.6 * s, 1.1 * s, 1.4 * s, rock[Math.round(x) % 4], x, 0.5, z, { solid: true, flat: true }); }
+  makeLabel(g, ['⛏️ 수학 광산 마을', '북쪽 ⛏️ 광산 · 남쪽 📘 학당 · 🧮 혼합 계산 공방'], 1.4, MV.cx, 7.5, 4);
   buildMathExtras(g);
-  buildMineRail(g); // 🛤️ 1024a (⛰️ 블록 산은 없앴어요)
   registerSolids(g, 'math');
   g.updateMatrixWorld(true);
   // 우리 마을 서쪽 광차 정류장 (🌀 포털로 바꿔서 지금은 만들지 않아요)
@@ -15598,7 +15701,7 @@ function updateMath(dt) {
   if (!mv.group) return;
   const near = (player.pos.x > 1000 && player.pos.x < 1400) || (camera.position.x > 1000 && camera.position.x < 1400);
   mv.group.visible = near;
-  if (near && mathRegion() && !mv.seen) { mv.seen = true; toast(`⛏️ 수학 광산 마을에 왔어요! 오늘 열린 광산(${mineOpenText()})에서 단계를 골라 문제를 풀고, 🛤️ 광산 레일도 타 봐요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
+  if (near && mathRegion() && !mv.seen) { mv.seen = true; toast(`⛏️ 수학 광산 마을에 왔어요! 남쪽 📘 학당에서 개념을 익히고, 오늘 열린 광산(${mineOpenText()})에 들어가 🚴 레일바이크를 타요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
   if (near && mv.group && (mv.dayK !== dayNum())) { mv.dayK = dayNum(); renderMath(true); }
 }
 
@@ -15705,11 +15808,11 @@ function openMineOld(id, block = null) { // (예전 숫자 카드 식 만들기 
 function closeMine() { $('minePanel').classList.add('hidden'); }
 function exprText(tokens) { return tokens.map(t => t.v).join(' '); }
 function fillMine() {
-  const m = MINE[mv.cur], p = mv.puzzle; if (!m || !p) return;
-  $('mnTitle').textContent = mv.block ? `⛰️ ${m.icon} ${m.name} 블록 (${mv.block.y + 1}층)` : `${m.icon} ${m.name}`;
+  const m = CALC[mv.cur], p = mv.puzzle; if (!m || !p) return;
+  $('mnTitle').textContent = `🧮 ${m.icon} ${m.name}`;
   $('mnRule').textContent = `📏 ${m.rule} · 💡 ${m.tip}`;
   $('mnTarget').innerHTML = frHTML(p.target);
-  $('mnStat').textContent = `⛏️ ${mineLv(m.id)}단계 · 반 전체 ${mineCount(m.id)}개 · 내 ${m.oreIcon} ${bag.ore[m.id] || 0}개`;
+  $('mnStat').textContent = `🧮 혼합 계산 공방 · 맞히면 🐚 ${m.price * 2} · 🧮 +4`;
   // 식 줄
   const line = $('mnExpr'); line.textContent = '';
   if (!mv.expr.length) line.append(el2('span', 'mn-ph', '아래 카드를 눌러 식을 만들어요'));
@@ -15727,7 +15830,7 @@ function fillMine() {
   $('mnShow').classList.toggle('hidden', mv.wrong < 3);
 }
 async function digMine() {
-  const m = MINE[mv.cur], p = mv.puzzle, fb = $('mnFb'); if (!m || !p || mv.busy) return;
+  const m = CALC[mv.cur], p = mv.puzzle, fb = $('mnFb'); if (!m || !p || mv.busy) return;
   const nums = mv.expr.filter(t => t.k === 'n'), r = m.frac ? fracEval(mv.expr) : mathEval(mv.expr);
   const say = (msg) => { fb.textContent = msg; fb.className = 'qz-fb bad'; playSfx('wrong'); };
   if (!r.ok) {
@@ -15741,13 +15844,13 @@ async function digMine() {
   } else if (r.v !== p.target) { mv.wrong++; fillMine(); return say(`계산하면 ${r.v}이(가) 돼요. 목표 수 ${p.target}${josa(String(p.target), '과', '와').slice(-1)} 달라요. 다시 해 봐요!${mv.wrong >= 3 ? ' (💡 정답 보기를 눌러도 돼요)' : ''}`); }
   // 정답!
   mv.busy = true; fillMine();
-  const res = await backend.mathOre(m.id);
+  const res = { ok: true }; // (1024b: 공방 식 만들기는 단원 광산 광석 수에 넣지 않아요)
   mv.busy = false;
   if (!res.ok && res.reason !== 'offline') { say('⚠️ 저장되지 않았어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요'); return; }
   const gotSh = giveShellCapped(m.price * 2); saveBag(); updateHUD(null); addStat('math', 4); // 🧮 수학력 · 🐚 1017k: 광석 대신 조개 (가게 예산 안에서)
   fb.textContent = `⛏️ ${m.frac ? mv.expr.map(t => t.k === 'n' ? frText(t.v) : t.v).join(' ') : exprText(mv.expr)} = ${frText(p.target)} 정답! ${gotSh ? `🐚 +${gotSh}` : '(오늘 조개 예산은 다 찼어요)'}`; fb.className = 'qz-fb good';
   playSfx('pick'); playAct(player.avatar, 'cheer');
-  burst(new V3(m.x, 2.5, MV.z0 + 3), [m.color, 0xFFFFFF, C.gold], 40, 5, 2);
+  burst(player.pos.clone().setY(2.5), [m.color, 0xFFFFFF, C.gold], 40, 5, 2);
   mv.puzzle = mineMake(m.id); mv.expr = []; mv.wrong = 0;
   if (mv.block) { // ⛰️ 블록 부수기 → 창을 닫고 계속 올라가요
     const b = mv.block; mv.block = null;
@@ -16199,55 +16302,131 @@ function openMosaic() { // 🎨 반 모자이크 (8×8 · 칸마다 색 하나 �
     box.append(grid, pal); box.append(el2('div', 'row-center', null)); box.lastChild.append(go);
   });
 }
+/* ---------- 📘 단원 학당 · 🧮 혼합 계산 공방 (1024b · 수학 광산 마을 남쪽) ----------
+   마을 짜임: 북쪽 광산 6곳 ↔ 큰길 ↔ 남쪽 학당 6곳 (광산과 같은 줄) · 그 뒤 🧮 혼합 계산 공방 · 🏟️ 펫 체육관
+   학당: 알짜 정리 개념 + 기초 확인 문제 (언제나 열려 있어요 · 단원마다 하루 10문제까지 🐚2 · 🧮 +1) · 3단원 학당에서 🪞 대칭 거울 공방 활동
+   혼합 계산 공방: 예전 광산의 숫자 카드 식 만들기 6가지 + ⚖️ 저울 □ 구하기 (5문제 → 하루 한 번 보물) */
+const MS = { hz: 21, cw: [1139.5, 35], gym: [1193.5, 35] }; // 학당 줄 z · 혼합 계산 공방 · 펫 체육관 자리
+const STUDY = {
+  m1: [['이상과 이하', '<b>60 이상</b>인 수: 60과 같거나 큰 수 (60, 61, 70.5 …) → 수직선에 <b>●</b>, 오른쪽으로 선<br><b>60 이하</b>인 수: 60과 같거나 작은 수 → <b>●</b>, 왼쪽으로 선'],
+    ['초과와 미만', '<b>60 초과</b>인 수: 60보다 큰 수 (60은 아니에요) → 수직선에 <b>○</b><br><b>60 미만</b>인 수: 60보다 작은 수 (60은 아니에요) → <b>○</b>'],
+    ['수의 범위를 함께 쓰기', '10 이상 15 미만인 자연수 → 10, 11, 12, 13, 14 (15는 빠져요)<br>10 초과 15 이하인 자연수 → 11, 12, 13, 14, 15'],
+    ['올림', '구하려는 자리 아래 수를 <b>올려서</b> 나타내요<br>243 → 십의 자리까지 <b>250</b>, 백의 자리까지 <b>300</b> · 2.31 → 소수 첫째 자리까지 2.4'],
+    ['버림', '구하려는 자리 아래 수를 <b>버려서</b> 나타내요<br>228 → 십의 자리까지 <b>220</b>, 백의 자리까지 <b>200</b>'],
+    ['반올림', '구하려는 자리 <b>바로 아래 숫자</b>가 0, 1, 2, 3, 4면 버리고, 5, 6, 7, 8, 9면 올려요<br>3482 → 십의 자리까지 <b>3480</b>, 백의 자리까지 <b>3500</b>'],
+    ['생활에서 어림하기', '<b>올림</b>: 모자라면 안 될 때 (버스·보트 대수, 상자 수)<br><b>버림</b>: 남는 것은 쓸 수 없을 때 (10개씩 묶어 팔기, 1000원짜리로 바꾸기)<br><b>반올림</b>: 대략 얼마인지 말할 때 (키, 인구)']],
+  m2: [['(진분수) × (자연수)', '분모는 그대로, <b>분자와 자연수를 곱해요</b> → 2/5 × 3 = 6/5 = 1과 1/5 (곱하기 전에 약분해도 돼요)'],
+    ['(대분수) × (자연수)', '① 가분수로 바꿔서: 1과 1/4 × 3 = 5/4 × 3 = 15/4 = 3과 3/4<br>② 자연수 부분과 분수 부분에 각각 곱해서: (1 × 3) + (1/4 × 3)'],
+    ['(자연수) × (분수)', '6 × 2/3 = 12/3 = 4 → 자연수에 진분수를 곱하면 <b>처음보다 작아져요</b><br>2 × 1과 1/3 = 2 × 4/3 = 8/3 = 2와 2/3'],
+    ['(진분수) × (진분수)', '<b>분자는 분자끼리, 분모는 분모끼리</b> 곱해요 → 2/3 × 4/5 = 8/15<br>단위분수끼리: 1/3 × 1/4 = 1/12 (분모끼리 곱해요)'],
+    ['(대분수) × (대분수)', '꼭 <b>가분수로 바꾼 다음</b> 곱해요 → 1과 1/2 × 2와 1/3 = 3/2 × 7/3 = 7/2 = 3과 1/2<br>(자연수끼리, 분수끼리 따로 곱하면 틀려요!)'],
+    ['세 분수의 곱셈', '앞에서부터 두 개씩 곱하거나, 세 분자끼리 · 세 분모끼리 한꺼번에 곱해요 → 1/2 × 2/3 × 3/4 = 6/24 = 1/4'],
+    ['곱의 크기', '1보다 작은 수(진분수)를 곱하면 작아지고, 1보다 큰 수를 곱하면 커져요']],
+  m3: [['도형의 합동', '모양과 크기가 같아서 포개었을 때 완전히 겹치는 두 도형 → <b>서로 합동</b>'],
+    ['대응점 · 대응변 · 대응각', '합동인 두 도형을 포개었을 때 겹치는 점·변·각<br>→ <b>대응변의 길이</b>와 <b>대응각의 크기</b>는 각각 같아요 (삼각형은 3쌍씩, 사각형은 4쌍씩)'],
+    ['선대칭도형', '한 직선을 따라 접었을 때 완전히 겹치는 도형 · 그 직선 = <b>대칭축</b> (도형에 따라 여러 개)<br>대응점끼리 이은 선분은 대칭축과 <b>수직</b>, 대칭축이 그 선분을 <b>똑같이 둘로</b> 나눠요'],
+    ['점대칭도형', '한 점을 중심으로 <b>180°</b> 돌렸을 때 처음 도형과 완전히 겹치는 도형 · 그 점 = <b>대칭의 중심</b> (항상 1개)<br>대칭의 중심은 대응점끼리 이은 선분을 <b>똑같이 둘로</b> 나눠요'],
+    ['그리는 방법', '선대칭: 각 점에서 대칭축에 수직인 선을 긋고, 같은 거리만큼 반대쪽에 대응점 → 이어요<br>점대칭: 각 점과 대칭의 중심을 이은 선을 늘여서, 같은 거리만큼 반대쪽에 대응점 → 이어요'],
+    ['정다각형', '정■각형의 대칭축은 ■개 · 변이 짝수 개인 정다각형은 점대칭도형이에요']],
+  m4: [['(소수) × (자연수)', '0.3 × 4 → 0.1이 3 × 4 = 12개 → <b>1.2</b> · 분수로: 3/10 × 4 = 12/10 = 1.2<br>1.6 × 3 = 4.8 (16 × 3 = 48, 소수 한 자리)'],
+    ['(자연수) × (소수)', '4 × 0.7 = 2.8 → 1보다 작은 소수를 곱하면 <b>처음보다 작아져요</b><br>3 × 1.25 = 3.75'],
+    ['(소수) × (소수)', '자연수처럼 곱한 다음, 곱하는 두 수의 <b>소수점 아래 자리 수를 더한 만큼</b> 소수점을 찍어요<br>0.7 × 0.5 → 7 × 5 = 35 → 1 + 1 = 2자리 → <b>0.35</b> · 1.2 × 2.4 = 2.88'],
+    ['곱의 소수점 위치 ①', '× 10, × 100, × 1000 → 0이 하나씩 늘 때마다 소수점이 <b>오른쪽</b>으로 한 칸씩<br>3.14 × 10 = 31.4 · × 100 = 314 · × 1000 = 3140'],
+    ['곱의 소수점 위치 ②', '× 0.1, × 0.01, × 0.001 → 소수점이 <b>왼쪽</b>으로 한 칸씩<br>314 × 0.1 = 31.4 · × 0.01 = 3.14 · × 0.001 = 0.314'],
+    ['자리 수 세기', '0.2 × 0.03 = 0.006 (1자리 + 2자리 = 3자리) · 315 × 63 = 19845 → 31.5 × 0.63 = 19.845']],
+  m5: [['직육면체와 정육면체', '<b>직육면체</b>: 직사각형 6개로 둘러싸인 도형 · <b>정육면체</b>: 정사각형 6개로 둘러싸인 도형<br>정육면체는 직육면체라고 할 수 있지만, 직육면체는 정육면체라고 할 수 없어요'],
+    ['구성 요소', '면 = 선분으로 둘러싸인 부분 <b>6개</b> · 모서리 = 면과 면이 만나는 선분 <b>12개</b> · 꼭짓점 = 모서리와 모서리가 만나는 점 <b>8개</b>'],
+    ['겨냥도', '모양을 잘 알 수 있게 그린 그림 · 보이는 모서리는 <b>실선</b>(9개), 보이지 않는 모서리는 <b>점선</b>(3개) · 보이는 면 3개, 보이는 꼭짓점 7개'],
+    ['밑면과 옆면', '서로 평행한 두 면 = <b>밑면</b> (평행한 면은 3쌍) · 밑면과 수직인 면 = <b>옆면</b> (한 면과 수직인 면은 4개)'],
+    ['전개도', '모서리를 잘라서 펼친 그림 · 잘린 모서리는 <b>실선</b>, 잘리지 않은 모서리는 <b>점선</b><br>접었을 때 맞닿는 선분의 길이는 같고, 마주 보는 면은 3쌍 · 겹치는 면이 없어야 해요'],
+    ['모서리 길이의 합', '직육면체: (가로 + 세로 + 높이) × 4 · 정육면체: 한 모서리 × 12']],
+  m6: [['평균', '자료의 값을 모두 더해 자료의 수로 나눈 값 = 그 자료를 대표하는 값<br><b>평균 = (자료의 값을 모두 더한 수) ÷ (자료의 수)</b> → 87, 92, 85, 90, 91 → 445 ÷ 5 = <b>89</b>'],
+    ['평균 구하는 다른 방법', '높은 막대에서 낮은 막대로 옮겨 <b>고르게</b> 하면 그 높이가 평균이에요 · 평균을 예상하고 짝지어 맞추기'],
+    ['평균 비교하기', '사람 수가 다른 두 모둠은 합이 아니라 <b>평균</b>으로 비교해요'],
+    ['평균 이용하기', '모르는 값 = 평균 × 자료의 수 − (아는 값들의 합)<br>예) 4과목 평균 85점, 세 과목 80, 90, 85점 → 85 × 4 − 255 = 85점'],
+    ['일이 일어날 가능성', '<b>불가능하다</b> · ~아닐 것 같다 · <b>반반이다</b> · ~일 것 같다 · <b>확실하다</b>'],
+    ['가능성을 수로', '불가능하다 = <b>0</b> · 반반이다 = <b>1/2</b> · 확실하다 = <b>1</b><br>예) 동전의 그림 면 1/2 · 주사위 7의 눈 0 · 주사위 6 이하의 눈 1']],
+};
+function buildStudyHall(g, m) { // 📘 학당 건물 (문은 북쪽 큰길을 봐요)
+  const o = { solid: false }, x = m.x, z = MS.hz, q = new THREE.Group(); q.position.set(x, 0, z); g.add(q);
+  box(q, 9, 0.3, 7, 0xC9C2B4, 0, 0.15, 0, o); box(q, 8, 3.6, 6, 0xFFF6E4, 0, 2.0, 0);
+  mesh(GABLE, q, 9, 2.0, 7, m.color, 0, 3.8, 0, { solid: false, ry: Math.PI / 2 });
+  box(q, 1.6, 2.4, 0.12, 0x5C3A22, 0, 1.4, -3.02, o); for (const sx of [-2.6, 2.6]) box(q, 1.4, 1.1, 0.1, C.glass, sx, 2.2, -3.02, o);
+  box(q, 4.4, 1.0, 0.12, 0x2F5A44, 0, 4.4, -3.3, o); signPlane(q, [`📘 ${m.u}단원 학당`], 4.2, 0.8, 0, 4.4, -3.38, { font: 46, pad: 4, fg: '#FFFFFF', bg: '#2F5A44', stroke: false }).rotation.y = Math.PI;
+  box(q, 3, 2, 0.1, 0x2F5A44, 0, 1.2, -4.3, o); for (const sx of [-1.4, 1.4]) box(q, 0.12, 1.4, 0.12, 0x7A4A2A, sx, 0.7, -4.3, o); // 길가 칠판
+  makeLabel(q, [`📘 ${m.u}단원 학당`, m.uname], 1.0, 0, 6.6, 0);
+  addInteract({ pos: new V3(x, 1, z - 4.4), r: 3.2, text: () => mathRegion() ? [`📘 ${m.u}단원 개념 공부`, `${m.uname} · 기초 문제`] : null, run: () => openUnitStudy(m.id) });
+}
 function buildMathExtras(g) {
   const o = { solid: false };
-  // 💎 보석 가공소
-  { const q = new THREE.Group(); q.position.set(MX.gem[0], 0, MX.gem[1]); g.add(q);
-    box(q, 6, 3.2, 4.4, 0x6B5A7A, 0, 1.6, 0); mesh(GABLE, q, 6.6, 1.8, 5, 0x3E2F5A, 0, 3.2, 0, { solid: false, ry: Math.PI / 2 });
-    box(q, 1.4, 2.2, 0.12, 0x2A2030, -1.5, 1.1, -2.22, o); box(q, 2.2, 1.0, 0.1, 0xBFE6FF, 1.3, 1.9, -2.22, { solid: false, emissive: 0.4 });
-    box(q, 2.6, 0.9, 1.0, 0x8A6A44, 1.2, 0.45, -3.0); cyl(q, 0.42, 0.12, 0xC9CED6, 1.2, 1.25, -3.0, { solid: false, rx: Math.PI / 2 }); // 연마 바퀴
-    GEMS.forEach((gm, i) => ball(q, 0.2, gm.c, -0.2 + i * 0.5, 1.02, -3.0, { solid: false, emissive: 0.5 }));
-    makeLabel(q, ['💎 보석 가공소', '광석 + 약수·배수·분수 문제'], 1.0, 0, 5.4, 0);
-    addInteract({ pos: new V3(MX.gem[0], 1, MX.gem[1] - 3.2), r: 3, text: () => mathRegion() ? ['보석 다듬기 💎', '보석 가공소'] : null, run: openGemShop }); }
-  // 🧩 도형 공방 + 반 모자이크
-  { const q = new THREE.Group(); q.position.set(MX.shape[0], 0, MX.shape[1]); g.add(q);
-    box(q, 6, 3.2, 4.4, 0xF5EBD6, 0, 1.6, 0); mesh(GABLE, q, 6.6, 1.8, 5, 0x2F8F83, 0, 3.2, 0, { solid: false, ry: Math.PI / 2 });
-    box(q, 1.4, 2.2, 0.12, 0x5A3A22, 0, 1.1, -2.22, o);
-    box(q, 0.9, 0.9, 0.12, 0xE2584A, -2.0, 4.6, 0, o); mesh(CONE, q, 0.55, 0.9, 0.55, 0x4A9AE8, 0, 4.7, 0, o); cyl(q, 0.45, 0.12, 0xFFD23C, 2.0, 4.6, 0, { solid: false, rx: Math.PI / 2 });
-    makeLabel(q, ['🧩 도형 공방', '둘레·넓이 문제 → 타일'], 1.0, 0, 6.0, 0);
-    addInteract({ pos: new V3(MX.shape[0], 1, MX.shape[1] - 3), r: 3, text: () => mathRegion() ? ['도형 문제 풀기 🧩', '도형 공방'] : null, run: openShapeShop });
-    const mg = new THREE.Group(); mg.position.set(MX.mo[0], 0, MX.mo[1]); g.add(mg); mv.moCells = [];
-    const N = MX.moN, S2 = MX.moS; box(mg, N * S2 + 0.6, 0.08, N * S2 + 0.6, 0x8A6A44, 0, 0.04, 0, o);
-    for (let i = 0; i < N * N; i++) { const m = new THREE.Mesh(BOX, M(MOSAIC_C[0])); m.scale.set(S2 - 0.08, 0.06, S2 - 0.08); m.position.set(((N - 1) / 2 - i % N) * S2, 0.11, ((N - 1) / 2 - Math.floor(i / N)) * S2); /* 큰길에서 남쪽을 볼 때 칠하기 창과 같은 모양 */ m.userData.solid = false; mg.add(m); mv.moCells.push(m); }
-    makeLabel(mg, ['🎨 우리 반 모자이크'], 0.9, 0, 1.6, -N * S2 / 2 - 0.6);
-    addInteract({ pos: new V3(MX.mo[0], 0.5, MX.mo[1] - N * S2 / 2 - 0.8), r: 3, text: () => mathRegion() ? ['모자이크 칠하기 🎨', `한 칸 🐚${TILE_SH}`] : null, run: openMosaic }); }
-  // 🪞 대칭 거울 공방 (1023g · 합동과 대칭)
-  { const q = new THREE.Group(); q.position.set(1188, 0, 28); g.add(q);
-    box(q, 5.2, 0.3, 4.2, 0xE8DCC8, 0, 0.15, 0, o); for (const [x, z] of [[-2.3, -1.8], [2.3, -1.8], [-2.3, 1.8], [2.3, 1.8]]) cyl(q, 0.16, 3, 0xF4F4F4, x, 1.6, z);
-    mesh(GABLE, q, 6, 1.4, 5, 0x7A5AB0, 0, 3.1, 0, { solid: false, ry: Math.PI / 2 });
-    box(q, 2.2, 2.4, 0.18, 0xC9A65E, 0, 1.6, 0.6); box(q, 1.9, 2.1, 0.05, 0xDDEEFF, 0, 1.6, 0.48, { solid: false, emissive: 0.35 }); // 큰 거울
-    for (const s2 of [-1, 1]) { mesh(SPH_LO, q, 0.55, 0.75, 0.1, 0xFF9AC0, s2 * 0.55, 1.85, 0.32, { solid: false, flat: true }); mesh(SPH_LO, q, 0.38, 0.5, 0.1, 0xFFD23C, s2 * 0.45, 1.2, 0.32, { solid: false, flat: true }); } box(q, 0.1, 1.3, 0.12, 0x3B2F2A, 0, 1.55, 0.3, o); // 🦋 대칭 나비
-    makeLabel(q, ['🪞 대칭 거울 공방', '합동과 대칭 문제'], 1.0, 0, 5.0, 0);
-    addInteract({ pos: new V3(1188, 1, 28 - 2.8), r: 3, text: () => mathRegion() ? ['합동과 대칭 문제 🪞', '대칭 거울 공방'] : null, run: openSymShop }); }
-  // ⚖️ 균형 저울 다리: 계단 + 출발대 · (틈) · 균형의 탑
-  { const B = MX.br, z = B.z;
-    box(g, B.x1 - B.x0, B.h, 4, 0x9A9286, (B.x0 + B.x1) / 2, B.h / 2, z);                         // 출발대
-    const steps = Math.ceil(B.h / 0.4); for (let k = 0; k < steps; k++) box(g, 0.55, (k + 1) * 0.4, 2.4, 0xA59D90, B.x0 - 0.3 - (steps - 1 - k) * 0.55, (k + 1) * 0.2, z); // 계단
-    box(g, B.x3 - B.x2, B.h, 6, 0x8C8478, (B.x2 + B.x3) / 2, B.h / 2, z);                       // 균형의 탑
-    for (const sx of [B.x2 + 0.3, B.x3 - 0.3]) for (const sz of [-2.7, 2.7]) cyl(g, 0.12, 1.1, C.gold, sx, B.h + 0.55, z + sz, o);
-    const sc = new THREE.Group(); sc.position.set((B.x2 + B.x3) / 2, B.h, z + 1.2); g.add(sc); // 큰 황금 저울
-    box(sc, 1.6, 0.3, 1.2, C.gold, 0, 0.15, 0, o); cyl(sc, 0.12, 2.4, C.gold, 0, 1.5, 0, o); box(sc, 3.2, 0.14, 0.14, C.gold, 0, 2.7, 0, o);
-    for (const x of [-1.5, 1.5]) { cyl(sc, 0.02, 0.9, 0xC9B79C, x, 2.25, 0, o); cyl(sc, 0.55, 0.08, C.gold, x, 1.8, 0, o); }
-    const ch = new THREE.Group(); ch.position.set((B.x2 + B.x3) / 2, B.h, z - 1.4); g.add(ch); box(ch, 1.0, 0.6, 0.7, 0x9A6233, 0, 0.3, 0, o); box(ch, 1.05, 0.26, 0.75, 0xB8743E, 0, 0.72, 0, o); box(ch, 1.07, 0.08, 0.1, C.gold, 0, 0.72, 0, o); mv.brChest = ch;
-    makeLabel(g, ['⚖️ 균형 저울 다리', '□를 맞히면 판자가 하나씩!'], 1.0, (B.x0 + B.x1) / 2, B.h + 3.2, z - 2.4);
-    addInteract({ pos: new V3(B.x1 - 0.6, B.h + 1, z), r: 2.2, text: () => mathRegion() && player.pos.y > B.h - 0.5 && mv.brN < B.n ? ['⚖️ 저울 문제 풀기', `판자 ${mv.brN}/${B.n}`] : null, run: openBalance });
-    addInteract({ pos: new V3((B.x2 + B.x3) / 2, B.h + 1, z - 1.4), r: 2.2, text: () => mathRegion() && player.pos.y > B.h - 0.5 ? (bag.balD === dayNum() ? ['🏆 오늘 보물은 받았어요', '내일 또 와요'] : ['🏆 균형의 탑 보물 열기', '하루 한 번']) : null, run: balanceTreasure });
-  }
+  for (const m of MINES) { buildStudyHall(g, m); box(g, 2.4, 0.04, 31, 0xE3CFA4, m.x, 0.025, MV.z0 + 9 + 15.5, o); box(g, 2.4, 0.04, 9.5, 0xE3CFA4, m.x, 0.025, 11.2, o); } // 광산 → 큰길 → 학당 길
+  // 🧮 혼합 계산 공방 (문은 북쪽)
+  { const [x, z] = MS.cw, q = new THREE.Group(); q.position.set(x, 0, z); g.add(q);
+    box(q, 11, 0.3, 8, 0xC9C2B4, 0, 0.15, 0, o); box(q, 10, 3.8, 7, 0xF5EBD6, 0, 2.1, 0); mesh(GABLE, q, 11, 2.2, 8, 0x2F8F83, 0, 4.0, 0, { solid: false, ry: Math.PI / 2 });
+    box(q, 2, 2.6, 0.12, 0x5C3A22, 0, 1.5, -3.52, o); for (const sx of [-3.3, 3.3]) box(q, 1.8, 1.2, 0.1, C.glass, sx, 2.3, -3.52, o);
+    const ab = new THREE.Group(); ab.position.set(0, 5.3, -3.4); q.add(ab); box(ab, 4.6, 2.0, 0.2, 0x8A5A34, 0, 0, 0, o); // 🧮 주판 간판
+    for (let r = 0; r < 4; r++) { box(ab, 4.2, 0.05, 0.05, 0xC9B79C, 0, -0.65 + r * 0.43, -0.12, o); for (let k = 0; k < 6; k++) ball(ab, 0.13, [0xE2584A, 0xFFD23C, 0x4A9AE8, 0x5FBE5A][r], -1.6 + k * 0.32 + (k > 2 ? 0.8 : 0), -0.65 + r * 0.43, -0.16, o); }
+    for (const [t, sx] of [['+', -4.2], ['×', 4.2]]) { box(q, 1, 1, 0.2, 0xFFD23C, sx, 4.4, -3.6, { solid: false, emissive: 0.3 }); makeLabel(q, [t], 0.9, sx, 4.4, -3.8, { stroke: false }); }
+    makeLabel(q, ['🧮 혼합 계산 공방', '카드로 식 만들기 · 저울 □ 구하기'], 1.1, 0, 7.6, 0);
+    addInteract({ pos: new V3(x, 1, z - 4.8), r: 3.4, text: () => mathRegion() ? ['🧮 혼합 계산 하기', '카드 식 만들기 · ⚖️ 저울'] : null, run: openCalcShop });
+    box(g, 2.4, 0.04, 26, 0xE3CFA4, x, 0.025, 19, o); }
+  box(g, 2.4, 0.04, 22, 0xE3CFA4, MS.gym[0], 0.025, 20, o); // 체육관 가는 길
+  // 남동쪽: 광석 더미 · 광차 전시
+  { const q = new THREE.Group(); q.position.set(1247.5, 0, 35); g.add(q);
+    for (let k = 0; k < 14; k++) mesh(SPH_LO, q, 0.7 + (k % 3) * 0.3, 0.6, 0.7, [0x7E776C, 0x9A9286, 0xD9783A, 0xF2C230, 0xC9D2DC][k % 5], Math.cos(k) * (1 + k * 0.2), 0.4 + (k % 4) * 0.15, Math.sin(k * 1.3) * 1.6, { solid: false, flat: true });
+    const ct = cartModel(0x5E6670); ct.position.set(5, 0, 0); q.add(ct); for (const sx of [-0.55, 0.55]) box(q, 0.12, 0.08, 7, 0x6B6B70, 5 + sx, 0.06, 0, o);
+    makeLabel(q, ['⛏️ 우리 반이 캔 광석'], 0.9, 1, 3.4, 0); }
 }
-function openBalance() {
-  const Q = qBalance(), B = MX.br;
-  mathQuiz('⚖️ 균형 저울 다리', Q, () => { mv.brN = Math.min(B.n, (mv.brN || 0) + 1); buildBridgePlanks(); playSfx('build'); toast(mv.brN >= B.n ? '🌉 다리가 완성됐어요! 균형의 탑으로 건너가요' : `🪵 판자 ${mv.brN}/${B.n}`, 'success'); setTimeout(() => { if (mv.brN < B.n) openBalance(); else closeLife(); }, 800); },
-    (box) => box.append(el2('p', 'hint', `양쪽 값이 같아지도록 □에 알맞은 수를 골라요. 맞힐 때마다 다리 판자가 하나씩 놓여요 (${mv.brN || 0}/${B.n}). 다리는 내 화면에만 놓이고, 광산 마을을 떠나면 다시 처음부터예요.`)));
+function updateMathExtras() {}
+// 📘 학당 창
+function openUnitStudy(id) {
+  const m = MINE[id];
+  openLife(`📘 ${m.u}단원 학당 · ${m.uname}`, (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', '알짜 정리로 개념을 익히고, 아래 기초 문제로 확인해요. 학당은 언제나 열려 있어요 (광산은 선생님이 연 날만 들어갈 수 있어요)'));
+    for (const [t, b] of STUDY[id]) { const d = el2('div', 'sticker'); d.style.cssText = 'padding:8px 12px;margin:6px 0;text-align:left;font-size:15px;line-height:1.6'; d.innerHTML = `<b style="color:#2F5A44">📌 ${t}</b><br>${b}`; box.append(d); }
+    const R = mqRec(), n = R.sd?.[id] || 0, row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
+    const b1 = el2('button', 'btn', `✏️ 기초 문제 풀기 (오늘 ${Math.min(n, 10)}/10 🐚)`); b1.style.background = '#D8F5D0'; b1.onclick = () => studyAsk(id); row.append(b1);
+    if (id === 'm3') { const b2 = el2('button', 'btn', '🪞 대칭 거울 공방 (10문제 도전 · 데칼코마니 · 대응 찾기)'); b2.style.background = '#E6DCFF'; b2.onclick = openSymShop; row.append(b2); }
+    box.append(row, el2('p', 'hint', `${mineOpenIds().includes(id) ? `⛏️ 오늘 ${m.icon} ${m.u}단원 광산이 열렸어요! 북쪽 광산으로 들어가 레일바이크를 타 봐요` : `오늘 열린 광산: ${mineOpenText()}`}`));
+  });
+}
+function studyAsk(id) {
+  const R = mqRec(); R.sdD !== dayNum() && (R.sdD = dayNum(), R.sd = {}); R.sd ||= {};
+  const Q = mqMake(id, 0), m = MINE[id], pay = (R.sd[id] || 0) < 10; Q.st = pay ? 1 : 0; let first = true;
+  const title = `✏️ ${m.u}단원 기초 문제`;
+  mathQuiz(title, Q, () => {
+    if (first) { R.sd[id] = (R.sd[id] || 0) + 1; const got = pay ? giveShellCapped(2) : 0; saveBag(); toast(`✏️ 정답!${got ? ` 🐚 +${got}` : pay ? '' : ' (오늘 이 학당 보상은 다 받았어요 · 연습은 계속!)'}`, 'success'); }
+    else toast('정답! 다음 문제도 도전해요', 'info');
+    setTimeout(() => { if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === title) studyAsk(id); }, 1000);
+  }, (box) => { const b = el2('button', 'btn', '⬅️ 개념 다시 보기'); b.style.cssText = 'background:#fff;font-size:14px;padding:4px 10px'; b.onclick = () => openUnitStudy(id); const r = el2('div', 'row-center', null); r.append(b); box.append(r); },
+  () => { if (first) { first = false; Q.st = 0; } });
+}
+// 🧮 혼합 계산 공방: 예전 광산 카드 식 만들기 (CALC) + ⚖️ 저울
+const CALC = {
+  m1: { id: 'm1', name: '덧셈·뺄셈 식', icon: '➕', color: 0x9A948A, ops: ['+', '−'], minN: 2, price: 2, rule: '숫자 카드 2장 이상 · 기호 + −', tip: '더하고 빼서 목표 수를 만들어요' },
+  m2: { id: 'm2', name: '곱셈·나눗셈 식', icon: '✖️', color: 0xD9783A, ops: ['×', '÷'], minN: 2, price: 3, rule: '숫자 카드 2장 이상 · 기호 × ÷', tip: '곱하고 나눠서 목표 수를 만들어요 (나누어떨어져야 해요)' },
+  m3: { id: 'm3', name: '혼합 계산 (계산 순서)', icon: '🔢', color: 0xC9D2DC, ops: ['+', '−', '×', '÷'], minN: 3, price: 5, rule: '숫자 카드 3장 이상 · + − × ÷', tip: '× ÷를 + −보다 먼저 계산해요' },
+  m4: { id: 'm4', name: '괄호가 있는 식', icon: '🧷', color: 0xF2C230, ops: ['+', '−', '×', '÷', '(', ')'], minN: 3, paren: true, price: 6, rule: '숫자 카드 3장 이상 · 괄호를 꼭 써요', tip: '괄호 안을 가장 먼저 계산해요' },
+  m5: { id: 'm5', name: '카드 4장 모두', icon: '💎', color: 0x6FD3E8, ops: ['+', '−', '×', '÷', '(', ')'], minN: 4, all: true, price: 10, rule: '숫자 카드 4장을 모두 써요 · + − × ÷ ( )', tip: '어떤 순서로 이어야 할지 여러 가지로 해 봐요' },
+  m6: { id: 'm6', name: '분수 곱셈 식', icon: '🔮', color: 0xB58CF0, ops: ['×'], minN: 2, frac: true, price: 8, rule: '분수의 곱셈 · 카드 2장 이상 · 기호 ×', tip: '분자끼리, 분모끼리 곱하고 약분해요. 대분수는 가분수로 바꿔서 곱해요' },
+};
+function openCalcShop() {
+  openLife('🧮 혼합 계산 공방', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'hint', '숫자 카드와 기호 카드를 이어 식을 만들어 목표 수를 맞혀요. 계산 순서: ( ) → × ÷ → + − · 맞히면 🐚 + 🧮'));
+    const g = el2('div', 'mx-opts');
+    for (const c of Object.values(CALC)) { const b = el2('button', 'btn mx-opt', ''); b.innerHTML = `${c.icon} <b>${c.name}</b><br><span style="font-size:13px">${c.rule} · 🐚 ${c.price * 2}</span>`; b.onclick = () => openMineOld(c.id); g.append(b); }
+    box.append(g);
+    const bb = el2('button', 'btn', `⚖️ 저울 □ 구하기 (${mv.brN || 0}/5${bag.balD === dayNum() ? ' · 오늘 보물 받음' : ' → 하루 한 번 보물'})`); bb.style.background = '#FFE066'; bb.onclick = openBalance;
+    const r = el2('div', 'row-center', null); r.append(bb); box.append(r);
+  });
+}
+
+function openBalance() { // ⚖️ 저울 □ 구하기 (1024b: 혼합 계산 공방 안 · 5문제 맞히면 하루 한 번 보물)
+  const Q = qBalance();
+  mathQuiz('⚖️ 저울 □ 구하기', Q, () => { mv.brN = Math.min(5, (mv.brN || 0) + 1); if (mv.brN >= 5) { mv.brN = 0; balanceTreasure(); setTimeout(openCalcShop, 1400); } else { toast(`⚖️ 저울 ${mv.brN}/5`, 'success'); setTimeout(openBalance, 900); } },
+    (box) => box.append(el2('p', 'hint', `양쪽 값이 같아지도록 □에 알맞은 수를 골라요 (${mv.brN || 0}/5). 5문제를 맞히면 균형의 보물 (하루 한 번)!`)));
 }
 function buildBridgePlanks() { // 🪵 내 화면의 다리 판자 (부딪혀서 올라설 수 있어요)
   if (mv.brG) { scene.remove(mv.brG); removeColliders('mathbridge'); mv.brG = null; }
@@ -16256,16 +16435,11 @@ function buildBridgePlanks() { // 🪵 내 화면의 다리 판자 (부딪혀서
   registerSolids(g, 'mathbridge');
 }
 function balanceTreasure() {
-  if (bag.balD === dayNum()) { toast('🏆 오늘 보물은 이미 받았어요. 내일 또 와요!', 'info'); return; }
+  if (bag.balD === dayNum()) { toast('⚖️ 5문제 성공! 오늘 보물은 이미 받았어요. 내일 또 와요!', 'info'); return; }
   bag.balD = dayNum(); earnShell(60); addStat('math', 10); // 🐚 1017k: 보석 대신 조개 +30 더
   let extra = ''; if (!bag.balScale) { bag.balScale = 1; bag.fur[27] = (bag.fur[27] || 0) + 1; extra = ' · ⚖️ 황금 저울(가구)'; }
-  saveBag(); const p = mv.brChest.position; burst(new V3(p.x, p.y + 1, p.z), RAINBOW, 70, 6, 3); playSfx('fanfare');
+  saveBag(); burst(player.pos.clone().setY(2), RAINBOW, 70, 6, 3); playSfx('fanfare');
   showBanner('🏆 균형의 탑 보물!', `🐚 +60 · 🧮 수학력 +10${extra}`, 5000);
-}
-function updateMathExtras(dt) {
-  if (!mv.moCells) return;
-  const mo = S.math?.mo || {}, key = JSON.stringify(mo); if (key !== mv.moKey) { mv.moKey = key; mv.moCells.forEach((m, i) => { m.material = M(MOSAIC_C[mo[i] | 0] ?? MOSAIC_C[0]); }); }
-  if (!mathRegion() && mv.brN) { mv.brN = 0; buildBridgePlanks(); } // 광산 마을을 떠나면 다리는 처음부터
 }
 function openOreShop() {
   openLife('💎 광석 교환소', (box) => {
@@ -16629,7 +16803,7 @@ async function exitRoom(id) {
   if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
   else if (id === 'sd') { const sp = HV_SITE.seodang.pos; x = sp[0]; z = sp[1] + 7; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); }
   else if (id === 'mus') { x = MUS_SPOT[0]; z = MUS_SPOT[1] - 6; h = Math.PI; mus.g = null; } // 🏛️ 박물관 문 앞
-  else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz] = PG_SPOT[+id[2]]; x = gx; z = gz + 5.4; h = 0; } // 🏟️ 마을 체육관 문 앞
+  else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz, gr = 0] = PG_SPOT[+id[2]]; x = gx + Math.sin(gr) * 5.4; z = gz + Math.cos(gr) * 5.4; h = gr; } // 🏟️ 마을 체육관 문 앞
   else if (id === 'etr') { x = 1796.2; z = -0.2; h = -Math.PI / 2; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 영어 마을 훈련소 문 앞
   else if (id === 'gw') { x = GW_HOUSE.x; z = GW_HOUSE.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 📜 과거시험장 문 앞
   else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
@@ -19106,18 +19280,18 @@ function openLeaders(here = roomNow()) {
   });
 }
 // ---------- 🏟️ 마을 체육관 (2·3·4단계): 바깥 건물 + 안쪽 방 ----------
-const PG_SPOT = { 2: [1170, -20], 3: [553, -8], 4: [1732, -32] }; // 건물 가운데 (문은 +z 쪽)
+const PG_SPOT = { 2: [1193.5, 35, Math.PI], 3: [553, -8], 4: [1732, -32] }; // 건물 가운데 (문은 +z 쪽 · 세 번째 값은 돌림: 1024b 수학 마을 체육관은 문이 북쪽 큰길을 봐요)
 const pgw = { labels: {}, key: '' };
 function buildPetGyms() {
   const o = { solid: false };
   for (const n of [2, 3, 4]) {
-    const [x, z] = PG_SPOT[n], g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+    const [x, z, rot = 0] = PG_SPOT[n], g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot; scene.add(g);
     box(g, 10, 0.3, 7.4, 0xC9C2B4, 0, 0.15, 0); box(g, 9.4, 3.6, 6.4, 0xFFF4DE, 0, 2.1, 0); box(g, 10.2, 0.6, 7.2, 0xE2584A, 0, 4.2, 0);
     box(g, 6, 1.1, 6.6, 0xF5C531, 0, 4.9, 0, o); cyl(g, 1.1, 0.25, 0xFFFFFF, 0, 4.2, 3.62, { solid: false, rx: Math.PI / 2 }); ball(g, 0.35, 0xE2584A, 0, 4.2, 3.75, { solid: false, emissive: 0.4 });
     box(g, 2.2, 2.6, 0.12, 0x5A3A22, 0, 1.6, 3.22, o); for (const sx of [-3.2, 3.2]) box(g, 1.6, 1.2, 0.1, C.glass, sx, 2.2, 3.22, o);
     pgw.labels[n] = makeLabel(g, [''], 1.2, 0, 6.6, 0);
     registerSolids(g, 'static');
-    addInteract({ pos: new V3(x, 1, z + 4.8), r: 2.6, text: () => roomNow() ? null : ['들어가기 🚪', `🏟️ ${n}단계 펫 체육관`], run: () => enterRoom('pg' + n) });
+    addInteract({ pos: new V3(x + Math.sin(rot) * 4.8, 1, z + Math.cos(rot) * 4.8), r: 2.6, text: () => roomNow() ? null : ['들어가기 🚪', `🏟️ ${n}단계 펫 체육관`], run: () => enterRoom('pg' + n) });
   }
   const g = new THREE.Group(); g.name = 'PetGymRooms'; scene.add(g);
   for (const n of [2, 3, 4]) { const r = ROOMS['pg' + n], { cx, cz, w, d } = r; roomShell(g, r);
@@ -20084,7 +20258,7 @@ function initHistAdmin() {
 const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
-  math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🛤️ 광산 레일 · 도형 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
+  math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🚴 레일바이크 · 📘 학당 · 🧮 혼합 계산 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
   read: { icon: '📚', name: '독서력', where: '광장 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 bag.stat ||= {};
@@ -20132,7 +20306,7 @@ function openStats() {
 // ❓ 능력치 점수 얻는 방법 (학생 안내 · 1017c)
 const STAT_GUIDE = {
   eng: [['🗽 영어 마을 구역 놀이 · 🏋️ 영어 훈련소', '고르기 정답 +1 · 쓰기 정답 +2 · 한 판 통과 +3 (쓰기 1개마다 +1 더)'], ['🧭 영어 미로', '칸 도착 +2 × 단계 · 통과 +3 × 단계 (Level 3이 제일 많아요)'], ['🔨 천막 두더지 (영어 단어)', '잡은 단어 수의 절반']],
-  math: [['⛏️ 단원 광산 (5단계)', '한 문제 +2 ~ +8'], ['🛤️ 광산 레일', '광맥 한 곳 +2 ~ +8'], ['🧩 도형 공방', '한 문제 +3'], ['🪞 대칭 거울 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
+  math: [['⛏️ 단원 광산 (5단계)', '한 문제 +2 ~ +8'], ['🚴 광산 레일바이크', '광맥 한 곳 +2 ~ +8'], ['📘 단원 학당 기초 문제', '+1'], ['🧮 혼합 계산 공방', '한 문제 +4'], ['🪞 대칭 거울 공방 (3단원 학당)', '한 문제 +3'], ['⚖️ 저울 5문제 보물 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
   soc: [['🏯 역사의 길 시대 퀴즈', '처음 보는 문제 한 번에 정답 +4 · 다시 맞히면 +2'], ['🏛️ 역사 박물관 연표 맞추기', '쉬움 +5 · 보통 +8 · 어려움 +12 (한 번에 맞히면 +3 더)']],
   read: [['📒 광장 독서 책상 (분수 남서쪽)', '책을 다 읽고 선생님께 확인받은 뒤 기록해요'], ['📖 줄글책', '쪽수 그대로 (100쪽 = 100점)'], ['🖼️ 그림이 많은 책 · 💬 만화책 · 🧸 그림책', '쪽수 × 0.7 · × 0.4 · × 0.5'], ['🎁 완독 보너스', '책 한 권 기록할 때마다 +10']],
 };
@@ -22319,7 +22493,7 @@ const HM = [
   { k: 'shops', icon: '🛍️', n: '상점가 한 바퀴', hint: '하루에 해변 상점가 가게 8곳을 모두 들러 봐요' },
   { k: 'isles', icon: '🏝️', n: '보물섬 탐험가', hint: '하루에 바다의 섬 4곳 보물상자를 모두 열어 봐요' },
   { k: 'crew', icon: '👫', n: '인기 많은 선장', hint: '내 배에 친구 3명을 태우고 바다를 달려 봐요' },
-  { k: 'cart5', icon: '🛒', n: '수레 레이스 만점', hint: '광산 수레 레이스 갈림길 문제를 모두 맞혀 봐요' },
+  { k: 'cart5', icon: '🚴', n: '레일바이크 만점', hint: '광산 안 레일바이크로 광맥 5곳 문제를 모두 맞혀 봐요' },
   { k: 'hunt', icon: '🗺️', n: '영어 보물 사냥꾼', hint: '영어 마을 보물찾기에서 보물상자를 찾아봐요' },
   { k: 'petisle', icon: '🐾', n: '펫과 섬 산책', hint: '집 펫과 함께 바다 건너 섬을 걸어 봐요' },
   { k: 'bg', icon: '🎲', n: '보드게임 친구', hint: '반월쉼터 탁자에 앉아 보드게임을 해 봐요' },
@@ -22590,7 +22764,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildShopStreet(); buildSeaFun(); buildCartRace(); buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
+buildBeach(); buildShopStreet(); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
 buildPretty();
 buildMountain();
 buildQuizBoard();
