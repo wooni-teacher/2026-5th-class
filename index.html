@@ -15467,6 +15467,111 @@ const SYM_Q = [
   ['다음 알파벳 중 선대칭도형이면서 점대칭도형인 것은?', 'H', ['A', 'S', 'T'], 'H는 접어도, 180° 돌려도 겹쳐요 (S는 점대칭만)'],
   ['다음 알파벳 중 점대칭도형인 것은?', 'N', ['A', 'M', 'T'], 'N을 180° 돌리면 다시 N이에요'],
 ];
+// 🖼️ 1023i: 10문제 도전·한 문제 풀기에도 문제마다 그림을 같이 보여 줘요 (SYM_FIG[i] = 그리기 함수)
+function symFig(fn) {
+  const W = 320, H = 200, cv = document.createElement('canvas'); cv.width = W * 2; cv.height = H * 2; cv.style.cssText = 'width:min(320px,82vw);display:block;margin:6px auto;background:#FFFDF6;border-radius:12px;border:1.5px solid #E8DCC0';
+  const x = cv.getContext('2d'); x.scale(2, 2); x.lineJoin = 'round'; x.lineCap = 'round';
+  const INK = '#3B5A8A', cen = (pts) => [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
+  const D = {
+    poly(pts, labs, fill = '#CFE3FF', col = INK) { x.fillStyle = fill; x.strokeStyle = col; x.lineWidth = 2.5; x.beginPath(); pts.forEach((p, i) => i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1])); x.closePath(); x.fill(); x.stroke();
+      if (labs) { const c = cen(pts); x.fillStyle = '#3B2F2A'; x.font = '800 14px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; pts.forEach((p, i) => { if (!labs[i]) return; const dx = p[0] - c[0], dy = p[1] - c[1], d = Math.hypot(dx, dy) || 1; x.fillText(labs[i], p[0] + dx / d * 13, p[1] + dy / d * 13); }); } return pts; },
+    seg(a, b, col = INK, w = 2.5, dash) { x.save(); x.strokeStyle = col; x.lineWidth = w; if (dash) x.setLineDash(dash); x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke(); x.restore(); },
+    axis(a, b) { D.seg(a, b, '#E2384A', 2, [6, 4]); },
+    edgeT(a, b, t, ref, col = '#3B2F2A') { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const d = Math.hypot(nx, ny) || 1; nx /= d; ny /= d; if (ref && ((mx - ref[0]) * nx + (my - ref[1]) * ny) < 0) { nx = -nx; ny = -ny; } D.txt(mx + nx * 13, my + ny * 13, t, 13, col); },
+    hl(a, b, col) { D.seg(a, b, col, 5); },
+    ang(p, a, b, t, col = '#E2584A', r = 18) { const a1 = Math.atan2(a[1] - p[1], a[0] - p[0]), a2 = Math.atan2(b[1] - p[1], b[0] - p[0]); let s = a1, e = a2, df = e - s; while (df > Math.PI) df -= 2 * Math.PI; while (df < -Math.PI) df += 2 * Math.PI; x.save(); x.strokeStyle = col; x.lineWidth = 2; x.beginPath(); x.arc(p[0], p[1], r, s, s + df, df < 0); x.stroke(); x.restore(); if (t) { const m = s + df / 2; D.txt(p[0] + Math.cos(m) * (r + 13), p[1] + Math.sin(m) * (r + 13), t, 12, col); } },
+    right(p, a, b, s = 9) { const u = [(a[0] - p[0]), (a[1] - p[1])], v = [(b[0] - p[0]), (b[1] - p[1])], lu = Math.hypot(...u), lv = Math.hypot(...v); const q1 = [p[0] + u[0] / lu * s, p[1] + u[1] / lu * s], q2 = [p[0] + v[0] / lv * s, p[1] + v[1] / lv * s]; x.save(); x.strokeStyle = '#E2584A'; x.lineWidth = 1.6; x.beginPath(); x.moveTo(q1[0], q1[1]); x.lineTo(q1[0] + q2[0] - p[0], q1[1] + q2[1] - p[1]); x.lineTo(q2[0], q2[1]); x.stroke(); x.restore(); },
+    tick(a, b, n = 1, col = '#E2584A') { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, l = Math.hypot(b[0] - a[0], b[1] - a[1]), ux = (b[0] - a[0]) / l, uy = (b[1] - a[1]) / l; for (let k = 0; k < n; k++) { const o = (k - (n - 1) / 2) * 4; D.seg([mx + ux * o - uy * 5, my + uy * o + ux * 5], [mx + ux * o + uy * 5, my + uy * o - ux * 5], col, 1.8); } },
+    dot(p, t, col = '#E2384A') { x.fillStyle = col; x.beginPath(); x.arc(p[0], p[1], 3.5, 0, Math.PI * 2); x.fill(); if (t) D.txt(p[0] + 10, p[1] - 9, t, 13, '#3B2F2A'); },
+    txt(px, py, t, size = 13, col = '#3B2F2A', bold = 800) { x.fillStyle = col; x.font = `${bold} ${size}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, px, py); },
+    reg(n, cx, cy, r, rot = -Math.PI / 2) { return Array.from({ length: n }, (_, i) => [cx + Math.cos(rot + i * 2 * Math.PI / n) * r, cy + Math.sin(rot + i * 2 * Math.PI / n) * r]); },
+    arrowArc(cx, cy, r) { x.save(); x.strokeStyle = '#F08A24'; x.lineWidth = 2.2; x.beginPath(); x.arc(cx, cy, r, -Math.PI * 0.9, -Math.PI * 0.1); x.stroke(); const ex = cx + Math.cos(-Math.PI * 0.1) * r, ey = cy + Math.sin(-Math.PI * 0.1) * r; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex - 8, ey - 3); x.moveTo(ex, ey); x.lineTo(ex - 2, ey - 9); x.stroke(); x.restore(); },
+    x,
+  };
+  fn(D); return cv;
+}
+const SF = { // 자주 쓰는 모양 (가로 320 × 세로 200)
+  T1: [[95, 40], [35, 150], [145, 150]], T2: [[245, 40], [185, 150], [295, 150]], TL1: ['ㄱ', 'ㄴ', 'ㄷ'], TL2: ['ㄹ', 'ㅁ', 'ㅂ'],
+  Q1: [[48, 50], [25, 150], [135, 150], [122, 50]], Q2: [[203, 50], [180, 150], [290, 150], [277, 50]], QL1: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'], QL2: ['ㅁ', 'ㅂ', 'ㅅ', 'ㅇ'],
+  K: [[160, 22], [92, 88], [160, 182], [228, 88]], KL: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'],
+  P: [[100, 45], [45, 155], [220, 155], [275, 45]], PL: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'], PC: [160, 100],
+  I: [[160, 25], [85, 168], [235, 168]], IL: ['ㄱ', 'ㄴ', 'ㄷ'],
+};
+const symCong = (D, l = true) => { D.poly(SF.T1, l && SF.TL1); D.poly(SF.T2, l && SF.TL2, '#FFE3EC'); };
+const symCongQ = (D) => { D.poly(SF.Q1, SF.QL1); D.poly(SF.Q2, SF.QL2, '#FFE3EC'); };
+const symKite = (D, axisLab) => { D.poly(SF.K, SF.KL, '#E6DCFF'); D.axis([160, 8], [160, 196]); if (axisLab) D.txt(178, 12, axisLab, 13, '#E2384A'); };
+const symPara = (D, c = 'ㅇ') => { D.poly(SF.P, SF.PL, '#FFF0C8'); D.dot(SF.PC, c); };
+const symShapes = (D, list) => { const n = list.length, w = 320 / n; list.forEach(([nm, f], i) => { const cx = w * i + w / 2; f(cx, 92); D.txt(cx, 180, nm, 12); }); };
+const SHP = (D) => ({
+  para: (cx, cy) => D.poly([[cx - 22, cy - 22], [cx - 34, cy + 22], [cx + 22, cy + 22], [cx + 34, cy - 22]], null, '#FFF0C8'),
+  trap: (cx, cy) => D.poly([[cx - 18, cy - 22], [cx - 34, cy + 22], [cx + 34, cy + 22], [cx + 12, cy - 22]], null, '#FFF0C8'),
+  pent: (cx, cy) => D.poly(D.reg(5, cx, cy, 30), null, '#FFF0C8'), hex: (cx, cy) => D.poly(D.reg(6, cx, cy, 30), null, '#FFF0C8'),
+  iso: (cx, cy) => D.poly([[cx, cy - 30], [cx - 26, cy + 24], [cx + 26, cy + 24]], null, '#FFF0C8'), sq: (cx, cy) => D.poly([[cx - 26, cy - 26], [cx - 26, cy + 26], [cx + 26, cy + 26], [cx + 26, cy - 26]], null, '#FFF0C8'),
+  tri: (cx, cy) => D.poly(D.reg(3, cx, cy, 32), null, '#FFF0C8'),
+  heart: (cx, cy) => { const x = D.x; x.fillStyle = '#FFC9D6'; x.strokeStyle = INK_S; x.lineWidth = 2.5; x.beginPath(); x.moveTo(cx, cy + 26); x.bezierCurveTo(cx - 44, cy - 4, cx - 18, cy - 38, cx, cy - 14); x.bezierCurveTo(cx + 18, cy - 38, cx + 44, cy - 4, cx, cy + 26); x.fill(); x.stroke(); },
+});
+const INK_S = '#3B5A8A';
+const SYM_FIG = [
+  /*0*/ (D) => { symCong(D, false); D.txt(160, 182, '포개면 완전히 겹쳐요', 13, '#7A5AD8'); },
+  /*1*/ (D) => { symCong(D); D.hl(SF.T1[0], SF.T1[1], '#4A9AE8'); D.hl(SF.T2[0], SF.T2[1], '#4A9AE8'); D.txt(160, 186, '같은 색 변끼리 겹쳐요', 12, '#4A9AE8'); },
+  /*2*/ (D) => { symCong(D); D.ang(SF.T1[1], SF.T1[0], SF.T1[2], '', '#E2584A'); D.ang(SF.T2[1], SF.T2[0], SF.T2[2], '', '#E2584A'); D.txt(160, 186, '같은 표시 각끼리 겹쳐요', 12, '#E2584A'); },
+  /*3*/ (D) => { symCong(D); const c1 = [95, 115], c2 = [245, 115]; D.edgeT(SF.T1[1], SF.T1[2], '6 cm', c1); D.edgeT(SF.T2[1], SF.T2[2], '6 cm', c2); D.ang(SF.T1[1], SF.T1[0], SF.T1[2], '60°'); D.ang(SF.T2[1], SF.T2[0], SF.T2[2], '60°'); },
+  /*4*/ (D) => { symKite(D); D.txt(255, 160, '접으면 겹쳐요', 12, '#7A5AD8'); },
+  /*5*/ (D) => symKite(D, '?'),
+  /*6*/ (D) => { symKite(D); D.seg(SF.K[1], SF.K[3], '#F08A24', 2, [4, 3]); D.right([160, 88], [160, 22], SF.K[3]); D.txt(268, 100, '대응점 ㄴ·ㄹ', 12, '#F08A24'); },
+  /*7*/ (D) => { symKite(D); D.seg(SF.K[1], [160, 88], '#F08A24', 2.2); D.seg([160, 88], SF.K[3], '#F08A24', 2.2); D.tick(SF.K[1], [160, 88], 1); D.tick([160, 88], SF.K[3], 1); },
+  /*8*/ (D) => { symPara(D); D.arrowArc(160, 100, 26); D.txt(160, 60, '?°', 14, '#F08A24'); },
+  /*9*/ (D) => { D.poly(SF.P, SF.PL, '#FFF0C8'); D.dot(SF.PC, '?'); },
+  /*10*/ (D) => { symPara(D); D.seg(SF.P[0], SF.P[2], '#F08A24', 2, [4, 3]); D.tick(SF.P[0], SF.PC, 1); D.tick(SF.PC, SF.P[2], 1); },
+  /*11*/ (D) => { const h = D.poly(D.reg(6, 160, 100, 78), ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ'], '#FFF0C8'); for (let i = 0; i < 3; i++) D.seg(h[i], h[i + 3], '#F08A24', 1.6, [4, 3]); D.dot([160, 100], ''); },
+  /*12*/ (D) => { D.poly([[60, 70], [30, 150], [100, 150]], null); D.poly([[215, 30], [160, 160], [290, 160]], null, '#FFE3EC'); D.txt(65, 180, '처음 도형', 12); D.txt(225, 186, '크게 확대한 도형', 12); },
+  /*13*/ (D) => symCong(D),
+  /*14*/ (D) => { D.poly([[25, 70], [25, 130], [145, 130], [145, 70]], null); D.poly([[185, 40], [185, 160], [295, 160], [295, 40]], null, '#FFE3EC'); D.txt(85, 150, '가로 8 · 세로 2 → 둘레 20', 11); D.txt(240, 180, '가로 5 · 세로 5 → 둘레 20', 11); },
+  /*15*/ (D) => { D.poly([[45, 75], [45, 125], [165, 125], [165, 75]], null); D.edgeT([45, 125], [165, 125], '8 cm', [105, 100]); D.edgeT([45, 75], [45, 125], '3 cm', [105, 100]); D.poly([[215, 55], [215, 145], [295, 145], [295, 55]], null, '#FFE3EC'); D.edgeT([215, 145], [295, 145], '6 cm', [255, 100]); D.txt(255, 100, '4 cm', 12); D.txt(160, 186, '넓이는 둘 다 24 cm²', 12, '#7A5AD8'); },
+  /*16*/ (D) => { const R = D.poly([[160, 22], [80, 100], [160, 178], [240, 100]], ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'], '#E6DCFF'); D.seg(R[0], R[2], '#F08A24', 2, [4, 3]); D.seg(R[1], R[3], '#F08A24', 2, [4, 3]); D.right([160, 100], R[0], R[3]); },
+  /*17*/ (D) => { symCongQ(D); D.edgeT(SF.Q2[1], SF.Q2[2], '4 cm', [235, 100], '#E2584A'); D.edgeT(SF.Q1[1], SF.Q1[2], '? cm', [80, 100], '#E2584A'); },
+  /*18*/ (D) => { symCong(D); D.ang(SF.T1[2], SF.T1[0], SF.T1[1], '45°'); D.ang(SF.T2[2], SF.T2[0], SF.T2[1], '?'); },
+  /*19*/ (D) => { symCongQ(D); D.ang(SF.Q1[0], SF.Q1[1], SF.Q1[3], '100°'); D.ang(SF.Q1[1], SF.Q1[2], SF.Q1[0], '75°'); D.ang(SF.Q1[3], SF.Q1[0], SF.Q1[2], '115°'); D.ang(SF.Q2[2], SF.Q2[1], SF.Q2[3], '?'); },
+  /*20*/ (D) => { symCong(D); D.ang(SF.T1[1], SF.T1[0], SF.T1[2], '40°'); D.ang(SF.T1[2], SF.T1[0], SF.T1[1], '50°'); D.ang(SF.T2[0], SF.T2[1], SF.T2[2], '?'); },
+  /*21*/ (D) => { const N = [90, 160], C = [250, 160], A = [60, 50], R = [280, 50]; D.poly([A, N, C], null); D.poly([R, C, N], null, 'rgba(255,200,215,.55)'); for (const [p, t] of [[A, 'ㄱ'], [N, 'ㄴ'], [C, 'ㄷ'], [R, 'ㄹ']]) D.txt(p[0] + (p[0] < 160 ? -12 : 12), p[1] + (p[1] > 100 ? 10 : -6), t, 14); D.edgeT(A, N, '4 cm', [140, 120]); D.txt(170, 178, '8 cm', 13); D.edgeT(N, R, '?', [250, 160], '#E2584A'); D.txt(160, 18, '삼각형 ㄱㄴㄷ의 둘레 23 cm', 12, '#7A5AD8'); },
+  /*22*/ (D) => { symCong(D); const C3 = ['#E2584A', '#4A9AE8', '#5FBE5A']; for (let i = 0; i < 3; i++) { D.hl(SF.T1[i], SF.T1[(i + 1) % 3], C3[i]); D.hl(SF.T2[i], SF.T2[(i + 1) % 3], C3[i]); } },
+  /*23*/ (D) => { symCongQ(D); const C4 = ['#E2584A', '#4A9AE8', '#5FBE5A', '#F08A24']; for (let i = 0; i < 4; i++) { D.ang(SF.Q1[i], SF.Q1[(i + 3) % 4], SF.Q1[(i + 1) % 4], '', C4[i], 14); D.ang(SF.Q2[i], SF.Q2[(i + 3) % 4], SF.Q2[(i + 1) % 4], '', C4[i], 14); } },
+  /*24*/ (D) => { const A = [[25, 60], [75, 150], [150, 150]], B = A.map(p => [p[0] + 160, p[1]]); D.poly(A, SF.TL1); D.poly(B, SF.TL2, '#FFE3EC'); D.edgeT(A[1], A[2], '7 cm', [83, 120]); D.ang(A[1], A[0], A[2], '100°'); D.edgeT(B[1], B[2], '? cm', [243, 120], '#E2584A'); D.ang(B[1], B[0], B[2], '?'); },
+  /*25*/ (D) => { symKite(D); D.seg(SF.K[1], [160, 88], '#F08A24', 2.2); D.txt(126, 76, '3 cm', 12, '#F08A24'); D.seg([160, 88], SF.K[3], '#F08A24', 2.2, [4, 3]); D.txt(194, 76, '?', 13, '#E2584A'); },
+  /*26*/ (D) => { const S = D.poly([[160, 25], [70, 110], [130, 170], [190, 170], [250, 110]], ['ㄱ', 'ㄴ', 'ㄹ', 'ㅁ', 'ㄷ'], '#E6DCFF'); D.axis([160, 8], [160, 196]); D.seg(S[1], S[4], '#F08A24', 2.2); D.dot([160, 110], 'ㅂ'); D.txt(205, 122, '5 cm', 12, '#F08A24'); D.txt(115, 122, '?', 13, '#E2584A'); },
+  /*27*/ (D) => { D.poly(SF.I, SF.IL, '#E6DCFF'); D.axis(SF.I[0], [160, 168]); D.txt(160, 182, 'ㄹ', 14); D.edgeT(SF.I[0], SF.I[1], '8 cm', [160, 120]); D.edgeT(SF.I[0], SF.I[2], '? cm', [160, 120], '#E2584A'); },
+  /*28*/ (D) => { D.poly(SF.I, SF.IL, '#E6DCFF'); D.axis(SF.I[0], [160, 168]); D.txt(160, 182, 'ㄹ', 14); D.ang(SF.I[1], SF.I[0], [160, 168], '55°'); D.ang(SF.I[2], SF.I[0], [160, 168], '?'); },
+  /*29*/ (D) => { D.poly(SF.I, SF.IL, '#E6DCFF'); D.axis(SF.I[0], [160, 168]); D.txt(160, 182, 'ㄹ', 14); D.ang(SF.I[1], SF.I[0], SF.I[2], '55°'); D.right([160, 168], SF.I[0], SF.I[2]); D.ang(SF.I[0], [160, 168], SF.I[2], '?', '#E2584A', 26); },
+  /*30*/ (D) => { const S = D.poly([[40, 100], [95, 40], [225, 40], [280, 100], [225, 160], [95, 160]], ['ㄱ', 'ㄴ', 'ㅇ', 'ㅈ', 'ㅂ', 'ㄹ'], '#E6DCFF'); D.axis([20, 100], [300, 100]); D.seg(S[1], S[5], '#F08A24', 1.8, [4, 3]); D.seg(S[2], S[4], '#F08A24', 1.8, [4, 3]); D.txt(80, 70, '4 cm', 12, '#F08A24'); D.txt(242, 70, '3 cm', 12, '#F08A24'); },
+  /*31*/ (D) => { const S = D.poly([[160, 25], [235, 80], [210, 170], [110, 170], [85, 80]], ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ'], '#E6DCFF'); D.axis([160, 10], [160, 192]); D.edgeT(S[0], S[1], '9 cm', [160, 110]); D.edgeT(S[1], S[2], '7 cm', [160, 110]); D.txt(186, 184, '4 cm', 12); },
+  /*32*/ (D) => { D.poly(D.reg(9, 90, 95, 62), null, '#FFF0C8'); D.poly(D.reg(6, 235, 95, 62), null, '#FFF0C8'); D.txt(90, 182, '정구각형', 12); D.txt(235, 182, '정육각형', 12); },
+  /*33*/ (D) => { D.poly(D.reg(5, 55, 90, 42), null, '#FFF0C8'); D.poly([[115, 60], [115, 125], [205, 125], [205, 60]], null, '#FFF0C8'); D.poly(D.reg(6, 265, 92, 42), null, '#FFF0C8'); D.txt(55, 170, '정오각형', 12); D.txt(160, 170, '직사각형', 12); D.txt(265, 170, '정육각형', 12); },
+  /*34*/ (D) => { ['ㄷ', 'ㄹ', 'ㅂ', 'ㅋ', 'ㅎ'].forEach((t, i) => D.txt(40 + i * 60, 100, t, 46, '#3B2F2A', 900)); },
+  /*35*/ (D) => { const x = D.x; x.fillStyle = '#CFE3FF'; x.strokeStyle = INK_S; x.lineWidth = 2.5; x.beginPath(); x.arc(160, 100, 75, 0, Math.PI * 2); x.fill(); x.stroke(); for (let i = 0; i < 4; i++) { const a = i * Math.PI / 4; D.axis([160 + Math.cos(a) * 90, 100 + Math.sin(a) * 90], [160 - Math.cos(a) * 90, 100 - Math.sin(a) * 90]); } D.txt(280, 185, '…', 16, '#E2384A'); },
+  /*36*/ (D) => { D.poly([[60, 50], [60, 150], [260, 150], [260, 50]], null, '#FFF0C8'); },
+  /*37*/ (D) => { D.poly([[160, 22], [70, 100], [160, 178], [250, 100]], null, '#FFF0C8'); },
+  /*38*/ (D) => { const S = SHP(D); symShapes(D, [['평행사변형', S.para], ['이등변삼각형', S.iso], ['정사각형', S.sq], ['정오각형', S.pent]]); },
+  /*39*/ (D) => { const h = D.poly(D.reg(6, 160, 100, 80, 0), ['ㄹ', 'ㅁ', 'ㅂ', 'ㄱ', 'ㄴ', 'ㄷ'], '#FFF0C8'); D.dot([160, 100], 'ㅇ'); D.seg(h[0], h[3], '#F08A24', 2, [4, 3]); D.txt(200, 112, '5 cm', 12, '#F08A24'); D.txt(120, 112, '?', 13, '#E2584A'); },
+  /*40*/ (D) => { symPara(D, 'ㅅ'); D.seg(SF.P[0], SF.P[2], '#F08A24', 2, [4, 3]); D.txt(122, 82, '9 cm', 12, '#F08A24'); D.txt(170, 140, '?', 13, '#E2384A'); },
+  /*41*/ (D) => { symPara(D); D.seg(SF.P[0], SF.P[2], '#F08A24', 2, [4, 3]); D.txt(198, 140, '8 cm', 12, '#F08A24'); D.txt(160, 184, '선분 ㄱㄹ = ?', 13, '#E2384A'); },
+  /*42*/ (D) => { const h = D.poly(D.reg(6, 160, 100, 80, -Math.PI / 2), ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ'], '#FFF0C8'); D.dot([160, 100], ''); D.edgeT(h[3], h[2], '8 cm', [160, 100], '#F08A24'); D.edgeT(h[0], h[5], '?', [160, 100], '#E2584A'); },
+  /*43*/ (D) => { const h = D.poly(D.reg(6, 160, 100, 80, 0), ['ㄹ', 'ㅁ', 'ㅂ', 'ㄱ', 'ㄴ', 'ㄷ'], '#FFF0C8'); D.dot([160, 100], 'ㅇ'); D.edgeT(h[1], h[2], '3 cm', [160, 100], '#F08A24'); D.seg(h[4], h[1], '#F08A24', 1.8, [4, 3]); D.txt(160, 192, '선분 ㄴㅁ = 16 cm', 12, '#F08A24'); },
+  /*44*/ (D) => { const R = D.poly([[160, 22], [70, 100], [160, 178], [250, 100]], ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'], '#E6DCFF'); D.seg(R[0], R[2], '#F08A24', 2, [4, 3]); D.seg(R[1], R[3], '#F08A24', 2, [4, 3]); D.dot([160, 100], 'ㅇ'); D.txt(115, 92, '9 cm', 12, '#F08A24'); D.txt(172, 140, '?', 13, '#E2384A'); },
+  /*45*/ (D) => { const S = SHP(D); symShapes(D, [['평행사변형', S.para], ['사다리꼴', S.trap], ['정오각형', S.pent], ['이등변삼각형', S.iso]]); },
+  /*46*/ (D) => { const S = SHP(D); symShapes(D, [['정육각형', S.hex], ['정오각형', S.pent], ['하트', S.heart], ['정삼각형', S.tri]]); },
+  /*47*/ (D) => { const S = SHP(D); symShapes(D, [['정사각형', S.sq], ['정삼각형', S.tri], ['사다리꼴', S.trap], ['평행사변형', S.para]]); },
+  /*48*/ (D) => { for (const [cx, t] of [[85, '03:00'], [235, '06:00']]) { D.x.fillStyle = '#2B2B33'; D.x.fillRect(cx - 62, 70, 124, 56); D.txt(cx, 99, t, 30, '#7CF0A0', 900); } D.txt(160, 99, '~', 22); D.txt(160, 160, '이 사이 시각 중 180° 돌려도 같은 것은?', 12, '#7A5AD8'); },
+  /*49*/ (D) => { const x = D.x, F = [[20, 30, '스위스'], [170, 30, '이스라엘'], [20, 115, '자메이카'], [170, 115, '베트남']]; for (const [fx, fy, nm] of F) { x.save(); x.translate(fx, fy); x.strokeStyle = '#999'; x.lineWidth = 1;
+      if (nm === '스위스') { x.fillStyle = '#E2384A'; x.fillRect(0, 0, 130, 62); x.fillStyle = '#fff'; x.fillRect(55, 12, 20, 38); x.fillRect(46, 21, 38, 20); }
+      if (nm === '이스라엘') { x.fillStyle = '#fff'; x.fillRect(0, 0, 130, 62); x.fillStyle = '#2E5BC8'; x.fillRect(0, 7, 130, 8); x.fillRect(0, 47, 130, 8); x.strokeStyle = '#2E5BC8'; x.lineWidth = 2.5; for (const s of [1, -1]) { x.beginPath(); x.moveTo(65, 31 - s * 13); x.lineTo(65 + 11, 31 + s * 7); x.lineTo(65 - 11, 31 + s * 7); x.closePath(); x.stroke(); } }
+      if (nm === '자메이카') { x.fillStyle = '#2F9A4A'; x.fillRect(0, 0, 130, 62); x.fillStyle = '#111'; for (const s of [0, 1]) { x.beginPath(); x.moveTo(s ? 130 : 0, 6); x.lineTo(s ? 130 : 0, 56); x.lineTo(65 + (s ? 12 : -12), 31); x.closePath(); x.fill(); } x.strokeStyle = '#F2C230'; x.lineWidth = 7; x.beginPath(); x.moveTo(0, 0); x.lineTo(130, 62); x.moveTo(130, 0); x.lineTo(0, 62); x.stroke(); }
+      if (nm === '베트남') { x.fillStyle = '#D8282A'; x.fillRect(0, 0, 130, 62); x.fillStyle = '#FFD23C'; x.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 22; x.lineTo(65 + Math.cos(a) * r, 33 + Math.sin(a) * r); } x.closePath(); x.fill(); }
+      x.strokeRect(0, 0, 130, 62); x.restore(); D.txt(fx + 65, fy + 74, nm, 12); } },
+  /*50*/ (D) => { const A = [70, 40], B = [40, 160], C = [220, 160], O = [(A[0] + C[0]) / 2, (A[1] + C[1]) / 2], B2 = [2 * O[0] - B[0], 2 * O[1] - B[1]]; D.poly([A, B, C], null, '#FFE3EC'); D.seg(A, [A[0], 160], '#E2584A', 1.6, [4, 3]); D.txt(A[0] + 30, 112, '높이 8 cm', 11, '#E2584A'); D.txt(130, 178, '밑변 14 cm', 12); D.seg(C, B2, '#9A5AD8', 2, [5, 4]); D.seg(A, B2, '#9A5AD8', 2, [5, 4]); D.dot(O, 'ㅇ'); D.txt(262, 30, '점대칭으로 완성', 11, '#9A5AD8'); },
+  /*51*/ (D) => { const R = D.poly([[60, 40], [60, 160], [260, 160], [260, 40]], ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ'], '#FFF0C8'); D.seg(R[0], R[2], '#F08A24', 1.8); D.seg(R[1], R[3], '#F08A24', 1.8); D.dot([160, 100], 'ㅇ'); D.ang(R[1], R[2], [160, 100], '42°', '#E2584A', 26); D.ang(R[2], [160, 100], R[1], '42°', '#E2584A', 26); D.ang([160, 100], R[1], R[2], '?', '#E2384A', 16); },
+  /*52*/ (D) => { ['H', 'A', 'S', 'T'].forEach((t, i) => D.txt(48 + i * 75, 100, t, 60, '#3B2F2A', 900)); },
+  /*53*/ (D) => { ['N', 'A', 'M', 'T'].forEach((t, i) => D.txt(48 + i * 75, 100, t, 60, '#3B2F2A', 900)); },
+];
 const SYM_N = (n) => ['', '', '', '정삼각형', '정사각형', '정오각형', '정육각형', '정칠각형', '정팔각형'][n];
 function symPolyQ() { // 정다각형 대칭축 · 점대칭 (그림과 함께)
   const n = ri(3, 8), kind = ri(0, 1);
@@ -15484,7 +15589,7 @@ function symQuestion() { // 같은 문제가 자주 나오지 않게 (최근 15�
   bag.symSeen ||= []; if (Math.random() < 0.18) return symPolyQ();
   let i, t = 0; do { i = ri(0, SYM_Q.length - 1); t++; } while (bag.symSeen.includes(i) && t < 30);
   bag.symSeen = [...bag.symSeen, i].slice(-15); const [q, ans, wrongs, tip, unit] = SYM_Q[i];
-  return { q, ans, opts: shuf([ans, ...wrongs]), tip, hideTip: true, ...(unit ? { unit } : {}) };
+  const fg = SYM_FIG[i]; return { q, ans, opts: shuf([ans, ...wrongs]), tip, hideTip: true, ...(unit ? { unit } : {}), ...(fg ? { cv: () => symFig(fg) } : {}) };
 }
 const symW = { run: 0, ok: 0, n: 0 };
 function openSymShop() {
