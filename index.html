@@ -4398,7 +4398,7 @@ function onPlayers(type, uid, data) {
   }
   if (!r.target || r.target.x !== data.x || r.target.z !== data.z || r.target.m !== data.m) r.seenAt = performance.now();
   r.target = data;
-  { const nm = nickOf(uid, data) + rankTitle(uid) + vilTag(uid, data) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
+  { const nm = nickOf(uid, data) + titleText(uid, data) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
   const now = performance.now(), last = r.buf[r.buf.length - 1];
   if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
@@ -4456,7 +4456,7 @@ function sendPresence(time) {
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
-  { const bd = buddyCode(); if (bd) d.bd = bd; } // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
+  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); // 🏷️ 고른 칭호 // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -10095,9 +10095,9 @@ const rankNick = (u, e) => nickOf(u, e) || '친구';
 function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · (선생님) 오래된 주 지우기
   if (!joined || !stateLoaded || !backend) return;
   const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn;
-  const me = backend.uid, tl = (cleanNick(myNick) || '') + rankTitle(me) + vilTag(me) + praiseTag(me) + hpetTag(hpetCode());
+  const me = backend.uid, tl = (cleanNick(myNick) || '') + titleText(me) + praiseTag(me) + hpetTag(hpetCode());
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
-  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + rankTitle(u) + vilTag(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
+  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -14225,7 +14225,7 @@ function setWear(a, code) {
       a.wearFx = 9;
     }
   });
-  a.wearObjs = objs;
+  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
 }
 function openWardrobe() {
   openLife('👕 옷가게 · 내 옷장', (box) => {
@@ -14815,25 +14815,56 @@ function hpetModel(ki, acc = 0, spark = false, ow = 0) { // 🐾 네모네모 �
   }
   const ey = H.bird ? 0.72 : H.round ? 0.42 : 0.72, ez = H.bird ? 0.22 : H.round ? 0.28 : 0.49;
   if (!H.gecko) for (const s of [-1, 1]) { box(b, 0.07, 0.08, 0.02, 0x1E1E24, s * 0.1, ey, ez, o); box(b, 0.025, 0.025, 0.01, 0xFFFFFF, s * 0.1 + 0.015, ey + 0.02, ez + 0.012, o); box(b, 0.07, 0.035, 0.01, 0xFF9AB0, s * 0.15, ey - 0.07, ez, o); }
-  const top = H.gecko ? 0.22 : H.bird ? 0.82 : H.round ? 0.5 : 0.86, az = H.gecko ? 0.38 : H.bird ? 0.06 : H.round ? 0.05 : 0.3;
-  const OW = PET_OUTFITS[ow]; if (OW?.hat) acc = 0;
-  if (OW) { // 👗 펫 옷 그리기
-    const bw = H.gecko ? 0.32 : H.bird ? 0.42 : H.round ? 0.5 : 0.42, bl = H.gecko ? 0.6 : H.bird ? 0.42 : H.round ? 0.55 : 0.62, by = H.gecko ? 0.17 : H.bird ? 0.53 : H.round ? 0.49 : 0.53, ny = H.gecko ? 0.13 : H.bird ? 0.52 : H.round ? 0.42 : 0.55, nz = H.gecko ? 0.3 : H.bird ? 0.1 : H.round ? 0.2 : 0.16;
+  // 🎯 1024n 펫마다 몸에 맞춘 꾸미기: 머리 위(hg · 히로는 머리를 따라 움직여요) · 눈 · 목 · 몸(망토)
+  const q = { solid: false, surf: null }, U = g.userData.gecko, OW = PET_OUTFITS[ow]; if (OW?.hat) acc = 0;
+  const FT = H.gecko ? { hp: U.head, hy: 0.078, hz: -0.01, hs: 0.62 }
+    : H.bird ? { hp: b, hy: 0.81, hz: 0.06, hs: 0.86, ey: 0.72, ez: 0.22, col: ['xz', 0, 0.535, 0.06, 0.19, 0.18], body: [0.42, 0.42, 0.42, 0.32, 0], cf: -0.1 }
+    : H.round ? { hp: b, hy: 0.49, hz: 0.06, hs: 0.92, ey: 0.42, ez: 0.275, col: ['xy', 0, 0.28, 0.1, 0.27, 0.23], body: [0.5, 0.42, 0.55, 0.28, 0], cf: -0.1 }
+    : { hp: b, hy: 0.84, hz: 0.3, hs: H.k === 'rabbit' ? 0.74 : 0.96, ey: 0.72, ez: 0.49, col: ['xz', 0, 0.515, 0.3, 0.225, 0.215], body: [0.42, 0.34, 0.62, 0.36, 0], cf: 0.1 };
+  const hg = new THREE.Group(); hg.position.set(0, FT.hy, FT.hz); hg.scale.setScalar(FT.hs); FT.hp.add(hg); // 머리 위 (0 = 머리 꼭대기)
+  const STD = (c, x = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.75, ...x });
+  const collar = (c, t = 0.085, c2) => { // 목도리·목둘레
+    if (H.gecko) { const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.22, 8, 24), STD(c)); m.scale.set(0.14, 0.082, 0.14); m.position.set(0, 0.115, 0.27); b.add(m); if (c2) { const m2 = new THREE.Mesh(new THREE.TorusGeometry(1, 0.08, 6, 24), STD(c2)); m2.scale.set(0.145, 0.087, 0.18); m2.position.set(0, 0.12, 0.272); b.add(m2); } return [0.13, 0.08, 0.3]; }
+    const [k, , y, z, a, d2] = FT.col;
+    if (k === 'xz') { for (const s of [-1, 1]) { box(b, a * 2 + t, t, t, c, 0, y, z + s * d2, q); box(b, t, t, d2 * 2 + t, c, s * a, y, z, q); } if (c2) box(b, a * 2 + t + 0.01, t * 0.3, t + 0.01, c2, 0, y + t * 0.15, z + d2, q); return [a - 0.02, y - 0.08, z + d2 + 0.05]; }
+    for (const s of [-1, 1]) { box(b, a * 2 + t, t, t, c, 0, y + s * d2, z, q); box(b, t, d2 * 2 + t, t, c, s * a, y, z, q); } if (c2) box(b, a * 2 + t + 0.01, t * 0.3, t + 0.01, c2, 0, y + d2 + t * 0.1, z, q); return [a - 0.02, y + d2 - 0.12, z + 0.05];
+  };
+  const cloak = (c, ridge, trim) => { // 망토: 히로는 등 곡선을 따라 감싸고, 네모 펫은 등판 + 양옆으로 늘어져요
+    if (H.gecko) {
+      const T = U.torso, th = 1.36, R = [0.19, 0.142, 0.336], segs = ridge ? 10 : 1;
+      for (let i = 0; i < segs; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(1, ridge ? 4 : 28, 12, i / segs * Math.PI * 2, Math.PI * 2 / segs, 0, th), STD(ridge && i % 2 ? ridge : c, { side: THREE.DoubleSide })); m.scale.set(...R); T.add(m); }
+      if (trim) { const t = new THREE.Mesh(new THREE.TorusGeometry(1, 0.11, 6, 36), STD(trim)); t.rotation.x = Math.PI / 2; t.scale.set(R[0] * Math.sin(th) + 0.004, R[2] * Math.sin(th) + 0.004, 0.22); t.position.y = R[1] * Math.cos(th); T.add(t); }
+      return { gecko: true, T, sy: (z) => R[1] * Math.sqrt(Math.max(0, 1 - (z / R[2]) ** 2)) };
+    }
+    const [w, h, l, cy, cz] = FT.body, top = cy + h / 2, dh = h * 0.62, zb = cz - l / 2 - 0.02, zf = FT.cf, L = zf - zb, zc = (zf + zb) / 2, sl = l * 0.9, szc = cz - l * 0.03;
+    box(b, w + 0.07, 0.045, L, c, 0, top + 0.022, zc, q); // 등판
+    for (const s of [-1, 1]) box(b, 0.04, dh, sl, c, s * (w / 2 + 0.035), top - dh / 2 + 0.04, szc, q); // 양옆으로 늘어진 천
+    box(b, w + 0.11, dh * 0.7, 0.04, c, 0, top - dh * 0.35 + 0.04, zb - 0.005, q); // 뒤
+    if (ridge) for (const f of [0.18, 0.5, 0.82]) { const zz = zb + L * f; box(b, w + 0.085, 0.05, 0.04, ridge, 0, top + 0.024, zz, q); for (const s of [-1, 1]) box(b, 0.05, dh, 0.04, ridge, s * (w / 2 + 0.04), top - dh / 2 + 0.04, zb + sl * f, q); }
+    if (trim) { for (const s of [-1, 1]) box(b, 0.05, 0.055, sl + 0.02, trim, s * (w / 2 + 0.04), top - dh + 0.04, szc, q); box(b, w + 0.13, 0.055, 0.05, trim, 0, top - dh * 0.7 + 0.04, zb - 0.01, q); }
+    return { gecko: false, w, top, dh, sl, szc, zb };
+  };
+  if (OW) {
     const k = OW.k;
-    if (k === 'scarf') { box(b, bw + 0.08, 0.1, 0.22, 0xE2384A, 0, ny, nz, o); box(b, bw + 0.09, 0.03, 0.23, 0xFFFFFF, 0, ny + 0.02, nz, o); box(b, 0.09, 0.22, 0.06, 0xE2384A, bw / 2 - 0.02, ny - 0.12, nz + 0.1, o); }
-    if (k === 'rain') { box(b, bw + 0.08, 0.1, bl + 0.04, 0xFFD23C, 0, by, 0, o); box(b, 0.46, 0.14, 0.42, 0xFFD23C, 0, top - 0.02, az, o); box(b, 0.48, 0.04, 0.12, 0xF5B82A, 0, top - 0.06, az + 0.22, o); }
-    if (k === 'pumpkin') { box(b, bw + 0.08, 0.08, bl, 0xF08A24, 0, by, -0.02, o); for (const z of [-0.18, 0.02, 0.22]) box(b, bw + 0.09, 0.085, 0.03, 0x3B2F2A, 0, by, z * (bl / 0.62) - 0.02, o); ball(b, 0.08, 0xF08A24, 0, ny, nz + 0.1, o); }
-    if (k === 'santa') { box(b, bw + 0.06, 0.12, bl + 0.02, 0xD62E2E, 0, by, 0, o); box(b, bw + 0.08, 0.05, 0.1, 0xFFFFFF, 0, by, bl / 2 - 0.02, o); mesh(CONE, b, 0.2, 0.3, 0.2, 0xD62E2E, 0, top + 0.02, az, { solid: false, rz: 0.25 }); cyl(b, 0.21, 0.05, 0xFFFFFF, 0, top + 0.02, az, o); ball(b, 0.06, 0xFFFFFF, 0.08, top + 0.3, az, o); }
-    if (k === 'flower') for (let i = 0; i < 8; i++) { const t = i / 8 * Math.PI * 2; ball(b, 0.06, [0xFF7AA8, 0xFFE066, 0xFFFFFF, 0xB58CF0][i % 4], Math.cos(t) * 0.17, top + 0.01, az + Math.sin(t) * 0.15, o); }
-    if (k === 'sun') { const ey2 = H.bird ? 0.72 : H.round ? 0.42 : 0.72, ez2 = H.bird ? 0.235 : H.round ? 0.295 : 0.505; for (const s2 of [-1, 1]) box(b, 0.12, 0.09, 0.03, 0x1E1E24, s2 * 0.1, ey2, ez2, o); box(b, 0.1, 0.025, 0.03, 0x1E1E24, 0, ey2 + 0.02, ez2, o); }
-    if (k === 'gat') { cyl(b, 0.3, 0.025, 0x1E1E22, 0, top + 0.02, az, o); cyl(b, 0.12, 0.18, 0x2A2A30, 0, top + 0.11, az, o); }
-    if (k === 'miner') { mesh(SPH_MID, b, 0.22, 0.14, 0.22, 0xFFD23C, 0, top - 0.02, az, o); box(b, 0.32, 0.03, 0.08, 0xF5B82A, 0, top - 0.02, az + 0.17, o); box(b, 0.08, 0.07, 0.04, 0xFFF6C8, 0, top + 0.06, az + 0.2, { solid: false, emissive: 0.8 }); }
-    if (k === 'liberty') { cyl(b, 0.16, 0.06, 0x6FBFA0, 0, top + 0.02, az, o); for (let i = 0; i < 5; i++) { const t = -Math.PI / 2 + (i - 2) * 0.45; mesh(PYR, b, 0.05, 0.16, 0.05, 0x6FBFA0, Math.sin(t + Math.PI / 2) * 0.13, top + 0.1, az + Math.cos(t + Math.PI / 2) * 0.13 * -1, o); } }
-    if (k === 'pirate') { box(b, 0.38, 0.1, 0.24, 0x1E1E22, 0, top + 0.04, az, o); box(b, 0.24, 0.12, 0.2, 0x1E1E22, 0, top + 0.13, az, o); ball(b, 0.04, 0xFFFFFF, 0, top + 0.08, az + 0.13, o); box(b, 0.3, 0.02, 0.02, 0xE8C547, 0, top + 0.01, az + 0.12, o); }
+    if (k === 'scarf') { const [ex, ey, ez] = collar(0xE2384A, 0.09, 0xFFFFFF); box(b, 0.08, 0.2, 0.04, 0xE2384A, ex, ey - 0.06, ez, q); box(b, 0.085, 0.03, 0.045, 0xFFFFFF, ex, ey - 0.12, ez, q); }
+    if (k === 'rain') { cloak(0xFFD23C, null, 0xF5B82A); if (H.gecko) { mesh(SPH_MID, hg, 0.22, 0.11, 0.2, 0xFFD23C, 0, -0.03, -0.04, q); box(hg, 0.3, 0.025, 0.1, 0xF5B82A, 0, -0.04, 0.15, q); } else { box(hg, 0.48, 0.16, 0.44, 0xFFD23C, 0, 0.04, -0.02, q); box(hg, 0.5, 0.04, 0.14, 0xF5B82A, 0, -0.02, 0.24, q); } }
+    if (k === 'pumpkin') { const C2 = cloak(0xF08A24, 0xD9701A); // 🎃 호박 망토: 호박 골 · 잭오랜턴 얼굴 · 초록 잎 단추
+      const face = (par, x, y, z, ry, rx, s) => { const q = new THREE.Group(); q.position.set(x, y, z); q.rotation.set(rx, ry, 0); q.scale.setScalar(s); par.add(q); for (const sx of [-1, 1]) mesh(PYR, q, 0.07, 0.06, 0.02, 0x2A1A10, sx * 0.06, 0.04, 0, { solid: false, surf: null, rx: Math.PI / 2 }); box(q, 0.14, 0.03, 0.02, 0x2A1A10, 0, -0.04, 0, q); for (const sx of [-0.035, 0.035]) box(q, 0.025, 0.025, 0.021, 0xF08A24, sx, -0.03, 0.002, q); };
+      if (C2.gecko) { face(C2.T, 0, C2.sy(-0.17) + 0.004, -0.17, 0, -Math.PI / 2 - 0.45, 0.55); const lf = new THREE.Group(); lf.position.set(0, 0.17, 0.27); b.add(lf); mesh(CONE, lf, 0.04, 0.09, 0.02, 0x3E8A44, 0.04, 0, 0, { solid: false, surf: null, rz: -1.2 }); cyl(lf, 0.015, 0.06, 0x6A4A2E, 0, 0.02, 0, q); }
+      else { for (const s of [-1, 1]) face(b, s * (C2.w / 2 + 0.06), C2.top - C2.dh / 2 + 0.05, C2.szc - C2.sl * 0.1, s * Math.PI / 2, 0, 0.8); const [ex, ey, ez] = collar(0x3E8A44, 0.05); mesh(CONE, b, 0.06, 0.12, 0.03, 0x4FA84A, 0, ey + 0.03, ez, { solid: false, surf: null, rz: 1.1 }); } }
+    if (k === 'santa') { cloak(0xD62E2E, null, 0xFFFFFF); collar(0xFFFFFF, 0.08); mesh(CONE, hg, 0.2, 0.32, 0.2, 0xD62E2E, 0, 0.18, 0, { solid: false, surf: null, rz: 0.25 }); cyl(hg, 0.215, 0.06, 0xFFFFFF, 0, 0.03, 0, q); ball(hg, 0.06, 0xFFFFFF, 0.08, 0.34, 0, q); }
+    if (k === 'flower') for (let i = 0; i < 8; i++) { const t = i / 8 * Math.PI * 2; ball(hg, 0.06, [0xFF7AA8, 0xFFE066, 0xFFFFFF, 0xB58CF0][i % 4], Math.cos(t) * 0.17, 0.02, Math.sin(t) * 0.15, q); }
+    if (k === 'sun') { // 🕶️ 눈 자리에 딱 맞게 (다리까지)
+      if (H.gecko) { const hd = U.head; for (const s2 of [-1, 1]) { const ln = new THREE.Group(); ln.position.set(s2 * 0.118, 0.036, 0.098); ln.rotation.y = s2 * 0.5; hd.add(ln); box(ln, 0.1, 0.078, 0.016, 0x1E1E24, 0, 0, 0, q); box(ln, 0.03, 0.012, 0.004, 0xFFFFFF, -0.02, 0.022, 0.009, q); box(hd, 0.012, 0.012, 0.13, 0x1E1E24, s2 * 0.168, 0.04, 0.01, q); } box(hd, 0.11, 0.014, 0.014, 0x1E1E24, 0, 0.058, 0.13, q); }
+      else { const ey2 = FT.ey, ez2 = FT.ez + 0.016, hw = H.round ? 0.25 : H.bird ? 0.17 : 0.2; for (const s2 of [-1, 1]) { box(b, 0.12, 0.09, 0.025, 0x1E1E24, s2 * 0.1, ey2, ez2, q); box(b, 0.035, 0.015, 0.005, 0xFFFFFF, s2 * 0.1 - 0.025, ey2 + 0.025, ez2 + 0.014, q); box(b, 0.015, 0.018, 0.2, 0x1E1E24, s2 * (hw + 0.008), ey2 + 0.02, ez2 - 0.1, q); box(b, 0.05, 0.018, 0.018, 0x1E1E24, s2 * (hw - 0.015), ey2 + 0.02, ez2 - 0.004, q); } box(b, 0.1, 0.025, 0.025, 0x1E1E24, 0, ey2 + 0.02, ez2, q); } }
+    if (k === 'gat') { cyl(hg, 0.3, 0.025, 0x1E1E22, 0, 0.02, 0, q); cyl(hg, 0.12, 0.18, 0x2A2A30, 0, 0.11, 0, q); }
+    if (k === 'miner') { mesh(SPH_MID, hg, 0.22, 0.14, 0.22, 0xFFD23C, 0, -0.02, 0, q); box(hg, 0.32, 0.03, 0.08, 0xF5B82A, 0, -0.02, 0.17, q); box(hg, 0.08, 0.07, 0.04, 0xFFF6C8, 0, 0.06, 0.2, { solid: false, surf: null, emissive: 0.8 }); }
+    if (k === 'liberty') { cyl(hg, 0.16, 0.06, 0x6FBFA0, 0, 0.02, 0, q); for (let i = 0; i < 5; i++) { const t = -Math.PI / 2 + (i - 2) * 0.45; mesh(PYR, hg, 0.05, 0.16, 0.05, 0x6FBFA0, Math.sin(t + Math.PI / 2) * 0.13, 0.1, -Math.cos(t + Math.PI / 2) * 0.13, q); } }
+    if (k === 'pirate') { box(hg, 0.38, 0.1, 0.24, 0x1E1E22, 0, 0.04, 0, q); box(hg, 0.24, 0.12, 0.2, 0x1E1E22, 0, 0.13, 0, q); ball(hg, 0.04, 0xFFFFFF, 0, 0.08, 0.13, q); box(hg, 0.3, 0.02, 0.02, 0xE8C547, 0, 0.01, 0.12, q); }
   }
-  if (acc === 1) { box(b, 0.1, 0.08, 0.06, 0xE2384A, 0.12, top + 0.02, az, o); for (const s of [-1, 1]) mesh(PYR, b, 0.1, 0.1, 0.05, 0xE2384A, 0.12 + s * 0.08, top + 0.02, az, { solid: false, rz: s * Math.PI / 2 }); }
-  if (acc === 2) { cyl(b, 0.16, 0.03, 0x2B2B36, 0, top + 0.02, az, o); cyl(b, 0.1, 0.16, 0x2B2B36, 0, top + 0.11, az, o); cyl(b, 0.105, 0.035, 0xE2384A, 0, top + 0.06, az, o); }
-  if (acc === 3) { cyl(b, 0.12, 0.08, C.gold, 0, top + 0.05, az, { solid: false, emissive: 0.4 }); for (let i = 0; i < 5; i++) mesh(PYR, b, 0.05, 0.08, 0.05, C.gold, Math.cos(i * 1.26) * 0.11, top + 0.12, az + Math.sin(i * 1.26) * 0.11, { solid: false, emissive: 0.4 }); }
+  if (acc === 1) { box(hg, 0.1, 0.08, 0.06, 0xE2384A, 0.12, 0.02, 0, q); for (const s of [-1, 1]) mesh(PYR, hg, 0.1, 0.1, 0.05, 0xE2384A, 0.12 + s * 0.08, 0.02, 0, { solid: false, surf: null, rz: s * Math.PI / 2 }); }
+  if (acc === 2) { cyl(hg, 0.16, 0.03, 0x2B2B36, 0, 0.02, 0, q); cyl(hg, 0.1, 0.16, 0x2B2B36, 0, 0.11, 0, q); cyl(hg, 0.105, 0.035, 0xE2384A, 0, 0.06, 0, q); }
+  if (acc === 3) { cyl(hg, 0.12, 0.08, C.gold, 0, 0.05, 0, { solid: false, surf: null, emissive: 0.4 }); for (let i = 0; i < 5; i++) mesh(PYR, hg, 0.05, 0.08, 0.05, C.gold, Math.cos(i * 1.26) * 0.11, 0.12, Math.sin(i * 1.26) * 0.11, { solid: false, surf: null, emissive: 0.4 }); }
   g.userData.spark = spark; g.userData.ph = Math.random() * 6; g.scale.setScalar(1.25);
   return g;
 }
@@ -17297,6 +17328,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1024n', d: '10월 24일 (밤)', items: ['🏷️ 칭호를 골라서 달아요! 📊 내 능력치 → 🏷️ 내 칭호 고르기 · 칭호를 달면 이름표가 반짝반짝 ✨', '👑 지난주 능력치 합계 1등은 👑종합1등 칭호 + 어깨 위 아기 용 · 🎓장원은 어사화와 홍패 · 🔔골든벨은 금빛 어깨띠와 금종 왕관', '🐾 펫 옷이 펫 몸에 꼭 맞게 바뀌었어요 (히로 호박 망토 · 선글라스 · 모자 등)'] },
   { id: '1024m', d: '10월 24일 (밤)', items: ['🏃 수학 마을에 수학 달리기장! 선생님이 단원을 고르면 각자 문제를 풀며 달려요 · 맞히면 1칸, 3연속이면 ⚡2칸, 틀리면 3초 넘어져요', '🏅 마을 1등 칭호: 🔔골든벨(못 울리면 🔔최후의1인 · 3번 울리면 🏅골든벨마스터) · ⛏️금광왕(금빛 안전모와 곡괭이) · 한 주에 🎓장원·🔔골든벨·⛏️금광왕을 다 가지면 🌟삼관왕!'] },
   { id: '1024l', d: '10월 24일 (밤)', items: ['🔔 영어 마을에 영어 골든벨 홀이 생겼어요! 선생님이 문제를 내면 방석에 앉아 한 문제씩 풀어요 · 틀리면 탈락, 끝까지 살아남으면 🔔 골든벨!', '🔊 듣기 문제도 나와요 · 내 화면의 🔊 듣기 버튼으로 다시 들을 수 있어요'] },
   { id: '1024k', d: '10월 24일 (밤)', items: ['🏯 역사 마을에 장승·볏가리·지게·항아리·돌담, 🗽 영어 마을에 핫도그 수레·신호등·꽃 화분·택시·생울타리가 생겼어요 → 숨바꼭질 숨을 곳이 많아졌어요!', '🏸 배드민턴은 이제 랭킹 점수 없이 즐겨요'] },
@@ -20731,6 +20763,7 @@ function openStats() {
   openLife('📊 내 능력치', (box) => {
     box.textContent = ''; { const b = el2('button', 'btn', '🏆 이번 주 능력치 랭킹'); b.style.background = '#FFE066'; b.onclick = openRank; box.append(el2('div', 'row-center', null)); box.lastChild.append(b); }
     { const b = el2('button', 'btn', '❓ 점수 얻는 방법'); b.style.background = '#D7F0FF'; b.onclick = openStatGuide; box.lastChild.append(' ', b); }
+    { const b = el2('button', 'btn', '🏷️ 내 칭호 고르기'); b.style.background = '#FFE9A8'; b.onclick = openTitles; box.lastChild.append(' ', b); }
     if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요 (D-${READ_FEST_LAST - dayNum()})`));
     box.append(el2('p', 'hint', `과목 퀴즈를 잘 풀면 능력치가 올라요. 능력치마다 하루에 오를 수 있는 점수가 정해져 있고(주간 랭킹 점수도 같아요), 다음 날 0시에 다시 채워요. 모은 점수가 쌓여 레벨이 올라요 (최고 Lv${LV_MAX} · 누적 ${lvAt(LV_MAX)}점). Lv3·6·9·12마다 성 공방전 역할이 한 단계 강해져요.`));
     for (const [k, S2] of Object.entries(STATS)) {
@@ -23273,35 +23306,141 @@ function mrunTick(dt) {
   if (isTeacher) { if (G.ph === 'run' && !mrun.autoBusy && (Date.now() > G.t0 + G.dur * 1000 + 1200 || mrunRank(G).some(r => r[2] >= G.goal))) { mrun.autoBusy = true; mrunFinish().finally(() => setTimeout(() => { mrun.autoBusy = false; }, 2000)); }
     if (G.open && lpOpen && $('lpTitle').textContent === '🏃 달리기 진행') { const k = JSON.stringify([G.ph, G.n, mrunCd(G), mrunLeft(G), mrunRank(G).slice(0, 15).map(r => r[2]).join()]); if (k !== mrun.aKey) { mrun.aKey = k; refillLife(); } } }
 }
-// ================= 🏅 마을 1등 칭호 (1024m): 🎓장원 · 🔔골든벨 · ⛏️금광왕 → 셋 다면 🌟삼관왕 =================
-// 이번 주(월요일에 바뀌어요) 이름표 옆 칭호 + 겉모습: 🔔 머리 옆 작은 금종 · ⛏️ 금빛 안전모 + 등에 금곡괭이 · 🌟 발밑에 금빛 고리
+// ================= 🏅 칭호 (1024n): 가진 칭호 중 하나를 골라 이름표에 달아요 · 겉모습도 그 칭호대로 · 칭호를 달면 이름표가 반짝반짝 =================
+// 고른 칭호: bag.title (''=자동 · 'none'=안 달기) → players/{uid}/tt 로 친구 화면에도 · 정말 가진 칭호인지는 state로 확인해요
+// 👑종합1등(지난주 능력치 합계 1등) · 🌟삼관왕 · ⛏️금광왕 · 🔔골든벨/🔔최후의1인 · 🎓장원 · 🏅골든벨마스터 · 🥇 능력치 메달
 const wkOk = (c) => !!c && c.w === weekNum();
 const gwHas = (u, data) => { const c = S.gwc; return wkOk(c) && (c.uid === u || (!!c.name && rosterOf(u, data) === c.name)); };
 const egHas = (u, data) => { const c = S.egc; if (!wkOk(c) || !c.u) return false; if (c.u[u]) return true; const nm = rosterOf(u, data); return !!nm && Object.values(c.u).includes(nm); };
 const mrHas = (u, data) => { const c = S.mrunc; return wkOk(c) && (c.uid === u || (!!c.name && rosterOf(u, data) === c.name)); };
 const egMaster = (u, data) => (S.egcnt?.[rosterOf(u, data) || u] || 0) >= 3;
-function vilTag(u, data) {
-  const a = gwHas(u, data), b = egHas(u, data), c = mrHas(u, data); if (a && b && c) return ' 🌟삼관왕';
-  return (a ? ' 🎓장원' : '') + (b ? (S.egc.k === 'last' ? ' 🔔최후의1인' : ' 🔔골든벨') : egMaster(u, data) ? ' 🏅골든벨마스터' : '') + (c ? ' ⛏️금광왕' : '');
+const sumHas = (u) => { if (!S.rank) return false; const t = rankList(weekNum() - 1, 'sum')[0]; return !!t && rankHas(t, u); };
+const TITLE_INFO = [ // [키, 글, 얻는 법, 겉모습]
+  ['sum', '👑종합1등', '지난주 능력치 합계 1등 (🐲 하늘을 나는 용도 타요)', '어깨 위에 아기 용'],
+  ['tri', '🌟삼관왕', '한 주에 🎓장원 · 🔔골든벨 · ⛏️금광왕을 모두', '어사화 + 금빛 어깨띠 + 금곡괭이 + 발밑 금빛 고리'],
+  ['mr', '⛏️금광왕', '🏃 수학 달리기 1등', '금빛 안전모 + 등에 금곡괭이'],
+  ['eg', '🔔골든벨', '🔔 영어 골든벨에서 끝까지 살아남기 (아무도 못 울리면 가장 오래 버틴 친구가 🔔최후의1인)', '금빛 어깨띠 + 금종 왕관 (최후의1인은 은빛)'],
+  ['gw', '🎓장원', '📜 과거시험 장원급제', '어사화(꽃 달린 사모) + 손에 홍패'],
+  ['egm', '🏅골든벨마스터', '골든벨을 3번 울리면 (계속 가져요)', '머리 옆 작은 금종'],
+];
+function titlesOf(u, data) { // 가진 칭호 [키, 글, 겉모습] (위에 있을수록 높아요)
+  const out = [], a = gwHas(u, data), b = egHas(u, data), c = mrHas(u, data);
+  if (sumHas(u)) out.push(['sum', '👑종합1등', 'sum']);
+  if (a && b && c) out.push(['tri', '🌟삼관왕', 'tri']);
+  if (c) out.push(['mr', '⛏️금광왕', 'mr']);
+  if (b) out.push(S.egc.k === 'last' ? ['eg', '🔔최후의1인', 'egl'] : ['eg', '🔔골든벨', 'eg']);
+  if (a) out.push(['gw', '🎓장원', 'gw']);
+  if (egMaster(u, data)) out.push(['egm', '🏅골든벨마스터', 'egm']);
+  if (S.rank) { const w = weekNum() - 1; for (const k of Object.keys(rankCats())) { const i = rankList(w, k).slice(0, 3).findIndex(x => rankHas(x, u)); if (i >= 0) out.push([`r_${k}`, `${MEDAL[i]}${rankCats()[k].icon}${(rankCats()[k].name || '').slice(0, 2)}${i + 1}등`, '']); } }
+  return out;
 }
-function titleWear(a, f) { // f: 'b' 금종 · 'g' 금광왕 · 't' 삼관왕
-  if ((a.ttK ?? '') === f) return; a.ttK = f; (a.ttG || []).forEach(x => x.parent?.remove(x)); a.ttG = []; a.ttRing = null; if (!f) return;
-  const gold = new THREE.MeshStandardMaterial({ color: 0xF2C230, metalness: 0.55, roughness: 0.3, emissive: 0x6A4A00, emissiveIntensity: 0.35 }), M = (geo, par, x, y, z) => { const m = new THREE.Mesh(geo, gold); m.position.set(x, y, z); par.add(m); return m; };
-  if (f.includes('b') && !f.includes('t')) { const b = egBell(); b.scale.setScalar(0.2); b.position.set(0.5, 1.98, 0.12); b.rotation.z = -0.35; a.head.add(b); a.ttG.push(b); }
-  if (f.includes('g') || f.includes('t')) {
-    const h = new THREE.Group(); a.head.add(h); a.ttG.push(h); const dome = M(new THREE.SphereGeometry(0.72, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2), h, 0, 2.2, 0); dome.scale.y = 0.6; M(new THREE.CylinderGeometry(0.8, 0.8, 0.06, 20), h, 0, 2.22, 0.05); M(new THREE.BoxGeometry(0.1, 0.38, 0.62), h, 0, 2.42, 0);
-    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.08, 12), new THREE.MeshBasicMaterial({ color: 0xFFF6B0 })); lamp.rotation.x = Math.PI / 2; lamp.position.set(0, 2.38, 0.68); h.add(lamp); // ⛑️ 금빛 안전모
-    const p = new THREE.Group(); p.position.set(0, 0.95, -0.56); p.rotation.z = 0.6; a.rig.add(p); a.ttG.push(p); cyl(p, 0.045, 1.15, 0x8A5A32, 0, 0, 0, { solid: false }); const hd = M(new THREE.BoxGeometry(0.85, 0.11, 0.11), p, 0, 0.56, 0); hd.rotation.z = 0.08; for (const s of [-1, 1]) { const tip = M(new THREE.ConeGeometry(0.07, 0.22, 8), p, s * 0.52, 0.52, 0); tip.rotation.z = -s * Math.PI / 2 - s * 0.25; } // ⛏️ 등에 금곡괭이
-  }
-  if (f.includes('t')) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.05, 6, 32), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.9 })); r.rotation.x = Math.PI / 2; r.position.y = 0.06; a.rig.add(r); a.ttG.push(r); a.ttRing = r;
-    for (let i = 0; i < 3; i++) { const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.09), new THREE.MeshBasicMaterial({ color: [0xFFE066, 0xFF8FB1, 0x7FC8F8][i] })); s.position.set(Math.cos(i * 2.09) * 0.62, 0.12, Math.sin(i * 2.09) * 0.62); r.add(s); } } // 🌟 삼관왕 고리
+const ttSel = (u, data) => u === backend?.uid ? String(bag.title || '') : String(data?.tt || '');
+function titlePick(u, data) { const s = ttSel(u, data); if (s === 'none') return null; const L = titlesOf(u, data); return L.find(t => t[0] === s) || L[0] || null; }
+function titleText(u, data) { const t = titlePick(u, data); return t ? ' ' + t[1] : ''; }
+const vilTag = titleText; // (예전 이름)
+function openTitles() {
+  openLife('🏷️ 내 칭호', (box) => {
+    box.textContent = ''; const me = backend.uid, L = titlesOf(me), cur = titlePick(me), sel = String(bag.title || '');
+    box.append(el2('p', 'hint', '가진 칭호 중 하나를 골라 이름표에 달아요. 칭호를 달면 이름표가 반짝반짝 빛나고, 칭호마다 겉모습이 바뀌어요. 이번 주 칭호는 월요일에 새로 정해져요.'));
+    box.append(el2('p', 'lp-big', cur ? `지금 단 칭호: ${cur[1]}` : sel === 'none' ? '지금은 칭호를 달지 않았어요' : '아직 가진 칭호가 없어요'));
+    const row = el2('div', 'row-center wrap'), B = (t, on, fn) => { const b = el2('button', 'btn', t); b.style.background = on ? '#FFE066' : '#fff'; b.onclick = () => { fn(); saveBag(); playSfx('pick'); mrun.tt = 0; refillLife(); }; row.append(b); };
+    for (const [k, t] of L) B(`${(cur && cur[0] === k) ? '✅ ' : ''}${t}`, cur && cur[0] === k, () => { bag.title = k; });
+    B(`${!sel ? '✅ ' : ''}⚙️ 자동 (가장 높은 칭호)`, !sel, () => { bag.title = ''; });
+    B(`${sel === 'none' ? '✅ ' : ''}🚫 칭호 안 달기`, sel === 'none', () => { bag.title = 'none'; });
+    box.append(row, el2('h3', 'lp-sec', '🏅 칭호 얻는 법'));
+    for (const [k, t, how, look] of TITLE_INFO) { const have = L.some(x => x[0] === k); const d = el2('div', 'rank-row' + (have ? ' me' : ''), `${have ? '✅' : '🔒'} ${t} · ${how} · 👕 ${look}`); d.style.fontSize = '15px'; box.append(d); }
+    { const d = el2('div', 'rank-row', `🥇 능력치 메달 · 지난주 능력치마다 1~3등 · (겉모습 없이 칭호만)`); d.style.fontSize = '15px'; box.append(d); }
+  });
 }
-const titleFlags = (u, data) => { const a = gwHas(u, data), b = egHas(u, data), c = mrHas(u, data); return a && b && c ? 't' : (b ? 'b' : '') + (c ? 'g' : ''); };
+// ---- 겉모습 ----
+const TT_GOLD = () => new THREE.MeshStandardMaterial({ color: 0xF2C230, metalness: 0.55, roughness: 0.3, emissive: 0x6A4A00, emissiveIntensity: 0.35 });
+const TT_SILVER = () => new THREE.MeshStandardMaterial({ color: 0xD6DCE4, metalness: 0.6, roughness: 0.28, emissive: 0x3A4048, emissiveIntensity: 0.3 });
+function ttPart(par, geo, mat, x, y, z, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); par.add(m); return m; }
+function ttEosahwa(a, list) { // 🎓 어사화: 검은 사모 + 뒤에서 휘어져 늘어진 꽃가지
+  const h = new THREE.Group(); a.head.add(h); list.push(h); const bk = new THREE.MeshStandardMaterial({ color: 0x1A1A20, roughness: 0.6 }), o = { solid: false, surf: null };
+  ttPart(h, new THREE.CylinderGeometry(0.42, 0.46, 0.26, 20), bk, 0, 2.36, 0); ttPart(h, new THREE.CylinderGeometry(0.3, 0.32, 0.26, 18), bk, 0, 2.6, -0.12); // 사모 몸 · 뒤 높은 부분
+  for (const s of [-1, 1]) { const w = ttPart(h, new THREE.CylinderGeometry(0.17, 0.17, 0.025, 16), bk, s * 0.6, 2.52, -0.16, 0, 0, Math.PI / 2); w.scale.set(1, 1, 0.55); } // 사모 뿔(옆 날개)
+  const cols = [0xFF7AA8, 0xFFE066, 0xE2384A, 0x7FC8F8, 0xFFFFFF, 0xB58CF0];
+  for (const s of [-1, 1]) { const c = new THREE.CatmullRomCurve3([new V3(s * 0.1, 2.72, -0.22), new V3(s * 0.22, 3.12, -0.45), new V3(s * 0.38, 3.05, -0.8), new V3(s * 0.5, 2.55, -0.92), new V3(s * 0.54, 1.9, -0.8)]);
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(c, 24, 0.012, 4), new THREE.MeshStandardMaterial({ color: 0x3E8A44 })); h.add(tube);
+    for (let i = 1; i <= 16; i++) { const p = c.getPointAt(i / 16.5); ball(h, 0.05 + (i % 3) * 0.008, cols[(i + (s > 0 ? 0 : 3)) % cols.length], p.x + (i % 2 ? 0.03 : -0.03) * s, p.y, p.z, o); } }
+  return h;
+}
+function ttHongpae(a, list) { // 📜 홍패 (붉은 합격증) · 오른손에
+  const g = new THREE.Group(); g.position.set(0, -0.48, 0.24); g.rotation.x = -0.25; a.armR.add(g); list.push(g); const o = { solid: false, surf: null };
+  box(g, 0.42, 0.32, 0.025, 0xE8C547, 0, 0, 0, o); box(g, 0.38, 0.28, 0.03, 0xC0392B, 0, 0, 0.002, o); for (const y of [0.07, 0, -0.07]) box(g, 0.24, 0.025, 0.035, 0xF6E6B8, 0, y, 0.004, o);
+}
+function ttSash(a, list, silver) { // 🎗️ 금빛(은빛) 어깨띠: 왼쪽 어깨에서 오른쪽 허리로 (앞·뒤 · 어깨 위)
+  const g = new THREE.Group(); a.rig.add(g); list.push(g); const mat = silver ? TT_SILVER() : TT_GOLD();
+  for (const z of [0.262, -0.262]) ttPart(g, new THREE.BoxGeometry(0.17, 0.98, 0.02), mat, 0, 0.94, z, 0, 0, 0.72);
+  ttPart(g, new THREE.BoxGeometry(0.19, 0.03, 0.54), mat, -0.3, 1.255, 0);
+  const sp = signPlane(g, [silver ? 'LAST ONE' : 'GOLDEN BELL'], 0.72, 0.11, 0, 0.94, 0.274, { font: 34, pad: 2, fg: '#4A3200', bg: silver ? '#D6DCE4' : '#F2C230', stroke: false }); sp.rotation.z = 0.72 - Math.PI / 2;
+}
+function ttBellCrown(a, list, silver) { // 👑 금종 왕관
+  const h = new THREE.Group(); a.head.add(h); list.push(h); const mat = silver ? TT_SILVER() : TT_GOLD();
+  ttPart(h, new THREE.CylinderGeometry(0.5, 0.52, 0.16, 24, 1, true), mat, 0, 2.37, 0).material.side = THREE.DoubleSide;
+  for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; ttPart(h, new THREE.ConeGeometry(0.06, 0.16, 8), mat, Math.sin(t) * 0.5, 2.52, Math.cos(t) * 0.5); }
+  const b = egBell(); if (silver) b.traverse(x => { if (x.material) x.material = mat; }); b.scale.setScalar(0.3); b.position.set(0, 2.37, 0); h.add(b); a.ttBellSw = b;
+}
+function ttMiner(a, list, helmet) { // ⛏️ 금빛 안전모 + 등에 금곡괭이
+  const gold = TT_GOLD();
+  if (helmet) { const h = new THREE.Group(); a.head.add(h); list.push(h); const dome = ttPart(h, new THREE.SphereGeometry(0.72, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2), gold, 0, 2.2, 0); dome.scale.y = 0.6; ttPart(h, new THREE.CylinderGeometry(0.8, 0.8, 0.06, 20), gold, 0, 2.22, 0.05); ttPart(h, new THREE.BoxGeometry(0.1, 0.38, 0.62), gold, 0, 2.42, 0);
+    ttPart(h, new THREE.CylinderGeometry(0.1, 0.1, 0.08, 12), new THREE.MeshBasicMaterial({ color: 0xFFF6B0 }), 0, 2.38, 0.68, Math.PI / 2); }
+  const p = new THREE.Group(); p.position.set(0, 0.95, -0.56); p.rotation.z = 0.6; a.rig.add(p); list.push(p); cyl(p, 0.045, 1.15, 0x8A5A32, 0, 0, 0, { solid: false, surf: null }); ttPart(p, new THREE.BoxGeometry(0.85, 0.11, 0.11), gold, 0, 0.56, 0, 0, 0, 0.08);
+  for (const s of [-1, 1]) ttPart(p, new THREE.ConeGeometry(0.07, 0.22, 8), gold, s * 0.52, 0.52, 0, 0, 0, -s * Math.PI / 2 - s * 0.25);
+}
+function ttRing(a, list) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.05, 6, 32), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.9 })); r.rotation.x = Math.PI / 2; r.position.y = 0.06; a.rig.add(r); list.push(r); a.ttRing = r;
+  for (let i = 0; i < 3; i++) { const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.09), new THREE.MeshBasicMaterial({ color: [0xFFE066, 0xFF8FB1, 0x7FC8F8][i] })); s.position.set(Math.cos(i * 2.09) * 0.62, Math.sin(i * 2.09) * 0.62, -0.06); r.add(s); } }
+function ttDragon(a, list) { // 🐲 어깨 위 아기 용 (종합 1등)
+  const g = new THREE.Group(); g.position.set(0.72, 1.48, -0.02); g.rotation.y = 0.15; g.scale.setScalar(1.7); a.rig.add(g); list.push(g); const o = { solid: false, surf: null, flat: true }, G = 0x5BC26A, Y = 0xFFE7A0;
+  mesh(SPH_MID, g, 0.15, 0.13, 0.19, G, 0, 0, 0, o); mesh(SPH_MID, g, 0.11, 0.09, 0.14, Y, 0, -0.04, 0.05, o); // 몸 · 배
+  const hd = new THREE.Group(); hd.position.set(0, 0.16, 0.14); g.add(hd); a.ttDrHead = hd;
+  mesh(SPH_MID, hd, 0.12, 0.11, 0.12, G, 0, 0, 0, o); mesh(SPH_MID, hd, 0.08, 0.06, 0.08, G, 0, -0.03, 0.1, o); for (const s of [-1, 1]) { ball(hd, 0.03, 0xFFFFFF, s * 0.06, 0.03, 0.09, o); ball(hd, 0.018, 0x1E1E24, s * 0.065, 0.03, 0.115, o); mesh(CONE, hd, 0.025, 0.09, 0.025, 0xF2C230, s * 0.05, 0.12, -0.03, { ...o, rx: -0.4, rz: -s * 0.25 }); ball(hd, 0.01, 0x2A5A30, s * 0.025, -0.02, 0.18, o); }
+  const wings = []; for (const s of [-1, 1]) { const w = new THREE.Group(); w.position.set(s * 0.1, 0.07, -0.02); g.add(w); const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(s * 0.26, 0.14); sh.lineTo(s * 0.22, -0.02); sh.lineTo(s * 0.16, 0.03); sh.lineTo(s * 0.1, -0.05); sh.lineTo(0, 0);
+    w.add(new THREE.Mesh(new THREE.ShapeGeometry(sh), new THREE.MeshStandardMaterial({ color: 0xFFB347, side: THREE.DoubleSide }))); w.userData.s = s; wings.push(w); } a.ttWings = wings;
+  mesh(CONE, g, 0.07, 0.24, 0.07, G, 0, -0.04, -0.24, { ...o, rx: -Math.PI / 2 - 0.4 }); for (const k of [0, 1, 2]) mesh(CONE, g, 0.025, 0.05, 0.025, 0xF2C230, 0, 0.11 - k * 0.03, -0.05 - k * 0.07, o);
+  for (const s of [-1, 1]) mesh(SPH_LO, g, 0.04, 0.035, 0.05, G, s * 0.08, -0.12, 0.08, o); // 앞발
+}
+function titleWear(a, f) { // f: 겉모습 종류 (+':n' = 머리 장식 빼기 · 과거시험장 갓)
+  if ((a.ttK ?? '') === f) return; a.ttK = f; if (a.ttBy != null && a.badge) { a.badge.position.y = a.ttBy; a.ttBy = null; } (a.ttG || []).forEach(x => x.parent?.remove(x)); a.ttG = []; a.ttRing = null; a.ttWings = null; a.ttBellSw = null; a.ttDrHead = null; a.ttHead = false;
+  const [k, nh] = f.split(':'), L = a.ttG, head = !nh; if (!k) return;
+  if (k === 'gw') { if (head) ttEosahwa(a, L); ttHongpae(a, L); }
+  if (k === 'eg' || k === 'egl') { ttSash(a, L, k === 'egl'); if (head) ttBellCrown(a, L, k === 'egl'); }
+  if (k === 'mr') ttMiner(a, L, head);
+  if (k === 'tri') { if (head) ttEosahwa(a, L); ttSash(a, L, false); ttMiner(a, L, false); ttRing(a, L); }
+  if (k === 'sum') ttDragon(a, L);
+  if (k === 'egm') { const b = egBell(); b.scale.setScalar(0.2); b.position.set(0.5, 1.98, 0.12); b.rotation.z = -0.35; a.head.add(b); L.push(b); }
+  a.ttHead = head && ['gw', 'eg', 'egl', 'mr', 'tri'].includes(k);
+  if (a.badge) { if (a.ttHead) { if (a.ttBy == null) a.ttBy = a.badge.position.y; a.badge.position.y = Math.max(a.ttBy, 3.15); } else if (a.ttBy != null) { a.badge.position.y = a.ttBy; a.ttBy = null; } } // 머리 장식 위로 이름표를 올려요
+}
+// ---- ✨ 반짝이는 이름표 ----
+let TT_TEX = null;
+function ttTex() { if (TT_TEX) return TT_TEX; const mk = (fn) => { const c = document.createElement('canvas'); c.width = c.height = 128; fn(c.getContext('2d')); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+  TT_TEX = { glow: mk((x) => { const g = x.createRadialGradient(64, 64, 4, 64, 64, 64); g.addColorStop(0, 'rgba(255,230,120,0.95)'); g.addColorStop(0.45, 'rgba(255,200,60,0.5)'); g.addColorStop(1, 'rgba(255,190,40,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); }),
+    star: mk((x) => { x.translate(64, 64); x.fillStyle = '#FFFFFF'; x.shadowColor = '#FFE066'; x.shadowBlur = 18; x.beginPath(); for (let i = 0; i < 8; i++) { const r = i % 2 ? 9 : 56, t = i / 8 * Math.PI * 2; x.lineTo(Math.cos(t) * r, Math.sin(t) * r); } x.closePath(); x.fill(); }) }; return TT_TEX; }
+function ttFx(a, on, dt) {
+  const bd = a.badge; if (!bd) return;
+  if (!on) { if (a.ttFx) { a.ttFx.g.visible = false; bd.material.color.setRGB(1, 1, 1); } return; }
+  if (!a.ttFx) { const T = ttTex(), g = new THREE.Group(); a.g.add(g); const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glow, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.5 })); glow.renderOrder = 1; g.add(glow);
+    const stars = []; for (let i = 0; i < 4; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.star, transparent: true, depthWrite: false, toneMapped: false })); s.renderOrder = 3; s.userData.ph = i * 1.7; g.add(s); stars.push(s); }
+    bd.renderOrder = 2; a.ttFx = { g, glow, stars, t: Math.random() * 6 }; }
+  const F = a.ttFx; F.g.visible = true; F.t += dt; const w = bd.scale.x, h = bd.scale.y, p = bd.position, t = F.t;
+  F.glow.position.copy(p); F.glow.scale.set(w * 1.25, h * 2.2, 1); F.glow.material.opacity = 0.35 + 0.3 * Math.sin(t * 3.2);
+  const sh = 0.5 + 0.5 * Math.sin(t * 4.5); bd.material.color.setRGB(1, 0.9 + 0.1 * sh, 0.55 + 0.45 * sh); // 글자가 금빛 ↔ 흰빛으로 번쩍
+  F.stars.forEach((s, i) => { const k = (t * 1.3 + s.userData.ph) % 2.2, sc = k < 0.7 ? Math.sin(k / 0.7 * Math.PI) * h * 0.9 : 0; if (k < 0.02 || !s.userData.pos) s.userData.pos = [(i % 2 ? 1 : -1) * (0.3 + Math.random() * 0.22) * w, (i < 2 ? 1 : -1) * (0.3 + Math.random() * 0.25) * h];
+    s.position.set(p.x + s.userData.pos[0], p.y + s.userData.pos[1], p.z + 0.01); s.scale.set(sc, sc, 1); s.material.rotation = t * 2; });
+}
 function titleTick(dt) {
-  for (const a of [player.avatar, ...[...remotes.values()].map(r => r.a)]) if (a?.ttRing) a.ttRing.rotation.z += dt * 1.5;
+  const all = [[backend?.uid, player.avatar, undefined, true], ...[...remotes].map(([u, r]) => [u, r.a, r.target, false])];
+  for (const [u, a, data, me] of all) { if (!a) continue; if (a.ttRing) a.ttRing.rotation.z += dt * 1.5;
+    if (a.ttWings) { const fl = Math.sin(performance.now() / 120) * 0.5; for (const w of a.ttWings) w.rotation.y = w.userData.s * (0.3 + fl); }
+    if (a.ttBellSw) a.ttBellSw.rotation.z = Math.sin(performance.now() / 260) * 0.25;
+    if (a.ttDrHead) a.ttDrHead.rotation.y = Math.sin(performance.now() / 900) * 0.5;
+    ttFx(a, a.ttOn && (me ? joined : !!data) && a.g.visible !== false, dt); }
   if ((mrun.tt = (mrun.tt || 0) - dt) > 0) return; mrun.tt = 1.0;
-  if (player.avatar) titleWear(player.avatar, joined && backend?.uid ? titleFlags(backend.uid) : '');
-  for (const [u, r] of remotes) if (r.a) titleWear(r.a, r.target ? titleFlags(u, r.target) : '');
+  for (const [u, a, data, me] of all) { if (!a) continue; const t = (me ? joined && u : data) ? titlePick(u, data) : null; a.ttOn = !!t;
+    titleWear(a, t?.[2] ? t[2] + (a.gwKind ? ':n' : '') : '');
+    if (a.wearHatG) a.wearHatG.visible = !a.ttHead; if (a.ttHead && a.badge && a.badge.position.y < 3.15) { a.ttBy ??= a.badge.position.y; a.badge.position.y = 3.15; } }
 }
 // 👫 함께 배 타기 (1021f): 친구 배(선장) 가까이에서 E → 빈 자리에 타요 · 선장이 움직이면 같이 가요 · 친구 화면에도 그 자리에 보여요 (players/{uid}/bo = "선장uid:자리")
 const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null, duo: '', dv: 0 };
