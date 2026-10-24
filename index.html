@@ -14669,14 +14669,18 @@ async function homeRemove(cell) {
 const GK = { tan: 0xD9A35A, tanL: 0xE8BE7A, brown: 0x4A2E1E, mid: 0x8A5A34, cream: 0xF1E6D2, white: 0xFAF5EA, pad: 0x2E2018, iris: 0xC69C7A, pink: 0xF28AA0 };
 function heroGecko(b, g) {
   const o = { solid: false, flat: true, surf: null }, F = (x) => ({ solid: false, flat: true, surf: null, ...x }), U = { legs: [], tail: [] };
-  const torso = new THREE.Group(); torso.position.set(0, 0.13, 0); b.add(torso); U.torso = torso;
+  const torso = new THREE.Group(); torso.position.set(0, 0.1, 0); b.add(torso); U.torso = torso;
   mesh(SPH_MID, torso, 0.17, 0.095, 0.32, GK.brown, 0, 0, 0, o);                                  // 몸 (짙은 갈색 옆구리)
   mesh(SPH_MID, torso, 0.115, 0.05, 0.31, GK.tan, 0, 0.06, 0, o);                                 // 등 (노란 갈색 띠)
   for (const [x, y, z, s, c] of [[0.15, 0.01, 0.12, 0.06, GK.tan], [-0.15, 0.0, 0.06, 0.07, GK.mid], [0.15, -0.01, -0.1, 0.075, GK.cream], [-0.15, 0.01, -0.14, 0.06, GK.tan], [0.12, -0.03, 0.24, 0.045, GK.mid], [-0.13, -0.02, 0.22, 0.045, GK.tanL], [-0.155, 0.0, -0.02, 0.05, GK.cream]])
     mesh(SPH_LO, torso, 0.03, s * 0.8, s * 1.4, c, x, y, z, o);                                    // 옆구리 얼룩
   for (const sd of [-1, 1]) for (let k = 0; k < 12; k++) { const z = 0.3 - k * 0.055; mesh(CONE, torso, 0.016, 0.055, 0.016, GK.white, sd * (0.11 - Math.abs(z) * 0.05), 0.075, z, F({ rz: -sd * 0.6 })); } // 등 양쪽 흰 가시 볏
+  for (const [x, z, w, l, ry, c] of [[0.02, 0.24, 0.018, 0.07, 0.3, GK.brown], [-0.035, 0.17, 0.016, 0.06, -0.4, GK.brown], [0.04, 0.1, 0.02, 0.05, 0.6, GK.mid], [-0.02, 0.04, 0.018, 0.08, 0.1, GK.brown], [0.05, -0.03, 0.016, 0.05, -0.5, GK.brown], [-0.05, -0.09, 0.02, 0.06, 0.4, GK.mid], [0.015, -0.15, 0.016, 0.07, -0.2, GK.brown], [0.045, -0.22, 0.016, 0.05, 0.5, GK.mid], [-0.04, -0.25, 0.018, 0.05, -0.3, GK.brown]])
+    box(torso, w, 0.01, l, c, x, 0.058 + 0.05 * Math.sqrt(Math.max(0, 1 - (x / 0.115) ** 2 - (z / 0.31) ** 2)), z, F({ ry })); // 등 표면을 따라                                              // 등 무늬 (짙은 갈색 줄무늬)
+  for (const [x, z, r] of [[-0.06, 0.2, 0.022], [0.07, 0.02, 0.02], [-0.07, -0.13, 0.024], [0.06, -0.2, 0.02], [0.0, -0.27, 0.02]]) mesh(SPH_LO, torso, r, 0.008, r * 1.3, 0xE8B070, x, 0.058 + 0.05 * Math.sqrt(Math.max(0, 1 - (x / 0.115) ** 2 - (z / 0.31) ** 2)), z, o); // 밝은 주황 점
+  for (const sd of [-1, 1]) box(torso, 0.012, 0.01, 0.5, GK.cream, sd * 0.098, 0.088, -0.02, o);     // 볏 아래 흰 줄
   // 머리 (뒤가 넓은 세모 머리 · 앞 = +z)
-  const head = new THREE.Group(); head.position.set(0, 0.155, 0.38); b.add(head); U.head = head;
+  const head = new THREE.Group(); head.position.set(0, 0.125, 0.38); b.add(head); U.head = head;
   mesh(SPH_MID, head, 0.165, 0.085, 0.15, GK.tan, 0, 0, 0, o);
   mesh(SPH_MID, head, 0.1, 0.06, 0.11, GK.tan, 0, -0.012, 0.13, o);                               // 주둥이
   mesh(SPH_LO, head, 0.05, 0.03, 0.035, 0xE6C8AE, 0, -0.012, 0.235, o);                           // 밝은 코끝
@@ -14684,20 +14688,20 @@ function heroGecko(b, g) {
   for (const sd of [-1, 1]) { box(head, 0.016, 0.016, 0.22, GK.cream, sd * 0.1, -0.05, 0.08, F({ ry: -sd * 0.3 })); // 흰 입술선 (웃는 얼굴)
     mesh(SPH_LO, head, 0.025, 0.04, 0.12, GK.brown, sd * 0.14, -0.03, -0.01, o); }              // 눈 아래 짙은 띠
   for (const sd of [-1, 1]) { // 큰 눈 · 세로 동공 · 속눈썹 볏
-    const e = new THREE.Group(); e.position.set(sd * 0.125, 0.045, 0.04); head.add(e);
-    ball(e, 0.085, GK.tan, 0, 0, 0, o); ball(e, 0.078, 0x8A6A52, sd * 0.016, 0, 0.012, o); ball(e, 0.072, GK.iris, sd * 0.024, 0, 0.016, o); // 눈두덩 · 테두리 · 홍채
-    box(e, 0.012, 0.11, 0.022, 0x0E0A08, sd * 0.094, 0, 0.018, F({ ry: sd * 0.3 })); ball(e, 0.016, 0xFFFFFF, sd * 0.088, 0.036, 0.045, o); // 세로 동공 · 반짝
-    for (let k = 0; k < 4; k++) mesh(CONE, e, 0.014, 0.055, 0.014, GK.white, sd * (0.025 + k * 0.016), 0.083 - k * 0.006, 0.035 - k * 0.025, F({ rz: -sd * (0.3 + k * 0.18) }));
+    const e = new THREE.Group(); e.position.set(sd * 0.105, 0.03, 0.04); head.add(e);
+    ball(e, 0.06, GK.tan, 0, 0, 0, o); ball(e, 0.054, 0x8A6A52, sd * 0.012, 0, 0.008, o); ball(e, 0.05, GK.iris, sd * 0.016, 0, 0.011, o); // 눈두덩 · 테두리 · 홍채 (머리에 쏙)
+    box(e, 0.009, 0.075, 0.016, 0x0E0A08, sd * 0.065, 0, 0.012, F({ ry: sd * 0.3 })); ball(e, 0.011, 0xFFFFFF, sd * 0.06, 0.024, 0.031, o); // 세로 동공 · 반짝
+    for (let k = 0; k < 4; k++) mesh(CONE, e, 0.012, 0.045, 0.012, GK.white, sd * (0.018 + k * 0.012), 0.058 - k * 0.005, 0.035 - k * 0.025, F({ rz: -sd * (0.3 + k * 0.18) }));
     U['eye' + (sd > 0 ? 'R' : 'L')] = e; }
   for (let k = 0; k < 7; k++) { const a = -1.0 + k * 0.33; mesh(CONE, head, 0.014, 0.05, 0.014, GK.white, Math.sin(a) * 0.16, 0.025, -0.1 - Math.cos(a) * 0.02, F({ rx: -1.0, rz: -Math.sin(a) * 0.8 })); } // 머리 뒤 볏
   const tg = new THREE.Group(); tg.position.set(0.05, -0.04, 0.2); head.add(tg); box(tg, 0.035, 0.01, 0.09, GK.pink, 0, 0, 0.035, o); tg.visible = false; U.tongue = tg; // 👅 눈 핥는 혀
   // 다리 4개 (옆으로 쫙 벌리고 낮게 · 넓은 발가락 패드)
-  for (const [x, z, sd] of [[0.12, 0.19, 1], [-0.12, 0.19, -1], [0.12, -0.19, 1], [-0.12, -0.19, -1]]) {
-    const L = new THREE.Group(); L.position.set(x, 0.12, z); b.add(L);
-    box(L, 0.13, 0.045, 0.055, z > 0 ? GK.tan : GK.mid, sd * 0.065, -0.015, 0, F({ rz: -sd * 0.2 }));           // 윗다리 (옆으로)
-    box(L, 0.045, 0.09, 0.045, GK.tan, sd * 0.13, -0.065, 0.015, F({ rz: sd * 0.35 }));                          // 아랫다리
-    mesh(SPH_LO, L, 0.055, 0.016, 0.055, GK.tan, sd * 0.155, -0.108, 0.04, o);                                     // 발
-    for (let t = 0; t < 4; t++) { const a = -0.8 + t * 0.53; mesh(SPH_LO, L, 0.024, 0.014, 0.03, GK.pad, sd * 0.155 + Math.sin(a) * 0.06, -0.108, 0.04 + Math.cos(a) * 0.06, o); } // 발가락 패드 (짙은 끝)
+  for (const [x, z, sd] of [[0.11, 0.18, 1], [-0.11, 0.18, -1], [0.11, -0.18, 1], [-0.11, -0.18, -1]]) {
+    const L = new THREE.Group(); L.position.set(x, 0.09, z); b.add(L);
+    mesh(SPH_LO, L, 0.06, 0.032, 0.036, z > 0 ? GK.tan : GK.mid, sd * 0.045, -0.012, 0, F({ rz: -sd * 0.35 }));      // 윗다리 (둥글게)
+    mesh(SPH_LO, L, 0.028, 0.045, 0.03, GK.tan, sd * 0.095, -0.045, 0.012, F({ rz: sd * 0.5 }));                     // 아랫다리 (짧게)
+    mesh(SPH_LO, L, 0.045, 0.014, 0.048, GK.tan, sd * 0.11, -0.078, 0.03, o);                                         // 발
+    for (let t = 0; t < 4; t++) { const a = -0.8 + t * 0.53; mesh(SPH_LO, L, 0.02, 0.012, 0.026, GK.pad, sd * 0.11 + Math.sin(a) * 0.05, -0.078, 0.03 + Math.cos(a) * 0.05, o); } // 발가락 패드 (짙은 끝)
     U.legs.push({ g: L, s: sd, front: z > 0 });
   }
   // 꼬리 (흰 바탕 · 갈색 점 · 마디마다 S자로 흔들려요)
@@ -14715,11 +14719,11 @@ function geckoAnim(g, dt) { // 히로의 움직임
   U.torso.rotation.y = sway * 0.12; U.head.rotation.y = -sway * 0.18 + (U.tilting > 0 ? Math.sin((1.2 - U.tilting) / 1.2 * Math.PI) * 0.35 : 0);
   U.head.rotation.z = U.tilting > 0 ? Math.sin((1.2 - U.tilting) / 1.2 * Math.PI) * 0.4 : 0;
   U.tail.forEach((s, i) => { s.rotation.y = Math.sin(ph * (mv ? 1 : 0.5) - i * 0.7) * (mv ? 0.28 : 0.12); });
-  for (const L of U.legs) { const diag = (L.front ? 1 : -1) * L.s; L.g.rotation.y = mv ? Math.sin(ph) * 0.55 * diag : 0; L.g.position.y = 0.12 + (mv ? Math.max(0, Math.sin(ph) * diag) * 0.04 : 0); }
+  for (const L of U.legs) { const diag = (L.front ? 1 : -1) * L.s; L.g.rotation.y = mv ? Math.sin(ph) * 0.45 * diag : 0; L.g.position.y = 0.09 + (mv ? Math.max(0, Math.sin(ph) * diag) * 0.04 : 0); }
   U.torso.scale.set(1 + Math.sin(ph * 0.5) * 0.02, 1 + Math.sin(ph * 0.5) * 0.03, 1); // 숨쉬기
   if (!mv) { U.lick -= dt; U.tilt -= dt; }
   if (U.lick <= 0 && !U.licking) { U.licking = 0.7; U.lick = 5 + Math.random() * 7; }
-  if (U.licking > 0) { U.licking = Math.max(0, U.licking - dt); const k = Math.sin((0.7 - U.licking) / 0.7 * Math.PI); U.tongue.visible = U.licking > 0; U.tongue.position.set(0.05 + k * 0.05, -0.04 + k * 0.07, 0.2 - k * 0.13); U.tongue.rotation.set(-k * 1.0, k * 0.6, 0); U.tongue.scale.z = 0.6 + k * 0.8; }
+  if (U.licking > 0) { U.licking = Math.max(0, U.licking - dt); const k = Math.sin((0.7 - U.licking) / 0.7 * Math.PI); U.tongue.visible = U.licking > 0; U.tongue.position.set(0.045 + k * 0.04, -0.04 + k * 0.06, 0.2 - k * 0.13); U.tongue.rotation.set(-k * 1.0, k * 0.6, 0); U.tongue.scale.z = 0.6 + k * 0.8; }
   if (U.tilt <= 0 && !U.tilting) { U.tilting = 1.2; U.tilt = 4 + Math.random() * 5; if (Math.random() < 0.3) u.hop = 0.6; }
   if (U.tilting > 0) U.tilting = Math.max(0, U.tilting - dt);
 }
@@ -14790,10 +14794,10 @@ function hpetModel(ki, acc = 0, spark = false, ow = 0) { // 🐾 네모네모 �
   }
   const ey = H.bird ? 0.72 : H.round ? 0.42 : 0.72, ez = H.bird ? 0.22 : H.round ? 0.28 : 0.49;
   if (!H.gecko) for (const s of [-1, 1]) { box(b, 0.07, 0.08, 0.02, 0x1E1E24, s * 0.1, ey, ez, o); box(b, 0.025, 0.025, 0.01, 0xFFFFFF, s * 0.1 + 0.015, ey + 0.02, ez + 0.012, o); box(b, 0.07, 0.035, 0.01, 0xFF9AB0, s * 0.15, ey - 0.07, ez, o); }
-  const top = H.gecko ? 0.26 : H.bird ? 0.82 : H.round ? 0.5 : 0.86, az = H.gecko ? 0.38 : H.bird ? 0.06 : H.round ? 0.05 : 0.3;
+  const top = H.gecko ? 0.22 : H.bird ? 0.82 : H.round ? 0.5 : 0.86, az = H.gecko ? 0.38 : H.bird ? 0.06 : H.round ? 0.05 : 0.3;
   const OW = PET_OUTFITS[ow]; if (OW?.hat) acc = 0;
   if (OW) { // 👗 펫 옷 그리기
-    const bw = H.gecko ? 0.32 : H.bird ? 0.42 : H.round ? 0.5 : 0.42, bl = H.gecko ? 0.6 : H.bird ? 0.42 : H.round ? 0.55 : 0.62, by = H.gecko ? 0.2 : H.bird ? 0.53 : H.round ? 0.49 : 0.53, ny = H.gecko ? 0.16 : H.bird ? 0.52 : H.round ? 0.42 : 0.55, nz = H.gecko ? 0.3 : H.bird ? 0.1 : H.round ? 0.2 : 0.16;
+    const bw = H.gecko ? 0.32 : H.bird ? 0.42 : H.round ? 0.5 : 0.42, bl = H.gecko ? 0.6 : H.bird ? 0.42 : H.round ? 0.55 : 0.62, by = H.gecko ? 0.17 : H.bird ? 0.53 : H.round ? 0.49 : 0.53, ny = H.gecko ? 0.13 : H.bird ? 0.52 : H.round ? 0.42 : 0.55, nz = H.gecko ? 0.3 : H.bird ? 0.1 : H.round ? 0.2 : 0.16;
     const k = OW.k;
     if (k === 'scarf') { box(b, bw + 0.08, 0.1, 0.22, 0xE2384A, 0, ny, nz, o); box(b, bw + 0.09, 0.03, 0.23, 0xFFFFFF, 0, ny + 0.02, nz, o); box(b, 0.09, 0.22, 0.06, 0xE2384A, bw / 2 - 0.02, ny - 0.12, nz + 0.1, o); }
     if (k === 'rain') { box(b, bw + 0.08, 0.1, bl + 0.04, 0xFFD23C, 0, by, 0, o); box(b, 0.46, 0.14, 0.42, 0xFFD23C, 0, top - 0.02, az, o); box(b, 0.48, 0.04, 0.12, 0xF5B82A, 0, top - 0.06, az + 0.22, o); }
@@ -17265,6 +17269,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1024j', d: '10월 24일 (밤)', items: ['🦎 히로를 더 닮게 다듬었어요: 눈은 작게 · 다리는 짧고 둥글게 · 등에 무늬'] },
   { id: '1024i', d: '10월 24일 (밤)', items: ['🦎 우리 반 도마뱀 히로가 펫이 됐어요! 해변 🐾 펫 가게에서 무료로 데려와 같이 산책해요 (몸을 S자로 흔들며 걷고, 가끔 혀로 눈을 핥아요 👅)'] },
   { id: '1024h', d: '10월 24일 (밤)', items: ['🐾 데리고 다니는 동료 펫이 체육관 배틀처럼 입체 3D 펫으로 바뀌었어요! 날개를 파닥이고 꼬리를 흔들며 따라와요 (들판 야생 펫도 3D)'] },
   { id: '1024f', d: '10월 24일 (저녁)', items: ['📖 사회 학습지에 「세종대왕 · 조선의 발전에 따른 사람들의 생활 모습」이 생겼어요 (훈민정음 · 농사직설 · 혼천의 · 앙부일구 · 자격루 · 측우기 · 4군 6진)', '📜 역사 마을 조선 시대 퀴즈에도 세종대왕 문제가 나와요'] },
