@@ -17204,6 +17204,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1024h', d: '10월 24일 (밤)', items: ['🐾 데리고 다니는 동료 펫이 체육관 배틀처럼 입체 3D 펫으로 바뀌었어요! 날개를 파닥이고 꼬리를 흔들며 따라와요 (들판 야생 펫도 3D)'] },
   { id: '1024f', d: '10월 24일 (저녁)', items: ['📖 사회 학습지에 「세종대왕 · 조선의 발전에 따른 사람들의 생활 모습」이 생겼어요 (훈민정음 · 농사직설 · 혼천의 · 앙부일구 · 자격루 · 측우기 · 4군 6진)', '📜 역사 마을 조선 시대 퀴즈에도 세종대왕 문제가 나와요'] },
   { id: '1024e', d: '10월 24일', items: ['🏰 바닷가 모래사장에서 우리 반 모래성을 함께 쌓아요! 블록 8가지 · 함께 쌓을수록 단계가 올라가요', '🏆 선생님이 열면 모래성 대회! 모둠 터에 쌓고 마지막에 투표해요', '🐾 펫 센터에서 「데리고 다니기」를 누르면 체육관 펫이 따라다녀요 · 레일바이크 뒷자리 · 들판 야생 펫 도전 · 레이드 첫 번째'] },
   { id: '1024d', d: '10월 24일', items: ['🛗 수학 광산 마을 승강기를 타요! ⬆️ 전망대로 올라가거나 ⬇️ 오늘 열린 광산으로 내려가요'] },
@@ -19399,11 +19400,17 @@ function buddySet(id) {
 function buddyTex(id) { if (!bdw.tex[id]) { const t = new THREE.TextureLoader().load(petArt(id)); t.colorSpace = THREE.SRGBColorSpace; bdw.tex[id] = t; } return bdw.tex[id]; }
 function buddyModel(id, lv) {
   const g = new THREE.Group(), o = { solid: false }, col = new THREE.Color(PT[petType(id)].c).getHex();
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: buddyTex(id), transparent: true, depthWrite: false })); sp.scale.set(1.45, 1.45, 1); sp.position.y = 0.95; g.add(sp); g.userData.sp = sp;
+  const sp = pb3Pet(id), h = sp.userData.h || 1, k = 1.25 / Math.max(0.6, h); sp.scale.setScalar(k); sp.position.y = 0.55; sp.traverse(m => { if (m.isMesh && m.material?.isMeshToonMaterial && !m.material.userData.lit) { m.material.userData.lit = 1; if (m.material.emissive && m.material.emissive.getHex() === 0) { m.material.emissive.copy(m.material.color).multiplyScalar(0.22); } } }); /* 마을 빛에서도 또렷하게 */ g.add(sp); g.userData.sp = sp; g.userData.ph = Math.random() * 6; // 🐾 1024h: 체육관 배틀과 같은 3D 펫 (툰 재질 · 큰 눈 · 속성 장식)
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 6, 24), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85 })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.06; g.add(ring); g.userData.ring = ring;
   const sh = new THREE.Mesh(new THREE.CircleGeometry(0.38, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.04; g.add(sh);
-  makeLabel(g, [`${PT[petType(id)].i} ${CRITTER[id].name} Lv${lv}`], 0.55, 0, 1.95, 0);
+  makeLabel(g, [`${PT[petType(id)].i} ${CRITTER[id].name} Lv${lv}`], 0.55, 0, 2.15, 0);
   return g;
+}
+function buddyAnim(sp, t, mv) { // 날개 파닥 · 꼬리 살랑 · 장식 빙글 (배틀 화면과 같은 움직임)
+  const A = sp.userData.anim, b = sp.userData.body; if (!A || !b) return; const sp2 = mv ? 2 : 1;
+  b.position.y = Math.sin(t * 2 * sp2) * 0.04; b.scale.set(1 + Math.sin(t * 2) * 0.015, 1 - Math.sin(t * 2) * 0.015, 1);
+  for (const [w, s] of A.wings) w.rotation.y = s * Math.sin(t * 3.5 * sp2) * 0.4; for (const [tl, a] of A.tails) tl.rotation.y = Math.sin(t * 2.5 * sp2) * a * 0.6;
+  for (const [sg, o] of A.tents) sg.rotation.z = Math.sin(t * 2 + o) * 0.18; for (const r of A.spin) r.rotation.z += 0.03; for (const f of A.flick) { f.userData.sy ??= f.scale.y; f.scale.y = f.userData.sy * (1 + Math.sin(t * 6) * 0.08); }
 }
 function updateBuddy(dt) {
   const want = new Map(), me = buddyCode();
@@ -19415,19 +19422,20 @@ function updateBuddy(dt) {
     if (!f) { f = { g: buddyModel(id, +lv || 5), code, t: Math.random() * 6 }; f.g.position.copy(ag.position); scene.add(f.g); bdw.follow.set(u, f); }
     f.t += dt; const sp = f.g.userData.sp;
     if (mine && mrail.on && mrail.g) { // 🚴 레일바이크 뒷자리
-      mrail.g.updateMatrixWorld(true); const p = mrail.g.localToWorld(new V3(0, 0.75, -0.95)); f.g.position.copy(p); sp.position.y = 0.55 + Math.sin(f.t * 6) * 0.04; f.g.userData.ring.visible = false; continue; }
+      mrail.g.updateMatrixWorld(true); const p = mrail.g.localToWorld(new V3(0, 0.75, -0.95)); f.g.position.copy(p); f.g.rotation.y = ag.rotation.y; sp.position.y = 0.2 + Math.sin(f.t * 6) * 0.04; f.g.userData.ring.visible = false; buddyAnim(sp, f.t, true); continue; }
     f.g.userData.ring.visible = true;
     const back = new V3(Math.sin(ag.rotation.y - 2.3) * 1.5, 0, Math.cos(ag.rotation.y - 2.3) * 1.5).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
     if (dd > 14) f.g.position.copy(back); const mv = dd > 0.35; if (mv) { const s = Math.min(dd * 3, 10); f.g.position.x += dx / dd * s * dt; f.g.position.z += dz / dd * s * dt; }
     f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8);
-    sp.position.y = 0.95 + Math.sin(f.t * (mv ? 7 : 2.5)) * (mv ? 0.12 : 0.07); f.g.userData.ring.rotation.z += dt * 1.2;
+    { const want = mv ? Math.atan2(dx, dz) : ag.rotation.y; let d = want - f.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); f.g.rotation.y += d * Math.min(1, dt * 6); } // 가는 쪽을 봐요
+    sp.position.y = 0.35 + Math.abs(Math.sin(f.t * (mv ? 7 : 2.5))) * (mv ? 0.18 : 0.06); f.g.userData.ring.rotation.z += dt * 1.2; buddyAnim(sp, f.t, mv);
   }
   buddyWild(dt);
 }
 // 🌾 야생 펫 도전: 동료와 들판을 걸으면 가끔 나타나요 (하루 6번까지 · 45초 뒤 사라져요)
 function buddyWild(dt) {
   const id = buddyId(), p = player.pos, W = bdw.wild;
-  if (W) { W.left -= dt; W.g.userData.sp.position.y = 0.95 + Math.sin((W.left) * 4) * 0.12; W.g.rotation.y += dt;
+  if (W) { W.left -= dt; W.g.userData.sp.position.y = 0.35 + Math.abs(Math.sin(W.left * 4)) * 0.15; W.g.rotation.y += dt * 0.6; buddyAnim(W.g.userData.sp, 45 - W.left, true);
     if (W.left <= 0 || !inField(p.x, p.z) || !id) { scene.remove(W.g); W.act.pos.set(0, -99, 0); bdw.wild = null; } return; }
   if (!id || !joined || pb.B || !inField(p.x, p.z) || isFrozen()) { bdw.lastP = null; return; }
   if (bdw.lastP) bdw.walk += Math.hypot(p.x - bdw.lastP[0], p.z - bdw.lastP[1]); bdw.lastP = [p.x, p.z];
@@ -19435,7 +19443,7 @@ function buddyWild(dt) {
   if (bag.wildDay?.d !== dayNum()) bag.wildDay = { d: dayNum(), n: 0 }; if (bag.wildDay.n >= 6 || Math.random() > 0.45) return;
   const pool = PET_IDS.filter(x => !isRare(x) && x !== id), wid = pool[Math.floor(Math.random() * pool.length)], lv = Math.max(3, Math.min(PB_MAXLV, bag.pets[id].lv + Math.floor(Math.random() * 3) - 1));
   const a = player.heading + (Math.random() - 0.5) * 1.2, x = p.x + Math.sin(a) * 5, z = p.z + Math.cos(a) * 5; if (!inField(x, z)) return;
-  const g = buddyModel(wid, lv); g.position.set(x, 0, z); scene.add(g); makeLabel(g, ['❗ 야생 펫'], 0.6, 0, 2.5, 0); burst(new V3(x, 1, z), [0xFFFFFF, 0x9AE6A0], 30, 3, 2); playSfx('pick');
+  const g = buddyModel(wid, lv); g.position.set(x, 0, z); scene.add(g); makeLabel(g, ['❗ 야생 펫'], 0.6, 0, 2.7, 0); burst(new V3(x, 1, z), [0xFFFFFF, 0x9AE6A0], 30, 3, 2); playSfx('pick');
   bdw.wildAct ||= addInteract({ pos: new V3(0, -99, 0), r: 2.8, text: () => bdw.wild ? ['⚔️ 야생 펫과 배틀', `${CRITTER[bdw.wild.id].name} Lv${bdw.wild.lv}`] : null, run: wildBattle });
   bdw.wildAct.pos.set(x, 1, z); bdw.wild = { g, id: wid, lv, left: 45, act: bdw.wildAct };
   toast(`❗ 야생 ${PT[petType(wid)].i} ${CRITTER[wid].name} Lv${lv}이(가) 나타났어요! 가까이 가서 E로 배틀 (동료 ${CRITTER[id].name}이(가) 먼저 나가요)`, 'info');
