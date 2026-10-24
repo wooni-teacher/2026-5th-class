@@ -576,6 +576,7 @@
   .fq i { font-style: normal; padding: 0 2px; }
   .mn-card .fq, .mn-goal .fq { font-size: .72em; } .mn-now .fq { font-size: .8em; }
   .fq i:first-child { border-bottom: 2px solid currentColor; }
+  .mx-opt .fq, .lp-big .fq { font-size: .8em; } /* 1024a 광산 분수 문제 */
   .mn-now { text-align: center; font-size: 18px; font-weight: 700; min-height: 24px; color: var(--muted); }
   .mn-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 8px 0; }
   .mn-card { font-size: 28px; font-weight: 800; min-width: 64px; padding: 10px 14px; background: #fff; }
@@ -1431,7 +1432,8 @@
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn" id="tpSgWatch" style="background:#fff">👁️ 하늘에서 관전</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
-    <div class="row-center wrap"><button class="btn" id="tpBlkRefill" style="background:#fff">⛰️ 블록 산 다시 채우기</button><button class="btn danger" id="tpMathReset">⛏️ 광산 마을 처음으로</button></div>
+    <div id="tpMineOpen"></div>
+    <div class="row-center wrap"><button class="btn danger" id="tpMathReset">⛏️ 광산 마을 처음으로</button></div>
 
     <h3>🐉 펫 체육관 보스 레이드</h3>
     <p class="hint">보스를 부르면 우리 반이 함께 체력을 깎아요 (한 사람 하루 3번 · 한 번에 8턴). 물리치면 도전한 학생 모두 🐚 150 + 펫 경험치, 마지막 한 방은 🐚 50 더. 학생 화면에는 많이 깎은 5명만 보여요.</p>
@@ -4202,7 +4204,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || bgOpen() || boardW.on || sgFerry.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || bgOpen() || boardW.on || sgFerry.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -4417,7 +4419,7 @@ function sendPresence(time) {
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
-  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
+  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } } // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
@@ -11648,7 +11650,7 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1345, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 };
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1285, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 };
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
@@ -11703,7 +11705,7 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ['⛰️', BM.cx, BM.cz - 10], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
+const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ['🛤️', MR.plat[0], MR.plat[1]], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ['💎', MV.cx + 9, 13], ['📋', MV.cx - 6, 10.5]] : MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ['🌀', HV.x0 + 11, -8.5], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['🌀', PORTAL.x, PORTAL.z], ['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
@@ -11756,8 +11758,7 @@ function drawMathMapBase() { // 수학 광산 마을 지도
   c.fillStyle = '#E8D7B0'; c.beginPath(); c.arc(mapX(MV.cx), mapZ(4), 9 * s, 0, Math.PI * 2); c.fill();
   for (const m of MINES) { rect(m.x - 2.2, MV.z0 - 1, m.x + 2.2, MV.z0 + 0.5, '#1E1915'); rect(m.x - 0.7, MV.z0, m.x + 0.7, MV.z0 + 9, '#9A8A70'); }
   rect(MV.station[0] - 3, -3, MV.station[0] + 1, 3, '#A8A294');
-  rect(BM.x0, BM.z0, BM.x1, BM.z1, '#BFA57E'); rect(MV.x1 - 1, 1.5, BM.x0 + 1, 6.5, '#E3CFA4');
-  for (const cl of bm.cols) { const t = Math.min(1, cl.full / BM.maxH); c.fillStyle = `rgb(${Math.round(150 - 60 * t)},${Math.round(140 - 50 * t)},${Math.round(125 - 40 * t)})`; c.fillRect(mapX(cl.x - BM.S / 2), mapZ(cl.z - BM.S / 2), BM.S * s + 0.5, BM.S * s + 0.5); }
+  c.strokeStyle = '#6E4A2C'; c.lineWidth = 2; c.beginPath(); for (let k = 0; k <= 80; k++) { const P = mrAt(k / 80 * MR_L); k ? c.lineTo(mapX(P.x), mapZ(P.z)) : c.moveTo(mapX(P.x), mapZ(P.z)); } c.stroke(); // 🛤️ 광산 레일
   for (const [x, z] of [[1140, 28], [1175, 34], [1205, 30]]) rect(x - 2.5, z - 2, x + 2.5, z + 2, '#7A4A2A');
   mapUI.key = mapKey();
 }
@@ -14897,8 +14898,9 @@ function initHomeUI() {
 
 /* =====================================================================
    51. ⛏️ 수학 광산 마을 — 우리 마을 서쪽 광차 정류장에서 광차를 타고 가요 (월드 x 1105~1275)
-   · 광산 5곳: 숫자 카드와 기호 카드를 이어 식을 만들어 목표 수를 맞히면 광석을 캐요
-     1 돌(+ −) · 2 구리(× ÷) · 3 은(혼합 계산, 계산 순서) · 4 금(괄호) · 5 보석 동굴(카드 4장 모두) · 6 수정(분수의 곱셈)
+   · 1024a: 광산 6곳 = 5-2 1~6단원 (1 수의 범위와 어림하기 · 2 분수의 곱셈 · 3 합동과 대칭 · 4 소수의 곱셈 · 5 직육면체 · 6 평균과 가능성)
+     단계 5개(기본·실력(하)·실력(중)·심화(하)·심화(중))를 골라 풀어요 → MQ_LV · 문제 만들기 MQ_GEN · 오늘 열린 광산 state/math/open
+     ⛰️ 블록 산은 없애고, 마을을 크게 도는 🛤️ 광산 레일(buildMineRail)을 놓았어요 · 예전 숫자 카드 식 만들기 창(openMineOld)은 코드만 남겨 뒀어요
    · 내 광석은 이 기기 가방에(bag.ore), 반 전체가 캔 수는 state/math/{m1~m6} (누가 캤는지는 없어요)
    · 광산마다 광석 10개마다 한 단계씩 자라요 (5단계까지). 💎 교환소에서 광석을 조개돈으로 바꿔요 (가게 예산 안에서)
    · 문제·카드는 MINES에서 바꿀 수 있어요
@@ -14920,14 +14922,447 @@ const MINES = [
 ];
 MINES.forEach((m, k) => { m.x = 1126 + k * 27; }); // 광산 입구 6곳을 고르게
 const MINE = Object.fromEntries(MINES.map(m => [m.id, m]));
+// ⛏️ 1024a: 광산마다 5-2 단원 하나씩 (보상은 모두 같고, 문제 내용이 달라요 · 개념은 알짜 정리)
+[['수의 범위와 어림하기', ['<b>이상</b>·<b>이하</b>: 그 수를 포함해요 (수직선에 ●) · <b>초과</b>·<b>미만</b>: 포함하지 않아요 (○)', '<b>올림</b>: 구하려는 자리 아래 수를 올려요 (243 → 250, 300)', '<b>버림</b>: 구하려는 자리 아래 수를 버려요 (228 → 220, 200)', '<b>반올림</b>: 바로 아래 자리 숫자가 0~4면 버리고, 5~9면 올려요 (3482 → 3480, 3500)']],
+ ['분수의 곱셈', ['(진분수) × (자연수): 분자와 자연수를 곱해요 (분모는 그대로)', '(대분수) × (자연수): 가분수로 바꾸거나, 자연수 부분과 분수 부분에 각각 곱해요', '(진분수) × (진분수): <b>분자는 분자끼리, 분모는 분모끼리</b> 곱해요', '(단위분수) × (단위분수): 분자는 1, 분모끼리 곱해요', '(대분수) × (대분수): 꼭 <b>가분수로 바꿔서</b> 곱해요 · 약분은 미리 해도 돼요']],
+ ['합동과 대칭', ['<b>합동</b>: 모양과 크기가 같아 포개면 완전히 겹쳐요 → 대응변의 길이·대응각의 크기가 같아요', '<b>선대칭도형</b>: 한 직선(대칭축)을 따라 접으면 겹쳐요 → 대응점을 이은 선분은 대칭축과 수직, 대칭축까지 거리가 같아요', '<b>점대칭도형</b>: 한 점(대칭의 중심)을 중심으로 180° 돌리면 겹쳐요 → 대칭의 중심이 대응점을 이은 선분을 똑같이 둘로 나눠요']],
+ ['소수의 곱셈', ['(소수) × (자연수), (자연수) × (소수): 자연수의 곱셈처럼 계산하고 소수점을 찍어요 (0.3 × 4 = 1.2)', '(소수) × (소수): 자연수처럼 곱하고, <b>두 수의 소수점 아래 자리 수를 더한 만큼</b> 소수점을 옮겨요', '× 10, 100, 1000 → 소수점이 오른쪽으로 1, 2, 3칸 · × 0.1, 0.01, 0.001 → 왼쪽으로 1, 2, 3칸']],
+ ['직육면체', ['<b>직육면체</b>: 직사각형 6개 · <b>정육면체</b>: 정사각형 6개 (정육면체도 직육면체예요)', '면 6개 · 모서리 12개 · 꼭짓점 8개', '<b>겨냥도</b>: 보이는 모서리는 실선(9개), 보이지 않는 모서리는 점선(3개)', '<b>밑면</b>: 서로 평행한 두 면 (3쌍) · <b>옆면</b>: 밑면과 수직인 면 (한 면에 4개)', '<b>전개도</b>: 잘린 모서리는 실선, 잘리지 않은 모서리는 점선 · 접었을 때 만나는 선분의 길이는 같아요']],
+ ['평균과 가능성', ['<b>평균</b> = (자료의 값을 모두 더한 수) ÷ (자료의 수) (87, 92, 85, 90, 91 → 445 ÷ 5 = 89)', '사람 수가 다른 두 모둠은 평균으로 비교해요', '<b>가능성</b>: 불가능하다 · ~아닐 것 같다 · 반반이다 · ~일 것 같다 · 확실하다', '가능성을 수로: 불가능하다 <b>0</b> · 반반이다 <b>1/2</b> · 확실하다 <b>1</b>']],
+].forEach(([n, c], i) => { const m = MINES[i]; m.u = i + 1; m.uname = n; m.concept = c; m.name = `${i + 1}단원 ${n}`; });
 const MINE_STEP = 10, MINE_MAX = 5;
 const mineCount = (id, st = S) => st.math?.[id] || 0;
 const mineLv = (id, st = S) => Math.min(MINE_MAX, Math.floor(mineCount(id, st) / MINE_STEP));
 const mineLvSum = (st = S) => MINES.reduce((a, m) => a + mineLv(m.id, st), 0);
-const inMath = (x, z) => (x >= MV.x0 && x <= MV.x1 && z >= MV.z0 && z <= MV.z1) || inBMount(x, z) || inBGap(x, z);
+const inMath = (x, z) => x >= MV.x0 && x <= MV.x1 && z >= MV.z0 && z <= MV.z1; // ⛰️ 블록 산은 1024a에 없앴어요
 const mathRegion = () => joined && player.pos.x > 1080 && player.pos.x < 1400;
 bag.ore ||= {};
 const mv = { brN: 0, group: null, mines: {}, board: null, seen: false, key: '', puzzle: null, cur: '', expr: [], wrong: 0, busy: false };
+// ================= ⛏️ 1024a 단원 광산 문제 (5-2 1~6단원 · 5단계) =================
+// 개념은 알짜 정리, 문제 유형은 5단계 학습지에서 골라 숫자를 바꿔 끝없이 만들어요 (정답은 늘 보기 안에 하나)
+const MQ_LV = [
+  { n: '기본', icon: '🟢', sh: 4, st: 2, c: '#D8F5D0' },
+  { n: '실력(하)', icon: '🔵', sh: 6, st: 3, c: '#D7ECFF' },
+  { n: '실력(중)', icon: '🟣', sh: 9, st: 4, c: '#E6DCFF' },
+  { n: '심화(하)', icon: '🟠', sh: 13, st: 6, c: '#FFE3C4' },
+  { n: '심화(중)', icon: '🔴', sh: 18, st: 8, c: '#FFD0D0' },
+];
+const MQ_VEIN = 12; // 한 단원에서 하루 12문제까지는 보상 그대로, 그다음은 절반 (광맥이 얕아져요)
+const mqPick = (a) => a[Math.floor(Math.random() * a.length)];
+function mqOpts(ans, wrongs, more) { // 정답 + 서로 다른 오답 3개 (모자라면 more()로 채워요)
+  const out = [String(ans)]; for (const w of wrongs) { const s = String(w); if (w != null && s !== 'NaN' && !s.startsWith('-') && !out.includes(s) && out.length < 4) out.push(s); }
+  for (let k = 0; out.length < 4 && k < 60; k++) { const s = String(more ? more(k) : (parseFloat(ans) || 3) + (k + 1) * (k % 2 ? -1 : 1)); if (s !== 'NaN' && !out.includes(s) && !s.startsWith('-')) out.push(s); }
+  return shuf(out);
+}
+const mqQ = (q, ans, wrongs, tip, extra = {}) => ({ q, ans: String(ans), opts: mqOpts(ans, wrongs, extra.more), tip, hideTip: true, ...extra });
+// ---- 소수 (정수 × 10^-s 로 정확하게) ----
+const dS = (v, s) => { const neg = v < 0; v = Math.abs(v); let t = String(v).padStart(s + 1, '0'); if (s) t = t.slice(0, -s) + '.' + t.slice(-s); if (t.includes('.')) t = t.replace(/0+$/, '').replace(/\.$/, ''); return (neg ? '-' : '') + t; };
+const dNum = (str) => { const [a, b = ''] = String(str).split('.'); return [parseInt(a + b, 10), b.length]; };
+const dMul = (x, y) => { const [a, s] = dNum(x), [b, t] = dNum(y); return dS(a * b, s + t); };
+// ---- 분수 [분자, 분모] ----
+const fRed = (n, d) => { const g = gcd(n, d); return [n / g, d / g]; };
+const fMul = (...fs) => fRed(fs.reduce((a, f) => a * f[0], 1), fs.reduce((a, f) => a * f[1], 1));
+const fH = (f) => frHTML(frNice(f[0], f[1]));
+const fT = (f) => frText(frNice(f[0], f[1]));
+const mixH = (w, n, d) => frHTML(w ? { w, n, d } : { w: 0, n, d });
+const fProp = (dMin = 2, dMax = 9) => { for (;;) { const d = ri(dMin, dMax), n = ri(1, d - 1); if (gcd(n, d) === 1) return [n, d]; } };
+const fMix = (wMax = 3, dMax = 7) => { const [n, d] = fProp(2, dMax), w = ri(1, wMax); return { w, n, d, f: [w * d + n, d] }; };
+function fWrong(f, k) { const [n, d] = f, c = [[n + 1, d], [n, d + 1], [Math.max(1, n - 1), d], [n + d, d], [n * 2, d], [n, d * 2], [n + 2, d + 1]][k % 7]; const r = fRed(c[0], c[1]); return r[0] * f[1] === r[1] * f[0] ? fH([n + 3 + k, d]) : fH(r); }
+const fQ = (qh, ans, wrongs, tip) => { const a = fH(ans); return { qh, q: '', ans: a, opts: mqOpts(a, wrongs.map(w => Array.isArray(w) ? fH(fRed(w[0], w[1])) : w).filter(w => w !== a), (k) => fWrong(ans, k)), tip, hideTip: true, oh: true }; };
+
+// ===== 1단원 수의 범위와 어림하기 =====
+const U1_K = ['이상', '이하', '초과', '미만'];
+const u1In = (v, b, k) => k === '이상' ? v >= b : k === '이하' ? v <= b : k === '초과' ? v > b : v < b;
+function u1Round(n, unit, how) { if (how === '올림') return Math.ceil(n / unit) * unit; if (how === '버림') return Math.floor(n / unit) * unit; return Math.floor(n / unit + 0.5) * unit; }
+const U1_P = { 10: '십의 자리', 100: '백의 자리', 1000: '천의 자리', 10000: '만의 자리' };
+const U1_TIP = '이상·이하는 그 수를 포함(●), 초과·미만은 포함하지 않아요(○) · 올림은 올리고, 버림은 버리고, 반올림은 바로 아래 자리가 5 이상이면 올려요';
+const U1 = [
+  () => { const t = ri(0, 2);
+    if (t === 0) { const b = ri(20, 90), k = mqPick(U1_K), cand = Array.from({ length: 13 }, (_, i) => b - 6 + i), ok = shuf(cand.filter(v => u1In(v, b, k))), no = shuf(cand.filter(v => !u1In(v, b, k)));
+      const opts = shuf([ok[0], ...no.slice(0, 3)].map(String)); return { q: `다음 중 ${b} ${k}인 수는 어느 것일까요?`, ans: String(ok[0]), opts, tip: `${b} ${k}: ${k === '이상' ? `${b}와 같거나 큰 수` : k === '이하' ? `${b}와 같거나 작은 수` : k === '초과' ? `${b}보다 큰 수 (${b}는 아니에요)` : `${b}보다 작은 수 (${b}는 아니에요)`}`, hideTip: true }; }
+    if (t === 1) { const k = mqPick(U1_K), b = ri(10, 60), yes = k === '이상' || k === '이하'; return { q: `${b} ${k}인 수에 ${b}도 들어갈까요?`, ans: yes ? '네, 들어가요' : '아니요, 들어가지 않아요', opts: shuf(['네, 들어가요', '아니요, 들어가지 않아요']), tip: '이상·이하는 기준 수를 포함하고, 초과·미만은 포함하지 않아요', hideTip: true }; }
+    let n; do n = ri(101, 999); while (n % 10 === 0); const unit = mqPick([10, 100]), how = mqPick(['올림', '버림', '반올림']), a = u1Round(n, unit, how);
+    return mqQ(`${n}을(를) ${how}하여 ${U1_P[unit]}까지 나타내면?`, a, [u1Round(n, unit, '올림'), u1Round(n, unit, '버림'), u1Round(n, unit === 10 ? 100 : 10, how), a + unit], `${how}: ${how === '올림' ? `${U1_P[unit]} 아래 수를 올려요` : how === '버림' ? `${U1_P[unit]} 아래 수를 버려요` : `${U1_P[unit]} 바로 아래 자리가 5 이상이면 올리고, 4 이하면 버려요`}`); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const b = ri(15, 80), k = mqPick(U1_K), list = shuf([b, ...Array.from({ length: 5 }, () => +(b - 3 + Math.random() * 6).toFixed(1))]), n = list.filter(v => u1In(v, b, k)).length;
+      return mqQ(`다음 수 중 ${b} ${k}인 수는 모두 몇 개일까요?  ( ${list.join(',  ')} )`, n, [n + 1, n - 1, list.length - n, n + 2], `${b} 자신이 들어가는지(이상·이하) 안 들어가는지(초과·미만) 먼저 생각해요`, { unit: '개' }); }
+    if (t === 1) { const a = ri(10, 40), b = a + ri(4, 12), k1 = mqPick(['이상', '초과']), k2 = mqPick(['이하', '미만']), n = (k2 === '이하' ? b : b - 1) - (k1 === '이상' ? a : a + 1) + 1;
+      return mqQ(`${a} ${k1} ${b} ${k2}인 자연수는 모두 몇 개일까요?`, n, [n + 1, n - 1, b - a, n + 2], '양 끝 수가 들어가는지 하나씩 확인하고 세어요', { unit: '개' }); }
+    let n; do n = ri(1001, 9999); while (n % 100 === 0); const unit = mqPick([100, 1000]), how = mqPick(['올림', '버림', '반올림']), a = u1Round(n, unit, how);
+    return mqQ(`${n}을(를) ${how}하여 ${U1_P[unit]}까지 나타내면?`, a, [u1Round(n, unit, '올림'), u1Round(n, unit, '버림'), u1Round(n, unit === 100 ? 1000 : 100, how), a + unit, a - unit], U1_TIP); },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const x = ri(4, 9), y = ri(1, 9), k = mqPick(['이하', '미만']), top = x, s = top * (top + 1) / 2;
+      return mqQ(`${x}.${y} ${k}인 모든 자연수의 합은 얼마일까요?`, s, [s - top, s + top + 1, s + 1, top * top], `${x}.${y} ${k}인 자연수는 1, 2, …, ${x}예요`); }
+    if (t === 1) { const a = ri(1, 9), b = ri(1, 9), c = ri(1, 9), n = a * 100 + b * 10 + c, how = mqPick(['올림', '버림', '반올림']), r = u1Round(n, 10, how), s = (v) => dS(v, 2).replace(/^(\d+)$/, '$1');
+      const ans = dS(r, 2), w = ['올림', '버림', '반올림'].map(h => dS(u1Round(n, 10, h), 2)); return mqQ(`${dS(n, 2)}을(를) ${how}하여 소수 첫째 자리까지 나타내면?`, ans, [...w, dS(r + 10, 2), dS(u1Round(n, 100, how), 2)], '소수 둘째 자리 숫자를 보고 올리거나 버려요'); }
+    if (t === 2) { const k = mqPick(['이상', '초과']), list = [ri(20, 40), +(ri(200, 400) / 10).toFixed(1), ri(20, 40), +(ri(200, 400) / 10).toFixed(1)], mn = Math.min(...list), a = k === '이상' ? Math.floor(mn) : Math.ceil(mn) - 1;
+      return mqQ(`다음은 □ ${k}인 수를 쓴 거예요. □ 안에 들어갈 수 있는 가장 큰 자연수는?  ( ${list.join(',  ')} )`, a, [a + 1, a - 1, Math.round(mn), Math.max(...list)], `가장 작은 수 ${mn}도 □ ${k}이어야 해요`); }
+    const n = ri(1, 9) * 1000 + ri(0, 9) * 100 + ri(1, 9) * 10 + ri(0, 9), all = [['올림', 100], ['버림', 100], ['반올림', 100], ['올림', 10], ['반올림', 1000]].map(([h, u]) => [h, u, u1Round(n, u, h)]), [h, u, a] = mqPick(all);
+    return mqQ(`${n}을(를) ${h}하여 ${U1_P[u]}까지 나타낸 수는?`, a, all.map(x => x[2]), U1_TIP); },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const cap = mqPick([200, 250, 300, 400]), a = ri(5, 12), p = ri(4, 9), b = ri(3, 7), q = ri(8, 16), load = a * p + b * q, r = ri(12, 20); if (load >= cap - r) return U1[3]();
+      const n = Math.floor((cap - load) / r); return mqQ(`${cap} kg 이하까지 실을 수 있는 수레가 있어요. 무게가 ${p} kg인 상자 ${a}개와 ${q} kg인 상자 ${b}개를 실었을 때, ${r} kg인 상자를 몇 개까지 더 실을 수 있을까요?`, n, [n + 1, n - 1, Math.ceil((cap - load) / r) === n ? n + 2 : Math.ceil((cap - load) / r)], `더 실을 수 있는 무게 = ${cap} − (지금 무게) → ${r}씩 나눠서 넘지 않게 (버림)`, { unit: '개' }); }
+    if (t === 1) { const k = mqPick([8, 10, 12, 15]), n = ri(41, 130), a = Math.ceil(n / k); if (n % k === 0) return U1[3]();
+      return mqQ(`학생 ${n}명이 한 번에 ${k}명씩 탈 수 있는 케이블카를 모두 타려면 적어도 몇 번 운행해야 할까요?`, a, [a - 1, a + 1, Math.floor(n / k) - 1], '남는 사람도 타야 하니까 올림해요', { unit: '번' }); }
+    if (t === 2) { const unit = mqPick([10, 100]), n = ri(unit * 3 + 1, unit * 40 - 1); if (n % unit === 0) return U1[3](); const a = Math.floor(n / unit), what = unit === 10 ? ['사과', '상자에 10개씩'] : ['동전 100원짜리로 바꿀 10원짜리 동전', '100원'];
+      return unit === 10 ? mqQ(`사과 ${n}개를 한 상자에 10개씩 담아서 팔려고 해요. 팔 수 있는 사과는 최대 몇 상자일까요?`, a, [a + 1, a - 1, n], '10개가 안 되는 남은 사과는 팔 수 없어요 → 버림', { unit: '상자' })
+        : mqQ(`돈 ${n * 10}원을 1000원짜리 지폐로만 바꾸려고 해요. 최대 몇 장까지 바꿀 수 있을까요?`, Math.floor(n * 10 / 1000), [Math.floor(n * 10 / 1000) + 1, Math.max(0, Math.floor(n * 10 / 1000) - 1), Math.ceil(n * 10 / 1000) + 1], '1000원이 안 되는 돈은 바꿀 수 없어요 → 버림', { unit: '장' }); }
+    const h = ri(2, 9) * 100, big = Math.random() < 0.5, a = big ? h + 49 : h - 50;
+    return mqQ(`반올림하여 백의 자리까지 나타내면 ${h}이 되는 자연수 중 가장 ${big ? '큰' : '작은'} 수는?`, a, big ? [h + 50, h + 99, h + 44] : [h - 49, h - 99, h - 55], `백의 자리까지 반올림해서 ${h}: ${h - 50} 이상 ${h + 50} 미만`); },
+  () => { const t = ri(0, 4);
+    if (t === 0) { const u = mqPick([10, 100]), v = ri(3, 40) * u, h = u / 2, a = `${v - h} 이상 ${v + h} 미만`;
+      return mqQ(`반올림하여 ${U1_P[u]}까지 나타내면 ${v}이 되는 수의 범위는?`, a, [`${v - h} 초과 ${v + h} 이하`, `${v - h} 이상 ${v + h} 이하`, `${v - h + 1} 이상 ${v + h - 1} 이하`, `${v - u} 이상 ${v} 미만`], `${U1_P[u]} 바로 아래 자리가 5 이상이면 올라오고, 5 미만이면 내려와요 → 끝 수는 포함하지 않아요`); }
+    if (t === 1) { const B = mqPick([1500, 2000, 2500]), c = mqPick([100, 150, 200]), tmin = 30 + ri(11, 75), a = B + Math.ceil((tmin - 30) / 10) * c;
+      return mqQ(`어느 주차장은 30분까지 ${B}원이고, 30분을 넘으면 10분마다 ${c}원씩 더 내요 (10분이 안 돼도 10분으로 쳐요). ${tmin}분 동안 주차하면 모두 얼마일까요?`, a, [B + Math.floor((tmin - 30) / 10) * c, a + c, B + (tmin - 30) * c / 10 | 0], `30분을 넘은 시간 ${tmin - 30}분 → 10분 단위로 올림`, { unit: '원' }); }
+    if (t === 2) { const ds = shuf([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 5), big = Math.random() < 0.5, sorted = [...ds].sort((a, b) => big ? b - a : a - b); if (!big && sorted[0] === 0) [sorted[0], sorted[1]] = [sorted[1], sorted[0]];
+      const n = +sorted.join(''), a = u1Round(n, 1000, '반올림'); return mqQ(`수 카드 ${ds.join(', ')} 를 한 번씩 모두 써서 가장 ${big ? '큰' : '작은'} 다섯 자리 수를 만들고, 반올림하여 천의 자리까지 나타내면?`, a, [u1Round(n, 1000, '올림'), u1Round(n, 1000, '버림'), u1Round(n, 100, '반올림'), a + 1000], `먼저 가장 ${big ? '큰' : '작은'} 수 ${n}을(를) 만들어요`); }
+    if (t === 3) { const k = ri(11, 19), v = ri(8, 25) * 10, sol = []; for (let n = 1; n < 200; n++) if (u1Round(n * k, 10, '반올림') === v) sol.push(n); if (sol.length !== 1) return U1[4]();
+      return mqQ(`어떤 자연수에 ${k}를 곱한 수를 반올림하여 십의 자리까지 나타냈더니 ${v}이 됐어요. 어떤 자연수는?`, sol[0], [sol[0] + 1, sol[0] - 1, Math.round(v / k) === sol[0] ? sol[0] + 2 : Math.round(v / k)], `${v - 5} 이상 ${v + 5} 미만인 수 중 ${k}의 배수를 찾아요`); }
+    const d = [ri(1, 9), ri(0, 9)], e = [ri(0, 9), ri(1, 9)], down = Math.random() < 0.5;
+    return mqQ(`다음 수를 ${down ? '버림' : '올림'}하여 천의 자리까지 나타낸 수와 반올림하여 천의 자리까지 나타낸 수가 같아요. 0부터 9까지의 수 중 ■ 안에 들어갈 수 있는 모든 수의 합은?  ( ${d.join('')}■${e.join('')} )`, down ? 10 : 35, down ? [35, 15, 45] : [10, 30, 45], down ? '버림과 반올림이 같으려면 ■가 0~4여야 해요' : '올림과 반올림이 같으려면 ■가 5~9여야 해요'); },
+];
+
+// ===== 2단원 분수의 곱셈 =====
+const U2_TIP = '분자는 분자끼리, 분모는 분모끼리 곱하고 약분해요 · 대분수는 가분수로 바꿔서 곱해요';
+const U2 = [
+  () => { const [n, d] = fProp(3, 9), k = ri(2, 9), t = ri(0, 1), qh = t ? `${k} × ${fH([n, d])}` : `${fH([n, d])} × ${k}`, a = fMul([n, d], [k, 1]);
+    return fQ(`${qh} 을(를) 계산하면?`, a, [[n, d * k], [n + k, d], [n * k, d + k]], '자연수는 분자에 곱해요 (분모는 그대로) → 약분'); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const m = fMix(3, 6), k = ri(2, 6), a = fMul(m.f, [k, 1]); return fQ(`${mixH(m.w, m.n, m.d)} × ${k} 을(를) 계산하면?`, a, [[m.w * k * m.d + m.n, m.d], [m.w * m.d + m.n * k, m.d], [(m.w + m.n) * k, m.d]], '대분수를 가분수로 바꾸거나, 자연수 부분과 분수 부분에 각각 곱해요'); }
+    if (t === 1) { const a1 = ri(2, 9), b1 = ri(2, 9), a = fMul([1, a1], [1, b1]); return fQ(`${fH([1, a1])} × ${fH([1, b1])} 을(를) 계산하면?`, a, [[2, a1 * b1], [1, a1 + b1], [2, a1 + b1]], '단위분수끼리 곱하면 분자는 1, 분모끼리 곱해요'); }
+    const f1 = fProp(2, 9), f2 = fProp(2, 9), a = fMul(f1, f2); return fQ(`${fH(f1)} × ${fH(f2)} 을(를) 계산하면?`, a, [[f1[0] + f2[0], f1[1] + f2[1]], [f1[0] * f2[0], f1[1] + f2[1]], [f1[0] * f2[1], f1[1] * f2[0]]], U2_TIP); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const m1 = fMix(2, 5), m2 = fMix(2, 5), a = fMul(m1.f, m2.f); return fQ(`${mixH(m1.w, m1.n, m1.d)} × ${mixH(m2.w, m2.n, m2.d)} 을(를) 계산하면?`, a, [[m1.w * m2.w * m1.d * m2.d + m1.n * m2.n, m1.d * m2.d], [(m1.w * m2.w) * 1, 1], [a[0] + a[1], a[1]]], '대분수는 꼭 가분수로 바꾼 다음 곱해요 (자연수끼리, 분수끼리 따로 곱하면 틀려요)'); }
+    if (t === 1) { const f = [fProp(2, 7), fProp(2, 7), fProp(2, 7)], a = fMul(...f); return fQ(`${f.map(fH).join(' × ')} 을(를) 계산하면?`, a, [[f[0][0] + f[1][0] + f[2][0], f[0][1] * f[1][1] * f[2][1]], fMul(f[0], f[1]), [a[0] + 1, a[1]]], '세 분수도 분자끼리, 분모끼리 곱해요 (먼저 약분하면 쉬워요)'); }
+    const f = fProp(3, 9), k = ri(3, 7), m = fMix(1, 5), g = fProp(2, 6), c = [['①', [f]], ['②', [f, [k, 1]]], ['③', [f, [k, 1], m.f]], ['④', [f, g, [k, 1]]]];
+    const val = c.map(([, fs]) => { const r = fMul(...fs); return r[0] / r[1]; }), mx = val.indexOf(Math.max(...val)); if (val.filter(v => v === val[mx]).length > 1) return U2[2]();
+    const show = [fH(f), `${fH(f)} × ${k}`, `${fH(f)} × ${k} × ${mixH(m.w, m.n, m.d)}`, `${fH(f)} × ${fH(g)} × ${k}`];
+    return { qh: `계산 결과가 가장 큰 것은 어느 것일까요?<br><span style="font-size:.85em">① ${show[0]} &nbsp; ② ${show[1]}<br>③ ${show[2]} &nbsp; ④ ${show[3]}</span>`, q: '', ans: c[mx][0], opts: ['①', '②', '③', '④'], oh: true, hideTip: true, tip: '1보다 큰 수를 곱하면 커지고, 1보다 작은 수(진분수)를 곱하면 작아져요' }; },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const m1 = fMix(4, 5), m2 = fMix(3, 5), a = fMul(m1.f, m2.f); return fQ(`가로가 ${mixH(m1.w, m1.n, m1.d)} cm, 세로가 ${mixH(m2.w, m2.n, m2.d)} cm인 직사각형의 넓이는 몇 cm²일까요?`, a, [[2 * (m1.f[0] * m2.f[1] + m2.f[0] * m1.f[1]), m1.f[1] * m2.f[1]], [m1.w * m2.w * 1, 1], [a[0] + a[1], a[1]]], '직사각형의 넓이 = 가로 × 세로 (대분수는 가분수로)'); }
+    if (t === 1) { const d = mqPick([2, 3, 4, 5, 6, 10, 12]), n = ri(1, d - 1), a = 60 * n / d; if (gcd(n, d) !== 1) return U2[3]();
+      return { qh: `1시간의 ${fH([n, d])}은(는) 몇 분일까요?`, q: '', ans: String(a), opts: mqOpts(a, [60 / d, a + 60 / d, 100 * n / d | 0, a - 60 / d]), oh: true, unit: '분', hideTip: true, tip: '1시간 = 60분 → 60 × (분수)' }; }
+    if (t === 2) { const w = fMix(2, 5), k = ri(2, 4), p = fProp(2, 5), a = fMul(w.f, [k, 1], p); return fQ(`한 봉지에 ${mixH(w.w, w.n, w.d)} kg씩 든 설탕 ${k}봉지가 있어요. 이 설탕의 ${fH(p)}을(를) 썼다면 쓴 설탕은 몇 kg일까요?`, a, [fMul(w.f, [k, 1]), fMul(w.f, p), [a[0] + a[1], a[1]]], '전체 설탕 = 한 봉지 × 봉지 수 → 그중 (분수)만큼 = × (분수)'); }
+    const L = mqPick([3, 4, 5, 6]) * 10, p = fProp(2, 6), q = fProp(2, 6), a = fMul([L, 1], p, q); if (a[1] !== 1) return U2[3]();
+    return { qh: `리본 ${L} m의 ${fH(p)}을(를) 동생에게 주고, 동생은 받은 리본의 ${fH(q)}을(를) 썼어요. 동생이 쓴 리본은 몇 m일까요?`, q: '', ans: String(a[0]), opts: mqOpts(a[0], [fMul([L, 1], p)[0], L - a[0], a[0] * 2]), oh: true, unit: 'm', hideTip: true, tip: `${L} × ${fT(p)} × ${fT(q)}` }; },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const a1 = mqPick([3, 4, 5]), b2 = mqPick([[2, 5], [1, 3], [3, 4], [1, 4], [2, 3]]), L = ri(2, 9) * 600; const rest1 = [a1 - 1, a1], rest2 = [b2[1] - b2[0], b2[1]], f = fMul(rest1, rest2), M = L * f[1] / f[0]; if (M % 1) return U2[4]();
+      return { qh: `예린이는 용돈의 ${fH([1, a1])}을(를) 쓰고, 남은 돈의 ${fH(b2)}을(를) 썼더니 ${L}원이 남았어요. 처음 용돈은 얼마일까요?`, q: '', ans: String(M), opts: mqOpts(M, [L * a1, M + L, Math.round(M * 0.8 / 100) * 100, L * 2]), oh: true, unit: '원', hideTip: true, tip: `남은 돈 = 처음 × ${fT(rest1)} × ${fT(rest2)} → 거꾸로 생각해요` }; }
+    if (t === 1) { const a = fProp(2, 5), x = fMix(1, 4), r = fRed(x.f[0] * a[1] + a[0] * x.f[1], x.f[1] * a[1]), ans = fMul(x.f, a);
+      return fQ(`어떤 수에 ${fH(a)}을(를) 곱해야 할 것을 잘못하여 더했더니 ${fH(r)}이(가) 됐어요. 바르게 계산한 값은?`, ans, [x.f, fMul(r, a), [ans[0] + ans[1], ans[1]]], `어떤 수 = ${fT(r)} − ${fT(a)} 를 먼저 구하고 × ${fT(a)}`); }
+    const ds = shuf([2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 3).sort((x, y) => y - x), [p, q, s] = ds;
+    const big = { w: p, n: s, d: q }; // 가장 큰 대분수: 가장 큰 수를 자연수 부분에, 남은 두 수로 진분수 (분자 < 분모)
+    const bf = [big.w * big.d + big.n, big.d], ans2 = fMul(bf, [2, 1]);
+    return fQ(`수 카드 ${ds.join(', ')} 를 한 번씩 써서 가장 큰 대분수를 만들었어요. 이 대분수에 2를 곱하면?`, ans2, [fMul([p * 10 + q, s], [2, 1]), bf, [ans2[0] + 1, ans2[1]]], `가장 큰 수 ${p}를 자연수 부분에, 남은 두 수로 진분수를 만들어요 → ${big.w}와 ${big.n}/${big.d}`); },
+];
+
+// ===== 3단원 합동과 대칭 (🪞 거울 공방 문제 + 숫자 바꾼 문제) =====
+const U3_IDX = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [12, 13, 17, 18, 22, 23, 25, 27, 28, 39, 42, 31, 32], [14, 15, 19, 20, 24, 26, 29, 35, 36, 37, 40, 41, 45, 46, 47], [16, 21, 30, 33, 34, 38, 43, 44], [48, 49, 50, 51, 52, 53]];
+function u3FromBank(lv) { const i = mqPick(U3_IDX[lv].filter(j => j < SYM_Q.length)); const [q, ans, wrongs, tip, unit] = SYM_Q[i], fg = typeof SYM_FIG !== 'undefined' ? SYM_FIG[i] : null; return { q, ans, opts: shuf([ans, ...wrongs]), tip, hideTip: true, ...(unit ? { unit } : {}), ...(fg ? { cv: () => symFig(fg) } : {}) }; }
+const U3 = [
+  () => Math.random() < 0.75 ? u3FromBank(0) : (() => { const n = ri(3, 8); return mqQ(`${SYM_N(n)}의 대칭축은 몇 개일까요?`, n, [n - 1, n + 1, n * 2, 2], '정■각형의 대칭축은 ■개예요', { unit: '개', cv: () => symDrawPoly(n, true) }); })(),
+  () => { if (Math.random() < 0.6) return u3FromBank(1); const a = ri(30, 80), b = ri(30, 150 - a), c = 180 - a - b;
+    return mqQ(`삼각형 ㄱㄴㄷ과 삼각형 ㄹㅁㅂ은 서로 합동이에요. 각 ㄱ이 ${a}°, 각 ㄴ이 ${b}°일 때, 각 ㄷ의 대응각인 각 ㅂ은 몇 도일까요?`, c, [180 - a, 180 - b, a + b, c + 10], '합동이면 대응각의 크기가 같아요 · 삼각형 세 각의 합은 180°', { unit: '°' }); },
+  () => { if (Math.random() < 0.6) return u3FromBank(2); const a = ri(60, 120), b = ri(60, 120), c = ri(60, 120), d = 360 - a - b - c; if (d < 40 || d > 160) return U3[2]();
+    return mqQ(`두 사각형은 서로 합동이에요. 한 사각형의 세 각이 ${a}°, ${b}°, ${c}°일 때, 다른 사각형에서 나머지 한 각의 대응각은 몇 도일까요?`, d, [180 - (a + b + c) % 180, d + 10, d - 10, 360 - a - b], '사각형 네 각의 합은 360° · 대응각의 크기는 같아요', { unit: '°' }); },
+  () => { if (Math.random() < 0.55) return u3FromBank(3); const t = ri(0, 1);
+    if (t === 0) { const s1 = ri(4, 12), s2 = ri(4, 12), h = ri(2, 6), P = 2 * (s1 + s2) + 2 * h; return mqQ(`대칭축의 한쪽에 있는 변의 길이가 ${s1} cm, ${s2} cm이고, 대칭축이 밑변을 둘로 나눈 한쪽이 ${h} cm인 선대칭도형(오각형)의 둘레는 몇 cm일까요?`, P, [s1 + s2 + h, 2 * (s1 + s2) + h, P + 2 * h, P - 2], '대칭축 양쪽의 대응변 길이는 같아요 → 한쪽 길이의 합 × 2', { unit: 'cm' }); }
+    const a = ri(3, 9), b = ri(3, 9), c = ri(3, 9), P = 2 * (a + b + c); return mqQ(`점대칭도형인 육각형에서 서로 이웃한 세 변의 길이가 ${a} cm, ${b} cm, ${c} cm예요. 이 육각형의 둘레는 몇 cm일까요?`, P, [a + b + c, P + a, 3 * (a + b + c), P - 2], '점대칭도형은 대응변의 길이가 같아요 → 세 변의 합 × 2', { unit: 'cm' }); },
+  () => { if (Math.random() < 0.5) return u3FromBank(4); const t = ri(0, 1);
+    if (t === 0) { const b = ri(4, 12) * 2, h = ri(3, 10), A = b * h; return mqQ(`밑변 ${b} cm, 높이 ${h} cm인 삼각형을 한 변의 가운데 점을 대칭의 중심으로 하여 점대칭도형을 완성했어요. 완성한 도형의 넓이는 몇 cm²일까요?`, A, [A / 2, A * 2, b + h, A + b], '점대칭도형은 처음 삼각형과 합동인 삼각형이 하나 더 생겨요 → 넓이 2배', { unit: 'cm²' }); }
+    const per = ri(10, 30) * 2, x = ri(3, per / 2 - 3), y = per / 2 - x; return mqQ(`선분 ㄱㄹ을 대칭축으로 하는 선대칭도형 사각형 ㄱㄴㄹㄷ의 둘레가 ${per} cm예요. 변 ㄱㄴ이 ${x} cm일 때 변 ㄷㄹ은 몇 cm일까요?`, y, [x, per - x, y + 2, per / 4], '변 ㄱㄴ = 변 ㄱㄷ, 변 ㄴㄹ = 변 ㄷㄹ → 둘레의 반 = 변 ㄱㄴ + 변 ㄴㄹ', { unit: 'cm' }); },
+];
+
+// ===== 4단원 소수의 곱셈 =====
+const U4_TIP = '자연수처럼 곱한 다음, 곱하는 두 수의 소수점 아래 자리 수를 더한 만큼 소수점을 옮겨요';
+const U4 = [
+  () => { const t = ri(0, 2);
+    if (t === 0) { const a = `${ri(0, 3)}.${ri(1, 9)}`, k = ri(2, 9), A = dMul(a, k), sw = Math.random() < 0.5; return mqQ(sw ? `${k} × ${a} 의 값은?` : `${a} × ${k} 의 값은?`, A, [dMul(a, k * 10), dMul(a, k + 1), dS(dNum(A)[0], dNum(A)[1] + 1)], '자연수의 곱셈처럼 계산하고 소수점을 그대로 내려 찍어요'); }
+    if (t === 1) { const a = `${ri(1, 9)}.${ri(10, 99)}`, k = mqPick([10, 100, 1000]), A = dMul(a, k); return mqQ(`${a} × ${k} 의 값은?`, A, [dMul(a, k / 10 || 1), dMul(a, k * 10), dMul(a, 1)], '× 10, × 100, × 1000 → 0의 수만큼 소수점이 오른쪽으로 옮겨져요'); }
+    const a = ri(2, 9), b = `0.${ri(1, 9)}`, A = dMul(a, b); return mqQ(`${a} × ${b} 의 값은?`, A, [dMul(a * 10, b), String(a * dNum(b)[0]), dS(a * dNum(b)[0], 2)], '자연수 × 0.■ 는 자연수 × ■ 의 1/10 이에요'); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const a = `${ri(0, 4)}.${ri(1, 9)}`, b = `${ri(0, 4)}.${ri(1, 9)}`, A = dMul(a, b); if (A === '0') return U4[1](); return mqQ(`${a} × ${b} 의 값은?`, A, [dS(dNum(A)[0], 1), dS(dNum(A)[0], 3), dMul(a, b.replace('.', ''))], U4_TIP); }
+    if (t === 1) { const n = ri(12, 980), k = mqPick(['0.1', '0.01', '0.001']), A = dMul(n, k); return mqQ(`${n} × ${k} 의 값은?`, A, [dMul(n, k === '0.1' ? '0.01' : '0.1'), dMul(n, k === '0.001' ? '0.01' : '0.001'), dMul(n, 10)], '× 0.1, × 0.01, × 0.001 → 소수점 아래 자리 수만큼 소수점이 왼쪽으로 옮겨져요'); }
+    const a = ri(110, 499), b = ri(12, 89), p = a * b, x = dS(a, 1), y = dS(b, 2), A = dMul(x, y); return mqQ(`${a} × ${b} = ${p} 를 이용하여 ${x} × ${y} 의 값을 구하면?`, A, [dS(p, 2), dS(p, 4), dS(p, 1)], `소수점 아래 자리 수: ${x}는 1자리, ${y}는 2자리 → 곱은 3자리`); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const a = `${ri(1, 4)}.${ri(10, 99)}`, b = `0.${ri(1, 9)}`, A = dMul(a, b); return mqQ(`${a} × ${b} 의 값은?`, A, [dS(dNum(A)[0], 2), dS(dNum(A)[0], 4), dMul(a, b.replace('0.', ''))], U4_TIP); }
+    if (t === 1) { const a = `0.${ri(101, 989)}`, k = mqPick(['10', '100', '1000']), r = dMul(a, k); return mqQ(`${a} × □ = ${r} 일 때, □ 안에 알맞은 수는?`, k, ['10', '100', '1000', '0.1'].filter(v => v !== k), '소수점이 몇 자리 오른쪽으로 옮겨졌는지 세어요'); }
+    const base = `${ri(11, 99)}.${ri(1, 9)}`, [n0, s0] = dNum(base), raw = dS(n0, s0 + 1), f = [[base, '0.1'], [dS(n0, s0 + 1), '1'], [dS(n0, s0 + 2), '10'], [dS(n0, 0), dS(1, s0 + 2)]], diff = ri(0, 3);
+    const items = f.map(([x, y], i) => i === diff ? [x, y === '10' ? '100' : y === '1' ? '10' : y === '0.1' ? '0.01' : dS(1, s0 + 1)] : [x, y]); const names = ['①', '②', '③', '④'];
+    return { q: `계산 결과가 다른 하나는 어느 것일까요?   ${items.map(([x, y], i) => `${names[i]} ${x} × ${y}`).join('   ')}`, ans: names[diff], opts: names, hideTip: true, tip: '곱하는 수가 10배가 되면 곱도 10배가 돼요 · 소수점 위치를 차례로 따져요' }; },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const w = `${ri(1, 4)}.${ri(1, 9)}`, L = `${ri(2, 6)}.${ri(1, 9)}`, A = dMul(w, L); return mqQ(`1 m의 무게가 ${w} kg인 철근이 있어요. 이 철근 ${L} m의 무게는 몇 kg일까요?`, A, [dS(dNum(A)[0], 1), dMul(w, L.split('.')[0]), dS(dNum(A)[0] + 10, 2)], '(1 m의 무게) × (길이)', { unit: 'kg' }); }
+    if (t === 1) { const km = `${ri(10, 15)}.${ri(1, 9)}`, L = `${ri(2, 9)}.${ri(1, 9)}`, A = dMul(km, L); return mqQ(`휘발유 1 L로 ${km} km를 가는 자동차가 휘발유 ${L} L로 갈 수 있는 거리는 몇 km일까요?`, A, [dS(dNum(A)[0], 1), dS(dNum(A)[0], 3), dMul(km, L.split('.')[0])], '(1 L로 가는 거리) × (휘발유 양)', { unit: 'km' }); }
+    if (t === 2) { const a = `${ri(2, 9)}.${ri(1, 9)}`, b = `${ri(2, 9)}.${ri(1, 9)}`, A = dMul(a, b); return mqQ(`가로 ${a} cm, 세로 ${b} cm인 직사각형의 넓이는 몇 cm²일까요?`, A, [dS(dNum(A)[0], 1), dS((dNum(a)[0] + dNum(b)[0]) * 2, 1), dS(dNum(A)[0], 3)], '직사각형의 넓이 = 가로 × 세로', { unit: 'cm²' }); }
+    const e = mqPick([['0.3 × 0.14 × 2.4', '3 × 1.4 × 0.24', '0.1'], ['0.5 × 0.12 × 3.6', '5 × 1.2 × 0.36', '0.1'], ['2.5 × 0.4 × 1.2', '0.25 × 0.04 × 12', '10'], ['1.6 × 0.25 × 0.3', '16 × 2.5 × 0.03', '0.1']]);
+    return mqQ(`${e[0]} 은(는) ${e[1]} 의 몇 배일까요?`, e[2], ['0.01', '0.1', '10', '100', '1'].filter(v => v !== e[2]), '두 식을 같은 숫자끼리 짝지어 소수점 자리 수를 비교해요', { unit: '배' }); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const x = `${ri(1, 9)}.${ri(1, 9)}`, a = `${ri(1, 4)}.${ri(1, 9)}`, [xn] = dNum(x), [an] = dNum(a), r = dS(xn + an, 1), A = dMul(x, a); return mqQ(`어떤 수에 ${a}을(를) 곱해야 할 것을 잘못하여 더했더니 ${r}이(가) 됐어요. 바르게 계산한 값은?`, A, [dMul(r, a), x, dS(dNum(A)[0], 1)], `어떤 수 = ${r} − ${a} = ${x} → × ${a}`); }
+    if (t === 1) { const h = ri(5, 20) * 10, k = mqPick(['0.6', '0.8', '0.5', '0.4']), A = dMul(dMul(h, k), k); return mqQ(`공을 ${h} cm 높이에서 떨어뜨리면 떨어진 높이의 ${k}배만큼 튀어 올라요. 두 번째로 튀어 오른 높이는 몇 cm일까요?`, A, [dMul(h, k), dMul(A, k), dMul(h, dS(dNum(k)[0] * 2, 1))], `첫 번째 = ${h} × ${k}, 두 번째 = (첫 번째) × ${k}`, { unit: 'cm' }); }
+    const m = mqPick([[15, '1.25'], [30, '1.5'], [45, '1.75'], [12, '1.2'], [6, '1.1'], [24, '1.4'], [36, '1.6']]), v = `${ri(40, 80)}.${ri(1, 9)}`, A = dMul(v, m[1]);
+    return mqQ(`한 시간에 ${v} km를 가는 빠르기로 1시간 ${m[0]}분 동안 간 거리는 몇 km일까요?`, A, [dMul(v, `1.${m[0]}`), dMul(v, 1), dS(dNum(A)[0] + 100, dNum(A)[1])], `1시간 ${m[0]}분 = ${m[1]}시간 (${m[0]}분 = ${m[0]}/60시간)`, { unit: 'km' }); },
+];
+
+// ===== 5단원 직육면체 =====
+const U5_FIX0 = [
+  ['직육면체의 면은 모두 몇 개일까요?', '6', ['4', '8', '12'], '직육면체: 면 6 · 모서리 12 · 꼭짓점 8', '개'],
+  ['직육면체의 모서리는 모두 몇 개일까요?', '12', ['6', '8', '10'], '직육면체: 면 6 · 모서리 12 · 꼭짓점 8', '개'],
+  ['직육면체의 꼭짓점은 모두 몇 개일까요?', '8', ['6', '12', '4'], '직육면체: 면 6 · 모서리 12 · 꼭짓점 8', '개'],
+  ['정육면체의 면은 어떤 모양일까요?', '정사각형', ['직사각형', '정삼각형', '사다리꼴'], '정사각형 6개로 둘러싸인 도형이 정육면체예요'],
+  ['직육면체에서 서로 평행한 면은 모두 몇 쌍일까요?', '3', ['2', '4', '6'], '마주 보는 면끼리 평행해요 → 3쌍', '쌍'],
+  ['직육면체에서 한 면과 수직인 면은 모두 몇 개일까요?', '4', ['2', '3', '5'], '한 면과 만나는 면(옆면)은 모두 수직이에요 → 4개', '개'],
+  ['직육면체의 겨냥도에서 보이는 모서리는 몇 개일까요?', '9', ['3', '8', '12'], '보이는 모서리는 실선 9개, 보이지 않는 모서리는 점선 3개', '개'],
+  ['직육면체의 겨냥도에서 보이지 않는 모서리는 몇 개일까요?', '3', ['1', '4', '9'], '보이지 않는 모서리는 점선으로 3개', '개'],
+  ['직육면체의 겨냥도에서 보이지 않는 꼭짓점은 몇 개일까요?', '1', ['0', '2', '3'], '보이는 꼭짓점 7개, 보이지 않는 꼭짓점 1개', '개'],
+  ['직육면체의 겨냥도에서 보이는 면은 몇 개일까요?', '3', ['2', '4', '6'], '앞·위·옆 3개의 면이 보여요', '개'],
+  ['직육면체의 겨냥도에서 보이지 않는 모서리는 어떻게 그릴까요?', '점선', ['실선', '굵은 선', '그리지 않아요'], '보이는 모서리는 실선, 보이지 않는 모서리는 점선'],
+  ['직육면체에서 평행한 두 면을 무엇이라고 할까요?', '밑면', ['옆면', '꼭짓점', '모서리'], '서로 평행한 두 면 = 밑면, 밑면과 수직인 면 = 옆면'],
+  ['정육면체에 대해 바르게 말한 것은?', '정육면체는 직육면체라고 할 수 있어요', ['직육면체는 모두 정육면체예요', '정육면체의 모서리 길이는 서로 달라요', '정육면체는 면이 8개예요'], '정사각형도 직사각형 → 정육면체도 직육면체예요'],
+  ['직육면체의 전개도를 접었을 때 만나는 선분의 길이는 어떠할까요?', '같아요', ['달라요', '2배예요', '알 수 없어요'], '전개도에서 맞닿는 선분은 길이가 같아요'],
+  ['전개도에서 잘린 모서리는 무슨 선으로 그릴까요?', '실선', ['점선', '굵은 점선', '그리지 않아요'], '잘린 모서리는 실선, 잘리지 않은 모서리는 점선으로 그려요'],
+];
+const U5 = [
+  () => { const [q, a, w, tip, unit] = mqPick(U5_FIX0); return { q, ans: a, opts: shuf([a, ...w]), tip, hideTip: true, ...(unit ? { unit } : {}) }; },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const a = ri(3, 12), b = ri(3, 12), c = ri(3, 12), s = 4 * (a + b + c); return mqQ(`가로 ${a} cm, 세로 ${b} cm, 높이 ${c} cm인 직육면체의 모든 모서리의 길이의 합은 몇 cm일까요?`, s, [a + b + c, 2 * (a + b + c), 3 * (a + b + c), s + 4], '같은 길이의 모서리가 4개씩 → (가로 + 세로 + 높이) × 4', { unit: 'cm' }); }
+    if (t === 1) { const a = ri(3, 15), s = 12 * a; return mqQ(`한 모서리의 길이가 ${a} cm인 정육면체의 모든 모서리의 길이의 합은 몇 cm일까요?`, s, [6 * a, 8 * a, 4 * a, s + a], '정육면체는 모서리 12개의 길이가 모두 같아요', { unit: 'cm' }); }
+    if (t === 2) { const e = mqPick([['(꼭짓점의 수) + (면의 수)', 14], ['(모서리의 수) − (꼭짓점의 수)', 4], ['(꼭짓점의 수) − (면의 수)', 2], ['(모서리의 수) + (면의 수)', 18], ['(모서리의 수) − (면의 수)', 6]]); return mqQ(`직육면체에서 ${e[0]} 을(를) 구하면?`, e[1], [e[1] + 2, e[1] - 2, e[1] + 4], '면 6 · 모서리 12 · 꼭짓점 8'); }
+    const a = ri(3, 12), b = ri(3, 12), c = ri(3, 12), s = a + b + c; return mqQ(`가로 ${a} cm, 세로 ${b} cm, 높이 ${c} cm인 직육면체의 겨냥도에서 보이지 않는 모서리의 길이의 합은 몇 cm일까요?`, s, [3 * s, 4 * s, 2 * s], '보이지 않는 모서리(점선) 3개는 가로·세로·높이 하나씩이에요', { unit: 'cm' }); },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const a = ri(3, 12), b = ri(3, 12), c = ri(3, 12), s = 4 * (a + b + c); return mqQ(`모든 모서리의 길이의 합이 ${s} cm인 직육면체예요. 가로가 ${a} cm, 세로가 ${b} cm일 때 높이는 몇 cm일까요?`, c, [s / 4, c + 1, s - a - b, c * 2], `가로 + 세로 + 높이 = ${s} ÷ 4`, { unit: 'cm' }); }
+    if (t === 1) { const a = ri(3, 15), s = 12 * a; return mqQ(`모든 모서리의 길이의 합이 ${s} cm인 정육면체의 한 모서리는 몇 cm일까요?`, a, [s / 6, s / 8, s / 4], '정육면체의 모서리는 12개 → ÷ 12', { unit: 'cm' }); }
+    if (t === 2) { const a = ri(3, 12), b = ri(3, 12), c = ri(3, 12), s = 3 * (a + b + c); return mqQ(`가로 ${a} cm, 세로 ${b} cm, 높이 ${c} cm인 직육면체의 겨냥도에서 보이는 모서리의 길이의 합은 몇 cm일까요?`, s, [a + b + c, 4 * (a + b + c), 2 * (a + b + c)], '보이는 모서리 9개 = 가로 3개 + 세로 3개 + 높이 3개', { unit: 'cm' }); }
+    const f = ri(1, 6); return mqQ(`주사위에서 마주 보는 두 면의 눈의 수의 합은 7이에요. 눈의 수 ${f}와(과) 평행한 면의 눈의 수는?`, 7 - f, [1, 2, 3, 4, 5, 6].filter(v => v !== 7 - f && v !== f), '평행한 면 = 마주 보는 면 → 합이 7'); },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const k = mqPick([[2, '2등분'], [3, '3등분'], [4, '4등분'], [6, '6등분'], [8, '8등분']]), more = 12 * (k[0] - 1); return mqQ(`직육면체 모양의 빵을 ${k[1]}이 되도록 잘랐어요 (자른 조각도 모두 직육면체예요). 자른 조각들의 모서리 수의 합은 자르기 전 빵의 모서리 수보다 몇 개 더 많을까요?`, more, [12 * k[0], more - 12, more + 12, 4 * (k[0] - 1)], `조각 ${k[0]}개 × 12개 − 12개`, { unit: '개' }); }
+    if (t === 1) { const a = ri(10, 30), b = ri(10, 30), c = ri(5, 20), knot = ri(10, 25), L = 2 * a + 2 * b + 4 * c + knot; return mqQ(`가로 ${a} cm, 세로 ${b} cm, 높이 ${c} cm인 직육면체 상자를 리본으로 가로·세로 한 번씩 둘러 묶었어요(십자 모양). 매듭에 ${knot} cm를 썼다면 리본은 모두 몇 cm일까요?`, L, [L - knot, 2 * (a + b + c) + knot, 4 * (a + b + c) + knot], `리본이 지나가는 길: 가로 2번 + 세로 2번 + 높이 4번 + 매듭`, { unit: 'cm' }); }
+    if (t === 2) { const n = ri(3, 9); return mqQ(`직육면체 모양의 상자 여러 개의 면의 수와 꼭짓점의 수를 모두 더했더니 ${n * 14}개였어요. 상자들의 모서리의 수의 합은 몇 개일까요?`, n * 12, [n * 14, n * 8, n * 6, n * 12 + 12], `상자 하나: 면 6 + 꼭짓점 8 = 14 → 상자 ${n}개`, { unit: '개' }); }
+    const a = ri(2, 9), b = ri(2, 9); const c = 12 * 3 - a - b; return mqQ(`직육면체의 겨냥도에서 보이지 않는 모서리의 길이가 ${a} cm, ${b} cm, □ cm이고, 보이는 모서리의 길이의 합이 108 cm예요. □는 몇 cm일까요?`, 36 - a - b, [108 - a - b, 36, 36 - a], '보이는 모서리의 합 = (가로 + 세로 + 높이) × 3', { unit: 'cm' }); },
+  () => { const t = ri(0, 3);
+    if (t === 0) { const a = ri(4, 15), b = ri(4, 15); let c = ri(4, 15); const s = a + b + c; if (s % 3) c += 3 - s % 3; const e = (a + b + c) / 3; return mqQ(`가로 ${a} cm, 세로 ${b} cm, 높이 ${c} cm인 직육면체와 모든 모서리의 길이의 합이 같은 정육면체가 있어요. 정육면체의 한 모서리는 몇 cm일까요?`, e, [(a + b + c) / 2 | 0, e + 1, e * 2, a + b + c], `정육면체의 모서리 합 = 한 모서리 × 12 = (${a} + ${b} + ${c}) × 4`, { unit: 'cm' }); }
+    if (t === 1) { const a = ri(3, 10), P = 14 * a; return mqQ(`한 모서리가 ${a} cm인 정육면체의 전개도를 그렸어요. 전개도의 둘레(바깥쪽 선분의 길이의 합)는 몇 cm일까요?`, P, [12 * a, 24 * a, 10 * a, 7 * a], '정육면체 전개도의 둘레에는 한 모서리 길이의 선분이 14개 있어요', { unit: 'cm' }); }
+    if (t === 2) { const v = mqPick([[1, 2, 3], [4, 5, 6], [1, 2, 4], [2, 3, 6], [3, 5, 6], [1, 3, 5]]), s = 21 - (v[0] + v[1] + v[2]); return mqQ(`주사위 한 개를 놓았더니 보이는 세 면의 눈이 ${v.join(', ')}이었어요. 보이지 않는 세 면의 눈의 수의 합은?`, s, [21 - s, s + 1, s - 1, 7], '주사위 눈의 합은 1 + 2 + … + 6 = 21 (마주 보는 면의 합 7)'); }
+    const a = ri(3, 9), c = ri(3, 9); let b = ri(3, 9); if (b === a) b = a + 2; const L = 4 * (a + b + c); return mqQ(`모든 모서리의 길이의 합이 ${L} cm인 직육면체가 있어요. 세로는 가로보다 ${b - a >= 0 ? b - a : a - b} cm ${b >= a ? '길고' : '짧고'}, 높이는 ${c} cm예요. 가로는 몇 cm일까요?`, a, [b, c, a + 1, (L / 4 - c) | 0], `가로 + 세로 = ${L} ÷ 4 − ${c}`, { unit: 'cm' }); },
+];
+
+// ===== 6단원 평균과 가능성 =====
+const U6_POSS = [['주사위를 굴렸을 때 7의 눈이 나올 가능성', '불가능하다'], ['동전을 던졌을 때 그림 면이 나올 가능성', '반반이다'], ['내일 아침 해가 동쪽에서 뜰 가능성', '확실하다'], ['1부터 6까지 적힌 주사위를 굴려 6 이하의 눈이 나올 가능성', '확실하다'], ['빨간 구슬만 든 주머니에서 파란 구슬을 꺼낼 가능성', '불가능하다'], ['주사위를 굴려 짝수의 눈이 나올 가능성', '반반이다'], ['12월 다음에 1월이 올 가능성', '확실하다'], ['흰 바둑돌 2개, 검은 바둑돌 2개 중 하나를 꺼낼 때 흰 바둑돌일 가능성', '반반이다'], ['오늘이 수요일일 때 내일이 금요일일 가능성', '불가능하다']];
+const U6_WORD = ['불가능하다', '~아닐 것 같다', '반반이다', '~일 것 같다', '확실하다'];
+const u6Mean = (n, lo, hi) => { for (;;) { const a = Array.from({ length: n }, () => ri(lo, hi)), s = a.reduce((x, y) => x + y, 0); if (s % n === 0) return [a, s / n]; } };
+const U6 = [
+  () => { const t = ri(0, 2);
+    if (t === 0) { const [a, m] = u6Mean(ri(4, 5), 4, 30); return mqQ(`다음 자료의 평균을 구하면?  ( ${a.join(',  ')} )`, m, [m + 1, m - 1, Math.max(...a), a.reduce((x, y) => x + y, 0)], '평균 = (자료의 값을 모두 더한 수) ÷ (자료의 수)'); }
+    if (t === 1) { const [s, w] = mqPick(U6_POSS); return { q: `일이 일어날 가능성을 말로 나타내면?  「${s}」`, ans: w, opts: ['불가능하다', '반반이다', '확실하다', '~일 것 같다'].includes(w) ? shuf(['불가능하다', '반반이다', '확실하다', '~일 것 같다']) : shuf([w, '불가능하다', '반반이다', '확실하다']), tip: '불가능하다(0) · 반반이다(1/2) · 확실하다(1)', hideTip: true }; }
+    const [s, w] = mqPick(U6_POSS), num = { 불가능하다: '0', 반반이다: '1/2', 확실하다: '1' }[w]; return { q: `가능성을 수로 나타내면?  「${s}」`, ans: num, opts: shuf(['0', '1/2', '1', '2']), tip: '불가능하다 = 0 · 반반이다 = 1/2 · 확실하다 = 1', hideTip: true }; },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const days = ['월', '화', '수', '목', '금'], [a, m] = u6Mean(5, 20, 45); return mqQ(`요일별 줄넘기 기록이에요 (${days.map((d, i) => `${d} ${a[i]}번`).join(', ')}). 하루 평균 몇 번 했을까요?`, m, [m + 2, m - 2, a.reduce((x, y) => x + y, 0) / 4 | 0, Math.max(...a)], '5일 기록을 모두 더해서 5로 나눠요', { unit: '번' }); }
+    if (t === 1) { const [a, m] = u6Mean(5, 20, 40), n = a.filter(v => v > m).length; return mqQ(`과수원 5곳의 사과 수확량이에요 (${a.map(v => v * 10).join(', ')} kg). 수확량이 평균보다 많은 과수원은 몇 곳일까요?`, n, [n + 1, n - 1 < 0 ? 5 - n : n - 1, 5 - n, 0].filter((v, i, ar) => v >= 0), '평균을 먼저 구하고, 평균보다 큰 값을 세어요', { unit: '곳' }); }
+    const tot = mqPick([4, 6, 8, 10]), r = mqPick([0, tot / 2, tot]), w = r === 0 ? '0' : r === tot ? '1' : '1/2'; return { q: `주머니에 구슬 ${tot}개가 있고 그중 빨간 구슬은 ${r}개예요. 구슬 하나를 꺼낼 때 빨간 구슬일 가능성을 수로 나타내면?`, ans: w, opts: shuf(['0', '1/2', '1', `1/${tot}`]), tip: '모두 빨강 → 1 · 반만 빨강 → 1/2 · 빨강 없음 → 0', hideTip: true }; },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const n = ri(4, 5), [a, m] = u6Mean(n, 70, 100), miss = a.pop(); return mqQ(`${n}과목 시험 점수의 평균이 ${m}점이에요. ${n}과목 중 ${n - 1}과목 점수가 ${a.join('점, ')}점이라면 나머지 한 과목은 몇 점일까요?`, miss, [m, miss + 2, miss - 2, m * n - a[0]], `점수의 합 = ${m} × ${n} → 아는 점수를 빼요`, { unit: '점' }); }
+    if (t === 1) { const [A, ma] = u6Mean(4, 10, 30), [B, mb] = u6Mean(5, 10, 30); if (ma === mb) return U6[2](); const ans = ma > mb ? '가 모둠' : '나 모둠';
+      return { q: `책 읽은 수: 가 모둠 4명 (${A.join(', ')}권), 나 모둠 5명 (${B.join(', ')}권). 한 사람당 평균 책을 더 많이 읽은 모둠은?`, ans, opts: ['가 모둠', '나 모둠', '똑같아요'], tip: '사람 수가 다르면 합이 아니라 평균으로 비교해요', hideTip: true }; }
+    const [a, m] = u6Mean(4, 12, 20), s = a.reduce((x, y) => x + y, 0); return mqQ(`민준이네 모둠이 읽은 책은 ${a.join(', ')}권이에요. 수를 옮기고 짝지어 고르게 하면 한 사람당 몇 권일까요?`, m, [m + 1, m - 1, s], '고르게 맞춘 값 = 평균', { unit: '권' }); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const a = Array.from({ length: 4 }, () => ri(70, 95)), m = ri(82, 90), need = 5 * m - a.reduce((x, y) => x + y, 0); if (need < 60 || need > 100) return U6[3]();
+      return mqQ(`줄넘기 4회 기록이 ${a.join('번, ')}번이에요. 5회까지의 평균이 ${m}번 이상이 되려면 5회에는 적어도 몇 번을 해야 할까요?`, need, [m, need + 1, need - 1, 4 * m - a.reduce((x, y) => x + y, 0) + m], `5회까지 합이 ${m} × 5 = ${m * 5} 이상이어야 해요`, { unit: '번' }); }
+    if (t === 1) { const m = ri(20, 40), k = ri(1, 3), x = 5 * (m + k) - 4 * m; return mqQ(`4명의 평균 몸무게가 ${m} kg인 모둠에 한 명이 새로 들어왔더니 평균이 ${k} kg 늘었어요. 새로 들어온 친구는 몇 kg일까요?`, x, [m + k, x - k, x + 4, m + 5 * k], `새 합 = ${m + k} × 5, 원래 합 = ${m} × 4`, { unit: 'kg' }); }
+    const n = ri(4, 6), m = ri(30, 60), ext = ri(5, 15); return mqQ(`${n}명이 모은 칭찬 스티커 평균이 ${m}장이에요. 선생님이 한 명에게 ${ext * n}장을 더 주었다면 평균은 몇 장이 될까요?`, m + ext, [m + ext * n, m, m + ext + 1], `합이 ${ext * n}장 늘어요 → 평균은 ${ext * n} ÷ ${n}만큼 늘어요`, { unit: '장' }); },
+  () => { const t = ri(0, 2);
+    if (t === 0) { const a = ri(3, 8), b = ri(3, 8), p = ri(70, 90), q = ri(70, 90), s = a * p + b * q; if (s % (a + b)) return U6[4](); const m = s / (a + b);
+      return mqQ(`남학생 ${a}명의 평균 점수는 ${p}점, 여학생 ${b}명의 평균 점수는 ${q}점이에요. 전체 ${a + b}명의 평균은 몇 점일까요?`, m, [Math.round((p + q) / 2), m + 1, m - 1, m + 2], '전체 평균 = (남학생 점수 합 + 여학생 점수 합) ÷ 전체 학생 수 (두 평균을 그냥 더해 2로 나누면 안 돼요)', { unit: '점' }); }
+    if (t === 1) { const n = ri(5, 7), m = ri(30, 50), k = ri(1, 3), x = n * m - (n - 1) * (m + k); if (x <= 0) return U6[4](); return mqQ(`${n}명의 평균 기록이 ${m}점이었는데, 한 명이 빠지니 평균이 ${k}점 올랐어요. 빠진 사람의 기록은 몇 점일까요?`, x, [m - k, m - k * n, x + k, m], `빠진 사람 = ${n} × ${m} − ${n - 1} × ${m + k}`, { unit: '점' }); }
+    const sp = mqPick([[8, 3], [6, 2], [10, 5], [8, 6], [4, 1], [6, 6], [8, 0]]), [N, r] = sp, w = r === 0 ? '불가능하다' : r === N ? '확실하다' : r * 2 === N ? '반반이다' : r * 2 > N ? '~일 것 같다' : '~아닐 것 같다';
+    return { q: `똑같은 크기로 ${N}칸으로 나눈 회전판에 빨간색 ${r}칸이 있어요. 화살이 빨간색에 멈출 가능성을 말로 나타내면?`, ans: w, opts: shuf([...shuf(U6_WORD.filter(v => v !== w)).slice(0, 3), w]), tip: '전체의 절반보다 많으면 ~일 것 같다, 적으면 ~아닐 것 같다', hideTip: true }; },
+];
+const MQ_GEN = { m1: U1, m2: U2, m3: U3, m4: U4, m5: U5, m6: U6 };
+const mqSeen = [];
+function mqMake(id, lv) { // 같은 문제가 바로 다시 나오지 않게
+  let Q; for (let k = 0; k < 8; k++) { Q = MQ_GEN[id][lv](); const key = Q.q + (Q.qh || ''); if (!mqSeen.includes(key)) { mqSeen.push(key); if (mqSeen.length > 20) mqSeen.shift(); break; } }
+  return Q;
+}
+
+// ---------- ⛏️ 1024a 단원 광산: 오늘 열린 광산 · 5단계 고르기 · 골고루 캐기 ----------
+// 열린 광산: state/math/open {d: 날짜 번호, m: 'm1,m3' 또는 'all'} (선생님이 정해요) · 오늘 정한 게 없으면 날마다 한 광산씩 차례로 열려요
+// 보상은 광산마다 똑같고 단계마다 달라요 (MQ_LV) · 한 번에 맞혀야 보상 · 같은 단원 하루 12문제 넘으면 절반 · 덜 캔 단원 ×1.5 · 이번 주 광산 도장 2·4·6개 보너스
+// 내 기록은 이 기기 가방에 (bag.mq) · 반 전체가 캔 수는 지금처럼 state/math/{m1~m6}
+const MQ_WB = [[2, 15], [4, 30], [6, 50]];
+const mineOpenSet = () => { const o = S.math?.open; return !!(o && o.d === dayNum() && typeof o.m === 'string'); };
+const mineOpenIds = () => { if (mineOpenSet()) { const m = S.math.open.m; return m === 'all' ? MINES.map(x => x.id) : m.split(',').filter(id => MINE[id]); } return [MINES[((dayNum() % MINES.length) + MINES.length) % MINES.length].id]; };
+const mineOpen = (id) => isTeacher || mineOpenIds().includes(id);
+const mineOpenText = () => mineOpenIds().map(id => `${MINE[id].icon} ${MINE[id].u}단원`).join(' · ') || '없음';
+function mqRec() {
+  bag.mq ||= { c: {}, d: 0, dc: {}, w: 0, wc: {}, wb: {}, lv: {} };
+  const R = bag.mq; R.c ||= {}; R.lv ||= {};
+  if (R.d !== dayNum()) { R.d = dayNum(); R.dc = {}; }
+  if (R.w !== weekNum()) { R.w = weekNum(); R.wc = {}; R.wb = {}; }
+  return R;
+}
+function mqLow(id) { const R = mqRec(), cs = MINES.map(m => R.c[m.id] || 0), mn = Math.min(...cs), mx = Math.max(...cs); return (R.c[id] || 0) === mn && mx - mn >= 5; }
+const mqMult = (id) => ({ vein: (mqRec().dc[id] || 0) < MQ_VEIN ? 1 : 0.5, low: mqLow(id) });
+const mqStamps = () => { const R = mqRec(); return MINES.filter(m => (R.wc[m.id] || 0) >= 3).length; };
+const mqShOf = (id, lv) => { const { vein, low } = mqMult(id); return Math.round(MQ_LV[lv].sh * vein * (low ? 1.5 : 1)); };
+const mqStOf = (id, lv) => Math.max(1, Math.round(MQ_LV[lv].st * mqMult(id).vein));
+function mqReward(id, lv) { // 한 번에 맞힌 문제 → 🐚 · 반 광석 +1 · 도장
+  const R = mqRec(), m = MINE[id], sh = mqShOf(id, lv), low = mqLow(id), vein = mqMult(id).vein, s0 = mqStamps();
+  R.dc[id] = (R.dc[id] || 0) + 1; R.wc[id] = (R.wc[id] || 0) + 1; R.c[id] = (R.c[id] || 0) + 1; R.lv[lv] = (R.lv[lv] || 0) + 1;
+  const s1 = mqStamps(); let bonus = 0; for (const [k, b] of MQ_WB) if (s1 >= k && !R.wb[k]) { R.wb[k] = 1; bonus += b; }
+  const got = giveShellCapped(sh + bonus); saveBag(); updateHUD(null);
+  backend.mathOre(id).catch?.(() => {});
+  if (mathRegion()) burst(new V3(m.x, 2.5, MV.z0 + 3), [m.color, 0xFFFFFF, C.gold], 30, 4, 2);
+  if (s1 > s0) setTimeout(() => showBanner(`🗓️ ${m.icon} ${m.u}단원 광산 도장!`, `이번 주 도장 ${s1} / ${MINES.length}${bonus ? ` · 🎁 골고루 보너스 🐚 +${bonus}` : ` · 다음 보너스는 도장 ${(MQ_WB.find(([k]) => k > s1) || [0])[0] || '-'}개`}`, 4500), 400);
+  return { got, low, vein, bonus };
+}
+function mqConcept(m) { const d = el2('details', 'sticker'); d.style.cssText = 'padding:8px 10px;margin:6px 0;text-align:left;font-size:14.5px;line-height:1.55'; const s = el2('summary', '', `📘 ${m.u}단원 알짜 개념 (눌러서 보기)`); s.style.cssText = 'cursor:pointer;font-weight:800'; d.append(s); const body = el2('div', ''); body.innerHTML = m.concept.map(t => `· ${t}`).join('<br>'); d.append(body); return d; }
+function mqStampRow() { const R = mqRec(); return MINES.map(m => `${(R.wc[m.id] || 0) >= 3 ? '✅' : '⬜'}${m.icon}`).join(' '); }
+function openMine(id) { // 광산 입구 → 단계 고르기
+  const m = MINE[id]; if (!m) return; if (!mv.mqGuide) { mv.mqGuide = true; }
+  openLife(`${m.icon} ${m.u}단원 광산 · ${m.uname}`, (box) => {
+    box.textContent = ''; const R = mqRec(), open = mineOpen(id), today = mineOpenIds().includes(id);
+    box.append(el2('p', open ? 'up-win' : 'hint', today ? '⛏️ 오늘 열린 광산이에요! 단계를 골라 문제를 풀어요' : open ? '🧑‍🏫 선생님은 닫힌 광산에도 들어갈 수 있어요' : `🚧 오늘은 닫혀 있어요 · 오늘 열린 광산: ${mineOpenText()}`));
+    box.append(mqConcept(m));
+    if (open) {
+      const g = el2('div', 'mx-opts');
+      MQ_LV.forEach((L, i) => { const b = el2('button', 'btn mx-opt', ''); b.style.background = L.c; b.innerHTML = `${L.icon} <b>${L.n}</b><br><span style="font-size:13px">🐚 ${mqShOf(id, i)} · 🧮 +${mqStOf(id, i)}</span>`; b.onclick = () => mqAsk(id, i, 0); g.append(b); });
+      box.append(el2('p', 'hint', '단계를 골라요 (기본 → 심화(중)으로 갈수록 어렵고 보상이 커요) · 첫 번째에 맞혀야 보상을 받아요'), g);
+    }
+    const dc = R.dc[id] || 0, info = el2('p', 'hint', '');
+    info.innerHTML = `⛏️ 오늘 이 광산에서 ${dc}문제 · ${dc < MQ_VEIN ? `광맥이 깊어요 (${MQ_VEIN - dc}문제 더 보상 그대로)` : '광맥이 얕아졌어요 (보상 절반 · 내일 다시 깊어져요)'}`
+      + (mqLow(id) ? '<br>💤 내가 가장 덜 캔 단원이에요 → 🐚 ×1.5' : '')
+      + `<br>🗓️ 이번 주 광산 도장 (단원마다 3문제): ${mqStampRow()}<br>🎁 도장 2개 🐚 +15 · 4개 🐚 +30 · 6개 🐚 +50 → 여러 단원을 골고루 풀어요!`;
+    box.append(info);
+    box.append(el2('p', 'hint', `🛤️ 마을 서쪽 아래 「광산 레일」을 타면 마을을 한 바퀴 돌며 광맥 5곳에서 문제를 풀 수 있어요 · 반 전체 ${m.icon} ${mineCount(id)}개`));
+  });
+}
+function mqAsk(id, lv, streak) {
+  const m = MINE[id], L = MQ_LV[lv]; if (!mineOpen(id)) return openMine(id);
+  const Q = mqMake(id, lv), sh = mqShOf(id, lv); Q.st = mqStOf(id, lv); let first = true;
+  const title = `${m.icon} ${m.u}단원 · ${L.icon} ${L.n}`;
+  mathQuiz(title, Q, () => {
+    if (first) { const r = mqReward(id, lv); streak++; toast(`⛏️ 정답! ${r.got ? `🐚 +${r.got}` : '(오늘 조개 예산은 다 찼어요)'}${r.low ? ' · 💤 덜 캔 단원 ×1.5' : ''}${r.vein < 1 ? ' · 광맥이 얕아져 절반' : ''}`, 'success'); playAct(player.avatar, 'cheer'); }
+    else { streak = 0; toast('정답! 다음 문제는 첫 번째에 맞혀서 보상을 받아요 💪', 'info'); }
+    setTimeout(() => { if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === title) mqAsk(id, lv, streak); }, 1100);
+  }, (box) => {
+    const row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
+    row.append(el2('span', 'hint', `🐚 ${sh} · 🧮 +${Q.st} · 연속 정답 ${streak}`));
+    const b = el2('button', 'btn', '⬅️ 단계 바꾸기'); b.style.cssText = 'background:#fff;font-size:14px;padding:4px 10px'; b.onclick = () => openMine(id); row.append(b);
+    box.append(row);
+  }, () => { if (first) { first = false; Q.st = 0; } });
+}
+
+// ---------- 🛤️ 광산 레일 (1024a): 마을을 크게 한 바퀴 도는 높은 레일 · 광맥 5곳에서 멈춰 문제 ----------
+const MR = { x0: 1117, x1: 1268, z0: -16, z1: 38, r: 7, H: 5.2, ramp: 16, spd: 7.5, stops: [0.17, 0.34, 0.5, 0.66, 0.83], plat: [1112.6, 31] };
+const MR_SEG = (() => { const { x0, x1, z0, z1, r } = MR, P = Math.PI; return [
+  { L: z1 - z0 - 2 * r, x: x0, z: z1 - r, dx: 0, dz: -1 }, { L: P * r / 2, cx: x0 + r, cz: z0 + r, t0: P },
+  { L: x1 - x0 - 2 * r, x: x0 + r, z: z0, dx: 1, dz: 0 }, { L: P * r / 2, cx: x1 - r, cz: z0 + r, t0: 1.5 * P },
+  { L: z1 - z0 - 2 * r, x: x1, z: z0 + r, dx: 0, dz: 1 }, { L: P * r / 2, cx: x1 - r, cz: z1 - r, t0: 0 },
+  { L: x1 - x0 - 2 * r, x: x1 - r, z: z1, dx: -1, dz: 0 }, { L: P * r / 2, cx: x0 + r, cz: z1 - r, t0: 0.5 * P }]; })();
+const MR_L = MR_SEG.reduce((a, g) => a + g.L, 0);
+function mrAt(s) { s = Math.max(0, Math.min(MR_L - 1e-6, s)); for (const g of MR_SEG) { if (s <= g.L) { if (g.dx != null) return { x: g.x + g.dx * s, z: g.z + g.dz * s, tx: g.dx, tz: g.dz }; const t = g.t0 + s / MR.r; return { x: g.cx + Math.cos(t) * MR.r, z: g.cz + Math.sin(t) * MR.r, tx: -Math.sin(t), tz: Math.cos(t) }; } s -= g.L; } return { x: MR.x0, z: MR.z1 - MR.r, tx: 0, tz: -1 }; }
+const mrH = (s) => { const u = Math.max(0, Math.min(1, s / MR.ramp, (MR_L - s) / MR.ramp)); return MR.H * u * u * (3 - 2 * u); };
+const mrail = { on: false, s: 0, fi: 0, wait: false, answered: false, ok: 0, id: 'm1', lv: 0, g: null, hud: null, last: null, sh: 0 };
+function buildMineRail(g) {
+  const o = { solid: false }, tr = new THREE.Group(); tr.name = 'MineRail'; g.add(tr);
+  for (let s = 0; s < MR_L; s += 1.2) { const P = mrAt(s + 0.6), h = mrH(s + 0.6), a = Math.atan2(P.tx, P.tz), ix = P.tz, iz = -P.tx;
+    for (const ro of [-0.48, 0.48]) box(tr, 0.11, 0.1, 1.28, 0x8C8C92, P.x + ix * ro, h + 0.12, P.z + iz * ro, { solid: false, ry: a });
+    box(tr, 1.5, 0.08, 0.26, 0x6E4A2C, P.x, h + 0.03, P.z, { solid: false, ry: a }); }
+  for (let s = 6; s < MR_L - 4; s += 8) { const P = mrAt(s), h = mrH(s); if (h < 0.8) continue; const ix = P.tz, iz = -P.tx, a = Math.atan2(P.tx, P.tz); // 나무 버팀목 (몸은 막지 않아요)
+    for (const sd of [-0.85, 0.85]) box(tr, 0.22, h, 0.22, 0x7A5234, P.x + ix * sd, h / 2, P.z + iz * sd, o);
+    box(tr, 2.0, 0.2, 0.26, 0x6E4A2C, P.x, h - 0.15, P.z, { solid: false, ry: a }); box(tr, 0.12, h * 0.9, 0.12, 0x6E4A2C, P.x, h * 0.45, P.z, { solid: false, ry: a, rz: 0.5 }); }
+  MR.stops.forEach((f, i) => { const s = f * MR_L, P = mrAt(s), h = mrH(s), ix = P.tz, iz = -P.tx, x = P.x - ix * 1.6, z = P.z - iz * 1.6; // 광맥 표시 (레일 안쪽)
+    box(tr, 0.16, h + 2.2, 0.16, 0x5A3A22, x, (h + 2.2) / 2, z, o); ball(tr, 0.28, 0xFFD27A, x, h + 2.4, z, { solid: false, emissive: 0.9 });
+    for (let k = 0; k < 3; k++) mesh(CONE, tr, 0.18, 0.7, 0.18, [0x9AD8FF, 0xC9A6FF, 0xFFD23C][k], x + (k - 1) * 0.3, h + 0.35, z, { solid: false, emissive: 0.4, rz: (k - 1) * 0.3 });
+    makeLabel(tr, [`⛏️ 광맥 ${i + 1}`], 0.7, x, h + 3.2, z); });
+  // 승강장 (마을 남서쪽)
+  const [px, pz] = MR.plat; box(tr, 3.2, 0.3, 6, 0xA8A294, px, 0.15, pz, o); for (const sz of [-2.6, 2.6]) cyl(tr, 0.1, 2.6, 0x7A5234, px - 1.2, 1.3, pz + sz, o);
+  box(tr, 3.4, 0.2, 6.4, 0x7A4A2A, px, 2.7, pz, o); const park = cartModel(0x3E6AC8); park.position.set(MR.x0, 0.05, MR.z1 - MR.r + 1); park.rotation.y = Math.PI; tr.add(park);
+  makeLabel(tr, ['🛤️ 광산 레일', '오늘 열린 광산 문제를 풀며 마을 한 바퀴!'], 1.0, px, 4.2, pz);
+  addInteract({ pos: new V3(px + 1, 1, pz), r: 3.2, text: () => mrail.on || !mathRegion() ? null : ['🛤️ 광산 레일 타기', `오늘: ${mineOpenText()}`], run: openMrailPick });
+  const hud = document.createElement('div'); hud.id = 'mrHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:8px 14px;z-index:9;display:flex;gap:10px;align-items:center;font-size:17px';
+  hud.innerHTML = '<b id="mrInfo"></b><button class="btn" id="mrQuit" style="background:#fff;font-size:15px;padding:4px 10px">내리기</button>'; document.body.append(hud); mrail.hud = hud;
+  $('mrQuit').onclick = () => mrEnd(false);
+}
+function openMrailPick() {
+  const ids = isTeacher ? MINES.map(m => m.id) : mineOpenIds(); let pick = ids.includes(mrail.id) ? mrail.id : ids[0];
+  openLife('🛤️ 광산 레일 타기', (box) => {
+    const draw = () => {
+      box.textContent = ''; box.append(el2('p', 'hint', '광산 레일을 타고 마을을 한 바퀴 돌아요. 광맥 5곳에서 멈추면 문제를 풀어요 (기회는 한 번!). 한 번에 맞히면 광산과 똑같이 🐚 · 🧮을 받고, 4문제 이상 맞히고 끝까지 타면 🐚 +10 더 (하루 3번)'));
+      box.append(el2('div', 'field', '⛏️ 어느 단원 광산?'));
+      const r1 = el2('div', 'row-center wrap', null); r1.style.gap = '6px';
+      for (const id of ids) { const m = MINE[id], b = el2('button', 'btn', `${m.icon} ${m.u}단원 ${m.uname}`); b.style.background = id === pick ? '#FFE066' : '#fff'; b.onclick = () => { pick = id; draw(); }; r1.append(b); }
+      box.append(r1, el2('div', 'field', '📶 어떤 단계?'));
+      const g = el2('div', 'mx-opts'); MQ_LV.forEach((L, i) => { const b = el2('button', 'btn mx-opt', ''); b.style.background = L.c; b.innerHTML = `${L.icon} <b>${L.n}</b><br><span style="font-size:13px">🐚 ${mqShOf(pick, i)} · 🧮 +${mqStOf(pick, i)}</span>`; b.onclick = () => mrStart(pick, i); g.append(b); });
+      box.append(g);
+    };
+    draw();
+  });
+}
+function mrStart(id, lv) {
+  if (mrail.on || cart.on || isFrozen() || hv.travel || !joined || !mineOpen(id)) return; if (bag.ride) { bag.ride = ''; saveBag(); } closeLife();
+  Object.assign(mrail, { on: true, s: 0, fi: 0, wait: false, answered: false, ok: 0, id, lv, last: null, sh: 0 });
+  mrail.g?.parent?.remove(mrail.g); mrail.g = cartModel(0x3E6AC8); player.avatar.g.add(mrail.g);
+  mrail.hud.classList.remove('hidden'); playSfx('fanfare'); toast(`🛤️ 출발! ${MINE[id].icon} ${MINE[id].u}단원 · ${MQ_LV[lv].n} 문제가 광맥마다 기다려요`, 'info');
+}
+function mrEnd(done) {
+  if (!mrail.on) return; mrail.on = false; mrail.wait = false; mrail.last = null; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrail.hud.classList.add('hidden');
+  if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('⛏️ 광맥')) closeLife();
+  if (done) {
+    if (bag.mrDay?.d !== dayNum()) bag.mrDay = { d: dayNum(), n: 0 }; let b = 0; if (mrail.ok >= 4 && bag.mrDay.n < 3) { bag.mrDay.n++; b = giveShellCapped(10); }
+    if (mrail.ok >= 5) hmHit?.('cart5'); saveBag(); updateHUD(null); burst(player.pos.clone().setY(2), RAINBOW, 50, 6, 3);
+    showBanner(`🛤️ 광산 레일 완주! 광맥 ${mrail.ok}/5`, `${mrail.sh ? `문제 보상 🐚 +${mrail.sh}` : '다음엔 더 많이 맞혀 봐요'}${b ? ` · 완주 보너스 🐚 +${b}` : mrail.ok >= 4 ? ' · 오늘 완주 보너스 3번은 다 받았어요' : ' · 4문제 이상 맞히면 완주 보너스'}`, 6000);
+  }
+  player.pos.set(MR.plat[0] + 1.6, 0.15, MR.plat[1]); player.vy = 0;
+}
+function mrQuiz() {
+  const Q = mqMake(mrail.id, mrail.lv), i = mrail.fi, m = MINE[mrail.id], L = MQ_LV[mrail.lv]; mrail.answered = false;
+  openLife(`⛏️ 광맥 ${i + 1}/5 · ${m.icon} ${m.u}단원 ${L.n}`, (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', '기회는 한 번! 맞히면 광석과 보상을 받고, 레일은 계속 달려요'));
+    if (Q.sh) box.append(drawShape(Q)); else if (Q.cv) box.append(Q.cv());
+    const qp = el2('p', 'lp-big', ''); if (Q.qh) qp.innerHTML = Q.qh; else qp.textContent = Q.q; box.append(qp);
+    const grid = el2('div', 'mx-opts'), fb = el2('p', 'hint', ''), btns = [];
+    for (const op of Q.opts) { const b = el2('button', 'btn mx-opt', ''); if (Q.oh) b.innerHTML = op + (Q.unit ? ' ' + Q.unit : ''); else b.textContent = `${op}${Q.unit ? ' ' + Q.unit : ''}`; btns.push([op, b]);
+      b.onclick = () => { if (mrail.answered) return; mrail.answered = true; const ok = op === Q.ans; b.style.background = ok ? '#BDE8B0' : '#F6C9C0';
+        if (!ok) { btns.find(([o]) => o === Q.ans)?.[1].style.setProperty('background', '#BDE8B0'); fb.textContent = `💡 ${Q.tip}`; }
+        playSfx(ok ? 'right' : 'wrong');
+        if (ok) { const r = mqReward(mrail.id, mrail.lv); mrail.sh += r.got; addStat('math', mqStOf(mrail.id, mrail.lv)); }
+        setTimeout(() => mrGo(ok), ok ? 600 : 2200); };
+      grid.append(b); }
+    box.append(grid, fb);
+  });
+}
+function mrGo(ok) {
+  if (!mrail.on || !mrail.wait) return; mrail.wait = false; mrail.fi++; if (ok) mrail.ok++;
+  if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('⛏️ 광맥')) closeLife();
+  toast(ok ? '⛏️ 정답! 광석을 실었어요' : '🤔 아쉬워요! 다음 광맥에서 다시 도전', ok ? 'success' : 'warn');
+}
+function updateMrail(dt) {
+  if (!mrail.on) return;
+  const p = player.pos;
+  if (mrail.last && Math.hypot(p.x - mrail.last[0], p.z - mrail.last[1]) > 6) { mrail.on = false; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrail.hud.classList.add('hidden'); mrail.last = null; return; } // 다른 곳으로 옮겨졌어요
+  if (mrail.wait) { if (!mrail.answered && $('lifePanel').classList.contains('hidden')) { mrail.answered = true; mrGo(false); } }
+  else { mrail.s += MR.spd * dt; const st = MR.stops[mrail.fi] * MR_L;
+    if (mrail.fi < 5 && mrail.s >= st) { mrail.s = st; mrail.wait = true; mrQuiz(); }
+    if (mrail.s >= MR_L) { mrail.last = null; mrEnd(true); return; } }
+  const P = mrAt(mrail.s), h = mrH(mrail.s), hd = Math.atan2(P.tx, P.tz);
+  p.set(P.x, h + 0.2, P.z); player.vy = 0; player.heading = hd; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = hd; mrail.last = [P.x, P.z];
+  if (!mrail.wait) { let d = hd + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 2.2); }
+  if (mrail.g && mrail.g.parent !== player.avatar.g) player.avatar.g.add(mrail.g);
+  { const vis = mrail.wait ? 'hidden' : ''; if (mrail.hud.style.visibility !== vis) mrail.hud.style.visibility = vis; } // 문제 창과 겹치지 않게
+  const info = `${MINE[mrail.id].icon} ${MQ_LV[mrail.lv].n} · ⛏️ ${Math.min(mrail.fi + (mrail.wait ? 1 : 0), 5)}/5 · 정답 ${mrail.ok}`; if ($('mrInfo').textContent !== info) $('mrInfo').textContent = info;
+}
+function fillMineOpenAdmin() { // 🧑‍🏫 오늘 열 광산
+  const box = $('tpMineOpen'); if (!box) return; box.textContent = '';
+  const ids = mineOpenSet() ? mineOpenIds() : [], auto = !mineOpenSet();
+  box.append(el2('p', 'hint', `오늘 열린 광산: ${mineOpenText()}${auto ? ' (자동 · 날마다 한 단원씩 차례로)' : ''} · 눌러서 열고 닫아요 (오늘 하루만)`));
+  const row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
+  for (const m of MINES) { const on = ids.includes(m.id), b = el2('button', 'btn', `${on ? '🔓' : '🔒'} ${m.icon} ${m.u}단원`); b.style.background = on ? '#FFE066' : '#fff';
+    b.onclick = () => { const next = on ? ids.filter(x => x !== m.id) : [...ids, m.id]; adminDo({ 'math/open': next.length ? { d: dayNum(), m: MINES.map(x => x.id).filter(x => next.includes(x)).join(',') } : null }, next.length ? `⛏️ 오늘 열린 광산: ${next.map(x => MINE[x].u + '단원').join(', ')}` : '⛏️ 자동(날마다 차례로)으로 돌아갔어요'); };
+    row.append(b); }
+  const all = el2('button', 'btn', '🔓 모두 열기'); all.style.background = '#D8F5D0'; all.onclick = () => adminDo({ 'math/open': { d: dayNum(), m: 'all' } }, '⛏️ 오늘은 모든 광산이 열려요');
+  const au = el2('button', 'btn', '🔁 자동'); au.style.background = '#fff'; au.onclick = () => adminDo({ 'math/open': null }, '⛏️ 날마다 한 단원씩 차례로 열려요');
+  row.append(all, au); box.append(row);
+}
+
 
 // ---------- 식 계산 (계산 순서: 괄호 → × ÷ → + −, 나눗셈은 나누어떨어질 때만) ----------
 function mathEval(tokens) {
@@ -15047,7 +15482,7 @@ function buildMathVillage() {
     box(g, 7.4, h, 10, rock[k % 4], x, h / 2, Z0 - 6);
     mesh(SPH_MID, g, 4.2, 3, 4, rock[(k + 1) % 4], x + 1.5, h, Z0 - 7, { solid: false, flat: true });
   }
-  for (const [x0, x1] of [[X0 - 8, X0], [X1, X1 + 8]]) for (let z = Z0 - 4; z < Z1 + 6; z += 8) { if (x0 === X1 && z === 4) continue; /* 블록 산 가는 바위 틈 */ const h = 8 + (Math.abs(z * 7) % 5); box(g, x1 - x0, h, 8.4, rock[Math.abs(Math.round(z)) % 4], (x0 + x1) / 2, h / 2, z); } // 양옆 바위
+  for (const [x0, x1] of [[X0 - 8, X0], [X1, X1 + 8]]) for (let z = Z0 - 4; z < Z1 + 6; z += 8) { const h = 8 + (Math.abs(z * 7) % 5); box(g, x1 - x0, h, 8.4, rock[Math.abs(Math.round(z)) % 4], (x0 + x1) / 2, h / 2, z); } // 양옆 바위
   for (let x = X0; x <= X1; x += 12) { makeTree(x + 3, Z1 + 4, g); }                                     // 남쪽 소나무 줄
   box(g, W, 1.1, 0.3, 0x8A5A34, CX, 0.55, Z1 + 0.2);                                                     // 남쪽 울타리 (부딪혀요)
   // 광산 입구 5곳
@@ -15073,8 +15508,12 @@ function buildMathVillage() {
       c.visible = false; crys.push(c);
     }
     const label = makeLabel(mg, [''], 1.0, 0, 7.4, 1);
-    mv.mines[m.id] = { g: mg, crys, label, lv: -1, key: '' };
-    addInteract({ pos: new V3(m.x, 1, Z0 + 2.4), r: 3.2, dy: 2.2, text: () => mathRegion() ? [`광석 캐기 ⛏️`, `${m.icon} ${m.name}`] : null, run: () => openMine(m.id) });
+    const bar = new THREE.Group(); bar.position.set(0, 0, 0.75); mg.add(bar); // 🚧 오늘 닫힌 광산: 나무 판자로 막아요
+    for (const [y, rz] of [[1.3, 0.25], [2.6, -0.2], [3.7, 0.12]]) box(bar, 4.6, 0.32, 0.14, 0x9C6A3E, 0, y, 0, { solid: false, rz });
+    box(bar, 2.4, 0.6, 0.06, 0xFFD23C, 0, 2.0, 0.12, o); makeLabel(bar, ['🚧 오늘은 닫혔어요'], 0.6, 0, 2.0, 0.3, { stroke: false });
+    const glow = new THREE.Group(); mg.add(glow); ball(glow, 0.35, 0xFFE9A0, 0, 4.4, 0.7, { solid: false, emissive: 1 }); for (const sx of [-1.5, 1.5]) ball(glow, 0.22, 0xFFD27A, sx, 3.2, 0.7, { solid: false, emissive: 1 });
+    mv.mines[m.id] = { g: mg, crys, label, lv: -1, key: '', bar, glow };
+    addInteract({ pos: new V3(m.x, 1, Z0 + 2.4), r: 3.2, dy: 2.2, text: () => mathRegion() ? [mineOpen(m.id) ? '광산 들어가기 ⛏️' : '🚧 오늘은 닫혀 있어요 (개념 보기)', `${m.icon} ${m.u}단원 ${m.uname}`] : null, run: () => openMine(m.id) });
   }
   // 광장 게시판
   const bd = new THREE.Group(); bd.position.set(MV.cx - 6, 0, 10.5); g.add(bd);
@@ -15103,15 +15542,15 @@ function buildMathVillage() {
   if (!TRANSIT_OFF) cyl(st, 0.08, 2, 0x3B2F2A, -1, 1, -1.45, o);
   if (!TRANSIT_OFF) addInteract({ pos: new V3(MV.station[0], 1, MV.station[1] + 2), r: 2.8, text: () => mathRegion() ? ['광차 타기 🚃', '우리 마을로 돌아가기'] : null, run: () => travelTo('fromMath') });
   for (const [x, z] of [[1140, 9], [1170, 9], [1215, 9], [1250, 9], [1150, -1], [1235, -1]]) lantern(g, x, z, 2.2);
-  for (const [x, z, s] of [[1122, 30, 1], [1150, 34, 0.8], [1236, 32, 1.1], [1262, 26, 0.9], [1117, -30, 1], [1268, 18, 1.2]]) { mesh(SPH_MID, g, 1.6 * s, 1.1 * s, 1.4 * s, rock[Math.round(x) % 4], x, 0.5, z, { solid: true, flat: true }); }
+  for (const [x, z, s] of [[1109, 40, 1], [1150, 34, 0.8], [1236, 32, 1.1], [1262, 26, 0.9], [1117, -30, 1], [1268, 18, 1.2]]) { mesh(SPH_MID, g, 1.6 * s, 1.1 * s, 1.4 * s, rock[Math.round(x) % 4], x, 0.5, z, { solid: true, flat: true }); }
   for (const [x, z] of [[1140, 28], [1175, 34], [1205, 30]]) { // 광부 오두막
     const hg = new THREE.Group(); hg.position.set(x, 0, z); g.add(hg);
     box(hg, 5, 3, 4, 0xB07C50, 0, 1.5, 0); mesh(GABLE, hg, 5.6, 2, 4.6, 0x7A4A2A, 0, 3, 0, { solid: false, ry: Math.PI / 2 });
     box(hg, 1, 1.8, 0.1, 0x5C3A22, 0, 0.9, -2.02, o); box(hg, 0.9, 0.7, 0.1, 0xFFE9A0, 1.5, 1.8, -2.02, { solid: false, emissive: 0.5 });
   }
-  makeLabel(g, ['⛏️ 수학 광산 마을', '숫자와 기호를 이어 식을 만들어 광석을 캐요'], 1.4, MV.cx, 7.5, 4);
+  makeLabel(g, ['⛏️ 수학 광산 마을', '1~6단원 광산 · 오늘 열린 광산에서 문제를 풀어요'], 1.4, MV.cx, 7.5, 4);
   buildMathExtras(g);
-  buildBlockMountain(g);
+  buildMineRail(g); // 🛤️ 1024a (⛰️ 블록 산은 없앴어요)
   registerSolids(g, 'math');
   g.updateMatrixWorld(true);
   // 우리 마을 서쪽 광차 정류장 (🌀 포털로 바꿔서 지금은 만들지 않아요)
@@ -15129,16 +15568,17 @@ function buildMathVillage() {
 }
 function renderMath(force) {
   if (!mv.group) return;
-  const key = JSON.stringify(S.math || {});
+  const key = JSON.stringify(S.math || {}) + dayNum();
   if (!force && key === mv.key) return;
   mv.key = key;
   for (const m of MINES) {
     const info = mv.mines[m.id], lv = mineLv(m.id), n = mineCount(m.id);
     info.crys.forEach((c, k) => { c.visible = k < lv; });
-    info.label.userData.set([`${m.icon} ${m.name}`, lv >= MINE_MAX ? `🌟 ${MINE_MAX}단계 완성 · 광석 ${n}개` : `⛏️ ${lv}단계 · 다음 단계까지 ${MINE_STEP - (n % MINE_STEP)}개`]);
+    const op = mineOpenIds().includes(m.id); info.bar.visible = !op; info.glow.visible = op;
+    info.label.userData.set([`${m.icon} ${m.u}단원 ${m.uname}`, `${op ? '🔓 오늘 열림' : '🔒 닫힘'} · ${lv >= MINE_MAX ? `🌟 ${MINE_MAX}단계 완성` : `⛏️ ${lv}단계 (다음까지 ${MINE_STEP - (n % MINE_STEP)}개)`}`]);
   }
   const total = MINES.reduce((a, m) => a + mineCount(m.id), 0);
-  mv.board.userData.set(['⛏️ 우리 반 광산', `함께 캔 광석 ${total}개`, `광산 단계 ${mineLvSum()} / ${MINES.length * MINE_MAX}`]);
+  mv.board.userData.set(['⛏️ 우리 반 광산', `오늘 열린 광산: ${mineOpenText()}`, `함께 캔 광석 ${total}개 · 광산 단계 ${mineLvSum()} / ${MINES.length * MINE_MAX}`]);
 }
 function syncMath(prev, first) {
   renderMath(false); renderBlocks(false);
@@ -15158,7 +15598,8 @@ function updateMath(dt) {
   if (!mv.group) return;
   const near = (player.pos.x > 1000 && player.pos.x < 1400) || (camera.position.x > 1000 && camera.position.x < 1400);
   mv.group.visible = near;
-  if (near && mathRegion() && !mv.seen) { mv.seen = true; toast(`⛏️ 수학 광산 마을에 왔어요! 광산 입구에서 E를 눌러 식을 만들고 광석을 캐요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
+  if (near && mathRegion() && !mv.seen) { mv.seen = true; toast(`⛏️ 수학 광산 마을에 왔어요! 오늘 열린 광산(${mineOpenText()})에서 단계를 골라 문제를 풀고, 🛤️ 광산 레일도 타 봐요${backend.mode === 'firebase' ? '' : ' (이 브라우저에만 저장)'}`, 'info'); }
+  if (near && mv.group && (mv.dayK !== dayNum())) { mv.dayK = dayNum(); renderMath(true); }
 }
 
 // ---------- ⛰️ 블록 산 (마인크래프트처럼 올라가서 블록을 캐요) ----------
@@ -15213,7 +15654,7 @@ function buildBlockMountain(g) {
   const legend = new THREE.Group(); legend.position.set(BM.cx - 12, 0, BM.cz + 12); g.add(legend);
   box(legend, 0.25, 3.2, 0.25, 0x8A5A34, 0, 1.6, 0); box(legend, 3.4, 2.2, 0.15, 0xFFF3DC, 0, 2.6, 0, o);
   makeLabel(legend, ['1층 🪨 돌 · 2층 🟠 구리 · 3층 ⚪ 은', '4층 🟡 금 · 5층 💎 보석 · 6~7층 🔮 수정'], 0.75, 0, 4.4, 0);
-  bm.act = addInteract({ pos: new V3(0, -99, 0), r: 2.6, dy: 1.6, text: () => bm.target ? ['블록 캐기 ⛏️', `${MINE[bm.target.m].icon} ${MINE[bm.target.m].name} 블록`] : null, run: () => bm.target && openMine(bm.target.m, bm.target) });
+  bm.act = addInteract({ pos: new V3(0, -99, 0), r: 2.6, dy: 1.6, text: () => bm.target ? ['블록 캐기 ⛏️', `${MINE[bm.target.m].icon} ${MINE[bm.target.m].name} 블록`] : null, run: () => bm.target && openMineOld(bm.target.m, bm.target) });
   bm.key = ''; renderBlocks(true);
 }
 function renderBlocks(force) {
@@ -15256,7 +15697,7 @@ function updateBlocks(dt) {
 }
 
 // ---------- 광산 퍼즐 창 ----------
-function openMine(id, block = null) {
+function openMineOld(id, block = null) { // (예전 숫자 카드 식 만들기 · 1024a부터는 openMine이 단원 문제를 열어요)
   closeModals(); mv.cur = id; mv.block = block; // block: 블록 산에서 캐는 블록 (맞히면 그 블록이 부서져요)
   if (!mv.puzzle || mv.puzzle.id !== id) { mv.puzzle = mineMake(id); mv.expr = []; mv.wrong = 0; }
   $('minePanel').classList.remove('hidden'); $('mnFb').textContent = ''; fillMine(); $('mnTitle').focus();
@@ -15395,10 +15836,10 @@ function mathQuiz(title, Q, onRight, extra, onWrong) { // 4지선다 창 (맞히
   openLife(title, (box) => {
     box.textContent = ''; if (extra) extra(box);
     if (Q.sh) box.append(drawShape(Q)); else if (Q.cv) box.append(Q.cv());
-    box.append(el2('p', 'lp-big', Q.q));
+    { const qp = el2('p', 'lp-big', ''); if (Q.qh) qp.innerHTML = Q.qh; else qp.textContent = Q.q; box.append(qp); } // 1024a: 분수 문제는 HTML(직접 만든 숫자만)
     const fb = el2('p', 'hint', Q.hideTip ? '🤔 틀리면 💡 힌트가 나와요' : `💡 ${Q.tip}`), grid = el2('div', 'mx-opts'); let done = false;
-    for (const o of Q.opts) { const b = el2('button', 'btn mx-opt', `${o}${Q.unit ? ' ' + Q.unit : ''}`);
-      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); addStat('math', 3); onRight(); } else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = `🤔 다시 생각해 봐요 · 💡 ${Q.tip}`; onWrong?.(); } };
+    for (const o of Q.opts) { const b = el2('button', 'btn mx-opt', `${o}${Q.unit ? ' ' + Q.unit : ''}`); if (Q.oh) b.innerHTML = `${o}${Q.unit ? ' ' + Q.unit : ''}`;
+      b.onclick = () => { if (done) return; if (o === Q.ans) { done = true; b.style.background = '#BDE8B0'; playSfx('right'); addStat('math', Q.st ?? 3); onRight(); } else { b.disabled = true; b.style.background = '#F6C9C0'; playSfx('wrong'); fb.textContent = `🤔 다시 생각해 봐요 · 💡 ${Q.tip}`; onWrong?.(); } };
       grid.append(b); }
     box.append(grid, fb);
   });
@@ -15869,7 +16310,6 @@ function initMineUI() {
     const op = { '+': '+', '-': '−', '*': '×', 'x': '×', '/': '÷', '(': '(', ')': ')' }[e.key];
     if (op && MINE[mv.cur]?.ops.includes(op)) { e.preventDefault(); mv.expr.push({ k: 'o', v: op }); fillMine(); }
   });
-  $('tpBlkRefill').onclick = () => adminDo({ 'math/blk': null }, '⛰️ 블록 산을 다시 가득 채웠어요');
   $('tpMathReset').onclick = async () => {
     if (!(await confirmAction({ title: '⛏️ 광산 마을을 처음부터 할까요?', body: '반 전체가 캔 광석 수와 광산 단계가 0으로 돌아가요.\n학생 기기의 광석(가방)은 그대로예요.', okText: '처음부터' }))) return;
     adminDo({ math: null }, '⛏️ 광산 마을을 처음부터 다시 시작해요');
@@ -15877,6 +16317,7 @@ function initMineUI() {
 }
 function fillMathAdmin() {
   $('tpMathNow').textContent = `⛏️ 함께 캔 광석 ${MINES.reduce((a, m) => a + mineCount(m.id), 0)}개 · 광산 단계 ${mineLvSum()} / ${MINES.length * MINE_MAX} (${MINES.map(m => `${m.icon}${mineCount(m.id)}`).join(' ')})`;
+  fillMineOpenAdmin();
 }
 
 
@@ -17769,6 +18210,8 @@ const PROPS = [null, // 변신할 수 있는 물건 10가지
   { icon: '📮', name: '빨간 우체통', t: 'post' }, { icon: '☎️', name: '전화 부스', t: 'phone' }, { icon: '🚒', name: '소화전', t: 'hyd' }, { icon: '📰', name: '신문 가판대', t: 'news' },
   { icon: '🛒', name: '광석 수레', t: 'cart' }, { icon: '💎', name: '수정 바위', t: 'cryst' }, { icon: '🛢️', name: '나무 통', t: 'barrel' }, { icon: '🔦', name: '광산 등불', t: 'mlamp' }, { icon: '⛰️', name: '바위', t: 'rock' },
   { icon: '🌾', name: '건초 더미', t: 'hay' }, { icon: '🧑‍🌾', name: '허수아비', t: 'scare' }, { icon: '🌻', name: '해바라기', t: 'sun' }, { icon: '🪣', name: '우물', t: 'well' }, { icon: '🥕', name: '채소 상자', t: 'veg' },
+  // 1024a: ⛏️ 광산 마을 물건 (32~35)
+  { icon: '⛏️', name: '곡괭이 걸이', t: 'pick' }, { icon: '🪵', name: '갱도 버팀목', t: 'prop' }, { icon: '🚧', name: '광산 안내판', t: 'msign' }, { icon: '🪨', name: '광석 더미', t: 'ore' },
 ];
 function propCustom(k, g) { // 🙈 1022f 마을별 변신 물건 모양 (모두 몸을 막지 않아요)
   const o = { solid: false }, f = { solid: false, flat: true };
@@ -17792,6 +18235,10 @@ function propCustom(k, g) { // 🙈 1022f 마을별 변신 물건 모양 (모두
   else if (k === 'scare') { cyl(g, 0.06, 1.9, 0x7A5436, 0, 0.95, 0, o); box(g, 1.5, 0.08, 0.08, 0x7A5436, 0, 1.4, 0, o); box(g, 0.6, 0.7, 0.3, 0x4A9AE8, 0, 1.3, 0, o); ball(g, 0.25, 0xE8CC80, 0, 1.9, 0, o); mesh(CONE, g, 0.4, 0.3, 0.4, 0xC9A65E, 0, 2.2, 0, o); }
   else if (k === 'sun') { cyl(g, 0.05, 1.7, 0x5FA040, 0, 0.85, 0, o); for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; mesh(SPH_LO, g, 0.14, 0.24, 0.05, 0xFFD23C, Math.cos(a) * 0.32, 1.75 + Math.sin(a) * 0.32, 0.05, f); } cyl(g, 0.2, 0.08, 0x6A4A2A, 0, 1.75, 0.08, { solid: false, rx: Math.PI / 2 }); for (const s2 of [-1, 1]) mesh(SPH_LO, g, 0.2, 0.05, 0.12, 0x5FA040, s2 * 0.2, 0.9, 0, f); }
   else if (k === 'well') { cyl(g, 0.75, 0.7, 0xA8A294, 0, 0.35, 0, o); cyl(g, 0.6, 0.05, 0x3E8FD6, 0, 0.66, 0, o); for (const s2 of [-1, 1]) cyl(g, 0.06, 1.4, 0x7A5436, s2 * 0.7, 1.1, 0, o); mesh(GABLE, g, 1.7, 0.5, 0.9, 0xC9A65E, 0, 1.8, 0, { solid: false, ry: Math.PI / 2 }); cyl(g, 0.12, 0.2, 0x8A5A34, 0, 1.2, 0, o); }
+  else if (k === 'pick') { box(g, 1.4, 0.12, 0.12, 0x7A5436, 0, 1.3, 0, o); for (const x of [-0.6, 0.6]) cyl(g, 0.06, 1.35, 0x7A5436, x, 0.67, 0, o); for (const x of [-0.3, 0.3]) { cyl(g, 0.04, 1.0, 0x9C6A3E, x, 0.85, 0.1, { solid: false, rz: x * 0.4 }); box(g, 0.55, 0.1, 0.1, 0x8C95A3, x + x * 0.4, 1.32, 0.1, { solid: false, rz: 0.15 }); } }
+  else if (k === 'prop') { for (const x of [-0.65, 0.65]) box(g, 0.24, 1.9, 0.24, 0x7A5234, x, 0.95, 0, o); box(g, 1.7, 0.26, 0.3, 0x6E4A2C, 0, 1.95, 0, o); ball(g, 0.14, 0xFFD27A, 0, 1.7, 0.15, { solid: false, emissive: 0.8 }); }
+  else if (k === 'msign') { for (const x of [-0.5, 0.5]) cyl(g, 0.05, 1.2, 0x7A5436, x, 0.6, 0, o); box(g, 1.3, 0.6, 0.08, 0xFFD23C, 0, 1.1, 0, o); for (let i = 0; i < 4; i++) box(g, 0.14, 0.62, 0.09, 0x2A2A2A, -0.45 + i * 0.3, 1.1, 0.01, { solid: false, rz: 0.6 }); }
+  else if (k === 'ore') { for (const [x, z, sc, c] of [[0, 0, 0.6, 0x7E776C], [0.45, 0.2, 0.42, 0x9A9286], [-0.4, 0.15, 0.45, 0x8C8478], [0.1, 0.4, 0.38, 0xD9783A], [-0.1, -0.35, 0.36, 0xF2C230]]) mesh(SPH_LO, g, sc, sc * 0.8, sc, c, x, sc * 0.6, z, f); }
   else if (k === 'veg') { box(g, 1.0, 0.5, 0.7, 0xB8864A, 0, 0.25, 0, o); for (let i = 0; i < 6; i++) mesh(CONE, g, 0.09, 0.32, 0.09, 0xF08A24, -0.35 + (i % 3) * 0.35, 0.6, -0.15 + Math.floor(i / 3) * 0.3, { solid: false, rx: Math.PI }); for (let i = 0; i < 6; i++) mesh(SPH_LO, g, 0.06, 0.18, 0.06, 0x5FBE5A, -0.35 + (i % 3) * 0.35, 0.82, -0.15 + Math.floor(i / 3) * 0.3, f); }
 }
 const hide = { prop: 0, rewarded: '', endSent: '', bar: false, potion: false, sneakUntil: 0, radarUntil: 0, beepAt: 0 };
@@ -17800,7 +18247,7 @@ const HIDE_VIL = {
   main: { n: '🏫 메인 마을', at: () => [0, -9], in: (x, z) => inTown(x, z), props: [1, 2, 3, 4, 6, 11, 12, 13] }, // 🌳 나무 · 🪑 벤치 · 💡 가로등 · 🪴 화분 · 📦 상자 · 🗑️ 휴지통 · 🥤 자판기 · 🚲 자전거
   hv: { n: '🏯 역사 마을', at: () => [HV.x0 + 6, 0], in: (x, z) => inHV(x, z), props: [5, 8, 10, 14, 15, 16, 17] }, // 🏮 돌 등불 · 🏺 장독대 · 🐦 솟대 · 🪵 장작 · 🥁 큰북 · 🪨 맷돌 · 🏮 청사초롱
   ev: { n: '🗽 영어 마을', at: () => [EV.bus[0] + 3, 0], in: (x, z) => inEV(x, z), props: [2, 3, 18, 19, 20, 21, 11] }, // 🪑 벤치 · 💡 가로등 · 📮 우체통 · ☎️ 전화 부스 · 🚒 소화전 · 📰 가판대 · 🗑️ 휴지통
-  math: { n: '⛏️ 수학 마을', at: () => [MV.station[0] + 4, MV.station[1] + 1], in: (x, z) => inMath(x, z), props: [22, 23, 24, 25, 26, 6] }, // 🛒 광석 수레 · 💎 수정 · 🛢️ 통 · 🔦 등불 · ⛰️ 바위 · 📦 상자
+  math: { n: '⛏️ 수학 마을', at: () => [MV.station[0] + 4, MV.station[1] + 1], in: (x, z) => inMath(x, z), props: [22, 23, 24, 25, 26, 32, 33, 34, 35] }, // 🛒 광석 수레 · 💎 수정 바위 · 🛢️ 나무 통 · 🔦 광산 등불 · ⛰️ 바위 · ⛏️ 곡괭이 걸이 · 🪵 갱도 버팀목 · 🚧 안내판 · 🪨 광석 더미 (1024a)
   field: { n: '🏡 들판 마을', at: () => [0, 68], in: (x, z) => inField(x, z), props: [1, 9, 7, 27, 28, 29, 30, 31] }, // 🌳 나무 · 🍊 과일나무 · 🧺 바구니 · 🌾 건초 · 🧑‍🌾 허수아비 · 🌻 해바라기 · 🪣 우물 · 🥕 채소 상자
 };
 const hideVil = () => HIDE_VIL[S.hide?.v] || HIDE_VIL.main;
@@ -19637,7 +20084,7 @@ function initHistAdmin() {
 const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
-  math: { icon: '🧮', name: '수학력', where: '수학 광산 식 만들기 · 도형 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
+  math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🛤️ 광산 레일 · 도형 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
   read: { icon: '📚', name: '독서력', where: '광장 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 bag.stat ||= {};
@@ -19685,7 +20132,7 @@ function openStats() {
 // ❓ 능력치 점수 얻는 방법 (학생 안내 · 1017c)
 const STAT_GUIDE = {
   eng: [['🗽 영어 마을 구역 놀이 · 🏋️ 영어 훈련소', '고르기 정답 +1 · 쓰기 정답 +2 · 한 판 통과 +3 (쓰기 1개마다 +1 더)'], ['🧭 영어 미로', '칸 도착 +2 × 단계 · 통과 +3 × 단계 (Level 3이 제일 많아요)'], ['🔨 천막 두더지 (영어 단어)', '잡은 단어 수의 절반']],
-  math: [['⛏️ 수학 광산 식 만들기', '한 문제 +4'], ['🧩 도형 공방', '한 문제 +3'], ['🪞 대칭 거울 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
+  math: [['⛏️ 단원 광산 (5단계)', '한 문제 +2 ~ +8'], ['🛤️ 광산 레일', '광맥 한 곳 +2 ~ +8'], ['🧩 도형 공방', '한 문제 +3'], ['🪞 대칭 거울 공방', '한 문제 +3'], ['⚖️ 균형 다리 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
   soc: [['🏯 역사의 길 시대 퀴즈', '처음 보는 문제 한 번에 정답 +4 · 다시 맞히면 +2'], ['🏛️ 역사 박물관 연표 맞추기', '쉬움 +5 · 보통 +8 · 어려움 +12 (한 번에 맞히면 +3 더)']],
   read: [['📒 광장 독서 책상 (분수 남서쪽)', '책을 다 읽고 선생님께 확인받은 뒤 기록해요'], ['📖 줄글책', '쪽수 그대로 (100쪽 = 100점)'], ['🖼️ 그림이 많은 책 · 💬 만화책 · 🧸 그림책', '쪽수 × 0.7 · × 0.4 · × 0.5'], ['🎁 완독 보너스', '책 한 권 기록할 때마다 +10']],
 };
@@ -21301,13 +21748,13 @@ function cartEnd(done) {
   player.pos.set(sx - 1.5, 0.15, sz + 0.5); player.vy = 0;
 }
 function cartQuiz() {
-  const Q = isleQ(cart.fi % 2 ? 'math2' : 'math'), i = cart.fi; cart.answered = false;
+  const Q = mqMake(mqPick(mineOpenIds()), ri(0, 1)), i = cart.fi; cart.answered = false; // ⛏️ 1024a: 오늘 열린 광산 단원 (기본·실력(하))
   openLife(`❓ 갈림길 ${i + 1}/5`, (box) => {
     box.textContent = ''; box.append(el2('p', 'hint', '⚡ 맞히면 안쪽 금빛 레일(빠름) · 🐢 틀리면 바깥 레일(느림) · 로봇은 기다려 주지 않아요!'));
-    if (Q.sh) box.append(drawShape(Q)); box.append(el2('p', 'lp-big', Q.q)); const grid = el2('div', 'mx-opts');
-    for (const op of Q.opts) { const b = el2('button', 'btn mx-opt', `${op}${Q.unit ? ' ' + Q.unit : ''}`);
+    if (Q.sh) box.append(drawShape(Q)); else if (Q.cv) box.append(Q.cv()); { const qp = el2('p', 'lp-big', ''); if (Q.qh) qp.innerHTML = Q.qh; else qp.textContent = Q.q; box.append(qp); } const grid = el2('div', 'mx-opts');
+    for (const op of Q.opts) { const b = el2('button', 'btn mx-opt', `${op}${Q.unit ? ' ' + Q.unit : ''}`); if (Q.oh) b.innerHTML = `${op}${Q.unit ? ' ' + Q.unit : ''}`; b.dataset.o = op;
       b.onclick = () => { if (cart.answered) return; cart.answered = true; const ok = op === Q.ans; b.style.background = ok ? '#BDE8B0' : '#F6C9C0';
-        if (!ok) [...grid.children].find(x => x.textContent.startsWith(String(Q.ans)))?.style.setProperty('background', '#BDE8B0');
+        if (!ok) [...grid.children].find(x => x.dataset.o === Q.ans)?.style.setProperty('background', '#BDE8B0');
         playSfx(ok ? 'right' : 'wrong'); setTimeout(() => cartGo(ok), ok ? 350 : 900); };
       grid.append(b); }
     box.append(grid);
@@ -22169,7 +22616,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateHunt(dt); gwTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
