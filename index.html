@@ -13178,7 +13178,7 @@ function setTeachLook(a, code) {
   const n = code - 1, hat = n % 4, item = (n >> 2) % 4, trail = n >> 4, o = { solid: false }, objs = [], GOLD = 0xFFC93C;
   const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
   if (hat && a.badge) a.badge.position.y = 3.02; // 모자 위로 동물 배지를 살짝 올려요
-  objs.push(makeLabel(a.g, ['🧑‍🏫 선생님'], 0.5, 0, hat ? 3.55 : 3.28, 0, { bg: '#FFD84D', fg: '#3B2F2A', font: 52, pad: 10 })); // 선생님 표시
+  objs.push(a.tlLab = makeLabel(a.g, ['🧑‍🏫 선생님'], 0.5, 0, hat ? 3.55 : 3.28, 0, { bg: '#FFD84D', fg: '#3B2F2A', font: 52, pad: 10 })); // 선생님 표시 (titleTick이 이름표 바로 위로 맞춰요)
   const ring = new THREE.Mesh(TL_RING, tlRingMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); // 금빛 고리
   a.tlHat = null;
   if (hat === 1) a.tlHat = add(a.head, g => { // 학사모
@@ -17328,6 +17328,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1025b', d: '10월 25일', items: ['🏷️ 칭호를 단 이름표와 🧑‍🏫 선생님 표시가 겹치지 않게 위아래로 정리했어요'] },
   { id: '1025a', d: '10월 25일', items: ['🧑‍🏫 선생님은 모든 칭호를 골라 달 수 있어요 (칭호 겉모습도 함께)'] },
   { id: '1024n', d: '10월 24일 (밤)', items: ['🏷️ 칭호를 골라서 달아요! 📊 내 능력치 → 🏷️ 내 칭호 고르기 · 칭호를 달면 이름표가 반짝반짝 ✨', '👑 지난주 능력치 합계 1등은 👑종합1등 칭호 + 어깨 위 아기 용 · 🎓장원은 어사화와 홍패 · 🔔골든벨은 금빛 어깨띠와 금종 왕관', '🐾 펫 옷이 펫 몸에 꼭 맞게 바뀌었어요 (히로 호박 망토 · 선글라스 · 모자 등)'] },
   { id: '1024m', d: '10월 24일 (밤)', items: ['🏃 수학 마을에 수학 달리기장! 선생님이 단원을 고르면 각자 문제를 풀며 달려요 · 맞히면 1칸, 3연속이면 ⚡2칸, 틀리면 3초 넘어져요', '🏅 마을 1등 칭호: 🔔골든벨(못 울리면 🔔최후의1인 · 3번 울리면 🏅골든벨마스터) · ⛏️금광왕(금빛 안전모와 곡괭이) · 한 주에 🎓장원·🔔골든벨·⛏️금광왕을 다 가지면 🌟삼관왕!'] },
@@ -23439,7 +23440,10 @@ function titleTick(dt) {
     if (a.ttWings) { const fl = Math.sin(performance.now() / 120) * 0.5; for (const w of a.ttWings) w.rotation.y = w.userData.s * (0.3 + fl); }
     if (a.ttBellSw) a.ttBellSw.rotation.z = Math.sin(performance.now() / 260) * 0.25;
     if (a.ttDrHead) a.ttDrHead.rotation.y = Math.sin(performance.now() / 900) * 0.5;
-    ttFx(a, a.ttOn && (me ? joined : !!data) && a.g.visible !== false, dt); }
+    ttFx(a, a.ttOn && (me ? joined : !!data) && a.g.visible !== false, dt);
+    if (a.badge) { let top = a.badge.position.y + a.badge.scale.y / 2; // 🏷️ 이름표 위로 차곡차곡 (선생님 표시 · 골든벨 도전 표시가 이름표와 겹치지 않게)
+      if (a.tlLab?.parent) { a.tlLab.position.y = top + 0.07 + a.tlLab.scale.y / 2; top = a.tlLab.position.y + a.tlLab.scale.y / 2; }
+      if (a.egM?.visible) a.egM.position.y = top + 0.07 + a.egM.scale.y / 2; } }
   if ((mrun.tt = (mrun.tt || 0) - dt) > 0) return; mrun.tt = 1.0;
   for (const [u, a, data, me] of all) { if (!a) continue; const t = (me ? joined && u : data) ? titlePick(u, data) : null; a.ttOn = !!t;
     titleWear(a, t?.[2] ? t[2] + (a.gwKind ? ':n' : '') : '');
