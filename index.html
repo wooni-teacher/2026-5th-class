@@ -1637,6 +1637,7 @@
     <div class="row-center wrap"><button class="btn" id="tpEarnLoad" style="background:#FFE066">🔄 현황 불러오기</button><button class="btn" id="tpEarnClear" style="background:#fff">🧹 기록 비우기</button></div>
     <div id="tpEarn" class="hint"></div>
     <div class="row-center"><button class="btn danger" id="tpFundReset">🐷 반 기부 처음부터</button></div>
+    <div class="row-center"><button class="btn" id="tpCapsOpen" style="background:#FFE9A8">🎰 캡슐뽑기 저금통 (목표·예상·새로 모으기)</button></div>
 
     <h3>🗳️ 마을 이름 투표</h3>
     <p class="hint">학생들이 이름 후보를 내고(한 사람 하나), 투표로 마을 이름을 정해요. 정해진 이름은 들판 입구 아치와 표지에 보여요.</p>
@@ -2144,7 +2145,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, caps: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2192,6 +2193,7 @@ function normalize(v) {
     eg: v.eg && typeof v.eg === 'object' ? { open: v.eg.open === true, n: v.eg.n | 0, title: String(v.eg.title || '').slice(0, 30), us: Object.values(toObj(v.eg.us)).slice(0, 12).map(x => String(x).slice(0, 16)), cur: v.eg.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.eg.ph) ? v.eg.ph : 'wait', lim: Math.min(120, Math.max(0, v.eg.lim | 0)), qt: +v.eg.qt || 0, qs: Object.values(toObj(v.eg.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), s: String(q?.s || '').slice(0, 160) })), rev: Object.fromEntries(Object.entries(toObj(v.eg.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.eg.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.eg.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.eg.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), wk: v.eg.wk === 'last' ? 'last' : 'win' } : null,
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0, k: v.egc.k === 'last' ? 'last' : 'win', u: Object.fromEntries(Object.entries(plainObj(v.egc.u)).filter(([u]) => ANON_ID.test(u)).slice(0, 40).map(([u, x]) => [u, String(x || '').slice(0, 12)])) } : null,
+    caps: v.caps && typeof v.caps === 'object' ? { n: Math.max(0, v.caps.n | 0), ...(v.caps.g ? { g: Math.min(1e6, Math.max(1000, v.caps.g | 0)) } : {}), r: v.caps.r | 0, log: Object.fromEntries(Object.entries(plainObj(v.caps.log)).filter(([d, x]) => /^[0-9]{1,6}$/.test(d) && Number.isFinite(+x)).map(([d, x]) => [d, +x | 0])) } : null,
     pq: Object.fromEntries(Object.entries(plainObj(v.pq)).filter(([k, q]) => /^[A-Za-z0-9_-]{3,80}$/.test(k) && q && typeof q.t === 'string' && ['prop', 'collect', 'vote', 'done'].includes(q.ph)).slice(0, 60).map(([k, q]) => [k, { t: q.t.slice(0, 40), ph: q.ph, mv: Math.min(5, Math.max(1, q.mv | 0 || 1)), at: +q.at || 0, s: q.s === true, u: String(q.u || '').slice(0, 64) }])),
     pqo: Object.fromEntries(Object.entries(plainObj(v.pqo)).map(([k, x]) => [k, Object.fromEntries(Object.entries(plainObj(x)).filter(([o, y]) => y && typeof y.t === 'string').slice(0, 80).map(([o, y]) => [o, { t: y.t.slice(0, 40), at: +y.at || 0 }]))])),
     pqv: Object.fromEntries(Object.entries(plainObj(v.pqv)).map(([k, x]) => [k, Object.fromEntries(Object.entries(plainObj(x)).filter(([u, y]) => ANON_ID.test(u) && typeof y === 'string').map(([u, y]) => [u, y.slice(0, 300)]))])),
@@ -2523,7 +2525,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3017,6 +3019,10 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async egAnswer(o) { try { await D.set(R(`state/ega/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async mrunStep(o) { try { await D.set(R(`state/mrunp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async capsGive(amt) { // 🎰 캡슐뽑기 저금통: 한 번에 500까지 · 목표를 넘지 않게 · 그날 모인 양도 같이 (14일 지난 기록은 지워요)
+      if (!online) return { ok: false, reason: 'offline' }; let add = 0;
+      try { const r = await D.runTransaction(R('state/caps'), cur => { const c = cur || { n: 0 }, g = c.g || 20000, n = c.n | 0; add = Math.max(0, Math.min(amt, 500, g - n)); if (!add) return; const d = Math.floor((now() + 9 * 3600000) / 86400000), log = {}; for (const [k, v] of Object.entries(c.log || {})) if (+k > d - 14) log[k] = v; log[d] = (log[d] | 0) + add; return { ...c, n: n + add, log }; }); return { ok: r.committed && add > 0, add }; } catch (e) { return { ok: false }; }
+    },
     async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; try { await D.set(R(`state/${path}`), val); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🗳️ 의견함 (규칙이 학생 몫만 허락)
     async emoPost(p, nm) { try { await D.set(R(`state/emo/${uid}_${Date.now().toString(36)}`), { p, nm, ok: false, at: D.serverTimestamp() }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 😀 도트 이모티콘 (선생님 확인 전에는 ok: false)
     async emoDel(k) { try { await D.set(R(`state/emo/${k}`), null); return { ok: true }; } catch (e) { return { ok: false }; } },
@@ -13812,6 +13818,7 @@ function initTpTabs() {
   $('tpEgOpen')?.addEventListener('click', () => { closeModals(); openEgAdmin(); });
   $('tpMrOpen')?.addEventListener('click', () => { closeModals(); openMrunAdmin(); });
   $('tpPollOpen')?.addEventListener('click', () => { closeModals(); openPoll(); });
+  $('tpCapsOpen')?.addEventListener('click', () => { closeModals(); openCaps(); });
   tpTab(store.get('sv-tptab') || 'class');
 }
 function tpTab(k, user) {
@@ -17357,6 +17364,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1026d', d: '10월 26일', items: ['🎰 반 기부함 옆에 캡슐뽑기 저금통! 모두의 🐚을 모아 2만을 채우면 선생님과 진짜 캡슐뽑기를 해요 · 하루 평균 속도로 며칠 남았는지도 보여요'] },
   { id: '1026c', d: '10월 26일', items: ['🗳️ 학교 교실 뒤쪽에 우리 반 의견함! 주제마다 💡 의견을 내고 🗳️ 투표해요 (모두 익명)', '📝 학생도 주제를 제안할 수 있어요 · 선생님이 허락하면 열려요'] },
   { id: '1026b', d: '10월 26일', items: ['🏷️ 선생님이 칭호를 직접 줄 수 있어요 (이번 주만 또는 계속) · 받으면 알림이 떠요'] },
   { id: '1026a', d: '10월 26일', items: ['👤 계정 연결 상태가 보여요! 왼쪽 아래와 🎒 가방 맨 위에 "계정 연결됨" 또는 "이 기기에만 저장 중"(이유까지)이 나와요', '🔤 닉네임 띄어쓰기·영문 대소문자가 달라도 같은 계정으로 이어져요 (예: 김 철수 = 김철수, Hiro = hiro)'] },
@@ -23616,6 +23624,69 @@ function pollTick(dt) { // 0.5초마다: 게시판 · 새 주제 알림
   poll.seen = act || '-';
   if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🗳️ 우리 반 의견함' && document.activeElement?.tagName !== 'INPUT') { const k = JSON.stringify([S.pq, Object.fromEntries(Object.entries(S.pqo || {}).map(([a, b]) => [a, Object.keys(b).length])), Object.fromEntries(Object.entries(S.pqv || {}).map(([a, b]) => [a, Object.keys(b).length]))]); if (k !== poll.lk) { if (poll.lk) refillLife(); poll.lk = k; } }
 }
+// ================= 🎰 캡슐뽑기 저금통 (1026d · 반 기부함 옆) =================
+// 모두의 🐚을 모아 목표(기본 2만)를 채우면 선생님과 진짜 캡슐뽑기! · 누가 얼마나 냈는지는 남지 않아요
+// · 저장: state/caps {n 모인 🐚, g 목표, r 회차, log {날짜번호: 그날 모인 🐚}} (기부는 한 번에 500까지 · 줄일 수 없어요 · 목표·회차는 선생님만)
+const CAPS = { x: 44.2, z: -20.4 };
+const capsNow = () => ({ n: S.caps?.n | 0, g: S.caps?.g || 20000, r: S.caps?.r | 0, log: S.caps?.log || {} });
+function capsSpeed() { // 최근 7일 하루 평균 (처음 기부한 날부터 오늘까지)
+  const { log } = capsNow(), today = dayNum(), days = Object.keys(log).map(Number).filter(d => d > today - 7 && d <= today); if (!days.length) return 0;
+  const sum = days.reduce((a, d) => a + (log[d] | 0), 0), span = today - Math.min(...days) + 1; return sum / Math.max(1, span);
+}
+function capsEta() { const { n, g } = capsNow(), v = capsSpeed(); if (n >= g) return '🎉 달성!'; if (!v) return '아직 모은 기록이 없어요'; return `하루 평균 🐚${Math.round(v)} → 이대로면 약 ${Math.ceil((g - n) / v)}일 뒤`; }
+function buildCapsMachine() { // 🎰 캡슐 뽑기 기계
+  const g = new THREE.Group(); g.name = 'CapsMachine'; scene.add(g); const o = { solid: false, surf: null }, { x, z } = CAPS;
+  box(g, 1.3, 1.1, 1.1, 0xE2384A, x, 0.55, z, { surf: null }); box(g, 1.36, 0.1, 1.16, 0xFFD23C, x, 1.12, z, o);
+  box(g, 0.5, 0.36, 0.06, 0x2A2A30, x, 0.42, z + 0.56, o); box(g, 0.3, 0.12, 0.04, 0xFFD23C, x, 0.72, z + 0.57, o); // 캡슐 나오는 곳 · 동전 넣는 곳
+  { const k = new THREE.Group(); k.position.set(x + 0.3, 0.78, z + 0.57); g.add(k); cyl(k, 0.13, 0.08, 0xF4F1E6, 0, 0, 0.02, { ...o, rx: Math.PI / 2 }); box(k, 0.22, 0.05, 0.06, 0xC0392B, 0, 0, 0.07, o); capsV.knob = k; } // 손잡이
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.62, 24, 16), new THREE.MeshStandardMaterial({ color: 0xDDF4FF, transparent: true, opacity: 0.32, roughness: 0.05, metalness: 0.1, depthWrite: false })); dome.position.set(x, 1.72, z); g.add(dome);
+  const cols = [0xFF6B6B, 0x4D96FF, 0x6BCB77, 0xFFD23C, 0xC9A0FF, 0xFF9E5E, 0xFF8FB1, 0x5ED6D6]; capsV.balls = [];
+  for (let i = 0; i < 26; i++) { const t = i * 2.39996, rr = 0.38 * Math.sqrt((i % 13 + 0.5) / 13), yy = 1.32 + Math.floor(i / 13) * 0.2 + (i % 3) * 0.06; const b = new THREE.Group(); b.position.set(x + Math.cos(t) * rr, yy, z + Math.sin(t) * rr); g.add(b); b.userData.y0 = yy;
+    const c = cols[i % cols.length]; mesh(SPH_LO, b, 0.12, 0.12, 0.12, c, 0, 0, 0, { ...o, flat: true }); capsV.balls.push(b); }
+  box(g, 0.5, 0.12, 0.5, 0xFFD23C, x, 2.38, z, o); ball(g, 0.12, 0xE2384A, x, 2.5, z, o);
+  capsV.label = makeLabel(g, [''], 0.95, x, 3.4, z);
+  addInteract({ pos: new V3(x, 1, z + 1.2), r: 2.6, text: () => { const { n, g: G } = capsNow(); return ['🎰 캡슐뽑기 저금통', n >= G ? '🎉 달성! 선생님과 캡슐뽑기' : `🐚 ${n} / ${G} 모으기`]; }, run: openCaps });
+  registerSolids(g, 'caps');
+}
+const capsV = { balls: [], label: null, knob: null, key: '', seen: null };
+function openCaps() {
+  openLife('🎰 캡슐뽑기 저금통', (box) => {
+    box.textContent = ''; const { n, g, r } = capsNow(), done = n >= g;
+    box.append(el2('p', 'hint', `모두의 🐚 조개돈을 모아 🐚${g.toLocaleString()}을 채우면 선생님과 진짜 캡슐뽑기를 해요! 누가 얼마나 냈는지는 남지 않아요 · ${r + 1}회차`));
+    const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, n / g * 100)}%`; bar.append(fill);
+    box.append(el2('p', 'lp-big', `🎰 🐚 ${n.toLocaleString()} / ${g.toLocaleString()} (${Math.floor(Math.min(100, n / g * 100))}%)`), bar, el2('p', 'hint', `📈 ${capsEta()}`));
+    if (done) { box.append(el2('p', 'up-win', '🎉 목표 달성! 선생님과 캡슐뽑기를 해요!')); }
+    else if (!isTeacher) {
+      box.append(el2('p', 'hint', `내 조개돈 🐚${bag.shell || 0}`)); const row = el2('div', 'row-center wrap');
+      for (const amt of [10, 50, 100, 500]) { const b = el2('button', 'btn lp-btn', `🐚 ${amt} 넣기`); b.disabled = (bag.shell || 0) < amt;
+        b.onclick = async () => { if ((bag.shell || 0) < amt) return; b.disabled = true; const res = await backend.capsGive(amt);
+          if (res.ok && res.add > 0) { bag.shell -= res.add; saveBag(); playSfx('coin'); capsV.spin = 1.2; toast(`🎰 🐚${res.add}을 넣었어요! 고마워요`, 'success'); burst(new V3(CAPS.x, 2, CAPS.z), [0xFF6B6B, 0x4D96FF, 0xFFD23C, 0x6BCB77], 24, 3, 2); }
+          else if (res.reason !== 'offline') toast('넣지 못했어요. 잠시 뒤 다시 해 봐요', 'warn'); refillLife(); };
+        row.append(b); }
+      box.append(row);
+    }
+    if (isTeacher) {
+      box.append(el2('h3', 'lp-sec', '🧑‍🏫 선생님'));
+      const row = el2('div', 'row-center wrap'), sel = el2('select', 'tinput', null); sel.style.width = 'auto';
+      for (const v of [5000, 10000, 15000, 20000, 30000, 50000]) { const op = document.createElement('option'); op.value = v; op.textContent = `목표 🐚${v.toLocaleString()}`; if (v === g) op.selected = true; sel.append(op); }
+      sel.onchange = () => adminDo({ 'caps/g': +sel.value }, `🎰 목표를 🐚${(+sel.value).toLocaleString()}으로 바꿨어요`).then(() => setTimeout(refillLife, 250));
+      const rs = el2('button', 'btn', '🔁 새로 모으기 (다음 회차)'); rs.style.background = '#fff'; rs.onclick = async () => { if (await confirmAction({ title: '캡슐뽑기 저금통을 비울까요?', body: `모인 🐚${n}이 0이 되고 ${r + 2}회차를 시작해요.`, okText: '새로 모으기' })) adminDo({ caps: { n: 0, g, r: r + 1 } }, '🎰 새 회차를 시작했어요').then(() => setTimeout(refillLife, 250)); };
+      const est = el2('button', 'btn', '📊 학생들 🐚로 예상하기'); est.style.background = '#FFE9A8'; const out = el2('div', '');
+      est.onclick = async () => { out.textContent = '불러오는 중…'; const all = await backend.earnGet?.(); if (!all) { out.textContent = '⚠️ 재화 기록을 불러오지 못했어요'; return; }
+        const today = dayNum(), rows = Object.values(all).filter(v => v && v.d === today), held = Object.values(all).reduce((a, v) => a + (v?.h | 0), 0), earn = rows.reduce((a, v) => a + (v.s | 0), 0), left = Math.max(0, g - n), cap = capNow();
+        out.textContent = ''; for (const t of [`👥 기록 있는 학생 ${Object.keys(all).length}명 · 지금 가진 🐚 합계 ${held.toLocaleString()} (모두 넣으면 ${held >= left ? '바로 달성!' : `${Math.round((n + held) / g * 100)}%`})`, `📅 오늘 ${rows.length}명이 번 🐚 ${earn.toLocaleString()}${earn ? ` → 매일 이만큼 모두 넣으면 약 ${Math.ceil(left / earn)}일` : ''}`, `🎮 놀이로 버는 🐚 하루 상한 ${cap}/명 → ${Object.keys(all).length}명이 매일 다 채워 모두 넣으면 약 ${Math.ceil(left / Math.max(1, cap * Object.keys(all).length))}일 (가장 빠를 때)`, `📈 지금까지 넣은 속도: ${capsEta()}`]) out.append(el2('p', 'hint', t)); };
+      row.append(sel, est, rs); box.append(row, out);
+    }
+  });
+}
+function capsTick(dt) {
+  const { n, g, r } = capsNow(), done = n >= g;
+  if (capsV.balls.length) { capsV.t = (capsV.t || 0) + dt; const sp = (capsV.spin = Math.max(0, (capsV.spin || 0) - dt)) > 0 || done; capsV.balls.forEach((b, i) => { b.position.y = b.userData.y0 + Math.abs(Math.sin(capsV.t * (sp ? 9 : 1.2) + i)) * (sp ? 0.12 : 0.015); }); if (capsV.knob && sp) capsV.knob.rotation.z += dt * 6; }
+  if ((capsV.lt = (capsV.lt || 0) - dt) > 0) return; capsV.lt = 0.5;
+  const k = `${n}|${g}`; if (capsV.label && capsV.key !== k) { capsV.key = k; capsV.label.userData.set([done ? '🎉 캡슐뽑기 달성!' : '🎰 캡슐뽑기 저금통', `🐚 ${n.toLocaleString()} / ${g.toLocaleString()}`]); }
+  if (!joined || !stateLoaded) return;
+  if (done && bag.capsSeen !== r) { bag.capsSeen = r; saveBag(); playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 80, 7, 3); showBanner(`🎰 캡슐뽑기 🐚${g.toLocaleString()} 달성!`, '모두 함께 모았어요 · 선생님과 캡슐뽑기를 해요! 🎉', 8000); }
+}
 // 👫 함께 배 타기 (1021f): 친구 배(선장) 가까이에서 E → 빈 자리에 타요 · 선장이 움직이면 같이 가요 · 친구 화면에도 그 자리에 보여요 (players/{uid}/bo = "선장uid:자리")
 const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null, duo: '', dv: 0 };
 const boardSeatsOf = (q) => BOAT_SEATS[Math.min(3, Math.floor((q | 0) / 25))] || BOAT_SEATS[0];
@@ -24026,7 +24097,7 @@ function bgClose() {
   if (!bgOpen()) return; bgw.game = null; bgw.el.classList.add('hidden'); bgw.frame.src = 'about:blank'; document.body.classList.remove('bg-open');
   if (isSeated(player.avatar)) playAct(player.avatar, null); toast('🎲 재미있었나요? 다른 탁자에서 또 해 봐요', 'info');
 }
-buildBeach(); buildSand(); buildShopStreet(); buildVilDecor('hv'); buildEgHall(); buildMrunHall(); buildVilDecor('ev'); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
+buildBeach(); buildSand(); buildShopStreet(); buildVilDecor('hv'); buildEgHall(); buildMrunHall(); buildCapsMachine(); buildVilDecor('ev'); buildSeaFun(); /* 🛒 수레 레이스는 1024b에 없앴어요 (광산 안 레일바이크로) */ buildEngHunt(); initTalk(); buildBoardCafe(); buildBoardRooms(); buildGwacheo(); initBoard(); initVname();
 buildPretty();
 buildMountain();
 buildQuizBoard();
@@ -24052,7 +24123,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); egTick(dt); mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
