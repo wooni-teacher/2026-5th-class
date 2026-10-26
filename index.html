@@ -2565,7 +2565,12 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
   if (nick && !teacher) { // 👤 1021e: 같은 반 코드 + 같은 닉네임 = 같은 계정 (다른 기기에서도) · 처음 기기는 익명 계정을 그대로 이어서(uid·땅·집 유지)
     try {
       const h = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
-      const k = await h(`sv1|${room}|${cleanNick(nick)}`), email = `n${k.slice(0, 30)}@banwol-village.app`, pw = `bw-${k.slice(30, 54)}`;
+      // 🔤 1026a: 띄어쓰기·영문 대소문자는 달라도 같은 계정 (acct/{k2} → 처음 만든 계정 키 k) · 예전 계정은 그대로 이어서
+      const n0 = cleanNick(nick), k2 = await h(`sv2|${room}|${nickKey(n0)}`), mapRef = D.ref(D.getDatabase(app), `${DB_ROOT}/rooms/${room}/acct/${k2}`);
+      let k = null; try { k = (await D.get(mapRef)).val(); } catch (e) { console.warn('acct map', e); }
+      if (!(typeof k === 'string' && /^[0-9a-f]{64}$/.test(k))) { k = await h(`sv1|${room}|${n0}`); acct.newMap = true; } else acct.viaMap = true;
+      acct.nick = n0; acct.mapRef = mapRef; acct.key = k;
+      const email = `n${k.slice(0, 30)}@banwol-village.app`, pw = `bw-${k.slice(30, 54)}`;
       if (user.email !== email) {
         if (user.isAnonymous) {
           try { user = (await A.linkWithCredential(user, A.EmailAuthProvider.credential(email, pw))).user; acct.mode = 'nick'; }
@@ -2576,6 +2581,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
           acct.mode = 'nick';
         }
       } else acct.mode = 'nick';
+      if (acct.mode === 'nick' && acct.newMap) try { await D.set(acct.mapRef, acct.key); } catch (e) { /* 다른 기기가 먼저 정했으면 그대로 */ }
     } catch (e) { console.warn('nick account', e); acct.mode = 'anon'; acct.err = e?.code || 'x'; if (!auth.currentUser) user = (await A.signInAnonymously(auth)).user; else user = auth.currentUser; }
   }
   const uid = user.uid;
@@ -4475,6 +4481,7 @@ let stateLoaded = false;
 let backend = null, joined = false;
 let myAnimal = 0, myShirt = 0, myHair = 0, myHairColor = 0, myBookUntil = 0, myNick = '';
 // 🏷️ 닉네임: 8글자까지, 나쁜 말은 막아요 (선생님이 관리 화면에서 바꾸거나 지울 수 있어요: state/nick/{기기})
+const nickKey = (n) => String(n || '').normalize('NFC').replace(/\s+/g, '').toLowerCase(); // 🔤 계정 찾을 때: 띄어쓰기·대소문자 무시
 const cleanNick = (v) => String(v || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 8);
 const NICK_BAD = ['시발', '씨발', '씨빨', '시바', '씨바', 'ㅅㅂ', 'ㅆㅂ', '병신', 'ㅂㅅ', '븅신', '개새', '개색', '새끼', '쌔끼', 'ㅅㄲ', '좆', '존나', '졸라', 'ㅈㄴ', '지랄', 'ㅈㄹ', '미친', '미쳤', 'ㅁㅊ', '닥쳐', '꺼져', '죽어', '죽을', '엿먹', '찐따', '장애', '바보', '멍청', '돼지', '뚱땡', '못생', '섹스', '야동', '변태', '애미', '애비', '느금', '니미', 'fuck', 'shit', 'bitch', 'sex', 'damn', 'stupid', 'idiot', 'dick', 'ass'];
 function nickBad(v) { const t = String(v || '').toLowerCase().replace(/[\s\d_.\-~!@#$%^&*()+=\[\]{}|\\:;"',.?/]/g, ''); return NICK_BAD.some(w => t.includes(w)); }
@@ -4961,6 +4968,7 @@ function initUI() {
   $('room').value = (AUTOJOIN ? store.get('sv-room') : params.get('room') || store.get('sv-room')) || '';
   if (HAS_FIREBASE) {
     $('practiceBtn').classList.remove('hidden');
+    { const last = String(store.get('sv-acct-last') || '').split('|'); $('modeNote').textContent = '👤 같은 반 코드 + 같은 닉네임이면 어느 기기에서든 내 계정(집·가방)으로 이어져요. 띄어쓰기·영문 대소문자는 상관없어요. "혼자 연습하기"는 이 기기에만 저장돼요.' + (last[0] ? ` (이 기기 지난번: ${last[0]} · ${last[2] || ''})` : ''); }
   } else {
     $('modeNote').textContent = '지금은 연습 모드예요. 이 기기에만 저장되고, 친구 기기와는 연결되지 않아요. (선생님: Firebase를 설정하면 반 전체가 함께 써요)';
     $('room').closest('.card').querySelector('label[for="room"]').classList.add('hidden');
@@ -6100,6 +6108,13 @@ async function importVillageFile(file) {
 // 화면 왼쪽 아래: 지금 실제로 쓰는 저장 방식만 보여 줘요 (공유되지 않는데 공유되는 것처럼 보이지 않게)
 let syncKind = '';
 function refreshSyncStatus() { if (syncKind) setSyncStatus(syncKind); }
+function acctLine(short) { // 👤 1026a: 지금 이 기기의 계정 상태 (학생이 직접 확인해요)
+  if (!backend) return ''; if (isTeacher) return '🧑‍🏫 선생님 기기';
+  if (backend.mode !== 'firebase') return short ? '💾 이 기기에만 저장 (혼자 연습)' : '💾 혼자 연습 모드라 이 기기에만 저장돼요. 다른 기기로 이어지지 않아요 → 처음 화면에서 "마을로 들어가기"로 들어와요';
+  const A = backend.acct || {};
+  if (A.mode === 'nick') return bagW.stop ? '⚠️ 다른 기기에서 이 계정을 쓰는 중 · 이 기기 가방은 저장하지 않아요 (한 기기만 켜요)' : short ? `👤 계정 연결됨 · ${A.nick || myNick}` : `👤 계정 연결됨 · 반 코드 ${currentRoom} · 닉네임 ${A.nick || myNick} → 다른 기기에서도 같은 반 코드·닉네임이면 이어서 해요 (띄어쓰기·영문 대소문자는 상관없어요)`;
+  return A.err === 'auth/operation-not-allowed' ? '⚠️ 이 기기에만 저장 중 · 선생님이 Firebase에서 이메일/비밀번호 로그인을 켜야 해요' : '⚠️ 이 기기에만 저장 중 · 계정 연결에 실패했어요 (인터넷을 확인하고 다시 들어와요)';
+}
 function setSyncStatus(kind) {
   syncKind = kind;
   $('status').textContent = {
@@ -6110,6 +6125,8 @@ function setSyncStatus(kind) {
     saveFail: '⚠️ 이 기기에 저장하지 못하고 있어요 (새로고침하면 사라질 수 있어요). 선생님께 알려 주세요',
   }[kind] || '';
   if (isTeacher) $('status').textContent = '🧑‍🏫 선생님 모드 · ' + $('status').textContent; // 선생님 기기인지 한눈에
+  else if (kind === 'online' && backend?.mode === 'firebase') $('status').textContent += ' · ' + acctLine(true);
+  if (backend && joined) try { store.set('sv-acct-last', `${cleanNick(myNick)}|${currentRoom}|${acctLine(true)}`); } catch (e) { }
 }
 
 
@@ -9762,7 +9779,8 @@ function openCraft(mode) {
 function openBag() {
   openLife('🎒 내 가방', (box) => {
     box.textContent = '';
-    box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', '가방과 조개돈은 이 기기에만 저장돼요. 친구에게 보이지 않고, 비교하지 않아요.'));
+    { const al = acctLine(false), ok = al.startsWith('👤') || al.startsWith('🧑'); const p0 = el2('p', ok ? 'hint' : 'err', al); p0.style.cssText = `padding:6px 10px;border-radius:10px;background:${ok ? '#E3F6DC' : '#FFE3DC'}`; box.append(p0); }
+    box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', backend?.acct?.mode === 'nick' ? '가방과 조개돈은 내 계정에 저장돼요 (같은 반 코드·닉네임이면 다른 기기에서도 그대로). 친구에게 보이지 않고, 비교하지 않아요.' : '가방과 조개돈은 이 기기에만 저장돼요. 친구에게 보이지 않고, 비교하지 않아요.'));
     { const d = dexProgress(), badges = DEX_BADGES.map(([t]) => bag.badges[t] ? `🏅${t}%` : `▫️${t}%`).join(' ');
       box.append(el2('h3', 'lp-sec', `📖 내가 잡아 본 생물 ${d.have} / ${d.all} (${d.pct}%)`), el2('p', '', `도감 배지: ${badges} · 배지를 받으면 👕 옷장에 배지 전용 꾸미기가 생겨요`));
       const b = el2('button', 'btn', '👕 내 옷장'); b.onclick = openWardrobe; const w = el2('div', 'row-center'); w.append(b); box.append(w); }
@@ -17328,6 +17346,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1026a', d: '10월 26일', items: ['👤 계정 연결 상태가 보여요! 왼쪽 아래와 🎒 가방 맨 위에 "계정 연결됨" 또는 "이 기기에만 저장 중"(이유까지)이 나와요', '🔤 닉네임 띄어쓰기·영문 대소문자가 달라도 같은 계정으로 이어져요 (예: 김 철수 = 김철수, Hiro = hiro)'] },
   { id: '1025b', d: '10월 25일', items: ['🏷️ 칭호를 단 이름표와 🧑‍🏫 선생님 표시가 겹치지 않게 위아래로 정리했어요'] },
   { id: '1025a', d: '10월 25일', items: ['🧑‍🏫 선생님은 모든 칭호를 골라 달 수 있어요 (칭호 겉모습도 함께)'] },
   { id: '1024n', d: '10월 24일 (밤)', items: ['🏷️ 칭호를 골라서 달아요! 📊 내 능력치 → 🏷️ 내 칭호 고르기 · 칭호를 달면 이름표가 반짝반짝 ✨', '👑 지난주 능력치 합계 1등은 👑종합1등 칭호 + 어깨 위 아기 용 · 🎓장원은 어사화와 홍패 · 🔔골든벨은 금빛 어깨띠와 금종 왕관', '🐾 펫 옷이 펫 몸에 꼭 맞게 바뀌었어요 (히로 호박 망토 · 선글라스 · 모자 등)'] },
