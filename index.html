@@ -1637,7 +1637,7 @@
     <div class="row-center wrap"><button class="btn" id="tpEarnLoad" style="background:#FFE066">🔄 현황 불러오기</button><button class="btn" id="tpEarnClear" style="background:#fff">🧹 기록 비우기</button></div>
     <div id="tpEarn" class="hint"></div>
     <div class="row-center"><button class="btn danger" id="tpFundReset">🐷 반 기부 처음부터</button></div>
-    <div class="row-center"><button class="btn" id="tpCapsOpen" style="background:#FFE9A8">🎰 캡슐뽑기 저금통 (목표·예상·새로 모으기)</button></div>
+    <div class="row-center"><button class="btn" id="tpCapsOpen" style="background:#FFE9A8">🎰 캡슐뽑기 저금통 (목표·예상·새로 모으기)</button> <button class="btn" id="tpWheelOpen" style="background:#FFE9A8">🎡 돌림판</button></div>
 
     <h3>🗳️ 마을 이름 투표</h3>
     <p class="hint">학생들이 이름 후보를 내고(한 사람 하나), 투표로 마을 이름을 정해요. 정해진 이름은 들판 입구 아치와 표지에 보여요.</p>
@@ -2145,7 +2145,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, caps: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2194,6 +2194,7 @@ function normalize(v) {
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0, k: v.egc.k === 'last' ? 'last' : 'win', u: Object.fromEntries(Object.entries(plainObj(v.egc.u)).filter(([u]) => ANON_ID.test(u)).slice(0, 40).map(([u, x]) => [u, String(x || '').slice(0, 12)])) } : null,
     caps: v.caps && typeof v.caps === 'object' ? { n: Math.max(0, v.caps.n | 0), ...(v.caps.g ? { g: Math.min(1e6, Math.max(1000, v.caps.g | 0)) } : {}), r: v.caps.r | 0, log: Object.fromEntries(Object.entries(plainObj(v.caps.log)).filter(([d, x]) => /^[0-9]{1,6}$/.test(d) && Number.isFinite(+x)).map(([d, x]) => [d, +x | 0])) } : null,
+    capsw: v.capsw && typeof v.capsw === 'object' && Array.isArray(Object.values(toObj(v.capsw.names))) ? { at: +v.capsw.at || 0, names: Object.values(toObj(v.capsw.names)).map(x => String(x).slice(0, 12)).slice(0, 40), w: Math.max(0, v.capsw.w | 0), picked: Object.fromEntries(Object.entries(plainObj(v.capsw.picked)).filter(([k, x]) => k.length <= 40 && isInt(x, 0, 999))) } : null,
     pq: Object.fromEntries(Object.entries(plainObj(v.pq)).filter(([k, q]) => /^[A-Za-z0-9_-]{3,80}$/.test(k) && q && typeof q.t === 'string' && ['prop', 'collect', 'vote', 'done'].includes(q.ph)).slice(0, 60).map(([k, q]) => [k, { t: q.t.slice(0, 40), ph: q.ph, mv: Math.min(5, Math.max(1, q.mv | 0 || 1)), at: +q.at || 0, s: q.s === true, u: String(q.u || '').slice(0, 64) }])),
     pqo: Object.fromEntries(Object.entries(plainObj(v.pqo)).map(([k, x]) => [k, Object.fromEntries(Object.entries(plainObj(x)).filter(([o, y]) => y && typeof y.t === 'string').slice(0, 80).map(([o, y]) => [o, { t: y.t.slice(0, 40), at: +y.at || 0 }]))])),
     pqv: Object.fromEntries(Object.entries(plainObj(v.pqv)).map(([k, x]) => [k, Object.fromEntries(Object.entries(plainObj(x)).filter(([u, y]) => ANON_ID.test(u) && typeof y === 'string').map(([u, y]) => [u, y.slice(0, 300)]))])),
@@ -13819,6 +13820,7 @@ function initTpTabs() {
   $('tpMrOpen')?.addEventListener('click', () => { closeModals(); openMrunAdmin(); });
   $('tpPollOpen')?.addEventListener('click', () => { closeModals(); openPoll(); });
   $('tpCapsOpen')?.addEventListener('click', () => { closeModals(); openCaps(); });
+  $('tpWheelOpen')?.addEventListener('click', () => { closeModals(); openWheelAdmin(); });
   tpTab(store.get('sv-tptab') || 'class');
 }
 function tpTab(k, user) {
@@ -17364,6 +17366,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1026e', d: '10월 26일', items: ['🎡 캡슐뽑기 돌림판! 선생님이 돌리면 모두의 화면에 같은 돌림판이 돌고, 멈춘 친구가 캡슐을 뽑아요'] },
   { id: '1026d', d: '10월 26일', items: ['🎰 반 기부함 옆에 캡슐뽑기 저금통! 모두의 🐚을 모아 2만을 채우면 선생님과 진짜 캡슐뽑기를 해요 · 하루 평균 속도로 며칠 남았는지도 보여요'] },
   { id: '1026c', d: '10월 26일', items: ['🗳️ 학교 교실 뒤쪽에 우리 반 의견함! 주제마다 💡 의견을 내고 🗳️ 투표해요 (모두 익명)', '📝 학생도 주제를 제안할 수 있어요 · 선생님이 허락하면 열려요'] },
   { id: '1026b', d: '10월 26일', items: ['🏷️ 선생님이 칭호를 직접 줄 수 있어요 (이번 주만 또는 계속) · 받으면 알림이 떠요'] },
@@ -23655,7 +23658,7 @@ function openCaps() {
     box.append(el2('p', 'hint', `모두의 🐚 조개돈을 모아 🐚${g.toLocaleString()}을 채우면 선생님과 진짜 캡슐뽑기를 해요! 누가 얼마나 냈는지는 남지 않아요 · ${r + 1}회차`));
     const bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, n / g * 100)}%`; bar.append(fill);
     box.append(el2('p', 'lp-big', `🎰 🐚 ${n.toLocaleString()} / ${g.toLocaleString()} (${Math.floor(Math.min(100, n / g * 100))}%)`), bar, el2('p', 'hint', `📈 ${capsEta()}`));
-    if (done) { box.append(el2('p', 'up-win', '🎉 목표 달성! 선생님과 캡슐뽑기를 해요!')); }
+    if (done) { box.append(el2('p', 'up-win', '🎉 목표 달성! 선생님과 캡슐뽑기를 해요!')); const pl = Object.entries(S.capsw?.picked || {}).sort((a, b) => a[1] - b[1]); if (pl.length) box.append(el2('p', 'hint', `🎡 뽑을 순서: ${pl.map(([nm, i]) => `${i}. ${nm}`).join(' · ')}`)); }
     else if (!isTeacher) {
       box.append(el2('p', 'hint', `내 조개돈 🐚${bag.shell || 0}`)); const row = el2('div', 'row-center wrap');
       for (const amt of [10, 50, 100, 500]) { const b = el2('button', 'btn lp-btn', `🐚 ${amt} 넣기`); b.disabled = (bag.shell || 0) < amt;
@@ -23675,18 +23678,71 @@ function openCaps() {
       est.onclick = async () => { out.textContent = '불러오는 중…'; const all = await backend.earnGet?.(); if (!all) { out.textContent = '⚠️ 재화 기록을 불러오지 못했어요'; return; }
         const today = dayNum(), rows = Object.values(all).filter(v => v && v.d === today), held = Object.values(all).reduce((a, v) => a + (v?.h | 0), 0), earn = rows.reduce((a, v) => a + (v.s | 0), 0), left = Math.max(0, g - n), cap = capNow();
         out.textContent = ''; for (const t of [`👥 기록 있는 학생 ${Object.keys(all).length}명 · 지금 가진 🐚 합계 ${held.toLocaleString()} (모두 넣으면 ${held >= left ? '바로 달성!' : `${Math.round((n + held) / g * 100)}%`})`, `📅 오늘 ${rows.length}명이 번 🐚 ${earn.toLocaleString()}${earn ? ` → 매일 이만큼 모두 넣으면 약 ${Math.ceil(left / earn)}일` : ''}`, `🎮 놀이로 버는 🐚 하루 상한 ${cap}/명 → ${Object.keys(all).length}명이 매일 다 채워 모두 넣으면 약 ${Math.ceil(left / Math.max(1, cap * Object.keys(all).length))}일 (가장 빠를 때)`, `📈 지금까지 넣은 속도: ${capsEta()}`]) out.append(el2('p', 'hint', t)); };
-      row.append(sel, est, rs); box.append(row, out);
+      const wh = el2('button', 'btn', '🎡 누가 뽑을지 돌림판'); wh.style.background = done ? '#FFD23C' : '#FFE9A8'; wh.onclick = openWheelAdmin;
+      row.append(wh, sel, est, rs); box.append(row, out);
     }
   });
 }
 function capsTick(dt) {
   const { n, g, r } = capsNow(), done = n >= g;
   if (capsV.balls.length) { capsV.t = (capsV.t || 0) + dt; const sp = (capsV.spin = Math.max(0, (capsV.spin || 0) - dt)) > 0 || done; capsV.balls.forEach((b, i) => { b.position.y = b.userData.y0 + Math.abs(Math.sin(capsV.t * (sp ? 9 : 1.2) + i)) * (sp ? 0.12 : 0.015); }); if (capsV.knob && sp) capsV.knob.rotation.z += dt * 6; }
-  if ((capsV.lt = (capsV.lt || 0) - dt) > 0) return; capsV.lt = 0.5;
+  if ((capsV.lt = (capsV.lt || 0) - dt) > 0) return; capsV.lt = 0.5; wheelTick();
   const k = `${n}|${g}`; if (capsV.label && capsV.key !== k) { capsV.key = k; capsV.label.userData.set([done ? '🎉 캡슐뽑기 달성!' : '🎰 캡슐뽑기 저금통', `🐚 ${n.toLocaleString()} / ${g.toLocaleString()}`]); }
   if (!joined || !stateLoaded) return;
   if (done && bag.capsSeen !== r) { bag.capsSeen = r; saveBag(); playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 80, 7, 3); showBanner(`🎰 캡슐뽑기 🐚${g.toLocaleString()} 달성!`, '모두 함께 모았어요 · 선생님과 캡슐뽑기를 해요! 🎉', 8000); }
 }
+// ================= 🎡 캡슐뽑기 돌림판 (1026e) =================
+// 선생님이 돌리면 모두의 화면에 같은 돌림판이 돌고, 멈춘 친구가 캡슐을 뽑아요 · 이미 뽑힌 친구는 빼고 돌릴 수 있어요
+// · 저장: state/capsw {at, names [후보], w 당첨 번호, picked {이름: 순서}} (선생님만)
+const wheel = { el: null, cvs: null, seenAt: 0, anim: null, off: new Set(), skipPicked: true };
+const WHEEL_COLS = ['#FF6B6B', '#FFB347', '#FFD23C', '#6BCB77', '#4D96FF', '#9B8CFF', '#FF8FB1', '#5ED6D6'];
+function wheelCands() { // 명단 이름 · 명단이 없으면 지금 접속한 친구 닉네임
+  let L = rosterNames(); if (!L.length) L = [...new Set([...remotes.entries()].filter(([, r]) => r.target && !r.target.t).map(([u, r]) => nickOf(u, r.target)).filter(Boolean))];
+  return L.slice(0, 40);
+}
+function openWheelAdmin() {
+  if (!isTeacher) return;
+  openLife('🎡 캡슐뽑기 돌림판', (box) => {
+    box.textContent = ''; const picked = S.capsw?.picked || {}, all = wheelCands();
+    box.append(el2('p', 'hint', '누가 캡슐을 뽑을지 돌림판으로 정해요. 돌리면 학생들 화면에도 같은 돌림판이 돌아요. 오늘 없는 친구는 눌러서 빼요.'));
+    if (!all.length) { box.append(el2('p', 'vempty', '후보가 없어요. 🙋 발표 칭찬 창에서 📝 우리 반 명단을 저장하거나, 학생들이 접속하면 나와요.')); return; }
+    const grid = el2('div', 'row-center wrap');
+    for (const nm of all) { const pk = picked[nm] != null, out = wheel.off.has(nm) || (wheel.skipPicked && pk); const b = el2('button', 'btn', `${out ? '⬜' : '✅'} ${nm}${pk ? ` 🎰${picked[nm]}` : ''}`); b.style.cssText = `font-size:15px;padding:6px 10px;background:${out ? '#EEE' : '#fff'}`;
+      b.onclick = () => { if (wheel.off.has(nm)) wheel.off.delete(nm); else wheel.off.add(nm); refillLife(); }; grid.append(b); }
+    box.append(grid);
+    const cands = all.filter(nm => !wheel.off.has(nm) && !(wheel.skipPicked && picked[nm] != null));
+    const row = el2('div', 'row-center wrap');
+    { const l = el2('label', null, ''); l.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = wheel.skipPicked; cb.onchange = () => { wheel.skipPicked = cb.checked; refillLife(); }; l.append(cb, ' 이미 뽑힌 친구 빼기'); row.append(l); }
+    const go = el2('button', 'btn', `🎡 돌리기 (${cands.length}명)`); go.style.background = '#FFD23C'; go.disabled = cands.length < 1;
+    go.onclick = async () => { if (wheel.anim) return; const w = Math.floor(Math.random() * cands.length), n = Object.keys(picked).length + 1;
+      const ok = await adminDo({ capsw: { at: Date.now(), names: cands, w, picked: { ...picked, [cands[w]]: n } } }, ''); if (ok) closeLife(); };
+    const rs = el2('button', 'btn', '🔁 뽑힌 기록 지우기'); rs.style.background = '#fff'; rs.onclick = () => adminDo({ capsw: null }, '🎡 돌림판 기록을 지웠어요').then(() => setTimeout(refillLife, 250));
+    row.append(go, rs); box.append(row);
+    const pl = Object.entries(picked).sort((a, b) => a[1] - b[1]); if (pl.length) box.append(el2('p', 'hint', `🎰 뽑힌 순서: ${pl.map(([nm, i]) => `${i}. ${nm}`).join(' · ')}`));
+  });
+}
+function wheelDraw(names, ang, hi) {
+  const c = wheel.cvs.getContext('2d'), W = wheel.cvs.width, R = W / 2 - 14, n = names.length, cx = W / 2, cy = W / 2; c.clearRect(0, 0, W, W);
+  c.save(); c.translate(cx, cy); c.rotate(ang);
+  for (let i = 0; i < n; i++) { const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, a0, a1); c.closePath(); c.fillStyle = WHEEL_COLS[i % WHEEL_COLS.length]; if (n % WHEEL_COLS.length === 1 && i === n - 1) c.fillStyle = WHEEL_COLS[3]; c.fill(); if (hi === i) { c.fillStyle = 'rgba(255,255,255,0.45)'; c.fill(); } c.strokeStyle = '#FFFFFF'; c.lineWidth = 3; c.stroke();
+    c.save(); c.rotate((a0 + a1) / 2); c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = '#2B2118'; c.font = `700 ${n > 24 ? 18 : n > 14 ? 22 : 28}px Pretendard, sans-serif`; c.fillText(names[i], R - 14, 0); c.restore(); }
+  c.restore(); c.beginPath(); c.arc(cx, cy, 34, 0, Math.PI * 2); c.fillStyle = '#FFFFFF'; c.fill(); c.font = '700 34px Pretendard, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('🎰', cx, cy + 2);
+  c.beginPath(); c.moveTo(cx - 20, 4); c.lineTo(cx + 20, 4); c.lineTo(cx, 44); c.closePath(); c.fillStyle = '#E2384A'; c.fill(); c.strokeStyle = '#FFFFFF'; c.lineWidth = 3; c.stroke(); // ▼ 바늘 (위)
+}
+function wheelShow(sw) {
+  if (!wheel.el) { const d = document.createElement('div'); d.id = 'wheelOv'; d.style.cssText = 'position:fixed;inset:0;z-index:60;background:rgba(20,16,30,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px';
+    d.innerHTML = '<b id="wheelTitle" style="color:#fff;font-size:28px;text-shadow:0 2px 6px #000">🎡 누가 캡슐을 뽑을까요?</b><canvas id="wheelCv" width="560" height="560" style="width:min(86vw,62vh);height:min(86vw,62vh)"></canvas><b id="wheelWin" style="color:#FFE066;font-size:34px;min-height:44px;text-shadow:0 2px 8px #000"></b><button class="btn" id="wheelClose" style="background:#fff">닫기</button>';
+    document.body.append(d); wheel.el = d; wheel.cvs = $('wheelCv'); $('wheelClose').onclick = () => { d.style.display = 'none'; wheel.anim = null; }; }
+  const names = sw.names || [], n = names.length; if (!n) return; wheel.el.style.display = 'flex'; $('wheelWin').textContent = '';
+  const TAU = Math.PI * 2, seg = TAU / n, norm = (x) => ((x % TAU) + TAU) % TAU, target = -Math.PI / 2 - (sw.w + 0.5) * seg + (Math.random() - 0.5) * seg * 0.6, start = Math.random() * TAU, end = start + norm(target - start) + TAU * 7, t0 = performance.now(), D = 5200;
+  wheel.anim = { names, start, end, t0, D, w: sw.w, tick: -1 }; playSfx('pick');
+  const step = () => { const A = wheel.anim; if (!A) return; const k = Math.min(1, (performance.now() - A.t0) / A.D), e = 1 - Math.pow(1 - k, 4), ang = A.start + (A.end - A.start) * e;
+    const idx = Math.floor((((-Math.PI / 2 - ang) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / seg) % n; if (idx !== A.tick) { A.tick = idx; if (k < 0.97) playSfx('pick'); }
+    wheelDraw(A.names, ang, k >= 1 ? A.w : -1);
+    if (k < 1) requestAnimationFrame(step); else { $('wheelWin').textContent = `🎉 ${A.names[A.w]} 차례예요!`; playSfx('fanfare'); burst(player.pos.clone().setY(3), RAINBOW, 90, 8, 3); setTimeout(() => { if (wheel.anim === A && wheel.el) { wheel.el.style.display = 'none'; wheel.anim = null; } }, 9000); } };
+  requestAnimationFrame(step);
+}
+function wheelTick() { const sw = S.capsw; if (!sw?.at || sw.at === wheel.seenAt) return; const fresh = !wheel.seenAt ? Math.abs((backend?.now ? backend.now() : Date.now()) - sw.at) < 20000 : true; wheel.seenAt = sw.at; if (fresh && joined) wheelShow(sw); }
 // 👫 함께 배 타기 (1021f): 친구 배(선장) 가까이에서 E → 빈 자리에 타요 · 선장이 움직이면 같이 가요 · 친구 화면에도 그 자리에 보여요 (players/{uid}/bo = "선장uid:자리")
 const boardW = { on: false, cap: '', seat: 0, hud: null, it: null, cand: null, seen: new Map(), last: null, duo: '', dv: 0 };
 const boardSeatsOf = (q) => BOAT_SEATS[Math.min(3, Math.floor((q | 0) / 25))] || BOAT_SEATS[0];
