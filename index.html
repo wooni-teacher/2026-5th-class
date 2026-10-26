@@ -1359,7 +1359,7 @@
     <div id="tpEmo"></div>
 
     <h3>🙋 발표 칭찬 · ⭐ 능력치 주기</h3>
-    <p class="hint">오른쪽 아래 🙋 버튼과 같아요. 발표한 학생 칭찬(🐚 + 반 발표 목표), 학생을 골라 능력치 주기, 📝 우리 반 명단 저장을 해요.</p>
+    <p class="hint">오른쪽 아래 🙋 버튼과 같아요. 발표한 학생 칭찬(🐚 + 반 발표 목표), 학생을 골라 능력치 주기, 🏷️ 칭호 주기(이번 주만·계속), 📝 우리 반 명단 저장을 해요.</p>
     <div class="row-center"><button class="btn" id="tpPraiseOpen" style="background:#FFE9A8">🙋 발표 칭찬 · ⭐ 능력치 주기 열기</button></div>
 
     <h3>📜 과거시험장</h3>
@@ -2140,7 +2140,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, tgive: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2188,6 +2188,7 @@ function normalize(v) {
     eg: v.eg && typeof v.eg === 'object' ? { open: v.eg.open === true, n: v.eg.n | 0, title: String(v.eg.title || '').slice(0, 30), us: Object.values(toObj(v.eg.us)).slice(0, 12).map(x => String(x).slice(0, 16)), cur: v.eg.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.eg.ph) ? v.eg.ph : 'wait', lim: Math.min(120, Math.max(0, v.eg.lim | 0)), qt: +v.eg.qt || 0, qs: Object.values(toObj(v.eg.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), s: String(q?.s || '').slice(0, 160) })), rev: Object.fromEntries(Object.entries(toObj(v.eg.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.eg.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.eg.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.eg.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), wk: v.eg.wk === 'last' ? 'last' : 'win' } : null,
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0, k: v.egc.k === 'last' ? 'last' : 'win', u: Object.fromEntries(Object.entries(plainObj(v.egc.u)).filter(([u]) => ANON_ID.test(u)).slice(0, 40).map(([u, x]) => [u, String(x || '').slice(0, 12)])) } : null,
+    tgive: Object.fromEntries(Object.entries(plainObj(v.tgive)).filter(([k, x]) => k.length <= 64 && x && typeof x === 'object').slice(0, 80).map(([k, x]) => [k, Object.fromEntries(Object.entries(x).filter(([t, n]) => /^[a-z_]{1,10}$/.test(t) && Number.isInteger(n) && n >= -1 && n < 1e6))])),
     egcnt: Object.fromEntries(Object.entries(plainObj(v.egcnt)).filter(([k, x]) => k.length <= 64 && !/[.#$\[\]/]/.test(k) && isInt(x, 0, 1000))),
     mrun: v.mrun && typeof v.mrun === 'object' ? { open: v.mrun.open === true, n: v.mrun.n | 0, title: String(v.mrun.title || '').slice(0, 30), us: Object.values(toObj(v.mrun.us)).map(String).filter(id => /^m[1-6]$/.test(id)).slice(0, 6), lv: Math.min(4, Math.max(0, v.mrun.lv | 0)), ph: ['wait', 'run', 'end'].includes(v.mrun.ph) ? v.mrun.ph : 'wait', t0: +v.mrun.t0 || 0, dur: Math.min(1800, Math.max(30, v.mrun.dur | 0 || 180)), goal: Math.min(60, Math.max(5, v.mrun.goal | 0 || 20)), res: v.mrun.res ? { rk: Object.values(toObj(v.mrun.res.rk)).slice(0, 10).map(r => ({ u: String(r?.u || ''), nm: String(r?.nm || '').slice(0, 12), s: r?.s | 0 })) } : null } : null,
     mrunp: Object.fromEntries(Object.entries(plainObj(v.mrunp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), s: Math.min(100, Math.max(0, x.s | 0)), c: x.c | 0, w: x.w | 0, at: +x.at || 0 }])),
@@ -17346,6 +17347,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1026b', d: '10월 26일', items: ['🏷️ 선생님이 칭호를 직접 줄 수 있어요 (이번 주만 또는 계속) · 받으면 알림이 떠요'] },
   { id: '1026a', d: '10월 26일', items: ['👤 계정 연결 상태가 보여요! 왼쪽 아래와 🎒 가방 맨 위에 "계정 연결됨" 또는 "이 기기에만 저장 중"(이유까지)이 나와요', '🔤 닉네임 띄어쓰기·영문 대소문자가 달라도 같은 계정으로 이어져요 (예: 김 철수 = 김철수, Hiro = hiro)'] },
   { id: '1025b', d: '10월 25일', items: ['🏷️ 칭호를 단 이름표와 🧑‍🏫 선생님 표시가 겹치지 않게 위아래로 정리했어요'] },
   { id: '1025a', d: '10월 25일', items: ['🧑‍🏫 선생님은 모든 칭호를 골라 달 수 있어요 (칭호 겉모습도 함께)'] },
@@ -22551,6 +22553,36 @@ async function praiseGive(u, nm, dir = 1) {
   setTimeout(() => { if ($('lpTitle').textContent === '🙋 발표 칭찬') refillLife(); }, 300);
 }
 const stg = { tab: 'talk', k: 'math', n: 10, sel: new Set() };
+// 🏷️ 1026b 선생님이 주는 칭호: state/tgive/{명단 이름 또는 기기}/{칭호 키} = 이번 주 번호(그 주만) 또는 -1(계속)
+const TT_DEF = { sum: ['👑종합1등', 'sum'], tri: ['🌟삼관왕', 'tri'], mr: ['⛏️금광왕', 'mr'], eg: ['🔔골든벨', 'eg'], egl: ['🔔최후의1인', 'egl'], gw: ['🎓장원', 'gw'], egm: ['🏅골든벨마스터', 'egm'] };
+const ttDef = (k) => TT_DEF[k] || (k.startsWith('r_') && rankCats()[k.slice(2)] ? [`${MEDAL[0]}${rankCats()[k.slice(2)].icon}${(rankCats()[k.slice(2)].name || '').slice(0, 2)}1등`, ''] : null);
+const TT_ORDER = () => [...Object.keys(TT_DEF), ...Object.keys(rankCats()).map(k => `r_${k}`)];
+const tgKey = (k) => String(k || '').replace(/[.#$\[\]\/]/g, '_').slice(0, 40);
+const tgOk = (v) => v === -1 || v === weekNum();
+function tgOf(u, data) { const o = {}, nm = rosterOf(u, data); for (const key of [u, nm && tgKey(nm)]) { if (!key) continue; for (const [k, v] of Object.entries(S.tgive?.[key] || {})) if (tgOk(v) && ttDef(k)) o[k] = v; } return o; }
+function ttGiven(out, u, data) { const g = tgOf(u, data), have = new Set(out.map(t => t[0])); let add = false; for (const k of Object.keys(g)) { if (have.has(k) || (k === 'egl' && have.has('eg'))) continue; const d = ttDef(k); out.push([k, d[0], d[1]]); add = true; }
+  if (add) { const ord = TT_ORDER(); out.sort((a, b) => ord.indexOf(a[0]) - ord.indexOf(b[0])); } return out; }
+function fillTitleGive(box) {
+  const list = praiseStudents(); stg.ttDur ||= 'w';
+  box.append(el2('p', 'hint', '학생을 고르고 칭호를 누르면 주거나 거둬요. 칭호가 안 보이는 학생에게 직접 줄 수 있어요. 받은 학생은 📊 → 🏷️ 내 칭호 고르기에서 달 수 있어요 (자동이면 바로 달려요). 명단 이름으로 주면 기기를 바꿔도 그대로예요.'));
+  if (!list.length) { box.append(el2('p', 'vempty', '학생이 아직 없어요. 학생들이 접속하거나 📝 명단을 저장하면 여기에 나와요.')); return; }
+  const grid = el2('div', 'row-center wrap');
+  for (const [u, nm] of list) { const key = tgKey(u), n = Object.values(S.tgive?.[key] || {}).filter(tgOk).length, on = [...remotes.entries()].some(([ru, r]) => ru === u || rosterOf(ru, r.target) === u);
+    const b = el2('button', 'btn', `${on ? '🟢' : '⚪'} ${nm}${n ? ` · 🏷️${n}` : ''}`); b.style.cssText = `font-size:16px;padding:7px 11px;background:${stg.ttU === key ? '#FFE066' : n ? '#FFF2C4' : '#fff'}`; b.onclick = () => { stg.ttU = key; stg.ttNm = nm; refillLife(); }; grid.append(b); }
+  box.append(grid);
+  if (!stg.ttU) return;
+  const key = stg.ttU, cur = S.tgive?.[key] || {};
+  box.append(el2('h3', 'lp-sec', `🏷️ ${stg.ttNm || key}에게 칭호 주기`));
+  const dr = el2('div', 'row-center wrap'); for (const [k, t] of [['w', '📅 이번 주만 (월요일에 사라져요)'], ['p', '♾️ 계속 (거둘 때까지)']]) { const b = el2('button', 'btn', t); b.style.background = stg.ttDur === k ? '#CDEFC2' : '#fff'; b.onclick = () => { stg.ttDur = k; refillLife(); }; dr.append(b); } box.append(dr);
+  const row = el2('div', 'row-center wrap');
+  for (const k of TT_ORDER()) { const d = ttDef(k); if (!d) continue; const v = cur[k], has = tgOk(v); const b = el2('button', 'btn', `${has ? '✅' : '➕'} ${d[0]}${has ? (v === -1 ? ' ♾️' : ' 📅') : ''}`); b.style.cssText = `font-size:16px;background:${has ? '#CDEFC2' : '#fff'}`;
+    b.onclick = () => adminDo({ [`tgive/${key}/${k}`]: has ? null : (stg.ttDur === 'p' ? -1 : weekNum()) }, has ? `🏷️ ${stg.ttNm}의 ${d[0]} 칭호를 거뒀어요` : `🏷️ ${stg.ttNm}에게 ${d[0]} 칭호를 줬어요`).then(() => setTimeout(refillLife, 300)); row.append(b); }
+  box.append(row, el2('p', 'hint', '✅ = 선생님이 준 칭호 · 학생이 스스로 얻은 칭호(장원·골든벨 등)는 여기 없어도 그대로 있어요.'));
+}
+function tgTick() { // 학생: 선생님이 새 칭호를 주면 알려 줘요
+  if (!joined || isTeacher || !stateLoaded || !backend?.uid) return; const g = tgOf(backend.uid), ks = Object.keys(g).sort().join(','); if (bag.tgSeen === undefined) { bag.tgSeen = ks; saveBag(); return; }
+  if (ks !== bag.tgSeen) { const old = new Set(String(bag.tgSeen).split(',')), nw = Object.keys(g).filter(k => !old.has(k)); bag.tgSeen = ks; saveBag(); if (nw.length) { playSfx('fanfare'); showBanner(`🏷️ 선생님이 칭호를 주셨어요!`, `${nw.map(k => ttDef(k)[0]).join(' · ')} · 📊 → 🏷️ 내 칭호 고르기에서 달 수 있어요`, 6000); } }
+}
 function fillStatGive(box) { // ⭐ 능력치 주기 (state/sgive/{이름·기기}/{능력치} = 지금까지 준 합계)
   box.append(el2('p', 'hint', '능력치와 점수를 고르고, 줄 학생을 눌러 고른 다음 ⭐ 주기를 눌러요. 하루 상한과 상관없이 그대로 오르고 주간 랭킹에도 들어가요. 학생이 접속해 있지 않아도 다음에 들어오면 받아요.'));
   const r1 = el2('div', 'row-center wrap');
@@ -22572,8 +22604,9 @@ function fillStatGive(box) { // ⭐ 능력치 주기 (state/sgive/{이름·기�
 function openPraise() {
   if (!isTeacher) return;
   openLife('🙋 발표 칭찬', (box) => {
-    box.textContent = ''; { const tb = el2('div', 'row-center wrap'); for (const [k, n] of [['talk', '🙋 발표 칭찬'], ['stat', '⭐ 능력치 주기']]) { const b = el2('button', 'btn', n); b.style.background = stg.tab === k ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.tab === k)); b.onclick = () => { stg.tab = k; refillLife(); }; tb.append(b); } box.append(tb); }
+    box.textContent = ''; { const tb = el2('div', 'row-center wrap'); for (const [k, n] of [['talk', '🙋 발표 칭찬'], ['stat', '⭐ 능력치 주기'], ['ttl', '🏷️ 칭호 주기']]) { const b = el2('button', 'btn', n); b.style.background = stg.tab === k ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.tab === k)); b.onclick = () => { stg.tab = k; refillLife(); }; tb.append(b); } box.append(tb); }
     if (stg.tab === 'stat') { fillStatGive(box); return; }
+    if (stg.tab === 'ttl') { fillTitleGive(box); return; }
     const T = talkToday(), C = talkCfg(), tn = T?.n | 0;
     box.append(el2('p', 'lp-big', C.g ? `📣 오늘 우리 반 발표 ${tn} / ${C.g}${tn >= C.g ? ' 🎉 달성!' : ''}` : `📣 오늘 우리 반 발표 ${tn}번 (목표 끔)`));
     if (C.g) { const bar = el2('div', ''); bar.style.cssText = 'height:14px;border-radius:7px;background:#EEE;overflow:hidden;margin:4px 0 8px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.min(100, tn / C.g * 100)}%;background:#5FBE5A`; bar.append(f); box.append(bar); }
@@ -23355,7 +23388,7 @@ function titlesOf(u, data) { // 가진 칭호 [키, 글, 겉모습] (위에 있�
   if (a) out.push(['gw', '🎓장원', 'gw']);
   if (egMaster(u, data)) out.push(['egm', '🏅골든벨마스터', 'egm']);
   if (S.rank) { const w = weekNum() - 1; for (const k of Object.keys(rankCats())) { const i = rankList(w, k).slice(0, 3).findIndex(x => rankHas(x, u)); if (i >= 0) out.push([`r_${k}`, `${MEDAL[i]}${rankCats()[k].icon}${(rankCats()[k].name || '').slice(0, 2)}${i + 1}등`, '']); } }
-  return out;
+  return ttGiven(out, u, data);
 }
 const ttSel = (u, data) => u === backend?.uid ? String(bag.title || '') : String(data?.tt || '');
 function titlePick(u, data) { const s = ttSel(u, data); if (s === 'none' || (!s && ttTeacher(u, data))) return null; /* 선생님은 고른 칭호만 (자동으로는 안 달아요) */ const L = titlesOf(u, data); return L.find(t => t[0] === s) || L[0] || null; }
@@ -23463,7 +23496,7 @@ function titleTick(dt) {
     if (a.badge) { let top = a.badge.position.y + a.badge.scale.y / 2; // 🏷️ 이름표 위로 차곡차곡 (선생님 표시 · 골든벨 도전 표시가 이름표와 겹치지 않게)
       if (a.tlLab?.parent) { a.tlLab.position.y = top + 0.07 + a.tlLab.scale.y / 2; top = a.tlLab.position.y + a.tlLab.scale.y / 2; }
       if (a.egM?.visible) a.egM.position.y = top + 0.07 + a.egM.scale.y / 2; } }
-  if ((mrun.tt = (mrun.tt || 0) - dt) > 0) return; mrun.tt = 1.0;
+  if ((mrun.tt = (mrun.tt || 0) - dt) > 0) return; mrun.tt = 1.0; tgTick();
   for (const [u, a, data, me] of all) { if (!a) continue; const t = (me ? joined && u : data) ? titlePick(u, data) : null; a.ttOn = !!t;
     titleWear(a, t?.[2] ? t[2] + (a.gwKind ? ':n' : '') : '');
     if (a.wearHatG) a.wearHatG.visible = !a.ttHead; if (a.tlHat) a.tlHat.visible = !a.ttHead && !a.wearHatG; /* 🧑‍🏫 칭호 머리 장식을 쓰면 선생님 모자는 잠깐 벗어요 */ if (a.ttHead && a.badge && a.badge.position.y < 3.15) { a.ttBy ??= a.badge.position.y; a.badge.position.y = 3.15; } }
