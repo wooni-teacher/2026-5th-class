@@ -17366,6 +17366,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1027c', d: '10월 27일', items: ['📝 영어 훈련소 Lesson 7에 단원평가 연습 2! 평가 음원 듣기 · 틀린 곳 고치기 · 대화 순서 맞추기 · 문장 배열'] },
   { id: '1027b', d: '10월 27일', items: ['📝 영어 훈련소 Lesson 7에도 단원평가 연습! 평가 음원 듣기 1~5번 · 읽기·쓰기 6~10번', '🏖️ Lesson 7 단어(watched·visited·picked·took)와 문장이 늘었어요'] },
   { id: '1027a', d: '10월 27일', items: ['📝 영어 훈련소 Lesson 11에 단원평가 연습! 진짜 평가 음원으로 듣기 1~5번, 읽기·쓰기 6~10번을 풀어요', '🏠 Lesson 11 단어(꽃병·시계·헤어드라이어·의자)와 문장이 늘었어요'] },
   { id: '1026e', d: '10월 26일', items: ['🎡 캡슐뽑기 돌림판! 선생님이 돌리면 모두의 화면에 같은 돌림판이 돌고, 멈춘 친구가 캡슐을 뽑아요'] },
@@ -17676,7 +17677,7 @@ const EV_WRONG = ["I'm eleven years old.", "It's on your left.", 'He has blue ey
 const thereBe = (t) => (/^(many|two)/.test(t[0]) ? 'There are' : 'There is');
 // ✍️ 쓰기 문제용 단어 (한 낱말만) · 📒 훈련소 학습지
 const EV_WORDS = {
-  7: [['boat', '보트, 배', '🚤'], ['movie', '영화', '🎬'], ['festival', '축제', '🎪'], ['watermelon', '수박', '🍉'], ['went', '갔다 (go)', '🚶'], ['saw', '보았다 (see)', '👀'], ['swam', '수영했다 (swim)', '🏊'], ['ate', '먹었다 (eat)', '🍽️'], ['rode', '탔다 (ride)', '🚲'], ['yesterday', '어제', '📅'], ['watched', '보았다 (watch)', '🎬'], ['visited', '방문했다 (visit)', '👵'], ['picked', '땄다 (pick)', '🍇'], ['took', '찍었다·가져갔다 (take)', '📸']],
+  7: [['boat', '보트, 배', '🚤'], ['movie', '영화', '🎬'], ['festival', '축제', '🎪'], ['watermelon', '수박', '🍉'], ['went', '갔다 (go)', '🚶'], ['saw', '보았다 (see)', '👀'], ['swam', '수영했다 (swim)', '🏊'], ['ate', '먹었다 (eat)', '🍽️'], ['rode', '탔다 (ride)', '🚲'], ['yesterday', '어제', '📅'], ['watched', '보았다 (watch)', '🎬'], ['visited', '방문했다 (visit)', '👵'], ['picked', '땄다 (pick)', '🍇'], ['took', '찍었다·가져갔다 (take)', '📸'], ['met', '만났다 (meet)', '🤝'], ['helped', '도왔다 (help)', '🙌']],
   8: [['eyes', '눈', '👀'], ['glasses', '안경', '👓'], ['pants', '바지', '👖'], ['curly', '곱슬곱슬한', '➰'], ['long', '긴', '📏'], ['short', '짧은', '✂️'], ['straight', '곧은', '📐'], ['dress', '원피스', '👗'], ['wear', '입고 있다', '👕']],
   9: [['left', '왼쪽', '⬅️'], ['right', '오른쪽', '➡️'], ['straight', '똑바로', '⬆️'], ['turn', '돌다', '↩️'], ['block', '블록, 구역', '🧱'], ['market', '시장', '🏪'], ['store', '가게', '🛍️'], ['place', '장소', '📍']],
   10: [['socks', '양말', '🧦'], ['size', '사이즈', '📏'], ['cheap', '저렴한', '🏷️'], ['large', '큰', '🐘'], ['small', '작은', '🐭'], ['sunglasses', '선글라스', '🕶️'], ['free', '무료인', '🆓'], ['sale', '할인', '💸']],
@@ -17721,6 +17722,21 @@ const EV_TEST = {
     { type: 'pick', ask: '📖 10. 틀린 부분을 고친 문장을 고르세요.', show: 'There is many books.', ko: '(틀린 문장)', opts: evOpt(['There are many books.', 'There is many book.', 'There are many book.', 'There is a many books.'], 0), say: 'There are many books.', sayAfter: true, exp: 'many books (여러 권) → There are' },
   ],
 };
+const EV_TEST2 = { // 📝 단원평가 2 (같은 단원 두 번째 평가지)
+  7: [
+    { type: 'pick', ask: '🎧 1. 잘 듣고, 남자아이가 방학 동안 한 일을 고르세요.', audio: 'audio/l7b/q1.mp3', say: 'Good to see you again! What did you do during the vacation? I went to Sokcho and swam at the beach.', opts: evOpt(['1) 사촌 방문하기', '2) 보트 타기', '3) 해변에서 수영하기', '4) 포도 따기', '5) 할머니 댁 방문하기'], 2), exp: 'B: I went to Sokcho and swam at the beach. (해변에서 수영했어요)' },
+    { type: 'pick', ask: '🎧 2. 잘 듣고, 질문에 알맞은 응답을 고르세요.', audio: 'audio/l7b/q2.mp3', say: "What did you do yesterday? One. Good to see you, too! Two. I'm from Korea. Three. I walk the dog at 4:30. Four. I like swimming. Five. I watched a movie with my mom. It was fun.", opts: evOpt(N5, 4), exp: 'What did you do yesterday? → 5) I watched a movie with my mom. It was fun.' },
+    { type: 'pick', ask: '🎧 3. 잘 듣고, 그림에 알맞은 대화를 고르세요.', show: '👦 💭 🚤👨‍👧 👧', ko: '(그림: 여자아이가 아빠와 보트를 탄 일을 떠올려요)', audio: 'audio/l7b/q3.mp3', say: 'One. What did you do yesterday? I ate ice cream with my sister. Two. What did you do yesterday? I went camping. Three. What did you do last weekend? I rode in a boat with my dad. Four. What did you do last weekend? I helped my grandpa and picked some grapes. Five. What did you do during the vacation? I went to a baseball game.', opts: evOpt(N5, 2), exp: '3) What did you do last weekend? → I rode in a boat with my dad. (아빠와 보트를 탔어요)' },
+    { type: 'pick', ask: '🎧 4. 잘 듣고, 대화에 이어질 응답으로 알맞은 것을 고르세요.', audio: 'audio/l7b/q4.mp3', say: 'Hi, Jake. How was your vacation? It was great. I went camping. What did you do there? One. It was fun. Two. I like drawing pictures. Three. My favorite food is pizza. Four. I ate watermelon and saw many stars at night. Five. I get home at 6:30.', opts: evOpt(N5, 3), exp: 'What did you do there? → 4) I ate watermelon and saw many stars at night.' },
+    { type: 'pick', ask: '🎧 5. 잘 듣고, 주어진 질문에 알맞지 않은 응답을 고르세요.', show: 'What did you do last weekend?', audio: 'audio/l7b/q5.mp3', say: 'One. I went to Dokdo and took some pictures of birds. Two. I went to a music festival. Three. I picked some tomatoes with my brother. Four. I will visit my grandparents. Five. I went to a baseball game. It was fun.', opts: evOpt(N5, 3), exp: '4) I will visit my grandparents. → 앞으로 할 일(will)이라 지난 주말에 한 일이 아니에요' },
+    { type: 'pick', ask: '📖 6. 다음을 읽고, 단어의 성격이 다른 하나를 고르세요.', opts: evOpt(['1) yesterday', '2) visited', '3) watched', '4) went', '5) met'], 0), exp: 'visited·watched·went·met은 지난 일을 말하는 동사(과거형), yesterday는 \'어제\'라는 때를 나타내는 말이에요' },
+    { type: 'pick', ask: '📖 7. 대화를 읽고, 빈칸에 알맞은 단어를 고르세요.', passage: 'A: What ____ you do yesterday?\nB: I swam at the beach.', opts: evOpt(['1) do', '2) did', '3) will', '4) are', '5) is'], 1), say: 'What did you do yesterday? I swam at the beach.', sayAfter: true, exp: '지난 일을 물을 때 What did you do ~?' },
+    { type: 'pick', ask: '📖 8. 밑줄 친 (1)~(5) 중 틀린 것을 고르세요.', passage: 'A: How (1) was your vacation?\nB: It (2) was great. I (3) go to Dokdo.\nA: What did you (4) do there?\nB: I (5) rode in a boat and took many pictures.', opts: evOpt(['1) was', '2) was', '3) go', '4) do', '5) rode'], 2), exp: '(3) go → went (지난 방학에 간 일이라 과거형)' },
+    { type: 'spell', word: 'went', emo: '🏝️', ko: '8. I (3) go to Dokdo. → I ____ to Dokdo.', say: 'went', hint: '틀린 단어 go를 바르게 고쳐 써요 (go의 과거형)' },
+    { type: 'order', noSay: true, ko: '9. 문장을 알맞은 순서로 눌러 자연스러운 대화를 완성해요', words: ['Hi, Leo. How was your vacation?', 'It was fun. I visited my grandparents in Sokcho.', 'What did you do there?', 'I swam at the beach and rode in a boat.'], en: "Hi, Leo. How was your vacation? It was fun. I visited my grandparents in Sokcho. What did you do there? I swam at the beach and rode in a boat.", exp: '방학이 어땠니? → 재미있었어, 할머니 댁에 갔어 → 거기서 뭐 했니? → 수영하고 보트 탔어' },
+    { type: 'order', noSay: true, ko: '10. 너는 방학 동안 무엇을 했니? (단어를 차례대로 눌러요)', words: ['What', 'did', 'you', 'do', 'during', 'the vacation?'], en: 'What did you do during the vacation?' },
+  ],
+};
 const evAud = { a: null };
 function evSpeak(it) { // 🎧 평가 음원이 있으면 그 소리 · 없으면 기기 목소리
   if (!it.audio) { sayEn(it.say); return; }
@@ -17729,6 +17745,7 @@ function evSpeak(it) { // 🎧 평가 음원이 있으면 그 소리 · 없으�
 }
 function evStopAudio() { try { evAud.a?.pause(); } catch (e) { } }
 function evTrainQs(n, kind) { // 훈련소: 단어 쓰기 5 · 문장 만들기 4 · 📝 단원평가
+  if (kind === 'test2' && EV_TEST2[n]) return EV_TEST2[n].map(q => ({ ...q, opts: q.opts?.map(o => ({ ...o })), played: false }));
   if (kind === 'test' && EV_TEST[n]) return EV_TEST[n].map(q => ({ ...q, opts: q.opts?.map(o => ({ ...o })), played: false }));
   if (kind === 'word') { const qs = [], used = []; for (let k = 0; k < 5; k++) { const q = evSpellQ(n, used); used.push(q.word); qs.push(q); } return qs; }
   return evShuffle(EV_SENTS[n]).slice(0, 4).map(([en, ko]) => ({ type: 'order', en, ko, words: en.split(' ') }));
@@ -17810,7 +17827,7 @@ function renderEvQ() {
     const redraw = () => { line.textContent = ''; picked.forEach((p, idx) => { const c = el2('button', 'btn ev-chip on', p.w); c.onclick = () => { if (q.answered) return; picked.splice(idx, 1); redraw(); }; line.append(c); }); [...opts.children].forEach(b => b.disabled = picked.some(p => p.k === +b.dataset.k) || q.answered); };
     for (const p of words) { const b = el2('button', 'btn ev-chip', p.w); b.dataset.k = p.k; b.onclick = () => { if (q.answered) return; picked.push(p); redraw(); if (picked.length === it.words.length) evAnswer(picked.map(x => x.w).join(' ') === it.en); }; opts.append(b); }
     opts.classList.add('ev-chips');
-    if (!it.played) { it.played = true; setTimeout(() => sayEn(it.en), 250); }
+    if (!it.played && !it.noSay) { it.played = true; setTimeout(() => sayEn(it.en), 250); }
   } else {
     opts.classList.remove('ev-chips');
     for (const o of it.opts) { const b = el2('button', 'btn', o.t); b.onclick = () => { if (q.answered) return; b.classList.add(o.ok ? 'ok' : 'no'); if (!o.ok) [...opts.children].forEach((x, k) => { if (it.opts[k].ok) x.classList.add('ok'); }); evAnswer(o.ok); }; opts.append(b); }
@@ -17823,7 +17840,7 @@ function evAnswer(ok) {
   if (ok && it.type !== 'pick') q.wr = (q.wr || 0) + 1;
   $('evFb').textContent = ok ? (it.type !== 'pick' ? '⭕ Good job! ✍️ 쓰기 성공 (보상 2배)' : '⭕ Good job! 맞았어요') : `❌ 정답: ${it.type === 'order' ? it.en : it.type === 'spell' ? it.word : (it.opts.find(o => o.ok)?.t || '')}`; $('evFb').className = 'qz-fb ' + (ok ? 'ok' : 'no');
   playSfx(ok ? 'pick' : 'drop'); if (it.type === 'spell') setTimeout(() => sayEn(it.word), 200); else if (it.say && !it.audio && (it.sayAfter || it.type !== 'order')) setTimeout(() => sayEn(it.say), 200); else if (it.type === 'order') setTimeout(() => sayEn(it.en), 200);
-  if (it.exp) $('evFb').textContent += ` · 💡 ${it.exp}`;
+  if (it.exp) $('evFb').textContent += ` · 💡 ${it.exp}`; // (order 문제도 풀이를 보여 줘요)
   $('evNext').disabled = false; $('evNext').focus();
   [...$('evOpts').children].forEach(b => b.disabled = true);
 }
@@ -17856,7 +17873,8 @@ function openTraining(n = ev.trainN || 7) {
     const Z = evZone(n); box.append(el2('p', 'lp-big', `Lesson ${n} · ${Z.title}`));
     const acts = el2('div', 'row-center wrap'), w = el2('button', 'btn', '✍️ 단어 쓰기 연습 (5문제)'), o = el2('button', 'btn', '🧩 문장 만들기 연습 (4문제)');
     w.style.background = '#FFD23C'; o.style.background = '#DDEBFF'; w.onclick = () => startTrain(n, 'word'); o.onclick = () => startTrain(n, 'sent'); acts.append(w, o);
-    if (EV_TEST[n]) { const t = el2('button', 'btn', `📝 단원평가 연습 (${EV_TEST[n].length}문제 · 🎧 듣기 포함)`); t.style.background = '#FFB0C8'; t.onclick = () => startTrain(n, 'test'); acts.append(t); }
+    if (EV_TEST[n]) { const t = el2('button', 'btn', `📝 단원평가 연습${EV_TEST2[n] ? ' 1' : ''} (${EV_TEST[n].length}문제 · 🎧 듣기 포함)`); t.style.background = '#FFB0C8'; t.onclick = () => startTrain(n, 'test'); acts.append(t); }
+    if (EV_TEST2[n]) { const t = el2('button', 'btn', `📝 단원평가 연습 2 (${EV_TEST2[n].length}문제 · 🎧 듣기 포함)`); t.style.background = '#FFC9DA'; t.onclick = () => startTrain(n, 'test2'); acts.append(t); }
     box.append(acts);
     box.append(el2('h3', 'lp-sec', '📒 단어'));
     const wl = el2('div', 'ev-sheet'); for (const [en, ko, emo] of EV_WORDS[n]) { const r = el2('button', 'ev-sheet-row'); r.append(el2('span', 'ev-emo', emo), el2('b', '', en), el2('span', 'hint', ko), el2('span', 'ev-spk', '🔊')); r.onclick = () => sayEn(en); wl.append(r); } box.append(wl);
@@ -17867,8 +17885,8 @@ function openTraining(n = ev.trainN || 7) {
 }
 function startTrain(n, kind) {
   closeModals(); stopEvGame();
-  ev.q = { n, qs: evTrainQs(n, kind), i: 0, right: 0, wr: 0, done: false, answered: false, train: true, kind }; ev.q.pass = ev.q.qs.length - (kind === 'test' ? 3 : 1);
-  $('evTitle').textContent = `🏋️ 영어 훈련소 · Lesson ${n} · ${kind === 'word' ? '단어 쓰기' : kind === 'test' ? '📝 단원평가 연습' : '문장 만들기'}`; $('evPanel').classList.remove('hidden'); renderEvQ();
+  ev.q = { n, qs: evTrainQs(n, kind), i: 0, right: 0, wr: 0, done: false, answered: false, train: true, kind }; ev.q.pass = ev.q.qs.length - (kind === 'test' || kind === 'test2' ? 3 : 1);
+  $('evTitle').textContent = `🏋️ 영어 훈련소 · Lesson ${n} · ${kind === 'word' ? '단어 쓰기' : kind === 'test' ? '📝 단원평가 연습' : kind === 'test2' ? '📝 단원평가 연습 2' : '문장 만들기'}`; $('evPanel').classList.remove('hidden'); renderEvQ();
 }
 // ---- 👕 무대 위 친구 찾기 (Lesson 8) ----
 const EV_HAIR = [['short', 'straight'], ['short', 'curly'], ['long', 'straight'], ['long', 'curly']];
@@ -22978,6 +22996,18 @@ const EG_DEF = `# Lesson 7
 
 문제: 알맞은 형태로 써요. I ___ a movie yesterday. (watch)
 정답: watched
+
+문제: 단어의 성격이 다른 하나는?
+보기: yesterday / visited / watched / went / met
+정답: 1
+
+문제: What did you do last weekend? 에 알맞지 않은 대답은?
+듣기: What did you do last weekend?
+보기: I went to a music festival. / I picked some tomatoes with my brother. / I will visit my grandparents. / I went to a baseball game.
+정답: 3
+
+문제: 틀린 곳을 고쳐 써요. I go to Dokdo last summer. (틀린 단어를 바르게)
+정답: went
 
 문제: What did you do last weekend? 에 어울리지 않는 대답은?
 보기: I went camping with my family. / I visited my grandparents. / It was great. / I swam at the beach.
