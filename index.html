@@ -1443,7 +1443,7 @@
     <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpSgMe"> 🧑‍🏫 선생님도 한 나라로 참여하기 (학생·🤖와 함께 싸워요)</label>
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
     <div id="tpSgList"></div>
-    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStat" style="background:#fff" title="능력치(영어·수학·사회 + 독서×2)가 나라마다 비슷하게">💪 능력치로 고르게</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn" id="tpSgWatch" style="background:#fff">👁️ 하늘에서 관전</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
@@ -2388,6 +2388,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async sgDamage(u, d, max) { const s2 = st.siege; if (!s2?.on) return { ok: false }; s2.php ||= {}; const was = s2.php[u] ?? max, hp = Math.max(0, was - d); s2.php[u] = hp; emit(); return { ok: true, hp, was }; },
     async sgBotsPush() { return { ok: true }; }, async sgBotHit() { return { ok: false }; },
     async sgHpSet(u, v) { const s2 = st.siege; if (!s2?.on) return { ok: false }; s2.php ||= {}; if (v == null) delete s2.php[u]; else s2.php[u] = v; emit(); return { ok: true }; },
+    async sgStp(v) { if (!st.siege) return; (st.siege.stp ||= {}).me = v; emit(); }, // 📚 1027o 공부의 힘
     async sgArmSet(u, lv, hp) { const s2 = st.siege; if (!s2?.on) return { ok: false }; (s2.arm ||= {})[u] = lv; (s2.php ||= {})[u] = hp; emit(); return { ok: true }; },
     async sgSpend(t, cost) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; if (Object.entries(cost).some(([k, v]) => (r[k] || 0) < v)) return { ok: false }; for (const [k, v] of Object.entries(cost)) r[k] -= v; emit(); return { ok: true }; },
     async sgGain(t, give, pts) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; for (const [k, v] of Object.entries(give)) r[k] = (r[k] || 0) + v; (s.score ||= {})[t] = (s.score[t] || 0) + pts; emit(); return { ok: true }; },
@@ -2817,6 +2818,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async sgHpSet(u, v) { try { await D.set(R(`state/siege/php/${u}`), v); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgBotsPush(v) { try { await D.set(R('sgbots'), v); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgBotHit(id, d) { const job = (botQ = botQ.then(() => new Promise(r => setTimeout(r, 260))).then(async () => { try { await D.set(R(`sgbotdmg/${uid}`), { id, d: Math.max(1, Math.min(10, d | 0)), t: Date.now() }); return { ok: true }; } catch (e) { return { ok: false }; } })); return job; }, /* 여러 🤖를 한꺼번에 맞히면 0.26초씩 나눠 적어요 */
+    async sgStp(v) { try { await D.set(R(`state/siege/stp/${uid}`), v); } catch (e) { /* 규칙 게시 전 */ } }, // 📚 1027o 공부의 힘
     async sgArmSet(u, lv, hp) { try { await D.update(R('state/siege'), { [`arm/${u}`]: lv, [`php/${u}`]: hp }); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgSpend(t, cost) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { if (!c || Object.entries(cost).some(([k, v]) => (c[k] || 0) < v)) return undefined; const n = { ...c }; for (const [k, v] of Object.entries(cost)) n[k] -= v; return n; }); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
     async sgGain(t, give, pts) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { const n = { ...(c || {}) }; for (const [k, v] of Object.entries(give)) n[k] = (n[k] || 0) + v; return n; }); await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + pts); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
@@ -4467,6 +4469,7 @@ function updateRemotes(dt) {
   }
 }
 const PRESENCE_INTERVAL = 0.5; // 초
+function sgMySp() { return ['math', 'eng', 'soc', 'read'].map(k => Math.min(9, statTier(k))).join(''); } // 💪 1027o 수학·영어·사회·독서 단계 (0~4)
 let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0;
 for (const ev of ['keydown', 'pointerdown', 'touchstart', 'wheel']) addEventListener(ev, () => { lastInputAt = Date.now(); }, { capture: true, passive: true }); // 💤 잠수 판단: 마지막으로 누른 때
 function sendPresence(time) {
@@ -4478,7 +4481,7 @@ function sendPresence(time) {
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
-  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); // 🏷️ 고른 칭호 // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
+  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -17366,6 +17369,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1027o', d: '10월 27일', items: ['💪 성 공방전에서 공부의 힘이 눈에 보여요! 능력치에 따라 무기가 나무 → 철 → 강철 → 황금으로 바뀌어요 (궁병은 🔥 불화살까지)', '💥 맞히면 피해 숫자가 떠요 · 금빛 ⚡는 내 능력치로 더한 몫 · ⚒️ 대장장이가 갈아 준 무기는 🔥 불꽃', '📚 독서력이 오르면 발밑에 파란 고리 · 전쟁이 끝나면 나라별 공부의 힘 TOP 3'] },
   { id: '1027n', d: '10월 27일', items: ['🔢 영어 훈련소 Lesson 10에 숫자·가격 연습! eleven~sixteen, twenty~fifty, hundred, thousand를 듣고·읽고·써요 (매번 새 가격)', '💬 Can I help you? / They\'re three thousand won. / Oh, they\'re expensive. 같은 가격 묻고 답하기 표현이 늘었어요'] },
   { id: '1027m', d: '10월 27일', items: ['📝 영어 훈련소 Lesson 12에 단원평가 연습! 평가지 그림과 평가 음원으로 풀어요 → 이제 Lesson 7~12 모두 단원평가 연습이 있어요'] },
   { id: '1027l', d: '10월 27일', items: ['📝 영어 훈련소 Lesson 10에 단원평가 연습! 평가지 그림(물건·가격표)과 평가 음원으로 풀어요'] },
@@ -21098,6 +21102,14 @@ const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 독�
   sch: { icon: '📜', name: '책사', hp: 5, st: 'soc', off: true, tag: '(체험장 전용)', can: [] },
 };
 const sgPow = (k) => statTier(k) + statTier('read'); // 📚 독서력은 모든 직업 능력을 함께 올려 줘요
+/* 💪 1027o 공부의 힘이 눈에 보여요: 무기 모양(나무→철→강철→황금) · 📚 독서력 파란 고리 · 피해 숫자 · 전쟁 끝 결과
+   친구 능력치 단계는 접속 정보 sp(수학·영어·사회·독서 4자리)로 알아요. ⚒️ 대장장이 갈기는 그 위에 🔥 불꽃(60초 +1) */
+const SG_TIER_I = { math: 0, eng: 1, soc: 2, read: 3 };
+const sgTierOf = (u, k) => { if (!k) return 0; if (u === backend?.uid) return Math.min(9, statTier(k)); const sp = String(remotes.get(u)?.target?.sp || ''); return +sp[SG_TIER_I[k]] || 0; };
+const sgGrade = (t) => Math.max(0, Math.min(3, t | 0)); // 0 나무 · 1 철 · 2 강철 · 3 황금
+const sgGradeOf = (u, role) => sgGrade(sgTierOf(u, SG_ROLES[role]?.st));
+const SG_GRADE = { blade: [0x9A6B3E, 0xD8DEE6, 0x8FCBFF, 0xF2D25C], head: [0x7A5A3A, 0x6E7682, 0x8FB4D8, 0xE0B84A], bow: [0x8A5A34, 0xC8D0DA, 0x6FB0E8, 0xFF8A3C], tipc: [0x5A5A5A, 0xC8D0DA, 0x8FCBFF, 0xFF7A1A], glow: [0, 0, 0.3, 0.6], name: ['나무', '철', '강철', '황금'] };
+const sgPowerOf = (u, tg) => { if (tg?.me) return statTier('math') + statTier('eng') + statTier('soc') + 2 * statTier('read'); const sp = String(tg?.sp || remotes.get(u)?.target?.sp || ''); if (!/^[0-9]{4}$/.test(sp)) return null; return +sp[0] + +sp[1] + +sp[2] + 2 * +sp[3]; }; // ⚖️ 팀 나누기용 (📚 독서는 모든 직업에 들어가서 2배)
 const SG_GEN = { pd: 3, rng: 3.3, cd: 0.9, gate: 2 }, SG_WHIRL = { r: 4.2, cd: 12000 }, SG_POW = { pd: 1, rng: 2.4, cd: 1.0, gate: 1 };
 const SG_ROAR = { r: 12, cd: 35000 }, SG_DODGE = { cd: 8000, dur: 1500 }, SG_DRAW = { min: 0.3, full: 1.1 }; // 📣 함성 · 💨 구르기 · 🏹 당기기(초)
 const SG_ARM = [null, { name: '가죽 갑옷', icon: '🟫', cost: 2 }, { name: '철 갑옷', icon: '⬜', cost: 5 }];
@@ -21414,30 +21426,36 @@ function sgHpBar() { // ❤️ 머리 위 체력 막대 (캔버스 한 장)
     c.fillStyle = '#fff'; c.font = `800 18px ${CANVAS_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(`${arm ? '🛡️' : '❤️'} ${cur}/${max}`, 80, 18); tex.needsUpdate = true; };
   return sp;
 }
-function setSgLook(a, t, hurt, role) { // 나라 조끼 + 머리 위 나라·역할 (쓰러지면 🤕)
-  const key = t ? `${S.siege?.set}|${t}|${hurt ? 1 : 0}|${role}` : '';
+function setSgLook(a, t, hurt, role, uid) { // 나라 조끼 + 머리 위 나라·역할 (쓰러지면 🤕) · 💪 무기 모양은 능력치 단계
+  const gr = uid ? sgGradeOf(uid, role) : 0, rd = uid ? Math.min(4, sgTierOf(uid, 'read')) : 0;
+  const key = t ? `${S.siege?.set}|${t}|${hurt ? 1 : 0}|${role}|${gr}|${rd}` : '';
   if ((a.sgKey || '') === key) return;
-  if (a.sgObjs) { for (const x of a.sgObjs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } } a.sgObjs = null; }
+  if (a.sgObjs) { for (const x of a.sgObjs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } } a.sgObjs = null; a.sgHeld = null; a.sgRd = null; }
   a.sgKey = key; if (!t) return;
   const N = sgSet().nat[t - 1]; if (!N) return;
   const o = { solid: false }, objs = [], vest = new THREE.Group(); a.rig.add(vest); objs.push(vest);
   box(vest, 0.84, 0.5, 0.54, N.col, 0, 0.98, 0, o); box(vest, 0.86, 0.1, 0.56, 0xFFFFFF, 0, 1.2, 0, o);
   objs.push(makeLabel(a.g, [hurt ? '🤕' : `${N.icon}${SG_ROLES[role]?.icon || ''}`], 0.5, 0, a.tcode ? 4.35 : 3.75, 0, { stroke: false, pad: 4, font: 80 }));
   const bar = sgHpBar(); bar.position.set(0, a.tcode ? 3.6 : 3.2, 0); a.g.add(bar); objs.push(bar); a.sgBar = bar; a.sgBarKey = '';
-  if (!hurt && ['sol', 'sch', 'smith', 'king', 'gen', 'arch'].includes(role)) objs.push(sgHeldItem(a, role));
+  if (!hurt && ['sol', 'sch', 'smith', 'king', 'gen', 'arch'].includes(role)) { const it = sgHeldItem(a, role, gr); objs.push(it); a.sgHeld = it; a.sgGr = gr; }
+  if (!hurt && rd >= 1) { const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.62 + rd * 0.03, 32), new THREE.MeshBasicMaterial({ color: 0x5AB4FF, transparent: true, opacity: 0.22 + rd * 0.1, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); a.sgRd = ring; a.sgRdT = rd; } // 📚 독서력 파란 고리
   if (role === 'king') { const cr = new THREE.Group(), o2 = { solid: false, surf: null, emissive: 0.35 }; cr.position.set(0, a.tcode ? 2.62 : 2.38, 0); a.g.add(cr); objs.push(cr); // 👑 왕관
     cyl(cr, 0.36, 0.16, 0xF2C230, 0, 0, 0, o2); for (let i = 0; i < 5; i++) { const an = i / 5 * Math.PI * 2; mesh(CONE, cr, 0.09, 0.22, 0.09, 0xF2C230, Math.cos(an) * 0.3, 0.17, Math.sin(an) * 0.3, o2); ball(cr, 0.045, i % 2 ? 0xE2584A : 0x3B82C4, Math.cos(an) * 0.33, 0.04, Math.sin(an) * 0.33, { solid: false, surf: null }); } } // ⚔️ 병사는 검 · 📜 책사는 부채 · ⚒️ 대장장이는 망치
   a.sgObjs = objs;
 }
-function sgHeldItem(a, role) { // 오른손에 드는 검·부채 (몸짓 소품과 따로)
-  const g = new THREE.Group(), o = { solid: false, surf: null }; (a.hand || a.armR).add(g);
-  if (role === 'arch') { g.rotation.x = -0.2; const arc = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.035, 6, 20, Math.PI * 0.95), new THREE.MeshStandardMaterial({ color: 0x8A5A34, roughness: 0.8 })); arc.rotation.set(0, Math.PI / 2, Math.PI / 2 + Math.PI * 0.025); arc.position.set(0, -0.15, 0.05); g.add(arc); cyl(g, 0.008, 1.08, 0xF4EEDC, 0, -0.15, -0.0, o); return g; } // 🏹 활
-  if (role === 'gen') { g.rotation.x = -1.35; cyl(g, 0.045, 1.5, 0x5A3A22, 0, -0.45, 0, o); box(g, 0.1, 0.62, 0.03, 0xE8EEF4, 0.07, -1.45, 0, o); mesh(CONE, g, 0.07, 0.2, 0.03, 0xE8EEF4, 0.07, -1.85, 0, { ...o, rx: Math.PI }); box(g, 0.26, 0.06, 0.1, 0xC0392B, 0, -1.12, 0, o); return g; } // 🎖️ 언월도
-  if (role === 'smith') { g.rotation.x = -1.35; cyl(g, 0.045, 0.85, 0x7A5436, 0, -0.38, 0, o); box(g, 0.22, 0.24, 0.5, 0x6E7682, 0, -0.85, 0, o); box(g, 0.24, 0.26, 0.08, 0x8C95A3, 0, -0.85, 0.26, o); }
-  else if (role === 'sol' || role === 'king') { g.rotation.x = -1.35; const bl = role === 'king' ? 0xF2D25C : 0xD8DEE6; cyl(g, 0.04, 0.3, 0x5A3A22, 0, -0.1, 0, o); box(g, 0.36, 0.06, 0.1, 0xC9A65E, 0, -0.27, 0, o); box(g, 0.08, 0.95, 0.025, bl, 0, -0.78, 0, o); mesh(CONE, g, 0.06, 0.14, 0.025, bl, 0, -1.32, 0, { ...o, rx: Math.PI }); }
+function sgTipFx(g, x, y, z, big = 1) { // 무기 끝: 반짝이·🔥 불꽃이 나오는 자리
+  const tip = new THREE.Object3D(); tip.position.set(x, y, z); g.add(tip); g.userData.tip = tip;
+  const fl = new THREE.Mesh(new THREE.SphereGeometry(0.17 * big, 10, 8), new THREE.MeshBasicMaterial({ color: 0xFF7A1A, transparent: true, opacity: 0.6, depthWrite: false })); fl.visible = false; tip.add(fl); g.userData.flame = fl;
+}
+function sgHeldItem(a, role, gr = 0) { // 오른손에 드는 검·부채 (몸짓 소품과 따로) · 💪 gr: 0 나무 · 1 철 · 2 강철 · 3 황금
+  const g = new THREE.Group(), o = { solid: false, surf: null }, ob = gr >= 2 ? { ...o, emissive: SG_GRADE.glow[gr] } : o, bl = SG_GRADE.blade[gr] ?? SG_GRADE.blade[1]; (a.hand || a.armR).add(g);
+  if (role === 'arch') { g.rotation.x = -0.2; const bc = SG_GRADE.bow[gr] ?? 0x8A5A34; const arc = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.035 + gr * 0.006, 6, 20, Math.PI * 0.95), new THREE.MeshStandardMaterial({ color: bc, roughness: 0.8, emissive: gr >= 2 ? bc : 0, emissiveIntensity: SG_GRADE.glow[gr] || 0 })); sgTipFx(g, 0, -0.15, 0.05, 1.3); arc.rotation.set(0, Math.PI / 2, Math.PI / 2 + Math.PI * 0.025); arc.position.set(0, -0.15, 0.05); g.add(arc); cyl(g, 0.008, 1.08, 0xF4EEDC, 0, -0.15, -0.0, o); return g; } // 🏹 활
+  if (role === 'gen') { g.rotation.x = -1.35; cyl(g, 0.045, 1.5, 0x5A3A22, 0, -0.45, 0, o); box(g, 0.1 + gr * 0.02, 0.62 + gr * 0.06, 0.03, bl, 0.07, -1.45, 0, ob); mesh(CONE, g, 0.07, 0.2, 0.03, bl, 0.07, -1.85 - gr * 0.03, 0, { ...ob, rx: Math.PI }); box(g, 0.26, 0.06, 0.1, 0xC0392B, 0, -1.12, 0, o); sgTipFx(g, 0.07, -1.6, 0); return g; } // 🎖️ 언월도
+  if (role === 'smith') { g.rotation.x = -1.35; const hc = SG_GRADE.head[gr] ?? 0x6E7682; cyl(g, 0.045, 0.85, 0x7A5436, 0, -0.38, 0, o); box(g, 0.22, 0.24, 0.5, hc, 0, -0.85, 0, ob); box(g, 0.24, 0.26, 0.08, gr >= 3 ? 0xFFE58A : 0x8C95A3, 0, -0.85, 0.26, ob); sgTipFx(g, 0, -0.85, 0.3); }
+  else if (role === 'sol' || role === 'king') { g.rotation.x = -1.35; const L = 0.95 + gr * 0.1; cyl(g, 0.04, 0.3, 0x5A3A22, 0, -0.1, 0, o); box(g, 0.36 + gr * 0.04, 0.06, 0.1, gr >= 3 ? 0xF2C230 : 0xC9A65E, 0, -0.27, 0, gr >= 3 ? ob : o); box(g, 0.08 + gr * 0.01, L, 0.025, bl, 0, -0.3 - L / 2, 0, ob); mesh(CONE, g, 0.06 + gr * 0.005, 0.14, 0.025, bl, 0, -0.37 - L, 0, { ...ob, rx: Math.PI }); sgTipFx(g, 0, -0.3 - L * 0.75, 0); }
   else { g.rotation.x = -1.1; cyl(g, 0.03, 0.32, 0x7A5436, 0, -0.12, 0, o);
     const leaf = new THREE.Mesh(new THREE.CircleGeometry(0.5, 18, Math.PI * 1.05, Math.PI * 0.9), new THREE.MeshStandardMaterial({ color: 0xF4E6C8, side: THREE.DoubleSide, roughness: 0.9 })); leaf.position.y = -0.22; leaf.rotation.y = Math.PI / 2; g.add(leaf);
-    const rim = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.5, 18, 1, Math.PI * 1.05, Math.PI * 0.9), new THREE.MeshBasicMaterial({ color: 0xC0392B, side: THREE.DoubleSide })); rim.position.y = -0.22; rim.rotation.y = Math.PI / 2; g.add(rim); }
+    const rim = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.5, 18, 1, Math.PI * 1.05, Math.PI * 0.9), new THREE.MeshBasicMaterial({ color: 0xC0392B, side: THREE.DoubleSide })); rim.position.y = -0.22; rim.rotation.y = Math.PI / 2; g.add(rim); sgTipFx(g, 0, -0.5, 0); }
   return g;
 }
 function sgSpawn() {
@@ -21454,7 +21472,7 @@ function syncSiege(prev, first) {
   if (!s && sgw.key) buildCastles();
   syncBars();
   if (s && s.r !== sgw.lastR) { // 새 전쟁
-    sgw.lastR = s.r; sgw.ended = ''; sgw.finalTold = ''; sgw.wasHurt = false; sgw.shots = Object.fromEntries(Object.entries(s.shot || {}).map(([u, v]) => [u, v?.t])); sgw.fxSeen = Object.fromEntries(Object.entries(s.fx || {}).map(([u, v]) => [u, v?.t]));
+    sgw.lastR = s.r; sgw.ended = ''; sgw.finalTold = ''; sgw.wasHurt = false; sgw.stp = { d: 0, f: 0, r: 0 }; sgw.stpSent = ''; sgw.shots = Object.fromEntries(Object.entries(s.shot || {}).map(([u, v]) => [u, v?.t])); sgw.fxSeen = Object.fromEntries(Object.entries(s.fx || {}).map(([u, v]) => [u, v?.t]));
     if (!first || siegeRegion()) {
       if (!isTeacher && !sgMine() && s.on) { const cnt = {}; for (const v of Object.values(s.team || {})) cnt[v] = (cnt[v] || 0) + 1; let best = 1; for (let t = 1; t <= s.n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; backend.sgJoin(best); }
       setTimeout(() => { sgSpawn(); const t = sgMine(), N = sgSet().nat[t - 1]; showBanner(`⚔️ 성 공방전 · ${sgSet().name}`, N ? `나는 ${N.icon} ${N.name}! 거점을 차지하고, 상대 성문을 부숴요` : '선생님은 옆줄에서 지켜봐요', 5000); if (N && sgw.roleAsked !== s.r) { sgw.roleAsked = s.r; setTimeout(openSgRole, 1200); } }, first ? 900 : 300);
@@ -21468,10 +21486,11 @@ function syncSiege(prev, first) {
       if (hp === 0 && php > 0) { playSfx('fanfare'); const [bx, bz] = castleLocal(t, 0, 6.5); burst(new V3(bx, 2, bz), [N.col, 0xFFFFFF, 0x8A6A44], 70, 7, 3); toast(me === t ? `💥 우리 ${N.name} 성문이 부서졌어요! 25초 뒤 다시 세워져요` : `💥 ${N.icon} ${N.name} 성문이 부서졌어요!`, me === t ? 'warn' : 'success'); }
       if (hp > 0 && php === 0) toast(`🛡️ ${N.name} 성문을 다시 세웠어요`, 'info');
     }
+    for (const [u, hp] of Object.entries(s.php || {})) { const was = p.php?.[u] ?? sgMaxHp(u); if (hp < was && !((sgw.popMine?.[u] || 0) > performance.now() - 1500)) sgDmgPop(sgPosOf(u), `-${was - hp}`, [], 0, true); } // 💥 친구 화면에도 피해 숫자
     for (let t = 1; t <= s.n; t++) if (s.fall?.[t] && !p.fall?.[t]) { const N = set.nat[t - 1], X = set.nat[s.fall[t] - 1]; playSfx('fanfare'); const ca = castleAt(t); burst(new V3(ca.x, 4, ca.z), [X.col, 0xFFFFFF, 0xFFE066], 90, 8, 4); showBanner(`🏳️ ${N.icon} ${N.name} 성 함락!`, `${X.icon} ${X.name}이(가) 성을 차지했어요${me === s.fall[t] ? ' · 우리 나라 +50점!' : ''}\n${N.name} 친구들은 ${X.name}의 ⛓️ 포로가 되어 함께 싸워요`, 6000); }
     { const mt = s.team?.[backend.uid], pt = p.team?.[backend.uid]; if (mt && pt && mt !== pt && !isTeacher) { const X = set.nat[mt - 1]; setTimeout(() => { sgSpawn(); toast(`⛓️ 이제 ${X.icon} ${X.name}의 포로예요. 👊 주먹으로만 싸울 수 있어요`, 'warn'); }, 1200); } }
     for (const st of SG_SITES) { const o = s.own?.[st.k] || 0, po = p.own?.[st.k] || 0; if (o !== po) { const N = set.nat[o - 1]; toast(o ? `${st.icon} ${N.icon} ${N.name}이(가) ${st.name}을(를) 차지했어요!` : `${st.icon} ${st.name}이(가) 주인 없는 땅이 됐어요`, o === me ? 'success' : 'info'); if (o === me) playSfx('right'); } }
-    for (const [u, v] of Object.entries(s.shot || {})) { if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t; if (u !== backend.uid) { if (v.m) sgMeleeFx(v.x, v.z, v.dx, v.dz, v.m); else sgLaunch(v.x, v.z, v.dx, v.dz, v.v, v.a ?? sgWeap().ang, false, sgTeamOf(u), 0); } }
+    for (const [u, v] of Object.entries(s.shot || {})) { if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t; if (u !== backend.uid) { if (v.m) sgMeleeFx(v.x, v.z, v.dx, v.dz, v.m, sgGradeOf(u, sgRoleOf(u))); else sgLaunch(v.x, v.z, v.dx, v.dz, v.v, v.a ?? sgWeap().ang, false, sgTeamOf(u), 0, 0, 0, sgRoleOf(u) === 'arch' ? sgGradeOf(u, 'arch') : 0); } }
     for (const [u, v] of Object.entries(s.fx || {})) { if (!v || sgw.fxSeen[u] === v.t) continue; sgw.fxSeen[u] = v.t; if (u !== backend.uid) sgPlayFx(v, false); }
     for (const t of [1, 2, 3, 4]) for (const k of ['steel']) if (sgBuff(t, k) && !(p.buff?.[t]?.[k] > backend.now() - 1000)) { const N = set.nat[t - 1]; if (N) toast(k === 'steel' ? `⛓️ ${N.name}이(가) 강철 무기를 들었어요! (60초 피해 2배)` : `📯 ${N.name}이(가) 진격 나팔을 불었어요! (30초)`, t === me ? 'success' : 'warn'); }
   }
@@ -21541,7 +21560,7 @@ function sgDrawRelease() {
   const W = WEAPONS.bow, p = player.pos, full = k >= 1, aim = sgAimPoint(null, 6 + 24 * k), { dx, dz, v, a } = sgAimShot(W, aim);
   player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'cheer'); playSfx('jump');
   sgw.cool = 0.5; const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6, pd = (full ? 3 : 2) + sgPow('eng') + (sgBuff(sgMine(), 'steel') ? 1 : 0);
-  sgLaunch(sx, sz, dx, dz, v, a, true, sgMine(), W.dmg * (full ? 2 : 1) * (sgBuff(sgMine(), 'steel') ? 2 : 1), pd);
+  sgLaunch(sx, sz, dx, dz, v, a, true, sgMine(), W.dmg * (full ? 2 : 1) * (sgBuff(sgMine(), 'steel') ? 2 : 1), pd, sgPow('eng'), sgGradeOf(backend.uid, 'arch'));
   backend.sgShot({ x: +sx.toFixed(2), z: +sz.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: +v.toFixed(2), a: +a.toFixed(3) });
   if (full) burst(new V3(sx, 1.7, sz), [0xFFE066, 0xFFFFFF], 12, 2, 1); renderSgBar(true);
 }
@@ -21555,11 +21574,11 @@ function sgQ() { // Q: 직업마다 다른 스킬
   if (sgQLeft()) { toast(`⏳ ${sgQLeft()}초 뒤에 다시 쓸 수 있어요`, 'info'); return; }
   const p = player.pos, me = sgMine();
   if (role === 'gen') { // 🌀 회오리 베기: 둘레 4.2걸음 상대 모두
-    sgw.qCd = performance.now() + SG_WHIRL.cd; playAct(player.avatar, 'slash'); sgMeleeFx(p.x, p.z, 0, 1, 6); backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: 0, dz: 1, v: 0, a: 0, m: 6 });
+    sgw.qCd = performance.now() + SG_WHIRL.cd; playAct(player.avatar, 'slash'); sgMeleeFx(p.x, p.z, 0, 1, 6, sgGradeOf(backend.uid, 'gen')); backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: 0, dz: 1, v: 0, a: 0, m: 6 });
     const dmg = SG_GEN.pd + sgPow('math'); let n = 0;
     setTimeout(() => { if (!sgCan()) return;
-      for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - p.x, r.pos.z - p.z) <= SG_WHIRL.r) { n++; sgHitPlayer(u, dmg, t); } }
-      for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - p.x, a.z - p.z) <= SG_WHIRL.r) { n++; sgHitBot(id, dmg); } }
+      for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - p.x, r.pos.z - p.z) <= SG_WHIRL.r) { n++; sgHitPlayer(u, dmg, t, { pw: sgPow('math') }); } }
+      for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - p.x, a.z - p.z) <= SG_WHIRL.r) { n++; sgHitBot(id, dmg, sgPow('math')); } }
       for (const c of Object.values(sgw.castles)) { if (c.t === me || c.open) continue; const m = sgGateAt(c, p.x, p.z); if (Math.hypot(m.x - p.x, m.z - p.z) <= SG_WHIRL.r + 1) { n++; sgHitGate(c.t, SG_GEN.gate, true); } }
       toast(n ? `🌀 회오리 베기! ${n}곳을 휩쓸었어요 (피해 ${dmg})` : '🌀 회오리 베기! 둘레에 상대가 없었어요', n ? 'success' : 'info'); }, 180);
   } else if (role === 'arch') { // 💨 구르기: 움직이는 쪽(가만히 있으면 뒤로) 휙 · 1.5초 동안 안 맞아요
@@ -21574,7 +21593,7 @@ function sgQ() { // Q: 직업마다 다른 스킬
     for (const [u, rr] of remotes) if (sgTeamOf(u) === me && !sgHurt(u) && Math.hypot(rr.pos.x - p.x, rr.pos.z - p.z) <= SG_ROAR.r) uids.push(u);
     for (const [id, b] of Object.entries(sgb.list)) { const a = sgb.av[id]?.g.position || b; if (b.t === me && !b.down && Math.hypot(a.x - p.x, a.z - p.z) <= SG_ROAR.r) uids.push(id); }
     backend.sgSkillBuff(me, 'roar', backend.now() + dur * 1000, uids); playAct(player.avatar, 'cheer'); playSfx('fanfare');
-    backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: 0, dz: 1, v: 0, a: 0, m: 7 }); sgMeleeFx(p.x, p.z, 0, 1, 7);
+    backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: 0, dz: 1, v: 0, a: 0, m: 7 }); sgMeleeFx(p.x, p.z, 0, 1, 7, sgGradeOf(backend.uid, 'king')); sgStpAdd('r', 3 * sgPow('soc'));
     toast(`📣 왕의 함성! 우리 편 ${uids.length}명이 ${dur}초 동안 피해 +1 · 빨라져요`, 'success');
   }
   renderSgBar(true);
@@ -21622,28 +21641,31 @@ function sgMeleeTarget(rng, cone, gates) {
     for (const [k, b] of Object.entries(sgw.bars)) if (b.t !== me) { const m = b.box.getCenter(new V3()); consider(m.x, m.z, 'b', k, 0.8); } }
   return best;
 }
-function sgMeleeFx(x, z, dx, dz, m) { // 휘두른 자리에 반짝 (모두에게 보여요)
-  if (m === 1) { for (let i = -2; i <= 2; i++) { const a = Math.atan2(dx, dz) + i * 0.3; burst(new V3(x + Math.sin(a) * 1.3, 1.3 + i * 0.08, z + Math.cos(a) * 1.3), [0xFFFFFF, 0xDDE6F0], 3, 0.8, 0.3, 0.3, 0); } playSfx('pick'); }
+const SG_SLASH_COL = [[0xE8D8B8, 0xFFFFFF], [0xFFFFFF, 0xDDE6F0], [0x8FCBFF, 0xFFFFFF, 0xBFE4FF], [0xFFE066, 0xFFC83D, 0xFFFFFF]];
+function sgMeleeFx(x, z, dx, dz, m, gr = 1) { // 휘두른 자리에 반짝 (모두에게 보여요) · 💪 gr 능력치 단계: 높을수록 길고 반짝
+  gr = Math.max(0, Math.min(3, gr | 0)); const cols = SG_SLASH_COL[gr];
+  if (m === 1) { const n = 2 + (gr >= 2 ? 1 : 0); for (let i = -n; i <= n; i++) { const a = Math.atan2(dx, dz) + i * 0.3; burst(new V3(x + Math.sin(a) * (1.3 + gr * 0.12), 1.3 + i * 0.08, z + Math.cos(a) * (1.3 + gr * 0.12)), cols, 3 + gr, 0.8, 0.3, 0.3 + gr * 0.08, 0); } playSfx('pick'); }
   else if (m === 5) { sgWave(x, z, 0x7FD36A, SG_WAVE.r * 0.9); burst(new V3(x, 1.8, z), [0x7FD36A, 0xBFF0B0, 0xFFFFFF], 30, 4, 2.5); }
-  else if (m === 4) { burst(new V3(x + dx * 1.2, 0.4, z + dz * 1.2), [0xC9B08A, 0x8C95A3, 0xFFE066], 14, 2.5, 1.5, 0.5); playSfx('build'); }
+  else if (m === 4) { burst(new V3(x + dx * 1.2, 0.4, z + dz * 1.2), gr >= 3 ? [0xFFE066, 0xFFC83D, 0xFFFFFF] : [0xC9B08A, 0x8C95A3, 0xFFE066], 14 + 8 * gr, 2.5 + gr * 0.4, 1.5, 0.5); playSfx('build'); }
   else if (m === 2) sgOrb(x, z, dx, dz, null);
-  else if (m === 6) { for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; setTimeout(() => burst(new V3(x + Math.sin(a) * 2.6, 1.2, z + Math.cos(a) * 2.6), [0xFFFFFF, 0xDDE6F0, 0xFFE066], 3, 1, 0.4, 0.3, 0), i * 12); } sgWave(x, z, 0xFFFFFF, 4.5); playSfx('pick'); } // 🌀 회오리 베기
-  else if (m === 7) { sgWave(x, z, 0xFFC83D, SG_ROAR.r * 0.9); burst(new V3(x, 2.4, z), [0xFFE066, 0xFFC83D, 0xFFFFFF], 36, 4, 3); } // 📣 왕의 함성
+  else if (m === 6) { for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; setTimeout(() => burst(new V3(x + Math.sin(a) * 2.6, 1.2, z + Math.cos(a) * 2.6), gr >= 2 ? cols : [0xFFFFFF, 0xDDE6F0, 0xFFE066], 3 + gr, 1, 0.4, 0.3, 0), i * 12); } sgWave(x, z, gr >= 3 ? 0xFFE066 : gr >= 2 ? 0x8FCBFF : 0xFFFFFF, 4.5 * (1 + gr * 0.08)); playSfx('pick'); } // 🌀 회오리 베기
+  else if (m === 7) { sgWave(x, z, 0xFFC83D, SG_ROAR.r * 0.9 * (1 + gr * 0.12)); if (gr >= 2) setTimeout(() => sgWave(x, z, 0xFFE58A, SG_ROAR.r * 0.7 * (1 + gr * 0.12)), 260); burst(new V3(x, 2.4, z), [0xFFE066, 0xFFC83D, 0xFFFFFF], 36 + 12 * gr, 4 + gr * 0.5, 3); } // 📣 왕의 함성 (사회력이 높을수록 크고 길게)
   else if (m === 8) { burst(new V3(x, 0.4, z), [0xE8DCC0, 0xFFFFFF, 0x9ED8FF], 18, 2.5, 1.2, 0.5); } // 💨 구르기
-  else if (m === 3) { for (let i = 0; i < 6; i++) setTimeout(() => burst(new V3(x + dx * i * 1.4, 0.3, z + dz * i * 1.4), [0xC9B08A, 0xFFE066], 6, 1.5, 1, 0.5), i * 60); playSfx('jump'); }
+  else if (m === 3) { for (let i = 0; i < 6; i++) setTimeout(() => burst(new V3(x + dx * i * 1.4, 0.3, z + dz * i * 1.4), gr >= 3 ? [0xFFE066, 0xFFC83D] : gr >= 2 ? [0x8FCBFF, 0xFFFFFF] : [0xC9B08A, 0xFFE066], 6 + gr * 2, 1.5, 1, 0.5), i * 60); playSfx('jump'); }
 }
 function sgMelee() {
   const role = sgMyRole(), fan = false, ham = role === 'smith', king = role === 'king', gen = role === 'gen', pw = role === 'pow', W = ham ? SG_HAMMER : king ? SG_KING : gen ? SG_GEN : pw ? SG_POW : SG_SWORD, p = player.pos;
   const tg = sgMeleeTarget(W.rng, 1.4, true), f = sgAimDir(); let dx = f.x, dz = f.z;
   if (tg) { const ex = tg.x - p.x, ez = tg.z - p.z, d = Math.hypot(ex, ez) || 1; dx = ex / d; dz = ez / d; }
   player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'slash');
-  sgw.cool = W.cd; renderSgBar(true); sgMeleeFx(p.x, p.z, dx, dz, ham ? 4 : 1);
+  sgw.cool = W.cd; renderSgBar(true); sgMeleeFx(p.x, p.z, dx, dz, ham ? 4 : 1, sgGradeOf(backend.uid, role));
   backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: 0, a: 0, m: ham ? 4 : 1 });
   if (!tg) return;
   const dmg = ham ? SG_HAMMER.pd + Math.floor(statTier('read') / 2) : king ? SG_KING.pd : gen ? SG_GEN.pd + sgPow('math') : pw ? SG_POW.pd : sgSwordDmg();
+  const spw = ham ? Math.floor(statTier('read') / 2) : (gen || role === 'sol') ? sgPow('math') : 0; // 💪 능력치로 더한 몫
   setTimeout(() => { if (!S.siege?.on) return;
-    if (tg.kind === 'p') { if (!sgHurt(tg.ref) && !sgSafe(tg.ref)) sgHitPlayer(tg.ref, dmg, sgTeamOf(tg.ref), { stun: ham }); }
-    else if (tg.kind === 'r') sgHitBot(tg.ref, dmg);
+    if (tg.kind === 'p') { if (!sgHurt(tg.ref) && !sgSafe(tg.ref)) sgHitPlayer(tg.ref, dmg, sgTeamOf(tg.ref), { stun: ham, pw: spw }); }
+    else if (tg.kind === 'r') sgHitBot(tg.ref, dmg, spw);
     else if (tg.kind === 'g') sgHitGate(tg.ref, ham ? SG_HAMMER.gate : king ? SG_KING.gate : gen ? SG_GEN.gate : pw ? SG_POW.gate : 2 * (sgBuff(sgMine(), 'steel') ? 2 : 1));
     else if (tg.kind === 'b' && !fan) backend.sgBarHit(tg.ref);
     burst(new V3(tg.x, 1.3, tg.z), fan ? [0xE8FFF0, 0xFFFFFF] : [0xFFFFFF, 0xFFE066], 14, 3, 1.5);
@@ -21654,11 +21676,11 @@ function sgDash() {
   if (spec.on || !sgCan() || sgMyRole() !== 'sol' || pDash.on) return;
   if (sgDashLeft()) { toast(`⚡ ${sgDashLeft()}초 뒤에 다시 돌격할 수 있어요`, 'info'); return; }
   const f = sgAimDir(), p = player.pos; sgw.dashCd = performance.now() + SG_DASH_CD;
-  backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: +f.x.toFixed(3), dz: +f.z.toFixed(3), v: 0, a: 0, m: 3 }); sgMeleeFx(p.x, p.z, f.x, f.z, 3);
+  backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: +f.x.toFixed(3), dz: +f.z.toFixed(3), v: 0, a: 0, m: 3 }); sgMeleeFx(p.x, p.z, f.x, f.z, 3, sgGradeOf(backend.uid, 'sol'));
   dashStart(f.x, f.z, (x, z, hit) => { // 부딪힌 상대마다 한 번씩
     const me = sgMine(), dmg = sgSwordDmg() + 1;
-    for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || hit.has(u) || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - x, r.pos.z - z) < 1.7) { hit.add(u); sgHitPlayer(u, dmg, t); burst(new V3(r.pos.x, 1.3, r.pos.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
-    for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down || hit.has(id)) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - x, a.z - z) < 1.7) { hit.add(id); sgHitBot(id, dmg); burst(new V3(a.x, 1.3, a.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
+    for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || hit.has(u) || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - x, r.pos.z - z) < 1.7) { hit.add(u); sgHitPlayer(u, dmg, t, { pw: sgPow('math') }); burst(new V3(r.pos.x, 1.3, r.pos.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
+    for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down || hit.has(id)) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - x, a.z - z) < 1.7) { hit.add(id); sgHitBot(id, dmg, sgPow('math')); burst(new V3(a.x, 1.3, a.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
   }, () => sgCan());
   renderSgBar(true);
 }
@@ -21692,11 +21714,13 @@ function sgFireHit(x, z, R, d, gd) { // 내 기기(화공을 쓴 책사)가 원 
   for (const c of Object.values(sgw.castles)) { if (c.t === me || c.open) continue; const m = sgGateAt(c, x, z); if (Math.hypot(m.x - x, m.z - z) <= R + 2.5) { n++; sgHitGate(c.t, Math.min(12, gd)); } }
   if (!n) toast('🔥 불화살이 떨어졌지만 원 안에 상대가 없었어요', 'info');
 }
-function sgLaunch(x, z, dx, dz, v, a, mine, t, dmg, pdO) {
+function sgLaunch(x, z, dx, dz, v, a, mine, t, dmg, pdO, pw = 0, gr = 0) { // 💪 pw 능력치로 더한 피해 · gr 화살 모양 (2 강철 = 파란 꼬리 · 3 = 🔥 불화살)
   const W = sgWeap(), arrow = W !== WEAPONS.sling;
   const m = arrow ? new THREE.Group() : mesh(SPH_LO, scene, 0.22, 0.2, 0.22, W.col, x, 1.7, z, { solid: false, flat: true, surf: null });
-  if (arrow) { const sh = cyl(m, 0.03, 0.9, 0x8A5A34, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); sh.castShadow = false; mesh(CONE, m, 0.06, 0.16, 0.06, 0x5A5A5A, 0, 0, 0.5, { solid: false, rx: Math.PI / 2, surf: null }); box(m, 0.12, 0.01, 0.16, 0xFFFFFF, 0, 0, -0.42, { solid: false, surf: null }); m.position.set(x, 1.7, z); scene.add(m); }
-  sgw.balls.push({ m, x, y: 1.7, z, vx: dx * v * Math.cos(a), vy: v * Math.sin(a), vz: dz * v * Math.cos(a), t: 0, mine, team: t, dmg, pd: mine ? (pdO || sgPlayerDmg()) : 0, fx: x, fz: z, dead: false, arrow });
+  if (arrow) { const ho = { solid: false, rx: Math.PI / 2, surf: null, ...(gr >= 2 ? { emissive: SG_GRADE.glow[gr] } : {}) }; const sh = cyl(m, 0.03, 0.9, 0x8A5A34, 0, 0, 0, { solid: false, rx: Math.PI / 2, surf: null }); sh.castShadow = false; mesh(CONE, m, 0.06 + gr * 0.01, 0.16, 0.06 + gr * 0.01, SG_GRADE.tipc[gr] ?? 0x5A5A5A, 0, 0, 0.5, ho); box(m, 0.12, 0.01, 0.16, gr >= 3 ? 0xFFC83D : gr >= 2 ? 0x8FCBFF : 0xFFFFFF, 0, 0, -0.42, { solid: false, surf: null });
+    if (gr >= 3) { const fb = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), new THREE.MeshBasicMaterial({ color: 0xFF7A1A, transparent: true, opacity: 0.7, depthWrite: false })); fb.position.set(0, 0, 0.5); m.add(fb); }
+    m.position.set(x, 1.7, z); scene.add(m); }
+  sgw.balls.push({ m, x, y: 1.7, z, vx: dx * v * Math.cos(a), vy: v * Math.sin(a), vz: dz * v * Math.cos(a), t: 0, mine, team: t, dmg, pd: mine ? (pdO || sgPlayerDmg()) : 0, fx: x, fz: z, dead: false, arrow, pw, gr });
 }
 /* 📜 책사 스킬 효과: 📯 나팔 = 우리 나라 친구 발밑에 금빛 고리 · 🛡️ 방패진 = 파란 방패 막 · 🔥 화공 = 불화살 비
    스킬을 쓰는 순간 우리 나라 모두에게 퍼지는 물결이 보여요 (모든 기기에서 보여요) */
@@ -21719,8 +21743,18 @@ function sgAura(a, horn, shield) { // 아바타 하나에 나팔·방패 효과 
   if (horn) { A.ring.rotation.z += 0.06; const k = 1 + Math.sin(time * 8) * 0.08; A.ring.scale.set(k, k, 1); if (Math.random() < 0.04) burst(a.g.position.clone().setY(0.3), [0xFFE066, 0xFFC83D], 4, 2, 2, 0.6); }
   if (shield) { A.dome.rotation.y += 0.01; const k = 1 + Math.sin(time * 3) * 0.03; A.dome.scale.set(k, k, k); }
 }
+const sgTmpV = new V3();
+function sgGearFx(a, uid, on) { // 💪 매 프레임: 황금 무기 반짝 · ⚒️ 갈아 준 무기 🔥 불꽃 · 📚 독서 고리
+  if (!a) return; const g = a.sgHeld;
+  if (a.sgRd) { a.sgRd.rotation.z += 0.02; if (a.sgRdT >= 3 && Math.random() < 0.03) burst(a.g.position.clone().setY(0.3), [0x7FC8FF, 0xFFFFFF], 2, 0.6, 1.5, 0.6, 0); }
+  if (!g?.userData.tip || !g.parent) return;
+  const sharp = on && sgPB(uid, 'sharp'), gr = a.sgGr || 0, fl = g.userData.flame;
+  if (fl) { fl.visible = sharp; if (sharp) { const k = 1 + Math.sin(time * 18) * 0.25; fl.scale.set(k, k * 1.4, k); } }
+  if (sharp ? Math.random() < 0.3 : gr >= 3 && Math.random() < 0.07) { const p = g.userData.tip.getWorldPosition(sgTmpV).clone(); if (sharp) burst(p, [0xFF7A1A, 0xFFC83D, 0xFF3A1A], 2, 0.6, 1.4, 0.35, 2); else burst(p, [0xFFE066, 0xFFFFFF], 2, 0.5, 0.6, 0.4, 0); }
+}
 function sgAuraAll(s) { // 매 프레임: 나팔·방패 효과 + 스킬 시작 물결
   const on = !!s?.on, B = (u, k) => on && sgPB(u, k);
+  sgGearFx(player.avatar, backend.uid, on); for (const [uid, r] of remotes) if (r.a.sgHeld || r.a.sgRd) sgGearFx(r.a, uid, on);
   const trOn = trw.role === 'sch' && trRegion(), pn = performance.now(); // 🎯 체험장 책사 연습도 같은 효과
   sgAura(player.avatar, B(backend.uid, 'horn') || B(backend.uid, 'roar') || (trOn && trw.horn > pn), B(backend.uid, 'shield') || B(backend.uid, 'dodge') || (trOn && trw.shield > pn));
   for (const [uid, r] of remotes) sgAura(r.a, B(uid, 'horn') || B(uid, 'roar'), B(uid, 'shield') || B(uid, 'dodge'));
@@ -21771,13 +21805,52 @@ function sgKingDown(uid, by) { // 👑 상대 왕을 쓰러뜨렸어요: 우리 
   if (by === sgMine()) { toast(`👑 ${N?.name || '상대'}의 왕을 쓰러뜨렸어요! 우리 나라 +${SG_KING_PTS}점`, 'success'); playSfx('fanfare'); }
 }
 function sgPlayerDmg() { const role = sgMyRole(); return sgWeap().pd + (role === 'sol' ? 1 + statTier('math') : 0) + (sgBuff(sgMine(), 'steel') ? 1 : 0); }
+/* 💥 1027o 피해 숫자: 내가 맞히면 "-6 · ⚡+2 ⚒️+1" (⚡ = 내 능력치로 더한 몫) · 친구 화면에는 체력이 줄어든 만큼 "-6" */
+function sgDmgPop(pos, txt, parts = [], big = 0, dim = false) {
+  if (!pos) return; const cv = document.createElement('canvas'); cv.width = 320; cv.height = 150; const c = cv.getContext('2d');
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+  c.font = `900 ${dim ? 70 : 78}px ${CANVAS_FONT}`; c.lineWidth = 12; c.strokeStyle = 'rgba(40,20,10,.9)'; c.strokeText(txt, 160, 52); c.fillStyle = dim ? '#FFFFFF' : big >= 3 ? '#FFD23A' : '#FF5A4A'; c.fillText(txt, 160, 52);
+  if (parts.length) { const line = parts.map(q => q[0]).join(' '); c.font = `900 40px ${CANVAS_FONT}`; c.lineWidth = 9; c.strokeText(line, 160, 118); let x = 160 - c.measureText(line).width / 2; c.textAlign = 'left'; for (const [t, col] of parts) { c.fillStyle = col; c.fillText(t, x, 118); x += c.measureText(t + ' ').width; } }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, toneMapped: false })); sp.renderOrder = 20;
+  const k = (dim ? 0.9 : 1) * (1 + Math.min(4, big) * 0.12); sp.scale.set(2.2 * k, 1.03 * k, 1);
+  const x0 = pos.x + (Math.random() - 0.5) * 0.6, z0 = pos.z + (Math.random() - 0.5) * 0.6, y0 = (pos.y || 0) + 2.7; sp.position.set(x0, y0, z0); scene.add(sp);
+  const t0 = performance.now(), step = () => { const u = (performance.now() - t0) / (sgw.popMs || 1150); if (u >= 1) { scene.remove(sp); tex.dispose(); sp.material.dispose(); return; } sp.position.y = y0 + u * 1.3; sp.material.opacity = u < 0.7 ? 1 : 1 - (u - 0.7) / 0.3; const pop = u < 0.12 ? 0.6 + u / 0.12 * 0.4 : 1; sp.scale.set(2.2 * k * pop, 1.03 * k * pop, 1); requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function sgHitPop(pos, key, dmg, pw, sh, ro) { // 내가 맞혔을 때 (능력치 몫은 금빛 ⚡)
+  const parts = []; if (pw > 0) parts.push([`⚡+${pw}`, '#FFD23A']); if (sh) parts.push(['🔥+1', '#FF9A3C']); if (ro) parts.push(['📣+1', '#FFE58A']);
+  sgDmgPop(pos, `-${dmg}`, parts, pw); if (key) (sgw.popMine ||= {})[key] = performance.now(); if (pw > 0) sgStpAdd('d', Math.min(pw, dmg));
+}
+/* 📚 공부의 힘 세기: d 능력치로 더 준 피해 · f 더 고친 성문 · r 더 긴 함성(초) → 4초마다 siege/stp/{나} */
+function sgStpAdd(k, v) { if (!S.siege?.on || !sgMine() || !(v > 0)) return; sgw.stp ||= { d: 0, f: 0, r: 0 }; sgw.stp[k] = Math.min(9999, (sgw.stp[k] || 0) + Math.round(v)); }
+function sgStpFlush(now) {
+  if (!sgw.stp || !S.siege || !sgMine() || (!now && performance.now() < (sgw.stpAt || 0))) return; sgw.stpAt = performance.now() + 4000;
+  const v = { d: sgw.stp.d | 0, f: sgw.stp.f | 0, r: sgw.stp.r | 0 }, key = JSON.stringify(v); if (key === sgw.stpSent || !(v.d || v.f || v.r)) return; sgw.stpSent = key; backend.sgStp?.(v);
+}
+const sgStpScore = (v) => (v?.d | 0) + (v?.f | 0) + Math.floor((v?.r | 0) / 3);
+const sgStpLine = (v) => [v?.d ? `⚔️ 더 준 피해 +${v.d}` : '', v?.f ? `🔨 더 고친 성문 +${v.f}` : '', v?.r ? `📣 더 긴 함성 +${v.r}초` : ''].filter(Boolean).join(' · ');
+function sgStudyFill(box) {
+  box.textContent = ''; const s = S.siege, set = sgSet(); if (!s) { box.append(el2('p', 'vempty', '성 공방전이 끝났어요')); return; }
+  const all = { ...(s.stp || {}) }; if (sgMine() && sgw.stp && sgStpScore(sgw.stp) > sgStpScore(all[backend.uid])) all[backend.uid] = sgw.stp;
+  box.append(el2('p', 'hint', '내 능력치(🔤영어 · 🧮수학 · 🏛️사회 · 📚독서) 덕분에 더 세진 만큼만 세었어요. 문제를 풀어 능력치를 올리면 다음 전쟁에서 무기도 바뀌고 더 강해져요!'));
+  if (sgMine()) { const L = sgStpLine(all[backend.uid]), d = el2('div', '', L ? `💪 내 공부의 힘 — ${L}` : '💪 이번 전쟁에서는 능력치로 더한 힘이 없었어요. 능력치를 올려 봐요!'); d.style.cssText = 'background:#FFF6D6;border:2px solid #F2C230;border-radius:12px;padding:10px;margin:8px 0;font-weight:800;line-height:1.5'; box.append(d); }
+  for (let t = 1; t <= s.n; t++) { const N = set.nat[t - 1]; if (!N) continue;
+    const L = Object.entries(all).filter(([u]) => s.team?.[u] === t).map(([u, v]) => [u, v, sgStpScore(v)]).filter(q => q[2] > 0).sort((a, b) => b[2] - a[2]).slice(0, 3);
+    const sec = el2('div', ''); sec.style.cssText = `border-left:6px solid #${new THREE.Color(N.col).getHexString()};background:#fff;border-radius:10px;padding:8px 10px;margin:6px 0;line-height:1.6`;
+    sec.append(el2('b', '', `${N.icon} ${N.name} 공부의 힘 TOP 3`));
+    if (!L.length) sec.append(el2('div', 'hint', '아직 없어요'));
+    L.forEach(([u, v], i) => sec.append(el2('div', '', `${['🥇', '🥈', '🥉'][i]} ${u === backend.uid ? `${myNick || '나'} (나)` : (nickOf(u, remotes.get(u)?.target) || '친구')} · ${sgStpLine(v)}`)));
+    box.append(sec); }
+}
+function openSgStudy() { openLife('📚 공부의 힘 결과', sgStudyFill); }
 async function sgHitPlayer(uid, dmg, tt, o = {}) { // 맞은 친구 체력을 줄이고, 0이 되면 쓰러져요 (방패진이면 1 덜 아파요)
-  if (sgPB(backend.uid, 'sharp')) dmg += 1; // ⚔️ 대장장이가 갈아 준 무기
-  if (sgPB(backend.uid, 'roar')) dmg += 1; // 📣 왕의 함성
+  const sh = sgPB(backend.uid, 'sharp') ? 1 : 0, ro = sgPB(backend.uid, 'roar') ? 1 : 0; dmg += sh + ro; // ⚔️ 대장장이가 갈아 준 무기 · 📣 왕의 함성
   if (o.stun && !sgHurt(uid)) backend.sgPBuffSet(uid, 'stun', backend.now() + SG_STUN); // 🔨 어질어질
   if (sgKingSafe(uid)) { toast('🏰 성 안에 있는 왕은 맞지 않아요! 성 밖으로 나올 때를 노려요', 'info'); return; }
   if (sgPB(uid, 'shield')) dmg = Math.max(1, dmg - 1);
   const r = await backend.sgDamage(uid, dmg, sgMaxHp(uid)); const N = sgSet().nat[tt - 1];
+  if (r.ok && r.was > 0) sgHitPop(sgPosOf(uid), uid, Math.min(dmg, r.was), o.pw || 0, sh, ro);
   if (r.ok && r.hp <= 0 && (r.was > 0 || !sgHurt(uid))) { await backend.sgHurtSet(uid); if (sgIsKing(uid) && r.was > 0) sgKingDown(uid, sgMine()); else toast(`🎯 ${N.name} 친구가 쓰러졌어요! 잠시 뒤 자기 성에서 다시 일어나요`, 'success'); }
   else if (r.ok) toast(`🎯 명중! ${N.name} 친구 ❤️ -${dmg} (${r.hp}/${sgMaxHp(uid)})`, 'success');
 }
@@ -21795,7 +21868,7 @@ const sgFixLeft = () => Math.max(0, Math.ceil(((sgw.fixCd || 0) - performance.no
 async function sgRepair(t) {
   if (sgFixLeft()) { toast(`🔨 망치를 고쳐 잡는 중이에요… ${sgFixLeft()}초 뒤에 다시 고칠 수 있어요`, 'info'); return; }
   if (sgw.busy.fix) return; sgw.busy.fix = true; setTimeout(() => { sgw.busy.fix = false; }, 1200);
-  const r = await backend.sgFix(t, Math.min(12, 4 + 2 * sgPow('eng')), sgMax(t)); if (r.ok) { sgHelpPt(); sgw.fixCd = performance.now() + SG_FIX_CD; burst(new V3(...castleLocal(t, 0, 6.2).flatMap((v, i) => i ? [1.6, v] : [v])), [0xC9A65E, 0xFFFFFF], 16, 3, 1); playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
+  const r = await backend.sgFix(t, Math.min(12, 4 + 2 * sgPow('eng')), sgMax(t)); if (r.ok) { sgHelpPt(); sgStpAdd('f', Math.min(12, 4 + 2 * sgPow('eng')) - 4); sgw.fixCd = performance.now() + SG_FIX_CD; burst(new V3(...castleLocal(t, 0, 6.2).flatMap((v, i) => i ? [1.6, v] : [v])), [0xC9A65E, 0xFFFFFF], 16, 3, 1); playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
 }
 const SG_CAT = { cost: { w: 4, i: 3 }, gate: 10 }; // 🪨 1023b: 산성 투석기 = ⚒️ 대장장이 전용 공성 무기 (쏠 때마다 나라 자원 · 성문 -10)
 function sgCatText(key, owner) {
@@ -21901,7 +21974,7 @@ function openSgRole() {
       const b = el2('button', 'sg-role' + (on ? ' on' : '')); b.setAttribute('aria-pressed', String(on)); if (full) { b.disabled = true; b.style.opacity = '0.55'; }
       const txt = el2('span', 'sg-role-txt'); txt.append(el2('b', '', `${R.name}${k === 'king' ? ' · 🗡️ 왕의 검 · 📣 함성' : k === 'gen' ? ' · 🗡️ 큰 칼 · 🌀 회오리' : k === 'sol' ? ' · 🗡️ 검 · ⚡ 돌격' : k === 'arch' ? ' · 🏹 활 · 💨 구르기' : k === 'sch' ? ' · 🌬️ 부채 ✨' : k === 'smith' ? ' · 🔨 망치' : ` · ${sgWeap().icon} ${sgWeap().name}`}`), el2('span', 'sg-role-tag', R.tag));
       for (const c of R.can) txt.append(el2('span', 'sg-role-can', c));
-      if (R.st) txt.append(el2('span', 'sg-role-tag', `${STATS[R.st].icon} 내 ${STATS[R.st].name} Lv${statLv(R.st)} + 📚 독서력 Lv${statLv('read')} → 강화 +${sgPow(R.st)}`));
+      if (R.st) txt.append(el2('span', 'sg-role-tag', `${STATS[R.st].icon} 내 ${STATS[R.st].name} Lv${statLv(R.st)} + 📚 독서력 Lv${statLv('read')} → 강화 +${sgPow(R.st)} · ${k === 'king' ? `📣 함성 고리 ${['작게', '보통', '크게', '아주 크게'][sgGrade(statTier(R.st))]}` : `${k === 'arch' ? '🏹 활' : k === 'smith' ? '🔨 망치' : '🗡️ 칼'} ${SG_GRADE.name[sgGrade(statTier(R.st))]}`}`));
       txt.append(el2('span', 'sg-role-can', (bag.trial?.[k] || (k === 'smith' && bag.trial?.eng)) ? '🎯 체험장에서 연습해 봤어요 ✅' : '🎯 학교 앞 포털 → 역할 체험장에서 미리 연습할 수 있어요'));
       b.append(el2('span', 'sg-role-ic', R.icon), txt, el2('span', 'sg-role-n', on ? `✅ 지금 역할 (${n + 1}/${cap})` : full ? (n && sgRoleEmpty(sgMine(), backend.uid).length ? `빈 역할부터 (${n}/${cap})` : `자리 없음 (${n}/${cap})`) : n ? `빈 자리 ${cap - n} (${n}/${cap})` : `🙋 비어 있어요 (0/${cap})`));
       b.onclick = async () => { if (on) { closeLife(); return; } if ((sgMyRole() === 'pow' && sgHasRole(backend.uid)) || !sgRoleOk()) { toast(sgMyRole() === 'pow' ? '⛓️ 포로는 역할을 바꿀 수 없어요' : '⏳ 역할은 🗺️ 작전 시간에 바꿀 수 있어요', 'info'); return; } if (sgRoleCount(sgMine(), k, backend.uid) >= sgRoleCap(sgMine(), k, backend.uid)) { toast(sgRoleEmpty(sgMine(), backend.uid).length ? `😅 빈 역할부터 채워요: ${sgRoleEmpty(sgMine(), backend.uid).map(k2 => SG_ROLES[k2].icon + SG_ROLES[k2].name).join(' · ')}` : '😅 그 역할은 자리가 다 찼어요. 다른 역할을 골라요', 'warn'); refillLife(); return; } if (sgMyRole() === 'king' && sgHurt(backend.uid)) { toast('👑 쓰러진 왕은 일어난 뒤에 역할을 바꿀 수 있어요', 'info'); return; } await backend.sgRole(k); playSfx('pick'); toast(`${R.icon} ${R.name}이(가) 됐어요!`, 'success'); closeLife(); renderSgBar(true); };
@@ -21957,8 +22030,8 @@ function updateSiege(dt) {
   if (sgw.beaconFire) sgw.beaconFire.visible = show && !!s?.own?.beacon;
   // 나라 표시·쓰러진 모습
   const lie = (a, on) => { a.g.rotation.z = on ? 1.45 : 0; };
-  if (player.avatar) { const h = !!s && sgMine() && sgHurt(backend.uid); setSgLook(player.avatar, s ? sgMine() : 0, h, sgMyRole()); lie(player.avatar, h); }
-  for (const [uid, r] of remotes) { const t = s ? sgTeamOf(uid) : 0, h = !!t && sgHurt(uid); setSgLook(r.a, t, h, sgRoleOf(uid)); lie(r.a, h); }
+  if (player.avatar) { const h = !!s && sgMine() && sgHurt(backend.uid); setSgLook(player.avatar, s ? sgMine() : 0, h, sgMyRole(), backend.uid); lie(player.avatar, h); }
+  for (const [uid, r] of remotes) { const t = s ? sgTeamOf(uid) : 0, h = !!t && sgHurt(uid); setSgLook(r.a, t, h, sgRoleOf(uid), uid); lie(r.a, h); }
   if (s) { const upd = (a, u) => { if (!a?.sgBar) return; const cur = sgHurt(u) ? 0 : sgCurHp(u), mx = sgMaxHp(u), k = `${cur}/${mx}/${sgArm(u)}`; if (a.sgBarKey !== k) { a.sgBarKey = k; a.sgBar.userData.draw(cur, mx, sgArm(u)); } };
     upd(player.avatar, backend.uid); for (const [uid, r] of remotes) upd(r.a, uid); }
   if (s) for (let t = 1; t <= s.n; t++) {
@@ -21979,20 +22052,21 @@ function updateSiege(dt) {
     if (sgw.boxes.some(bx => bx.containsPoint(P)) || sgw.cover.some(bx => bx.containsPoint(P))) { b.dead = true; burst(P, [0xBBB4A4, 0x8A8478], 10, 3, 1); break; }
     if (b.mine && s?.on) for (const [uid, r] of remotes) {
       const tt = sgTeamOf(uid); if (!tt || tt === b.team || sgHurt(uid) || sgSafe(uid)) continue;
-      if (Math.hypot(r.pos.x - b.x, r.pos.y + 1 - b.y, r.pos.z - b.z) < 0.85) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); sgHitPlayer(uid, b.pd || 2, tt); break; }
+      if (Math.hypot(r.pos.x - b.x, r.pos.y + 1 - b.y, r.pos.z - b.z) < 0.85) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); sgHitPlayer(uid, b.pd || 2, tt, { pw: b.pw || 0 }); break; }
     }
     if (!b.dead && b.mine && s?.on) for (const [id, bt] of Object.entries(sgb.list)) { // 🤖 컴퓨터 병사
       if (bt.t === b.team || bt.down) continue; const a = sgb.av[id]?.g.position || bt;
-      if (Math.hypot(a.x - b.x, 1.1 - b.y, a.z - b.z) < 0.9) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); sgHitBot(id, b.pd || 2); break; }
+      if (Math.hypot(a.x - b.x, 1.1 - b.y, a.z - b.z) < 0.9) { b.dead = true; burst(P, [0xFFFFFF, 0xFFE066], 26, 4, 2); sgHitBot(id, b.pd || 2, b.pw || 0); break; }
     }
     if (b.dead) break;
     if (b.y < 0.15) { b.dead = true; burst(P.setY(0.2), [0xC9B08A, 0xA89A80], 8, 2, 1); }
     b.m.position.set(b.x, b.y, b.z); if (b.arrow) b.m.lookAt(b.x + b.vx, b.y + b.vy, b.z + b.vz);
+    if (b.gr >= 2 && st === 0 && Math.random() < 0.6) burst(new V3(b.x, b.y, b.z), b.gr >= 3 ? [0xFF7A1A, 0xFFC83D, 0xFF3A1A] : [0x8FCBFF, 0xFFFFFF], 1 + (b.gr - 2), 0.3, 0.2, 0.35, 0); // 💪 화살 꼬리
   }
   for (const b of sgw.balls) if (b.dead || b.t > 5) scene.remove(b.m);
   sgw.balls = sgw.balls.filter(b => !b.dead && b.t <= 5);
   if (sgw.cool > 0) { sgw.cool -= dt; renderSgBar(); }
-  sgFerryStep(dt); sgBoatsOthers();
+  sgFerryStep(dt); sgBoatsOthers(); sgStpFlush();
   sgw.dock = !sgFerry.on && S.siege && siegeRegion() && !(sgMine() && sgHurt(backend.uid)) ? sgDockNear(player.pos.x, player.pos.z) : null; sgw.ferryIt.pos.set(sgw.dock ? sgw.dock.x : 0, sgw.dock ? 1 : -99, sgw.dock ? sgw.dock.z : 0);
   sgw.healTarget = sgFindHeal(); if (sgw.healTarget) { const r = remotes.get(sgw.healTarget); sgw.healIt.pos.set(r.pos.x, r.pos.y + 1, r.pos.z); } else sgw.healIt.pos.set(0, -99, 0);
   renderSgHud(false);
@@ -22170,10 +22244,10 @@ function updateSgBots(dt) {
   }
   for (const id of Object.keys(sgb.av)) if (!sgb.list[id]) { scene.remove(sgb.av[id].g); delete sgb.av[id]; }
 }
-async function sgHitBot(id, dmg) { // 학생이 컴퓨터 병사를 맞혔어요
-  if (sgPB(backend.uid, 'sharp')) dmg += 1; // ⚔️ 갈아 준 무기
-  if (sgPB(backend.uid, 'roar')) dmg += 1; // 📣 왕의 함성
+async function sgHitBot(id, dmg, pw = 0) { // 학생이 컴퓨터 병사를 맞혔어요
+  const sh = sgPB(backend.uid, 'sharp') ? 1 : 0, ro = sgPB(backend.uid, 'roar') ? 1 : 0; dmg += sh + ro; // ⚔️ 갈아 준 무기 · 📣 왕의 함성
   const b = sgb.list[id]; if (!b) return;
+  sgHitPop(sgb.av[id]?.g.position || b, '', dmg, pw, sh, ro);
   if (sgBotHost()) { const sim = sgb.sim[id]; if (sim && !sim.down) { sgBotHurt(sim, dmg); toast(sim.down ? '🎯 컴퓨터 병사를 쓰러뜨렸어요!' : `🎯 명중! 컴퓨터 병사 ❤️ ${sim.hp}/${sim.mx}`, 'success'); } return; }
   const r = await backend.sgBotHit(id, dmg); if (r.ok) toast(`🎯 명중! 컴퓨터 병사 ❤️ -${dmg}`, 'success');
 }
@@ -22279,7 +22353,7 @@ function renderSgHud(force) {
     if (ph === 'first') return `⚔️ 전반전 ${fm(h.a - now)}${ccTxt}`; if (ph === 'break') return `🗺️ 작전 시간 ${fm(h.b - now)} · 역할을 바꿀 수 있어요`; if (ph === 'second') return `⚔️ 후반전 ${fm(s.end - now)}${sgFinal() ? ' · 결전! 점수 2배' : ''}${ccTxt}`;
     return `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${sgFinal() ? ' · ⚔️ 결전! 점수 2배' : ` · ${set.name}`}${ccTxt}`; })();
   $('sgMine').textContent = t ? `🪵 ${res.w || 0} · ⛓️ ${res.i || 0} · 🍚 ${res.f || 0}${sgLagging() === t ? ' · 💪 약소국 단결 (차지·보급 1.5배)' : ''}` : '👀 선생님은 옆줄에서 지켜봐요';
-  if (w && sgw.ended !== s.r) { sgw.ended = s.r; showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
+  if (w && sgw.ended !== s.r) { sgw.ended = s.r; sgStpFlush(true); if (siegeRegion() && (sgMine() || isTeacher)) { setTimeout(() => { if (S.siege?.r === s.r) openSgStudy(); }, 4500); setTimeout(() => { if (life.fill === sgStudyFill) refillLife(); }, 9000); } showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
 // ---------- 선생님 ----------
 function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]);
@@ -22289,13 +22363,18 @@ function sgBalance(n, list) {
   const cnt = {}; for (const [u] of list) { const v = sgw.assign[u]; if (v >= 1 && v <= n) cnt[v] = (cnt[v] || 0) + 1; else delete sgw.assign[u]; }
   for (const [u] of hShuffle([...list])) if (!sgw.assign[u]) { let best = 1; for (let t = 1; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; sgw.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; }
 }
+function sgBalanceStat(n, list) { // 💪 1027o 능력치가 높은 학생부터 사람 수가 적고 → 힘 합이 작은 나라로 (나라마다 사람 수도 고르게)
+  sgw.assign = {}; const cnt = {}, sum = {};
+  const L = hShuffle([...list]).map(([u, tg]) => [u, sgPowerOf(u, tg) ?? 0]).sort((a, b) => b[1] - a[1]);
+  for (const [u, pw] of L) { let best = 0; for (let t = 1; t <= n; t++) { const c = cnt[t] || 0, s2 = sum[t] || 0; if (!best || c < (cnt[best] || 0) || (c === (cnt[best] || 0) && s2 < (sum[best] || 0))) best = t; } sgw.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; sum[best] = (sum[best] || 0) + pw; }
+}
 function fillSiegeAdmin(force) {
   if (!$('tpSgNow')) return;
   const s = S.siege, setKey = s ? s.set : $('tpSgSet').value, set = SIEGE_SETS[setKey] || SIEGE_SETS.three, n = s ? s.n : set.nat.length;
   const roles = s ? Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `${R.icon}${Object.keys(s.role || {}).filter(u => sgRoleOf(u) === k).length}`).join(' ') : '';
   $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초 · 역할 ${roles}` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
   $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on;
-  const list = sgStudents(), key = [setKey, n, list.map(([u]) => u).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
+  const list = sgStudents(), key = [setKey, n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?')).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
   if (!force && key === sgw.listKey) return; sgw.listKey = key;
   const box = $('tpSgList'); box.textContent = '';
   if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
@@ -22303,6 +22382,7 @@ function fillSiegeAdmin(force) {
     const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot');
     dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
     row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
+    { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.title = pw == null ? '아직 능력치 정보가 없어요 (새로고침하면 보여요)' : '능력치 힘 = 영어+수학+사회 단계 + 독서 단계×2'; b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1))));
     sel.value = String((s ? s.team?.[u] : sgw.assign[u]) || 0);
@@ -22310,6 +22390,8 @@ function fillSiegeAdmin(force) {
     const find = el2('button', 'btn', '📍'); find.title = '이 학생 위에 빛기둥 보이기'; find.onclick = () => sgBeam(u);
     row.append(sel, find); box.append(row);
   });
+  { const T = s ? (s.team || {}) : sgw.assign, sum = {}, cnt = {}; for (const [u, tg] of list) { const t = T[u]; if (!t) continue; sum[t] = (sum[t] || 0) + (sgPowerOf(u, tg) ?? 0); cnt[t] = (cnt[t] || 0) + 1; }
+    if (Object.keys(cnt).length) box.append(el2('p', 'hint', '💪 나라별 능력치 힘: ' + set.nat.slice(0, n).map((N, k) => `${N.icon}${N.name} ${sum[k + 1] || 0} (${cnt[k + 1] || 0}명)`).join(' · '))); }
 }
 function sgBeam(u) {
   const r = remotes.get(u), a = r ? r.a : u === backend.uid ? player.avatar : null; if (!a) { toast('지금 보이지 않는 학생이에요', 'info'); return; }
@@ -22334,6 +22416,7 @@ async function startSiege() {
 function initSiegeUI() {
   const sel = $('tpSgSet'); for (const [k, v] of Object.entries(SIEGE_SETS)) sel.append(new Option(`${v.name} (${v.nat.map(N => N.name).join('·')})`, k)); sel.value = 'three';
   sel.onchange = () => fillSiegeAdmin(true);
+  $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
   $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 우리 마을 광장으로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
@@ -22463,7 +22546,7 @@ function trBar(force) {
   for (const [id, s] of [['trFire', 'fire'], ['trHorn', 'horn'], ['trShield', 'shield']]) { $(id).classList.toggle('hidden', k !== 'sch'); $(id).disabled = !!trw.sch[s] && s !== 'horn'; }
 }
 // ⚔️ 병사: 🗡️ 검으로 가까운 허수아비 베기 · 📜 책사: 🌬️ 부채 (피해 1)
-function trHitDummy(d, dmg) { d.hp = Math.max(0, d.hp - dmg); d.bar.userData.draw(d.hp, d.max, 0); burst(new V3(d.x, 1.4, d.z), [0xE8CC80, 0xFFFFFF], 16, 3, 1); toast(d.hp > 0 ? `🎯 명중! 피해 ${dmg} · 허수아비 ❤️ ${d.hp}/${d.max}` : '💥 허수아비를 쓰러뜨렸어요!', 'success'); if (d.hp <= 0) d.g.rotation.x = -1.4; }
+function trHitDummy(d, dmg, pw = 0) { sgDmgPop(new V3(d.x, 0, d.z), `-${dmg}`, pw > 0 ? [[`⚡+${pw}`, '#FFD23A']] : [], pw); d.hp = Math.max(0, d.hp - dmg); d.bar.userData.draw(d.hp, d.max, 0); burst(new V3(d.x, 1.4, d.z), [0xE8CC80, 0xFFFFFF], 16, 3, 1); toast(d.hp > 0 ? `🎯 명중! 피해 ${dmg} · 허수아비 ❤️ ${d.hp}/${d.max}` : '💥 허수아비를 쓰러뜨렸어요!', 'success'); if (d.hp <= 0) d.g.rotation.x = -1.4; }
 function trShoot() {
   if (trw.fireAim) { trSkill('fire'); return; }
   if (trw.role === 'arch') { if (!trw.draw && trw.cool <= 0) trw.draw = performance.now(); trBar(true); return; } // 🏹 꾹 → 놓으면 trArchRelease
@@ -22473,15 +22556,15 @@ function trShoot() {
   const fan = false, W = SG_SWORD, p = player.pos, f = sgAimDir(); let best = null, bs = 1e9;
   for (const d of trw.dummies) { if (d.hp <= 0) continue; const dx = d.x - p.x, dz = d.z - p.z, dist = Math.hypot(dx, dz); if (dist > W.rng) continue; const ang = dist < 0.4 ? 0 : Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / dist))); if (ang > 1.4) continue; if (dist + ang * 1.5 < bs) { bs = dist + ang * 1.5; best = d; } }
   let dx = f.x, dz = f.z; if (best) { const ex = best.x - p.x, ez = best.z - p.z, dd = Math.hypot(ex, ez) || 1; dx = ex / dd; dz = ez / dd; }
-  player.heading = Math.atan2(dx, dz); playAct(player.avatar, fan ? 'fanw' : 'slash'); sgMeleeFx(p.x, p.z, dx, dz, fan ? 2 : 1); trw.cool = W.cd;
-  if (best) setTimeout(() => trHitDummy(best, fan ? SG_FAN.pd : SG_SWORD.pd + 1 + statTier('math')), 140);
+  player.heading = Math.atan2(dx, dz); playAct(player.avatar, fan ? 'fanw' : 'slash'); sgMeleeFx(p.x, p.z, dx, dz, fan ? 2 : 1, sgGrade(statTier('math'))); trw.cool = W.cd;
+  if (best) setTimeout(() => trHitDummy(best, fan ? SG_FAN.pd : SG_SWORD.pd + 1 + statTier('math'), fan ? 0 : statTier('math')), 140);
   else if (!fan) toast('🗡️ 허수아비에게 더 가까이 가서 베어요 (2~3걸음) · ⚡ 돌격(Q)으로 확 다가갈 수 있어요', 'info');
 }
 function trDash() { // ⚡ 체험장 돌격 (4초마다 · 실제 전쟁은 10초)
   if (trw.role === 'arch' || trw.role === 'gen') return trQ();
   if (trw.role !== 'sol' || pDash.on) return; if ((trw.dashCd || 0) > performance.now()) return;
   trw.dashCd = performance.now() + 4000; const f = sgAimDir(); sgMeleeFx(player.pos.x, player.pos.z, f.x, f.z, 3);
-  dashStart(f.x, f.z, (x, z, hit) => { for (const d of trw.dummies) if (d.hp > 0 && !hit.has(d) && Math.hypot(d.x - x, d.z - z) < 1.7) { hit.add(d); trHitDummy(d, SG_SWORD.pd + 2 + statTier('math')); } }, () => trRegion());
+  dashStart(f.x, f.z, (x, z, hit) => { for (const d of trw.dummies) if (d.hp > 0 && !hit.has(d) && Math.hypot(d.x - x, d.z - z) < 1.7) { hit.add(d); trHitDummy(d, SG_SWORD.pd + 2 + statTier('math'), statTier('math')); } }, () => trRegion());
   trBar(true);
 }
 // 🏹 궁병 · 🎖️ 장군 체험 (1022f)
@@ -22558,7 +22641,7 @@ function updateTrain(dt) {
   if (trw.cool > 0) trw.cool = Math.max(0, trw.cool - dt);
   if (trw.fireAim && (performance.now() > trw.fireAim || trw.role !== 'sch')) { trw.fireAim = 0; trBar(true); }
   { const want = trRegion() && ['sol', 'sch', 'arch', 'gen'].includes(trw.role) ? trw.role : '', a = player.avatar; // 체험장에서도 검·부채를 들어요
-    if ((a.trItemRole || '') !== want) { if (a.trItem) { a.trItem.parent?.remove(a.trItem); a.trItem = null; } if (want) a.trItem = sgHeldItem(a, want); a.trItemRole = want; } }
+    if ((a.trItemRole || '') !== want) { if (a.trItem) { a.trItem.parent?.remove(a.trItem); a.trItem = null; if (a.sgHeld && !a.sgHeld.parent) a.sgHeld = null; } if (want) { const gr = sgGradeOf(backend.uid, want); a.trItem = sgHeldItem(a, want, gr); if (!a.sgObjs) { a.sgHeld = a.trItem; a.sgGr = gr; } } a.trItemRole = want; } }
   // 날아가는 돌·화살
   const tSteps = Math.max(1, Math.ceil(dt / (1 / 90))), tdt = dt / tSteps; // 느린 기기에서도 화살이 과녁을 지나치지 않게 잘게 나눠 움직여요
   for (let si = 0; si < tSteps; si++) for (const b of trw.balls) { if (b.dead) continue; const dt = tdt; b.t += dt; b.vy -= 9.8 * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt; b.m.position.set(b.x, b.y, b.z); if (b.m.isGroup) b.m.lookAt(b.x + b.vx, b.y + b.vy, b.z + b.vz);
