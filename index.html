@@ -17369,6 +17369,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028a', d: '10월 28일', items: ['🗳️ 우리 반 의견함에 선생님도 의견을 넣을 수 있어요 (투표 때 다른 의견과 똑같이 보여요)'] },
   { id: '1027o', d: '10월 27일', items: ['💪 성 공방전에서 공부의 힘이 눈에 보여요! 능력치에 따라 무기가 나무 → 철 → 강철 → 황금으로 바뀌어요 (궁병은 🔥 불화살까지)', '💥 맞히면 피해 숫자가 떠요 · 금빛 ⚡는 내 능력치로 더한 몫 · ⚒️ 대장장이가 갈아 준 무기는 🔥 불꽃', '📚 독서력이 오르면 발밑에 파란 고리 · 전쟁이 끝나면 나라별 공부의 힘 TOP 3'] },
   { id: '1027n', d: '10월 27일', items: ['🔢 영어 훈련소 Lesson 10에 숫자·가격 연습! eleven~sixteen, twenty~fifty, hundred, thousand를 듣고·읽고·써요 (매번 새 가격)', '💬 Can I help you? / They\'re three thousand won. / Oh, they\'re expensive. 같은 가격 묻고 답하기 표현이 늘었어요'] },
   { id: '1027m', d: '10월 27일', items: ['📝 영어 훈련소 Lesson 12에 단원평가 연습! 평가지 그림과 평가 음원으로 풀어요 → 이제 Lesson 7~12 모두 단원평가 연습이 있어요'] },
@@ -23988,6 +23989,7 @@ function pollTally(id) { const c = {}; for (const v of Object.values(S.pqv?.[id]
 const pollVoters = (id) => Object.keys(S.pqv?.[id] || {}).length;
 const pollBad = (t) => nickBad(t) || thxBadWord(t);
 const pollWho = (u) => { u = String(u || ''); if (u === backend?.uid) return cleanNick(myNick) || '나'; return rosterOf(u, remotes.get(u)?.target) || nickOf(u, remotes.get(u)?.target) || '익명'; };
+const pollAuthor = (k) => /_t[0-9]+$/.test(k) ? '🧑‍🏫 선생님' : pollWho(k.replace(/_[01]$/, '')); // 🧑‍🏫 1028a 선생님 의견 키: {기기}_t{번호}
 function pollPut(path, val) { return backend.pollSet ? backend.pollSet(path, val) : Promise.resolve({ ok: false }); }
 function openPoll(focus) {
   if (focus) poll.open = focus;
@@ -24014,28 +24016,34 @@ function openPoll(focus) {
   });
 }
 function pollBody(card, id, q, ops) {
-  const me = backend.uid, mineOps = ops.filter(([k]) => k.startsWith(me + '_')), tally = pollTally(id), nv = pollVoters(id);
+  const me = backend.uid, mineOps = ops.filter(([k]) => k.startsWith(me + '_') && !/_t[0-9]+$/.test(k)), tally = pollTally(id), nv = pollVoters(id);
   const bar = (k, t, n, max, win) => { const r = el2('div', '', ''); r.style.cssText = 'margin:4px 0'; const lab = el2('div', '', `${win ? '🏆 ' : ''}${t} · ${n}표`); lab.style.cssText = `font-size:16px;${win ? 'font-weight:700' : ''}`; const bg = el2('div', ''); bg.style.cssText = 'height:12px;border-radius:6px;background:#EEE;overflow:hidden'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${max ? n / max * 100 : 0}%;background:${win ? '#FFB347' : '#7FC8F8'}`; bg.append(f); r.append(lab, bg); return r; };
   if (q.ph === 'prop') { card.append(el2('p', 'hint', isTeacher ? `학생 제안 (${pollWho(q.u)}) · 허락하면 의견 모으기가 시작돼요` : '선생님이 보고 있어요')); }
   if (q.ph === 'collect') {
-    const list = el2('div', 'row-center wrap'); for (const [k, o] of ops) { const sp = el2('span', '', `💬 ${o.t}${isTeacher ? ` (${pollWho(k.replace(/_[01]$/, ''))})` : k.startsWith(me + '_') ? ' (내 의견)' : ''}`); sp.style.cssText = 'display:inline-block;margin:3px;padding:4px 10px;border-radius:12px;background:#FFF6D8;font-size:15px'; if (isTeacher) { const x = el2('button', 'btn', '✖'); x.style.cssText = 'font-size:11px;padding:1px 6px;margin-left:4px;background:#fff'; x.onclick = (e) => { e.stopPropagation(); adminDo({ [`pqo/${id}/${k}`]: null }, '🗑️ 의견을 지웠어요').then(() => setTimeout(refillLife, 250)); }; sp.append(x); } list.append(sp); }
+    const list = el2('div', 'row-center wrap'); for (const [k, o] of ops) { const sp = el2('span', '', `💬 ${o.t}${isTeacher ? ` (${pollAuthor(k)})` : mineOps.some(([m]) => m === k) ? ' (내 의견)' : ''}`); sp.style.cssText = 'display:inline-block;margin:3px;padding:4px 10px;border-radius:12px;background:#FFF6D8;font-size:15px'; if (isTeacher) { const x = el2('button', 'btn', '✖'); x.style.cssText = 'font-size:11px;padding:1px 6px;margin-left:4px;background:#fff'; x.onclick = (e) => { e.stopPropagation(); adminDo({ [`pqo/${id}/${k}`]: null }, '🗑️ 의견을 지웠어요').then(() => setTimeout(refillLife, 250)); }; sp.append(x); } list.append(sp); }
     if (!ops.length) list.append(el2('p', 'hint', '아직 의견이 없어요. 첫 의견을 내 봐요!')); card.append(list);
     if (!isTeacher) { if (mineOps.length >= 2) card.append(el2('p', 'hint', '의견은 한 사람 2개까지예요.'));
       else { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '내 의견 (40글자까지)'; inp.autocomplete = 'off'; const b = el2('button', 'btn', '💡 의견 내기'); b.style.background = '#FFD23C';
         b.onclick = async () => { const t = inp.value.trim(); if (!t) return; if (pollBad(t)) { toast('🙅 고운 말로 적어요', 'warn'); return; } if (ops.some(([, o]) => gwNorm(o.t) === gwNorm(t))) { toast('💡 같은 의견이 이미 있어요. 투표 때 골라 주세요', 'info'); return; }
           const n = mineOps.some(([k]) => k.endsWith('_0')) ? 1 : 0, r = await pollPut(`pqo/${id}/${me}_${n}`, { t, at: Date.now() }); if (r.ok) { playSfx('pick'); toast('💡 의견을 냈어요!', 'success'); refillLife(); } else toast('⚠️ 보내지 못했어요 (마감됐을 수 있어요)', 'warn'); };
         const rw = el2('div', 'row-center wrap'); rw.append(inp, b); card.append(rw); } }
+    else { // 🧑‍🏫 1028a 선생님도 의견 넣기 (개수 제한 없음 · 학생에게는 다른 의견처럼 익명으로 보여요)
+      const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '선생님 의견 (40글자까지)'; inp.autocomplete = 'off'; const b = el2('button', 'btn', '💡 선생님 의견 넣기'); b.style.background = '#FFD23C';
+      inp.onclick = (e) => e.stopPropagation();
+      b.onclick = async (e) => { e.stopPropagation(); const t = inp.value.trim(); if (!t) return; if (pollBad(t)) { toast('🙅 고운 말로 적어요', 'warn'); return; } if (ops.some(([, o]) => gwNorm(o.t) === gwNorm(t))) { toast('💡 같은 의견이 이미 있어요', 'info'); return; } if (ops.length >= 80) { toast('의견이 너무 많아요 (80개까지)', 'warn'); return; }
+        let n = 0; while (S.pqo?.[id]?.[`${me}_t${n}`]) n++; await adminDo({ [`pqo/${id}/${me}_t${n}`]: { t, at: Date.now() } }, '💡 선생님 의견을 넣었어요'); playSfx('pick'); setTimeout(refillLife, 250); };
+      const rw = el2('div', 'row-center wrap'); rw.append(inp, b); card.append(rw); card.append(el2('p', 'hint', '선생님 의견도 학생들에게는 다른 의견과 똑같이 (누가 냈는지 없이) 보여요')); }
   }
   if (q.ph === 'vote') {
     const mv = Math.max(1, q.mv | 0), my = String(S.pqv?.[id]?.[me] || '');
     card.append(el2('p', 'hint', `마음에 드는 의견을 ${mv}개까지 골라 🗳️ 투표해요 · 마감 전에는 바꿀 수 있어요 · 지금 ${nv}명 투표`));
-    if (isTeacher) { const max = Math.max(1, ...Object.values(tally)); for (const [k, o] of ops) card.append(bar(k, `${o.t} (${pollWho(k.replace(/_[01]$/, ''))})`, tally[k] || 0, max, false)); }
+    if (isTeacher) { const max = Math.max(1, ...Object.values(tally)); for (const [k, o] of ops) card.append(bar(k, `${o.t} (${pollAuthor(k)})`, tally[k] || 0, max, false)); }
     else { const grid = el2('div', 'mx-opts'); for (const [k, o] of ops) { const sel = poll.sel.has(k), b = el2('button', 'btn mx-opt', `${sel ? '✅ ' : ''}${o.t}`); b.style.background = sel ? '#FFE066' : '#fff'; b.onclick = (e) => { e.stopPropagation(); if (sel) poll.sel.delete(k); else { if (mv === 1) poll.sel.clear(); else if (poll.sel.size >= mv) { toast(`🗳️ ${mv}개까지 골라요`, 'info'); return; } poll.sel.add(k); } refillLife(); }; grid.append(b); }
       card.append(grid); const v = el2('button', 'btn', my ? '🗳️ 다시 투표하기' : '🗳️ 투표하기'); v.style.background = '#FFD23C';
       v.onclick = async (e) => { e.stopPropagation(); const val = [...poll.sel].filter(k => S.pqo?.[id]?.[k]).slice(0, mv).join(','); if (!val) { toast('의견을 골라요', 'warn'); return; } const r = await pollPut(`pqv/${id}/${me}`, val); if (r.ok) { playSfx('pick'); toast('🗳️ 투표했어요! (누구를 골랐는지는 비밀)', 'success'); refillLife(); } else toast('⚠️ 투표하지 못했어요 (마감됐을 수 있어요)', 'warn'); };
       const rw = el2('div', 'row-center'); rw.append(v); card.append(rw); if (my) card.append(el2('p', 'hint', '✅ 투표했어요')); }
   }
-  if (q.ph === 'done') { const max = Math.max(0, ...Object.values(tally)); const sorted = [...ops].sort((a, b) => (tally[b[0]] || 0) - (tally[a[0]] || 0)); card.append(el2('p', 'hint', `${nv}명이 투표했어요`)); for (const [k, o] of sorted) card.append(bar(k, isTeacher ? `${o.t} (${pollWho(k.replace(/_[01]$/, ''))})` : o.t, tally[k] || 0, max, max > 0 && (tally[k] || 0) === max)); }
+  if (q.ph === 'done') { const max = Math.max(0, ...Object.values(tally)); const sorted = [...ops].sort((a, b) => (tally[b[0]] || 0) - (tally[a[0]] || 0)); card.append(el2('p', 'hint', `${nv}명이 투표했어요`)); for (const [k, o] of sorted) card.append(bar(k, isTeacher ? `${o.t} (${pollAuthor(k)})` : o.t, tally[k] || 0, max, max > 0 && (tally[k] || 0) === max)); }
   if (isTeacher) { // 🧑‍🏫 진행 버튼
     const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.cssText = `font-size:15px;background:${bg}`; b.onclick = (e) => { e.stopPropagation(); fn(); }; row.append(b); }, go = (ph, msg) => adminDo({ [`pq/${id}/ph`]: ph }, msg).then(() => setTimeout(refillLife, 250));
     if (q.ph === 'prop') { B('✅ 허락하고 의견 모으기', '#CDEFC2', () => go('collect', '💡 의견 모으기를 시작했어요')); }
