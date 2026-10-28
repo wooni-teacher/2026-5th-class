@@ -4291,7 +4291,7 @@ function updatePlayer(dt) {
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
   const moving = Math.min(1, Math.hypot(mx, mz));
   if (moving > 0.05) {
-    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : 1); p.x += mx * spd * dt; // 🏊 물속은 천천히 p.z += mz * spd * dt;
+    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt; /* 🏊 물속은 천천히 */
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -13180,7 +13180,7 @@ function renderMuralWall(force) {
   const p = muralNow(), show = muralShow(), key = JSON.stringify(MURALS.map((_, i) => muralCount(i))) + mural.lv;
   if (!force && key === mural.key) return;
   mural.key = key;
-  mural.tex.image = muralCanvas(show, 480 / mW(show), true); // 늘 480×360 (12·16·20칸 모두 나눠떨어져요. 크기가 바뀌면 텍스처가 깨져요) mural.tex.needsUpdate = true;
+  mural.tex.image = muralCanvas(show, 480 / mW(show), true); /* 늘 480×360 (12·16·20칸 모두 나눠떨어져요. 크기가 바뀌면 텍스처가 깨져요) */ mural.tex.needsUpdate = true;
   const doneList = MURALS.map((_, i) => i).filter(muralDone).slice(-4); // 완성작이 많으면 마지막 4장
   mural.frames.forEach((f, k) => {
     const i = doneList[k];
@@ -15109,7 +15109,7 @@ function hpetModel(ki, acc = 0, spark = false, ow = 0) { // 🐾 네모네모 �
 }
 function hpetAnim(g, dt, moving) { // 걷기 · 숨쉬기 · 꼬리 살랑
   const u = g.userData; u.ph += dt * (moving ? 12 : 3); u.hop = Math.max(0, (u.hop || 0) - dt); u.mv = moving;
-  u.body.position.y = u.gecko ? (moving ? Math.abs(Math.sin(u.ph)) * 0.012 : 0) : moving ? Math.abs(Math.sin(u.ph)) * 0.06 : Math.sin(u.ph) * 0.01; if (u.gecko) geckoAnim(g, dt); // 🦎 히로는 낮게 S자로 if (u.hop > 0) u.body.position.y += Math.sin((0.6 - u.hop) / 0.6 * Math.PI) * 0.5;
+  u.body.position.y = u.gecko ? (moving ? Math.abs(Math.sin(u.ph)) * 0.012 : 0) : moving ? Math.abs(Math.sin(u.ph)) * 0.06 : Math.sin(u.ph) * 0.01; if (u.gecko) geckoAnim(g, dt); /* 🦎 히로는 낮게 S자로 */ if (u.hop > 0) u.body.position.y += Math.sin((0.6 - u.hop) / 0.6 * Math.PI) * 0.5;
   if (u.spin > 0) { u.spin -= dt; u.body.rotation.y += dt * 12; } else u.body.rotation.y *= 0.8;
   if (u.tail) u.tail.rotation.y = Math.sin(u.ph * 1.6) * 0.5;
   if (u.heart && (u.ht = (u.ht || 0) - dt) <= 0) { u.ht = 1.4; burst(g.getWorldPosition(new V3()).add(new V3(0, 1.1, 0)), [0xFF7AA8, 0xFF9AC0], 3, 0.8, 1.2, 0.9, -0.5); }
@@ -17484,7 +17484,7 @@ function openReadLog() {
       const res = await backend.readLog(pick.g); bld.readBusy = false; let gain = 0;
       if (res.ok) { earnMat('독서 기록'); creditAction('read'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
       if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
-      bag.reads.unshift({ g: pick.g, k: pick.k, p: pick.p, at: Date.now() }); // 1020d: 제목·별점·느낌은 종이 기록장에 bag.reads = bag.reads.slice(0, 60);
+      bag.reads.unshift({ g: pick.g, k: pick.k, p: pick.p, at: Date.now() }); /* 1020d: 제목·별점·느낌은 종이 기록장에 */ bag.reads = bag.reads.slice(0, 60);
       let msg = `📒 기록했어요! ${gain > 0 ? `📚 독서력 +${gain}` : '오늘 독서력은 가득 찼어요'} · 독서 나무가 자라요`;
       if (bag.readDay !== dayNum()) { bag.readDay = dayNum(); earnShell(10); msg += ' · 🎁 🐚 +10'; }
       saveBag(); playSfx('coin'); toast(msg, 'success');
@@ -17670,6 +17670,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028r', d: '10월 28일', items: ['🚶 캐릭터가 한 줄로만 걷고 앞뒤(위아래)로는 못 움직이던 문제를 고쳤어요', '🛠️ 벽화 그림 갱신 · 펫 점프 · 펫 배틀 체력 색 · 영어 문장 "다음" 버튼 · 독서 기록 개수 제한도 바로잡았어요'] },
   { id: '1028q', d: '10월 28일', items: ['🚶 광장 감사 게시판·미션 게시판 아래가 투명 벽처럼 막히던 문제를 고쳤어요 (이제 게시판 아래로 지나갈 수 있어요)'] },
   { id: '1028p', d: '10월 28일', items: ['🏊 이름을 "아쿠아센터"로 바꿨어요 (건물 간판도)'] },
   { id: '1028o', d: '10월 28일', items: ['🏊 체육관이 아쿠아센터로 바뀌었어요! 자유 수영 · 🌊 워터슬라이드', '🏁 수영 경주: 로봇 3명과 25m · 표시선마다 영어·수학·사회 한 문제씩 · 맞히면 ⚡ 스퍼트'] },
@@ -18282,7 +18283,7 @@ function renderEvQ() {
     $('evNext').textContent = pass ? '한 번 더' : '다시 하기'; $('evNext').disabled = false; $('evSay').disabled = true;
     return;
   }
-  evStopAudio(); const it = q.qs[q.i]; q.answered = false; $('evSay').disabled = !(it.say || it.type === 'order'); // 🔊 문장 만들기도 다시 듣기 $('evNext').disabled = true; $('evNext').textContent = q.i === q.qs.length - 1 ? '결과 보기 ▶' : '다음 ▶';
+  evStopAudio(); const it = q.qs[q.i]; q.answered = false; $('evSay').disabled = !(it.say || it.type === 'order'); /* 🔊 문장 만들기도 다시 듣기 */ $('evNext').disabled = true; $('evNext').textContent = q.i === q.qs.length - 1 ? '결과 보기 ▶' : '다음 ▶';
   $('evStep').textContent = `${q.train ? '🏋️ 영어 훈련소 · Lesson ' + q.n : Z.ko} · ${q.i + 1} / ${q.qs.length}${it.type !== 'pick' ? ' · ✍️ 쓰기 (보상 2배)' : ''}`;
   box.append(el2('div', 'ev-ask', it.type === 'order' ? '🧩 단어를 차례대로 눌러 문장을 만들어요' : it.type === 'spell' ? '✍️ 뜻에 맞는 영어 단어를 알파벳을 눌러 만들어요' : it.ask));
   if (it.show) box.append(el2('div', 'ev-big', it.show));
@@ -19665,7 +19666,7 @@ function pbCard(el, m, side) { // 🪪 이름표: 같은 펫이면 체력 막대
   if (el.dataset.id !== m.id) { el.dataset.id = m.id; el.textContent = '';
     const top = el2('div', 'pb-name'); top.append(el2('b', '', m.nm || c.name), el2('span', 'pb-type', `${t.i} ${t.n}`), el2('span', 'pb-lv', `Lv${m.lv}`)); el.append(top);
     const bar = el2('div', 'pb-hp'), tr = el2('div', 'pb-hptr'); tr.append(el2('b', 'pb-ghost'), el2('i', '')); bar.append(el2('span', 'pb-hpl', 'HP'), tr); el.append(bar, el2('div', 'pb-hpt', ''), el2('div', 'pb-dots', '')); }
-  const r = Math.max(0, m.hp / m.max), fill = el.querySelector('.pb-hp i'), gh = el.querySelector('.pb-ghost'); fill.style.width = `${r * 100}%`; gh.style.width = `${r * 100}%`; // 줄어든 만큼 잠깐 빨갛게 남았다가 따라와요 fill.style.background = r > 0.5 ? 'linear-gradient(#7EE07A,#3FAF4A)' : r > 0.2 ? 'linear-gradient(#FFE066,#E8B400)' : 'linear-gradient(#FF8A7A,#E2584A)';
+  const r = Math.max(0, m.hp / m.max), fill = el.querySelector('.pb-hp i'), gh = el.querySelector('.pb-ghost'); fill.style.width = `${r * 100}%`; gh.style.width = `${r * 100}%`; /* 줄어든 만큼 잠깐 빨갛게 남았다가 따라와요 */ fill.style.background = r > 0.5 ? 'linear-gradient(#7EE07A,#3FAF4A)' : r > 0.2 ? 'linear-gradient(#FFE066,#E8B400)' : 'linear-gradient(#FF8A7A,#E2584A)';
   el.querySelector('.pb-hpt').textContent = `${m.hp} / ${m.max}${m.sa ? ` · 공격${m.sa > 0 ? '↑' : '↓'}` : ''}${m.sd ? ` · 방어${m.sd > 0 ? '↑' : '↓'}` : ''}`;
   el.querySelector('.pb-dots').textContent = side.mons.map(x => x.hp > 0 ? '●' : '○').join(' ');
 }
