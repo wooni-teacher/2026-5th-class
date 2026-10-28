@@ -1873,7 +1873,7 @@ const CFG = {
   TEACHER_PIN: '126758',
   SITES: [
     { id: 'Library',    name: '펫 체육관', icon: '🐾', cost: 5, color: 0x568CEB, pos: [-40, 0],  front: [1, 0] },
-    { id: 'Playground', name: '체육관',    icon: '🏸', cost: 5, color: 0x3F7FD0, pos: [40, 0],   front: [-1, 0] },
+    { id: 'Playground', name: '아쿠아센터', icon: '🏊', cost: 5, color: 0x3F7FD0, pos: [40, 0],   front: [-1, 0] },
     { id: 'Garden',     name: '독서 나무', icon: '🌳', cost: 4, color: 0x5FBE5A, pos: [-28, 40], front: [0, -1] },
     { id: 'Art',        name: '미술 공방', icon: '🎨', cost: 5, color: 0xE16EC8, pos: [28, 40],  front: [0, -1] },
   ],
@@ -4284,14 +4284,14 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
   const moving = Math.min(1, Math.hypot(mx, mz));
   if (moving > 0.05) {
-    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1); p.x += mx * spd * dt; p.z += mz * spd * dt;
+    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : 1); p.x += mx * spd * dt; // 🏊 물속은 천천히 p.z += mz * spd * dt;
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -17078,7 +17078,7 @@ function initThxUI() {
 const ROOMS = {
   lib: { name: '펫 체육관', icon: '🐾', cx: 1450, cz: 0, w: 28, d: 22, wall: 0xFFF1D6, floor: 0xD8C4A0, site: 'Library' }, // 예전 도서관 (독서 책상은 왼쪽 구석에)
   art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
-  gym: { name: '체육관', icon: '🏸', cx: 1580, cz: 0, w: 30, d: 30, wall: 0xE3F0FF, floor: 0xD9A866, site: 'Playground' },
+  gym: { name: '반월 아쿠아센터', icon: '🏊', cx: 1580, cz: 0, w: 30, d: 30, wall: 0xDDF3FF, floor: 0xE8F2F4, site: 'Playground' }, // 🏊 1028o 체육관 → 수영장 (방 id는 그대로)
   gh: { name: '온실 도서관', icon: '📚', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
   sd: { name: '서당', icon: '📜', cx: 1450, cz: 40, w: 20, d: 16, wall: 0xF1E4CC, floor: 0xC79A64, site: 'hv:seodang' },
   era: { name: '시대관', icon: '🏛️', cx: 1450, cz: -40, w: 20, d: 16, wall: 0xF3EBDD, floor: 0xB9905F, site: 'hv:era' },
@@ -17114,6 +17114,115 @@ function roomShell(g, r) {
   box(g, 2.8, 0.5, 0.3, r.wall, cx, H - 0.25, cz + d / 2, o);
   box(g, 2.0, 0.02, 1.0, 0xE2584A, cx, 0.115, cz + d / 2 - 0.9, o);
   signPlane(g, [`${r.icon} ${r.name}`], 3.6, 0.8, cx, H + 0.5, cz - d / 2 + 0.2, { font: 52, pad: 4, fg: '#3B2F2A', bg: '#FFFCF7', stroke: false }).rotation.y = 0;
+}
+// ================= 🏊 1028o 반월 아쿠아센터 (예전 체육관 자리 · 방 id는 그대로 'gym') =================
+// 🏊 자유 수영: 물에 들어가면 몸이 물에 잠기고 헤엄쳐요 (천천히) · 🏁 수영 경주: 🤖 3명과 25m · 표시선 3곳에서 영어·수학·사회 한 문제씩
+// 맞히면 ⚡ 스퍼트, 틀리면 🐢 잠깐 느려요 (기다리는 동안 로봇은 헤엄쳐요) · 🌊 워터슬라이드: 2층에서 빙글빙글 내려와 풍덩
+// · 저장: 이 기기 bag.swimBest (ms) · bag.swimDay {d, n} (하루 3판 🐚) · bag.slideN
+const POOL = { x0: 1567.5, x1: 1592.5, z0: -13, z1: -1, y: 0.16, lanes: [-11.5, -8.5, -5.5, -2.5], start: 1569, finish: 1591, me: 1 };
+const inPool = (x, z) => x > POOL.x0 && x < POOL.x1 && z > POOL.z0 && z < POOL.z1;
+const SLIDE_PTS = [[1592, 4.8, 12.5], [1588.5, 4.3, 13.2], [1585, 3.8, 12], [1584.5, 3.2, 8.5], [1587.5, 2.6, 6.8], [1591.5, 2.0, 6.5], [1592.5, 1.4, 3.5], [1590.5, 0.8, 1.0], [1589, 0.35, -2.2]];
+const pool = { built: false, curve: null, bots: [], water: null };
+const swim = { on: false, x: 0, v: 0, t0: 0, fi: 0, wait: false, boost: 0, slow: 0, ok: 0, qs: [], last: null, answered: false };
+const slideW = { on: false, u: 0, v: 0, last: null };
+function buildPool(g, r) { // 방 안: 수영장 · 레인 줄 · 출발대 · 미끄럼틀 탑 · 안전요원 의자
+  const { cx, cz, w, d } = r, o = { solid: false };
+  box(g, w - 0.6, 0.02, d - 0.6, 0xE8F2F4, cx, 0.11, cz, o); // 타일 바닥
+  for (let k = -6; k <= 6; k++) { box(g, 0.04, 0.021, d - 0.6, 0xD2E2E6, cx + k * 2.2, 0.112, cz, o); box(g, w - 0.6, 0.021, 0.04, 0xD2E2E6, cx, 0.112, cz + k * 2.2, o); }
+  const PW = POOL.x1 - POOL.x0, PD = POOL.z1 - POOL.z0, pcx = (POOL.x0 + POOL.x1) / 2, pcz = (POOL.z0 + POOL.z1) / 2;
+  box(g, PW + 1.2, 0.08, PD + 1.2, 0xFFFFFF, pcx, 0.14, pcz, o); // 테두리
+  box(g, PW, 0.03, PD, 0x1E6FB8, pcx, 0.15, pcz, o); // 바닥(깊은 파랑)
+  for (const z of POOL.lanes) box(g, PW - 2, 0.031, 0.18, 0x163E6A, pcx, 0.152, z, o); // 바닥 레인 선
+  const wm = new THREE.Mesh(new THREE.PlaneGeometry(PW, PD, 1, 1), new THREE.MeshStandardMaterial({ color: 0x5CC8F2, transparent: true, opacity: 0.78, roughness: 0.15, metalness: 0.1, depthWrite: false }));
+  wm.rotation.x = -Math.PI / 2; wm.position.set(pcx, POOL.y + 0.42, pcz); g.add(wm); pool.water = wm;
+  for (let i = 0; i <= 4; i++) { const z = POOL.z0 + i * 3; if (i === 0 || i === 4) continue; for (let x = POOL.x0 + 0.3; x < POOL.x1; x += 0.45) ball(g, 0.09, (Math.floor((x - POOL.x0) / 2.5) % 2) ? 0xE2384A : 0xFFFFFF, x, POOL.y + 0.45, z, o); } // 레인 줄
+  POOL.lanes.forEach((z, i) => { box(g, 0.8, 0.6, 1.0, 0xF2F6F8, POOL.x0 - 0.9, 0.42, z, o); box(g, 0.82, 0.04, 1.02, [0xE2584A, 0x4A9AE8, 0xFFD23C, 0x5FBE5A][i], POOL.x0 - 0.9, 0.73, z, o); }); // 출발대
+  for (const x of [POOL.x0 + 5, POOL.x1 - 5]) cyl(g, 0.04, 2.4, 0xFFFFFF, x, 1.2, POOL.z0 - 0.9, o);
+  for (let x = POOL.x0 + 5; x <= POOL.x1 - 5; x += 0.8) mesh(CONE, g, 0.15, 0.25, 0.02, [0xE2584A, 0xFFD23C, 0x4A9AE8][Math.round(x) % 3], x, 2.25, POOL.z0 - 0.9, { solid: false, rx: Math.PI }); // 깃발 줄
+  { const lx = POOL.x1 + 1.5, lz = POOL.z0 + 1.5; for (const [dx, dz] of [[-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]]) cyl(g, 0.05, 2.2, 0xFFFFFF, lx + dx, 1.1, lz + dz, o); box(g, 0.8, 0.1, 0.8, 0xE2584A, lx, 2.2, lz, o); box(g, 0.8, 0.6, 0.08, 0xE2584A, lx, 2.5, lz + 0.36, o); } // 안전요원 의자
+  for (const [x, z] of [[cx - 12, 4], [cx - 12, 10], [cx - 6, 13]]) { box(g, 2.4, 0.4, 0.8, 0x4A9AE8, x, 0.3, z, o); }
+  for (const [x, z] of [[cx - 13.5, 13.5], [cx + 13.5, -14]]) { cyl(g, 0.3, 0.5, 0xC9A065, x, 0.35, z, o); mesh(SPH_MID, g, 0.6, 0.8, 0.6, 0x4FA84A, x, 1.1, z, o); }
+  for (const [x, z] of [[cx - 13.2, -1], [cx + 13.2, 2]]) { const rg = new THREE.Mesh(WEAR_TORUS, new THREE.MeshStandardMaterial({ color: 0xFF6B4A })); rg.scale.setScalar(0.45); rg.position.set(x, 1.6, z); rg.rotation.y = Math.PI / 2; g.add(rg); } // 🛟
+  // 🌊 워터슬라이드
+  const C = new THREE.CatmullRomCurve3(SLIDE_PTS.map(([x, y, z]) => new V3(x, y, z))); pool.curve = C;
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(C, 120, 0.7, 12, false), new THREE.MeshStandardMaterial({ color: 0xFFB13B, transparent: true, opacity: 0.6, side: THREE.DoubleSide, roughness: 0.4, depthWrite: false })); g.add(tube);
+  const inner = new THREE.Mesh(new THREE.TubeGeometry(C, 120, 0.3, 8, false), new THREE.MeshBasicMaterial({ color: 0x9FE3FF, transparent: true, opacity: 0.35, depthWrite: false })); inner.position.y = -0.3; g.add(inner);
+  for (let i = 1; i < SLIDE_PTS.length - 1; i++) { const [x, y, z] = SLIDE_PTS[i]; cyl(g, 0.1, y - 0.5, 0xD8DEE6, x, (y - 0.5) / 2 + 0.1, z, o); }
+  { const [x, y, z] = SLIDE_PTS[0]; box(g, 2.6, 0.2, 2.2, 0x4A9AE8, x + 0.4, y - 0.4, z, o); for (const [dx, dz] of [[-0.8, -0.9], [1.6, -0.9], [-0.8, 0.9], [1.6, 0.9]]) cyl(g, 0.1, y - 0.4, 0xFFFFFF, x + 0.4 + dx, (y - 0.4) / 2, z + dz, o);
+    for (let k = 0; k < 9; k++) box(g, 0.9, 0.06, 0.08, 0xFFFFFF, x + 1.9, 0.4 + k * 0.48, z + 1.0, o); for (const dx of [-0.42, 0.42]) box(g, 0.06, y, 0.06, 0xFFFFFF, x + 1.9 + dx, y / 2, z + 1.0, o); } // 사다리
+  makeLabel(g, ['🌊 워터슬라이드'], 0.8, SLIDE_PTS[0][0], SLIDE_PTS[0][1] + 1.8, SLIDE_PTS[0][2]);
+  makeLabel(g, ['🏁 수영 경주', '출발대 옆에서 E'], 0.8, POOL.x0 - 1.2, 2.6, POOL.lanes[1] + 1.5);
+  addInteract({ pos: new V3(POOL.x0 - 1.6, 1, POOL.lanes[1] + 1.5), r: 2.8, text: () => roomNow() !== 'gym' || swim.on ? null : ['🏁 수영 경주 시작', `🤖 3명과 25m · 영어·수학·사회 한 문제씩 · 내 최고 ${bag.swimBest ? (bag.swimBest / 1000).toFixed(1) + '초' : '-'}`], run: swimStart });
+  addInteract({ pos: new V3(SLIDE_PTS[0][0] + 2.3, 1, SLIDE_PTS[0][2] + 1.6), r: 2.4, text: () => roomNow() !== 'gym' || slideW.on ? null : ['🌊 워터슬라이드 타기', '사다리를 올라가 빙글빙글~ 풍덩!'], run: slideStart });
+  // 🤖 경주 로봇 (경주할 때만)
+  pool.bots = [0, 2, 3].map((li, i) => { const a = makeAvatar(i + 1, [2, 5, 7][i], (i + 1) % 4, i % 4, g); a.g.visible = false; a.badge.userData.set([`🤖 ${['돌고래', '상어', '거북이'][i]}`]); return { a, li, x: 0, spd: 0, wait: 0, fi: 0, done: 0 }; });
+  pool.built = true;
+}
+// ---------- 🏁 수영 경주 ----------
+function swimQ(subj) { // 과목 하나에서 4지선다 한 문제 (수업 마무리 퀴즈 문제 만들기를 같이 써요)
+  const R = (a) => a[Math.floor(Math.random() * a.length)];
+  if (subj === 'math') { const q = wrapMake({ subj: 'math', m: R(mineOpenIds()), lv: Math.random() < 0.6 ? 0 : 1, cnt: 1 })[0]; if (q) return { ...q, subj }; }
+  if (subj === 'soc') { const eras = HIST_ERAS.filter(E => histPool([E.k]).length); if (eras.length) { const q = wrapMake({ subj: 'soc', k: R(eras).k, sub: '', cnt: 1 })[0]; if (q) return { ...q, subj }; } }
+  const q = wrapMake({ subj: 'eng', u: R([7, 8, 9, 10, 11, 12]), cnt: 1 })[0]; return { ...q, subj: subj === 'soc' || subj === 'math' ? 'eng' : subj };
+}
+const SWIM_FORK = [0.25, 0.5, 0.75];
+function swimStart() {
+  if (swim.on || slideW.on || isFrozen() || !joined || roomNow() !== 'gym') return; if (bag.ride) { bag.ride = ''; saveBag(); } closeModals();
+  const order = hShuffle(['eng', 'math', 'soc']);
+  Object.assign(swim, { on: true, x: POOL.start, v: 0, t0: performance.now(), fi: 0, wait: false, boost: 0, slow: 0, ok: 0, qs: order.map(swimQ), last: null, answered: false });
+  pool.bots.forEach((b) => Object.assign(b, { x: POOL.start, spd: 2.9 + Math.random() * 0.7, wait: 0, fi: 0, done: 0 })); pool.bots.forEach(b => { b.a.g.visible = true; });
+  playSfx('fanfare'); toast('🏁 출발! 표시선마다 문제가 나와요. 맞히면 ⚡ 스퍼트!', 'info');
+}
+function swimEnd(done) {
+  if (!swim.on) return; swim.on = false; pool.bots.forEach(b => { b.a.g.visible = false; }); if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('🏁 표시선')) closeLife();
+  if (!done) return;
+  const ms = performance.now() - swim.t0, place = 1 + pool.bots.filter(b => b.done && b.done < ms).length, best = !bag.swimBest || ms < bag.swimBest; if (best) bag.swimBest = Math.round(ms);
+  if (bag.swimDay?.d !== dayNum()) bag.swimDay = { d: dayNum(), n: 0 }; let sh = 0; if (bag.swimDay.n < 3) { bag.swimDay.n++; sh = giveShellCapped([25, 15, 10, 5][place - 1]); }
+  saveBag(); updateHUD(null); burst(player.pos.clone().setY(1.5), [0x9FE3FF, 0xFFFFFF, 0xFFE066], 60, 5, 3); playSfx(place === 1 ? 'fanfare' : 'right');
+  showBanner(`${['🥇', '🥈', '🥉', '4️⃣'][place - 1]} ${place}등! ${(ms / 1000).toFixed(1)}초${best ? ' 🎉 내 최고 기록' : ''}`, `문제 ${swim.ok}/3 정답${sh ? ` · 🐚 +${sh}` : bag.swimDay.n >= 3 ? ' · 오늘 조개 보상 3판은 다 받았어요' : ''}`, 5500);
+}
+function swimQuiz() {
+  const i = swim.fi, Q = swim.qs[i]; swim.answered = false;
+  openLife(`🏁 표시선 ${i + 1}/3 · ${WRAP_SUBJ[Q.subj]?.[0] || ''} ${WRAP_SUBJ[Q.subj]?.[1] || ''}`, (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', '⚡ 맞히면 3초 스퍼트 · 🐢 틀리면 잠깐 느려요 · 로봇은 기다려 주지 않아요!'));
+    wrapQBox(box, Q, i, -1, (j) => { if (swim.answered) return; swim.answered = true; const ok = j === Q.ans; playSfx(ok ? 'right' : 'wrong'); if (ok) { swim.ok++; addStat(Q.subj, 3); } const btns = [...box.querySelectorAll('.mx-opt')]; btns.forEach((b, k) => { b.style.background = k === Q.ans ? '#BDE8B0' : k === j ? '#F6C9C0' : '#fff'; }); setTimeout(() => swimGo(ok), ok ? 350 : 1000); }, null);
+  });
+}
+function swimGo(ok) { if (!swim.on || !swim.wait) return; swim.wait = false; swim.fi++; if (ok) swim.boost = 3; else swim.slow = 2.5; if (!$('lifePanel').classList.contains('hidden')) closeLife(); toast(ok ? '⚡ 정답! 스퍼트!' : '🐢 아쉬워요! 잠깐 숨 고르기', ok ? 'success' : 'warn'); }
+function swimStep(dt) {
+  if (!swim.on) return; const p = player.pos, L = POOL.finish - POOL.start;
+  if (swim.last && Math.hypot(p.x - swim.last[0], p.z - swim.last[1]) > 6) { swimEnd(false); return; } // 다른 곳으로 옮겨졌어요
+  for (const b of pool.bots) { if (b.done) continue; if (b.wait > 0) { b.wait -= dt; if (b.wait <= 0) b.fi++; } else { b.x += b.spd * dt; if (b.fi < 3 && b.x >= POOL.start + L * SWIM_FORK[b.fi]) { b.x = POOL.start + L * SWIM_FORK[b.fi]; b.wait = 1.2 + Math.random() * 2.2; } if (b.x >= POOL.finish) { b.x = POOL.finish; b.done = performance.now() - swim.t0; } }
+    b.a.g.position.set(b.x, POOL.y - 0.75, POOL.lanes[b.li]); b.a.g.rotation.y = Math.PI / 2; swimPose(b.a, 1, dt); if (Math.random() < 0.3) burst(new V3(b.x + 0.4, POOL.y + 0.5, POOL.lanes[b.li]), [0xFFFFFF, 0x9FE3FF], 2, 1, 1.2, 0.4, -6); }
+  if (swim.wait) { if (!swim.answered && $('lifePanel').classList.contains('hidden')) { swim.answered = true; swimGo(false); } }
+  else { swim.boost = Math.max(0, swim.boost - dt); swim.slow = Math.max(0, swim.slow - dt); const spd = swim.boost > 0 ? 6 : swim.slow > 0 ? 1.6 : 3.3; swim.x += spd * dt;
+    if (swim.fi < 3 && swim.x >= POOL.start + L * SWIM_FORK[swim.fi]) { swim.x = POOL.start + L * SWIM_FORK[swim.fi]; swim.wait = true; swimQuiz(); }
+    if (swim.x >= POOL.finish) { swim.x = POOL.finish; swim.last = null; swimEnd(true); return; } }
+  const z = POOL.lanes[POOL.me]; p.set(swim.x, 0.12, z); player.vy = 0; player.heading = Math.PI / 2; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = Math.PI / 2; swim.last = [p.x, p.z];
+  if (!swim.wait) { let d = Math.PI / 2 + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 2.5); }
+  if (swim.boost > 0 && Math.random() < 0.6) burst(new V3(p.x - 0.5, POOL.y + 0.5, z), [0xFFE066, 0xFFFFFF, 0x9FE3FF], 3, 1.5, 1.5, 0.5, -6);
+}
+// ---------- 🌊 워터슬라이드 ----------
+function slideStart() { if (slideW.on || swim.on || isFrozen() || !joined || roomNow() !== 'gym') return; if (bag.ride) { bag.ride = ''; saveBag(); } closeModals(); Object.assign(slideW, { on: true, u: 0, v: 0.12, last: null }); playAct(player.avatar, 'sit'); playSfx('jump'); toast('🌊 출발~!', 'info'); }
+function slideStep(dt) {
+  if (!slideW.on) return; const p = player.pos, C = pool.curve; if (!C) { slideW.on = false; return; }
+  if (slideW.last && Math.hypot(p.x - slideW.last[0], p.z - slideW.last[1]) > 6) { slideW.on = false; playAct(player.avatar, null); return; }
+  slideW.v = Math.min(0.42, slideW.v + dt * 0.12); slideW.u += slideW.v * dt;
+  if (slideW.u >= 1) { slideW.on = false; const e = C.getPointAt(1); p.set(e.x, 0.12, e.z); player.vy = 0; playAct(player.avatar, null); playSfx('splash'); for (let k = 0; k < 3; k++) setTimeout(() => burst(new V3(e.x, POOL.y + 0.6, e.z), [0xFFFFFF, 0x9FE3FF, 0x5CC8F2], 40, 5, 4, 0.8, -9), k * 90); bag.slideN = (bag.slideN | 0) + 1; saveBag(); toast(`💦 풍덩! (워터슬라이드 ${bag.slideN}번째)`, 'success'); return; }
+  const P = C.getPointAt(slideW.u), T = C.getTangentAt(slideW.u), h = Math.atan2(T.x, T.z);
+  p.set(P.x, P.y + 0.05, P.z); player.vy = 0; player.heading = h; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = h; slideW.last = [p.x, p.z];
+  let d = h + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 3);
+  if (Math.random() < 0.7) burst(new V3(P.x, P.y + 0.1, P.z), [0xFFFFFF, 0x9FE3FF], 2, 1, 0.8, 0.35, -5);
+}
+// ---------- 🏊 헤엄치기 (나 · 친구 · 🤖) ----------
+function swimPose(a, mv, dt) { const t = (a.swT = (a.swT || 0) + dt * (2 + mv * 4)); if (a.armL) { a.armL.rotation.x = -Math.PI + Math.sin(t) * 1.4; a.armR.rotation.x = -Math.PI - Math.sin(t) * 1.4; } }
+function poolTick(dt) { // 매 프레임 (아바타 위치를 다 정한 뒤)
+  if (!pool.built) return;
+  if (pool.water && roomNow() === 'gym') pool.water.material.opacity = 0.74 + Math.sin(time * 2) * 0.04;
+  if (joined) { swimStep(dt); slideStep(dt); }
+  const sink = (a, x, z, mv) => { if (!a?.g || !inPool(x, z) || slideW.on && a === player.avatar) return; a.g.position.y = POOL.y - 0.75; swimPose(a, mv, dt); if (mv > 0.2 && Math.random() < 0.25) burst(new V3(x, POOL.y + 0.5, z), [0xFFFFFF, 0x9FE3FF], 2, 0.8, 1, 0.4, -6); };
+  if (joined && player.avatar && player.pos.x > 1560 && player.pos.x < 1600) { const mv = swim.on ? 1 : Math.min(1, Math.hypot((keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y)); sink(player.avatar, player.pos.x, player.pos.z, mv); }
+  for (const r of remotes.values()) if (r.pos.x > 1560 && r.pos.x < 1600) sink(r.a, r.pos.x, r.pos.z, 0.6);
 }
 function buildInteriors() {
   const g = new THREE.Group(); g.name = 'Interiors'; scene.add(g); bld.group = g;
@@ -17166,25 +17275,8 @@ function buildInteriors() {
     box(g, 3, 1, 1, 0xC8D2DC, cx + 8, 0.5, cz - 4); for (let k = 0; k < 6; k++) cyl(g, 0.18, 0.3, [0xE2584A, 0xFFD23C, 0x4A9AE8, 0x5FBE5A, 0x9A5AD8, 0xFF9AC0][k], cx + 6.9 + k * 0.45, 1.15, cz - 4, o);
     bld.artLabel = makeLabel(g, [''], 0.8, cx + 6, 4.4, cz - d / 2 + 1);
   }
-  // ---------- 🏸 체육관: 배드민턴 코트 2면 ----------
-  { const r = ROOMS.gym, { cx, cz, w, d } = r; roomShell(g, r);
-    for (const [c, ccz] of Object.entries(BDM_C)) {
-      const L = (w2, d2, x, z) => box(g, w2, 0.02, d2, 0xFFFFFF, x, 0.125, z, o), X0 = BDM.x0, X1 = BDM.x1, NX = BDM.nx, HZ = BDM.hz;
-      box(g, X1 - X0 + 3, 0.02, HZ * 2 + 2, 0x3E8E6A, (X0 + X1) / 2, 0.112, ccz, o);
-      L(X1 - X0, 0.08, (X0 + X1) / 2, ccz - HZ); L(X1 - X0, 0.08, (X0 + X1) / 2, ccz + HZ); L(0.08, HZ * 2, X0, ccz); L(0.08, HZ * 2, X1, ccz);
-      L(X1 - X0, 0.06, (X0 + X1) / 2, ccz - HZ + 0.5); L(X1 - X0, 0.06, (X0 + X1) / 2, ccz + HZ - 0.5); // 단식 옆줄
-      for (const sx of [-1, 1]) { L(0.08, HZ * 2, NX + sx * 2.0, ccz); L(0.08, HZ * 2, NX + sx * (X1 - NX - 0.8), ccz); L(X1 - NX - 2.0, 0.08, NX + sx * (2.0 + (X1 - NX - 2.0) / 2), ccz); }
-      for (const sz of [-1, 1]) cyl(g, 0.07, BDM.netH + 0.1, 0xD8DDE4, NX, (BDM.netH + 0.1) / 2, ccz + sz * (HZ + 0.35), o);
-      const netM = new THREE.Mesh(new THREE.PlaneGeometry(HZ * 2 + 0.7, 0.75), new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
-      netM.position.set(NX, BDM.netH - 0.375, ccz); netM.rotation.y = Math.PI / 2; g.add(netM);
-      box(g, 0.04, 0.07, HZ * 2 + 0.7, 0xFFFFFF, NX, BDM.netH, ccz, o);
-      bld['bdmLab_' + c] = makeLabel(g, [''], 0.6, NX, 4.6, ccz);
-      for (const sx of [-1, 1]) addInteract({ pos: new V3(NX + sx * (X1 - NX + 2.6), 1, ccz), r: 2.6, text: () => { if (roomNow() !== 'gym' || bdm.on) return null; const m = bdmMatch(c); return ['배드민턴 🏸', !bdmLive(m) ? `${c === 'c0' ? '1번' : '2번'} 코트 · 단식·복식` : m.ph === 'wait' ? '친구 모으는 중 · 참가하기' : '경기 중 · 구경하기']; }, run: () => openBmMenu(c) });
-    }
-    // 벤치 (가운데 통로 양 끝)
-    box(g, 0.6, 0.45, 2.6, 0x8FA7C4, cx - w / 2 + 1.0, 0.25, 0, o); box(g, 0.6, 0.45, 2.6, 0x8FA7C4, cx + w / 2 - 1.0, 0.25, 0, o);
-    bld.gymLabel = makeLabel(g, [''], 0.8, cx, 4.0, cz - d / 2 + 1);
-  }
+  // ---------- 🏊 반월 아쿠아센터 (1028o · 예전 배드민턴 체육관) ----------
+  { const r = ROOMS.gym; roomShell(g, r); buildPool(g, r); bld.gymLabel = makeLabel(g, [''], 0.8, r.cx, 4.0, r.cz - r.d / 2 + 1); }
   // ---------- 📜 서당 (한옥 교실): 서안·방석에 앉으면 사회 학습지를 펴요 ----------
   { const r = ROOMS.sd, { cx, cz, w, d } = r; roomShell(g, r);
     box(g, w - 1, 0.03, d - 1, 0xE3CFA0, cx, 0.12, cz, o); // 돗자리
@@ -17245,8 +17337,8 @@ function setupDoors() {
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'lib', text: () => S.built.Library ? ['들어가기 🚪', '🐾 펫 체육관'] : null, run: () => enterRoom('lib') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.2, dyn: 'art', text: () => S.built.Art ? ['들어가기 🚪', '🎨 미술 공방 안'] : null, run: () => enterRoom('art') });
   addInteract({ pos: new V3(0, -99, 0), r: 2.0, dyn: 'gh', text: () => S.built.Garden ? ['온실 도서관 들어가기 📚', '자리에 앉아 책 읽기'] : null, run: () => enterRoom('gh') });
-  addInteract({ pos: new V3(0, -99, 0), r: 2.6, dyn: 'gym', text: () => S.built.Playground ? ['들어가기 🚪', '🏸 체육관 안'] : null, run: () => enterRoom('gym') });
-  addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() || S.built.Playground ? null : ['들어가기 🚪', '🏸 임시 체육관'], run: () => enterRoom('gym') });
+  addInteract({ pos: new V3(0, -99, 0), r: 2.6, dyn: 'gym', text: () => S.built.Playground ? ['들어가기 🚪', '🏊 반월 아쿠아센터'] : null, run: () => enterRoom('gym') });
+  addInteract({ pos: new V3(GYM_DOOR[0] - 2.4, 1, GYM_DOOR[1]), r: 2.4, text: () => bldRegion() || S.built.Playground ? null : ['들어가기 🚪', '🏊 아쿠아센터 (임시 입구)'], run: () => enterRoom('gym') });
 }
 function updateDoors() {
   const tempOn = !S.built?.Playground; // 체육관을 지으면 임시 입구는 사라져요
@@ -17266,6 +17358,7 @@ async function enterRoom(id) {
   if (id === 'gw') { toast(gwOpen() ? `📜 ${S.gw.title || '과거시험'}! 빈 자리(서안)에 앉아 시험지를 펴요` : '📜 과거시험장이에요. 선생님은 앞쪽에서 문제를 올려 시험장을 열어요', 'info'); return; }
   if (id === 'mrc') { toast(mrunOpen() ? `🏃 ${S.mrun.title || '수학 달리기'}! 뒤쪽 의자에 앉아 문제를 풀며 달려요` : '🏃 수학 달리기장이에요. 선생님은 앞쪽 순위판 앞에서 경주를 열어요', 'info'); return; }
   if (id === 'egb') { toast(egOpen() ? `🔔 ${S.eg.title || '영어 골든벨'}! 빈 방석에 앉아 골든벨 문제지를 펴요` : '🔔 영어 골든벨 홀이에요. 선생님은 무대 앞에서 문제를 올려 골든벨을 열어요', 'info'); return; }
+  if (id === 'gym') { toast('🏊 반월 아쿠아센터예요! 물에 들어가 헤엄치고, 🏁 출발대 옆에서 수영 경주, 🌊 사다리 옆에서 워터슬라이드!', 'info'); return; }
   if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
   toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
@@ -17344,7 +17437,7 @@ function renderRooms(force) {
     bld.artLabel?.userData.set(['🖼️ 우리 반 전시 벽', arts.length ? `작품 ${arts.length}점` : '선생님이 확인한 작품이 걸려요']);
   }
   const gy = S.gym || {};
-  bld.gymLabel?.userData.set(['🏸 우리 반 배드민턴', `함께 주고받은 횟수 ${gy.rally || 0}번`]);
+  bld.gymLabel?.userData.set(['🏊 반월 아쿠아센터', `🏁 수영 경주 · 🌊 워터슬라이드 · 자유 수영`]);
 }
 function updateRooms(dt) {
   if (!bld.group) return;
@@ -17567,6 +17660,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028o', d: '10월 28일', items: ['🏊 체육관이 반월 아쿠아센터로 바뀌었어요! 자유 수영 · 🌊 워터슬라이드', '🏁 수영 경주: 로봇 3명과 25m · 표시선마다 영어·수학·사회 한 문제씩 · 맞히면 ⚡ 스퍼트'] },
   { id: '1028n', d: '10월 28일', items: ['🗓️ 시즌이 생겨요! 🍂 시즌 1 가을 수확제 (11/2~11/29) · ❄️ 시즌 2 겨울 마을 (11/30~12/27) · 🎓 마무리 축제 (12/28~12/30)', '⭐ 오늘의 할 일로 시즌 별을 모아 시즌 패스 10단계! 한정 옷 · 펫 옷 · 칭호 · 발자국 꾸미기'] },
   { id: '1028m', d: '10월 28일', items: ['🧑‍🏫 선생님 관리 화면에서 반 전체 오늘의 할 일 현황을 볼 수 있어요'] },
   { id: '1028l', d: '10월 28일', items: ['📋 오늘의 할 일판! 날마다 미션 3개 (공부 2 + 놀이 1) · 하나마다 🐚5 · 모두 하면 🐚15 더 · 이번 주 ⭐ 모아 주간 보상', '📝 수업 마무리 퀴즈가 열린 날은 보너스 미션도 생겨요'] },
@@ -18911,7 +19005,7 @@ function bdmRender() {
   $('bdmMsg').textContent = bdm.msgT > 0 ? bdm.msg : hint;
 }
 function updateBm(dt) {
-  if (!bld.group) return;
+  if (!bld.group || pool.built) return; // 🏊 1028o 배드민턴 코트는 없어졌어요
   const me = backend?.uid;
   if (roomNow() === 'gym' || bdm.on) for (const c of ['c0', 'c1']) bdmCourt(c, dt);
   // 경기에 들어간 친구 손에 라켓
@@ -18939,6 +19033,7 @@ function updateBm(dt) {
   bdm.rk -= dt; if (bdm.rk <= 0) { bdm.rk = 0.2; bdmRender(); }
 }
 function bdmCourtLabels() { // 코트 위 안내: 비었는지·모으는 중·점수
+  if (pool.built) return;
   bdm.labT = (bdm.labT || 0) - 1; if (bdm.labT > 0) return; bdm.labT = 15;
   for (const c of ['c0', 'c1']) { const m = bdmMatch(c), L = bld['bdmLab_' + c]; if (!L) continue; L.visible = !(bdm.on && bdm.c === c); // 내가 뛰는 코트는 위쪽 점수 띠로 봐요
     L.userData.set(!bdmLive(m) ? [`🏸 ${c === 'c0' ? '1번' : '2번'} 코트`, '비어 있어요 · 옆에서 E'] : m.ph === 'wait' ? [`⏳ ${m.n === 4 ? '복식' : '단식'} 친구 모으는 중`, `${Object.values(m.s || {}).filter(Boolean).length} / ${m.n}명 · 옆에서 E로 참가`] : [`🔵 A팀 ${m.sc?.a || 0} : ${m.sc?.b || 0} B팀 🟠`, m.n === 4 ? '복식 2:2' : '단식 1:1']); }
@@ -24066,6 +24161,7 @@ const DQ_FUN = [
   { id: 'don', icon: '🐷', t: '반 기부함이나 캡슐 저금통에 🐚10 넣기', hint: '광장 기부함 · 캡슐뽑기 저금통', goal: 10, cur: () => (DON_DAY - donLeft('fund')) + (DON_DAY - donLeft('caps')) },
   { id: 'pet', icon: '🐾', t: '우리 집 펫 한 번 돌보기', hint: '우리 집에서 펫에게 밥·간식·놀이', goal: 1, cur: () => Object.values(bag.hpet?.pets || {}).some(p => p?.day?.d === dayNum() && Object.keys(p.day).length > 1) ? 1 : 0 },
   { id: 'cart', icon: '🛒', t: '수레 레이스 한 판 달리기', hint: '수학 마을 수레 레이스장', goal: 1, cur: () => bag.cartDay?.d === dayNum() && (bag.cartDay.n | 0) > 0 ? 1 : 0 },
+  { id: 'swim', icon: '🏊', t: '아쿠아센터 수영 경주 한 판', hint: '광장 옆 🏊 아쿠아센터 (예전 체육관)', goal: 1, cur: () => bag.swimDay?.d === dayNum() && (bag.swimDay.n | 0) > 0 ? 1 : 0 },
 ];
 const DQ_WRAP = { id: 'wrap', icon: '📝', t: '오늘 수업 마무리 퀴즈 풀기', hint: '선생님이 열면 바로 떠요 (못 풀었으면 위쪽 버튼)', goal: 1, cur: () => bag.wrapDone === dayNum() ? 1 : 0, bonus: true };
 const dqW = { btn: null, key: '', t: 0, told: -1 };
@@ -25211,6 +25307,7 @@ function loop() {
   updateEnv(dt);
   if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); }
   updateTeachLooks(dt);
+  poolTick(dt); // 🏊 1028o (아바타 위치를 다 정한 뒤)
 
   world.crates.forEach((c, k) => {
     const vis = crateVisible(c.i);
