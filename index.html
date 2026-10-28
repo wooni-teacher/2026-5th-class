@@ -1445,6 +1445,11 @@
     <div id="tpSgList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStat" style="background:#fff" title="능력치(영어·수학·사회 + 독서×2)가 나라마다 비슷하게">💪 능력치로 고르게</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn" id="tpSgWatch" style="background:#fff">👁️ 하늘에서 관전</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
+    <h3>⛰️ 뒷산 (캠핑 모임 · 썰매)</h3>
+    <p class="hint" id="tpMtnNow"></p>
+    <p class="hint">⛺ 캠핑 모임을 열면 10분 동안 꼭대기에 텐트·모닥불이 생기고 하늘이 노을빛(해돋이빛)이 돼요. 꼭대기에 올라온 학생은 도장과 🐚20을 받아요. 🛷 썰매장은 12~2월에 저절로 열리고, 그 밖에는 여기서 열 수 있어요. 💎 보물 상자는 날마다 산 어딘가에 숨어요 (🔭 망원경으로 힌트).</p>
+    <div class="row-center wrap"><button class="btn" id="tpCampDusk" style="background:#FFD9B8">🌅 노을 캠핑 모임 (10분)</button><button class="btn" id="tpCampDawn" style="background:#FFE9C8">🌄 해돋이 캠핑 모임 (10분)</button><button class="btn" id="tpCampEnd" style="background:#fff">⏹️ 모임 끝내기</button></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSled" style="background:#EAF6FF">🛷 썰매장 지금 열기</button><button class="btn" id="tpCampGo" style="background:#fff">🏃 꼭대기로 가기</button></div>
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
     <div id="tpMineOpen"></div>
@@ -2145,7 +2150,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2203,6 +2208,7 @@ function normalize(v) {
     mrun: v.mrun && typeof v.mrun === 'object' ? { open: v.mrun.open === true, n: v.mrun.n | 0, title: String(v.mrun.title || '').slice(0, 30), us: Object.values(toObj(v.mrun.us)).map(String).filter(id => /^m[1-6]$/.test(id)).slice(0, 6), lv: Math.min(4, Math.max(0, v.mrun.lv | 0)), ph: ['wait', 'run', 'end'].includes(v.mrun.ph) ? v.mrun.ph : 'wait', t0: +v.mrun.t0 || 0, dur: Math.min(1800, Math.max(30, v.mrun.dur | 0 || 180)), goal: Math.min(60, Math.max(5, v.mrun.goal | 0 || 20)), res: v.mrun.res ? { rk: Object.values(toObj(v.mrun.res.rk)).slice(0, 10).map(r => ({ u: String(r?.u || ''), nm: String(r?.nm || '').slice(0, 12), s: r?.s | 0 })) } : null } : null,
     mrunp: Object.fromEntries(Object.entries(plainObj(v.mrunp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), s: Math.min(100, Math.max(0, x.s | 0)), c: x.c | 0, w: x.w | 0, at: +x.at || 0 }])),
     mrunc: v.mrunc && typeof v.mrunc === 'object' ? { n: v.mrunc.n | 0, uid: String(v.mrunc.uid || ''), name: String(v.mrunc.name || '').slice(0, 12), w: v.mrunc.w | 0, s: v.mrunc.s | 0 } : null,
+    mtev: (() => { const m = plainObj(v.mtev), c = plainObj(m.camp); return { camp: Number.isFinite(+c.s) && Number.isFinite(+c.e) && c.s && c.e ? { s: +c.s, e: +c.e, k: c.k === 'dawn' ? 'dawn' : 'dusk' } : null, sled: m.sled === 1 ? 1 : 0 }; })(), // ⛰️ 1028d 뒷산 캠핑·썰매
     shgive: Object.fromEntries(Object.entries(plainObj(v.shgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && isInt(x.n, 0, 10000000)).map(([u, x]) => [u, { n: x.n, m: typeof x.m === 'string' ? x.m.slice(0, 30) : '' }])), // 🐚 1028b 선생님이 준 조개 (합계)
     sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read'].filter(k => isInt(x[k], 0, 1000000)).map(k => [k, x[k]]))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
@@ -4264,7 +4270,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -8646,7 +8652,7 @@ async function buyLot(id) {
   const slot = ['b', 'c'].find(k => !S.plotExtra?.[backend.uid]?.[k] || !S.plots[S.plotExtra[backend.uid][k]]);
   const res = !have.length || !S.plotOwner?.[backend.uid] || !S.plots[S.plotOwner[backend.uid]] ? await backend.claimPlot(id, myAnimal, myShirt) : await backend.claimPlotExtra(id, myAnimal, myShirt, slot);
   if (res.ok) {
-    bag.shell -= price; saveBag();
+    if (!shellTake(price)) bag.shell = Math.max(0, (bag.shell || 0) - price), saveBag();
     toast(`🏡 ${lotName(id)} 땅을 샀어요! 뒤쪽에 🏠 집을 짓고, 🌼 꾸미기로 꾸며 보세요`, 'success');
     const [cx, cz] = lotCenter(id); burst(new V3(cx, 2, cz), RAINBOW, 60, 6, 3);
   } else if (res.reason === 'have') toast('🏡 땅을 더 살 수 없어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요', 'info');
@@ -8702,10 +8708,9 @@ function openHouse(lotId) {
     go.disabled = blocked || (bag.shell || 0) < price;
     if ((bag.shell || 0) < price) box.append(el2('p', 'hint', `🐚 조개돈이 ${price - (bag.shell || 0)} 모자라요`));
     go.onclick = async () => {
-      if ((bag.shell || 0) < price) return;
+      if (!shellTake(price)) return;
       const res = await backend.setHouse(id, { s: pick.s, c: pick.c, ...(cur?.lv ? { lv: cur.lv } : {}), ...(cur?.n ? { n: cur.n } : {}) });
-      if (!res.ok) { if (res.reason !== 'offline') toast('🚫 집을 짓지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
-      bag.shell -= price; saveBag();
+      if (!res.ok) { shellBack(price); if (res.reason !== 'offline') toast('🚫 집을 짓지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
       const [cx, cz] = lotCenter(id); burst(new V3(cx, 3, cz + 3), RAINBOW, 80, 7, 3);
       toast(cur ? '🎨 우리 집이 새 모습이 됐어요!' : `🏠 ${HOUSE_STYLES[pick.s].name}을 지었어요!`, 'success');
       closeLife();
@@ -8730,10 +8735,9 @@ function openHouse(lotId) {
       if (nx) {
         const up = el2('button', 'btn lp-btn', `${nx.icon} ${nx.name} 만들기 (🐚${nx.price})`); up.disabled = (bag.shell || 0) < nx.price;
         up.onclick = async () => {
-          if ((bag.shell || 0) < nx.price) return;
+          if (!shellTake(nx.price)) return;
           const res = await backend.setHouse(id, { s: cur.s, c: cur.c, lv: lv + 1, ...(cur.n ? { n: cur.n } : {}) });
-          if (!res.ok) { if (res.reason !== 'offline') toast('🚫 저장하지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
-          bag.shell -= nx.price; saveBag();
+          if (!res.ok) { shellBack(nx.price); if (res.reason !== 'offline') toast('🚫 저장하지 못했어요. 한 번 더 눌러 주세요', 'warn'); return; }
           const [cx, cz] = lotCenter(id); burst(new V3(cx, 3, cz), RAINBOW, 80, 7, 3);
           toast(`🏗️ ${nx.icon} ${nx.name}이(가) 생겼어요!`, 'success'); closeLife();
         };
@@ -9146,7 +9150,13 @@ function gainCritter(c) {
 // ---------- 반 동전 ----------
 const coinNow = () => S.coins || 0; // 지금까지 모은 합계 (마을 발전 기준 · 줄지 않아요)
 const coinAvail = () => Math.max(0, (S.coins || 0) - (S.coinSpent || 0)); // 이벤트에 쓸 수 있는 반 동전
-function earnShell(n, kind) { bag.shell = (bag.shell || 0) + n; if (n > 0 && kind !== 'x' && !isTeacher) { const L = elogDay(); L.s += n; if (kind === 'm') L.m += n; elogW.dirty = true; } saveBag(); }
+/* 🐚 1028c 조개 쓰기는 "먼저 빼고 → 저장 실패하면 돌려주기" (빠르게 여러 번 눌러도 모자라게 안 돼요 · 마이너스 없음) */
+function shellTake(n) { n = Math.floor(n) || 0; if (n <= 0) return true; if ((bag.shell || 0) < n) return false; bag.shell -= n; saveBag(); renderCoinChip?.(); return true; }
+function shellBack(n) { n = Math.floor(n) || 0; if (n > 0) { bag.shell = (bag.shell || 0) + n; saveBag(); renderCoinChip?.(); } }
+const DON_DAY = 500; // 🐷🎰 기부함·캡슐뽑기 저금통: 한 사람 하루 500까지 (각각)
+const donLeft = (k) => { const d = bag.don?.[k]; return Math.max(0, DON_DAY - (d?.d === dayNum() ? d.n | 0 : 0)); };
+function donAdd(k, n) { bag.don ||= {}; const d = bag.don[k], cur = d?.d === dayNum() ? d.n | 0 : 0; bag.don[k] = { d: dayNum(), n: Math.max(0, cur + n) }; saveBag(); }
+function earnShell(n, kind) { bag.shell = Math.max(0, (bag.shell || 0) + n); if (n > 0 && kind !== 'x' && !isTeacher) { const L = elogDay(); L.s += n; if (kind === 'm') L.m += n; elogW.dirty = true; } saveBag(); }
 /* 📊 오늘 재화 현황 (1019a): 이 기기 bag.elog {d 날, s 오늘 번 조개, m 미션 보상, c 보탠 반 동전} → 15초마다 earn/{uid}로 보내요 (선생님 관리화면에서 봐요)
    kind 'x' = 버는 게 아닌 것(집 허물기 돌려받기·옛 재료 바꾸기) · 'm' = 공동 미션 보상 · 예산 안 = earnToday() */
 const elogW = { dirty: true, at: 0 };
@@ -9159,6 +9169,7 @@ function elogTick() {
 setInterval(() => { try { elogTick(); } catch (e) { } }, 5000);
 const T_SHELL = 999999; // 🧑‍🏫 선생님 기기: 조개돈 무한 (학생 때 조개돈은 bag.shellStu에 따로 보관)
 function teacherWallet() {
+  if (!isTeacher && !(bag.shell >= 0)) { bag.shell = 0; saveBag(); } // 🐚 1028c 예전 버그로 마이너스가 된 조개는 0으로
   if (isTeacher) { if (bag.shellStu == null) bag.shellStu = bag.shell || 0; if (bag.shell !== T_SHELL) bag.shell = T_SHELL; }
   else if (bag.shellStu != null) { bag.shell = bag.shellStu; delete bag.shellStu; }
 }
@@ -11572,11 +11583,141 @@ function buildMountain() {
   registerSolids(g, 'mountain');
   batchStatic(g);
 }
+/* =====================================================================
+   ⛰️ 1028d 뒷산 놀거리: ⛺ 꼭대기 캠핑 모임 · 🛷 썰매 내려오기(겨울) · 💎 숨은 보물 상자
+   · 캠핑: 선생님이 state/mtev/camp {s 시작, e 끝, k dusk|dawn}을 열면 꼭대기에 텐트·모닥불, 하늘이 노을빛 → 꼭대기에 오면 도장 + 🐚20 (모임마다 한 번)
+   · 썰매: 겨울(12~2월) 또는 선생님이 state/mtev/sled = 1 → 꼭대기에서 오솔길을 따라 미끄러져 내려와요 · 깃발 8개 · 하루 3판 🐚
+   · 보물: 날마다 산 어딘가 한 곳(모두 같은 곳) · 🔭 망원경으로 보면 빛기둥 · 하루 한 번 🐚20 (이 기기 bag.mtChest)
+   ===================================================================== */
+const MT_CAMP_MS = 10 * 60000;
+const mtf = { built: false, campG: null, fire: null, sun: null, beam: null, lab: null, labKey: '', sky: false, seenCamp: null, sledG: null, gates: [], chest: null, chestDay: -1, tick: 0 };
+const mtCamp = () => { const c = S.mtev?.camp; return c && backend && backend.now() < c.e && backend.now() >= c.s - 5000 ? c : null; };
+const sledOpen = () => seasonNow() === 'wi' || S.mtev?.sled === 1;
+const SLED_PATH = [[3, -103], [-5, -98], [-11, -89], [-19, -79], [-30, -70], [-30, -63]];
+const SLED_L = (() => { let L = 0; const c = [0]; for (let i = 1; i < SLED_PATH.length; i++) { L += Math.hypot(SLED_PATH[i][0] - SLED_PATH[i - 1][0], SLED_PATH[i][1] - SLED_PATH[i - 1][1]); c.push(L); } SLED_PATH.cum = c; return L; })();
+function sledAt(s) { const c = SLED_PATH.cum; s = clamp(s, 0, SLED_L); let i = 1; while (i < c.length - 1 && c[i] < s) i++; const [ax, az] = SLED_PATH[i - 1], [bx, bz] = SLED_PATH[i], L = c[i] - c[i - 1], t = (s - c[i - 1]) / L, tx = (bx - ax) / L, tz = (bz - az) / L; return { x: ax + (bx - ax) * t, z: az + (bz - az) * t, tx, tz, rx: -tz, rz: tx }; }
+const SLED_GATES = Array.from({ length: 8 }, (_, i) => ({ s: 9 + i * (SLED_L - 16) / 7, off: i % 2 ? -1.7 : 1.7 }));
+const sled = { on: false, s: 0, v: 0, off: 0, t0: 0, got: new Set(), g: null, last: null };
+function buildMtnFun() {
+  if (mtf.built || !mtn.heights) return; mtf.built = true;
+  const [tx, tz] = MT.peak, ty = MT.top, o = { solid: false, surf: null };
+  // ⛺ 캠핑장 (모임 때만 보여요)
+  const g = new THREE.Group(); g.name = 'MtCamp'; g.visible = false; scene.add(g); mtf.campG = g;
+  const fx = tx + 7.5, fz = tz - 1;
+  for (const a of [0, 1.05, 2.1]) box(g, 1.3, 0.16, 0.16, 0x6B4A30, fx, ty + 0.12, fz, { ...o, ry: a });
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; ball(g, 0.16, 0x8C8478, fx + Math.cos(a) * 0.75, ty + 0.08, fz + Math.sin(a) * 0.75, o); }
+  const fire = new THREE.Group(); fire.position.set(fx, ty + 0.2, fz); g.add(fire); mtf.fire = fire;
+  for (const [c, r, h, k] of [[0xFF5A1A, 0.42, 1.1, 0.9], [0xFFB830, 0.28, 0.85, 1.1], [0xFFF0A0, 0.14, 0.5, 1.3]]) mesh(CONE, fire, r, h, r, c, 0, h / 2, 0, { ...o, emissive: k });
+  for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2 + 0.4; cyl(g, 0.28, 0.42, 0x8A5A34, fx + Math.cos(a) * 2.1, ty + 0.21, fz + Math.sin(a) * 2.1, { ...o, surf: 'bark' }); } // 통나무 의자
+  for (const [x, z, c, ry] of [[tx + 10.5, tz - 4.5, 0xE2584A, 0.6], [tx + 5.5, tz - 6.5, 0x3B82C4, -0.3], [tx + 11, tz + 1.5, 0xF2C230, 1.5]]) { const t = new THREE.Group(); t.position.set(x, ty, z); t.rotation.y = ry; g.add(t);
+    box(t, 1.6, 0.1, 1.9, 0x5A4632, 0, 0.05, 0, o); box(t, 0.1, 1.3, 1.9, c, -0.48, 0.62, 0, { ...o, rz: -0.62 }); box(t, 0.1, 1.3, 1.9, c, 0.48, 0.62, 0, { ...o, rz: 0.62 }); box(t, 0.6, 0.8, 0.04, 0x2A2A30, 0, 0.42, 0.96, o); }
+  { const cv = document.createElement('canvas'); cv.width = cv.height = 128; const c = cv.getContext('2d'), gr = c.createRadialGradient(64, 64, 8, 64, 64, 64); gr.addColorStop(0, 'rgba(255,250,220,1)'); gr.addColorStop(0.35, 'rgba(255,190,90,0.95)'); gr.addColorStop(1, 'rgba(255,120,60,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 128);
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; mtf.sun = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false })); mtf.sun.scale.set(60, 60, 1); mtf.sun.visible = false; scene.add(mtf.sun); }
+  mtf.beam = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 60, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xFFB060, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide })); mtf.beam.position.set(tx, ty + 30, tz); mtf.beam.visible = false; scene.add(mtf.beam); // 마을에서도 보이는 빛기둥
+  mtf.lab = makeLabel(g, [''], 1.1, fx, ty + 3.6, fz);
+  addInteract({ pos: new V3(fx, ty + 0.3, fz + 2.1), r: 3.2, dy: 2.2, text: () => mtCamp() ? ['🔥 모닥불 가에 앉기', '⛺ 캠핑 모임'] : null, run: () => { player.heading = Math.atan2(fx - player.pos.x, fz - player.pos.z); playAct(player.avatar, 'sit'); toast('🔥 따뜻해요… 친구들과 노을을 봐요', 'info'); } });
+  addInteract({ pos: new V3(tx + 9, ty + 0.3, tz - 1), r: 3.5, dy: 2.2, text: () => mtCamp() ? ['📸 기념사진 찍기', `지금 꼭대기 ${mtCampCount()}명`] : null, run: () => { if (onCooldown('mtphoto', 4)) return; playAct(player.avatar, 'cheer'); playSfx('fanfare'); burst(player.pos.clone().setY(ty + 2.5), RAINBOW, 40, 4, 2); showBanner('📸 찰칵!', `⛺ 뒷산 꼭대기 캠핑 모임 · 지금 ${mtCampCount()}명이 함께해요`, 4000); } });
+  // 🛷 썰매장: 출발 표지판 + 깃발 (썰매 철에만)
+  const sg = new THREE.Group(); sg.name = 'MtSled'; sg.visible = false; scene.add(sg); mtf.sledG = sg;
+  { const P = sledAt(0.5), y = terrainH(P.x, P.z); box(sg, 0.15, 2, 0.15, 0x8A5A34, P.x - P.rx * 2.4, y + 1, P.z - P.rz * 2.4, o); signPlane(sg, ['🛷 썰매 출발'], 2.2, 0.66, P.x - P.rx * 2.4, y + 2.2, P.z - P.rz * 2.4, { font: 44, pad: 4, fg: '#2A3B5A', bg: '#EAF6FF' }).rotation.y = Math.atan2(-P.tx, -P.tz);
+    const sl = new THREE.Group(); sl.position.set(P.x + P.rx * 1.6, y + 0.1, P.z + P.rz * 1.6); sl.rotation.y = Math.atan2(P.tx, P.tz); sg.add(sl); sledModel(sl); }
+  mtf.gates = SLED_GATES.map((G, i) => { const P = sledAt(G.s), x = P.x + P.rx * G.off, z = P.z + P.rz * G.off, y = terrainH(x, z), fg = new THREE.Group(); fg.position.set(x, y, z); sg.add(fg);
+    cyl(fg, 0.05, 1.6, 0xFFFFFF, 0, 0.8, 0, o); box(fg, 0.04, 0.5, 0.7, i % 2 ? 0x3B82C4 : 0xE2584A, 0, 1.35, 0.35, o); const ring = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.2, 24), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; fg.add(ring); return { g: fg, ring }; });
+  { const P = sledAt(0.5), y = terrainH(P.x, P.z); addInteract({ pos: new V3(P.x, y + 0.3, P.z), r: 3, dy: 2, text: () => sled.on || !sledOpen() ? null : ['🛷 썰매 타기', `깃발 8개 · 내 최고 ${bag.sledBest ? (bag.sledBest / 1000).toFixed(1) + '초' : '-'}`], run: sledStart }); }
+  // 💎 보물 상자
+  const cg = new THREE.Group(); cg.name = 'MtChest'; scene.add(cg); mtf.chest = cg;
+  box(cg, 0.9, 0.55, 0.6, 0x9A5A2A, 0, 0.28, 0, o); box(cg, 0.94, 0.12, 0.64, 0xF2C230, 0, 0.5, 0, { ...o, emissive: 0.3 }); const lid = new THREE.Group(); lid.position.set(0, 0.56, -0.3); cg.add(lid); box(lid, 0.92, 0.22, 0.62, 0xB06A30, 0, 0.11, 0.3, o); box(lid, 0.16, 0.18, 0.06, 0xF2C230, 0, 0.05, 0.62, { ...o, emissive: 0.4 }); cg.userData.lid = lid;
+  addInteract({ pos: new V3(0, -99, 0), r: 2.2, dy: 1.4, text: () => mtf.chestDay === dayNum() && cg.visible ? (bag.mtChest === dayNum() ? ['💎 오늘의 보물 상자', '이미 열었어요 · 내일 다른 곳에 숨어요'] : ['💎 보물 상자 열기', '뒷산 숨은 보물']) : null, run: mtChestOpen, mtChest: true });
+}
+function sledModel(par) { const o = { solid: false, surf: null }; box(par, 0.8, 0.12, 1.5, 0xB0703A, 0, 0.18, 0, o); for (const x of [-0.36, 0.36]) { box(par, 0.06, 0.06, 1.6, 0xC0392B, x, 0.04, 0, o); box(par, 0.06, 0.2, 0.06, 0xC0392B, x, 0.1, 0.62, o); box(par, 0.06, 0.2, 0.06, 0xC0392B, x, 0.1, -0.5, o); } box(par, 0.8, 0.3, 0.08, 0xB0703A, 0, 0.33, -0.7, o); }
+const mtCampCount = () => { const [tx, tz] = MT.peak; let n = Math.hypot(player.pos.x - tx, player.pos.z - tz) < 15 ? 1 : 0; for (const r of remotes.values()) if (!r.target?.t && Math.hypot(r.pos.x - tx, r.pos.z - tz) < 15 && r.pos.y > MT.top - 1.5) n++; return n; };
+/* 💎 날마다 같은 자리 (모든 기기가 같은 곳): 날짜로 정해지는 난수 */
+function mtChestSpot(day) {
+  let a = (day * 2654435761) >>> 0; const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  for (let k = 0; k < 300; k++) { const x = MT.x0 + 6 + rnd() * (MT.x1 - MT.x0 - 12), z = MT.z0 + 6 + rnd() * (MT.z1 - MT.z0 - 10), h = terrainH(x, z);
+    if (h < 0.8 || h > MT.top - 1 || Math.hypot(x - MT.pond[0], z - MT.pond[1]) < 8 || Math.hypot(x - MT.peak[0], z - MT.peak[1]) < 12) continue;
+    if (polyDist(x, z, MT_TRAIL) < 3.5 || polyDist(x, z, MT_TRAIL2) < 3 || polyDist(x, z, MT_TRAIL3) < 3 || polyDist(x, z, MT_STREAM) < 3) continue;
+    if (colliders.some(({ box: b }) => x > b.min.x - 0.8 && x < b.max.x + 0.8 && z > b.min.z - 0.8 && z < b.max.z + 0.8 && b.max.y > h + 0.3)) continue; return [x, z]; }
+  return [-20, -110];
+}
+const DIR8 = ['북쪽', '북동쪽', '동쪽', '남동쪽', '남쪽', '남서쪽', '서쪽', '북서쪽'];
+function mtChestHint() { // 🔭 망원경: 보물 자리에 빛기둥 20초 + 방향
+  if (!mtf.chest || bag.mtChest === dayNum()) return;
+  const P = mtf.chest.position, a = Math.atan2(P.x - MT.peak[0], -(P.z - MT.peak[1])), d = DIR8[((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8];
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 26, 10, 1, true), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide })); m.position.set(P.x, P.y + 13, P.z); scene.add(m);
+  setTimeout(() => { scene.remove(m); m.geometry.dispose(); m.material.dispose(); }, 20000);
+  setTimeout(() => toast(`💎 망원경에 반짝! 오늘의 보물 상자는 꼭대기에서 ${d}이에요. 20초 동안 노란 빛기둥이 서 있어요`, 'success'), 900);
+}
+function mtChestOpen() {
+  if (bag.mtChest === dayNum()) { toast('💎 오늘 보물은 이미 찾았어요! 내일은 다른 곳에 숨어요 (🔭 망원경 힌트)', 'info'); return; }
+  bag.mtChest = dayNum(); bag.mtChestN = (bag.mtChestN | 0) + 1; const sh = giveShellCapped(20); saveBag(); updateHUD(null);
+  const lid = mtf.chest.userData.lid; lid.rotation.x = -1.2; playSfx('fanfare'); burst(mtf.chest.position.clone().setY(mtf.chest.position.y + 1), [0xFFE066, 0xFFFFFF, 0x9AF0FF], 50, 4, 3);
+  showBanner('💎 뒷산 보물 상자를 찾았어요!', `${sh ? `🐚 +${sh} · ` : '(오늘 조개 예산은 다 찼어요) · '}지금까지 찾은 보물 ${bag.mtChestN}개 · 내일 또 다른 곳에 숨어요`, 6000);
+}
+/* 🛷 썰매 */
+function sledStart() {
+  if (sled.on || !sledOpen() || isFrozen() || !joined || cart.on || mrail.on) return; if (bag.ride) { bag.ride = ''; saveBag(); } closeModals();
+  Object.assign(sled, { on: true, s: 0.5, v: 7, off: 0, t0: performance.now(), got: new Set(), last: null });
+  sled.g?.parent?.remove(sled.g); sled.g = new THREE.Group(); sledModel(sled.g); sled.g.position.y = -0.05; player.avatar.g.add(sled.g); playAct(player.avatar, 'sit');
+  playSfx('jump'); toast('🛷 출발! ⬅️➡️(A·D)로 방향을 바꿔 깃발 고리를 지나가요', 'info');
+}
+function sledEnd(done) {
+  if (!sled.on) return; sled.on = false; sled.g?.parent?.remove(sled.g); sled.g = null; playAct(player.avatar, '');
+  if (!done) return;
+  const ms = performance.now() - sled.t0, n = sled.got.size, best = !bag.sledBest || ms < bag.sledBest; if (best) bag.sledBest = Math.round(ms); bag.sledGates = Math.max(bag.sledGates | 0, n);
+  if (bag.sledDay?.d !== dayNum()) bag.sledDay = { d: dayNum(), n: 0 }; let sh = 0; if (bag.sledDay.n < 3) { bag.sledDay.n++; sh = giveShellCapped(4 + n * 2); }
+  saveBag(); updateHUD(null); burst(player.pos.clone().setY(player.pos.y + 2), [0xFFFFFF, 0x9FD3FF, 0xFFE066], 50, 5, 3); playSfx(n >= 6 ? 'fanfare' : 'right');
+  showBanner(`🛷 도착! ${(ms / 1000).toFixed(1)}초${best ? ' 🎉 내 최고 기록' : ''}`, `🚩 깃발 ${n}/8${n === 8 ? ' 완벽해요!' : ''}${sh ? ` · 🐚 +${sh}` : bag.sledDay.n >= 3 ? ' · 오늘 조개 보상 3판은 다 받았어요' : ''}`, 5000);
+}
+function sledStep(dt) {
+  if (!sled.on) return; const p = player.pos;
+  if (sled.last && Math.hypot(p.x - sled.last[0], p.z - sled.last[1]) > 6) { sledEnd(false); return; } // 다른 곳으로 옮겨졌어요
+  const P = sledAt(sled.s), Q = sledAt(sled.s + 1.5), drop = terrainH(P.x, P.z) - terrainH(Q.x, Q.z);
+  sled.v = clamp(sled.v + (drop / 1.5 * 9 - 0.35 - sled.v * 0.04) * dt, 6.5, 16);
+  const ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x; sled.off = clamp(sled.off + clamp(ix, -1, 1) * 5 * dt, -3.2, 3.2);
+  const s0 = sled.s; sled.s += sled.v * dt;
+  SLED_GATES.forEach((G, i) => { if (!sled.got.has(i) && s0 < G.s && sled.s >= G.s && Math.abs(sled.off - G.off) < 1.35) { sled.got.add(i); playSfx('coin'); const R = mtf.gates[i]; if (R) burst(R.g.position.clone().setY(R.g.position.y + 1), [0xFFE066, 0xFFFFFF], 20, 3, 2); toast(`🚩 깃발 ${sled.got.size}/8`, 'success'); } });
+  if (sled.s >= SLED_L) { sledEnd(true); return; }
+  const R = sledAt(sled.s), x = R.x + R.rx * sled.off, z = R.z + R.rz * sled.off, h = Math.atan2(R.tx, R.tz);
+  p.set(x, terrainH(x, z) + 0.15, z); player.vy = 0; player.heading = h; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = h; sled.last = [x, z];
+  let d = h + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 2.5);
+  if (Math.random() < 0.6) burst(new V3(x - R.tx * 0.8, p.y + 0.1, z - R.tz * 0.8), [0xFFFFFF, 0xE8F4FF], 2, 1.5, 1, 0.4, -4);
+}
+function mtFunTick(dt) {
+  buildMtnFun(); if (!mtf.built) return;
+  sledStep(dt);
+  const camp = mtCamp(), [tx, tz] = MT.peak, ty = MT.top, p = player.pos;
+  if (mtf.campG.visible !== !!camp) { mtf.campG.visible = !!camp; mtf.beam.visible = !!camp; }
+  if (camp) { const k = 1 + Math.sin(time * 14) * 0.12 + Math.sin(time * 23) * 0.06; mtf.fire.scale.set(k, 1 + (k - 1) * 2, k); if (Math.random() < 0.3) burst(mtf.fire.position.clone().setY(ty + 1.1), [0xFF7A1A, 0xFFC83D], 1, 0.4, 1.6, 0.6, 1.5); mtf.beam.material.opacity = 0.2 + Math.sin(time * 2) * 0.08; }
+  if (sled.on || mtf.sledG.visible) for (const G of mtf.gates) G.ring.rotation.z += dt;
+  const near = Math.hypot(p.x - tx, p.z - tz) < 45 && p.z < -60;
+  const skyOn = !!camp && near && joined;
+  mtf.sun.visible = skyOn; if (skyOn) { const dir = camp.k === 'dawn' ? 1 : -1; mtf.sun.position.set(tx + dir * 170, ty + 14, tz - 20); }
+  if (skyOn !== mtf.sky) { mtf.sky = skyOn; const sky = pretty.sky?.material.uniforms;
+    if (skyOn) { const dawn = camp.k === 'dawn'; if (sky) { sky.top.value.setHex(dawn ? 0x6E8FD8 : 0x4A3A8C); sky.bottom.value.setHex(dawn ? 0xFFC9A0 : 0xFF9A5A); } scene.background.setHex(dawn ? 0xFFD8B8 : 0xF4A878); scene.fog.color.setHex(dawn ? 0xFFE0C8 : 0xF7B98A); }
+    else applyEnv(true); }
+  if ((mtf.tick -= dt) > 0) return; mtf.tick = 0.5;
+  mtf.sledG.visible = sledOpen();
+  { const day = dayNum(); if (mtf.chestDay !== day) { mtf.chestDay = day; const [x, z] = mtChestSpot(day), y = terrainH(x, z); mtf.chest.position.set(x, y, z); mtf.chest.rotation.y = (day % 7) * 0.9; mtf.chest.userData.lid.rotation.x = 0; const it = interactables.find(q => q.mtChest); if (it) it.pos.set(x, y + 0.5, z); }
+    mtf.chest.visible = true; if (bag.mtChest === day) mtf.chest.userData.lid.rotation.x = -1.2; else if (Math.random() < 0.25) burst(mtf.chest.position.clone().setY(mtf.chest.position.y + 0.8), [0xFFE066, 0xFFFFFF], 2, 0.6, 0.8, 0.5, 0); }
+  if (camp) { const left = Math.max(0, Math.ceil((camp.e - backend.now()) / 1000)), lab = `${camp.k === 'dawn' ? '🌄 해돋이' : '🌅 노을'} 캠핑 모임 · ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} · ${mtCampCount()}명`; if (lab !== mtf.labKey) { mtf.labKey = lab; mtf.lab.userData.set([lab]); } }
+  if (camp && mtf.seenCamp !== camp.s && stateLoaded) { const first = mtf.seenCamp === null; mtf.seenCamp = camp.s; if (!first || backend.now() - camp.s < 60000) { playSfx('fanfare'); showBanner(`⛺ 뒷산 꼭대기 캠핑 모임! (${camp.k === 'dawn' ? '🌄 해돋이' : '🌅 노을'})`, '북쪽 울타리 틈 → 오솔길을 따라 꼭대기로 올라와요 · 주황 빛기둥이 꼭대기예요 · 도착하면 도장 + 🐚20', 7000); } }
+  if (!camp && mtf.seenCamp === null && stateLoaded) mtf.seenCamp = S.mtev?.camp?.s || 0;
+  if (camp && joined && !isTeacher && bag.campGot !== camp.s && Math.hypot(p.x - tx, p.z - tz) < 14 && p.y > ty - 1.5) { bag.campGot = camp.s; bag.campN = (bag.campN | 0) + 1; earnShell(20, 'm'); saveBag(); updateHUD(null); playAct(player.avatar, 'cheer'); burst(p.clone().setY(p.y + 2.4), RAINBOW, 50, 5, 3); showBanner('⛺ 캠핑 모임 도장 쾅!', `🐚 +20 · 지금까지 캠핑 모임 ${bag.campN}번 참여 · 🔥 모닥불 가에 앉아 친구들과 노을을 봐요`, 6000); }
+  if ($('tpMtnNow') && !$('teacherPanel').classList.contains('hidden')) { const t = camp ? `⛺ ${camp.k === 'dawn' ? '해돋이' : '노을'} 캠핑 모임 중 · 남은 ${Math.ceil((camp.e - backend.now()) / 60000)}분 · 꼭대기 ${mtCampCount()}명` : '⛺ 캠핑 모임 닫힘'; const s2 = `${t} · 🛷 썰매장 ${sledOpen() ? '열림' : '닫힘'}${seasonNow() === 'wi' ? ' (겨울)' : S.mtev?.sled === 1 ? ' (선생님이 열었어요)' : ' (12~2월에 저절로 열려요)'}`; if ($('tpMtnNow').textContent !== s2) $('tpMtnNow').textContent = s2; $('tpSled').textContent = S.mtev?.sled === 1 ? '🛷 썰매장 닫기 (겨울에는 그대로 열려요)' : '🛷 썰매장 지금 열기'; }
+}
+function mtAdminInit() {
+  const camp = (k) => adminDo({ 'mtev/camp': { s: backend.now(), e: backend.now() + MT_CAMP_MS, k } }, `⛺ ${k === 'dawn' ? '🌄 해돋이' : '🌅 노을'} 캠핑 모임을 열었어요 (10분)`);
+  $('tpCampDusk').onclick = () => camp('dusk'); $('tpCampDawn').onclick = () => camp('dawn');
+  $('tpCampEnd').onclick = () => adminDo({ 'mtev/camp': null }, '⏹️ 캠핑 모임을 끝냈어요');
+  $('tpSled').onclick = () => adminDo({ 'mtev/sled': S.mtev?.sled === 1 ? null : 1 }, S.mtev?.sled === 1 ? '🛷 썰매장을 닫았어요' : '🛷 썰매장을 열었어요');
+  $('tpCampGo').onclick = () => { closeModals(); ctfTeleport(MT.peak[0] + 5, MT.peak[1] + 3, 0); };
+}
 function lookScope() {
   if (mtn.view) return;
   playAct(player.avatar, 'look');
   mtn.view = { t: 0, d: 6, yaw: camYaw };
-  toast('🔭 우리 마을이 한눈에 보여요! (움직이면 돌아와요)', 'info');
+  toast('🔭 우리 마을이 한눈에 보여요! (움직이면 돌아와요)', 'info'); mtChestHint(); // 💎 1028d 보물 힌트
 }
 function updateMountain(dt) {
   if (mtn.fall) mtn.fall.map.offset.y += dt * 1.6;
@@ -14420,13 +14561,16 @@ function openFund() {
     const f = FUND[p], bar = el2('div', 'bar'), fill = el2('div'); fill.style.width = `${Math.min(100, Math.round(n / f.goal * 100))}%`; bar.append(fill);
     box.append(el2('p', 'lp-big', `${f.icon} ${f.name} 🐚 ${n} / ${f.goal}`), bar, el2('p', 'hint', `내 조개돈 🐚${bag.shell || 0}`));
     const row = el2('div', 'row-center wrap');
+    if (!isTeacher) box.append(el2('p', 'hint', `오늘 더 기부할 수 있어요: 🐚${donLeft('fund')} / ${DON_DAY}`));
     for (const amt of [10, 50, 100, 500]) {
-      const b = el2('button', 'btn lp-btn', `🐚 ${amt} 기부`); b.disabled = (bag.shell || 0) < amt;
+      const b = el2('button', 'btn lp-btn', `🐚 ${amt} 기부`); b.disabled = (bag.shell || 0) < amt || (!isTeacher && donLeft('fund') < amt);
       b.onclick = async () => {
-        if ((bag.shell || 0) < amt) return;
+        if (!isTeacher && donLeft('fund') < amt) { toast(`🐷 기부는 하루 🐚${DON_DAY}까지예요 (오늘 남은 만큼: 🐚${donLeft('fund')})`, 'info'); return; }
+        if (!shellTake(amt)) return; if (!isTeacher) donAdd('fund', amt);
         b.disabled = true;
         const res = await backend.fundGive(amt);
-        if (res.ok) { bag.shell -= amt; saveBag(); playSfx('coin'); toast(`🐷 🐚${amt}을 기부했어요! 고마워요`, 'success'); burst(new V3(FUND_BOX[0], 2.4, FUND_BOX[1]), [0xFF9AC0, C.gold, 0xFFFFFF], 24, 3, 2); }
+        if (!res.ok) { shellBack(amt); if (!isTeacher) donAdd('fund', -amt); }
+        if (res.ok) { playSfx('coin'); toast(`🐷 🐚${amt}을 기부했어요! 고마워요`, 'success'); burst(new V3(FUND_BOX[0], 2.4, FUND_BOX[1]), [0xFF9AC0, C.gold, 0xFFFFFF], 24, 3, 2); }
         else if (res.reason !== 'offline') toast('기부가 저장되지 않았어요. 잠시 뒤 다시 해 봐요', 'warn');
         refillLife();
       };
@@ -14658,7 +14802,7 @@ function openHomeDecor() {
       list.forEach((c, i) => {
         const cur = (inn[key] | 0) === i, b = el2('button', 'btn', cur ? '✔' : ''); b.style.cssText = `width:46px;height:46px;padding:0;background:${hexStr(c)}`;
         b.setAttribute('aria-label', `${label} ${i + 1}${cur ? ', 지금' : ''}`); b.disabled = cur || (bag.shell || 0) < 50;
-        b.onclick = async () => { if ((bag.shell || 0) < 50) return; const r = await backend.homeSet(id, { [key]: i }); if (r.ok) { bag.shell -= 50; saveBag(); playSfx('coin'); } refillLife(); };
+        b.onclick = async () => { if (!shellTake(50)) return; const r = await backend.homeSet(id, { [key]: i }); if (r.ok) playSfx('coin'); else shellBack(50); refillLife(); };
         row.append(b);
       });
       box.append(row);
@@ -14676,7 +14820,7 @@ function openHomeDecor() {
         const nm = pName(v), b = el2('button', 'btn frame-btn' + (cur === v ? ' on' : ''), ''); b.title = nm; b.setAttribute('aria-label', `${sl.name}에 ${nm} 걸기`);
         const cv = typeof v === 'string' ? pixCanvas(S.art[v].p, 4) : muralFullCanvas(v, 60 / mW(v)); b.append(cv);
         b.disabled = cur === v || (bag.shell || 0) < FRAME_PRICE;
-        b.onclick = async () => { if ((bag.shell || 0) < FRAME_PRICE) return; const r = await backend.homeSet(id, { [`p/${k}`]: v }); if (r.ok) { bag.shell -= FRAME_PRICE; saveBag(); playSfx('build'); toast(`🖼️ ${nm} 액자를 ${sl.name}에 걸었어요!`, 'success'); } refillLife(); };
+        b.onclick = async () => { if (!shellTake(FRAME_PRICE)) return; const r = await backend.homeSet(id, { [`p/${k}`]: v }); if (!r.ok) shellBack(FRAME_PRICE); if (r.ok) { playSfx('build'); toast(`🖼️ ${nm} 액자를 ${sl.name}에 걸었어요!`, 'success'); } refillLife(); };
         pick.append(b);
       }
       if (cur != null) { const off = el2('button', 'btn frame-off', '떼기'); off.onclick = async () => { await backend.homeSet(id, { [`p/${k}`]: null }); refillLife(); }; pick.append(off); }
@@ -14712,9 +14856,9 @@ async function homePlace() {
   const f = FURN[e.t];
   if (e.buy && (bag.shell || 0) < f.price) { toast(`🐚 조개돈이 ${f.price - (bag.shell || 0)} 모자라요`, 'warn'); return; }
   if (!e.buy && !(bag.fur[e.t] > 0)) { homeEditStop(); return; }
+  if (e.buy && !shellTake(f.price)) return; if (!e.buy) bag.fur[e.t]--; // 🐚 먼저 빼기
   const res = await backend.homeSet(id, { [`${slot.L}/${cell}`]: { t: e.t, r: e.r } });
-  if (!res.ok) { if (res.reason !== 'offline') toast('🚫 놓지 못했어요. 한 번 더 해 봐요', 'warn'); return; }
-  if (e.buy) bag.shell -= f.price; else bag.fur[e.t]--;
+  if (!res.ok) { if (e.buy) shellBack(f.price); else bag.fur[e.t]++; saveBag(); if (res.reason !== 'offline') toast('🚫 놓지 못했어요. 한 번 더 해 봐요', 'warn'); return; }
   saveBag(); playSfx('build');
   const [x, z] = roomCellPos(id, cell); burst(new V3(x, 1, z), [0xFFD23C, 0xFFFFFF, 0x9BE36B], 20, 3, 2);
   toast(`${f.icon} ${josa(f.name, '을', '를')} ${slot.L === 'u' ? `${FURN[S.plots[id]?.in?.c?.[cell]?.t | 0]?.name} 위에 올렸어요!` : slot.L === 'g' ? '바닥에 깔았어요!' : '놓았어요!'}`, 'success');
@@ -16474,7 +16618,7 @@ function openMosaic() { // 🎨 반 모자이크 (8×8 · 칸마다 색 하나 �
     for (let i = 0; i < MX.moN * MX.moN; i++) { const b = el2('button', 'mo-cell' + (pk.i === i ? ' on' : '')); b.style.background = hexStr(MOSAIC_C[mo[i] | 0]); b.setAttribute('aria-label', `${Math.floor(i / MX.moN) + 1}줄 ${i % MX.moN + 1}칸`); b.onclick = () => { pk.i = i; refillLife(); }; grid.append(b); }
     const pal = el2('div', 'row-center wrap'); MOSAIC_C.forEach((c, j) => { const b = el2('button', 'btn', pk.c === j ? '✔' : ''); b.style.cssText = `width:40px;height:40px;padding:0;background:${hexStr(c)};${j === 7 ? 'color:#fff' : ''}`; b.onclick = () => { pk.c = j; refillLife(); }; pal.append(b); });
     const go = el2('button', 'btn lp-btn', `🎨 칠하기 (🐚 ${TILE_SH})`); go.disabled = pk.i < 0 || (bag.shell || 0) < TILE_SH;
-    go.onclick = async () => { if (pk.i < 0 || (bag.shell || 0) < TILE_SH) return; const r = await backend.mathMo(pk.i, pk.c); if (!r.ok) { toast('⚠️ 칠하지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); return; } bag.shell -= TILE_SH; saveBag(); updateHUD(null); playSfx('build'); refillLife(); };
+    go.onclick = async () => { if (pk.i < 0 || !shellTake(TILE_SH)) return; const r = await backend.mathMo(pk.i, pk.c); if (!r.ok) { shellBack(TILE_SH); toast('⚠️ 칠하지 못했어요. 선생님께 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); return; } saveBag(); updateHUD(null); playSfx('build'); refillLife(); };
     box.append(grid, pal); box.append(el2('div', 'row-center', null)); box.lastChild.append(go);
   });
 }
@@ -17370,6 +17514,8 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028d', d: '10월 28일', items: ['⛺ 뒷산 꼭대기 캠핑 모임! 선생님이 열면 텐트·모닥불·노을 하늘 · 올라오면 도장 + 🐚', '🛷 겨울(12~2월)에는 꼭대기에서 썰매 타고 내려오기 · 깃발 8개 지나가기', '💎 날마다 뒷산 어딘가에 보물 상자가 숨어요 · 🔭 꼭대기 망원경으로 보면 힌트!'] },
+  { id: '1028c', d: '10월 28일', items: ['🐚 조개를 빠르게 여러 번 눌러도 모자라거나 마이너스가 되지 않게 고쳤어요 · 기부함·캡슐뽑기 저금통은 한 사람 하루 🐚500까지'] },
   { id: '1028b', d: '10월 28일', items: ['🎁 선생님이 🐚 조개를 직접 줄 수 있어요! 받으면 선생님 한마디와 함께 알려 줘요'] },
   { id: '1028a', d: '10월 28일', items: ['🗳️ 우리 반 의견함에 선생님도 의견을 넣을 수 있어요 (투표 때 다른 의견과 똑같이 보여요)'] },
   { id: '1027o', d: '10월 27일', items: ['💪 성 공방전에서 공부의 힘이 눈에 보여요! 능력치에 따라 무기가 나무 → 철 → 강철 → 황금으로 바뀌어요 (궁병은 🔥 불화살까지)', '💥 맞히면 피해 숫자가 떠요 · 금빛 ⚡는 내 능력치로 더한 몫 · ⚒️ 대장장이가 갈아 준 무기는 🔥 불꽃', '📚 독서력이 오르면 발밑에 파란 고리 · 전쟁이 끝나면 나라별 공부의 힘 TOP 3'] },
@@ -20425,7 +20571,7 @@ function openPot() {
       SEEDS.forEach((sd, s) => {
         const c = el2('div', 'lp-card'); c.append(el2('div', 'lp-icon', sd.icon), el2('div', 'lp-name', sd.name), el2('div', 'lp-sub', `🐚 ${sd.price} · ${sd.days}일${sd.tough ? ' · 잘 안 시들어요' : ''}`));
         const b = el2('button', 'btn lp-btn', '심기'); b.disabled = (bag.shell || 0) < sd.price;
-        b.onclick = async () => { if ((bag.shell || 0) < sd.price) return; const r = await backend.potSet({ s, d: dayNum(), w: 0, n: 0 }); if (r.ok) { bag.shell -= sd.price; saveBag(); playSfx('plop'); toast(`🌱 ${sd.name} 씨앗을 심었어요! 오늘부터 하루에 한 번 물을 줘요`, 'success'); } else if (r.reason !== 'offline') toast('⚠️ 심지 못했어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); refillLife(); };
+        b.onclick = async () => { if (!shellTake(sd.price)) return; const r = await backend.potSet({ s, d: dayNum(), w: 0, n: 0 }); if (!r.ok) shellBack(sd.price); if (r.ok) { playSfx('plop'); toast(`🌱 ${sd.name} 씨앗을 심었어요! 오늘부터 하루에 한 번 물을 줘요`, 'success'); } else if (r.reason !== 'offline') toast('⚠️ 심지 못했어요. 선생님께 Firebase 규칙을 다시 게시해 달라고 말씀드려요', 'warn'); refillLife(); };
         c.append(b); grid.append(c);
       });
       box.append(grid); return;
@@ -22419,6 +22565,7 @@ async function startSiege() {
 function initSiegeUI() {
   const sel = $('tpSgSet'); for (const [k, v] of Object.entries(SIEGE_SETS)) sel.append(new Option(`${v.name} (${v.nat.map(N => N.name).join('·')})`, k)); sel.value = 'three';
   sel.onchange = () => fillSiegeAdmin(true);
+  mtAdminInit(); // ⛰️ 1028d 뒷산
   $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
@@ -24153,10 +24300,11 @@ function openCaps() {
     box.append(el2('p', 'lp-big', `🎰 🐚 ${n.toLocaleString()} / ${g.toLocaleString()} (${Math.floor(Math.min(100, n / g * 100))}%)`), bar, el2('p', 'hint', `📈 ${capsEta()}`));
     if (done) { box.append(el2('p', 'up-win', '🎉 목표 달성! 선생님과 캡슐뽑기를 해요!')); const pl = Object.entries(S.capsw?.picked || {}).sort((a, b) => a[1] - b[1]); if (pl.length) box.append(el2('p', 'hint', `🎡 뽑을 순서: ${pl.map(([nm, i]) => `${i}. ${nm}`).join(' · ')}`)); }
     else if (!isTeacher) {
-      box.append(el2('p', 'hint', `내 조개돈 🐚${bag.shell || 0}`)); const row = el2('div', 'row-center wrap');
-      for (const amt of [10, 50, 100, 500]) { const b = el2('button', 'btn lp-btn', `🐚 ${amt} 넣기`); b.disabled = (bag.shell || 0) < amt;
-        b.onclick = async () => { if ((bag.shell || 0) < amt) return; b.disabled = true; const res = await backend.capsGive(amt);
-          if (res.ok && res.add > 0) { bag.shell -= res.add; saveBag(); playSfx('coin'); capsV.spin = 1.2; toast(`🎰 🐚${res.add}을 넣었어요! 고마워요`, 'success'); burst(new V3(CAPS.x, 2, CAPS.z), [0xFF6B6B, 0x4D96FF, 0xFFD23C, 0x6BCB77], 24, 3, 2); }
+      box.append(el2('p', 'hint', `내 조개돈 🐚${bag.shell || 0} · 오늘 더 넣을 수 있어요: 🐚${donLeft('caps')} / ${DON_DAY}`)); const row = el2('div', 'row-center wrap');
+      for (const amt of [10, 50, 100, 500]) { const b = el2('button', 'btn lp-btn', `🐚 ${amt} 넣기`); b.disabled = (bag.shell || 0) < amt || donLeft('caps') < amt;
+        b.onclick = async () => { if (donLeft('caps') < amt) { toast(`🎰 저금통에는 하루 🐚${DON_DAY}까지 넣을 수 있어요 (오늘 남은 만큼: 🐚${donLeft('caps')})`, 'info'); return; } if (!shellTake(amt)) return; donAdd('caps', amt); b.disabled = true; const res = await backend.capsGive(amt);
+          const used = res.ok ? Math.max(0, Math.min(amt, res.add | 0)) : 0; if (used < amt) { shellBack(amt - used); donAdd('caps', -(amt - used)); }
+          if (res.ok && res.add > 0) { playSfx('coin'); capsV.spin = 1.2; toast(`🎰 🐚${res.add}을 넣었어요! 고마워요`, 'success'); burst(new V3(CAPS.x, 2, CAPS.z), [0xFF6B6B, 0x4D96FF, 0xFFD23C, 0x6BCB77], 24, 3, 2); }
           else if (res.reason !== 'offline') toast('넣지 못했어요. 잠시 뒤 다시 해 봐요', 'warn'); refillLife(); };
         row.append(b); }
       box.append(row);
@@ -24673,7 +24821,7 @@ function loop() {
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
   updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
-  updateMountain(dt);
+  updateMountain(dt); mtFunTick(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
