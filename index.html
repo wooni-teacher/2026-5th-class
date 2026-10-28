@@ -17548,6 +17548,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028l', d: '10월 28일', items: ['📋 오늘의 할 일판! 날마다 미션 3개 (공부 2 + 놀이 1) · 하나마다 🐚5 · 모두 하면 🐚15 더 · 이번 주 ⭐ 모아 주간 보상', '📝 수업 마무리 퀴즈가 열린 날은 보너스 미션도 생겨요'] },
   { id: '1028k', d: '10월 28일', items: ['📝 수업 마무리 퀴즈! 영어·수학·사회 수업 끝에 선생님이 열면 바로 문제지가 떠요 · 맞힌 만큼 능력치와 🐚'] },
   { id: '1028j', d: '10월 28일', items: ['😌 쉬는 시간에는 혼자 연습하기 화면도 함께 쉬어요 (⏰ 자동 쉬기도 똑같이)'] },
   { id: '1028i', d: '10월 28일', items: ['🐉 펫 배틀(보스 레이드 · 야생 · 친구 대결)에서 펫이 안 보이던 문제를 고쳤어요'] },
@@ -23968,7 +23969,7 @@ function openWrapPlay() {
     if (!key && !isTeacher) { const left = wrapW.sel.filter(x => x < 0).length, b = el2('button', 'btn', left ? `📨 내기 (${left}문제 남음)` : sent ? '📨 다시 내기' : '📨 내기'); b.style.background = '#FFD23C';
       b.onclick = async () => { if (left && !(await confirmAction({ title: '아직 안 고른 문제가 있어요', body: `${left}문제를 고르지 않았어요. 그래도 낼까요?`, okText: '그래도 내기' }))) return;
         const r = await backend.wrapAnswer({ r: W.n, nm: (rosterOf(backend.uid) || cleanNick(myNick) || '친구').slice(0, 12), a: wrapW.sel.map(x => x < 0 ? '-' : String(x)).join(',') });
-        if (r.ok) { playSfx('pick'); toast('📨 냈어요! 결과를 기다려요', 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 내지 못했어요 (마감됐을 수 있어요)', 'warn'); };
+        if (r.ok) { bag.wrapDone = dayNum(); saveBag(); playSfx('pick'); toast('📨 냈어요! 결과를 기다려요', 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 내지 못했어요 (마감됐을 수 있어요)', 'warn'); };
       const row = el2('div', 'row-center'); row.append(b); box.append(row); }
     if (key && sent) { const sc = wrapScore(sent, key), sub = WRAP_SUBJ[W.subj] ? W.subj : 'eng'; box.append(el2('p', 'hint', `${STATS[sub].icon} ${STATS[sub].name} +${wrapReward(sc, qs.length).st} · 🐚 +${wrapReward(sc, qs.length).sh} (한 번만 받아요)`)); }
   });
@@ -24026,6 +24027,64 @@ function wrapTick() { // 0.5초마다
   if (isTeacher && S.wrap?.n && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📝 수업 마무리 퀴즈 (선생님)') { const k = JSON.stringify([S.wrap.ph, Object.keys(S.wrapa || {}).length, Object.values(S.wrapa || {}).map(v => v?.a).join('|')]); if (k !== wrapW.aKey) { wrapW.aKey = k; refillLife(); } }
 }
 setInterval(() => { try { wrapTick(); } catch (e) { console.warn('wrap', e); } }, 250);
+// ================= 📋 1028l 오늘의 할 일판 =================
+// 학생마다 날마다 미션 3개 (공부 2 + 놀이 1, 학생마다 조금씩 달라요) + 📝 수업 마무리 퀴즈가 열린 날은 보너스 미션
+// 미션 하나 🐚5 · ⭐1 · 3개 모두 🐚15 더 · 이번 주 ⭐10 → 🐚30 · ⭐15 → 🐚60 (월요일에 새로)
+// · 저장: 이 기기 bag.dq {d, done{id:1}, all} · bag.dqw {w, s 별, got{10,15}} · bag.wrapDone = 수업 마무리 퀴즈를 낸 날
+const DQ_STUDY = [
+  { id: 'eng', icon: '🔤', t: '영어력 10 올리기', hint: '영어 훈련소 · 영어 마을 놀이 · 영어 미로', goal: 10, cur: () => statToday('eng') },
+  { id: 'math', icon: '🧮', t: '수학력 10 올리기', hint: '단원 광산 · 학당 · 레일바이크 · 계산 공방', goal: 10, cur: () => statToday('math') },
+  { id: 'soc', icon: '🏛️', t: '사회력 8 올리기', hint: '역사의 길 시대 퀴즈 · 역사 박물관 연표', goal: 8, cur: () => statToday('soc') },
+  { id: 'read', icon: '📚', t: '독서 기록 1번 하기', hint: '광장 📒 독서 책상 (선생님 확인 뒤 올라요)', goal: 1, cur: () => statToday('read') > 0 || bag.readSt?.d === dayNum() && (bag.readSt.n | 0) > 0 ? 1 : 0 },
+];
+const DQ_FUN = [
+  { id: 'chest', icon: '💎', t: '뒷산 보물 상자 찾기', hint: '🔭 꼭대기 망원경으로 보면 힌트!', goal: 1, cur: () => bag.mtChest === dayNum() ? 1 : 0 },
+  { id: 'don', icon: '🐷', t: '반 기부함이나 캡슐 저금통에 🐚10 넣기', hint: '광장 기부함 · 캡슐뽑기 저금통', goal: 10, cur: () => (DON_DAY - donLeft('fund')) + (DON_DAY - donLeft('caps')) },
+  { id: 'pet', icon: '🐾', t: '우리 집 펫 한 번 돌보기', hint: '우리 집에서 펫에게 밥·간식·놀이', goal: 1, cur: () => Object.values(bag.hpet?.pets || {}).some(p => p?.day?.d === dayNum() && Object.keys(p.day).length > 1) ? 1 : 0 },
+  { id: 'cart', icon: '🛒', t: '수레 레이스 한 판 달리기', hint: '수학 마을 수레 레이스장', goal: 1, cur: () => bag.cartDay?.d === dayNum() && (bag.cartDay.n | 0) > 0 ? 1 : 0 },
+];
+const DQ_WRAP = { id: 'wrap', icon: '📝', t: '오늘 수업 마무리 퀴즈 풀기', hint: '선생님이 열면 바로 떠요 (못 풀었으면 위쪽 버튼)', goal: 1, cur: () => bag.wrapDone === dayNum() ? 1 : 0, bonus: true };
+const dqW = { btn: null, key: '', t: 0, told: -1 };
+function dqList() { // 오늘 미션: 날짜 + 기기 번호로 정해요 (하루 동안 그대로)
+  const u = String(backend?.uid || 'me'); let h = dayNum() * 31; for (const c of u) h = (h * 33 + c.charCodeAt(0)) >>> 0;
+  const st = [...DQ_STUDY], a = st.splice(h % st.length, 1)[0], b = st[(h >>> 3) % st.length], f = DQ_FUN[(h >>> 6) % DQ_FUN.length];
+  const L = [a, b, f]; const W = S.wrap; if (W?.n && Math.floor(((W.at || W.n * 1000) + 9 * 3600000) / 86400000) === dayNum()) L.push(DQ_WRAP); return L;
+}
+const dqDone = (m) => Math.min(m.goal, m.cur() | 0) >= m.goal;
+function dqTick() {
+  if (!joined || isTeacher || !stateLoaded) { dqBtn(false); return; }
+  const today = dayNum(); if (bag.dq?.d !== today) { bag.dq = { d: today, done: {}, all: 0 }; saveBag(); }
+  if (bag.dqw?.w !== weekNum()) { bag.dqw = { w: weekNum(), s: 0, got: {} }; saveBag(); }
+  if (dqW.told !== today) { dqW.told = today; setTimeout(() => toast('📋 오늘의 할 일 3개가 생겼어요! 왼쪽 📋 버튼을 눌러 봐요', 'info'), 4000); }
+  const L = dqList(), base = L.filter(m => !m.bonus);
+  for (const m of L) if (!bag.dq.done[m.id] && dqDone(m)) { bag.dq.done[m.id] = 1; bag.dqw.s = (bag.dqw.s | 0) + 1; earnShell(5, 'm'); saveBag(); renderCoinChip(); playSfx('coin'); toast(`📋 ${m.icon} ${m.t} 완료! 🐚 +5 · ⭐ 이번 주 ${bag.dqw.s}개`, 'success'); }
+  if (!bag.dq.all && base.every(m => bag.dq.done[m.id])) { bag.dq.all = 1; earnShell(15, 'm'); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), RAINBOW, 50, 5, 3); showBanner('📋 오늘의 할 일 모두 완료!', `🐚 +15 더 · 이번 주 ⭐ ${bag.dqw.s}개`, 5000); }
+  for (const [n, sh] of [[10, 30], [15, 60]]) if ((bag.dqw.s | 0) >= n && !bag.dqw.got[n]) { bag.dqw.got[n] = 1; earnShell(sh, 'm'); saveBag(); renderCoinChip(); setTimeout(() => showBanner(`⭐ 이번 주 별 ${n}개!`, `주간 보상 🐚 +${sh} · 월요일에 새로 모아요`, 5000), 1500); }
+  const n = base.filter(m => bag.dq.done[m.id]).length, bon = L.find(m => m.bonus), lab = `📋 오늘의 할 일 ${n}/${base.length}${bon && !bag.dq.done.wrap ? ' +📝' : ''}`;
+  dqBtn(!(pb3.on || cart.on || sled.on || mrail.on), lab, n >= base.length && (!bon || bag.dq.done.wrap));
+  if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📋 오늘의 할 일') { const k = JSON.stringify([bag.dq, L.map(m => m.cur())]); if (k !== dqW.key) { dqW.key = k; refillLife(); } }
+}
+function dqBtn(show, lab, done) {
+  if (!dqW.btn) { const b = document.createElement('button'); b.id = 'dqBtn'; b.className = 'btn hidden'; b.style.cssText = 'position:fixed;left:10px;top:262px;z-index:6;font-size:15px;padding:7px 12px;box-shadow:0 2px 8px rgba(0,0,0,.18)'; b.onclick = openDailyQ; document.body.append(b); dqW.btn = b; }
+  const b = dqW.btn; b.classList.toggle('hidden', !show); if (!show) return; if (b.textContent !== lab) b.textContent = lab; b.style.background = done ? '#CDEFC2' : '#FFF6D8';
+}
+function openDailyQ() {
+  openLife('📋 오늘의 할 일', (box) => {
+    box.textContent = ''; const L = dqList();
+    box.append(el2('p', 'hint', '날마다 할 일 3개! 하나 끝낼 때마다 🐚5와 ⭐1 · 3개 모두 하면 🐚15 더. 이번 주 ⭐10개면 🐚30, ⭐15개면 🐚60 (월요일에 새로 모아요)'));
+    for (const m of L) { const cur = Math.min(m.goal, m.cur() | 0), ok = !!bag.dq?.done?.[m.id] || cur >= m.goal, card = el2('div', '');
+      card.style.cssText = `display:flex;gap:10px;align-items:center;background:${ok ? '#E5F7DF' : '#fff'};border-radius:12px;padding:10px 12px;margin:7px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)${m.bonus ? ';border:2px dashed #F2C230' : ''}`;
+      const ic = el2('div', '', ok ? '✅' : m.icon); ic.style.fontSize = '30px'; const tx = el2('div', ''); tx.style.flex = '1';
+      tx.append(el2('b', '', `${m.bonus ? '⭐ 보너스 · ' : ''}${m.t}`), el2('div', 'hint', m.hint));
+      if (m.goal > 1) { const bg = el2('div', ''); bg.style.cssText = 'height:9px;border-radius:5px;background:#EEE;overflow:hidden;margin-top:4px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.round(cur / m.goal * 100)}%;background:${ok ? '#7FD36A' : '#F2C230'}`; bg.append(f); tx.append(bg, el2('div', 'hint', `${cur} / ${m.goal}`)); }
+      card.append(ic, tx); box.append(card); }
+    const s = bag.dqw?.s | 0, wb = el2('div', ''); wb.style.cssText = 'margin-top:10px;text-align:center;font-weight:800';
+    wb.textContent = `⭐ 이번 주 별 ${s}개 · ${s >= 15 ? '주간 보상 모두 받았어요 🎉' : s >= 10 ? `⭐15까지 ${15 - s}개 (🐚60)` : `⭐10까지 ${10 - s}개 (🐚30)`}`;
+    const bar = el2('div', ''); bar.style.cssText = 'height:12px;border-radius:6px;background:#EEE;overflow:hidden;margin:6px 0'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.min(100, s / 15 * 100)}%;background:linear-gradient(90deg,#FFD23C,#FF9A3C)`; bar.append(f);
+    box.append(wb, bar);
+  });
+}
+setInterval(() => { try { dqTick(); } catch (e) { console.warn('dq', e); } }, 1000);
 // ================= 🏃 수학 달리기장 (1024m · 수학 광산 마을) =================
 // 선생님이 단원(1~6단원 광산)·단계·시간·결승 칸 수를 골라 열고 → 🏁 출발! 3·2·1 뒤에 각자 화면에 단원 문제가 끝없이 나와요 (광산 문제 생성기)
 // 맞히면 한 칸 · 3번 연속 맞힐 때마다 ⚡ 두 칸 · 틀리면 3초 넘어져요 · 누군가 결승선에 닿거나 시간이 끝나면 끝 → 1등은 이번 주 ⛏️금광왕
