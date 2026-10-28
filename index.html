@@ -5049,6 +5049,7 @@ async function join(practice, asTeacher = false) {
   store.set('sv-hairc', String(myHairColor));
   if (practice) {
     backend = await openVillageData({ practice: true, onWarning: (m) => { toast(m, 'warn'); setSyncStatus('saveFail'); } });
+    practiceCtlWatch(); // 😌 1028j 혼자 연습도 반 쉬는 시간을 따라요
   } else {
     const room = cleanRoom($('room').value);
     if (!room) { err.textContent = '우리 반 코드를 적어 주세요'; $('room').focus(); return; }
@@ -11766,14 +11767,26 @@ const FREEZE_MAX = 10 * 60 * 1000;
    자동 쉬기는 기기마다 '쉬지 않고 한 시간'(rw.play)을 세요. 화면을 3분 넘게 안 보면(탭 숨김) 쉰 걸로 쳐요 */
 const REST_TIPS = [['👀', '창밖 먼 곳을 20초 동안 바라봐요'], ['🙆', '두 팔을 머리 위로 쭉 펴고 기지개를 켜요'], ['😑', '눈을 꼭 감았다가 천천히 떠요 (5번)'], ['🚰', '물을 한 모금 마셔요'], ['🔄', '목을 천천히 왼쪽·오른쪽으로 돌려요'], ['🧍', '자리에서 일어나 제자리 걸음을 해요'], ['🤲', '손가락을 쥐었다 폈다 해요 (10번)'], ['🌬️', '코로 숨을 깊게 들이쉬고 입으로 천천히 내쉬어요']];
 const rw = { play: 0, until: 0, shown: false, hidAt: 0, tipI: -1, waitT: 0, why: '' };
+/* 😌 1028j 혼자 연습 모드도 쉬는 시간을 따라요: 이 기기가 아는 반 코드(입력칸·마지막 반)로 Firebase의 state/control만 읽어요 (쓰지 않아요) */
+const prCtl = { c: null, off: 0, on: false };
+const ctlSrc = () => (backend?.mode !== 'firebase' && prCtl.c) ? prCtl.c : S.control;
+const ctlNow = () => (backend?.mode !== 'firebase' && prCtl.c) ? Date.now() + prCtl.off : backend.now();
+async function practiceCtlWatch() {
+  if (prCtl.on || !HAS_FIREBASE) return; const room = cleanRoom($('room')?.value || '') || cleanRoom(String(store.get('sv-room') || '')); if (!room) return; prCtl.on = true;
+  try { const V = '10.12.2'; const [{ initializeApp }, A, D] = await Promise.all([import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`), import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`), import(`https://www.gstatic.com/firebasejs/${V}/firebase-database.js`)]);
+    const app = initializeApp(FIREBASE_CONFIG, 'sv-practice-ctl'), auth = A.getAuth(app); try { await auth.authStateReady?.(); } catch (e) { } if (!auth.currentUser) await A.signInAnonymously(auth);
+    const db = D.getDatabase(app); D.onValue(D.ref(db, '.info/serverTimeOffset'), (x) => { prCtl.off = +x.val() || 0; });
+    D.onValue(D.ref(db, `${DB_ROOT}/rooms/${room}/state/control`), (x) => { const v = x.val() || {}; prCtl.c = { rest: +v.rest || 0, ra: +v.ra || 0, rl: +v.rl || 0 }; }, (e) => console.warn('practice ctl', e));
+  } catch (e) { console.warn('practice ctl', e); prCtl.on = false; }
+}
 const REST_MAXMS = 10 * 60000 + 30000; // 😌 가장 긴 쉬는 시간(10분) + 여유
 const restClassOn = () => { // 1023f: 새로고침하면 꺼졌던 쉬는 시간이 다시 켜지던 문제 → 서버 시각을 받은 뒤에만 · 이 기기에서 이미 끝난 쉬는 시간은 다시 안 켜요 · 남은 시간이 10분 30초보다 길면 기기 시계가 틀린 거예요
-  const r = S.control?.rest; if (!r || !backend) return false;
-  if (backend.clockOk && !backend.clockOk()) return false;
+  const r = ctlSrc()?.rest; if (!r || !backend) return false;
+  if (backend.mode === 'firebase' && backend.clockOk && !backend.clockOk()) return false;
   if (bag.restDone === r) return false;
-  const left = r - backend.now(); return left > 0 && left < REST_MAXMS;
+  const left = r - ctlNow(); return left > 0 && left < REST_MAXMS;
 };
-const restAutoMin = () => +S.control?.ra || 0;
+const restAutoMin = () => +ctlSrc()?.ra || 0;
 const restBusy = () => ['in-siege', 'in-hide', 'in-ctf', 'in-play', 'in-pb'].some(c => document.body.classList.contains(c)); // 팀 놀이 중
 document.addEventListener('visibilitychange', () => { if (document.hidden) rw.hidAt = performance.now(); else if (rw.hidAt && performance.now() - rw.hidAt > 180000) rw.play = 0; });
 function updateRest(dt) {
@@ -11781,17 +11794,17 @@ function updateRest(dt) {
   const cls = restClassOn(), self = rw.until > performance.now();
   if (!cls && !self && !document.hidden) { // ⏰ 쉬지 않고 한 시간
     rw.play += dt; const lim = restAutoMin() * 60;
-    if (lim && rw.play >= lim) { if (restBusy() && rw.waitT < 600) rw.waitT += dt; else { rw.until = performance.now() + (+S.control?.rl || 90) * 1000; rw.why = `⏰ ${restAutoMin()}분 동안 열심히 놀았어요!`; rw.waitT = 0; rw.play = 0; } }
+    if (lim && rw.play >= lim) { if (restBusy() && rw.waitT < 600) rw.waitT += dt; else { rw.until = performance.now() + (+ctlSrc()?.rl || 90) * 1000; rw.why = `⏰ ${restAutoMin()}분 동안 열심히 놀았어요!`; rw.waitT = 0; rw.play = 0; } }
   }
   if (cls) rw.play = 0;
   const on = cls || rw.until > performance.now();
   if (on !== rw.shown) {
     rw.shown = on; $('restOv').classList.toggle('hidden', !on);
     if (on) { playSfx('bell'); if (placing.active) stopPlacing(); if (life.fishing) endFishing(); $('emoteBar').classList.add('hidden'); for (const k in keys) keys[k] = false; joy.x = joy.y = 0; rw.tipI = -1; }
-    else { if (S.control?.rest) { bag.restDone = S.control.rest; saveBag(); } rw.play = 0; rw.until = 0; toast('▶️ 잘 쉬었어요! 다시 마을로 돌아왔어요', 'success'); }
+    else { if (ctlSrc()?.rest) { bag.restDone = ctlSrc().rest; saveBag(); } rw.play = 0; rw.until = 0; toast('▶️ 잘 쉬었어요! 다시 마을로 돌아왔어요', 'success'); }
   }
   if (!on) return;
-  const left = Math.max(0, Math.ceil(cls ? (S.control.rest - backend.now()) / 1000 : (rw.until - performance.now()) / 1000));
+  const left = Math.max(0, Math.ceil(cls ? (ctlSrc().rest - ctlNow()) / 1000 : (rw.until - performance.now()) / 1000));
   const t = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; if ($('restTime').textContent !== t) $('restTime').textContent = t;
   const why = cls ? '🧑‍🏫 선생님이 쉬는 시간을 주셨어요' : rw.why; if ($('restWhy').textContent !== why) $('restWhy').textContent = why;
   const ti = Math.floor(performance.now() / 15000) % REST_TIPS.length; if (ti !== rw.tipI) { rw.tipI = ti; $('restEmo').textContent = REST_TIPS[ti][0]; $('restTip').textContent = REST_TIPS[ti][1]; }
@@ -17528,6 +17541,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028j', d: '10월 28일', items: ['😌 쉬는 시간에는 혼자 연습하기 화면도 함께 쉬어요 (⏰ 자동 쉬기도 똑같이)'] },
   { id: '1028i', d: '10월 28일', items: ['🐉 펫 배틀(보스 레이드 · 야생 · 친구 대결)에서 펫이 안 보이던 문제를 고쳤어요'] },
   { id: '1028h', d: '10월 28일', items: ['📱 태블릿에서 글을 적을 때 화면 키보드가 창을 가리지 않게 창이 위로 올라가요 · 영어 답이 자동 고침으로 바뀌지 않아요'] },
   { id: '1028g', d: '10월 28일', items: ['🔔 영어 골든벨 주관식에서 답을 적는 도중에 글자가 지워지던 문제를 고쳤어요'] },
