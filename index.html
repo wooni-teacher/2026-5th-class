@@ -2145,7 +2145,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2203,6 +2203,7 @@ function normalize(v) {
     mrun: v.mrun && typeof v.mrun === 'object' ? { open: v.mrun.open === true, n: v.mrun.n | 0, title: String(v.mrun.title || '').slice(0, 30), us: Object.values(toObj(v.mrun.us)).map(String).filter(id => /^m[1-6]$/.test(id)).slice(0, 6), lv: Math.min(4, Math.max(0, v.mrun.lv | 0)), ph: ['wait', 'run', 'end'].includes(v.mrun.ph) ? v.mrun.ph : 'wait', t0: +v.mrun.t0 || 0, dur: Math.min(1800, Math.max(30, v.mrun.dur | 0 || 180)), goal: Math.min(60, Math.max(5, v.mrun.goal | 0 || 20)), res: v.mrun.res ? { rk: Object.values(toObj(v.mrun.res.rk)).slice(0, 10).map(r => ({ u: String(r?.u || ''), nm: String(r?.nm || '').slice(0, 12), s: r?.s | 0 })) } : null } : null,
     mrunp: Object.fromEntries(Object.entries(plainObj(v.mrunp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), s: Math.min(100, Math.max(0, x.s | 0)), c: x.c | 0, w: x.w | 0, at: +x.at || 0 }])),
     mrunc: v.mrunc && typeof v.mrunc === 'object' ? { n: v.mrunc.n | 0, uid: String(v.mrunc.uid || ''), name: String(v.mrunc.name || '').slice(0, 12), w: v.mrunc.w | 0, s: v.mrunc.s | 0 } : null,
+    shgive: Object.fromEntries(Object.entries(plainObj(v.shgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && isInt(x.n, 0, 10000000)).map(([u, x]) => [u, { n: x.n, m: typeof x.m === 'string' ? x.m.slice(0, 30) : '' }])), // 🐚 1028b 선생님이 준 조개 (합계)
     sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read'].filter(k => isInt(x[k], 0, 1000000)).map(k => [k, x[k]]))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
@@ -17369,6 +17370,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028b', d: '10월 28일', items: ['🎁 선생님이 🐚 조개를 직접 줄 수 있어요! 받으면 선생님 한마디와 함께 알려 줘요'] },
   { id: '1028a', d: '10월 28일', items: ['🗳️ 우리 반 의견함에 선생님도 의견을 넣을 수 있어요 (투표 때 다른 의견과 똑같이 보여요)'] },
   { id: '1027o', d: '10월 27일', items: ['💪 성 공방전에서 공부의 힘이 눈에 보여요! 능력치에 따라 무기가 나무 → 철 → 강철 → 황금으로 바뀌어요 (궁병은 🔥 불화살까지)', '💥 맞히면 피해 숫자가 떠요 · 금빛 ⚡는 내 능력치로 더한 몫 · ⚒️ 대장장이가 갈아 준 무기는 🔥 불꽃', '📚 독서력이 오르면 발밑에 파란 고리 · 전쟁이 끝나면 나라별 공부의 힘 TOP 3'] },
   { id: '1027n', d: '10월 27일', items: ['🔢 영어 훈련소 Lesson 10에 숫자·가격 연습! eleven~sixteen, twenty~fifty, hundred, thousand를 듣고·읽고·써요 (매번 새 가격)', '💬 Can I help you? / They\'re three thousand won. / Oh, they\'re expensive. 같은 가격 묻고 답하기 표현이 늘었어요'] },
@@ -22859,6 +22861,10 @@ function praiseSync() { // 학생 기기: 칭찬 · 반 목표 보상 받기
     for (const st of ['eng', 'math', 'soc', 'read']) { const tot = keys.reduce((a, k) => a + (S.sgive?.[k]?.[st] | 0), 0), sn = bag.sgvT[st] | 0;
       if (tot > sn) { addStat(st, tot - sn, true); got.push(`${STATS[st].icon} ${STATS[st].name} +${tot - sn}`); } if (tot !== sn) { bag.sgvT[st] = tot; ch = true; } }
     if (got.length) { saveBag(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0x9AF0FF, 0xFFD23C, 0xFFFFFF], 40, 4, 2); setTimeout(() => showBanner('⭐ 선생님이 능력치를 줬어요!', got.join('\n'), 6000), 300); } else if (ch) saveBag(); }
+  { const keys = [...new Set([uid, rosterOf(uid)].filter(Boolean).map(tgKey))], tot = keys.reduce((a, k) => a + (S.shgive?.[k]?.n | 0), 0); // 🐚 1028b 선생님이 준 조개
+    bag.shgT ??= 0; // 새 기능이라 처음엔 0부터 (그 전에 준 조개도 받아요)
+    if (tot > bag.shgT) { const d = tot - bag.shgT, msg = keys.map(k => S.shgive?.[k]?.m).find(Boolean) || ''; bag.shgT = tot; earnShell(d, 'x'); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0xFFD23C, 0xFFB6D9, 0xFFFFFF], 40, 4, 2); setTimeout(() => showBanner(`🎁 선생님이 🐚 ${d}을(를) 줬어요!`, msg ? `💬 ${msg}` : '고마워요! 🐚 조개돈으로 쇼핑해요', 6000), 300); }
+    else if (tot < bag.shgT) { const d = bag.shgT - tot; bag.shgT = tot; bag.shell = Math.max(0, (bag.shell || 0) - d); saveBag(); renderCoinChip(); toast(`↩️ 선생님이 잘못 준 🐚 ${d}을(를) 되돌렸어요`, 'info'); } }
   if (n > seen) { const k = n - seen, sh = k * C.p; bag.prz = { d: dayNum(), n }; if (sh) earnShell(sh); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), [0xFFD23C, 0xFF9AC0, 0xFFFFFF], 40, 4, 2); showBanner('🙋 선생님이 발표를 칭찬했어요!', `${sh ? `🐚 +${sh} · ` : ''}오늘 칭찬 ${n}번 · 이름표에 🎤가 생겼어요`, 5000); }
   else if (n < seen) { bag.prz = { d: dayNum(), n }; saveBag(); } // 선생님이 취소했어요 (받은 조개는 그대로)
   if (T && C.g > 0 && T.n >= C.g && bag.talkDay !== dayNum()) { bag.talkDay = dayNum(); if (C.r) earnShell(C.r); saveBag(); renderCoinChip(); setTimeout(() => showBanner('📣 오늘 우리 반 발표 목표 달성!', `모두 함께 해냈어요! ${C.r ? `🐚 +${C.r}` : ''}`, 6000), 600); }
@@ -22912,6 +22918,31 @@ function tgTick() { // 학생: 선생님이 새 칭호를 주면 알려 줘요
   if (!joined || isTeacher || !stateLoaded || !backend?.uid) return; const g = tgOf(backend.uid), ks = Object.keys(g).sort().join(','); if (bag.tgSeen === undefined) { bag.tgSeen = ks; saveBag(); return; }
   if (ks !== bag.tgSeen) { const old = new Set(String(bag.tgSeen).split(',')), nw = Object.keys(g).filter(k => !old.has(k)); bag.tgSeen = ks; saveBag(); if (nw.length) { playSfx('fanfare'); showBanner(`🏷️ 선생님이 칭호를 주셨어요!`, `${nw.map(k => ttDef(k)[0]).join(' · ')} · 📊 → 🏷️ 내 칭호 고르기에서 달 수 있어요`, 6000); } }
 }
+function fillShellGive(box) { // 🐚 1028b 조개 주기 (state/shgive/{이름·기기} {n 지금까지 준 합계, m 마지막 한마디})
+  stg.shN ||= 10; stg.shSel ||= new Set();
+  box.append(el2('p', 'hint', '개수를 정하고 받을 학생을 골라 🐚 주기를 눌러요. 놀이로 버는 하루 상한과 상관없이 그대로 들어가요. 학생이 접속해 있지 않아도 다음에 들어오면 받아요. 명단 이름으로 주면 기기를 바꿔도 받아요.'));
+  const r1 = el2('div', 'row-center wrap');
+  for (const n of [5, 10, 20, 30, 50, 100]) { const b = el2('button', 'btn', `🐚 ${n}`); b.style.background = stg.shN === n ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.shN === n)); b.onclick = () => { stg.shN = n; refillLife(); }; r1.append(b); }
+  const num = el2('input', 'tinput', null); num.type = 'number'; num.min = 1; num.max = 1000; num.value = stg.shN; num.style.width = '110px'; num.setAttribute('aria-label', '줄 조개 개수'); num.oninput = () => { const v = Math.floor(+num.value); if (v >= 1 && v <= 1000) { stg.shN = v; go.textContent = `🐚 ${v} 주기`; } };
+  r1.append(el2('span', 'hint', '직접:'), num);
+  const msg = el2('input', 'tinput', null); msg.maxLength = 30; msg.placeholder = '한마디 (안 써도 돼요) 예: 청소를 열심히 했어요'; msg.value = stg.shMsg || ''; msg.autocomplete = 'off'; msg.oninput = () => { stg.shMsg = msg.value; };
+  box.append(r1, msg, el2('h3', 'lp-sec', `받을 학생 (${stg.shSel.size}명 골랐어요)`));
+  const list = praiseStudents(), grid = el2('div', 'row-center wrap');
+  for (const [u, nm] of list) { const k = tgKey(u), on = stg.shSel.has(k), tot = S.shgive?.[k]?.n | 0, b = el2('button', 'btn', `${on ? '✅' : '⬜'} ${nm}${tot ? ` · 🐚${tot}` : ''}`); b.style.cssText = `font-size:16px;padding:7px 10px;background:${on ? '#CDEFC2' : '#fff'}`; b.setAttribute('aria-pressed', String(on)); b.onclick = () => { on ? stg.shSel.delete(k) : stg.shSel.add(k); refillLife(); }; grid.append(b); }
+  if (!list.length) box.append(el2('p', 'vempty', '학생이 아직 없어요. 🙋 발표 칭찬 탭 아래 📝 명단을 먼저 저장해요.'));
+  const r3 = el2('div', 'row-center wrap'), all = el2('button', 'btn', '반 모두 고르기'), none = el2('button', 'btn', '모두 풀기'), go = el2('button', 'btn', `🐚 ${stg.shN} 주기`);
+  all.style.background = none.style.background = '#fff'; all.onclick = () => { list.forEach(([u]) => stg.shSel.add(tgKey(u))); refillLife(); }; none.onclick = () => { stg.shSel.clear(); refillLife(); };
+  go.style.background = '#FFD23C'; go.disabled = !stg.shSel.size;
+  go.onclick = async () => { const n = Math.floor(stg.shN), m = String(stg.shMsg || '').trim().slice(0, 30); if (!(n >= 1 && n <= 1000)) { toast('🐚 1~1000개 사이로 정해요', 'warn'); return; } if (m && pollBad(m)) { toast('🙅 고운 말로 적어요', 'warn'); return; }
+    const upd = {}, prev = {}; for (const k of stg.shSel) { const cur = S.shgive?.[k]; prev[k] = cur ? { n: cur.n, m: cur.m || '' } : null; upd[`shgive/${k}`] = { n: Math.min(10000000, (cur?.n | 0) + n), m }; }
+    const r = await backend.adminUpdate(upd); if (!r.ok) { toast('⚠️ 저장하지 못했어요. database.rules.json을 다시 게시해 주세요', 'warn'); return; }
+    const names = list.filter(([u]) => stg.shSel.has(tgKey(u))).map(([, nm]) => nm); stg.shLast = { prev, n, names }; playSfx('coin');
+    toast(`🐚 ${names.slice(0, 4).join(', ')}${names.length > 4 ? ` 외 ${names.length - 4}명` : ''}에게 🐚 ${n}!`, 'success'); stg.shSel.clear(); setTimeout(refillLife, 300); };
+  r3.append(all, none, go); box.append(grid, r3);
+  if (stg.shLast) { const L = stg.shLast, u = el2('button', 'btn', `↩️ 방금 준 것 되돌리기 (${L.names.slice(0, 3).join(', ')}${L.names.length > 3 ? ` 외 ${L.names.length - 3}명` : ''} · 🐚 ${L.n})`); u.style.background = '#fff';
+    u.onclick = async () => { const upd = {}; for (const [k, v] of Object.entries(L.prev)) upd[`shgive/${k}`] = v; const r = await backend.adminUpdate(upd); if (!r.ok) { toast('⚠️ 되돌리지 못했어요', 'warn'); return; } stg.shLast = null; toast('↩️ 되돌렸어요 (이미 받은 학생은 그만큼 조개가 빠져요)', 'info'); setTimeout(refillLife, 300); };
+    const rw = el2('div', 'row-center'); rw.append(u); box.append(rw); }
+}
 function fillStatGive(box) { // ⭐ 능력치 주기 (state/sgive/{이름·기기}/{능력치} = 지금까지 준 합계)
   box.append(el2('p', 'hint', '능력치와 점수를 고르고, 줄 학생을 눌러 고른 다음 ⭐ 주기를 눌러요. 하루 상한과 상관없이 그대로 오르고 주간 랭킹에도 들어가요. 학생이 접속해 있지 않아도 다음에 들어오면 받아요.'));
   const r1 = el2('div', 'row-center wrap');
@@ -22933,9 +22964,10 @@ function fillStatGive(box) { // ⭐ 능력치 주기 (state/sgive/{이름·기�
 function openPraise() {
   if (!isTeacher) return;
   openLife('🙋 발표 칭찬', (box) => {
-    box.textContent = ''; { const tb = el2('div', 'row-center wrap'); for (const [k, n] of [['talk', '🙋 발표 칭찬'], ['stat', '⭐ 능력치 주기'], ['ttl', '🏷️ 칭호 주기']]) { const b = el2('button', 'btn', n); b.style.background = stg.tab === k ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.tab === k)); b.onclick = () => { stg.tab = k; refillLife(); }; tb.append(b); } box.append(tb); }
+    box.textContent = ''; { const tb = el2('div', 'row-center wrap'); for (const [k, n] of [['talk', '🙋 발표 칭찬'], ['stat', '⭐ 능력치 주기'], ['shell', '🐚 조개 주기'], ['ttl', '🏷️ 칭호 주기']]) { const b = el2('button', 'btn', n); b.style.background = stg.tab === k ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(stg.tab === k)); b.onclick = () => { stg.tab = k; refillLife(); }; tb.append(b); } box.append(tb); }
     if (stg.tab === 'stat') { fillStatGive(box); return; }
     if (stg.tab === 'ttl') { fillTitleGive(box); return; }
+    if (stg.tab === 'shell') { fillShellGive(box); return; }
     const T = talkToday(), C = talkCfg(), tn = T?.n | 0;
     box.append(el2('p', 'lp-big', C.g ? `📣 오늘 우리 반 발표 ${tn} / ${C.g}${tn >= C.g ? ' 🎉 달성!' : ''}` : `📣 오늘 우리 반 발표 ${tn}번 (목표 끔)`));
     if (C.g) { const bar = el2('div', ''); bar.style.cssText = 'height:14px;border-radius:7px;background:#EEE;overflow:hidden;margin:4px 0 8px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.min(100, tn / C.g * 100)}%;background:#5FBE5A`; bar.append(f); box.append(bar); }
