@@ -1348,6 +1348,10 @@
     <div class="row-center wrap" style="margin-top:8px"><button class="btn" id="tpMute" style="background:#fff">🔇 학생 소리 모두 끄기 / 켜기</button><button class="btn" id="tpLite" style="background:#fff">🪶 학생 화질 모두 가볍게</button></div>
     <p class="hint" style="margin-top:6px">선생님 화면 왼쪽에도 모이기·멈춤 버튼이 있어요. 멈춤은 10분이 지나면 저절로 풀려요.</p>
 
+    <h3>📝 수업 마무리 퀴즈 (영어 · 수학 · 사회)</h3>
+    <p class="hint">수업 끝 3~5분: 과목·단원을 고르면 학생 화면에 바로 문제지가 떠요 → 선생님 화면에서 실시간 채점 → 결과 공개하면 맞힌 만큼 능력치·🐚</p>
+    <div class="row-center wrap"><button class="btn" id="tpWrapOpen" style="background:#FFD23C;font-size:18px">📝 수업 마무리 퀴즈 열기</button></div>
+
     <h3>😌 쉬는 시간</h3>
     <p class="hint" id="tpRestNow"></p>
     <div class="row-center wrap"><button class="btn" data-rest="3" style="background:#CDEFC2">😌 3분 쉬기</button><button class="btn" data-rest="5" style="background:#CDEFC2">😌 5분 쉬기</button><button class="btn" data-rest="10" style="background:#CDEFC2">😌 10분 쉬기</button><button class="btn hidden" id="tpRestEnd" style="background:#fff">▶️ 쉬는 시간 끝내기</button></div>
@@ -2150,7 +2154,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2196,6 +2200,8 @@ function normalize(v) {
     gwa: Object.fromEntries(Object.entries(plainObj(v.gwa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     gwc: v.gwc && typeof v.gwc === 'object' ? { n: v.gwc.n | 0, name: String(v.gwc.name || '').slice(0, 12), uid: String(v.gwc.uid || ''), w: v.gwc.w | 0, sc: v.gwc.sc | 0 } : null,
     eg: v.eg && typeof v.eg === 'object' ? { open: v.eg.open === true, n: v.eg.n | 0, title: String(v.eg.title || '').slice(0, 30), us: Object.values(toObj(v.eg.us)).slice(0, 12).map(x => String(x).slice(0, 16)), cur: v.eg.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.eg.ph) ? v.eg.ph : 'wait', lim: Math.min(120, Math.max(0, v.eg.lim | 0)), qt: +v.eg.qt || 0, qs: Object.values(toObj(v.eg.qs)).slice(0, 40).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), s: String(q?.s || '').slice(0, 160) })), rev: Object.fromEntries(Object.entries(toObj(v.eg.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.eg.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.eg.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.eg.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), wk: v.eg.wk === 'last' ? 'last' : 'win' } : null,
+    wrap: v.wrap && typeof v.wrap === 'object' && v.wrap.n && v.wrap.qs ? { n: +v.wrap.n || 0, subj: ['eng', 'math', 'soc'].includes(v.wrap.subj) ? v.wrap.subj : 'eng', title: String(v.wrap.title || '').slice(0, 40), ph: v.wrap.ph === 'rev' ? 'rev' : 'q', at: +v.wrap.at || 0, qs: Object.values(toObj(v.wrap.qs)).slice(0, 10).map(q => ({ q: String(q?.q || '').slice(0, 300), ...(q?.qh ? { qh: String(q.qh).slice(0, 1500) } : {}), o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 300)), ...(q?.oh ? { oh: true } : {}), ...(q?.u ? { u: String(q.u).slice(0, 8) } : {}) })), ...(v.wrap.key ? { key: Object.values(toObj(v.wrap.key)).map(x => +x | 0) } : {}) } : null, // 📝 1028k
+    wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0, k: v.egc.k === 'last' ? 'last' : 'win', u: Object.fromEntries(Object.entries(plainObj(v.egc.u)).filter(([u]) => ANON_ID.test(u)).slice(0, 40).map(([u, x]) => [u, String(x || '').slice(0, 12)])) } : null,
     caps: v.caps && typeof v.caps === 'object' ? { n: Math.max(0, v.caps.n | 0), ...(v.caps.g ? { g: Math.min(1e6, Math.max(1000, v.caps.g | 0)) } : {}), r: v.caps.r | 0, log: Object.fromEntries(Object.entries(plainObj(v.caps.log)).filter(([d, x]) => /^[0-9]{1,6}$/.test(d) && Number.isFinite(+x)).map(([d, x]) => [d, +x | 0])) } : null,
@@ -2534,7 +2540,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3027,6 +3033,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     acct, async bagGet() { try { return (await D.get(R(`bags/${uid}`))).val(); } catch (e) { return null; } }, async bagAt() { try { return (await D.get(R(`bags/${uid}/at`))).val() || 0; } catch (e) { return -1; } }, async bagPut(j, at) { try { await D.set(R(`bags/${uid}`), { j, at, nk: cleanNick(myNick) || '' }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎒 닉네임 계정 가방 (다른 기기에서 이어서)
     async earnGet() { try { return (await D.get(R('earn'))).val() || {}; } catch (e) { return null; } },
     async gwAnswer(o) { try { await D.set(R(`state/gwa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async wrapAnswer(o) { try { await D.set(R(`state/wrapa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📝 1028k 수업 마무리
     async egAnswer(o) { try { await D.set(R(`state/ega/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async mrunStep(o) { try { await D.set(R(`state/mrunp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async capsGive(amt) { // 🎰 캡슐뽑기 저금통: 한 번에 500까지 · 목표를 넘지 않게 · 그날 모인 양도 같이 (14일 지난 기록은 지워요)
@@ -13962,7 +13969,7 @@ function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hi
 const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투표'], ['village', '🏘️ 마을'], ['play', '🎮 놀이'], ['setup', '⚙️ 설정']];
 // 1022b: 탭마다 보여 줄 순서 (제목으로 찾아요) · 마을 탭은 마을별 묶음 · 목록에 없는 것(선생님 모습·게시판 공지·업데이트 투표·마을 미션 기록·보상 투표 등)은 숨겨요
 const TP_LAYOUT = {
-  class: [/수업 도구/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
+  class: [/수업 도구/, /수업 마무리/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/성 공방전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
@@ -17541,6 +17548,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028k', d: '10월 28일', items: ['📝 수업 마무리 퀴즈! 영어·수학·사회 수업 끝에 선생님이 열면 바로 문제지가 떠요 · 맞힌 만큼 능력치와 🐚'] },
   { id: '1028j', d: '10월 28일', items: ['😌 쉬는 시간에는 혼자 연습하기 화면도 함께 쉬어요 (⏰ 자동 쉬기도 똑같이)'] },
   { id: '1028i', d: '10월 28일', items: ['🐉 펫 배틀(보스 레이드 · 야생 · 친구 대결)에서 펫이 안 보이던 문제를 고쳤어요'] },
   { id: '1028h', d: '10월 28일', items: ['📱 태블릿에서 글을 적을 때 화면 키보드가 창을 가리지 않게 창이 위로 올라가요 · 영어 답이 자동 고침으로 바뀌지 않아요'] },
@@ -22599,6 +22607,7 @@ function initSiegeUI() {
   const sel = $('tpSgSet'); for (const [k, v] of Object.entries(SIEGE_SETS)) sel.append(new Option(`${v.name} (${v.nat.map(N => N.name).join('·')})`, k)); sel.value = 'three';
   sel.onchange = () => fillSiegeAdmin(true);
   mtAdminInit(); // ⛰️ 1028d 뒷산
+  $('tpWrapOpen').onclick = () => { closeModals(); openWrapAdmin(); }; // 📝 1028k 수업 마무리
   $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
@@ -23891,6 +23900,132 @@ function egTick(dt) {
   if (isTeacher) { const key = bag.egKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + G.lim * 1000 + 1500 && !eg.autoBusy) { eg.autoBusy = true; egReveal().finally(() => { setTimeout(() => { eg.autoBusy = false; }, 2000); }); }
     if (G.open && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 진행') { const k = JSON.stringify([G.ph, G.cur, egAliveN(G), Object.keys(S.ega || {}).length, Object.values(S.ega || {}).map(v => Object.keys(v?.a || {}).length).join(), G.ph === 'q' ? egLeft(G) : 0]); if (k !== eg.aKey) { eg.aKey = k; if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') refillLife(); } } }
 }
+// ================= 📝 1028k 수업 마무리 퀴즈 (영어 · 수학 · 사회) =================
+// 선생님이 과목·단원·문제 수를 골라 열면 → 학생 화면에 바로 문제지가 떠요 (마을 어디에 있든) → 모두 내면 선생님 화면에서 바로 채점·문제별 정답률
+// → 📊 결과 공개를 누르면 학생마다 맞힌 수만큼 그 과목 능력치 + 🐚 (한 번)
+// · 저장: state/wrap {n 회차(초), subj eng|math|soc, title, ph q|rev, qs [{q, qh?, o[], u?}], key? (공개 뒤에만)} · state/wrapa/{uid} {r, nm, a "0,2,-"}
+// · 정답은 공개 전까지 선생님 기기에만 (bag.wrapKey {n, a[]}) — 시험 답은 선생님 기기에만
+const WRAP_SUBJ = { eng: ['🔤', '영어'], math: ['🧮', '수학'], soc: ['🏛️', '사회'] };
+const wrapW = { cfg: { subj: 'eng', u: 10, m: 'm1', lv: 0, k: 'joseon', sub: '', cnt: 3 }, sel: [], seenN: 0, chip: null, aKey: '', sKey: '' };
+const wrapOn = () => !!S.wrap?.n && (S.wrap.ph === 'q' || S.wrap.ph === 'rev');
+function wrapSafeHtml(h) { // 수학 분수 모양(qh) — 선생님만 쓸 수 있는 칸이지만 혹시 몰라 태그·속성을 걸러요
+  const t = document.createElement('template'); t.innerHTML = String(h || '');
+  const ok = new Set(['SPAN', 'B', 'I', 'SUP', 'SUB', 'BR', 'DIV', 'SMALL', 'U', 'EM', 'STRONG']);
+  const walk = (n) => { for (const c of [...n.childNodes]) { if (c.nodeType === 1) { if (!ok.has(c.tagName)) { c.replaceWith(document.createTextNode(c.textContent)); continue; } for (const a of [...c.attributes]) if (a.name !== 'class' && a.name !== 'style') c.removeAttribute(a.name); walk(c); } else if (c.nodeType !== 3) c.remove(); } };
+  walk(t.content); return t.innerHTML;
+}
+function wrapMake(cfg) { // → [{q, qh?, o[], u?, ans}] (ans = 정답 번호)
+  const out = [], seen = new Set(), N = cfg.cnt;
+  const push = (q) => { const k = q.q + (q.qh || ''); if (seen.has(k) || !q.o || q.o.length < 2 || q.ans < 0) return; seen.add(k); out.push(q); };
+  if (cfg.subj === 'eng') {
+    const W = EV_WORDS[cfg.u] || [], Sn = EV_SENTS[cfg.u] || [];
+    const pick4 = (list, right, f) => { const others = evShuffle(list.filter(x => f(x) !== f(right))).slice(0, 3).map(f); const o = evShuffle([f(right), ...others]); return { o, ans: o.indexOf(f(right)) }; };
+    for (let t = 0; t < 60 && out.length < N; t++) {
+      const kind = t % 4;
+      if (kind === 0 && W.length >= 4) { const w = evPick(W), r = pick4(W, w, x => x[1]); push({ q: `'${w[0]}'의 뜻은 무엇일까요? ${w[2] || ''}`, ...r }); }
+      else if (kind === 1 && W.length >= 4) { const w = evPick(W), r = pick4(W, w, x => x[0]); push({ q: `'${w[1]}'을(를) 영어로 하면? ${w[2] || ''}`, ...r }); }
+      else if (kind === 2 && Sn.length >= 4) { const s = evPick(Sn), r = pick4(Sn, s, x => x[1]); push({ q: `다음 문장의 뜻은?\n${s[0]}`, ...r }); }
+      else if (kind === 3 && Sn.length >= 4) { const s = evPick(Sn), r = pick4(Sn, s, x => x[0]); push({ q: `"${s[1]}"을(를) 영어로 바르게 말한 것은?`, ...r }); }
+    }
+  } else if (cfg.subj === 'math') {
+    const gen = MQ_GEN[cfg.m]?.[cfg.lv]; if (gen) for (let t = 0; t < 80 && out.length < N; t++) { const Q = gen(); if (!Q || Q.sh || Q.cv || !Array.isArray(Q.opts)) continue; const ans = Q.opts.indexOf(Q.ans); push({ q: Q.q || '', ...(Q.qh ? { qh: Q.qh } : {}), o: Q.opts.map(String), ...(Q.oh ? { oh: true } : {}), ...(Q.unit ? { u: Q.unit } : {}), ans }); }
+  } else {
+    let pool = histPool([cfg.k]); if (cfg.sub) pool = pool.filter(x => x.sub === cfg.sub);
+    for (const it of hShuffle([...pool])) { if (out.length >= N) break; const o = histChoices(it); if (o.length < 3) continue; push({ q: `${it.ctx && it.ctx !== it.sub ? `[${it.ctx}]\n` : ''}${it.q}`, o, ans: o.indexOf(it.a) }); }
+  }
+  return out.slice(0, N);
+}
+function wrapTitle(cfg) { const [ic, nm] = WRAP_SUBJ[cfg.subj]; return cfg.subj === 'eng' ? `${ic} 영어 Lesson ${cfg.u}` : cfg.subj === 'math' ? `${ic} 수학 ${MINE[cfg.m]?.u}단원 ${MINE[cfg.m]?.uname || ''} · ${MQ_LV[cfg.lv]?.n}` : `${ic} 사회 ${HIST_ERA[cfg.k]?.n || ''}${cfg.sub ? ` · ${cfg.sub}` : ''}`; }
+async function wrapStart() {
+  const cfg = wrapW.cfg, qs = wrapMake(cfg);
+  if (!qs.length) { toast(cfg.subj === 'soc' ? '📜 이 시대 학습지 문제가 아직 없어요 (역사 마을 관리에서 학습지를 불러와요)' : '문제를 만들지 못했어요. 다른 단원을 골라 봐요', 'warn'); return; }
+  const n = Math.floor(Date.now() / 1000); bag.wrapKey = { n, a: qs.map(q => q.ans) }; saveBag();
+  const r = await backend.adminUpdate({ wrap: { n, subj: cfg.subj, title: wrapTitle(cfg).slice(0, 40), ph: 'q', qs: qs.map(({ ans, ...q }) => q), at: backend.now() }, wrapa: null });
+  if (!r.ok) { toast('⚠️ 열지 못했어요. database.rules.json을 다시 게시해 주세요', 'warn'); return; }
+  playSfx('fanfare'); toast(`📝 ${qs.length}문제 수업 마무리 퀴즈를 열었어요! 학생 화면에 바로 떠요`, 'success'); setTimeout(refillLife, 300);
+}
+const wrapAns = (u) => { const v = S.wrapa?.[u]; return v && v.r === S.wrap?.n ? String(v.a || '').split(',') : null; };
+const wrapKeyNow = () => S.wrap?.key ? Object.values(S.wrap.key).map(Number) : (bag.wrapKey?.n === S.wrap?.n ? bag.wrapKey.a : null);
+function wrapScore(a, key) { if (!a || !key) return 0; return key.reduce((s, k, i) => s + (String(k) === a[i] ? 1 : 0), 0); }
+function wrapQBox(box, Q, i, pickI, onPick, key) { // 문제 하나 그리기
+  const card = el2('div', ''); card.style.cssText = 'background:#fff;border-radius:12px;padding:10px 12px;margin:8px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)';
+  const qp = el2('p', '', ''); qp.style.cssText = 'font-weight:800;font-size:18px;white-space:pre-line;margin:0 0 6px'; qp.textContent = `${i + 1}. `; if (Q.qh) { const sp = document.createElement('span'); sp.innerHTML = wrapSafeHtml(Q.qh); qp.append(sp); } else qp.append(document.createTextNode(Q.q)); card.append(qp);
+  const grid = el2('div', 'mx-opts'); (Q.o || []).forEach((op, j) => { const b = el2('button', 'btn mx-opt', ''); if (Q.oh) b.innerHTML = wrapSafeHtml(`${j + 1}) ${op}`); else b.textContent = `${j + 1}) ${op}${Q.u ? ' ' + Q.u : ''}`;
+    const right = key && +key[i] === j, mine = pickI === j; b.style.background = key ? (right ? '#BDE8B0' : mine ? '#F6C9C0' : '#fff') : mine ? '#FFE066' : '#fff'; if (onPick) b.onclick = () => onPick(j); else b.disabled = !key; grid.append(b); });
+  card.append(grid); box.append(card); return card;
+}
+function openWrapPlay() {
+  if (!S.wrap?.n) { toast('📝 지금은 수업 마무리 퀴즈가 없어요', 'info'); return; }
+  wrapW.sKey = `${S.wrap.n}|${S.wrap.ph}`;
+  openLife('📝 수업 마무리 퀴즈', (box) => {
+    box.textContent = ''; const W = S.wrap; if (!W?.n) { box.append(el2('p', 'vempty', '퀴즈가 끝났어요')); return; }
+    const qs = Object.values(W.qs || {}), sent = wrapAns(backend.uid), key = W.ph === 'rev' ? wrapKeyNow() : null;
+    if (wrapW.selN !== W.n) { wrapW.selN = W.n; wrapW.sel = sent ? sent.map(x => x === '-' ? -1 : +x) : qs.map(() => -1); }
+    box.append(el2('p', 'lp-big', W.title || '수업 마무리 퀴즈'));
+    if (key) { const sc = wrapScore(sent, key); box.append(el2('p', 'lp-big', sent ? `🎯 ${qs.length}문제 중 ${sc}개 맞혔어요!${sc === qs.length ? ' 💯' : ''}` : '이번 퀴즈에는 답을 내지 않았어요')); }
+    else box.append(el2('p', 'hint', sent ? '✅ 냈어요! 선생님이 결과를 공개할 때까지 답을 고쳐서 다시 낼 수 있어요' : `오늘 배운 내용을 ${qs.length}문제로 확인해요. 다 고르고 📨 내기를 눌러요`));
+    qs.forEach((Q, i) => wrapQBox(box, Q, i, key ? (sent ? +sent[i] : -1) : wrapW.sel[i], key || isTeacher ? null : (j) => { wrapW.sel[i] = j; refillLife(); }, key));
+    if (!key && !isTeacher) { const left = wrapW.sel.filter(x => x < 0).length, b = el2('button', 'btn', left ? `📨 내기 (${left}문제 남음)` : sent ? '📨 다시 내기' : '📨 내기'); b.style.background = '#FFD23C';
+      b.onclick = async () => { if (left && !(await confirmAction({ title: '아직 안 고른 문제가 있어요', body: `${left}문제를 고르지 않았어요. 그래도 낼까요?`, okText: '그래도 내기' }))) return;
+        const r = await backend.wrapAnswer({ r: W.n, nm: (rosterOf(backend.uid) || cleanNick(myNick) || '친구').slice(0, 12), a: wrapW.sel.map(x => x < 0 ? '-' : String(x)).join(',') });
+        if (r.ok) { playSfx('pick'); toast('📨 냈어요! 결과를 기다려요', 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 내지 못했어요 (마감됐을 수 있어요)', 'warn'); };
+      const row = el2('div', 'row-center'); row.append(b); box.append(row); }
+    if (key && sent) { const sc = wrapScore(sent, key), sub = WRAP_SUBJ[W.subj] ? W.subj : 'eng'; box.append(el2('p', 'hint', `${STATS[sub].icon} ${STATS[sub].name} +${wrapReward(sc, qs.length).st} · 🐚 +${wrapReward(sc, qs.length).sh} (한 번만 받아요)`)); }
+  });
+}
+const wrapReward = (sc, n) => ({ st: sc * 3 + (sc === n && n >= 3 ? 4 : 0), sh: sc * 2 });
+function wrapSync() { // 학생 기기: 새 퀴즈가 열리면 바로 문제지 · 공개되면 보상 한 번
+  if (!joined || isTeacher || !stateLoaded) { wrapChip(false); return; }
+  const W = S.wrap; wrapChip(!!W?.n && W.ph === 'q' && !(!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📝 수업 마무리 퀴즈'));
+  if (!W?.n) return;
+  const k = `${W.n}|${W.ph}`;
+  if (W.ph === 'q' && wrapW.seenN !== W.n) { const first = !wrapW.seenN && backend.now() - (W.at || 0) > 10 * 60000; wrapW.seenN = W.n; if (!first && !wrapAns(backend.uid)) { closeModals(); playSfx('bell'); openWrapPlay(); showBanner('📝 수업 마무리 퀴즈!', `${W.title || ''} · 오늘 배운 것을 확인해요`, 3500); } }
+  if (k !== wrapW.sKey && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📝 수업 마무리 퀴즈') openWrapPlay();
+  if (W.ph === 'rev' && bag.wrapGot !== W.n) { const sent = wrapAns(backend.uid), key = wrapKeyNow(); if (key) { bag.wrapGot = W.n; if (sent) { const n = Object.values(W.qs || {}).length, sc = wrapScore(sent, key), R = wrapReward(sc, n), sub = WRAP_SUBJ[W.subj] ? W.subj : 'eng'; if (R.st) addStat(sub, R.st, true); const sh = R.sh ? giveShellCapped(R.sh) : 0; saveBag(); updateHUD(null); playSfx(sc === n ? 'fanfare' : 'right'); if (sc === n) burst(player.pos.clone().setY(2.2), RAINBOW, 50, 5, 3); showBanner(`📝 ${n}문제 중 ${sc}개 정답!${sc === n ? ' 💯' : ''}`, `${STATS[sub].icon} ${STATS[sub].name} +${R.st}${sh ? ` · 🐚 +${sh}` : ''} · 틀린 문제는 문제지에서 확인해요`, 6000); if ($('lifePanel').classList.contains('hidden')) openWrapPlay(); } else saveBag(); } }
+}
+function wrapChip(show) {
+  if (!wrapW.chip) { const b = document.createElement('button'); b.className = 'btn hidden'; b.id = 'wrapChip'; b.textContent = '📝 수업 마무리 퀴즈 풀기'; b.style.cssText = 'position:fixed;left:50%;top:78px;transform:translateX(-50%);z-index:7;background:#FFD23C;font-size:17px;box-shadow:0 3px 10px rgba(0,0,0,.2)'; b.onclick = openWrapPlay; document.body.append(b); wrapW.chip = b; }
+  wrapW.chip.classList.toggle('hidden', !show);
+}
+function openWrapAdmin() {
+  if (!isTeacher) return;
+  openLife('📝 수업 마무리 퀴즈 (선생님)', (box) => {
+    box.textContent = ''; const W = S.wrap, cfg = wrapW.cfg;
+    const B = (row, t, on, fn) => { const b = el2('button', 'btn', t); b.style.background = on ? '#FFE066' : '#fff'; b.setAttribute('aria-pressed', String(!!on)); b.onclick = () => { fn(); refillLife(); }; row.append(b); return b; };
+    if (W?.n) { // 진행 중: 실시간 채점
+      const qs = Object.values(W.qs || {}), key = wrapKeyNow(), stu = praiseStudents(), ans = Object.entries(S.wrapa || {}).filter(([, v]) => v?.r === W.n);
+      box.append(el2('p', 'lp-big', `${W.title} · ${W.ph === 'rev' ? '📊 결과 공개함' : '✏️ 푸는 중'}`), el2('p', 'hint', `📨 낸 학생 ${ans.length}명${key ? '' : ' · ⚠️ 이 기기에 정답이 없어요 (다른 기기에서 열었어요) → 공개해도 채점이 안 돼요'}`));
+      if (key) { const rate = qs.map((_, i) => ans.length ? Math.round(ans.filter(([, v]) => String(v.a || '').split(',')[i] === String(key[i])).length / ans.length * 100) : 0);
+        qs.forEach((Q, i) => { const r = el2('div', ''); r.style.cssText = 'margin:4px 0'; const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]), lab = el2('div', '', ''); lab.innerHTML = wrapSafeHtml(`${i + 1}. ${Q.qh ? Q.qh : esc((Q.q || '').replace(/\n/g, ' ').slice(0, 60))} → 정답 ${+key[i] + 1}) ${Q.oh ? String(Q.o?.[key[i]] ?? '') : esc(Q.o?.[key[i]] ?? '')}${Q.u ? ' ' + esc(Q.u) : ''} · <b>정답률 ${rate[i]}%</b>`); lab.style.fontSize = '15px'; const bg = el2('div', ''); bg.style.cssText = 'height:10px;border-radius:5px;background:#EEE;overflow:hidden'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${rate[i]}%;background:${rate[i] >= 70 ? '#7FD36A' : rate[i] >= 40 ? '#F2C230' : '#EE5A4A'}`; bg.append(f); r.append(lab, bg); box.append(r); });
+        const list = el2('div', 'row-center wrap'); list.style.margin = '8px 0';
+        for (const [u, v] of ans.sort((a, b) => wrapScore(String(b[1].a).split(','), key) - wrapScore(String(a[1].a).split(','), key))) { const a = String(v.a || '').split(','), sc = wrapScore(a, key), sp = el2('span', '', `${v.nm || '친구'} ${a.map((x, i) => x === String(key[i]) ? '⭕' : '❌').join('')} ${sc}/${qs.length}`); sp.style.cssText = `display:inline-block;margin:3px;padding:4px 9px;border-radius:10px;font-size:15px;background:${sc === qs.length ? '#CDEFC2' : sc * 2 >= qs.length ? '#FFF6D8' : '#FDE2DD'}`; list.append(sp); }
+        box.append(list); }
+      const done = new Set(ans.map(([u, v]) => v.nm)), yet = stu.filter(([u, nm]) => !done.has(nm) && !ans.some(([au]) => au === u)).map(([, nm]) => nm.replace(' (기기)', ''));
+      if (yet.length && W.ph === 'q') box.append(el2('p', 'hint', `⏳ 아직 안 낸 학생: ${yet.slice(0, 30).join(', ')}`));
+      const row = el2('div', 'row-center wrap');
+      if (W.ph === 'q') { const b = el2('button', 'btn', '📊 마감하고 결과 공개'); b.style.background = '#FFD23C'; b.disabled = !key; b.onclick = async () => { const r = await backend.adminUpdate({ 'wrap/ph': 'rev', 'wrap/key': key.map(Number) }); if (r.ok) { playSfx('fanfare'); toast('📊 결과를 공개했어요! 학생마다 맞힌 만큼 능력치를 받아요', 'success'); } setTimeout(refillLife, 300); }; row.append(b); }
+      const e = el2('button', 'btn', W.ph === 'rev' ? '✅ 끝내기 (닫기)' : '🗑️ 그만두기'); e.style.background = '#fff'; e.onclick = async () => { await backend.adminUpdate({ wrap: null, wrapa: null }); toast('📝 수업 마무리 퀴즈를 닫았어요', 'info'); setTimeout(refillLife, 300); }; row.append(e);
+      const pv = el2('button', 'btn', '👀 학생 화면 보기'); pv.style.background = '#fff'; pv.onclick = openWrapPlay; row.append(pv); box.append(row); return;
+    }
+    box.append(el2('p', 'hint', '수업 끝 3~5분! 과목과 단원을 고르고 열면 모든 학생 화면에 바로 문제지가 떠요. 정답은 공개 전까지 이 기기에만 있어요. 공개하면 학생마다 맞힌 수만큼 그 과목 능력치(정답당 +3, 만점 +4)와 🐚를 받아요.'));
+    const r1 = el2('div', 'row-center wrap'); for (const [k, [ic, nm]] of Object.entries(WRAP_SUBJ)) B(r1, `${ic} ${nm}`, cfg.subj === k, () => { cfg.subj = k; }); box.append(r1);
+    const r2 = el2('div', 'row-center wrap');
+    if (cfg.subj === 'eng') for (const u of [7, 8, 9, 10, 11, 12]) B(r2, `Lesson ${u}`, cfg.u === u, () => { cfg.u = u; });
+    else if (cfg.subj === 'math') { for (const m of MINES) B(r2, `${m.u}단원 ${m.uname}`, cfg.m === m.id, () => { cfg.m = m.id; }); }
+    else for (const E of HIST_ERAS) { const n = histPool([E.k]).length; const b = B(r2, `${E.icon} ${E.n}${n ? '' : ' (문제 없음)'}`, cfg.k === E.k, () => { cfg.k = E.k; cfg.sub = ''; }); b.disabled = !n; }
+    box.append(r2);
+    if (cfg.subj === 'math') { const r3 = el2('div', 'row-center wrap'); MQ_LV.forEach((L, i) => B(r3, `${L.icon} ${L.n}`, cfg.lv === i, () => { cfg.lv = i; })); box.append(r3); }
+    if (cfg.subj === 'soc') { const subs = [...new Set(histPool([cfg.k]).map(x => x.sub).filter(Boolean))]; if (subs.length > 1) { const r3 = el2('div', 'row-center wrap'); B(r3, '전체', !cfg.sub, () => { cfg.sub = ''; }); for (const s of subs) B(r3, s.slice(0, 18), cfg.sub === s, () => { cfg.sub = s; }); box.append(el2('p', 'hint', '학습지 고르기'), r3); } }
+    const r4 = el2('div', 'row-center wrap'); for (const n of [3, 5, 7]) B(r4, `${n}문제`, cfg.cnt === n, () => { cfg.cnt = n; }); box.append(r4);
+    const go = el2('button', 'btn', `📝 ${wrapTitle(cfg)} · ${cfg.cnt}문제 열기`); go.style.cssText = 'background:#FFD23C;font-size:18px'; go.onclick = wrapStart; const rw = el2('div', 'row-center'); rw.append(go); box.append(rw);
+  });
+}
+function wrapTick() { // 0.5초마다
+  if ((wrapW.t = (wrapW.t || 0) + 1) % 2) return;
+  wrapSync();
+  if (isTeacher && S.wrap?.n && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📝 수업 마무리 퀴즈 (선생님)') { const k = JSON.stringify([S.wrap.ph, Object.keys(S.wrapa || {}).length, Object.values(S.wrapa || {}).map(v => v?.a).join('|')]); if (k !== wrapW.aKey) { wrapW.aKey = k; refillLife(); } }
+}
+setInterval(() => { try { wrapTick(); } catch (e) { console.warn('wrap', e); } }, 250);
 // ================= 🏃 수학 달리기장 (1024m · 수학 광산 마을) =================
 // 선생님이 단원(1~6단원 광산)·단계·시간·결승 칸 수를 골라 열고 → 🏁 출발! 3·2·1 뒤에 각자 화면에 단원 문제가 끝없이 나와요 (광산 문제 생성기)
 // 맞히면 한 칸 · 3번 연속 맞힐 때마다 ⚡ 두 칸 · 틀리면 3초 넘어져요 · 누군가 결승선에 닿거나 시간이 끝나면 끝 → 1등은 이번 주 ⛏️금광왕
