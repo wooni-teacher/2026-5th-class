@@ -11619,11 +11619,13 @@ function buildMtnFun() {
   addInteract({ pos: new V3(tx + 9, ty + 0.3, tz - 1), r: 3.5, dy: 2.2, text: () => mtCamp() ? ['📸 기념사진 찍기', `지금 꼭대기 ${mtCampCount()}명`] : null, run: () => { if (onCooldown('mtphoto', 4)) return; playAct(player.avatar, 'cheer'); playSfx('fanfare'); burst(player.pos.clone().setY(ty + 2.5), RAINBOW, 40, 4, 2); showBanner('📸 찰칵!', `⛺ 뒷산 꼭대기 캠핑 모임 · 지금 ${mtCampCount()}명이 함께해요`, 4000); } });
   // 🛷 썰매장: 출발 표지판 + 깃발 (썰매 철에만)
   const sg = new THREE.Group(); sg.name = 'MtSled'; sg.visible = false; scene.add(sg); mtf.sledG = sg;
-  { const P = sledAt(0.5), y = terrainH(P.x, P.z); box(sg, 0.15, 2, 0.15, 0x8A5A34, P.x - P.rx * 2.4, y + 1, P.z - P.rz * 2.4, o); signPlane(sg, ['🛷 썰매 출발'], 2.2, 0.66, P.x - P.rx * 2.4, y + 2.2, P.z - P.rz * 2.4, { font: 44, pad: 4, fg: '#2A3B5A', bg: '#EAF6FF' }).rotation.y = Math.atan2(-P.tx, -P.tz);
-    const sl = new THREE.Group(); sl.position.set(P.x + P.rx * 1.6, y + 0.1, P.z + P.rz * 1.6); sl.rotation.y = Math.atan2(P.tx, P.tz); sg.add(sl); sledModel(sl); }
+  const sg0 = new THREE.Group(); sg0.name = 'MtSledSign'; scene.add(sg0); // 출발 표지판·썰매는 늘 보여요 (겨울이 아니면 "겨울에 열려요")
+  { const P = sledAt(0.5), y = terrainH(P.x, P.z); box(sg0, 0.15, 2, 0.15, 0x8A5A34, P.x - P.rx * 2.4, y + 1, P.z - P.rz * 2.4, o); makeLabel(sg0, ['🛷 썰매 출발'], 0.9, P.x - P.rx * 2.4, y + 2.6, P.z - P.rz * 2.4);
+    const sl = new THREE.Group(); sl.position.set(P.x + P.rx * 1.6, y + 0.1, P.z + P.rz * 1.6); sl.rotation.y = Math.atan2(P.tx, P.tz); sg0.add(sl); sledModel(sl); }
   mtf.gates = SLED_GATES.map((G, i) => { const P = sledAt(G.s), x = P.x + P.rx * G.off, z = P.z + P.rz * G.off, y = terrainH(x, z), fg = new THREE.Group(); fg.position.set(x, y, z); sg.add(fg);
     cyl(fg, 0.05, 1.6, 0xFFFFFF, 0, 0.8, 0, o); box(fg, 0.04, 0.5, 0.7, i % 2 ? 0x3B82C4 : 0xE2584A, 0, 1.35, 0.35, o); const ring = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.2, 24), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; fg.add(ring); return { g: fg, ring }; });
-  { const P = sledAt(0.5), y = terrainH(P.x, P.z); addInteract({ pos: new V3(P.x, y + 0.3, P.z), r: 3, dy: 2, text: () => sled.on || !sledOpen() ? null : ['🛷 썰매 타기', `깃발 8개 · 내 최고 ${bag.sledBest ? (bag.sledBest / 1000).toFixed(1) + '초' : '-'}`], run: sledStart }); }
+  { const P = sledAt(0.5), y = terrainH(P.x, P.z); addInteract({ pos: new V3(P.x, y + 0.3, P.z), r: 3, dy: 2, text: () => sled.on ? null : !sledOpen() ? ['🛷 썰매장', '❄️ 겨울(12~2월)에 열려요'] : ['🛷 썰매 타기', `깃발 8개 · 내 최고 ${bag.sledBest ? (bag.sledBest / 1000).toFixed(1) + '초' : '-'}`], run: () => sledOpen() ? sledStart() : toast('🛷 썰매장은 눈이 오는 겨울(12~2월)에 열려요! (선생님이 미리 열어 줄 수도 있어요)', 'info') }); }
+  mtf.board = makeLabel(scene, [''], 1.7, -38, 3.6, -60.5); // 🪧 입구 알림판
   // 💎 보물 상자
   const cg = new THREE.Group(); cg.name = 'MtChest'; scene.add(cg); mtf.chest = cg;
   box(cg, 0.9, 0.55, 0.6, 0x9A5A2A, 0, 0.28, 0, o); box(cg, 0.94, 0.12, 0.64, 0xF2C230, 0, 0.5, 0, { ...o, emissive: 0.3 }); const lid = new THREE.Group(); lid.position.set(0, 0.56, -0.3); cg.add(lid); box(lid, 0.92, 0.22, 0.62, 0xB06A30, 0, 0.11, 0.3, o); box(lid, 0.16, 0.18, 0.06, 0xF2C230, 0, 0.05, 0.62, { ...o, emissive: 0.4 }); cg.userData.lid = lid;
@@ -11704,6 +11706,7 @@ function mtFunTick(dt) {
   if (camp && mtf.seenCamp !== camp.s && stateLoaded) { const first = mtf.seenCamp === null; mtf.seenCamp = camp.s; if (!first || backend.now() - camp.s < 60000) { playSfx('fanfare'); showBanner(`⛺ 뒷산 꼭대기 캠핑 모임! (${camp.k === 'dawn' ? '🌄 해돋이' : '🌅 노을'})`, '북쪽 울타리 틈 → 오솔길을 따라 꼭대기로 올라와요 · 주황 빛기둥이 꼭대기예요 · 도착하면 도장 + 🐚20', 7000); } }
   if (!camp && mtf.seenCamp === null && stateLoaded) mtf.seenCamp = S.mtev?.camp?.s || 0;
   if (camp && joined && !isTeacher && bag.campGot !== camp.s && Math.hypot(p.x - tx, p.z - tz) < 14 && p.y > ty - 1.5) { bag.campGot = camp.s; bag.campN = (bag.campN | 0) + 1; earnShell(20, 'm'); saveBag(); updateHUD(null); playAct(player.avatar, 'cheer'); burst(p.clone().setY(p.y + 2.4), RAINBOW, 50, 5, 3); showBanner('⛺ 캠핑 모임 도장 쾅!', `🐚 +20 · 지금까지 캠핑 모임 ${bag.campN}번 참여 · 🔥 모닥불 가에 앉아 친구들과 노을을 봐요`, 6000); }
+  { const L = [camp ? `⛺ 지금 꼭대기에서 캠핑 모임 중!` : '⛰️ 뒷산 놀거리', bag.mtChest === dayNum() ? '💎 오늘 보물 찾기 완료 ✅' : '💎 오늘의 보물 상자가 숨어 있어요 (🔭 꼭대기 망원경 힌트)', sledOpen() ? '🛷 꼭대기에서 썰매 타기 열림!' : '🛷 썰매는 겨울에 열려요'], k = L.join('|'); if (mtf.boardKey !== k) { mtf.boardKey = k; mtf.board.userData.set(L); } }
   if ($('tpMtnNow') && !$('teacherPanel').classList.contains('hidden')) { const t = camp ? `⛺ ${camp.k === 'dawn' ? '해돋이' : '노을'} 캠핑 모임 중 · 남은 ${Math.ceil((camp.e - backend.now()) / 60000)}분 · 꼭대기 ${mtCampCount()}명` : '⛺ 캠핑 모임 닫힘'; const s2 = `${t} · 🛷 썰매장 ${sledOpen() ? '열림' : '닫힘'}${seasonNow() === 'wi' ? ' (겨울)' : S.mtev?.sled === 1 ? ' (선생님이 열었어요)' : ' (12~2월에 저절로 열려요)'}`; if ($('tpMtnNow').textContent !== s2) $('tpMtnNow').textContent = s2; $('tpSled').textContent = S.mtev?.sled === 1 ? '🛷 썰매장 닫기 (겨울에는 그대로 열려요)' : '🛷 썰매장 지금 열기'; }
 }
 function mtAdminInit() {
@@ -17514,6 +17517,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028e', d: '10월 28일', items: ['🪧 뒷산 입구에 놀거리 알림판 · 🛷 꼭대기 썰매 출발대는 늘 보여요 (겨울에 열려요)'] },
   { id: '1028d', d: '10월 28일', items: ['⛺ 뒷산 꼭대기 캠핑 모임! 선생님이 열면 텐트·모닥불·노을 하늘 · 올라오면 도장 + 🐚', '🛷 겨울(12~2월)에는 꼭대기에서 썰매 타고 내려오기 · 깃발 8개 지나가기', '💎 날마다 뒷산 어딘가에 보물 상자가 숨어요 · 🔭 꼭대기 망원경으로 보면 힌트!'] },
   { id: '1028c', d: '10월 28일', items: ['🐚 조개를 빠르게 여러 번 눌러도 모자라거나 마이너스가 되지 않게 고쳤어요 · 기부함·캡슐뽑기 저금통은 한 사람 하루 🐚500까지'] },
   { id: '1028b', d: '10월 28일', items: ['🎁 선생님이 🐚 조개를 직접 줄 수 있어요! 받으면 선생님 한마디와 함께 알려 줘요'] },
