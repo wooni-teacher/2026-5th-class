@@ -9691,6 +9691,17 @@ function openLife(title, fill) {
   $('lifePanel').classList.remove('hidden');
   fill($('lpBody')); $('lpTitle').focus();
 }
+/* 📱 1028h 태블릿 화면 키보드: 키보드가 창을 가리면(아이패드처럼 화면 높이는 그대로일 때) 창을 키보드 위 보이는 곳으로 올리고, 적는 칸을 가운데로
+   · 창 안 글칸은 자동 고침·맞춤법 밑줄을 꺼요 (영어 답 swam → swan 처럼 바뀌지 않게) */
+function kbFit(vh, vt) {
+  const a = document.activeElement, m = a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.type !== 'checkbox' && a.type !== 'range' ? a.closest('.modal') : null;
+  for (const x of document.querySelectorAll('.modal.kb-fit')) if (x !== m || !(vh < innerHeight - 120)) { x.classList.remove('kb-fit'); x.style.top = x.style.maxHeight = x.style.transform = ''; }
+  if (!m || !(vh < innerHeight - 120)) return;
+  m.classList.add('kb-fit'); m.style.top = `${vt + 6}px`; m.style.transform = 'translate(-50%, 0)'; m.style.maxHeight = `${vh - 12}px`;
+  setTimeout(() => a.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60);
+}
+if (window.visualViewport) { const f = () => kbFit(visualViewport.height, visualViewport.offsetTop); visualViewport.addEventListener('resize', f); visualViewport.addEventListener('scroll', f); addEventListener('focusout', () => setTimeout(f, 150)); }
+addEventListener('focusin', (e) => { const t = e.target; if (t?.closest?.('.modal') && /^(INPUT|TEXTAREA)$/.test(t.tagName)) { t.setAttribute('autocorrect', 'off'); t.spellcheck = false; if (window.visualViewport) setTimeout(() => kbFit(visualViewport.height, visualViewport.offsetTop), 350); } });
 function refillLife() { if (!$('lifePanel').classList.contains('hidden') && life.fill) life.fill($('lpBody')); }
 function lifeTyping() { // ✍️ 창 안 글칸에 쓰는 중이면 (글자가 있거나 커서가 있으면) 저절로 다시 그리지 않아요
   const b = $('lpBody'); if (!b || $('lifePanel').classList.contains('hidden')) return false;
@@ -17517,6 +17528,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028h', d: '10월 28일', items: ['📱 태블릿에서 글을 적을 때 화면 키보드가 창을 가리지 않게 창이 위로 올라가요 · 영어 답이 자동 고침으로 바뀌지 않아요'] },
   { id: '1028g', d: '10월 28일', items: ['🔔 영어 골든벨 주관식에서 답을 적는 도중에 글자가 지워지던 문제를 고쳤어요'] },
   { id: '1028f', d: '10월 28일', items: ['🧑‍🏫 관리 화면 🎮 놀이 탭에 ⛰️ 뒷산(캠핑 모임 · 썰매) 칸이 보이게 고쳤어요'] },
   { id: '1028e', d: '10월 28일', items: ['🪧 뒷산 입구에 놀거리 알림판 · 🛷 꼭대기 썰매 출발대는 늘 보여요 (겨울에 열려요)'] },
@@ -23743,7 +23755,7 @@ function openEgPlay() {
     const my = mine?.a?.[G.cur], send = async (v) => { if (G.ph !== 'q' || (G.lim && egLeft(S.eg) === 0)) { toast('⏱️ 시간이 끝났어요', 'warn'); return; } const r = await backend.egAnswer({ r: G.n, nm: (rosterOf(me) || cleanNick(myNick) || '친구').slice(0, 12), a: { ...(mine?.a || {}), [G.cur]: String(v).slice(0, 40) }, t: { ...(mine?.t || {}), [G.cur]: Date.now() } }); if (r.ok) { playSfx('pick'); toast(`🔔 제출했어요: ${v}`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 제출하지 못했어요 (마감됐을 수 있어요)', 'warn'); };
     if (G.ph === 'rev') { const key = G.rev?.[G.cur] || ''; const ok = my != null && (Q.t === 'sa' ? key.split('/').some(k => gwNorm(k) === gwNorm(my)) : Q.t === 'mc' ? key.startsWith(`${my}번`) : key === my);
       box.append(el2('p', 'lp-big', `정답: ${key}`), el2('p', 'hint', my == null ? '답을 내지 않았어요' : `내 답: ${Q.t === 'mc' ? `${my}번 ${Q.o[+my - 1] || ''}` : my} ${ok ? '⭕' : '❌'}`)); if (inP) box.append(el2('p', 'lp-big', out == null ? '🙋 살아남았어요!' : out === G.cur ? '😢 탈락…' : '')); return; }
-    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 영어로 적어요'; const dk = `${G.n}|${G.cur}`; inp.value = eg.draft?.k === dk ? eg.draft.v : (my || ''); inp.oninput = () => { eg.draft = { k: dk, v: inp.value }; }; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); const b = el2('button', 'btn', '🔔 제출'); b.style.background = '#FFD23C';
+    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 영어로 적어요'; const dk = `${G.n}|${G.cur}`; inp.value = eg.draft?.k === dk ? eg.draft.v : (my || ''); inp.oninput = () => { eg.draft = { k: dk, v: inp.value }; }; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('enterkeyhint', 'send'); const b = el2('button', 'btn', '🔔 제출'); b.style.background = '#FFD23C';
       b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (nickBad(v) || thxBadWord(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; inp.onkeydown = (e) => { if (e.key === 'Enter') b.onclick(); }; const rw = el2('div', 'row-center wrap'); rw.append(inp, b); box.append(rw); }
     else { const grid = el2('div', 'mx-opts'); Q.o.forEach((op, i) => { const v = Q.t === 'ox' ? op : String(i + 1), b = el2('button', 'btn mx-opt', Q.t === 'ox' ? (op === 'O' ? '⭕ O' : '❌ X') : `${i + 1}) ${op}`); if (my === v) b.style.background = '#FFE066'; b.onclick = () => send(v); grid.append(b); }); box.append(grid); }
     if (my != null) box.append(el2('p', 'hint', `✅ 제출한 답: ${Q.t === 'mc' ? `${my}번` : my}`));
