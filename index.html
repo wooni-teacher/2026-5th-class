@@ -1350,7 +1350,7 @@
 
     <h3>📝 수업 마무리 퀴즈 (영어 · 수학 · 사회)</h3>
     <p class="hint">수업 끝 3~5분: 과목·단원을 고르면 학생 화면에 바로 문제지가 떠요 → 선생님 화면에서 실시간 채점 → 결과 공개하면 맞힌 만큼 능력치·🐚</p>
-    <div class="row-center wrap"><button class="btn" id="tpWrapOpen" style="background:#FFD23C;font-size:18px">📝 수업 마무리 퀴즈 열기</button></div>
+    <div class="row-center wrap"><button class="btn" id="tpWrapOpen" style="background:#FFD23C;font-size:18px">📝 수업 마무리 퀴즈 열기</button><button class="btn" id="tpDqView" style="background:#FFF6D8;font-size:18px">📋 반 전체 오늘의 할 일 현황</button></div>
 
     <h3>😌 쉬는 시간</h3>
     <p class="hint" id="tpRestNow"></p>
@@ -9172,7 +9172,7 @@ function elogDay() { if (bag.elog?.d !== dayNum()) bag.elog = { d: dayNum(), s: 
 function elogTick() {
   if (!joined || isTeacher || !backend?.earnPut || !elogW.dirty || performance.now() - elogW.at < 15000) return;
   elogW.at = performance.now(); elogW.dirty = false; const L = elogDay();
-  backend.earnPut({ d: L.d, s: Math.min(100000, L.s | 0), m: Math.min(100000, L.m | 0), b: Math.min(100000, earnToday() | 0), c: Math.min(100000, L.c | 0), h: Math.min(10000000, Math.max(0, bag.shell | 0)), n: (cleanNick(myNick) || '친구').slice(0, 8) }).then(r => { if (!r?.ok) elogW.dirty = true; });
+  backend.earnPut({ d: L.d, s: Math.min(100000, L.s | 0), m: Math.min(100000, L.m | 0), b: Math.min(100000, earnToday() | 0), c: Math.min(100000, L.c | 0), h: Math.min(10000000, Math.max(0, bag.shell | 0)), n: (cleanNick(myNick) || '친구').slice(0, 8), q: dqCode(), w: Math.min(100, bag.dqw?.w === weekNum() ? bag.dqw.s | 0 : 0), r: String(rosterOf(backend.uid) || '').slice(0, 12) }).then(r => { if (!r?.ok) elogW.dirty = true; });
 }
 setInterval(() => { try { elogTick(); } catch (e) { } }, 5000);
 const T_SHELL = 999999; // 🧑‍🏫 선생님 기기: 조개돈 무한 (학생 때 조개돈은 bag.shellStu에 따로 보관)
@@ -17548,6 +17548,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028m', d: '10월 28일', items: ['🧑‍🏫 선생님 관리 화면에서 반 전체 오늘의 할 일 현황을 볼 수 있어요'] },
   { id: '1028l', d: '10월 28일', items: ['📋 오늘의 할 일판! 날마다 미션 3개 (공부 2 + 놀이 1) · 하나마다 🐚5 · 모두 하면 🐚15 더 · 이번 주 ⭐ 모아 주간 보상', '📝 수업 마무리 퀴즈가 열린 날은 보너스 미션도 생겨요'] },
   { id: '1028k', d: '10월 28일', items: ['📝 수업 마무리 퀴즈! 영어·수학·사회 수업 끝에 선생님이 열면 바로 문제지가 떠요 · 맞힌 만큼 능력치와 🐚'] },
   { id: '1028j', d: '10월 28일', items: ['😌 쉬는 시간에는 혼자 연습하기 화면도 함께 쉬어요 (⏰ 자동 쉬기도 똑같이)'] },
@@ -22609,6 +22610,7 @@ function initSiegeUI() {
   sel.onchange = () => fillSiegeAdmin(true);
   mtAdminInit(); // ⛰️ 1028d 뒷산
   $('tpWrapOpen').onclick = () => { closeModals(); openWrapAdmin(); }; // 📝 1028k 수업 마무리
+  $('tpDqView').onclick = () => { closeModals(); openDqAdmin(); }; // 📋 1028m 미션 현황
   $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
@@ -24050,6 +24052,7 @@ function dqList() { // 오늘 미션: 날짜 + 기기 번호로 정해요 (하�
   const st = [...DQ_STUDY], a = st.splice(h % st.length, 1)[0], b = st[(h >>> 3) % st.length], f = DQ_FUN[(h >>> 6) % DQ_FUN.length];
   const L = [a, b, f]; const W = S.wrap; if (W?.n && Math.floor(((W.at || W.n * 1000) + 9 * 3600000) / 86400000) === dayNum()) L.push(DQ_WRAP); return L;
 }
+function dqCode() { if (bag.dq?.d !== dayNum()) return ''; return dqList().map(m => `${m.id}:${bag.dq.done?.[m.id] ? 1 : 0}`).join(',').slice(0, 80); } // 📋 1028m 선생님 현황판으로 (earn/{uid}/q)
 const dqDone = (m) => Math.min(m.goal, m.cur() | 0) >= m.goal;
 function dqTick() {
   if (!joined || isTeacher || !stateLoaded) { dqBtn(false); return; }
@@ -24060,6 +24063,7 @@ function dqTick() {
   for (const m of L) if (!bag.dq.done[m.id] && dqDone(m)) { bag.dq.done[m.id] = 1; bag.dqw.s = (bag.dqw.s | 0) + 1; earnShell(5, 'm'); saveBag(); renderCoinChip(); playSfx('coin'); toast(`📋 ${m.icon} ${m.t} 완료! 🐚 +5 · ⭐ 이번 주 ${bag.dqw.s}개`, 'success'); }
   if (!bag.dq.all && base.every(m => bag.dq.done[m.id])) { bag.dq.all = 1; earnShell(15, 'm'); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2.2), RAINBOW, 50, 5, 3); showBanner('📋 오늘의 할 일 모두 완료!', `🐚 +15 더 · 이번 주 ⭐ ${bag.dqw.s}개`, 5000); }
   for (const [n, sh] of [[10, 30], [15, 60]]) if ((bag.dqw.s | 0) >= n && !bag.dqw.got[n]) { bag.dqw.got[n] = 1; earnShell(sh, 'm'); saveBag(); renderCoinChip(); setTimeout(() => showBanner(`⭐ 이번 주 별 ${n}개!`, `주간 보상 🐚 +${sh} · 월요일에 새로 모아요`, 5000), 1500); }
+  { const c = dqCode() + '|' + (bag.dqw.s | 0); if (c !== dqW.sent) { dqW.sent = c; elogW.dirty = true; } } // 바뀌면 15초 안에 선생님 현황판으로
   const n = base.filter(m => bag.dq.done[m.id]).length, bon = L.find(m => m.bonus), lab = `📋 오늘의 할 일 ${n}/${base.length}${bon && !bag.dq.done.wrap ? ' +📝' : ''}`;
   dqBtn(!(pb3.on || cart.on || sled.on || mrail.on), lab, n >= base.length && (!bon || bag.dq.done.wrap));
   if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📋 오늘의 할 일') { const k = JSON.stringify([bag.dq, L.map(m => m.cur())]); if (k !== dqW.key) { dqW.key = k; refillLife(); } }
@@ -24085,6 +24089,32 @@ function openDailyQ() {
   });
 }
 setInterval(() => { try { dqTick(); } catch (e) { console.warn('dq', e); } }, 1000);
+/* 🧑‍🏫 1028m 반 전체 오늘의 할 일 현황: 학생 기기가 15초 안에 earn/{uid} {q "eng:1,soc:0,chest:1,wrap:0", w 이번 주 별, r 명단 이름}로 알려 줘요 → 선생님은 15초마다 다시 불러요 */
+const DQ_ALL = Object.fromEntries([...DQ_STUDY, ...DQ_FUN, DQ_WRAP].map(m => [m.id, m]));
+const dqAdm = { data: null, at: 0, busy: false, timer: 0 };
+async function dqAdmLoad() { if (dqAdm.busy) return; dqAdm.busy = true; try { const d = await backend.earnGet?.(); if (d) { dqAdm.data = d; dqAdm.at = Date.now(); } } finally { dqAdm.busy = false; } if ($('lpTitle').textContent === '📋 반 전체 오늘의 할 일' && !$('lifePanel').classList.contains('hidden')) refillLife(); }
+function openDqAdmin() {
+  if (!isTeacher) return; dqAdmLoad(); clearInterval(dqAdm.timer); dqAdm.timer = setInterval(() => { if ($('lifePanel').classList.contains('hidden') || $('lpTitle').textContent !== '📋 반 전체 오늘의 할 일') { clearInterval(dqAdm.timer); return; } dqAdmLoad(); }, 15000);
+  openLife('📋 반 전체 오늘의 할 일', (box) => {
+    box.textContent = ''; const today = dayNum(), all = dqAdm.data;
+    if (!all) { box.append(el2('p', 'vempty', dqAdm.busy ? '불러오는 중…' : '⚠️ 기록을 불러오지 못했어요 (database.rules.json을 다시 게시해 주세요)')); return; }
+    const rows = Object.entries(all).filter(([, v]) => v && v.d === today && typeof v.q === 'string').map(([u, v]) => { const ms = v.q ? v.q.split(',').map(x => x.split(':')).filter(x => DQ_ALL[x[0]]) : [], base = ms.filter(([id]) => !DQ_ALL[id].bonus), n = base.filter(x => x[1] === '1').length; return { u, nm: v.r || v.n || '친구', ms, n, total: base.length, w: v.w | 0, at: v.at | 0 }; });
+    rows.sort((a, b) => b.n - a.n || b.w - a.w || a.nm.localeCompare(b.nm, 'ko'));
+    const doneAll = rows.filter(r => r.total && r.n >= r.total).length, some = rows.filter(r => r.n > 0 && r.n < r.total).length, zero = rows.filter(r => !r.n).length;
+    const ros = rosterNames(), seen = new Set(rows.map(r => r.nm)), absent = ros.filter(nm => !seen.has(nm));
+    box.append(el2('p', 'lp-big', `✅ 모두 완료 ${doneAll}명 · 🟡 하는 중 ${some}명 · ⬜ 아직 ${zero}명`));
+    box.append(el2('p', 'hint', `학생 기기가 15초 안에 알려 줘요 · 이 화면은 15초마다 새로 불러와요 (마지막 ${new Date(dqAdm.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })})`));
+    const rb = el2('button', 'btn', '🔄 지금 새로 불러오기'); rb.style.background = '#fff'; rb.onclick = dqAdmLoad; const r0 = el2('div', 'row-center'); r0.append(rb); box.append(r0);
+    const list = el2('div', '');
+    for (const r of rows) { const row = el2('div', ''); row.style.cssText = `display:flex;align-items:center;gap:8px;padding:7px 10px;margin:4px 0;border-radius:10px;background:${r.total && r.n >= r.total ? '#E5F7DF' : r.n ? '#FFF6D8' : '#fff'};box-shadow:0 1px 3px rgba(0,0,0,.06)`;
+      const nm = el2('b', '', r.nm); nm.style.cssText = 'min-width:84px'; const ic = el2('span', '', r.ms.map(([id, ok]) => `${ok === '1' ? '✅' : '⬜'}${DQ_ALL[id].icon}`).join(' ')); ic.style.cssText = 'flex:1;font-size:17px'; ic.title = r.ms.map(([id, ok]) => `${DQ_ALL[id].t} ${ok === '1' ? '완료' : '아직'}`).join('\n');
+      row.append(nm, ic, el2('span', '', `${r.n}/${r.total}`), el2('span', 'hint', `⭐${r.w}`)); list.append(row); }
+    if (!rows.length) list.append(el2('p', 'vempty', '오늘 기록이 아직 없어요. 학생들이 들어오면 15초 안에 나와요 (학생도 새 버전으로 새로고침해야 해요)'));
+    box.append(list);
+    if (absent.length) box.append(el2('p', 'hint', `👀 오늘 아직 기록이 없는 학생 (명단 기준): ${absent.join(', ')}`));
+    box.append(el2('p', 'hint', `아이콘: ${Object.values(DQ_ALL).map(m => `${m.icon} ${m.t}`).join(' · ')} (📝는 수업 마무리 보너스)`));
+  });
+}
 // ================= 🏃 수학 달리기장 (1024m · 수학 광산 마을) =================
 // 선생님이 단원(1~6단원 광산)·단계·시간·결승 칸 수를 골라 열고 → 🏁 출발! 3·2·1 뒤에 각자 화면에 단원 문제가 끝없이 나와요 (광산 문제 생성기)
 // 맞히면 한 칸 · 3번 연속 맞힐 때마다 ⚡ 두 칸 · 틀리면 3초 넘어져요 · 누군가 결승선에 닿거나 시간이 끝나면 끝 → 1등은 이번 주 ⛏️금광왕
