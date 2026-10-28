@@ -17517,6 +17517,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1028g', d: '10월 28일', items: ['🔔 영어 골든벨 주관식에서 답을 적는 도중에 글자가 지워지던 문제를 고쳤어요'] },
   { id: '1028f', d: '10월 28일', items: ['🧑‍🏫 관리 화면 🎮 놀이 탭에 ⛰️ 뒷산(캠핑 모임 · 썰매) 칸이 보이게 고쳤어요'] },
   { id: '1028e', d: '10월 28일', items: ['🪧 뒷산 입구에 놀거리 알림판 · 🛷 꼭대기 썰매 출발대는 늘 보여요 (겨울에 열려요)'] },
   { id: '1028d', d: '10월 28일', items: ['⛺ 뒷산 꼭대기 캠핑 모임! 선생님이 열면 텐트·모닥불·노을 하늘 · 올라오면 도장 + 🐚', '🛷 겨울(12~2월)에는 꼭대기에서 썰매 타고 내려오기 · 깃발 8개 지나가기', '💎 날마다 뒷산 어딘가에 보물 상자가 숨어요 · 🔭 꼭대기 망원경으로 보면 힌트!'] },
@@ -23736,18 +23737,19 @@ function openEgPlay() {
     if (G.ph === 'end') { const w = Object.values(G.win || {}); box.append(el2('p', 'lp-big', w.length ? `${G.wk === 'last' ? '🔔 최후의 1인' : '🔔 골든벨'}: ${w.join(', ')}` : '🔔 이번엔 아무도 못 울렸어요'), el2('p', 'hint', G.win?.[me] ? (G.wk === 'last' ? '🎉 내가 끝까지 버틴 최후의 1인이에요!' : '🎉 내가 골든벨을 울렸어요!') : inP ? `${out != null ? out + 1 : qs.length}번 문제까지 도전했어요` : '이번 판에는 참가하지 않았어요')); return; }
     if (G.ph === 'wait' || !Q) { box.append(el2('p', 'hint', `모두 ${qs.length}문제예요. 앞 칠판에 1번 문제가 나오면 여기서 답해요. 1번 문제에 답하면 참가!`)); return; }
     if (st) box.append(st);
-    const left = egLeft(G); box.append(el2('p', 'hint', `${G.cur + 1} / ${qs.length}번 문제 · ${G.ph === 'q' ? `답을 고르거나 적고 제출해요 (마감 전엔 바꿀 수 있어요)${left >= 0 ? ` · ⏱️ ${left}초` : ''}` : '정답 공개!'}`));
+    const left = egLeft(G), lh = el2('p', 'hint', egLeftText(G, left)); lh.id = 'egLeftTxt'; box.append(lh); // ⏱️ 1028g 시간은 이 줄만 바꿔요 (창을 다시 그리면 적던 답이 지워져요)
     const qp = el2('p', 'lp-big', `${G.cur + 1}. ${Q.q}`); qp.style.whiteSpace = 'pre-line'; box.append(qp);
     if (Q.s) { const sb = el2('button', 'btn', '🔊 듣기'); sb.style.background = '#BFE3F7'; sb.onclick = () => sayEn(Q.s); const r0 = el2('div', 'row-center'); r0.append(sb); box.append(r0); if (G.ph === 'rev') box.append(el2('p', 'hint', `🔊 ${Q.s}`)); }
     const my = mine?.a?.[G.cur], send = async (v) => { if (G.ph !== 'q' || (G.lim && egLeft(S.eg) === 0)) { toast('⏱️ 시간이 끝났어요', 'warn'); return; } const r = await backend.egAnswer({ r: G.n, nm: (rosterOf(me) || cleanNick(myNick) || '친구').slice(0, 12), a: { ...(mine?.a || {}), [G.cur]: String(v).slice(0, 40) }, t: { ...(mine?.t || {}), [G.cur]: Date.now() } }); if (r.ok) { playSfx('pick'); toast(`🔔 제출했어요: ${v}`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 제출하지 못했어요 (마감됐을 수 있어요)', 'warn'); };
     if (G.ph === 'rev') { const key = G.rev?.[G.cur] || ''; const ok = my != null && (Q.t === 'sa' ? key.split('/').some(k => gwNorm(k) === gwNorm(my)) : Q.t === 'mc' ? key.startsWith(`${my}번`) : key === my);
       box.append(el2('p', 'lp-big', `정답: ${key}`), el2('p', 'hint', my == null ? '답을 내지 않았어요' : `내 답: ${Q.t === 'mc' ? `${my}번 ${Q.o[+my - 1] || ''}` : my} ${ok ? '⭕' : '❌'}`)); if (inP) box.append(el2('p', 'lp-big', out == null ? '🙋 살아남았어요!' : out === G.cur ? '😢 탈락…' : '')); return; }
-    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 영어로 적어요'; inp.value = my || ''; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); const b = el2('button', 'btn', '🔔 제출'); b.style.background = '#FFD23C';
+    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 영어로 적어요'; const dk = `${G.n}|${G.cur}`; inp.value = eg.draft?.k === dk ? eg.draft.v : (my || ''); inp.oninput = () => { eg.draft = { k: dk, v: inp.value }; }; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); const b = el2('button', 'btn', '🔔 제출'); b.style.background = '#FFD23C';
       b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (nickBad(v) || thxBadWord(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; inp.onkeydown = (e) => { if (e.key === 'Enter') b.onclick(); }; const rw = el2('div', 'row-center wrap'); rw.append(inp, b); box.append(rw); }
     else { const grid = el2('div', 'mx-opts'); Q.o.forEach((op, i) => { const v = Q.t === 'ox' ? op : String(i + 1), b = el2('button', 'btn mx-opt', Q.t === 'ox' ? (op === 'O' ? '⭕ O' : '❌ X') : `${i + 1}) ${op}`); if (my === v) b.style.background = '#FFE066'; b.onclick = () => send(v); grid.append(b); }); box.append(grid); }
     if (my != null) box.append(el2('p', 'hint', `✅ 제출한 답: ${Q.t === 'mc' ? `${my}번` : my}`));
   });
 }
+function egLeftText(G, left) { const qs = G.qs || []; return `${G.cur + 1} / ${qs.length}번 문제 · ${G.ph === 'q' ? `답을 고르거나 적고 제출해요 (마감 전엔 바꿀 수 있어요)${left >= 0 ? ` · ⏱️ ${left}초` : ''}` : '정답 공개!'}`; }
 function egUnitsOf(qs) { const m = new Map(); for (const q of qs) m.set(q.u, (m.get(q.u) || 0) + 1); return [...m].sort((a, b) => (+a[0] || 999) - (+b[0] || 999) || String(a[0]).localeCompare(String(b[0]))); }
 function openEgAdmin() {
   if (!isTeacher) return;
@@ -23858,7 +23860,7 @@ function egTick(dt) {
   if (G.open && G.n !== eg.seenN && stateLoaded) { if (eg.seenN && !isTeacher) toast(`🔔 ${G.title || '영어 골든벨'}이 열렸어요! 영어 마을 골든벨 홀로 와요`, 'info'); eg.seenN = G.n; }
   if (!isTeacher && G.ph === 'end' && bag.egDone !== G.n && G.p) { bag.egDone = G.n; const me = backend.uid; if (G.p[me]) { const o = G.out?.[me], s = o != null ? o : (G.qs || []).length; if (s) { addStat('eng', Math.min(30, s * 2), true); earnShell(Math.min(40, s * 3)); } if (G.win?.[me]) { const last = G.wk === 'last', b = last ? 30 : 60; earnShell(b); burst(player.pos.clone().setY(2), RAINBOW, 60, 6, 3); showBanner(last ? '🔔 최후의 1인!' : '🔔 골든벨을 울렸어요!', `${last ? '가장 오래 버텼어요' : '끝까지 살아남았어요'} · 이번 주 칭호 · 🐚 +${b + Math.min(40, s * 3)}`, 6000); } } saveBag(); }
   if (!isTeacher && G.open && roomNow() === 'egb') { const k = JSON.stringify([G.n, G.cur, G.ph]); if (k !== eg.sKey) { const open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지'; if (open || G.ph === 'q') { openEgPlay(); const Q = G.qs?.[G.cur]; if (G.ph === 'q' && Q?.s && eg.said !== k) { eg.said = k; setTimeout(() => sayEn(Q.s), 500); } } else eg.sKey = k; }
-    else if (G.ph === 'q' && G.lim && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지') { const l = egLeft(G); if (l !== eg.lastL) { eg.lastL = l; refillLife(); } } }
+    else if (G.ph === 'q' && G.lim && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지') { const l = egLeft(G); if (l !== eg.lastL) { eg.lastL = l; const el = $('egLeftTxt'); if (el) el.textContent = egLeftText(G, l); else refillLife(); } } }
   if (isTeacher) { const key = bag.egKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + G.lim * 1000 + 1500 && !eg.autoBusy) { eg.autoBusy = true; egReveal().finally(() => { setTimeout(() => { eg.autoBusy = false; }, 2000); }); }
     if (G.open && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 진행') { const k = JSON.stringify([G.ph, G.cur, egAliveN(G), Object.keys(S.ega || {}).length, Object.values(S.ega || {}).map(v => Object.keys(v?.a || {}).length).join(), G.ph === 'q' ? egLeft(G) : 0]); if (k !== eg.aKey) { eg.aKey = k; if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') refillLife(); } } }
 }
