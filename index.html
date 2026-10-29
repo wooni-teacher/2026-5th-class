@@ -1350,7 +1350,7 @@
 
     <h3>📝 수업 마무리 퀴즈 (영어 · 수학 · 사회)</h3>
     <p class="hint">수업 끝 3~5분: 과목·단원을 고르면 학생 화면에 바로 문제지가 떠요 → 선생님 화면에서 실시간 채점 → 결과 공개하면 맞힌 만큼 능력치·🐚</p>
-    <div class="row-center wrap"><button class="btn" id="tpWrapOpen" style="background:#FFD23C;font-size:18px">📝 수업 마무리 퀴즈 열기</button><button class="btn" id="tpDqView" style="background:#FFF6D8;font-size:18px">📋 반 전체 오늘의 할 일 현황</button><button class="btn" id="tpScr" style="background:#FFE1EC;font-size:18px">🎭 꿈끼 대본 연습실</button></div>
+    <div class="row-center wrap"><button class="btn" id="tpWrapOpen" style="background:#FFD23C;font-size:18px">📝 수업 마무리 퀴즈 열기</button><button class="btn" id="tpDqView" style="background:#FFF6D8;font-size:18px">📋 반 전체 오늘의 할 일 현황</button><button class="btn" id="tpScr" style="background:#FFE1EC;font-size:18px">🎭 꿈끼 대본 연습실</button><button class="btn" id="tpAcct" style="background:#E3F6DC;font-size:18px">👤 계정 점검</button></div>
 
     <h3>🗓️ 시즌 (🍂 11/2~11/29 · ❄️ 11/30~12/27 · 🎓 12/28~12/30)</h3>
     <p class="hint" id="tpSsnNow"></p>
@@ -2597,7 +2597,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
   const auth = A.getAuth(app); try { await auth.authStateReady?.(); } catch (e) { }
   const acct = { mode: 'anon', switched: false, fresh: false };
   let user = auth.currentUser || (await A.signInAnonymously(auth)).user; // 이름·이메일 없이 익명 로그인
-  if (nick && !teacher) { // 👤 1021e: 같은 반 코드 + 같은 닉네임 = 같은 계정 (다른 기기에서도) · 처음 기기는 익명 계정을 그대로 이어서(uid·땅·집 유지)
+  if (nick && !teacher) for (let tryN = 0; tryN < 3; tryN++) { // 👤 1021e: 같은 반 코드 + 같은 닉네임 = 같은 계정 (다른 기기에서도) · 처음 기기는 익명 계정을 그대로 이어서(uid·땅·집 유지) · 1029g: 반 전체가 한꺼번에 들어와 막히면 잠깐 뒤 다시 해요
     try {
       const h = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
       // 🔤 1026a: 띄어쓰기·영문 대소문자는 달라도 같은 계정 (acct/{k2} → 처음 만든 계정 키 k) · 예전 계정은 그대로 이어서
@@ -2617,7 +2617,9 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
         }
       } else acct.mode = 'nick';
       if (acct.mode === 'nick' && acct.newMap) try { await D.set(acct.mapRef, acct.key); } catch (e) { /* 다른 기기가 먼저 정했으면 그대로 */ }
-    } catch (e) { console.warn('nick account', e); acct.mode = 'anon'; acct.err = e?.code || 'x'; if (!auth.currentUser) user = (await A.signInAnonymously(auth)).user; else user = auth.currentUser; }
+      break;
+    } catch (e) { console.warn('nick account', e); if (tryN < 2 && /too-many|network|internal|timeout/.test(e?.code || '')) { await new Promise(r => setTimeout(r, 1500 * (tryN + 1) + Math.random() * 1500)); continue; }
+      acct.mode = 'anon'; acct.err = e?.code || 'x'; if (!auth.currentUser) user = (await A.signInAnonymously(auth)).user; else user = auth.currentUser; break; }
   }
   const uid = user.uid;
   const db = D.getDatabase(app);
@@ -9165,22 +9167,38 @@ const bagW = { up: 0, timer: null };
 async function bagCloudStart() {
   const A = backend?.acct; if (!A || !backend.bagGet) return '';
   if (A.err === 'auth/operation-not-allowed') setTimeout(() => toast('👤 닉네임 계정을 쓰려면 선생님이 Firebase에서 "이메일/비밀번호" 로그인을 켜 주세요 (지금은 이 기기에만 저장돼요)', 'warn'), 1500);
+  if (A.err && A.err !== 'auth/operation-not-allowed') setTimeout(() => toast(`👤 계정 연결에 실패했어요 (${A.err}) · 지금은 이 기기에만 저장돼요. 잠시 뒤 새로고침해서 다시 들어와요`, 'warn'), 1500);
   if (A.mode !== 'nick') return '';
-  const cloud = await backend.bagGet();
-  if (cloud?.j && cloud.at > (bag._cv || 0)) { // 마지막으로 맞춘 뒤 다른 기기에서 바뀌었으면 그 가방으로
-    try { const o = JSON.parse(cloud.j); o._cv = cloud.at; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); toast('🎒 다른 기기에서 쓰던 가방을 불러와요…', 'info'); setTimeout(() => location.reload(), 700); return 'reload'; } catch (e) { console.warn(e); }
+  const cloud = await backend.bagGet(), uid = backend.uid, other = bag._uid ? bag._uid !== uid : !!A.switched; // 🎒 1029g: 이 기기 가방이 다른 계정(다른 학생) 것인지
+  if (cloud?.j && (other || cloud.at !== (bag._cv || 0))) { // 다른 학생 가방이거나 · 마지막으로 맞춘 뒤 다른 기기에서 바뀌었으면 (시계가 달라도 '같은지'로 봐요) 계정 가방으로
+    try { const o = JSON.parse(cloud.j); o._cv = cloud.at; o._uid = uid; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); toast('🎒 내 계정 가방을 불러와요…', 'info'); setTimeout(() => location.reload(), 700); return 'reload'; } catch (e) { console.warn(e); }
   }
-  if (!cloud?.j && A.fresh) { const o = { m: { branch: 0, stone: 0, fruit: 0 }, c: {}, f: {}, day: '', req: {}, cd: {}, shell: 100, _at: Date.now() }; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); setTimeout(() => location.reload(), 300); return 'reload'; } // 이 기기에서 처음 만든 다른 닉네임: 새 가방으로
+  if (!cloud?.j && other && !A.fresh) { const o = { m: { branch: 0, stone: 0, fruit: 0 }, c: {}, f: {}, day: '', req: {}, cd: {}, shell: 100, _at: Date.now(), _uid: uid }; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); setTimeout(() => location.reload(), 300); return 'reload'; } // 다른 학생이 쓰던 가방은 내 계정에 올리지 않아요
+  if (!bag._uid) { bag._uid = uid; store.set(BAG_KEY, JSON.stringify(bag)); }
+  if (!cloud?.j && A.fresh) { const o = { m: { branch: 0, stone: 0, fruit: 0 }, c: {}, f: {}, day: '', req: {}, cd: {}, shell: 100, _at: Date.now(), _uid: backend.uid }; store.set(BAG_KEY, JSON.stringify(o)); store.set('sv-autojoin', 'student'); setTimeout(() => location.reload(), 300); return 'reload'; } // 이 기기에서 처음 만든 다른 닉네임: 새 가방으로
   bagUpload(true); clearInterval(bagW.timer); bagW.timer = setInterval(() => bagUpload(false), 20000);
   addEventListener('visibilitychange', () => { if (document.hidden) bagUpload(true); });
   if (A.switched) setTimeout(() => toast('👤 같은 닉네임 계정으로 들어왔어요 (다른 기기에서 쓰던 집·가방 그대로)', 'success'), 1200);
   return '';
 }
+function bagTakenOver() { // 🔒 다른 기기에서 같은 계정으로 들어왔어요 → 이 기기는 멈추고 새로고침 안내
+  if ($('bagLock')) return; const d = document.createElement('div'); d.id = 'bagLock'; d.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(30,24,20,.72);display:flex;align-items:center;justify-content:center;padding:16px';
+  const c = el2('div', ''); c.style.cssText = 'background:#FFF9EF;border-radius:20px;padding:22px;max-width:420px;text-align:center;font-size:17px;line-height:1.5';
+  c.append(el2('p', '', '📱➡️💻'), el2('b', '', '다른 기기에서 내 계정으로 들어왔어요'), el2('p', 'hint', '이 기기는 더 저장하지 않아요. 이어서 하려면 새로고침해서 최신 가방을 불러와요.'));
+  const b = el2('button', 'btn', '🔄 새로고침해서 이어 하기'); b.style.background = '#FFD23C'; b.onclick = () => { store.set('sv-autojoin', 'student'); location.reload(); }; c.append(b); d.append(c); document.body.append(d);
+}
+async function bagSaveNow() { // 💾 다른 기기로 옮기기 전에
+  if (backend?.acct?.mode !== 'nick') { toast('⚠️ 이 기기는 계정에 연결되지 않아 옮길 수 없어요 (이 기기에만 저장)', 'warn'); return; }
+  bag._at = Date.now(); const ok = await bagUpload(true); toast(ok ? '💾 계정에 저장했어요! 이제 다른 기기에서 같은 반 코드·닉네임으로 들어와요' : '⚠️ 저장하지 못했어요. 인터넷을 확인하고 다시 눌러요', ok ? 'success' : 'warn');
+}
 async function bagUpload(force) {
-  if (!backend?.bagPut || backend.acct?.mode !== 'nick' || isTeacher || bagW.busy || bagW.stop) return; if (!force && (bag._at || 0) <= bagW.up) return;
+  if (!backend?.bagPut || backend.acct?.mode !== 'nick' || isTeacher || bagW.busy || bagW.stop) return;
   bagW.busy = true; try {
-    const ca = await backend.bagAt(); if (ca > (bag._cv || 0)) { bagW.stop = true; toast('👤 다른 기기에서 이 닉네임 계정을 쓰고 있어요. 이 기기의 가방은 저장하지 않아요 (다시 들어오면 그 기기 가방을 불러와요)', 'warn'); return; }
-    const at = Date.now(); bagW.up = bag._at || 0; bag._cv = at; store.set(BAG_KEY, JSON.stringify(bag)); await backend.bagPut(JSON.stringify(bag), at);
+    const ca = await backend.bagAt(); if (ca < 0) return; // 읽지 못했으면 다음에
+    if (ca && ca !== (bag._cv || 0)) { bagW.stop = true; bagTakenOver(); return; } // 🔒 1029g: 내가 마지막으로 올린 것과 다르면 = 다른 기기가 이어서 쓰는 중 (시계 차이와 상관없이)
+    if (!force && (bag._at || 0) <= bagW.up) return;
+    let at = Math.round(backend.now()); if (at === ca) at++; bagW.up = bag._at || 0; bag._cv = at; bag._uid = backend.uid; store.set(BAG_KEY, JSON.stringify(bag)); const r = await backend.bagPut(JSON.stringify(bag), at); if (r && r.ok === false) { bagW.up = 0; bag._cv = ca; store.set(BAG_KEY, JSON.stringify(bag)); return false; } // 못 올렸으면 되돌려요 (다른 기기로 착각하지 않게)
+    return true;
   } finally { bagW.busy = false; }
 }
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
@@ -9899,7 +9917,8 @@ function openCraft(mode) {
 function openBag() {
   openLife('🎒 내 가방', (box) => {
     box.textContent = '';
-    { const al = acctLine(false), ok = al.startsWith('👤') || al.startsWith('🧑'); const p0 = el2('p', ok ? 'hint' : 'err', al); p0.style.cssText = `padding:6px 10px;border-radius:10px;background:${ok ? '#E3F6DC' : '#FFE3DC'}`; box.append(p0); }
+    { const al = acctLine(false), ok = al.startsWith('👤') || al.startsWith('🧑'); const p0 = el2('p', ok ? 'hint' : 'err', al); p0.style.cssText = `padding:6px 10px;border-radius:10px;background:${ok ? '#E3F6DC' : '#FFE3DC'}`; box.append(p0);
+      if (!isTeacher && backend?.acct?.mode === 'nick') { const b = el2('button', 'btn', '💾 지금 저장 (다른 기기로 옮기기 전에 눌러요)'); b.style.cssText = 'background:#DCEBFA;font-size:15px'; b.onclick = bagSaveNow; const r = el2('div', 'row-center'); r.append(b); box.append(r); } } // 1029g
     box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', backend?.acct?.mode === 'nick' ? '가방과 조개돈은 내 계정에 저장돼요 (같은 반 코드·닉네임이면 다른 기기에서도 그대로). 친구에게 보이지 않고, 비교하지 않아요.' : '가방과 조개돈은 이 기기에만 저장돼요. 친구에게 보이지 않고, 비교하지 않아요.'));
     { const d = dexProgress(), badges = DEX_BADGES.map(([t]) => bag.badges[t] ? `🏅${t}%` : `▫️${t}%`).join(' ');
       box.append(el2('h3', 'lp-sec', `📖 내가 잡아 본 생물 ${d.have} / ${d.all} (${d.pct}%)`), el2('p', '', `도감 배지: ${badges} · 배지를 받으면 👕 옷장에 배지 전용 꾸미기가 생겨요`));
@@ -17875,6 +17894,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1029g', d: '10월 29일', items: ['👤 기기를 옮길 때 계정 이어지기 고침: 여럿이 쓰는 노트북에서 다른 친구 가방이 섞이던 문제 · 기기 시계가 달라 최신 가방을 못 불러오던 문제', '💾 🎒 가방 창의 "지금 저장" 버튼 · 다른 기기에서 들어오면 이 기기는 멈추고 새로고침 안내', '🧑‍🏫 선생님: 👤 계정 점검 (같은 학생 이름으로 계정이 여러 개인지)'] },
   { id: '1029f', d: '10월 29일', items: ['🎤 꿈나무 무대가 늘 열려 있어요 (🏛️ 도감관 뒤쪽) · 📋 오늘의 할 일 🎭 미션의 "🎤 무대로 가기" 버튼으로 바로 가요'] },
   { id: '1029e', d: '10월 29일', items: ['💃 옷가게에서 몸짓을 팔아요 (😊 몸짓 창에서 써요): 🎭 무대 인사 · 마이크 노래 · 뮤지컬 포즈 / 🏆 승리 댄스 · 헹가래 점프 · 응원 깃발 / 😂 옆돌기 · 물구나무 · 펭귄 흉내 · 꾸벅꾸벅 · 로봇 춤', '👫 둘이 함께: 🙏 하이파이브 · 💞 손잡고 빙글빙글 (친구 옆에서 둘 다 누르기) · ❄️ 겨울 몸짓(눈 굴리기 · 손 호호 · 스노보드)은 시즌 2부터'] },
   { id: '1029d', d: '10월 29일', items: ['🎭 대본 연습실이 🎤 꿈나무 무대 옆 대본 게시판으로 옮겼어요 · 배역은 선생님이 정해요 (주인공 · 다함께) · 연습하면 📚 독서력', '🔔 꿈끼 대본 골든벨: 끝까지 다 맞히면 🐚 100 + 🏷️ 🎭꿈끼왕 칭호', '👕 🎭꿈끼왕은 옷가게에서 안중근 꾸미기 (🥸 콧수염 · 🇰🇷 태극 머리띠 · 🧥 코트)'] },
@@ -22950,6 +22970,7 @@ function initSiegeUI() {
   mtAdminInit(); // ⛰️ 1028d 뒷산
   $('tpWalls').onclick = () => { closeModals(); showWalls(); }; // 🧱 1028p
   $('tpScr').onclick = () => { closeModals(); openScrAdmin(); }; // 🎭 1029c
+  $('tpAcct').onclick = () => { closeModals(); openAcctCheck(); }; // 👤 1029g
   $('tpWrapOpen').onclick = () => { closeModals(); openWrapAdmin(); }; // 📝 1028k 수업 마무리
   $('tpDqView').onclick = () => { closeModals(); openDqAdmin(); }; // 📋 1028m 미션 현황
   for (const b of document.querySelectorAll('[data-ssn]')) b.onclick = () => { const v = b.dataset.ssn; adminDo({ ssnc: v === 'auto' ? null : v }, v === 'auto' ? '📅 시즌을 날짜대로 바꿔요' : `🗓️ ${ssnById(v)?.icon} ${ssnById(v)?.n}을(를) 시작했어요`); }; // 🗓️ 1028n
@@ -24601,6 +24622,21 @@ function scrTick() { // 🎤 꿈나무 무대 옆 대본 게시판 (무대가 �
     const wp = sp.localToWorld(new V3(5.9, 1, -3.4)); scrW.it = addInteract({ pos: wp, r: 3, text: () => S.scr?.x ? ['🎭 대본 보기 · 연습 게임', `${S.scr.t || '꿈끼 발표회 대본'} · 📚 독서력`] : ['🎭 꿈끼 대본 게시판', '선생님이 대본을 올리면 열려요'], run: openScript }); }
   if (scrW.board) { const t = on ? S.scr.t || '' : '(곧 열려요)'; if (scrW.signT !== t) { scrW.signT = t; scrW.board.remove(scrW.sign); scrW.sign = signPlane(scrW.board, ['🎭 꿈끼 발표회 대본', t, '📜 대본 보기 · ✏️ 연습 게임', 'E 누르기'], 2.6, 1.7, 0, 2.0, -0.03, { font: 40, pad: 6, fg: '#3B2F2A', bg: '#FFF6EA', stroke: false }); } }
   if (isTeacher && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('🎭 꿈끼 대본 연습실 (선생님)')) { const k = JSON.stringify(S.scrp || {}); if (k !== scrW.admK) { const first = scrW.admK == null; scrW.admK = k; if (!first && !lifeTyping()) refillLife(); } }
+}
+async function openAcctCheck() { // 👤 1029g 같은 학생 이름으로 계정이 여러 개 생겼는지 (earn 기록: 학생 기기가 15초마다 올려요)
+  if (!isTeacher) return; const E = await backend.earnGet?.(); if (!E) { toast('기록을 읽지 못했어요', 'warn'); return; }
+  openLife('👤 계정 점검', (box) => {
+    box.textContent = ''; const names = rosterNames(), by = {};
+    for (const [u, v] of Object.entries(E || {})) { if (!v) continue; const k = v.r || `(명단 밖) ${v.n || '?'}`; (by[k] ||= []).push([u, v]); }
+    box.append(el2('p', 'hint', '학생 기기가 들어와 있을 때 남긴 기록으로 봐요. 같은 학생 이름에 계정이 2개 이상이면 다른 닉네임 표기로 새 계정이 생긴 거예요. 집·가방이 많은 쪽 닉네임(아래 표기 그대로)으로 들어오게 알려 주세요.'));
+    const dups = Object.entries(by).filter(([, L]) => L.length > 1), none = names.filter(n => !by[n]);
+    box.append(el2('h3', 'lp-sec', dups.length ? `⚠️ 계정이 여러 개인 학생 ${dups.length}명` : '✅ 계정이 여러 개인 학생은 없어요'));
+    for (const [k, L] of dups) { box.append(el2('div', 'rank-row me', `👤 ${k}`)); for (const [u, v] of L.sort((a, b) => (b[1].h | 0) - (a[1].h | 0))) box.append(el2('div', 'rank-row', `　· 닉네임 "${v.n || '?'}" · 🐚 ${v.h | 0} · 마지막 ${v.at ? new Date(v.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '-'} · 기기 번호 ${u.slice(0, 6)}`)); }
+    box.append(el2('h3', 'lp-sec', `학생별 계정 (${Object.keys(by).length})`));
+    for (const [k, L] of Object.entries(by).filter(([, L]) => L.length === 1).sort()) { const v = L[0][1]; box.append(el2('div', 'rank-row', `${k} · "${v.n || '?'}" · 🐚 ${v.h | 0}`)); }
+    if (none.length) box.append(el2('p', 'hint', `아직 기록이 없는 학생 (명단 기준): ${none.join(', ')}`));
+    box.append(el2('p', 'hint', '💡 학생 화면 🎒 가방 맨 위에 "👤 계정 연결됨"이 보여야 다른 기기로 이어져요. "이 기기에만 저장"이면 새로고침해서 다시 들어오게 해요.'));
+  });
 }
 function goStage() { // 🎤 꿈나무 무대 앞으로 (도감관 뒤쪽이라 찾기 어려워요)
   const sp = rewardSpots.stage?.spot; if (!sp || !joined || isFrozen() || hv.travel) return; closeModals(); if (!$('lifePanel').classList.contains('hidden')) closeLife();
