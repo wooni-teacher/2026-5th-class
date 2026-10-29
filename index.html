@@ -4025,6 +4025,7 @@ function animateAvatar(a, moving, dt, grounded, reading) {
   a.armL.rotation.x = arms[0]; a.armR.rotation.x = arms[1];
   a.book.visible = reading || a.act?.k === 'sitread';
   if (a.rideK || a.rideWas) poseRide(a, moving, dt);
+  if (a.mot) motPose(a, dt, moving); // 💃 1029e 사는 몸짓
 }
 
 // ---- 몸짓 (낚시 찌 던지기·채집·인사 등) ----
@@ -4035,6 +4036,57 @@ const ACT_D = { cast: 0.8, fish: Infinity, reel: 0.45, show: 1.6, net: 0.6, shak
   sit: Infinity, sithand: Infinity, sitgood: 4, sitthink: 4, sitask: 4, hand: Infinity, good: 4, think: 4, ask: 4, slash: 0.38, fanw: 0.45, dash: 0.42, sitread: Infinity };
 const ACT_KEEP = new Set(['cast', 'fish', 'reel', 'show', 'cheer', 'wave', 'clap', 'yaho', 'oops', 'slash', 'fanw', 'dash']); // 걸어도 이어지는 몸짓
 let myAct = 0, actSeq = 0;
+/* ---- 💃 1029e 사는 몸짓 (옷가게 → 😊 몸짓 창) · 친구 화면에도 보여요 (접속 정보 mo = 순서×32 + 번호) ---- */
+const MOTS = [null,
+  { k: 'sbow', icon: '🙇', name: '무대 인사', price: 200, d: 1.8, g: '🎭 꿈끼 발표회' }, { k: 'sing', icon: '🎤', name: '마이크 노래', price: 300, d: 3, g: '🎭 꿈끼 발표회' }, { k: 'muse', icon: '🙆', name: '뮤지컬 포즈', price: 250, d: 2.2, g: '🎭 꿈끼 발표회' },
+  { k: 'vict', icon: '🕺', name: '승리 댄스', price: 400, d: 3, g: '🏆 승리·응원' }, { k: 'toss', icon: '🙌', name: '헹가래 점프', price: 300, d: 1.6, g: '🏆 승리·응원' }, { k: 'flag', icon: '🚩', name: '응원 깃발', price: 300, d: 2.6, g: '🏆 승리·응원' },
+  { k: 'cart', icon: '🤸', name: '옆돌기', price: 500, d: 1.3, g: '😂 재미' }, { k: 'hand', icon: '🙃', name: '물구나무', price: 600, d: 2.6, g: '😂 재미' }, { k: 'peng', icon: '🐧', name: '펭귄 흉내', price: 200, d: 2.6, g: '😂 재미' }, { k: 'doze', icon: '😴', name: '꾸벅꾸벅 졸기', price: 150, d: 3.5, g: '😂 재미' }, { k: 'robo', icon: '🤖', name: '로봇 춤', price: 350, d: 3, g: '😂 재미' },
+  { k: 'snow', icon: '⛄', name: '눈 굴리기', price: 300, d: 3, g: '❄️ 겨울', win: 1 }, { k: 'blow', icon: '🧤', name: '손 호호 불기', price: 200, d: 2.5, g: '❄️ 겨울', win: 1 }, { k: 'board', icon: '🏂', name: '스노보드 흉내', price: 400, d: 2.6, g: '❄️ 겨울', win: 1 },
+  { k: 'hi5', icon: '🙏', name: '하이파이브', price: 150, d: 1.6, g: '👫 둘이 함께', duo: 1 }, { k: 'spin', icon: '💞', name: '손잡고 빙글빙글', price: 300, d: 3, g: '👫 둘이 함께', duo: 1 },
+];
+const MOT_I = Object.fromEntries(MOTS.map((m, i) => [m?.k, i]).filter(([k]) => k));
+let myMot = 0, motSeq = 0;
+const motWinOpen = () => isTeacher || (typeof SSNS !== 'undefined' && (dayNum() >= SSNS[1].from || ['s2', 'fin'].includes(S.ssnc)));
+const motOwn = (i) => isTeacher || !!bag.own?.['m' + i];
+function motEnd(a) { if (!a?.mot) return; for (const o of a.mot.objs) o.parent?.remove(o); a.mot = null; a.rig.position.x = 0; }
+function playMot(a, k) {
+  if (!a) return; motEnd(a); const i = MOT_I[k], M = MOTS[i]; if (!M) return; if (a.act) playAct(a, null);
+  const m = a.mot = { k, t: 0, d: M.d, objs: [], fx: 0, orb: null }, o = { solid: false }, P = (par, fn) => { const g = new THREE.Group(); par.add(g); fn(g); m.objs.push(g); return g; };
+  if (k === 'sing') P(a.armR, g => { box(g, 0.07, 0.24, 0.07, 0x2A2A30, 0, -0.62, 0.1, o); ball(g, 0.08, 0x8A8F99, 0, -0.48, 0.1, o); });
+  if (k === 'flag') P(a.armR, g => { cyl(g, 0.025, 1.4, 0xC9A06A, 0, -1.1, 0.05, { solid: false, rx: Math.PI }); box(g, 0.04, 0.45, 0.65, [0xE2584A, 0x4A9AE8, 0xFFD23C][Math.floor(Math.random() * 3)], 0, -1.6, 0.4, o); });
+  if (k === 'snow') m.ball = P(a.g, g => { ball(g, 1, 0xFAFCFF, 0, 0, 0, o); g.position.set(0, 0.3, 1.0); g.scale.setScalar(0.25); });
+  if (k === 'board') P(a.g, g => { box(g, 0.5, 0.06, 1.7, 0x4A9AE8, 0, 0.06, 0, o); box(g, 0.52, 0.02, 0.4, 0xFFD23C, 0, 0.1, 0.5, o); });
+  if (k === 'doze') m.objs.push(makeLabel(a.g, ['💤 Zzz'], 0.6, 0.6, 3.3, 0, { stroke: false, pad: 4, font: 60 }));
+  if (a === player.avatar) { motSeq = (motSeq + 1) % 8; myMot = motSeq * 32 + i; if (k === 'toss' || k === 'vict') playSfx('cheer'); }
+  if (k === 'hi5') { const all = [[player.avatar, player.pos], ...[...remotes.values()].map(r => [r.a, r.pos])], me = all.find(x => x[0] === a);
+    for (const [b, pb] of all) if (b && b !== a && b.mot?.k === 'hi5' && me && Math.hypot(pb.x - me[1].x, pb.z - me[1].z) < 2.4) { const c = me[1].clone().add(pb).multiplyScalar(0.5).setY(2.4); burst(c, [0xFFE066, 0xFFFFFF, 0xFF8FB3], 40, 4, 2); if (a === player.avatar || b === player.avatar) { playSfx('clap'); toast('🙏 짝! 하이파이브!', 'success'); } break; } }
+}
+function motPose(a, dt, moving) {
+  const m = a.mot; if (!m) return; m.t += dt; const M = MOTS[MOT_I[m.k]], R = a.rig, T = m.t, u = Math.min(1, T / m.d), L = a.legL, Rg = a.legR;
+  if (u >= 1 || (moving > (a === player.avatar ? 0.3 : 0.7) && m.k !== 'spin')) { motEnd(a); return; }
+  const ramp = Math.min(1, u / 0.18, (1 - u) / 0.18), wp = (x, y, z) => a.g.localToWorld(new V3(x, y, z)), fxEvery = (s) => { if (T - m.fx >= s) { m.fx = T; return true; } return false; };
+  const arms = (lx, lz, rx, rz) => { a.armL.rotation.x = lx; a.armL.rotation.z = lz; a.armR.rotation.x = rx; a.armR.rotation.z = rz; };
+  switch (m.k) {
+    case 'sbow': R.rotation.x = 1.25 * ramp; arms(0.2 * ramp, 0, 0.2 * ramp, 0); if (u > 0.45 && !m.fired) { m.fired = 1; burst(wp(0, 2.6, 0.4), [0xFFE066, 0xFF8FB3, 0xFFFFFF], 26, 4, 2.4); if (a === player.avatar) playSfx('clap'); } break;
+    case 'sing': arms(-1.2 + 0.4 * Math.sin(T * 3), -0.6, -2.4, 0.4); R.rotation.z = 0.08 * Math.sin(T * 2.5); if (fxEvery(0.45)) burst(wp(0.3, 2.3, 0.4), [0xFF8FB3, 0x7AB8E8, 0xFFE066], 3, 1.4, 1.2); break;
+    case 'muse': arms(-2.6 * ramp, -0.9 * ramp, -2.6 * ramp, 0.9 * ramp); R.rotation.x = -0.15 * ramp; a.head.rotation.x = -0.25 * ramp; if (u > 0.4 && !m.fired) { m.fired = 1; burst(wp(0, 2.8, 0), RAINBOW, 30, 4, 2.5); } break;
+    case 'vict': { const s = Math.sin(T * 8); R.rotation.z = 0.18 * s; R.position.y += 0.1 * Math.abs(s); arms(-2.8 + 0.5 * Math.sin(T * 8 + Math.PI), -0.3, -2.8 + 0.5 * s, 0.3); if (L) { L.rotation.x = 0.4 * s; Rg.rotation.x = -0.4 * s; } if (fxEvery(0.5)) burst(wp(0, 2.6, 0), [0xFFE066, 0xFFFFFF], 6, 2, 2); break; }
+    case 'toss': R.position.y += 1.3 * Math.abs(Math.sin(u * Math.PI * 2)); arms(-3.0, -0.3, -3.0, 0.3); if (L) { L.rotation.x = 0.3; Rg.rotation.x = -0.3; } break;
+    case 'flag': arms(-0.3, 0, -2.9 + 0.45 * Math.sin(T * 7), 0.2); break;
+    case 'cart': { const th = Math.PI * 2 * (u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u)); R.rotation.z = th; R.position.x = 1.1 * Math.sin(th); R.position.y += 1.1 * (1 - Math.cos(th)); arms(-3.1, -0.4, -3.1, 0.4); if (L) { L.rotation.z = -0.5; Rg.rotation.z = 0.5; } break; }
+    case 'hand': { const th = Math.PI * (u < 0.2 ? u / 0.2 : u > 0.8 ? (1 - u) / 0.2 : 1); R.rotation.z = th; R.position.x = 1.1 * Math.sin(th); R.position.y += 1.1 * (1 - Math.cos(th)); arms(-3.1, -0.25, -3.1, 0.25); if (L) { L.rotation.x = 0.2 * Math.sin(T * 5); Rg.rotation.x = -L.rotation.x; } break; }
+    case 'peng': { const s = Math.sin(T * 6); arms(0, -0.55, 0, 0.55); R.rotation.z = 0.2 * s; R.position.y += 0.05 * Math.abs(s); if (L) { L.rotation.x = 0.15 * s; Rg.rotation.x = -0.15 * s; } a.head.rotation.x = 0.1 * Math.sin(T * 12); break; }
+    case 'doze': a.head.rotation.x = 0.55 * Math.max(0, Math.sin(T * 1.6)) ** 3; R.rotation.x = 0.08; arms(0.1, 0, 0.1, 0); break;
+    case 'robo': { const q = Math.floor(T / 0.35) % 4, P4 = [[-1.57, 0, 0, 0], [0, 0, -1.57, 0], [-3.1, 0, 0, 1.2], [0, -1.2, -3.1, 0]][q]; arms(...P4); a.head.rotation.y = [0.4, -0.4, 0, 0.4][q]; R.rotation.y = [0, 0.3, -0.3, 0][q]; break; }
+    case 'snow': R.rotation.x = 0.6; arms(-1.3, 0.15, -1.3, -0.15); if (m.ball) { const s = 0.25 + u * 0.55; m.ball.scale.setScalar(s); m.ball.position.set(0, s, 1.0 + u * 0.3); } break;
+    case 'blow': arms(-2.05, 0.4, -2.05, -0.4); a.head.rotation.x = 0.1; if (fxEvery(0.45)) burst(wp(0, 1.6, 0.7), [0xFFFFFF, 0xEAF4FF], 5, 0.8, 0.6, 0.5, -1); break;
+    case 'board': R.rotation.y = Math.PI / 2; R.rotation.z = 0.15 * Math.sin(T * 2); R.position.y += 0.15; arms(0, -1.2, 0, 1.2); if (fxEvery(0.25)) burst(wp(0, 0.2, -0.8), [0xFFFFFF, 0xEAF4FF], 3, 1, 0.8); break;
+    case 'hi5': arms(0, 0, -2.9, 0.15); break;
+    case 'spin': { arms(-1.5, 0, -1.5, 0); if (a === player.avatar) { if (!m.orb) for (const r of remotes.values()) if (r.a?.mot?.k === 'spin' && Math.hypot(r.pos.x - player.pos.x, r.pos.z - player.pos.z) < 2.8) { const c = player.pos.clone().add(r.pos).multiplyScalar(0.5); m.orb = { c, r: Math.max(0.6, Math.hypot(player.pos.x - c.x, player.pos.z - c.z)), a0: Math.atan2(player.pos.x - c.x, player.pos.z - c.z), t0: T }; break; }
+        if (m.orb) { const an = m.orb.a0 + (T - m.orb.t0) * 3; player.pos.x = m.orb.c.x + Math.sin(an) * m.orb.r; player.pos.z = m.orb.c.z + Math.cos(an) * m.orb.r; player.heading = an + Math.PI; a.g.position.x = player.pos.x; a.g.position.z = player.pos.z; a.g.rotation.y = player.heading; if (fxEvery(0.3)) burst(m.orb.c.clone().setY(2), [0xFF8FB3, 0xFFFFFF], 4, 1.5, 1.2); } } break; }
+  }
+}
+
 const easeOut = (u) => 1 - (1 - u) ** 3, easeBack = (u) => 1 + 2.7 * (u - 1) ** 3 + 1.7 * (u - 1) ** 2;
 function makeProps(a) { // 손에 드는 도구 (평소엔 숨겨 둬요)
   const o = { solid: false }, hand = new THREE.Group(); hand.position.set(0, -0.5, 0.02); a.armR.add(hand); a.hand = hand;
@@ -4057,7 +4109,7 @@ function clearHeld(a) {
   for (const k of ['held', 'bubble']) if (a[k]) { a[k].material.map?.dispose(); a[k].material.dispose(); a.g.remove(a[k]); a[k] = null; }
 }
 function playAct(a, k, o = {}) {
-  if (!a) return;
+  if (!a) return; if (k && a.mot) motEnd(a);
   clearHeld(a);
   a.act = k ? { k, t: 0, d: ACT_D[k], next: o.next || null, icon: o.icon || null, img: o.img || null, fx: 0 } : null;
   if (k === 'show') {
@@ -4490,6 +4542,7 @@ function updateRemotes(dt) {
     r.a.g.rotation.y = r.heading;
     const grounded = Math.abs(r.pos.y - before.y) / Math.max(dt, 1e-3) < 1.5;
     if ((t.m | 0) !== r.lastM) { r.lastM = t.m | 0; playAct(r.a, ACTS[r.lastM % 32] || null); } // 친구의 몸짓
+    if ((t.mo | 0) !== r.lastMo) { const first = r.lastMo === undefined; r.lastMo = t.mo | 0; const M = MOTS[r.lastMo % 32]; if (M && !first) playMot(r.a, M.k); } // 💃 친구의 사는 몸짓 (처음 보일 때는 안 해요)
     animateAvatar(r.a, Math.min(1, speed / SPEED), dt, grounded, backend.now() < (t.b || 0));
     if (r.a.rideK) r.a.g.position.y = r.pos.y + r.a.rideLift;
     { const myRoom = player.pos.x > 740 ? roomAt(player.pos.x, player.pos.z) : '', theirs = r.pos.x > 740 ? roomAt(r.pos.x, r.pos.z) : ''; r.a.g.visible = myRoom ? theirs === myRoom : !theirs; } // 집 안: 같은 집에 있는 친구만 보여요
@@ -4505,6 +4558,7 @@ function sendPresence(time) {
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (swimStMine()) d.ss = swimStMine(); // 🏊 1029b 고른 수영 동작
+  if (myMot) d.mo = myMot; // 💃 1029e 사는 몸짓
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
@@ -14516,6 +14570,14 @@ function openWardrobe() {
         b.onclick = () => { if (!own) { if ((bag.shell || 0) < it.price) return; bag.shell -= it.price; bag.own['s' + i] = true; playSfx('coin'); toast(`🏊 ${it.icon} ${josa(it.name, '을', '를')} 배웠어요! 물속에서 써 봐요`, 'success'); } bag.swSt = i; saveBag(); refillLife(); };
         card.append(b); grid.append(card); });
       box.append(grid); }
+    { box.append(el2('h3', 'lp-sec', '💃 몸짓 (😊 몸짓 창에서 써요)'), el2('p', 'hint', '산 몸짓은 😊 버튼(Q)을 누르면 나와요 · 친구들 화면에도 보여요 · 👫 둘이 함께 몸짓은 친구 옆에서 둘 다 누르면 특별해져요'));
+      let grp = '', grid = null;
+      MOTS.forEach((M, i) => { if (!M) return; if (M.g !== grp) { grp = M.g; box.append(el2('p', 'hint', M.g + (M.win ? (motWinOpen() ? '' : ' · ❄️ 시즌 2(11/30)부터 팔아요') : ''))); grid = el2('div', 'lp-grid'); box.append(grid); }
+        const own = motOwn(i), lock = M.win && !motWinOpen(), card = el2('div', 'lp-card');
+        card.append(el2('div', 'lp-icon', M.icon), el2('div', 'lp-name', M.name), el2('div', 'lp-sub', own ? '내 몸짓' : lock ? '❄️ 11/30부터' : `🐚 ${M.price}`));
+        const b = el2('button', 'btn lp-btn', own ? '해 보기' : lock ? '🔒' : '사기'); b.disabled = !own && (lock || (bag.shell || 0) < M.price);
+        b.onclick = () => { if (!own) { if (lock || (bag.shell || 0) < M.price) return; bag.shell -= M.price; bag.own['m' + i] = true; saveBag(); playSfx('coin'); toast(`💃 ${M.icon} ${josa(M.name, '을', '를')} 배웠어요! 😊 몸짓 창에서 써요`, 'success'); refillLife(); } closeLife(); playMot(player.avatar, M.k); };
+        card.append(b); grid.append(card); }); }
   });
 }
 // ---------- 🏗️ 집 키우기 ----------
@@ -17813,6 +17875,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1029e', d: '10월 29일', items: ['💃 옷가게에서 몸짓을 팔아요 (😊 몸짓 창에서 써요): 🎭 무대 인사 · 마이크 노래 · 뮤지컬 포즈 / 🏆 승리 댄스 · 헹가래 점프 · 응원 깃발 / 😂 옆돌기 · 물구나무 · 펭귄 흉내 · 꾸벅꾸벅 · 로봇 춤', '👫 둘이 함께: 🙏 하이파이브 · 💞 손잡고 빙글빙글 (친구 옆에서 둘 다 누르기) · ❄️ 겨울 몸짓(눈 굴리기 · 손 호호 · 스노보드)은 시즌 2부터'] },
   { id: '1029d', d: '10월 29일', items: ['🎭 대본 연습실이 🎤 꿈나무 무대 옆 대본 게시판으로 옮겼어요 · 배역은 선생님이 정해요 (주인공 · 다함께) · 연습하면 📚 독서력', '🔔 꿈끼 대본 골든벨: 끝까지 다 맞히면 🐚 100 + 🏷️ 🎭꿈끼왕 칭호', '👕 🎭꿈끼왕은 옷가게에서 안중근 꾸미기 (🥸 콧수염 · 🇰🇷 태극 머리띠 · 🧥 코트)'] },
   { id: '1029c', d: '10월 29일', items: ['🎭 꿈끼 발표회 대본 연습실: 왼쪽 🎭 대본 연습 버튼 → 내 배역 고르기 → 📖 보기 · 🫣 가리고 외우기(첫 글자 힌트) · ✏️ 빈칸 퀴즈 · 🔢 다음 구절 맞히기', '📋 대본이 올라와 있으면 오늘의 할 일에 🎭 보너스 미션(⭐+1)이 생겨요'] },
   { id: '1029b', d: '10월 29일', items: ['🏊 옷가게에서 수영 동작을 팔아요: 자유형(기본) · 🐶 개헤엄 · 🐸 평영 · 🌙 배영 · 🦋 접영 — 고른 동작은 친구 화면에도 보여요', '🏊 헤엄칠 때 몸을 눕혀서 진짜 수영처럼, 가만히 있으면 물에 떠서 팔을 저어요'] },
@@ -25458,6 +25521,7 @@ function emoTick(dt) { // 친구 이모티콘 보이기 · 시간이 지나면 �
 }
 function renderEmoBar() { // 몸짓 창 아래에 내 이모티콘
   const bar = $('emoteBar'); bar.querySelectorAll('.emo-mine').forEach(b => b.remove());
+  MOTS.forEach((M, i) => { if (!M || !motOwn(i) || (M.win && !motWinOpen())) return; const b = el2('button', 'btn emo emo-mine', M.icon); b.append(el2('span', '', M.name.length > 5 ? M.name.slice(0, 5) : M.name)); b.onclick = () => { if (!joined || isFrozen() || onCooldown('emote', 0.8)) return; if (life.fishing) endFishing(); playMot(player.avatar, M.k); bar.classList.add('hidden'); }; bar.append(b); }); // 💃 1029e 산 몸짓
   const add = (id, cv, label) => { const b = el2('button', 'btn emo emo-mine'); const im = document.createElement('img'); im.src = cv.toDataURL(); im.alt = ''; im.style.cssText = 'width:30px;height:30px;image-rendering:pixelated'; b.append(im, el2('span', '', label)); b.onclick = () => emoUse(id); bar.append(b); };
   bag.emoF.slice(0, 4).forEach((c, i) => add(`f${c}`, emoFaceCanvas(c, 64), `내 얼굴${i + 1}`));
   emoMinePix().filter(x => x.ok).slice(0, EMO_MAX_P).forEach((x, i) => add(`p${x.k}`, emoPixCanvas(x.p, 60), `내 그림${i + 1}`));
