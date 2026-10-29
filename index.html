@@ -17897,6 +17897,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1029i', d: '10월 29일', items: ['🏯 성 공방전 역사 전투 시나리오: 안시성 전투 (645)! 고구려는 지키고 당나라는 공격 · ⚔️ 포위 → ⛰️ 토산 쌓기·빼앗기 → ❄️ 겨울', '📜 시작할 때 브리핑 · 끝나면 "실제 역사는?" 카드와 역사 퀴즈 (🐚 + 🏛️ 사회력)'] },
   { id: '1029h', d: '10월 29일', items: ['🧑‍🏫 👤 계정 점검에서 중복 계정 정리 (기록 · 가방 · 땅·집 지우기, 되돌릴 수 없어요)'] },
   { id: '1029g', d: '10월 29일', items: ['👤 기기를 옮길 때 계정 이어지기 고침: 여럿이 쓰는 노트북에서 다른 친구 가방이 섞이던 문제 · 기기 시계가 달라 최신 가방을 못 불러오던 문제', '💾 🎒 가방 창의 "지금 저장" 버튼 · 다른 기기에서 들어오면 이 기기는 멈추고 새로고침 안내', '🧑‍🏫 선생님: 👤 계정 점검 (같은 학생 이름으로 계정이 여러 개인지)'] },
   { id: '1029f', d: '10월 29일', items: ['🎤 꿈나무 무대가 늘 열려 있어요 (🏛️ 도감관 뒤쪽) · 📋 오늘의 할 일 🎭 미션의 "🎤 무대로 가기" 버튼으로 바로 가요'] },
@@ -21644,6 +21645,7 @@ const SIEGE_SETS = {
   three: { name: '삼국 시대', eras: ['three'], weap: 'bow', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
   four: { name: '삼국 + 가야', eras: ['three'], weap: 'bow', nat: [{ name: '고구려', icon: '🏹', col: 0xD24A3A }, { name: '백제', icon: '🪷', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }, { name: '가야', icon: '⚒️', col: 0x3FA060 }] },
   nb: { name: '남북국 시대', eras: ['nb'], weap: 'xbow', nat: [{ name: '통일 신라', icon: '👑', col: 0x3E6AC8 }, { name: '발해', icon: '🐎', col: 0x8A4FC8 }] },
+  ansi: { name: '🏯 역사 전투 · 안시성 (645)', eras: ['three'], weap: 'bow', nat: [{ name: '고구려', icon: '🏯', col: 0xD24A3A }, { name: '당나라', icon: '🐉', col: 0xE0A81C }], scen: 1 }, // 🏯 1029i 역사 전투 시나리오
   late: { name: '후삼국 시대', eras: ['nb', 'goryeo'], weap: 'xbow', nat: [{ name: '후고구려', icon: '🐉', col: 0xD24A3A }, { name: '후백제', icon: '🌾', col: 0xE0A81C }, { name: '신라', icon: '👑', col: 0x3E6AC8 }] },
 };
 const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 독서력은 모든 직업을 함께 강하게 해요 (1022f: 의원·책사 → 장군·궁병)
@@ -21741,7 +21743,8 @@ const sgRes = (t) => S.siege?.res?.[t] || {};
 const sgLv = (t) => S.siege?.lv?.[t] || 1;
 const sgMax = (t) => SG_LV_HP(S.siege?.max || 30, sgLv(t));
 const sgHp = (t) => S.siege?.hp?.[t] ?? sgMax(t);
-const sgSpeedMul = () => (trw.horn > performance.now() ? 1.4 : 1) * ((S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? 0.15 : 0) + (sgPB(backend.uid, 'horn') ? 0.2 : 0) + (sgPB(backend.uid, 'roar') ? 0.15 : 0) : 1) * (S.siege?.on && sgPB(backend.uid, 'stun') ? 0.5 : 1) * (sgw.draw ? 0.6 : 1); // 📣 함성 · 🏹 활을 당기는 동안은 천천히 // 🎯 체험장 나팔도 빨라져요 · 🔨 어질어질하면 절반
+const sgSpeedMul = () => sgSpeedMul0() * (sgAnsi() && ansiPh() === 3 && S.siege?.on && sgMine() === 2 && siegeRegion() ? 0.8 : 1); // ❄️ 1029i 안시성 겨울: 당나라는 느려져요
+const sgSpeedMul0 = () => (trw.horn > performance.now() ? 1.4 : 1) * ((S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? 0.15 : 0) + (sgPB(backend.uid, 'horn') ? 0.2 : 0) + (sgPB(backend.uid, 'roar') ? 0.15 : 0) : 1) * (S.siege?.on && sgPB(backend.uid, 'stun') ? 0.5 : 1) * (sgw.draw ? 0.6 : 1); // 📣 함성 · 🏹 활을 당기는 동안은 천천히 // 🎯 체험장 나팔도 빨라져요 · 🔨 어질어질하면 절반
 const sgFrozen = () => !!S.siege && siegeRegion() && sgMine() && sgHurt(backend.uid);
 const sgw = { cover: [], field: null, castles: {}, key: '', lastR: '', ended: '', cool: 0, balls: [], boxes: [], sites: {}, bars: {}, barKey: '', shots: {}, fxSeen: {}, assign: {}, tick: 0, slow: 0, hud: '', listKey: '', busy: {}, spots: [], hurtT: 0, hurtPos: null, wasHurt: false, catObjs: {}, roleAsked: '', finalTold: '' };
 const sgFerry = { on: false, t: 0, x0: 0, z0: 0, x1: 0, z1: 0, boat: null }; // 🛶 해자 건너기 (1022f)
@@ -22520,7 +22523,7 @@ async function sgPlaceBar() {
 function openSgRole() {
   if (!S.siege?.on || !sgMine()) return;
   openLife('🎭 역할 고르기', (box) => {
-    box.textContent = ''; box.append(el2('p', 'hint', `우리 나라를 위해 할 일을 하나 골라요. 다섯 역할(👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이)에 1명씩 먼저 채워요. 📚 독서력이 높으면 어떤 역할이든 더 강해져요.${sgRoleEmpty(sgMine(), backend.uid).length ? ` 지금 빈 역할: ${sgRoleEmpty(sgMine(), backend.uid).map(k => SG_ROLES[k].icon + SG_ROLES[k].name).join(' · ')}.` : ` 다섯 역할이 다 찼으니 보병·궁병·대장장이는 ${sgRoleCapAll(sgMine())}명까지 들어갈 수 있어요.`} 역할은 시작 뒤 25초 안과 🗺️ 작전 시간에 바꿀 수 있어요. 25초 안에 안 고르면 빈 자리로 정해져요.`));
+    box.textContent = ''; if (sgAnsi()) { const me = sgMine(), d = el2('div', ''); d.style.cssText = `background:${me === 1 ? '#FFE3DC' : '#FFF3C8'};border-radius:14px;padding:10px 12px;margin-bottom:8px;text-align:left`; d.append(el2('b', '', me === 1 ? '🏯 너는 고구려! 안시성을 지켜요' : '🐉 너는 당나라! 안시성을 함락해요'), el2('div', 'hint', '645년 당 태종의 대군이 고구려로 쳐들어왔어요 · ⚔️ 포위 4분 → ⛰️ 토산 4분 → ❄️ 겨울 3분')); const bb = el2('button', 'btn', '📜 브리핑 자세히 보기'); bb.style.cssText = 'font-size:14px;padding:4px 10px;margin-top:4px'; bb.onclick = openAnsiBrief; d.append(bb); box.append(d); } // 🏯 1029i box.append(el2('p', 'hint', `우리 나라를 위해 할 일을 하나 골라요. 다섯 역할(👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이)에 1명씩 먼저 채워요. 📚 독서력이 높으면 어떤 역할이든 더 강해져요.${sgRoleEmpty(sgMine(), backend.uid).length ? ` 지금 빈 역할: ${sgRoleEmpty(sgMine(), backend.uid).map(k => SG_ROLES[k].icon + SG_ROLES[k].name).join(' · ')}.` : ` 다섯 역할이 다 찼으니 보병·궁병·대장장이는 ${sgRoleCapAll(sgMine())}명까지 들어갈 수 있어요.`} 역할은 시작 뒤 25초 안과 🗺️ 작전 시간에 바꿀 수 있어요. 25초 안에 안 고르면 빈 자리로 정해져요.`));
     if (sgMyRole() === 'pow' && sgHasRole(backend.uid)) box.append(el2('p', 'lp-big', '⛓️ 포로는 역할을 바꿀 수 없어요'));
     else if (!sgRoleOk()) box.append(el2('p', 'lp-big', '⏳ 지금은 역할을 바꿀 수 없어요. 🗺️ 작전 시간에 바꿔요'));
     const list = el2('div', 'sg-roles');
@@ -22571,6 +22574,7 @@ function updateSiege(dt) {
   const near = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10 && camera.position.z > SG.z0 - 10);
   const s = S.siege, show = near && !!s, set = sgSet();
   sgw.field.visible = show;
+  try { ansiTick(dt, show); } catch (e) { console.warn('ansi', e); } // 🏯 1029i
   for (const c of Object.values(sgw.castles)) { c.g.visible = show; c.door.visible = show && !c.open; c.rubble.visible = show && c.open; c.hpLabel.visible = show; c.cat.g.visible = show; if (show) c.flag.rotation.y = Math.sin(time * 2 + c.t) * 0.3; }
   if (sgw.catObjs.fort) sgw.catObjs.fort.g.visible = show;
   for (const b of Object.values(sgw.bars)) b.g.visible = show;
@@ -22646,7 +22650,7 @@ function updateSiege(dt) {
   if (s.half && me && s.on) { const ph = sgPhase();
     if (ph === 'break' && sgw.brkR !== s.r) { sgw.brkR = s.r; if (sgFerry.on) sgFerryEnd(); sgw.draw = 0; sgw.revFor = myHurt || sgw.revFor; backend.sgRevive(false); sgSpawn(); showBanner('🗺️ 작전 시간 (1분)', '전반전 끝! 우리 성에 모여 작전을 짜요. 🎭 역할도 바꿀 수 있어요', 5500); playSfx('fanfare'); setTimeout(() => { if (sgBreak()) openSgRole(); }, 1500); }
     if (ph === 'second' && sgw.h2R !== s.r) { sgw.h2R = s.r; if (sgw.brkR === s.r) { showBanner('⚔️ 후반전 시작!', '작전대로 싸워요! 성문을 부수고 🚩 함락 깃발을 차지해요', 4000); playSfx('fanfare'); } } }
-  if (sgFinal() && sgw.finalTold !== s.r && siegeRegion()) { sgw.finalTold = s.r; showBanner('⚔️ 결전의 시간!', '마지막 1분 — 거점 점수가 두 배예요', 4500); playSfx('fanfare'); }
+  if (sgFinal() && !sgAnsi() && sgw.finalTold !== s.r && siegeRegion()) { sgw.finalTold = s.r; showBanner('⚔️ 결전의 시간!', '마지막 1분 — 거점 점수가 두 배예요', 4500); playSfx('fanfare'); }
   // 1초마다 (선생님 기기 · 연습 모드는 내 기기): 거점 차지 · 점수·자원 · 성문 다시 세우기 · 끝
   if (performance.now() - sgw.tick > 1000) { sgw.tick = performance.now(); sgTickHost(); }
 }
@@ -22806,9 +22810,96 @@ async function sgHitBot(id, dmg, pw = 0) { // 학생이 컴퓨터 병사를 맞�
   if (sgBotHost()) { const sim = sgb.sim[id]; if (sim && !sim.down) { sgBotHurt(sim, dmg); toast(sim.down ? '🎯 컴퓨터 병사를 쓰러뜨렸어요!' : `🎯 명중! 컴퓨터 병사 ❤️ ${sim.hp}/${sim.mx}`, 'success'); } return; }
   const r = await backend.sgBotHit(id, dmg); if (r.ok) toast(`🎯 명중! 컴퓨터 병사 ❤️ -${dmg}`, 'success');
 }
+/* ---------- 🏯 1029i 역사 전투 시나리오: 안시성 전투 (645) ----------
+   고구려(성 1 · 수비, 인원 적게) vs 당나라(성 2 · 공격). 브리핑 25초 → 1단계 포위 4분 → 2단계 토산 4분 → 3단계 겨울 3분
+   · 당나라가 고구려 성을 함락하면 당 승리 · 끝까지 버티면(또는 당 진영을 함락하면) 고구려 승리
+   · ⛰️ 토산(2단계): 당나라 친구가 토산 자리에 서 있으면 쌓여요(🪵 목재를 쓰면 빨라요) → 100%가 되면 성벽을 넘어 성문이 열려요 (다시 안 세워져요)
+     고구려 친구가 토산에 서 있으면(당나라가 없을 때) 빼앗아요 → 100%면 고구려 차지 (+30점 · 더는 못 쌓아요) — 실제 역사!
+   · ❄️ 3단계: 겨울이 와서 당나라는 느려져요 · 끝나면 '실제 역사는?' 카드와 역사 퀴즈 3문제
+   · 저장: state/siege 의 set='ansi' · ts 토산 % · tc 빼앗기 % · tso 1=고구려 차지 · tsd 1=토산 완성 */
+const ANSI = { ph: [240000, 240000, 180000], brief: 25000, R: 4.6 };
+const sgAnsi = () => S.siege?.set === 'ansi';
+const ansiPos = () => { const c = castleAt(1); if (!c) return null; const [x, z] = castleLocal(1, -12, 23); /* 해자 밖 · 성문 앞 왼쪽 */ return { x, z }; };
+const ansiPh = () => { const s = S.siege; if (!sgAnsi() || !s) return 0; const t = backend.now() - s.at; return t < 0 ? 0 : t < ANSI.ph[0] ? 1 : t < ANSI.ph[0] + ANSI.ph[1] ? 2 : 3; };
+const ANSI_PH = [null, ['⚔️ 1단계 포위', '당나라 대군이 안시성을 둘러쌌어요'], ['⛰️ 2단계', '당나라가 성보다 높은 흙산(토산)을 쌓아요'], ['❄️ 3단계 겨울', '추위가 찾아왔어요. 끝까지!']];
+const ANSI_GOAL = { 1: ['🏯 성문을 고치고 성벽 위에서 막아요. 🛡️ 왕(성주)을 지켜요!', '⛰️ 토산을 빼앗을 준비! (토산 자리: 성 앞 왼쪽)', '❄️ 끝까지 버티면 승리! 당나라는 추위로 느려졌어요'], 2: ['🐉 성문을 부수고 성 한가운데 깃발 자리를 차지하면 함락!', '⛰️ 토산 자리에 서서 흙을 쌓아요 (🪵 목재가 있으면 빨라요). 100%면 성벽을 넘어요!', '❄️ 추위로 느려졌어요. 시간 안에 함락하지 못하면 물러나야 해요!'] };
+const ansiHud = () => { const ph = ansiPh(), s = S.siege; if (!ph) return '📜 브리핑'; return `${ANSI_PH[ph][0]}${ph >= 2 ? ` · 토산 ${s.tso ? '고구려 차지' : s.tsd ? '완성' : `${Math.round(s.ts || 0)}%`}` : ''}`; };
+const aw = { mound: null, label: null, flag: null, ph: -1, brief: '', end: '', txt: '' };
+function ansiTick(dt, show) {
+  const s = S.siege, on = show && sgAnsi(), P = on ? ansiPos() : null;
+  if (!aw.mound && P) { const g = new THREE.Group(); scene.add(g); const o = { solid: false };
+    const m = new THREE.Mesh(new THREE.ConeGeometry(5.2, 1, 18), new THREE.MeshStandardMaterial({ color: 0x9A7A4E, roughness: 0.95 })); m.position.y = 0.5; g.add(m); aw.cone = m;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(ANSI.R - 0.25, ANSI.R, 40), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; g.add(ring);
+    const fl = new THREE.Group(); cyl(fl, 0.06, 2.2, 0x6A4A2A, 0, 1.1, 0, o); const cloth = box(fl, 1.2, 0.7, 0.04, 0xE0A81C, 0.62, 1.8, 0, o); aw.cloth = cloth; g.add(fl); aw.flag = fl;
+    aw.label = makeLabel(g, ['⛰️ 토산'], 0.9, 0, 4, 0); aw.mound = g; }
+  if (!aw.mound) return;
+  aw.mound.visible = on; if (!on) return;
+  aw.mound.position.set(P.x, 0, P.z); const k = (s.ts || 0) / 100, h = 0.25 + 5.5 * k; aw.cone.scale.set(0.4 + 0.6 * k, h, 0.4 + 0.6 * k); aw.cone.position.y = h / 2; aw.flag.position.y = h; aw.label.position.y = h + 2.6;
+  aw.flag.visible = (s.ts || 0) > 3; aw.cloth.material.color.setHex(s.tso ? 0xD24A3A : 0xE0A81C);
+  const ph = ansiPh(), txt = s.tso ? '⛰️ 토산 · 🏯 고구려가 빼앗았어요!' : s.tsd ? '⛰️ 토산 완성 · 🐉 성벽을 넘었어요!' : ph < 2 ? '⛰️ 토산 자리 (2단계부터)' : `⛰️ 토산 ${Math.round(s.ts || 0)}%${s.tc ? ` · 🏯 빼앗는 중 ${Math.round(s.tc)}%` : ''}`;
+  if (txt !== aw.txt) { aw.txt = txt; aw.label.userData.set([txt, ph === 2 && !s.tso ? '🐉 서서 쌓기 · 🏯 서서 빼앗기' : '']); }
+  if (!joined || !siegeRegion()) return; const me = sgMine();
+  // 📜 브리핑 (한 번)
+  if (me && s.on && aw.brief !== s.r) { aw.brief = s.r; setTimeout(() => { if ($('lifePanel').classList.contains('hidden')) openAnsiBrief(); }, 1500); } // 역할 창이 떠 있으면 그 위의 안내로 대신해요
+  // 단계가 바뀌면 안내
+  if (s.on && ph && aw.ph !== ph && aw.phR === s.r) { if (me) { showBanner(ANSI_PH[ph][0], ANSI_GOAL[me]?.[ph - 1] || ANSI_PH[ph][1], 6000); playSfx('fanfare'); } }
+  aw.ph = ph; aw.phR = s.r;
+  if (ph === 3 && s.on && Math.random() < dt * 6) { const p = player.pos; burst(new V3(p.x + (Math.random() - 0.5) * 24, 9, p.z + (Math.random() - 0.5) * 24), [0xFFFFFF, 0xEAF4FF], 4, 3, 0, 0.35, -2.5); } // ❄️ 눈
+  // 🏁 끝 → 실제 역사 카드 (renderSgHud가 4.5초 뒤 열어요)
+}
+function openAnsiBrief() {
+  const me = sgMine();
+  openLife('📜 안시성 전투 (645년)', (box) => {
+    box.textContent = '';
+    box.append(el2('p', 'lp-big', '🐉 당나라 대군이 고구려로 쳐들어왔어요!'));
+    box.append(el2('p', '', '645년, 당나라 황제 태종이 수십만 대군을 이끌고 고구려를 침략했어요. 요동성 · 백암성 같은 성들이 하나둘 무너지고, 이제 당나라 군대 앞을 가로막은 것은 작은 성, 안시성이에요.'));
+    box.append(el2('p', 'hint', '⚔️ 1단계 포위 (4분) → ⛰️ 2단계 토산 (4분) → ❄️ 3단계 겨울 (3분)'));
+    const goal = el2('div', ''); goal.style.cssText = `background:${me === 1 ? '#FFE3DC' : '#FFF3C8'};border-radius:14px;padding:10px 12px;margin:8px 0;text-align:left`;
+    goal.append(el2('b', '', me === 1 ? '🏯 너는 고구려! 안시성을 지켜요' : me === 2 ? '🐉 너는 당나라! 안시성을 함락해요' : '👀 지켜보기'));
+    (ANSI_GOAL[me] || []).forEach((t, i) => goal.append(el2('div', '', `${i + 1}단계: ${t}`)));
+    goal.append(el2('div', 'hint', me === 1 ? '🏆 이기는 법: 끝날 때까지 성을 지키거나, 당나라 진영을 함락해요' : me === 2 ? '🏆 이기는 법: 고구려 성문을 부수고 성 한가운데 깃발 자리를 차지해요 (지키는 편이 없을 때)' : ''));
+    box.append(goal, el2('p', 'hint', '실제 역사와 다르게 끝날 수도 있어요. 끝나면 "실제 역사는?" 카드가 나와요!'));
+    const b = el2('button', 'btn', '⚔️ 알겠어요!'); b.style.background = '#FFD23C'; b.onclick = () => { closeLife(); if (!sgHasRole(backend.uid) && sgRoleOk()) openSgRole(); }; const r = el2('div', 'row-center'); r.append(b); box.append(r);
+  });
+}
+const ANSI_QS = [
+  { q: '안시성 전투는 고구려가 어느 나라와 싸운 전투일까요?', o: ['당나라', '수나라', '거란', '왜(일본)'], a: 0 },
+  { q: '당나라 군대가 안시성보다 높게 쌓아 올린 것은 무엇일까요?', o: ['토산(흙산)', '나무 사다리', '돌탑', '배다리'], a: 0 },
+  { q: '실제 안시성 전투는 어떻게 끝났을까요?', o: ['고구려가 성을 지켜 내고 당나라가 물러갔다', '당나라가 성을 빼앗았다', '두 나라가 동맹을 맺었다', '고구려가 성을 버리고 떠났다'], a: 0 },
+  { q: '안시성 전투가 일어난 때는 어느 시대일까요?', o: ['삼국 시대', '고조선', '고려 시대', '조선 시대'], a: 0 },
+  { q: '당나라 군대가 물러간 까닭으로 알맞은 것은?', o: ['추운 겨울이 오고 군량이 떨어져서', '바다에서 태풍을 만나서', '고구려와 친해져서', '황제가 병에 걸려서'], a: 0 },
+];
+function openAnsiEnd() {
+  const s = S.siege, w = s?.win, r = s?.r, qs = hShuffle([...ANSI_QS]).slice(0, 3).map(q => { const idx = hShuffle([0, 1, 2, 3]); return { q: q.q, o: idx.map(i => q.o[i]), a: idx.indexOf(q.a) }; });
+  const st = { i: -1, ok: 0, pick: -1, done: bag.ansiQ === r };
+  openLife('🏯 실제 역사는?', (box) => {
+    box.textContent = '';
+    if (st.i < 0) {
+      box.append(el2('p', 'lp-big', w === 1 ? '🏯 우리 반 안시성도 지켜 냈어요!' : w === 2 ? '🐉 우리 반에서는 당나라가 이겼어요!' : '🏁 전투가 끝났어요'));
+      box.append(el2('p', '', '실제 역사에서는… 당나라 군대는 안시성보다 높은 토산을 쌓으며 석 달 가까이(약 88일) 성을 공격했어요. 그런데 토산 한쪽이 무너지자 고구려 군사들이 뛰쳐나가 토산을 빼앗았어요. 추운 겨울이 다가오고 군량도 떨어지자, 당 태종은 결국 군대를 돌려 물러갔어요.'));
+      box.append(el2('p', 'hint', '💡 안시성을 지킨 성주는 "양만춘"으로 전해져요 (이름은 훗날의 기록에 나와요).'));
+      const row = el2('div', 'row-center wrap');
+      const qb = el2('button', 'btn', st.done ? '📝 역사 퀴즈 다시 풀기 (보상은 받았어요)' : '📝 역사 퀴즈 3문제 (🐚 + 🏛️ 사회력)'); qb.style.background = '#FFD23C'; qb.onclick = () => { st.i = 0; refillLife(); };
+      const sb = el2('button', 'btn', '📚 공부의 힘 결과'); sb.onclick = openSgStudy; row.append(qb, sb); box.append(row); return; }
+    if (st.i >= qs.length) { let sh = 0; if (!st.done && !isTeacher) { st.done = true; bag.ansiQ = r; addStat('soc', st.ok * 3); sh = giveShellCapped(st.ok * 7); saveBag(); updateHUD(null); }
+      box.append(el2('p', 'lp-big', `${st.ok === 3 ? '🎉' : '👍'} ${st.ok}/3 맞혔어요!`), el2('p', 'hint', st.sh ?? (sh ? `🐚 +${sh} · 🏛️ 사회력 +${st.ok * 3}` : ''))); st.sh = st.sh ?? (sh ? `🐚 +${sh} · 🏛️ 사회력 +${st.ok * 3}` : '');
+      const b = el2('button', 'btn', '📚 공부의 힘 결과'); b.onclick = openSgStudy; const rr = el2('div', 'row-center'); rr.append(b); box.append(rr); return; }
+    const Q = qs[st.i]; box.append(el2('p', 'hint', `${st.i + 1}/3`), Object.assign(el2('p', 'lp-big', Q.q), { style: 'font-size:19px' }));
+    const g = el2('div', ''); g.style.cssText = 'display:grid;gap:6px';
+    Q.o.forEach((o, j) => { const b = el2('button', 'btn', o); b.style.cssText = `text-align:left;font-size:16px;background:${st.pick < 0 ? '#fff' : j === Q.a ? '#BDE8B0' : j === st.pick ? '#F6C9C0' : '#fff'}`; b.disabled = st.pick >= 0;
+      b.onclick = () => { st.pick = j; if (j === Q.a) st.ok++; playSfx(j === Q.a ? 'right' : 'wrong'); refillLife(); setTimeout(() => { st.pick = -1; st.i++; refillLife(); }, j === Q.a ? 700 : 1500); }; g.append(b); });
+    box.append(g);
+  });
+}
+function ansiBalance(list, keep) { // 💪 능력치 힘으로 고구려 40% · 당나라 60% (keep: 선생님이 정해 둔 나라는 그대로)
+  const L = list.map(([u, tg]) => [u, sgPowerOf(u, tg) ?? 0]).sort((a, b) => b[1] - a[1]), sum = { 1: 0, 2: 0 }, cnt = { 1: 0, 2: 0 }, share = { 1: 0.4, 2: 0.6 }, n1 = Math.max(1, Math.round(L.length * 0.4));
+  const old = keep ? sgw.assign : {}; sgw.assign = {}; for (const [u, p] of L) if (old[u] === 1 || old[u] === 2) { sgw.assign[u] = old[u]; sum[old[u]] += p + 1; cnt[old[u]]++; }
+  for (const [u, p] of L) { if (sgw.assign[u]) continue; let t = (sum[1] + 1) / share[1] <= (sum[2] + 1) / share[2] ? 1 : 2; if (t === 1 && cnt[1] >= n1) t = 2; if (t === 2 && cnt[2] >= L.length - n1) t = 1; sgw.assign[u] = t; sum[t] += p + 1; cnt[t]++; }
+}
 function sgTickHost() {
   const s = S.siege; if (!s) return;
   const boss = isTeacher || backend.mode !== 'firebase';
+  if (boss && s.on && !s.win && sgAnsi() && backend.now() >= s.end) { backend.adminUpdate({ 'siege/on': 0, 'siege/win': sgFallen(1) ? 2 : 1 }); return; } // 🏯 끝까지 버티면 고구려 승리
   if (boss && s.on && !s.win && !s.kb && backend.now() >= s.end) { // ⏱ 끝: 왕이 가장 적게 쓰러진 나라에 보너스 +20 (먼저 더하고 다음 번에 승패를 정해요)
     let lo = Infinity; for (let t = 1; t <= s.n; t++) lo = Math.min(lo, s.kd?.[t] || 0);
     const up = { 'siege/kb': 1 }; for (let t = 1; t <= s.n; t++) if ((s.kd?.[t] || 0) === lo) up[`siege/score/${t}`] = (s.score?.[t] || 0) + SG_KING_BONUS;
@@ -22822,7 +22913,7 @@ function sgTickHost() {
   const w = sgWinner();
   if (boss && s.on && w) { backend.adminUpdate({ 'siege/on': 0, 'siege/win': w }); return; }
   if (s.on) for (let t = 1; t <= s.n; t++) { // 부서진 성문: 25초 뒤 반쯤 세워요
-    if (sgHp(t) !== 0 || sgw.busy['r' + t] || sgFallen(t)) continue; const dn = s.down?.[t];
+    if (sgHp(t) !== 0 || sgw.busy['r' + t] || sgFallen(t) || (sgAnsi() && t === 1 && s.tsd)) continue; const dn = s.down?.[t]; // ⛰️ 토산을 다 쌓으면 안시성 성문은 다시 안 세워져요
     if (!dn && boss) backend.adminUpdate({ [`siege/down/${t}`]: backend.now() });
     if (dn && backend.now() - dn >= SG_DOWN && (boss || sgMine() === t)) { sgw.busy['r' + t] = true; backend.sgRebuild(t, Math.ceil(sgMax(t) / 2)).finally(() => { sgw.busy['r' + t] = false; }); }
   }
@@ -22858,6 +22949,13 @@ function sgTickHost() {
       for (const st of SG_SITES) if ((s.own?.[st.k] || 0) === t) { upd[`siege/own/${st.k}`] = ct; upd[`siege/cap/${st.k}`] = { t: ct, p: 100 }; }
     } else if (ct !== (cc?.t || 0) || p !== (cc?.p || 0)) upd[`siege/cc/${t}`] = p ? { t: ct, p } : null;
   }
+  if (sgAnsi()) { const P = ansiPos(), ph = ansiPh(); let c1 = 0, c2 = 0; if (P) for (const [tt, x, z] of people) if (Math.hypot(x - P.x, z - P.z) < ANSI.R) { if (tt === 1) c1++; else if (tt === 2) c2++; } // ⛰️ 토산
+    let ts = s.ts || 0, tc = s.tc || 0, tso = s.tso || 0; const ts0 = ts, tc0 = tc;
+    if (!tso && !s.tsd && ph === 2 && c2 && !c1 && ts < 100) { const wood = s.res?.[2]?.w || 0; ts = Math.min(100, ts + (wood > 0 ? 1.6 : 0.8) * Math.min(3, c2)); if (wood > 0 && (sgw.ansiW = (sgw.ansiW || 0) + 1) % 3 === 0) backend.sgInc({ 'res/2/w': -1 }); }
+    if (!tso && !s.tsd && ts > 0 && ph >= 2 && c1 && !c2) tc = Math.min(100, tc + 6 * Math.min(3, c1)); else if (!c1 && tc > 0) tc = Math.max(0, tc - 3);
+    if (!tso && !s.tsd && tc >= 100) { upd['siege/tso'] = 1; upd['siege/score/1'] = (s.score?.[1] || 0) + 30; }
+    if (!tso && !s.tsd && ts >= 100) { upd['siege/tsd'] = 1; upd['siege/hp/1'] = 0; } // 토산 완성: 성벽을 넘어 들어가요
+    if (Math.round(ts) !== Math.round(ts0)) upd['siege/ts'] = Math.round(ts); if (Math.round(tc) !== Math.round(tc0)) upd['siege/tc'] = Math.round(tc); }
   if (Object.keys(upd).length) backend.adminUpdate(upd);
   // 3초마다 점수·자원
   if ((sgw.slow = (sgw.slow + 1) % 3) !== 0) return;
@@ -22906,9 +23004,10 @@ function renderSgHud(force) {
   $('sgNats').innerHTML = rows.join('');
   $('sgInfo').textContent = w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : (() => { const fm = (ms) => { const q = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(q / 60)}:${String(q % 60).padStart(2, '0')}`; }, h = s.half, ph = sgPhase(), now = backend.now(); const cc = Object.entries(s.cc || {}).find(([, v]) => v?.p), ccTxt = cc ? ` · 🚩 ${set.nat[+cc[0] - 1]?.name} 성 함락 중 ${cc[1].p}%` : '';
     if (ph === 'first') return `⚔️ 전반전 ${fm(h.a - now)}${ccTxt}`; if (ph === 'break') return `🗺️ 작전 시간 ${fm(h.b - now)} · 역할을 바꿀 수 있어요`; if (ph === 'second') return `⚔️ 후반전 ${fm(s.end - now)}${sgFinal() ? ' · 결전! 점수 2배' : ''}${ccTxt}`;
+    if (sgAnsi()) return `${ansiHud()} · ⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${ccTxt}`;
     return `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${sgFinal() ? ' · ⚔️ 결전! 점수 2배' : ` · ${set.name}`}${ccTxt}`; })();
   $('sgMine').textContent = t ? `🪵 ${res.w || 0} · ⛓️ ${res.i || 0} · 🍚 ${res.f || 0}${sgLagging() === t ? ' · 💪 약소국 단결 (차지·보급 1.5배)' : ''}` : '👀 선생님은 옆줄에서 지켜봐요';
-  if (w && sgw.ended !== s.r) { sgw.ended = s.r; sgStpFlush(true); if (siegeRegion() && (sgMine() || isTeacher)) { setTimeout(() => { if (S.siege?.r === s.r) openSgStudy(); }, 4500); setTimeout(() => { if (life.fill === sgStudyFill) refillLife(); }, 9000); } showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
+  if (w && sgw.ended !== s.r) { sgw.ended = s.r; sgStpFlush(true); if (siegeRegion() && (sgMine() || isTeacher)) { setTimeout(() => { if (S.siege?.r === s.r) (sgAnsi() ? openAnsiEnd() : openSgStudy()); }, 4500); setTimeout(() => { if (life.fill === sgStudyFill) refillLife(); }, 9000); } showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
 // ---------- 선생님 ----------
 function sgStudents() { const list = [...remotes.entries()].filter(([, r]) => !r.target.t).map(([u, r]) => [u, r.target]);
@@ -22959,11 +23058,12 @@ async function startSiege() {
   if (S.ctf?.on) { toast('🚩 깃발뺏기를 먼저 끝내 주세요', 'warn'); return; }
   const setKey = $('tpSgSet').value, set = SIEGE_SETS[setKey], n = set.nat.length, min = +$('tpSgMin').value, max = +$('tpSgHp').value, bots = +($('tpSgBots')?.value || 0);
   const list = sgStudents(); if (!list.length && !bots) { toast('접속한 학생이 없어요 (🤖 컴퓨터 병사만으로도 시작할 수 있어요)', 'warn'); return; }
-  sgBalance(n, list);
+  if (setKey === 'ansi') ansiBalance(list, true); else sgBalance(n, list);
   const counts = set.nat.map((N, k) => `${N.icon}${N.name} ${list.filter(([u]) => sgw.assign[u] === k + 1).length}명`).join(' · ');
-  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: `${counts}${bots ? ` (+ 나라마다 🤖 ${bots})` : ''}\n${min}분 (전반 ${(min - 1) / 2}분 · 🗺️ 작전 1분 · 후반 ${(min - 1) / 2}분) · 성문 체력 ${max}.\n🏆 성을 모두 함락하면 바로 승리, 아니면 끝날 때 점수가 높은 나라가 승리해요. 시작하면 모두 ⚔️ 전쟁터(따로 된 큰 땅)의 우리 성으로 옮기고, 각자 역할을 골라요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
+  if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: setKey === 'ansi' ? `${counts}${bots ? ` (+ 나라마다 🤖 ${bots})` : ''}\n📜 브리핑 25초 → ⚔️ 포위 4분 → ⛰️ 토산 4분 → ❄️ 겨울 3분 · 성문 체력 ${max}.\n🏆 당나라가 안시성을 함락하면 당 승리, 끝까지 지키면 고구려 승리. 고구려는 인원을 적게(약 40%) 나눠요 (옆 칸에서 바꿀 수 있어요).` : `${counts}${bots ? ` (+ 나라마다 🤖 ${bots})` : ''}\n${min}분 (전반 ${(min - 1) / 2}분 · 🗺️ 작전 1분 · 후반 ${(min - 1) / 2}분) · 성문 체력 ${max}.\n🏆 성을 모두 함락하면 바로 승리, 아니면 끝날 때 점수가 높은 나라가 승리해요. 시작하면 모두 ⚔️ 전쟁터(따로 된 큰 땅)의 우리 성으로 옮기고, 각자 역할을 골라요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
   const team = Object.fromEntries(list.map(([u]) => [u, sgw.assign[u]])), now = backend.now(), hp = {}, score = {}, lv = {}, res = {};
   for (let t = 1; t <= n; t++) { hp[t] = max; score[t] = 0; lv[t] = 1; res[t] = { w: 6, i: 4, f: 4 }; }
+  if (setKey === 'ansi') { const at = now + ANSI.brief; await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at, end: at + ANSI.ph[0] + ANSI.ph[1] + ANSI.ph[2], max, team, hp, score, lv, res: { 1: { w: 8, i: 4, f: 6 }, 2: { w: 10, i: 4, f: 4 } }, ...(bots ? { bots } : {}) } }, '🏯 안시성 전투를 시작해요! (브리핑 25초 + 11분)'); if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400); return; } // 🏯 1029i
   const halfMs = (min - 1) / 2 * 60000, at = now + 6000, ha = at + halfMs, hb = ha + 60000; // ⚔️ 전반전 · 🗺️ 작전 1분 · ⚔️ 후반전
   await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at, end: hb + halfMs, half: { a: ha, b: hb }, max, team, hp, score, lv, res, ...(bots ? { bots } : {}) } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
   if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400);
@@ -22979,8 +23079,8 @@ function initSiegeUI() {
   $('tpDqView').onclick = () => { closeModals(); openDqAdmin(); }; // 📋 1028m 미션 현황
   for (const b of document.querySelectorAll('[data-ssn]')) b.onclick = () => { const v = b.dataset.ssn; adminDo({ ssnc: v === 'auto' ? null : v }, v === 'auto' ? '📅 시즌을 날짜대로 바꿔요' : `🗓️ ${ssnById(v)?.icon} ${ssnById(v)?.n}을(를) 시작했어요`); }; // 🗓️ 1028n
   $('tpSsnOpen').onclick = () => { closeModals(); openSeason(); };
-  $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
-  $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
+  $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } if ($('tpSgSet').value === 'ansi') ansiBalance(list); else sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
+  $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; if ($('tpSgSet').value === 'ansi') ansiBalance(sgStudents()); else sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
   $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 우리 마을 광장으로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
   $('tpWhoMin').onchange = () => { fillWhoAdmin.key = ''; fillWhoAdmin(); };
