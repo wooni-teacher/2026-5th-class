@@ -4069,7 +4069,7 @@ const tmpV = new V3();
 function poseAct(a, dt, moving, arms) { // 몸짓 자세 (팔·몸 기울기·소품)
   const ac = a.act, R = a.rig;
   R.rotation.set(0, 0, 0); R.scale.set(1, 1, 1);
-  a.armL.rotation.z = a.armR.rotation.z = 0; a.head.rotation.x = 0;
+  a.armL.rotation.z = a.armR.rotation.z = 0; a.head.rotation.x = 0; if (a.legL) a.legL.rotation.z = a.legR.rotation.z = 0; // 🐸 평영 다리 벌림 되돌리기
   let prop = null, hop = 0, crouch = 0;
   if (ac && moving > 0.3 && !ACT_KEEP.has(ac.k)) { playAct(a, null); if (a === player.avatar && mtn.view) mtn.view = null; }
   else if (ac) {
@@ -4500,6 +4500,7 @@ function sendPresence(time) {
   const p = player.pos;
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
+  if (swimStMine()) d.ss = swimStMine(); // 🏊 1029b 고른 수영 동작
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
@@ -14496,6 +14497,14 @@ function openWardrobe() {
       });
       box.append(grid);
     }
+    { const cur = swimStMine(); box.append(el2('h3', 'lp-sec', `🏊 수영 동작 · 지금: ${SWIM_ST[cur].icon} ${SWIM_ST[cur].name}`), el2('p', 'hint', '🏊 아쿠아센터 물속에서 헤엄칠 때 보여요 (친구들 화면에도)'));
+      const grid = el2('div', 'lp-grid');
+      SWIM_ST.forEach((it, i) => { const own = swimStOwn(i), on = cur === i, card = el2('div', 'lp-card' + (on ? ' done' : ''));
+        card.append(el2('div', 'lp-icon', it.icon), el2('div', 'lp-name', it.name), el2('div', 'lp-sub', own ? (on ? '쓰는 중' : it.d) : `🐚 ${it.price} · ${it.d}`));
+        const b = el2('button', 'btn lp-btn', own ? (on ? '쓰는 중' : '고르기') : '사기'); b.disabled = on || (!own && (bag.shell || 0) < it.price);
+        b.onclick = () => { if (!own) { if ((bag.shell || 0) < it.price) return; bag.shell -= it.price; bag.own['s' + i] = true; playSfx('coin'); toast(`🏊 ${it.icon} ${josa(it.name, '을', '를')} 배웠어요! 물속에서 써 봐요`, 'success'); } bag.swSt = i; saveBag(); refillLife(); };
+        card.append(b); grid.append(card); });
+      box.append(grid); }
   });
 }
 // ---------- 🏗️ 집 키우기 ----------
@@ -17191,7 +17200,7 @@ function swimBegin(o) { // o {D 거리, lane 레인, bots 로봇과, mp 친구 �
   if (bag.ride) { bag.ride = ''; saveBag(); } closeModals(); if (!$('lifePanel').classList.contains('hidden')) closeLife();
   const n = swimNQ(o.D), order = []; while (order.length < n) order.push(...hShuffle(['eng', 'math', 'soc']));
   Object.assign(swim, { on: true, D: o.D, L: o.D / 25 * SWIM_U, cps: swimCps(o.D), lane: o.lane, s: 0, lap: 0, t0: o.t0 ?? performance.now(), fi: 0, wait: false, boost: 0, slow: 0, ok: 0, qs: order.slice(0, n).map(swimQ), last: null, answered: false, mp: o.mp || null });
-  pool.bots.forEach((b) => { Object.assign(b, { s: 0, spd: 2.9 + Math.random() * 0.7, wait: 0, fi: 0, done: 0 }); b.a.g.visible = !!o.bots; });
+  pool.bots.forEach((b) => { Object.assign(b, { s: 0, spd: 2.9 + Math.random() * 0.7, wait: 0, fi: 0, done: 0 }); b.a.swSt = Math.floor(Math.random() * SWIM_ST.length); b.a.g.visible = !!o.bots; });
   playSfx('fanfare'); toast(`🏁 ${o.D}m 출발!${o.D > 25 ? ' 끝 벽에서 자동으로 턴해요.' : ''} 표시선마다 문제 · 맞히면 ⚡ 스퍼트!`, 'info');
 }
 function swimStart(D = 25) {
@@ -17325,14 +17334,27 @@ function slideStep(dt) {
   if (Math.random() < 0.7) burst(new V3(P.x, P.y + 0.1, P.z), [0xFFFFFF, 0x9FE3FF], 2, 1, 0.8, 0.35, -5);
 }
 // ---------- 🏊 헤엄치기 (나 · 친구 · 🤖) ----------
-function swimPose(a, mv, dt) { const t = (a.swT = (a.swT || 0) + dt * (2 + mv * 4)); if (a.armL) { a.armL.rotation.x = -Math.PI + Math.sin(t) * 1.4; a.armR.rotation.x = -Math.PI - Math.sin(t) * 1.4; } }
+/* 🏊 1029b 수영 동작 (옷가게에서 사고 골라요 · 친구 화면에도 보여요: 접속 정보 ss) · 헤엄칠 때 몸을 눕히고, 가만히 있으면 물에 떠서 팔을 저어요 */
+const SWIM_ST = [{ icon: '🏊', name: '자유형', price: 0, d: '팔을 번갈아 크게 돌려요' }, { icon: '🐶', name: '개헤엄', price: 150, d: '고개를 들고 앞에서 파닥파닥' }, { icon: '🐸', name: '평영', price: 300, d: '두 팔을 쫙 벌리고 개구리 발차기' }, { icon: '🌙', name: '배영', price: 400, d: '하늘을 보고 누워서 둥둥' }, { icon: '🦋', name: '접영', price: 600, d: '두 팔을 함께 돌리며 물결처럼 출렁' }];
+const swimStOwn = (i) => !i || isTeacher || !!bag.own['s' + i];
+const swimStMine = () => { const i = bag.swSt | 0; return i > 0 && i < SWIM_ST.length && swimStOwn(i) ? i : 0; };
+function swimPose(a, mv, dt) {
+  if (!a.armL) return; const st = Math.min(SWIM_ST.length - 1, a.swSt | 0), R = a.rig, P2 = Math.PI * 2;
+  const t = (a.swT = ((a.swT || 0) + dt * (1.6 + mv * [5, 9, 3.6, 4.6, 4.2][st])) % (P2 * 50)), s = Math.sin(t), L = a.legL, Rg = a.legR;
+  if (mv < 0.2 && st !== 3) { R.rotation.set(0.15, 0, 0); a.armL.rotation.x = a.armR.rotation.x = -0.4; a.armL.rotation.z = -(0.7 + 0.25 * s); a.armR.rotation.z = 0.7 + 0.25 * s; if (L) { L.rotation.x = 0.3 * s; Rg.rotation.x = -0.3 * s; } return; } // 가만히: 물에 떠서 팔 젓기
+  if (st === 1) { R.rotation.set(0.55, 0, 0); R.position.y = 0.35 + Math.abs(s) * 0.05; a.armL.rotation.x = -1.5 + 0.6 * s; a.armR.rotation.x = -1.5 - 0.6 * s; a.head.rotation.x = -0.4; if (L) { L.rotation.x = 0.5 * Math.sin(t * 2); Rg.rotation.x = -L.rotation.x; } } // 🐶 개헤엄
+  else if (st === 2) { const pull = Math.max(0, s), kick = Math.max(0, -s); R.rotation.set(1.0 + 0.15 * s, 0, 0); R.position.y = 0.7 + 0.14 * kick; a.armL.rotation.x = a.armR.rotation.x = -2.9 + 1.3 * pull; a.armL.rotation.z = -(0.15 + 1.0 * pull); a.armR.rotation.z = 0.15 + 1.0 * pull; a.head.rotation.x = -0.3 * kick; if (L) { L.rotation.x = Rg.rotation.x = 0.5 * kick; L.rotation.z = -0.6 * kick; Rg.rotation.z = 0.6 * kick; } } // 🐸 평영
+  else if (st === 3) { const k = mv < 0.2 ? 0.9 : 1; R.rotation.set(1.35 * k, Math.PI, 0); R.position.y = 0.85; if (mv < 0.2) { a.armL.rotation.x = a.armR.rotation.x = -0.3; a.armL.rotation.z = -(1.2 + 0.2 * s); a.armR.rotation.z = 1.2 + 0.2 * s; } else { a.armL.rotation.x = t % P2; a.armR.rotation.x = (t + Math.PI) % P2; } if (L) { L.rotation.x = 0.3 * Math.sin(t * 3) * Math.min(1, mv * 2); Rg.rotation.x = -L.rotation.x; } } // 🌙 배영
+  else if (st === 4) { R.rotation.set(1.15 + 0.28 * s, 0, 0); R.position.y = 0.75 + 0.18 * s; a.armL.rotation.x = a.armR.rotation.x = t % P2; if (L) L.rotation.x = Rg.rotation.x = 0.45 * Math.sin(t + 1); } // 🦋 접영
+  else { R.rotation.set(1.25, 0, 0); R.position.y = 0.75 + Math.abs(s) * 0.03; a.armL.rotation.x = t % P2; a.armR.rotation.x = (t + Math.PI) % P2; if (L) { L.rotation.x = 0.35 * Math.sin(t * 3); Rg.rotation.x = -L.rotation.x; } } // 🏊 자유형
+}
 function poolTick(dt) { // 매 프레임 (아바타 위치를 다 정한 뒤)
   if (!pool.built) return;
   if (pool.water && roomNow() === 'gym') pool.water.material.opacity = 0.74 + Math.sin(time * 2) * 0.04;
   if (joined) { swimStep(dt); slideStep(dt); swmTick(); }
   const sink = (a, x, z, mv) => { if (!a?.g || !inPool(x, z) || slideW.on && a === player.avatar) return; a.g.position.y = POOL.y - 0.75; swimPose(a, mv, dt); if (mv > 0.2 && Math.random() < 0.25) burst(new V3(x, POOL.y + 0.5, z), [0xFFFFFF, 0x9FE3FF], 2, 0.8, 1, 0.4, -6); };
-  if (joined && player.avatar && player.pos.x > 1560 && player.pos.x < 1600) { const mv = swim.on ? 1 : Math.min(1, Math.hypot((keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y)); sink(player.avatar, player.pos.x, player.pos.z, mv); }
-  for (const r of remotes.values()) if (r.pos.x > 1560 && r.pos.x < 1600) sink(r.a, r.pos.x, r.pos.z, 0.6);
+  if (joined && player.avatar && player.pos.x > 1560 && player.pos.x < 1600) { const mv = swim.on ? 1 : Math.min(1, Math.hypot((keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y)); player.avatar.swSt = swimStMine(); sink(player.avatar, player.pos.x, player.pos.z, mv); }
+  for (const r of remotes.values()) if (r.pos.x > 1560 && r.pos.x < 1600) { if (r.a) r.a.swSt = Math.min(SWIM_ST.length - 1, Math.max(0, r.target?.ss | 0)); sink(r.a, r.pos.x, r.pos.z, 0.6); }
 }
 /* 🧱 1028p 투명 벽 찾기: 지금 서 있는 곳 둘레 25걸음 안의 부딪히는 상자(colliders)를 빨간 선 + 이름으로 20초 */
 function showWalls() {
@@ -17780,6 +17802,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1029b', d: '10월 29일', items: ['🏊 옷가게에서 수영 동작을 팔아요: 자유형(기본) · 🐶 개헤엄 · 🐸 평영 · 🌙 배영 · 🦋 접영 — 고른 동작은 친구 화면에도 보여요', '🏊 헤엄칠 때 몸을 눕혀서 진짜 수영처럼, 가만히 있으면 물에 떠서 팔을 저어요'] },
   { id: '1029a', d: '10월 29일', items: ['👕 옷가게에 수영 꾸미기: 수영모 3종(모자 칸) · 래쉬가드 5종(등·옷 칸, 긴소매 + 수영 레깅스)', '🏁 수영 경주 거리 고르기: 25m · 50m(한 번 왕복) · 100m(두 번 왕복), 끝 벽에서 자동으로 턴', '👫 친구와 수영 대결: 출발대에서 대결을 열면 친구들이 레인을 골라 들어와요', '🏊 릴레이: 팀(레인)마다 최대 4명 · 한 사람 50m 왕복 · 앞 친구가 도착하면 다음 친구 출발'] },
   { id: '1028r', d: '10월 28일', items: ['🚶 캐릭터가 한 줄로만 걷고 앞뒤(위아래)로는 못 움직이던 문제를 고쳤어요', '🛠️ 벽화 그림 갱신 · 펫 점프 · 펫 배틀 체력 색 · 영어 문장 "다음" 버튼 · 독서 기록 개수 제한도 바로잡았어요'] },
   { id: '1028q', d: '10월 28일', items: ['🚶 광장 감사 게시판·미션 게시판 아래가 투명 벽처럼 막히던 문제를 고쳤어요 (이제 게시판 아래로 지나갈 수 있어요)'] },
