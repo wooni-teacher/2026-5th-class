@@ -9118,7 +9118,21 @@ for (const [id, [n, t]] of Object.entries(PET)) if (CRITTER[id]) Object.assign(C
 const PET_RARE = { r1: { icon: '🦋', name: '무지개나비', t: 'wind', kind: 'wing', col: 0xC89AF0 }, r2: { icon: '🐉', name: '황금용', t: 'fire', kind: 'koi', col: 0xFFC93C }, r3: { icon: '🐢', name: '수정거북', t: 'water', kind: 'turtle', col: 0x8FE0F0 },
   r4: { icon: '🪲', name: '번개대왕', t: 'elec', kind: 'stag', col: 0xFFE066 }, r5: { icon: '✨', name: '숲요정', t: 'grass', kind: 'firefly', col: 0x7CF0A0 }, r6: { icon: '🐜', name: '바위장군', t: 'earth', kind: 'ant', col: 0xB0763A } };
 for (const [id, r] of Object.entries(PET_RARE)) { CRITTER[id] = { id, name: r.name, icon: r.icon, price: 150, col: r.col, pet: r.t, rare: true }; PET[id] = [r.name, r.t]; }
-const isRare = (id) => !!PET_RARE[id];
+// 🤿 1031c 바다 펫: 바닷속 탐험에서 관찰 퀴즈를 맞힌 생물만 데려와요 (펫 센터·알에서는 안 나와요)
+const SEA_PETS = {
+  s1: { from: 'clown', icon: '🐠', name: '흰동이', t: 'water', kind: 'gold', col: 0xFF7A1A, pr: 60 },
+  s2: { from: 'turtle', icon: '🐢', name: '꼬북파도', t: 'earth', kind: 'turtle', col: 0x5E8A3A, pr: 70 },
+  s3: { from: 'horse', icon: '🐴', name: '해마돌이', t: 'water', kind: 'eel', col: 0xF2C230, pr: 60 },
+  s4: { from: 'dolph', icon: '🐬', name: '돌핀', t: 'wind', kind: 'koi', col: 0x8FA6B8, pr: 80 },
+  s5: { from: 'shark', icon: '🦈', name: '샤크', t: 'water', kind: 'fish', col: 0x6E7F8E, pr: 90 },
+  s6: { from: 'crab', icon: '🦀', name: '집게왕', t: 'earth', kind: 'stag', col: 0xE2384A, pr: 60 },
+  s7: { from: 'ray', icon: '🫓', name: '찌릿가오리', t: 'elec', kind: 'flat', col: 0x9A7A5A, pr: 70 },
+  s8: { from: 'star', icon: '⭐', name: '별돌이', t: 'fire', kind: 'flat', col: 0xFF8A3C, pr: 50 },
+  s9: { from: 'whale', icon: '🐋', name: '아기고래', t: 'water', kind: 'koi', col: 0x4E6E8E, pr: 120 },
+};
+for (const [id, r] of Object.entries(SEA_PETS)) { CRITTER[id] = { id, name: r.name, icon: r.icon, price: r.pr, col: r.col, pet: r.t, rare: true, sea: r.from }; PET[id] = [r.name, r.t]; }
+const SEA_PET_OF = Object.fromEntries(Object.entries(SEA_PETS).map(([id, r]) => [r.from, id]));
+const isRare = (id) => !!PET_RARE[id] || !!SEA_PETS[id];
 const PET_IDS = Object.keys(PET);
 
 const MATS = { branch: { icon: '🪵', name: '나뭇가지', price: 5 }, stone: { icon: '🪨', name: '돌', price: 5 }, fruit: { icon: '🍎', name: '과일', price: 10 } };
@@ -17570,6 +17584,13 @@ function reefOpen(id) {
     Q.o.forEach((o, j) => { const b = el2('button', 'btn', o); b.style.cssText = `text-align:left;font-size:16px;background:${st.pick < 0 ? '#fff' : j === Q.a ? '#BDE8B0' : j === st.pick ? '#F6C9C0' : '#fff'}`; b.disabled = st.pick >= 0;
       b.onclick = () => { if (st.pick >= 0) return; st.pick = j; const ok = j === Q.a; playSfx(ok ? 'right' : 'wrong'); st.sh = ok ? reefReward(id) : '🐢 아쉬워요! 설명을 다시 읽고 또 도전해요'; refillLife(); }; g.append(b); });
     box.append(g); if (st.sh) box.append(el2('p', 'hint', st.sh));
+    { const pid = SEA_PET_OF[id]; if (pid) { const P = SEA_PETS[pid], own = !!bag.pets[pid], found = !!bag.reefDex?.[id] || isTeacher, cost = 60, d = el2('div', ''); d.style.cssText = 'background:#FFF3C8;border-radius:12px;padding:8px 10px;margin-top:8px';
+      d.append(el2('b', '', `🐾 바다 펫: ${P.icon} ${P.name} (${PT[P.t]?.i || ''}${PT[P.t]?.n || ''} 속성)`));
+      if (own) d.append(el2('div', 'hint', '✅ 내 펫이에요 · 🩺 펫 센터에서 팀에 넣고 배틀 · 동료 펫으로 데리고 다녀요'));
+      else if (!found) d.append(el2('div', 'hint', '관찰 퀴즈를 맞히면 펫으로 데려올 수 있어요'));
+      else { const b = el2('button', 'btn', isTeacher ? '🐾 펫으로 데려오기' : `🐾 펫으로 데려오기 (🐚 ${cost})`); b.style.cssText = 'background:#FFD23C;margin-top:4px'; b.disabled = !isTeacher && (bag.shell || 0) < cost;
+        b.onclick = () => { if (bag.pets[pid]) return; if (!isTeacher) { if ((bag.shell || 0) < cost) return; bag.shell -= cost; } bag.pets[pid] = petNew(pid); if (bag.pteam.length < PB_TEAM) bag.pteam.push(pid); saveBag(); renderCoinChip(); playSfx('fanfare'); burst(player.pos.clone().setY(2), [0x9FE3FF, 0xFFFFFF, 0xFFE066], 40, 4, 2); toast(`🐾 ${P.icon} ${P.name}이(가) 내 바다 펫이 됐어요! 펫 센터에서 팀을 정해요`, 'success'); refillLife(); };
+        d.append(b); } box.append(d); } }
     const n = Object.keys(bag.reefDex || {}).filter(k => REEF_I[k]).length; box.append(el2('p', 'hint', `🤿 바다 도감 ${n}/${REEF_ANIMALS.length}${n >= REEF_ANIMALS.length ? ' · 🎉 모두 찾았어요!' : ''}`));
   });
 }
@@ -18039,6 +18060,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031c', d: '10월 31일', items: ['🐾 바다 펫 9가지! 바닷속 탐험에서 관찰 퀴즈를 맞힌 생물(흰동가리·바다거북·해마·돌고래·상어·꽃게·가오리·불가사리·대왕고래)을 🐚60에 펫으로 데려와요 · 배틀 · 동료 펫으로 함께 다녀요'] },
   { id: '1031b', d: '10월 31일', items: ['🤿 바닷속 탐험! 바닷가 선착장 끝 다이빙 부표에서 잠수해요 · 산호초를 헤엄치며 바다 생물 15가지를 관찰하고 과학 상식 퀴즈 (🐚 · 📚 독서력)', '📖 바다 도감 15가지를 다 모으면 🐚 100 · 📋 오늘의 할 일에 바닷속 미션'] },
   { id: '1031a', d: '10월 31일', items: ['🧹 바다 정리: 🚤 보트 경주와 🏆 모둠 모래성 대회를 뺐어요 (🏰 우리 반 모래성은 그대로)'] },
   { id: '1029k', d: '10월 29일', items: ['🔗 기기 연결 코드: 🎒 가방 → "다른 기기로 옮기기"에서 6자리 숫자를 받아, 다른 기기 첫 화면에 넣고 들어가면 그 계정(집·가방) 그대로 이어져요 · 한 번 연결한 기기는 계속 그 계정'] },
@@ -19967,6 +19989,7 @@ function pbOpenBattle(B, mode, me) {
 const PET_ART = {}, PET_KIND = { b1: 'wing', b2: 'wing', b3: 'lady', b4: 'bee', b5: 'cicada', b6: 'stag', b7: 'firefly', b8: 'cricket', b9: 'snail', b10: 'ant', f2: 'gold', f5: 'eel', f6: 'cat', f10: 'tad', f14: 'flat', f15: 'octo', f16: 'jelly', h1: 'dfly', h2: 'cricket', h3: 'koi', h4: 'turtle' };
 const PET_COL = { b10: 0x8A5A3A, f6: 0x7A7A68, f8: 0x4A5A70, f5: 0xA8905A, f14: 0xB8A07A, f4: 0x9AD0B8, f9: 0xBFE6F2, f1: 0xC8A86A, f3: 0x8FB8D8, f11: 0x7FB0D0, f12: 0x4A8AC8, b8: 0xA07A4A, b5: 0x8A9A5A, h4: 0x6A8A48, b9: 0xD8A87A, f10: 0x5A6A48, f16: 0xC8D8FF };
 for (const [id, r] of Object.entries(PET_RARE)) { PET_KIND[id] = r.kind; PET_COL[id] = r.col; } // 🥚 희귀 펫 모양·색
+for (const [id, r] of Object.entries(SEA_PETS)) { PET_KIND[id] = r.kind; PET_COL[id] = r.col; } // 🤿 바다 펫 모양·색
 function petArt(id) {
   if (PET_ART[id]) return PET_ART[id];
   const S = 256, cv = document.createElement('canvas'); cv.width = cv.height = S; const x = cv.getContext('2d');
