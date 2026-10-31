@@ -720,6 +720,44 @@
   .hq-opt { background: #fff; font-size: 17px; min-height: 48px; word-break: keep-all; }
   .hq-opt.no { background: #F3D6D2; text-decoration: line-through; opacity: .7; }
   #sgHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(250px, 46vw); z-index: 3; font-size: 14px; } /* 1029j 오른쪽으로 */
+  /* ⚓ 1031e 한산도대첩 */
+  #hsHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(270px, 48vw); z-index: 3; font-size: 14px; line-height: 1.45; }
+  #hsAct { position: fixed; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(150px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; align-items: flex-end; z-index: 4; }
+  #hsAct #hsFireBtn, #hsAct #hsDrumBtn { width: 76px; height: 76px; border-radius: 50%; font-size: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; background: #FFD23C; }
+  #hsAct #hsDrumBtn { background: #FFB4A0; }
+  #hsAct small { font-size: 11px; font-weight: 800; }
+  #hsJoin { position: fixed; left: 50%; transform: translateX(-50%); top: calc(122px + var(--safe-top)); z-index: 5; background: #2F4E7E; color: #fff; font-size: 17px; box-shadow: 0 4px 0 #1A2E50; animation: hsiPulse 1.6s ease-in-out infinite; }
+  #hsIntro { position: fixed; inset: 0; z-index: 80; pointer-events: none; font-family: inherit; }
+  #hsIntro.hidden { display: none; }
+  body.hs-cine > *:not(#hsIntro):not(#scene):not(script):not(style) { visibility: hidden !important; }
+  #hsIntro .hsi-stage { position: absolute; inset: 0; overflow: hidden; background: #1A1410; }
+  #hsIntro.cine .hsi-stage { background: transparent; }
+  #hsIntro.cine::before, #hsIntro.cine::after { content: ''; position: absolute; left: 0; right: 0; height: 9vh; background: #000; }
+  #hsIntro.cine::before { top: 0; } #hsIntro.cine::after { bottom: 0; }
+  #hsIntro .hsi-2d { position: absolute; inset: 0; overflow: hidden; }
+  #hsIntro .hsi-cap { position: absolute; left: 50%; bottom: 11vh; transform: translateX(-50%); width: min(920px, 92vw); background: rgba(20, 16, 12, .8); color: #fff; border-radius: 18px; padding: 12px 20px; text-align: center; z-index: 2; animation: hsiIn .7s ease-out; }
+  #hsIntro .hsi-cap b { display: block; font-size: clamp(20px, 3.2vw, 36px); color: #FFE08A; }
+  #hsIntro .hsi-cap p { margin: 6px 0 0; font-size: clamp(15px, 2.2vw, 26px); line-height: 1.55; }
+  #hsIntro.tv .hsi-cap p { font-size: clamp(20px, 3vw, 40px); }
+  #hsIntro.tv .hsi-cap b { font-size: clamp(26px, 4vw, 52px); }
+  #hsIntro .hsi-top { position: absolute; top: calc(10px + var(--safe-top)); right: 12px; display: flex; gap: 8px; z-index: 3; pointer-events: auto; }
+  #hsIntro .hsi-bar { position: absolute; left: 0; bottom: 0; height: 6px; background: #FFD23C; z-index: 3; transition: width .3s linear; }
+  #hsIntro .hsi-sun { position: absolute; left: 62%; top: 14%; width: 15vmin; height: 15vmin; border-radius: 50%; background: #FFB347; box-shadow: 0 0 60px #FFC870; animation: hsiSun 9s ease-out forwards; }
+  #hsIntro .hsi-emo { position: absolute; font-size: 9vmin; animation: hsiSway 2.4s ease-in-out infinite; transform-origin: bottom center; }
+  #hsIntro .hsi-year { position: absolute; left: 8%; top: 10%; font-size: 14vmin; font-weight: 900; color: rgba(90, 50, 20, .35); letter-spacing: 4px; animation: hsiIn 2s ease-out; }
+  #hsIntro .hsi-march { position: absolute; left: 0; bottom: 22%; white-space: nowrap; font-size: 6vmin; animation: hsiMarch 9s linear forwards; }
+  #hsIntro .hsi-dash { stroke-dasharray: 400; stroke-dashoffset: 400; animation: hsiDash 3s ease-in-out forwards; }
+  #hsIntro .hsi-pop { opacity: 0; animation: hsiPop .6s ease-out forwards; }
+  #hsIntro .hsi-name { position: absolute; left: 6%; top: 12%; font-size: 9vmin; font-weight: 900; color: #1F4E82; text-shadow: 0 3px 0 #fff; animation: hsiIn 1.2s ease-out; }
+  @keyframes hsiIn { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  #hsIntro .hsi-year, #hsIntro .hsi-name { animation-name: hsiFade; }
+  @keyframes hsiFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes hsiSun { from { transform: translateY(14vh); } to { transform: translateY(0); } }
+  @keyframes hsiSway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  @keyframes hsiMarch { from { transform: translateX(-60%); } to { transform: translateX(10%); } }
+  @keyframes hsiDash { to { stroke-dashoffset: 0; } }
+  @keyframes hsiPop { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: scale(1); } }
+  @keyframes hsiPulse { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
   #sgNats { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
   #sgInfo, #sgMine { margin-top: 4px; }
   .sg-nat { position: relative; padding: 3px 8px 8px; border-radius: 10px; background: #fff; font-size: 14px; box-shadow: inset 0 0 0 2px var(--c); overflow: hidden; white-space: nowrap; }
@@ -1491,6 +1529,11 @@
     <p class="hint">학생들이 머리 위 말풍선으로 짧게(30자) 이야기해요. 나쁜 말은 막고, 대화는 저장하지 않아요 (한 사람당 마지막 한 줄만 1분 동안 있다가 저절로 지워져요). 수업 중에는 꺼 두세요.</p>
     <div id="tpChat"></div>
 
+    <h3>⚓ 한산도대첩 (판옥선 협동 해전 · 1592)</h3>
+    <p class="hint" id="tpHsNow"></p>
+    <p class="hint">판옥선 8척에 4명씩(🧭 선장 · 🔥 좌포 · 🔥 우포 · 🥁 북) 타고, 컴퓨터가 움직이는 왜선과 싸우는 협동전이에요. ① 꾀어내기 → ② 학익진 → ③ 총공격 (6~8분). 왜선은 이 기기(선생님)가 움직이니 끝날 때까지 켜 두세요.</p>
+    <p class="hint">순서: ⚓ 바다 열기 → 학생들이 판옥선에 타기 → 🎬 시작 영상(모두 화면에 같은 장면) 또는 📺 TV 영상(이 기기 · 내레이션) → ⚔️ 전투 시작</p>
+    <div class="row-center wrap"><button class="btn" id="tpHsOpen" type="button" style="background:#BFE0FF">⚓ 바다 열기</button><button class="btn" id="tpHsIntro" type="button" style="background:#fff">🎬 모두에게 시작 영상</button><button class="btn" id="tpHsTv" type="button" style="background:#fff">📺 TV로 영상 틀기 (내레이션)</button><button class="btn" id="tpHsStart" type="button" style="background:#FFD23C">⚔️ 전투 시작</button><button class="btn" id="tpHsEnd" type="button" style="background:#fff">🏁 끝내기</button><button class="btn" id="tpHsClose" type="button" style="background:#fff">🧹 닫기</button><button class="btn" id="tpHsGo" type="button" style="background:#fff">🚢 바다로 가기</button></div>
     <h3>🙈 변신 숨바꼭질 (마을을 골라요)</h3>
     <p class="hint">마을을 고르고 참가자를 모은 뒤 시작하면, 참가자가 모두 그 마을로 옮겨지고 술래를 뽑아요. 숨기 40초 → 찾기 3분. 숨는 사람은 그 마을에 어울리는 물건으로 변신하고, 그 마을 울타리 안에서만 숨어요.</p>
     <div class="row-center wrap"><label style="font-size:16px">🗺️ 숨바꼭질 마을 <select id="tpHideV" class="tinput" style="width:auto"><option value="main">🏫 메인 마을</option><option value="hv">🏯 역사 마을</option><option value="ev">🗽 영어 마을</option><option value="math">⛏️ 수학 마을</option><option value="field">🏡 들판 마을 (예전 우리 집 마을)</option></select></label></div>
@@ -2162,7 +2205,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, hs: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2198,6 +2241,7 @@ function normalize(v) {
     nick: toObj(v.nick), idea: plainObj(v.idea), badm: Object.fromEntries(['c0', 'c1'].filter(k => plainObj(v.badm)[k]?.s).map(k => [k, v.badm[k]])), eng: toObj(v.eng),
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
+    hs: v.hs && typeof v.hs === 'object' && v.hs.on ? { ...v.hs, r: String(v.hs.r || ''), ph: String(v.hs.ph || 'lobby'), t: +v.hs.t || 0, e: String(v.hs.e || ''), hl: toObj(v.hs.hl), ko: toObj(v.hs.ko), fb: +v.hs.fb || 0, fu: +v.hs.fu || 0, sunk: v.hs.sunk | 0, win: v.hs.win | 0 } : null, // ⚓ 1031e
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {}, fall: toObj(v.siege.fall), cc: toObj(v.siege.cc), kd: toObj(v.siege.kd) } : null,
     roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
     emo: Object.fromEntries(Object.entries(plainObj(v.emo)).filter(([k, x]) => /^[A-Za-z0-9_-]{3,60}$/.test(k) && x && typeof x.p === 'string' && /^[0-8]{144}$/.test(x.p)).slice(0, 200).map(([k, x]) => [k, { p: x.p, ok: x.ok === true, nm: typeof x.nm === 'string' ? x.nm.slice(0, 12) : '', at: +x.at || 0 }])),
@@ -4375,7 +4419,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on || hsW?.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -4403,7 +4447,7 @@ function updatePlayer(dt) {
       }
     }
   }
-  const g = sea.on || sail.on ? BOAT_Y : groundAt(p); // 🚤⛵ 배는 물 위
+  const g = sea.on || sail.on ? BOAT_Y : hsW?.on ? HS_DECK : groundAt(p); // 🚤⛵ 배는 물 위 · ⚓ 판옥선 갑판
   if (ny > g && player.onGround && player.vy <= 0 && ny - g < 0.7 && p.z < -60.4) ny = g; // 산비탈을 내려갈 때 땅에 붙어 걸어요
   if (ny <= g) { ny = g; player.vy = 0; player.onGround = true; } else player.onGround = false;
   p.y = ny;
@@ -4444,6 +4488,7 @@ function updateCamera(dt) {
       camera.lookAt(look); return;
     }
   }
+  if (hsCamera(dt)) return; // 🎬 1031e 한산도 시작 영상
   if (spec.on) { specCamera(dt); return; } // 👁️ 관전 모드: 하늘에서
   if (bdmCamera(dt)) return; // 🏸 배드민턴: 1인칭
   const t = player.pos.clone().add(new V3(0, 1.6, 0));
@@ -4592,6 +4637,7 @@ function sendPresence(time) {
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (swimStMine()) d.ss = swimStMine(); // 🏊 1029b 고른 수영 동작
   if (myMot) d.mo = myMot; // 💃 1029e 사는 몸짓
+  if (hsW?.on) d.hs = hsPresCode(); { const hd = hsW ? hsHdCode() : ''; if (hd) d.hd = hd; } // ⚓ 1031e 판옥선 자리 · 맞힌 왜선
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
@@ -5235,6 +5281,7 @@ addEventListener('keydown', e => {
   if (openDialog && k !== 'escape') return; // 창 안에서는 Tab·Enter·스페이스가 버튼을 누르게 (캐릭터는 멈춤)
   if (k === 'b' && !e.repeat && joined && !placing.active) { e.preventDefault(); openMissionHub(); return; }
   keys[k] = true;
+  if (!e.repeat && hsW?.on) { if (k === 'f') hsFire(); else if (k === 'q') hsDrum(); } // ⚓ 1031e 총통 · 북
   if (k === ' ') { e.preventDefault(); jumpBuffer = 0.15; }
   if (k === 'e' && !e.repeat) { if (placing.active) confirmPlace(); else triggerPrompt(); }
   if (k === 'r' && !e.repeat && placing.active) rotatePlacing();
@@ -7467,6 +7514,7 @@ function canStand(x, z) {
   if (x >= -L && x <= L && z >= -L && z <= L) return true;
   if (boardW.on) return true; // 👫 친구 배에 탔어요 (자리는 선장 배가 정해요)
   if (sea.on || sail.on) return inWater(x, z); // 🚤⛵ 배를 타면 바다 위만 (섬·모래사장에는 못 올라가요)
+  if (typeof hsInWalk === 'function' && hsInWalk(x, z)) return true; // ⚓ 1031e 한산도 바다 (배 위 · 선착장)
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inMineCave(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
@@ -9002,7 +9050,7 @@ function buildEnv() {
   env.fall.visible = false; scene.add(env.fall);
 }
 function applyEnv(force = false) {
-  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', rf = typeof roomNow === 'function' && joined && roomNow() === 'reef', key = season + night + mk + (rf ? 'reef' : ''); // 🤿 1031d 바닷속은 바다 빛 // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
+  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', rf = typeof roomNow === 'function' && joined && roomNow() === 'reef', key = season + night + mk + (rf ? 'reef' : '') + (hsEnvOn() ? 'hs' : ''); // 🤿 1031d 바닷속은 바다 빛 // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
   if (!force && key === env.key) return;
   const first = !env.key, snChanged = env.sn !== season + night; env.key = key; env.sn = season + night;
   scene.fog.near = 90; scene.fog.far = 240;
@@ -9029,6 +9077,7 @@ function applyEnv(force = false) {
   if (!first && joined && snChanged) toast(`${SEASONS[season]} · ${night ? '🌙 밤' : '☀️ 낮'} 마을이에요`, 'info');
   if (mk) mcEnv(mk);
   if (rf) reefEnv();
+  if (hsEnvOn()) hsEnv(); // ⚓ 1031e 남해 바다
 }
 function updateEnv(dt) {
   env.t -= dt; if (env.t <= 0) { env.t = 5; applyEnv(); } // 5초마다 시각 확인
@@ -12054,7 +12103,7 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1285, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 };
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1285, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 }, MAPB_HS = { x0: 2318, x1: 2562, z0: -378, z1: -150, s: 1 };
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
@@ -12064,6 +12113,8 @@ function drawMapBase() {
   if (MAPB === MAPB_MATH) return drawMathMapBase();
   if (MAPB === MAPB_EV) return drawEvMapBase();
   if (MAPB === MAPB_SG) return drawSgMapBase();
+  if (MAPB === MAPB_HS) { const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s, cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.fillStyle = '#5AA2DA'; c.fillRect(0, 0, W, H); c.fillStyle = '#7DBB5E'; // ⚓ 1031e 한산도 바다
+    for (const [a, b, x1, z1] of HS_LAND) c.fillRect(mapX(a), mapZ(b), (x1 - a) * MAPB.s, (z1 - b) * MAPB.s); for (const [ix, iz, ir] of HS_ISLES) { c.beginPath(); c.arc(mapX(ix), mapZ(iz), ir * MAPB.s, 0, Math.PI * 2); c.fill(); } c.fillStyle = '#B07C50'; c.fillRect(mapX(HS.cx - 15), mapZ(HS.z1 - 9), 30 * MAPB.s, 9 * MAPB.s); mapUI.key = mapKey(); return; }
   if (MAPB === MAPB_TR) { const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s, cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.fillStyle = '#8ACB64'; c.fillRect(0, 0, W, H); c.fillStyle = '#CDB98E'; c.fillRect(mapX(TR.x0), mapZ(TR.z0), (TR.x1 - TR.x0) * MAPB.s, (TR.z1 - TR.z0) * MAPB.s); mapUI.key = mapKey(); return; }
   const W = (MAPB.x1 - MAPB.x0) * MAPB.s, H = (MAPB.z1 - MAPB.z0) * MAPB.s;
   const cv = mapUI.base || (mapUI.base = document.createElement('canvas')); cv.width = W; cv.height = H;
@@ -12109,7 +12160,7 @@ function drawMapBase() {
   for (const k of ['museum', 'shop']) rect(LIFE_POS[k][0] - 4, LIFE_POS[k][1] - 3, LIFE_POS[k][0] + 4, LIFE_POS[k][1] + 3, k === 'shop' ? '#F5A04A' : '#C9B8E8');
   mapUI.key = mapKey();
 }
-const MAP_LABELS = () => MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ['🔔', EG_HALL.x, EG_HALL.z], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ...MINES.map(m => ['📘', m.x, MS.hz]), ['🧮', MS.cw[0], MS.cw[1]], ['🏟️', MS.gym[0], MS.gym[1]], ['📋', MV.cx - 6, 10.5], ['🏃', MR_HALL.x, MR_HALL.z]] : MAPB === MAPB_HV ? [
+const MAP_LABELS = () => MAPB === MAPB_HS ? [['⛰️', HS.cx, HS.z0 + 30], ['🏝️', HS_ISLES[0][0], HS_ISLES[0][1]], ['⚓', HS.cx, HS.z1 - 5], ...((hsW?.ens || []).filter(e => e.hp > 0).length ? (() => { const c = hsW.ens.filter(e => e.hp > 0); return [['⛵', c.reduce((a, e) => a + e.mx, 0) / c.length, c.reduce((a, e) => a + e.mz, 0) / c.length]]; })() : [])] : MAPB === MAPB_TR ? [['🌀', TR.cx, TR.z1 - 4], ...Object.entries(TR_ST).map(([k, st]) => [st.icon || SG_ROLES[k].icon, st.x, st.z])] : MAPB === MAPB_SG ? [...(S.siege ? [...Array.from({ length: S.siege.n }, (_, i) => { const ca = castleAt(i + 1); return [sgSet().nat[i].icon, ca.x, ca.z]; })] : []), ...SG_SITES.map(st => [st.icon, st.x, st.z]), ...sgKingMarks()] : MAPB === MAPB_EV ? [['🚌', EV.bus[0], EV.bus[1] + 3], ['🌀', EV.x0 + 16, -7.5], ['🗽', EV.cx, 0], ['🔔', EG_HALL.x, EG_HALL.z], ...EV_Z.map(Z => [Z.icon, Z.x, Z.z])] : MAPB === MAPB_MATH ? [['🚃', MV.station[0], MV.station[1]], ['🌀', MV.station[0] + 9, -6.5], ...MINES.map(m => [m.icon, m.x, MV.z0 + 3]), ...MINES.map(m => ['📘', m.x, MS.hz]), ['🧮', MS.cw[0], MS.cw[1]], ['🏟️', MS.gym[0], MS.gym[1]], ['📋', MV.cx - 6, 10.5], ['🏃', MR_HALL.x, MR_HALL.z]] : MAPB === MAPB_HV ? [
   ['⛵', HV.dock[0] + 2, 0], ['🌀', HV.x0 + 11, -8.5], ...HV_SITES.map(st => [st.icon, ...st.pos]), ...HIST_ERAS.map(E => [E.icon, E.x, E.z]), ['🐯', 505, -13], ['🐿️', 540, -9], ['🪣', 527, -9], ['🏯', 486, -36],
 ] : [['🌀', PORTAL.x, PORTAL.z], ['⛵', BEACH.pierX1 - 1, BEACH.pierZ], ['🚃', MV.back[0], MV.back[1]], ['🚌', EV.stop[0], EV.stop[1]], 
   ['🏫', 0, -42], ['⛲', 0, 0], ['📝', 10, 5], ...CFG.SITES.map(st => [st.icon, ...st.pos]), ['🏪', ...LIFE_POS.shop], ['🏛️', ...LIFE_POS.museum], ['🎣', LIFE_POS.pond[0], LIFE_POS.pond[1]],
@@ -12237,7 +12288,7 @@ function updateMap(dt) {
   if (!joined) return;
   if (seekerNoMap()) { $('miniBtn').classList.add('hidden'); if (!$('mapPanel').classList.contains('hidden')) closeMap(); return; }
   mapUI.t -= dt; if (mapUI.t > 0) return; mapUI.t = 0.15;
-  const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : evRegion() ? MAPB_EV : siegeRegion() ? MAPB_SG : trRegion() ? MAPB_TR : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
+  const want = hvRegion() ? MAPB_HV : mathRegion() ? MAPB_MATH : evRegion() ? MAPB_EV : siegeRegion() ? MAPB_SG : trRegion() ? MAPB_TR : (typeof hsRegion === 'function' && hsRegion()) ? MAPB_HS : MAPB_MAIN; if (MAPB !== want) { MAPB = want; mapUI.base = null; }
   if (!mapUI.base || mapUI.key !== mapKey()) drawMapBase();
   const inCls = classRegion() || arenaRegion() || homeRegion() || bldRegion(); // 교실·운동장·집 안·건물 안에서는 작은 지도를 숨겨요
   $('miniBtn').classList.toggle('hidden', !mapUI.show || placing.active || inCls);
@@ -14126,7 +14177,7 @@ const TP_LAYOUT = {
   class: [/수업 도구/, /수업 마무리/, /🗓️ 시즌/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
-  play: [/성 공방전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
+  play: [/성 공방전/, /한산도대첩/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
   setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
 function initTpTabs() {
@@ -18073,6 +18124,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031e', d: '10월 31일', items: ['⚓ 한산도대첩(1592)! 판옥선 한 척에 4명(🧭 선장 · 🔥 좌포 · 🔥 우포 · 🥁 북)이 함께 타고 왜선과 싸우는 협동 해전 · ① 견내량에서 꾀어내기 → ② 학익진 → ③ 총공격', '🎬 임진왜란 배경부터 한산도 앞바다까지 이어지는 시작 영상 · 📺 선생님 TV 모드는 내레이션', '📝 끝나면 실제 역사 카드와 퀴즈 (🐚 · 🏛️ 사회력)'] },
   { id: '1031d', d: '10월 31일', items: ['🌊 바닷속이 더 넓어졌어요: 수조 벽 대신 끝없이 이어지는 바다 · 깊은 바다 빛과 물안개 · 둘레 바위 언덕과 해초 숲 · 다른 마을이 보이지 않아요'] },
   { id: '1031c', d: '10월 31일', items: ['🐾 바다 펫 9가지! 바닷속 탐험에서 관찰 퀴즈를 맞힌 생물(흰동가리·바다거북·해마·돌고래·상어·꽃게·가오리·불가사리·대왕고래)을 🐚60에 펫으로 데려와요 · 배틀 · 동료 펫으로 함께 다녀요'] },
   { id: '1031b', d: '10월 31일', items: ['🤿 바닷속 탐험! 바닷가 선착장 끝 다이빙 부표에서 잠수해요 · 산호초를 헤엄치며 바다 생물 15가지를 관찰하고 과학 상식 퀴즈 (🐚 · 📚 독서력)', '📖 바다 도감 15가지를 다 모으면 🐚 100 · 📋 오늘의 할 일에 바닷속 미션'] },
@@ -25690,6 +25742,393 @@ function boardRemotes(dt) { // updateRemotes 다음: 배·함께 타는 탈것�
   if (duo) { const t = '👫 함께 타는 중'; if ($('boardDir').textContent !== t) $('boardDir').textContent = t; return; }
   const [N, nd] = isleNear(p), t = nd < 4.5 ? `${N.icon} ${N.n} 옆이에요!` : p.x < 84 ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`; if ($('boardDir').textContent !== t) $('boardDir').textContent = t;
 }
+/* ================= ⚓ 1031e 한산도대첩 (1592) — 판옥선 협동 해전 =================
+   · 따로 떨어진 넓은 바다(x 2318~2562 · z -378~-150). 북쪽 좁은 ⛰️ 견내량에 왜선 함대, 남쪽 ⚓ 통제영 선착장에 판옥선 8척
+   · 판옥선 한 척에 4명: 🧭 선장(배 몰기) · 🔥 좌현 포수 · 🔥 우현 포수 · 🥁 북(빠르게 · 장전 빠르게 · 앞쪽 총통). 빈 자리 총통은 선장이 쏴요
+   · 모두 조선 수군이 되어 컴퓨터 왜선과 싸우는 협동전: ① 꾀어내기 → ② 학익진 → ③ 총공격
+   · 선생님 기기(연습 모드는 내 기기)가 왜선을 움직이고 피해를 계산해요 → state/hs { on, r, ph, t, n, e(왜선 문자열), hl{배: 부서짐}, ko{배: 수리 끝 시각}, fb 학익진 완성률, fu, sunk, win }
+   · 학생은 접속 정보에만 써요: hs "배:자리:북:발사" · hd "판|왜선.맞힌수,…" (따로 저장하는 곳 없음)
+   · 🎬 시작 영상: 모두에게(state/hs ph 'intro' · 같은 시각에 같은 장면) · 📺 TV 모드(선생님 기기만 · 내레이션 소리) */
+var HS = { cx: 2440, cz: -265, x0: 2318, x1: 2562, z0: -378, z1: -150 };
+var hsW = null;
+const HS_DECK = 1.55, HS_SHIPS = 8, HS_HULL = 20, HS_KO = 12000, HS_LURE = 150000, HS_WING = 35000, HS_FIRE = 240000, HS_RANGE = 24;
+const HS_SEATS = [[0, 0], [1.05, 0.9], [-1.05, 0.9], [0, -2.5]]; // [왼쪽, 앞] · 0 선장 · 1 좌현 · 2 우현 · 3 북
+const HS_SEAT_N = ['🧭 선장', '🔥 좌현 포수', '🔥 우현 포수', '🥁 북'];
+const HS_COL = [0xD24A3A, 0x2F6FB5, 0xE0A81C, 0x3FA060, 0x8A4FC8, 0xF08A24, 0x2AA6A0, 0xE05A9A];
+const HS_MOOR = (k) => [HS.cx - 21 + k * 6, HS.z1 - 14.5, Math.PI];
+const HS_WC = [HS.cx, HS.cz - 45], HS_WR = 34; // 🕊️ 학익진: 적이 들어올 자리(가운데)와 반지름
+const HS_SPOT = (k) => { const a = (-72 + k * (144 / 7)) * Math.PI / 180, x = HS_WC[0] + Math.sin(a) * HS_WR, z = HS_WC[1] + Math.cos(a) * HS_WR; return [x, z, Math.atan2(HS_WC[0] - x, HS_WC[1] - z)]; };
+const HS_LAND = [[HS.x0 - 80, HS.z0 - 80, HS.cx - 9, HS.z0 + 48], [HS.cx + 9, HS.z0 - 80, HS.x1 + 80, HS.z0 + 48]]; // ⛰️ 견내량 양쪽 땅 (가운데 18m만 바다)
+const HS_ISLES = [[HS.cx - 62, HS.cz + 50, 22, '🏝️ 한산도'], [HS.cx + 74, HS.cz + 24, 11, ''], [HS.cx + 74, HS.cz - 44, 6, ''], [HS.cx - 76, HS.cz - 34, 7, ''], [HS.cx + 34, HS.cz + 52, 4, ''], [HS.cx - 22, HS.cz + 82, 3.5, '']];
+const HS_ET = { F: { hp: 14, r: 2.6, sp: 3.0, L: 7, n: '대장선' }, B: { hp: 8, r: 2.3, sp: 3.2, L: 6.5, n: '큰 배' }, M: { hp: 5, r: 1.9, sp: 3.8, L: 5, n: '중간 배' }, S: { hp: 3, r: 1.5, sp: 4.4, L: 3.8, n: '작은 배' } };
+const hsEType = (i) => i === 0 ? 'F' : 'BMMS'[i % 4];
+const HS_PH = { lobby: ['⚓ 출전 준비', '판옥선에 타고 바다에서 연습해요. 선생님이 시작하면 전투!'], intro: ['🎬 시작 영상', '곧 전투가 시작돼요'], lure: ['① 꾀어내기', '북쪽 ⛰️ 견내량 입구로 가서 왜선을 맞혀요 → 쫓아오면 남쪽 넓은 바다로 물러나요'], wing: ['② 학익진', '반짝이는 우리 배 자리(동그라미)로! 학의 날개처럼 둥글게 서서 적을 감싸요'], fire: ['③ 총공격', '배 옆구리를 적에게 돌려 총통을 쏴요! 왜선이 붙으면 배가 부서져요'], end: ['🏁 전투 끝', '실제 역사 카드를 확인해요'] };
+const hsPh = () => S.hs?.on ? S.hs.ph || 'lobby' : '';
+const hsHost = () => !!S.hs?.on && (isTeacher || backend?.mode !== 'firebase');
+function hsRegion() { return joined && player.pos.x > HS.x0 - 12 && player.pos.x < HS.x1 + 12 && player.pos.z > HS.z0 - 12 && player.pos.z < HS.z1 + 12; }
+function hsInWalk(x, z) { if (!hsW || !S.hs?.on) return false; if (hsW.on) return x > HS.x0 && x < HS.x1 && z > HS.z0 && z < HS.z1; return Math.abs(x - HS.cx) <= 15.2 && z >= HS.z1 - 9 && z <= HS.z1 - 0.4; }
+function hsEnvOn() { return !!hsW && (hsW.reg || hsW.cine); }
+function hsEnv() { // 🌊 남해 바다 빛: 밝은 낮 · 바다 안개(멀리 다른 마을이 보이지 않게)
+  const sky = pretty.sky?.material.uniforms; if (sky) { sky.top.value.setHex(0x4FA6E8); sky.bottom.value.setHex(0xDCEFFA); }
+  scene.background.setHex(0xD6EAF5); scene.fog.color.setHex(0xD6EAF5); scene.fog.near = 60; scene.fog.far = 210;
+  if (world.hemi) { world.hemi.intensity = 0.8; world.hemi.color.setHex(0xE8F4FF); } if (world.sun) { world.sun.intensity = 2.6; world.sun.color.setHex(0xFFF0D6); }
+  env.stars.visible = false; env.fall.visible = false;
+}
+function hsParse(s) { const m = /^(\d):(\d):(\d+):(\d+)$/.exec(String(s || '')); return m ? { k: +m[1], s: +m[2], b: +m[3], f: +m[4] } : null; }
+const hsPresCode = () => hsW?.on ? `${hsW.k}:${hsW.seat}:${hsW.b % 1000}:${hsW.f % 1000}` : '';
+function hsHdCode() { if (!hsW || !S.hs?.on || hsW.hr !== S.hs.r) return ''; const s = Object.entries(hsW.hits).filter(([, n]) => n > 0).map(([i, n]) => `${i}.${n}`).join(','); return s ? `${String(S.hs.r).slice(0, 12)}|${s}`.slice(0, 400) : ''; }
+function hsParseHd(s) { const [r, b] = String(s || '').split('|'); const o = {}; if (b) for (const x of b.split(',')) { const [i, n] = x.split('.'); if (+n > 0) o[+i] = +n; } return { r, o }; }
+function hsPack(L) { return L.map(e => [Math.round((e.x - HS.cx) * 10), Math.round((e.z - HS.cz) * 10), Math.round(e.h * 100), Math.max(0, Math.ceil(e.hp))].join(',')).join(';'); }
+function hsUnpack(s) { if (!s) return []; return String(s).split(';').map((x, i) => { const v = x.split(',').map(Number); return { x: HS.cx + v[0] / 10, z: HS.cz + v[1] / 10, h: v[2] / 100, hp: v[3], t: hsEType(i) }; }); }
+function hsLayout(n) { const L = []; for (let i = 0; i < n; i++) { const c = i % 4, r = Math.floor(i / 4); L.push({ x: HS.cx + (c - 1.5) * 3.9 + (r % 2) * 0.8, z: HS.z0 + 7 + r * 5.2, h: 0, hp: HS_ET[hsEType(i)].hp, t: hsEType(i) }); } return L; }
+function hsPush(x, z, r) { // 땅·섬·바다 끝에 부딪히면 밀어내요 → [x, z, 부딪힘]
+  let hit = false;
+  for (const [ix, iz, ir] of HS_ISLES) { const dx = x - ix, dz = z - iz, d = Math.hypot(dx, dz), m = ir + 1.4 + r; if (d < m) { x = ix + dx / (d || 1) * m; z = iz + dz / (d || 1) * m; hit = true; } }
+  for (const [a, b, c, d] of HS_LAND) { if (x > a - r && x < c + r && z > b - r && z < d + r) { const opts = [[x - (a - r), 'l'], [(c + r) - x, 'r'], [(d + r) - z, 'f']].sort((p, q) => p[0] - q[0])[0][1]; if (opts === 'l') x = a - r; else if (opts === 'r') x = c + r; else z = d + r; hit = true; } }
+  const nx = clamp(x, HS.x0 + 4 + r, HS.x1 - 4 - r), nz = clamp(z, HS.z0 + 2 + r, HS.z1 - 14); if (nx !== x || nz !== z) hit = true;
+  return [nx, nz, hit];
+}
+
+/* ---------- 🏗️ 바다·땅·섬·선착장 ---------- */
+function hsMakePanok(k) { // 🚢 판옥선: 2층 갑판 · 방패 난간 · 장대(지휘소) · 돛 두 개 · 노 · 총통 구멍
+  const g = new THREE.Group(), o = { solid: false }, col = HS_COL[k % 8];
+  box(g, 3.0, 1.0, 8.2, 0x5C3A22, 0, 0.35, 0, o); box(g, 2.2, 0.8, 1.4, 0x5C3A22, 0, 0.45, 4.6, { solid: false }); box(g, 2.4, 0.8, 1.0, 0x5C3A22, 0, 0.45, -4.4, o); // 아래 배
+  box(g, 3.5, 0.75, 7.2, 0x8A5A34, 0, 1.18, 0, o); // 위 갑판 (판옥)
+  for (const s of [1, -1]) { box(g, 0.12, 0.55, 7.2, 0x6B4226, s * 1.74, 1.82, 0, o); for (let q = 0; q < 4; q++) box(g, 0.06, 0.24, 0.32, 0x1E1A16, s * 1.81, 1.02, -2.4 + q * 1.6, o); for (let q = 0; q < 5; q++) box(g, 0.08, 0.06, 1.9, 0xC89A60, s * 2.3, 0.62, -2.6 + q * 1.3, { solid: false, ry: s * 1.2, rz: s * 0.35 }); }
+  box(g, 3.5, 0.55, 0.12, 0x6B4226, 0, 1.82, 3.56, o); box(g, 3.5, 0.55, 0.12, 0x6B4226, 0, 1.82, -3.56, o);
+  for (const [x, z] of [[-0.9, -1.6], [0.9, -1.6], [-0.9, -3.0], [0.9, -3.0]]) box(g, 0.12, 1.4, 0.12, 0x5C3A22, x, 2.25, z, o); // 장대
+  box(g, 2.4, 0.18, 1.9, 0xB03A2E, 0, 3.0, -2.3, o); box(g, 2.8, 0.1, 2.3, 0x3B2F2A, 0, 3.12, -2.3, o);
+  for (const [z, h] of [[1.6, 6.2], [-0.4, 5.2]]) { cyl(g, 0.09, h, 0x6B4226, 0, 1.55 + h / 2, z, o); box(g, 2.6, h * 0.5, 0.05, 0xEADBB8, 0, 1.55 + h * 0.62, z + 0.08, o); }
+  const fl = new THREE.Group(); fl.position.set(0, 7.9, 1.6); box(fl, 1.2, 0.7, 0.04, col, 0.62, 0, 0, o); g.add(fl); g.userData.flag = fl;
+  g.userData.label = makeLabel(g, [`🚢 ${k + 1}호`], 0.75, 0, 8.9, 0); return g;
+}
+function hsMakeWae(t) { // ⛵ 왜선 (검은 배 · 네모 돛) · 대장선은 높은 깃발
+  const E = HS_ET[t], g = new THREE.Group(), o = { solid: false }, w = E.r * 0.95;
+  box(g, w, 0.9, E.L, 0x2E2A28, 0, 0.35, 0, o); box(g, w * 0.7, 0.7, 1.0, 0x2E2A28, 0, 0.45, E.L / 2 + 0.3, o);
+  if (t === 'F' || t === 'B') { box(g, w * 0.9, 0.9, E.L * 0.5, 0x4A3A30, 0, 1.2, -E.L * 0.12, o); box(g, w * 1.05, 0.15, E.L * 0.55, 0x8A2A22, 0, 1.72, -E.L * 0.12, o); }
+  const mh = t === 'S' ? 2.6 : 4.2; cyl(g, 0.07, mh, 0x5A4632, 0, 0.8 + mh / 2, E.L * 0.12, o); box(g, w * 1.3, mh * 0.55, 0.04, 0xF2EEE2, 0, 0.8 + mh * 0.62, E.L * 0.12 + 0.06, o);
+  for (let q = 0; q < (t === 'S' ? 1 : 3); q++) { cyl(g, 0.03, 1.4, 0x3A2A1A, w * 0.45, 1.6, -E.L * 0.3 + q * 0.8, o); box(g, 0.03, 0.9, 0.3, [0xF2EEE2, 0x2E2A28, 0xC8A050][q % 3], w * 0.45, 1.85, -E.L * 0.3 + q * 0.8 + 0.17, o); }
+  if (t === 'F') { cyl(g, 0.06, 4.0, 0x3A2A1A, 0, 3.6, -E.L * 0.35, o); box(g, 0.05, 2.4, 0.8, 0xD8D2C0, 0, 4.2, -E.L * 0.35 + 0.42, o); mesh(SPH_LO, g, 0.18, 0.18, 0.18, 0xFAC83C, 0, 5.7, -E.L * 0.35, o); }
+  return g;
+}
+function hsBuild() {
+  if (hsW.built) return; hsW.built = true; const g = new THREE.Group(); g.name = 'Hansan'; scene.add(g); hsW.g = g; const o = { solid: false }, { cx, cz, x0, x1, z0, z1 } = HS;
+  box(g, 560, 0.2, 520, 0x3E8FD6, cx, -0.1, cz, o); // 🌊 바다 (안개 너머까지)
+  for (const [a, b, c, d] of HS_LAND) { box(g, c - a, 2.2, d - b, 0x6FAE52, (a + c) / 2, 0.9, (b + d) / 2, o); box(g, c - a + 2, 0.5, d - b + 2, 0xE8D49A, (a + c) / 2, 0.15, (b + d) / 2, o); }
+  for (let q = 0; q < 26; q++) { const s = q % 2 ? 1 : -1, x = cx + s * (16 + (q * 7 % 50)), z = z0 - 10 + (q * 13 % 50), h = 14 + (q * 11 % 22); mesh(CONE, g, 9 + h * 0.4, h, 9 + h * 0.4, [0x4E8E44, 0x5A9A48, 0x447E3C][q % 3], x, h / 2 + 1, z, o); } // ⛰️ 견내량 양쪽 산
+  for (let q = 0; q < 34; q++) { const side = q % 3, t = (q * 37 % 100) / 100, h = 22 + (q * 17 % 26), r = 16 + h * 0.4; const [x, z] = side === 0 ? [x0 - 26, z0 + t * (z1 - z0 + 60)] : side === 1 ? [x1 + 26, z0 + t * (z1 - z0 + 60)] : [x0 + t * (x1 - x0), z1 + 34]; mesh(CONE, g, r, h, r, [0x4E8E44, 0x5A9A48, 0x6A9E50][q % 3], x, h / 2 - 1, z, o); } // 둘레 산 (바다가 끝없이 이어지는 느낌 · 다른 마을이 안 보여요)
+  for (let q = 0; q < 10; q++) mesh(SPH_LO, g, 1.1, 0.5, 0.9, 0x6E6A62, cx + (q % 2 ? 7.2 : -7.2), 0.1, z0 + 6 + q * 4.2, o); // 🪨 견내량 암초
+  for (const [ix, iz, ir, nm] of HS_ISLES) { cyl(g, ir + 1.4, 0.5, 0xE8D49A, ix, 0.1, iz, o); cyl(g, ir, 1.6, 0x6FAE52, ix, 0.8, iz, o); mesh(CONE, g, ir * 0.8, ir * 0.7, ir * 0.8, 0x5A9A48, ix, 1.6 + ir * 0.35, iz, o); for (let q = 0; q < Math.min(8, ir); q++) { const a = q * 2.4, rr = ir * 0.6; mesh(CONE, g, 0.9, 2.6, 0.9, 0x2F6A3A, ix + Math.cos(a) * rr, 2.4 + ir * 0.1, iz + Math.sin(a) * rr, o); } if (nm) makeLabel(g, [nm], 1.6, ix, ir * 0.7 + 4, iz); }
+  makeLabel(g, ['⛰️ 견내량 (좁은 바다)'], 1.8, cx, 9, z0 + 40); makeLabel(g, ['🌊 한산도 앞바다'], 1.6, cx, 7, HS_WC[1] + 10);
+  const dk = new THREE.Group(); g.add(dk); box(dk, 30.4, 0.5, 9, 0xB07C50, cx, 0.95, z1 - 4.5, { surf: 'wood' }); dk.updateMatrixWorld(true); registerSolids(dk, 'hs');
+  for (let q = 0; q < 8; q++) cyl(g, 0.18, 2.2, 0x6B4226, cx - 15 + q * 4.3, 0.2, z1 - 9, o);
+  { const fl = new THREE.Group(); fl.position.set(cx - 13, 1.2, z1 - 3); cyl(fl, 0.1, 6, 0x5C3A22, 0, 3, 0, o); box(fl, 2.2, 1.4, 0.05, 0xD24A3A, 1.15, 5.2, 0, o); g.add(fl); hsW.dkFlag = fl; }
+  signPlane(g, ['⚓ 통제영 선착장', '판옥선 가까이에서 E로 타요 · 한 척에 4명'], 4.2, 1.2, cx + 9, 2.4, z1 - 1.2, { font: 46, pad: 8, fg: '#FFFFFF', bg: '#2F4E7E', stroke: false }).rotation.y = 0;
+  hsW.rings = []; const rg = new THREE.Group(); g.add(rg); hsW.ringG = rg;
+  for (let k = 0; k < HS_SHIPS; k++) { const [x, z] = HS_SPOT(k), m = new THREE.Mesh(new THREE.RingGeometry(3.2, 4.2, 36), new THREE.MeshBasicMaterial({ color: HS_COL[k], transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.12, z); rg.add(m); hsW.rings.push(m); makeLabel(rg, [`${k + 1}호 자리`], 0.9, x, 2.6, z); }
+  rg.visible = false;
+  hsW.it = addInteract({ pos: new V3(0, -99, 0), r: 7, text: () => { const c = hsW.cand; if (c == null) return null; const n = hsCrew(c).length; return [`🚢 판옥선 ${c + 1}호 타기`, n >= 4 ? '자리가 꽉 찼어요' : `${n}/4명 · ${HS_SEAT_N[hsFreeSeat(c)] || ''} 자리`]; }, run: () => hsBoard(hsW.cand) });
+}
+
+/* ---------- 👫 배와 자리 ---------- */
+function hsCrew(k) { const out = []; if (hsW.on && hsW.k === k) out.push([backend.uid, hsW.seat]); for (const [u, r] of remotes) { const p = hsParse(r.target?.hs); if (p && p.k === k) out.push([u, p.s, r, p]); } return out; }
+function hsFreeSeat(k) { const t = new Set(hsCrew(k).filter(([u]) => u !== backend.uid).map(c => c[1])); for (let s = 0; s < 4; s++) if (!t.has(s)) return s; return -1; }
+function hsCapPose(k) { // 선장 자리 [x, z, h] (선장이 없으면 null)
+  if (hsW.on && hsW.k === k && hsW.seat === 0) return [player.pos.x, player.pos.z, player.heading];
+  for (const [, r] of remotes) { const p = hsParse(r.target?.hs); if (p && p.k === k && p.s === 0) return [r.a.g.position.x, r.a.g.position.z, r.a.g.rotation.y]; }
+  return null;
+}
+const hsSeatAt = (P, s) => { const [a, f] = HS_SEATS[s] || HS_SEATS[0], h = P[2]; return [P[0] + a * Math.cos(h) + f * Math.sin(h), P[1] - a * Math.sin(h) + f * Math.cos(h), h]; };
+function hsBoard(k) {
+  if (k == null || hsW.on || !S.hs?.on) return; const s = hsFreeSeat(k); if (s < 0) { toast('🚢 자리가 꽉 찼어요. 다른 판옥선을 골라요', 'warn'); return; }
+  if (bag.ride) { bag.ride = ''; saveBag(); } closeModals();
+  Object.assign(hsW, { on: true, k, seat: s, v: 0, cd: 0, last: null, koSeen: 0 }); hsW.hr = S.hs.r;
+  if (s === 0) { const P = hsW.pose[k] || HS_MOOR(k); player.pos.set(P[0], HS_DECK, P[1]); player.heading = P[2]; camYaw = P[2] + Math.PI; }
+  playSfx('pick'); showBanner(`🚢 판옥선 ${k + 1}호 · ${HS_SEAT_N[s]}`, hsSeatHelp(s), 5000);
+}
+function hsSeatHelp(s) { return s === 0 ? 'WASD·조이스틱으로 배를 몰아요 (A·D 돌기 · W 앞으로) · 빈 자리 총통은 F로 쏴요' : s === 3 ? 'Q·🥁 북을 치면 배가 빨라지고 장전이 빨라져요 · F로 앞쪽 총통' : `F·🔥 버튼으로 배 ${s === 1 ? '왼쪽' : '오른쪽'}으로 총통을 쏴요 · 선장에게 "옆구리를 돌려 줘!"`; }
+function hsLeave(msg) { if (!hsW.on) return; hsW.on = false; hsW.k = -1; player.pos.set(HS.cx + (Math.random() - 0.5) * 8, 1.4, HS.z1 - 4); player.vy = 0; player.heading = Math.PI; if (msg) toast(msg, 'info'); }
+async function hsGo() {
+  if (hv.travel || !joined || !S.hs?.on) return; if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
+  if (sail.on || sea.on) boatQuiet(); if (boardW.on) boardEnd(''); if (cart.on) cartEnd(false);
+  hv.travel = true; closeModals(); mtn.view = null; const boat = document.querySelector('#travelFx .tv-boat'); if (boat) boat.textContent = '🚢';
+  $('travelText').textContent = '⚓ 판옥선을 타러 통제영으로 가는 중…'; $('travelFx').classList.remove('hidden'); playSfx('cast');
+  hsBuild(); await sleep(1000);
+  player.pos.set(HS.cx + (Math.random() - 0.5) * 10, 1.4, HS.z1 - 3.5); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.35; camera.position.set(player.pos.x, 6, player.pos.z + 9);
+  await sleep(700); $('travelFx').classList.add('hidden'); playSfx('plop'); if (boat) setTimeout(() => { boat.textContent = '⛵'; }, 300); hv.travel = false;
+  showBanner('⚓ 통제영 선착장', '판옥선 가까이 가서 E로 타요 · 한 척에 4명 (선장·좌포·우포·북)', 5000);
+}
+function hsHome() { if (hsW.on) hsLeave(''); travelTo('home'); }
+
+/* ---------- 🔥 총통 · 🥁 북 ---------- */
+function hsMySides() { // 내가 쏘는 쪽: L 왼쪽 · R 오른쪽 · F 앞
+  const s = hsW.seat; if (s === 1) return ['L']; if (s === 2) return ['R']; if (s === 3) return ['F'];
+  const have = new Set(hsCrew(hsW.k).map(c => c[1])), out = []; if (!have.has(1)) out.push('L'); if (!have.has(2)) out.push('R'); if (!have.has(3)) out.push('F'); return out;
+}
+const hsDir = (h, sd) => sd === 'L' ? [Math.cos(h), -Math.sin(h)] : sd === 'R' ? [-Math.cos(h), Math.sin(h)] : [Math.sin(h), Math.cos(h)];
+function hsDrumOn(k) { const now = performance.now(); if (hsW.on && hsW.k === k && hsW.seat === 3 && now - hsW.beatT < 3000) return true; for (const [u, r] of remotes) { const p = hsParse(r.target?.hs); if (!p || p.k !== k || p.s !== 3) continue; const sn = hsW.beatSeen.get(u); if (sn && now - sn.t < 3000) return true; } return false; }
+function hsShipCenter() { const P = hsW.seat === 0 ? [player.pos.x, player.pos.z, player.heading] : hsCapPose(hsW.k); return P; }
+function hsFire() {
+  if (!hsW?.on || !S.hs?.on) return; const now = performance.now(); if (now < hsW.cd) return; if ((S.hs.ko?.[hsW.k] || 0) > backend.now()) { toast('🔧 배를 고치는 중이에요', 'warn'); return; }
+  const P = hsShipCenter(); if (!P) return; const sides = hsMySides(); if (!sides.length) { toast('🧭 선장은 배를 몰아요! 포수 친구들이 총통을 쏴요', 'info'); hsW.cd = now + 800; return; }
+  hsW.cd = now + (hsDrumOn(hsW.k) ? 1200 : 1900); hsW.f++; playSfx('drop'); const ph = hsPh(), real = ph === 'lure' || ph === 'wing' || ph === 'fire';
+  for (const sd of sides) {
+    const [dx, dz] = hsDir(P[2], sd), ox = P[0] + dx * 1.9, oz = P[1] + dz * 1.9; let best = -1, bt = HS_RANGE + 4;
+    hsW.ens.forEach((e, i) => { if (e.hp <= 0 || !e.g) return; const rx = e.mx - ox, rz = e.mz - oz, t = rx * dx + rz * dz, r = HS_ET[e.t].r; if (t < 0 || t > HS_RANGE + r) return; const pd = Math.hypot(rx - dx * t, rz - dz * t); if (pd < r + 1.1 && t < bt) { bt = t; best = i; } });
+    const dist = best >= 0 ? bt : HS_RANGE; hsBall(ox, oz, dx, dz, dist, best >= 0, () => { if (best >= 0 && real && S.hs?.r === hsW.hr) { hsW.hits[best] = (hsW.hits[best] || 0) + 1; } });
+  }
+  if (!real && hsW.tipT < now) { hsW.tipT = now + 8000; toast(ph === 'lobby' ? '🎯 연습 사격이에요 (전투가 시작되면 진짜로 맞아요)' : '🎬 영상이 끝나고 전투가 시작되면 쏴요', 'info'); }
+}
+function hsBall(ox, oz, dx, dz, dist, hit, done) {
+  const m = hsW.pool.pop() || new THREE.Mesh(SPH_LO, new THREE.MeshStandardMaterial({ color: 0x1E1A16, roughness: 0.5 })); m.scale.setScalar(0.28); m.position.set(ox, 2.0, oz); m.visible = true; if (!m.parent) scene.add(m);
+  burst(new V3(ox, 2.0, oz), [0xFFF2C0, 0xFF9A3C, 0xCCCCCC], 8, 3, 1, 0.5, -1);
+  hsW.balls.push({ m, ox, oz, dx, dz, dist, t: 0, T: Math.max(0.25, dist / 30), hit, done });
+}
+function hsBalls(dt) {
+  for (const b of hsW.balls) { b.t += dt; const u = Math.min(1, b.t / b.T); b.m.position.set(b.ox + b.dx * b.dist * u, 2.0 + Math.sin(u * Math.PI) * (1 + b.dist * 0.06) - u * 1.6, b.oz + b.dz * b.dist * u);
+    if (u >= 1) { const p = b.m.position; if (b.hit) { burst(new V3(p.x, 1.4, p.z), [0xFF7A1A, 0xFFD23C, 0x4A4A4A], 18, 5, 2, 0.8, -4); if (b.done) playSfx('build'); } else burst(new V3(p.x, 0.2, p.z), [0xFFFFFF, 0xBFE4FF], 10, 3, 3, 0.6, -8); b.done?.(); b.m.visible = false; hsW.pool.push(b.m); b.dead = true; } }
+  hsW.balls = hsW.balls.filter(b => !b.dead);
+}
+function hsDrum() {
+  if (!hsW?.on) return; if (hsW.seat !== 3) { toast('🥁 북은 4번째 자리(북) 친구가 쳐요', 'info'); return; } const now = performance.now(); if (now - hsW.beatT < 350) return;
+  hsW.beatT = now; hsW.b++; playSfx('clap'); const P = hsCapPose(hsW.k); if (P) burst(new V3(player.pos.x, HS_DECK + 1.2, player.pos.z), [0xFFD23C, 0xFFFFFF], 6, 2, 2, 0.5, -2);
+}
+
+/* ---------- 🧠 선생님 기기: 왜선 움직이기 · 피해 계산 ---------- */
+function hsCaps() { const out = []; for (let k = 0; k < HS_SHIPS; k++) { const P = hsCapPose(k); if (P && !((S.hs.ko?.[k] || 0) > backend.now())) out.push([k, P]); } return out; }
+function hsHostTick(dt) {
+  const s = S.hs, H = hsW.H, now = backend.now();
+  if (H.r !== s.r) { // 처음 · 새 판 · 선생님 기기를 다시 켰을 때 (이미 맞힌 수는 다시 세지 않아요)
+    Object.assign(H, { r: s.r, list: hsUnpack(s.e), applied: {}, aggro: false, hl: { ...(s.hl || {}) }, ko: { ...(s.ko || {}) }, atk: {}, w: 0, sunk: s.sunk | 0, dirty: true });
+    for (const [u, hd] of hsHdAll()) if (hd.r === String(s.r).slice(0, 12)) H.applied[u] = { ...hd.o };
+  }
+  const ph = s.ph, L = H.list, real = ph === 'lure' || ph === 'wing' || ph === 'fire';
+  if (real) { const fbMul = (s.fu || 0) > now ? (s.fb >= 0.99 ? 2 : s.fb >= 0.5 ? 1.5 : 1) : 1; // 💥 맞힌 수 → 피해 (학익진을 완성하면 2배)
+    for (const [u, hd] of hsHdAll()) { if (hd.r !== String(s.r).slice(0, 12)) continue; const A = H.applied[u] ||= {}; for (const [i, n] of Object.entries(hd.o)) { const d = n - (A[i] || 0); if (d <= 0) continue; A[i] = n; const e = L[i]; if (!e || e.hp <= 0) continue; e.hp -= d * fbMul; H.aggro = true; H.dirty = true; if (e.hp <= 0) { e.hp = 0; H.sunk++; } } } }
+  const caps = hsCaps(), alive = L.filter(e => e.hp > 0), t = now - s.t;
+  const near = (e) => { let b = null, bd = 1e9; for (const [k, P] of caps) { const d = Math.hypot(P[0] - e.x, P[1] - e.z); if (d < bd) { bd = d; b = [k, P]; } } return [b, bd]; };
+  if (ph === 'lure' && !H.aggro) { if (t > HS_LURE * 0.8 || caps.some(([, P]) => P[1] < HS.z0 + 68 && Math.abs(P[0] - HS.cx) < 20)) H.aggro = true; }
+  for (const e of alive) { const E = HS_ET[e.t]; let tx = null, tz = null, sp = E.sp;
+    if (ph === 'lure' && H.aggro) { const [b] = near(e); if (b) { tx = b[1][0]; tz = b[1][1]; sp *= 0.85; } else { tx = HS_WC[0]; tz = HS_WC[1]; } }
+    else if (ph === 'wing') { tx = HS_WC[0] + (e.x - HS.cx) * 0.4; tz = HS_WC[1]; sp *= 0.55; }
+    else if (ph === 'fire') { const [b, bd] = near(e); if (b) { if (bd > 4.2) { tx = b[1][0]; tz = b[1][1]; }
+      const k = b[0], key = `${k}`; if (bd < 5.2) { if (now - (H.atk['b' + key] || 0) > 1600) { H.atk['b' + key] = now; H.hl[k] = (H.hl[k] | 0) + 1; H.dirty = true; } } // ⚔️ 배에 붙어 올라타려 해요
+      else if (bd < 13 && Math.random() < dt * 0.05) { H.hl[k] = (H.hl[k] | 0) + 1; H.dirty = true; } } } // 🏹 활·조총
+    if (tx != null) { const dx = tx - e.x, dz = tz - e.z, d = Math.hypot(dx, dz); if (d > 0.5) { const want = Math.atan2(dx, dz); let df = Math.atan2(Math.sin(want - e.h), Math.cos(want - e.h)); e.h += clamp(df, -dt * 1.2, dt * 1.2); const v = sp * Math.max(0.2, Math.cos(df)); e.x += Math.sin(e.h) * v * dt; e.z += Math.cos(e.h) * v * dt; H.dirty = true; } } }
+  for (let i = 0; i < alive.length; i++) { const a = alive[i]; for (let j = i + 1; j < alive.length; j++) { const b = alive[j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz), m = HS_ET[a.t].r + HS_ET[b.t].r + 0.4; if (d < m && d > 1e-3) { const p = (m - d) / 2; a.x -= dx / d * p; a.z -= dz / d * p; b.x += dx / d * p; b.z += dz / d * p; } }
+    for (const [, P] of caps) { const dx = a.x - P[0], dz = a.z - P[1], d = Math.hypot(dx, dz), m = HS_ET[a.t].r + 2.0; if (d < m && d > 1e-3) { a.x = P[0] + dx / d * m; a.z = P[1] + dz / d * m; } }
+    const [px, pz] = hsPush(a.x, a.z, HS_ET[a.t].r * 0.8); a.x = px; a.z = pz; }
+  const up = {};
+  for (const [k, n] of Object.entries(H.hl)) if (n >= HS_HULL) { H.ko[k] = now + HS_KO; H.hl[k] = 0; up[`hs/ko/${k}`] = H.ko[k]; H.dirty = true; } // 🔧 배가 부서지면 선착장으로 물러나 12초 동안 고쳐요
+  if (ph === 'lure' && alive.length && alive.reduce((a, e) => a + e.z, 0) / alive.length > HS.z0 + 64) { up['hs/ph'] = 'wing'; up['hs/t'] = now; }
+  if (ph === 'lure' && t > HS_LURE) { up['hs/ph'] = 'wing'; up['hs/t'] = now; }
+  if (ph === 'wing' && t > HS_WING) { const occ = hsWingOcc(); up['hs/ph'] = 'fire'; up['hs/t'] = now; up['hs/fb'] = occ[1] ? Math.round(occ[0] / occ[1] * 100) / 100 : 0; up['hs/fu'] = now + 45000; }
+  if ((ph === 'fire' && (t > HS_FIRE || !alive.length)) || (real && !alive.length)) { const r = H.sunk / Math.max(1, L.length); up['hs/ph'] = 'end'; up['hs/t'] = now; up['hs/win'] = r >= 0.75 ? 2 : r >= 0.4 ? 1 : 0; }
+  if ((H.dirty && performance.now() - H.w > 500) || Object.keys(up).length) { H.w = performance.now(); H.dirty = false; up['hs/e'] = hsPack(L); up['hs/hl'] = { ...H.hl }; up['hs/sunk'] = H.sunk; backend.adminUpdate(up); }
+}
+function hsHdAll() { const out = []; const mine = hsParseHd(hsHdCode()); if (mine.r) out.push([backend.uid, mine]); for (const [u, r] of remotes) { const h = hsParseHd(r.target?.hd); if (h.r) out.push([u, h]); } return out; }
+function hsWingOcc() { let n = 0, c = 0; for (let k = 0; k < HS_SHIPS; k++) { const P = hsCapPose(k); if (!P || (S.hs.ko?.[k] || 0) > backend.now()) continue; c++; const [x, z] = HS_SPOT(k); if (Math.hypot(P[0] - x, P[1] - z) < 5) n++; } return [n, c]; }
+async function hsAdmin(act) {
+  const now = backend.now(), up = {};
+  if (act === 'open') { const r = 'h' + now.toString(36).slice(-7); Object.assign(up, { hs: { on: 1, r, ph: 'lobby', t: now, n: 20, e: hsPack(hsLayout(20)), hl: {}, ko: {}, fb: 0, fu: 0, sunk: 0, win: 0 } }); }
+  else if (!S.hs?.on) { toast('⚓ 먼저 "바다 열기"를 눌러요', 'warn'); return; }
+  else if (act === 'intro') { up['hs/ph'] = 'intro'; up['hs/t'] = now; }
+  else if (act === 'start') { let c = 0; for (let k = 0; k < HS_SHIPS; k++) if (hsCapPose(k)) c++; const n = clamp(8 + 3 * c, 11, 32), r = 'h' + now.toString(36).slice(-7); Object.assign(up, { hs: { on: 1, r, ph: 'lure', t: now, n, e: hsPack(hsLayout(n)), hl: {}, ko: {}, fb: 0, fu: 0, sunk: 0, win: 0 } }); toast(`⚔️ 전투 시작! 판옥선 ${c}척 · 왜선 ${n}척`, 'success'); }
+  else if (act === 'end') { const L = hsW.H.list || [], r = (hsW.H.sunk | 0) / Math.max(1, L.length); up['hs/ph'] = 'end'; up['hs/t'] = now; up['hs/win'] = r >= 0.75 ? 2 : r >= 0.4 ? 1 : 0; }
+  else if (act === 'close') { up.hs = null; }
+  const res = await backend.adminUpdate(up); if (!res?.ok) toast('⚠️ 저장하지 못했어요. database.rules.json(한산도 hs)을 먼저 게시했는지 확인해요', 'warn');
+}
+
+/* ---------- 🎬 시작 영상 (모두에게 같은 시각 · 📺 TV 모드는 내레이션) ---------- */
+const HS_SCENES = [
+  { t: '1592년, 조선', n: '1592년, 조선은 나라를 세운 지 200년 가까이 큰 전쟁 없이 평화롭게 지내 왔어요.', v: 'peace' },
+  { t: '바다 건너 일본', n: '그 무렵 일본에서는 도요토미 히데요시가 오랜 싸움 끝에 나라를 하나로 모았어요. 히데요시는 명나라를 치러 갈 테니 조선이 길을 내어 달라고 억지를 부렸어요.', v: 'japan' },
+  { t: '임진왜란의 시작', n: '1592년 4월, 수많은 왜군의 배가 부산 앞바다를 덮었어요. 7년 동안 이어진 전쟁, 임진왜란이 시작된 거예요.', v: 'invade' },
+  { t: '20일 만에 한양이…', n: '왜군은 빠르게 북쪽으로 올라가 20일 만에 한양을 차지했어요. 선조 임금은 북쪽 의주까지 피란을 떠나야 했어요.', v: 'march' },
+  { t: '남쪽 바다의 이순신', n: '하지만 남쪽 바다에는 전라좌수사 이순신이 있었어요. 조선 수군은 옥포, 사천, 당포에서 잇달아 이겼고, 사천 해전에서는 거북선이 처음 나섰어요.', v: 'admiral' },
+  { t: '견내량에 모인 왜선', n: '바다를 되찾고 싶었던 왜군은 와키자카 야스하루가 이끄는 배 70여 척을 견내량에 모았어요.', cam: [[22, 24, -40], [-6, 15, -78], [0, 0, -95]] },
+  { t: '좁은 바다, 견내량', n: '견내량은 바다가 좁고 암초가 많아 큰 판옥선이 마음껏 싸우기 어려운 곳이었어요. 그래서 이순신은 배 몇 척을 보내 왜군을 넓은 한산도 앞바다로 꾀어내기로 했어요.', cam: [[-16, 6, -44], [12, 5, -50], [0, 1, -90]] },
+  { t: '학이 날개를 펴듯, 학익진', n: '넓은 바다로 나온 적을, 학이 날개를 펼치듯 둥글게 늘어선 배로 감싸고 한꺼번에 총통을 쏘는 거예요. 이것이 바로 학익진이에요.', cam: [[0, 75, 22], [34, 58, 6], [0, 0, -40]], wing: 1 },
+  { t: '출전!', n: '1592년 7월 8일, 한산도 앞바다. 이제 여러분이 조선 수군이에요. 판옥선에 올라 출전하세요!', cam: [[-32, 9, 70], [26, 8, 74], [0, 1.5, 100]] },
+];
+const hsSceneDur = (i) => 3500 + HS_SCENES[i].n.length * 165;
+const hsIntroTotal = () => HS_SCENES.reduce((a, _, i) => a + hsSceneDur(i), 0);
+const HS_MAP_LAND = 'M0,0 L400,0 L400,22 L300,28 L232,18 L150,28 L118,58 L88,66 L0,78 Z', HS_MAP_KOR = 'M150,28 L232,18 L300,28 L286,58 L256,88 L262,122 L276,160 L286,200 L280,238 L258,260 L222,270 L192,262 L170,242 L160,216 L172,192 L158,170 L166,140 L150,120 L170,100 L140,82 L118,58 Z', HS_MAP_JP = 'M318,276 L344,262 L360,270 L352,296 L326,300 Z M362,252 L386,226 L400,214 L400,262 L372,268 Z';
+function hsMapSvg(extra, vb = '0 0 400 300') { return `<svg viewBox="${vb}" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%"><rect x="-50" y="-50" width="500" height="400" fill="#7FB8E0"/><path d="${HS_MAP_LAND}" fill="#D8C99A"/><path d="${HS_MAP_KOR}" fill="#EBDDAE" stroke="#8A6A3A" stroke-width="1.5"/><path d="${HS_MAP_JP}" fill="#D8C99A" stroke="#8A6A3A" stroke-width="1.2"/>${extra}</svg>`; }
+const hsDot = (x, y, t, c = '#3B2F2A', s = 9) => `<circle cx="${x}" cy="${y}" r="3" fill="${c}"/><text x="${x + 5}" y="${y - 4}" font-size="${s}" font-weight="700" fill="${c}">${t}</text>`;
+function hsVis(v) {
+  if (v === 'peace') return `<div class="hsi-2d" style="background:linear-gradient(#FFD9A8,#FFF3DC 60%,#BFE3A8 60%)"><div class="hsi-sun"></div><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" style="position:absolute;inset:0;width:100%;height:100%"><path d="M0,190 Q80,120 160,180 T320,170 T400,180 L400,300 L0,300Z" fill="#8CC56A"/><path d="M0,215 Q100,170 200,212 T400,205 L400,300 L0,300Z" fill="#6FAE52"/><rect x="150" y="150" width="100" height="38" fill="#C8A070"/><rect x="158" y="156" width="6" height="32" fill="#8A2A22"/><rect x="236" y="156" width="6" height="32" fill="#8A2A22"/><rect x="197" y="156" width="6" height="32" fill="#8A2A22"/><path d="M128,152 Q150,140 160,128 L240,128 Q250,140 272,152 Z" fill="#3B3F4A"/><path d="M140,130 Q160,122 170,112 L230,112 Q240,122 260,130 Z" fill="#4A4F5A"/></svg><div class="hsi-emo" style="left:12%;bottom:8%">🌾</div><div class="hsi-emo" style="left:26%;bottom:6%;animation-delay:.4s">🌾</div><div class="hsi-emo" style="right:14%;bottom:7%;animation-delay:.8s">🌾</div><div class="hsi-year">1592</div></div>`;
+  if (v === 'japan') return `<div class="hsi-2d" style="background:linear-gradient(#5A1E1E,#B0502E)"><div style="position:absolute;left:50%;top:18%;transform:translateX(-50%);font-size:min(28vh,24vw)">🏯</div><div class="hsi-march">${'⚔️ '.repeat(14)}</div><div class="hsi-march" style="bottom:6%;animation-delay:.6s">${'🚩 '.repeat(12)}</div></div>`;
+  if (v === 'invade') { let s = ''; for (let q = 0; q < 14; q++) s += `<text font-size="12">⛵<animateMotion path="M${352 + (q % 4) * 8},${268 + (q % 3) * 7} L${272 + (q % 3) * 4},${254 + (q % 4) * 3}" dur="3.2s" begin="${(q * 0.25).toFixed(2)}s" fill="freeze"/></text>`; return `<div class="hsi-2d">${hsMapSvg(hsDot(268, 250, '부산', '#B0302A', 11) + hsDot(190, 130, '한양') + '<text x="350" y="240" font-size="12" font-weight="700" fill="#3B2F2A">일본</text>' + s, '150 150 250 160')}</div>`; }
+  if (v === 'march') return `<div class="hsi-2d">${hsMapSvg(hsDot(268, 250, '부산', '#B0302A', 10) + hsDot(190, 130, '한양', '#B0302A', 11) + hsDot(128, 62, '의주') + '<path class="hsi-dash" d="M268,250 Q250,200 230,180 T190,130" stroke="#C0392B" stroke-width="5" fill="none" stroke-linecap="round"/><path class="hsi-dash" style="animation-delay:3s" d="M190,130 Q160,100 130,64" stroke="#5A5A6A" stroke-width="3" stroke-dasharray="6 5" fill="none"/><text font-size="14">👑<animateMotion path="M186,128 Q160,100 126,64" dur="4s" begin="3.5s" fill="freeze"/></text><text x="226" y="214" font-size="11" font-weight="900" fill="#C0392B">20일</text>')}</div>`;
+  if (v === 'admiral') return `<div class="hsi-2d">${hsMapSvg(hsDot(212, 262, '여수') + '<text font-size="9">🚢<animateMotion path="M210,262 L262,262" dur="6s" fill="freeze"/></text>' + [[260, 258, '옥포', 1], [228, 254, '사천', 2.5], [242, 268, '당포', 4]].map(([x, y, t, d]) => `<g class="hsi-pop" style="animation-delay:${d}s;transform-origin:${x}px ${y}px"><text x="${x - 6}" y="${y - 6}" font-size="10">✨</text>${hsDot(x, y, t + ' 승리', '#1F4E82', 8)}</g>`).join('') + '<g class="hsi-pop" style="animation-delay:3s;transform-origin:226px 246px"><text x="216" y="248" font-size="11">🐢</text><text x="196" y="240" font-size="6.5" font-weight="700" fill="#1F4E82">거북선 첫 출전</text></g>', '180 215 120 70')}<div class="hsi-name">⚓ 이순신</div></div>`;
+  return '';
+}
+function hsSay(text, onend) { try { if (!('speechSynthesis' in window)) { onend?.(); return; } speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; u.rate = 0.95; const v = speechSynthesis.getVoices().find(v => /ko[-_]KR/i.test(v.lang)); if (v) u.voice = v; u.onend = () => onend?.(); u.onerror = () => onend?.(); speechSynthesis.speak(u); } catch (e) { onend?.(); } }
+function hsIntroEl() {
+  if (hsW.introEl) return hsW.introEl; const d = document.createElement('div'); d.id = 'hsIntro'; d.className = 'hidden';
+  d.innerHTML = '<div class="hsi-stage" id="hsiStage"></div><div class="hsi-cap" id="hsiCap"><b id="hsiT"></b><p id="hsiN"></p></div><div class="hsi-top"><button class="btn" id="hsiVoice" style="background:#fff">🔇 소리</button><button class="btn" id="hsiSkip" style="background:#FFE066">⏭ 건너뛰기</button></div><div class="hsi-bar" id="hsiBar"></div>';
+  document.body.append(d); hsW.introEl = d;
+  $('hsiSkip').onclick = () => { if (hsW.tv.on) hsTvStop(); else { hsW.skipT = S.hs?.t; hsIntroHide(); } };
+  $('hsiVoice').onclick = () => { hsW.voice = !hsW.voice; store.set('sv-hsvoice', hsW.voice ? '1' : '0'); $('hsiVoice').textContent = hsW.voice ? '🔊 소리' : '🔇 소리'; if (hsW.voice && hsW.ci >= 0) hsSay(HS_SCENES[hsW.ci].n); else speechSynthesis?.cancel?.(); };
+  return d;
+}
+function hsIntroShow(i, frac, tv) {
+  const d = hsIntroEl(), S2 = HS_SCENES[i]; d.classList.remove('hidden'); d.classList.toggle('tv', !!tv);
+  if (hsW.ci !== i) { hsW.ci = i; d.classList.toggle('cine', !!S2.cam); $('hsiStage').innerHTML = S2.cam ? '' : hsVis(S2.v); $('hsiT').textContent = S2.t; $('hsiN').textContent = S2.n; const c = $('hsiCap'); c.style.animation = 'none'; void c.offsetWidth; c.style.animation = '';
+    $('hsiVoice').textContent = hsW.voice ? '🔊 소리' : '🔇 소리'; $('hsiVoice').classList.toggle('hidden', !!tv); $('hsiSkip').textContent = tv ? '⏹ 끝내기' : '⏭ 건너뛰기';
+    if (!tv && hsW.voice) hsSay(S2.n); if (S2.cam) { hsBuild(); } }
+  $('hsiBar').style.width = `${Math.round(((i + frac) / HS_SCENES.length) * 100)}%`;
+  hsW.cine = !!S2.cam; hsW.cineF = frac; document.body.classList.toggle('hs-cine', hsW.cine); hsW.wingShow = !!S2.wing;
+}
+function hsIntroHide() { if (hsW.introEl) hsW.introEl.classList.add('hidden'); if (hsW.ci >= 0) { hsW.ci = -1; speechSynthesis?.cancel?.(); } hsW.cine = false; hsW.wingShow = false; document.body.classList.remove('hs-cine'); }
+function hsTvStart() { hsBuild(); closeModals(); Object.assign(hsW.tv, { on: true, i: 0, t0: performance.now(), said: false, end: false }); hsW.ci = -1; try { document.documentElement.requestFullscreen?.(); } catch (e) { } playSfx('fanfare'); }
+function hsTvStop() { hsW.tv.on = false; hsIntroHide(); try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { } }
+function hsIntroTick() {
+  const T = hsW.tv;
+  if (T.on) { const el = performance.now() - T.t0, D = hsSceneDur(T.i);
+    if (!T.said) { T.said = true; T.end = false; hsSay(HS_SCENES[T.i].n, () => { T.end = true; T.endAt = performance.now(); }); }
+    if (el > D && (T.end ? performance.now() - T.endAt > 900 : el > D * 2.4)) { T.i++; T.t0 = performance.now(); T.said = false; if (T.i >= HS_SCENES.length) { hsTvStop(); toast('📺 영상이 끝났어요', 'info'); return; } }
+    hsIntroShow(T.i, Math.min(1, (performance.now() - T.t0) / Math.max(D, 1)), true); return; }
+  if (hsPh() === 'intro' && hsW.skipT !== S.hs.t) { let e = backend.now() - S.hs.t; if (e >= 0 && e < hsIntroTotal()) { let i = 0; while (e > hsSceneDur(i)) { e -= hsSceneDur(i); i++; } hsIntroShow(i, e / hsSceneDur(i), false); return; } }
+  if (hsW.ci >= 0 || hsW.cine) hsIntroHide();
+}
+function hsCamera(dt) {
+  if (!hsW?.cine || hsW.ci < 0) return false; const c = HS_SCENES[hsW.ci].cam; if (!c) return false; const u = hsW.cineF, e = u * u * (3 - 2 * u), [a, b, l] = c;
+  camera.position.set(HS.cx + a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e, HS.cz + a[2] + (b[2] - a[2]) * e); camera.lookAt(HS.cx + l[0], l[1], HS.cz + l[2]); return true;
+}
+
+/* ---------- 🏁 끝: 실제 역사 카드 · 퀴즈 ---------- */
+const HS_QS = [
+  { q: '한산도 대첩에서 이순신이 펼친, 학이 날개를 편 모양의 진법은?', o: ['학익진', '장사진', '어린진', '일자진'], a: 0 },
+  { q: '이순신이 왜군을 넓은 한산도 앞바다로 꾀어낸 까닭은?', o: ['견내량이 좁고 암초가 많아 판옥선이 싸우기 어려워서', '견내량 바다가 얼어서', '비가 많이 와서', '왜군 배가 더 크고 튼튼해서'], a: 0 },
+  { q: '한산도 대첩이 일어난 전쟁은?', o: ['임진왜란', '병자호란', '고려 거란 전쟁', '6·25 전쟁'], a: 0 },
+  { q: '높은 2층 갑판에서 총통을 쏘던 조선 수군의 주력 전투선은?', o: ['판옥선', '뗏목', '증기선', '돛단배 거룻배'], a: 0 },
+  { q: '임진왜란 3대 대첩이 아닌 것은?', o: ['살수 대첩', '한산도 대첩', '진주 대첩', '행주 대첩'], a: 0 },
+  { q: '한산도 대첩의 결과로 알맞은 것은?', o: ['왜군이 바닷길로 군량을 나르려던 계획이 막히고 전라도를 지켰다', '조선이 일본 땅을 차지했다', '임진왜란이 바로 끝났다', '이순신이 한양을 되찾았다'], a: 0 },
+];
+function openHsEnd() {
+  const s = S.hs, w = s?.win, r = s?.r, L = hsW.ens || [], sunk = s?.sunk | 0, qs = hShuffle([...HS_QS]).slice(0, 3).map(q => { const idx = hShuffle([0, 1, 2, 3]); return { q: q.q, o: idx.map(i => q.o[i]), a: idx.indexOf(q.a) }; });
+  const st = { i: -1, ok: 0, pick: -1, done: bag.hsQ === r };
+  openLife('⚓ 한산도 대첩 · 실제 역사는?', (box) => {
+    box.textContent = '';
+    if (st.i < 0) {
+      box.append(el2('p', 'lp-big', w === 2 ? `🎉 대승! 왜선 ${sunk}/${L.length}척을 물리쳤어요` : w === 1 ? `👍 승리! 왜선 ${sunk}/${L.length}척을 물리쳤어요` : `🌊 왜선 ${sunk}/${L.length}척을 물리쳤어요`));
+      if (st.rw) box.append(el2('p', 'hint', st.rw));
+      box.append(el2('p', '', '실제 역사에서는… 1592년 7월 8일, 이순신이 이끄는 조선 수군은 판옥선 몇 척으로 견내량의 왜군을 넓은 한산도 앞바다로 꾀어냈어요. 그리고 학익진으로 에워싸 총통을 쏘아, 왜선 73척 가운데 47척을 깨뜨리고 12척을 빼앗았어요. 와키자카 야스하루는 겨우 도망쳤어요.'));
+      box.append(el2('p', '', '이 승리로 왜군은 바닷길로 군사와 군량을 보내려던 계획을 이루지 못했고, 조선은 곡창 지대인 전라도를 지킬 수 있었어요. 한산도 대첩은 진주 대첩 · 행주 대첩과 함께 임진왜란 3대 대첩으로 꼽혀요.'));
+      const row = el2('div', 'row-center wrap'), qb = el2('button', 'btn', st.done ? '📝 역사 퀴즈 다시 풀기 (보상은 받았어요)' : '📝 역사 퀴즈 3문제 (🐚 + 🏛️ 사회력)'); qb.style.background = '#FFD23C'; qb.onclick = () => { st.i = 0; refillLife(); }; row.append(qb); box.append(row); return; }
+    if (st.i >= qs.length) { if (!st.done && !isTeacher) { st.done = true; bag.hsQ = r; addStat('soc', st.ok * 3); const sh = giveShellCapped(st.ok * 7); saveBag(); updateHUD(null); st.sh = sh ? `🐚 +${sh} · 🏛️ 사회력 +${st.ok * 3}` : ''; }
+      box.append(el2('p', 'lp-big', `${st.ok === 3 ? '🎉' : '👍'} ${st.ok}/3 맞혔어요!`), el2('p', 'hint', st.sh || '')); const b = el2('button', 'btn', '🏠 마을로 돌아가기'); b.onclick = () => { closeLife(); if (hsRegion()) hsHome(); }; const rr = el2('div', 'row-center'); rr.append(b); box.append(rr); return; }
+    const Q = qs[st.i]; box.append(el2('p', 'hint', `${st.i + 1}/3`), Object.assign(el2('p', 'lp-big', Q.q), { style: 'font-size:19px' }));
+    const g = el2('div', ''); g.style.cssText = 'display:grid;gap:6px';
+    Q.o.forEach((o, j) => { const b = el2('button', 'btn', o); b.style.cssText = `text-align:left;font-size:16px;background:${st.pick < 0 ? '#fff' : j === Q.a ? '#BDE8B0' : j === st.pick ? '#F6C9C0' : '#fff'}`; b.disabled = st.pick >= 0;
+      b.onclick = () => { st.pick = j; if (j === Q.a) st.ok++; playSfx(j === Q.a ? 'right' : 'wrong'); refillLife(); setTimeout(() => { st.pick = -1; st.i++; refillLife(); }, j === Q.a ? 700 : 1500); }; g.append(b); });
+    box.append(g);
+  });
+  return st;
+}
+function hsReward() { // 전투에 참가한 친구 (한 판에 한 번)
+  const s = S.hs; if (!s || bag.hsR === s.r || isTeacher) return ''; bag.hsR = s.r; const sh = giveShellCapped(15 + (s.win | 0) * 10); addStat('soc', 5); saveBag(); updateHUD(null); return `🎁 참가 보상 🐚 +${sh} · 🏛️ 사회력 +5`;
+}
+
+/* ---------- 🖥️ 화면 (HUD · 버튼) ---------- */
+function hsUiInit() {
+  const hud = document.createElement('div'); hud.id = 'hsHud'; hud.className = 'sticker hidden'; hud.setAttribute('role', 'status'); document.body.append(hud); hsW.hud = hud;
+  const act = document.createElement('div'); act.id = 'hsAct'; act.className = 'hidden';
+  act.innerHTML = '<button class="btn" id="hsFireBtn" aria-label="총통 쏘기 (F)">🔥<small>F 발사</small></button><button class="btn" id="hsDrumBtn" aria-label="북 치기 (Q)">🥁<small>Q 북</small></button><button class="btn" id="hsLeaveBtn" style="font-size:13px">⚓ 내리기</button><button class="btn" id="hsHomeBtn" style="font-size:13px">🏠 마을로</button>';
+  document.body.append(act); hsW.act = act; $('hsFireBtn').onclick = hsFire; $('hsDrumBtn').onclick = hsDrum; $('hsLeaveBtn').onclick = () => hsLeave('⚓ 선착장에 내렸어요'); $('hsHomeBtn').onclick = hsHome;
+  const jb = document.createElement('button'); jb.id = 'hsJoin'; jb.className = 'btn hidden'; jb.textContent = '⚓ 한산도대첩 출전!'; jb.onclick = hsGo; document.body.append(jb); hsW.join = jb;
+  hsW.voice = store.get('sv-hsvoice') === '1';
+}
+function hsHudTick() {
+  const s = S.hs, reg = hsW.reg, now = backend.now(); hsW.join.classList.toggle('hidden', !(s?.on && joined && !reg && s.ph !== 'end' && !hv.travel));
+  hsW.hud.classList.toggle('hidden', !(reg && s?.on)); hsW.act.classList.toggle('hidden', !(reg && s?.on));
+  if (!(reg && s?.on)) return; const ph = hsPh(), P = HS_PH[ph] || HS_PH.lobby, L = hsW.ens, alive = L.filter(e => e.hp > 0).length;
+  const left = ph === 'lure' ? HS_LURE - (now - s.t) : ph === 'wing' ? HS_WING - (now - s.t) : ph === 'fire' ? HS_FIRE - (now - s.t) : 0, tm = left > 0 ? ` · ⏱️ ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}` : '';
+  let mine = '🚶 판옥선 가까이에서 E로 타요';
+  if (hsW.on) { const hl = s.hl?.[hsW.k] | 0, ko = (s.ko?.[hsW.k] || 0) - now; mine = `🚢 ${hsW.k + 1}호 · ${HS_SEAT_N[hsW.seat]} · 👫 ${hsCrew(hsW.k).length}/4<br>${ko > 0 ? `🔧 배를 고치는 중 ${Math.ceil(ko / 1000)}초` : `🛡️ 배 ${'■'.repeat(Math.ceil((HS_HULL - hl) / 4))}${'□'.repeat(Math.floor(hl / 4))} ${HS_HULL - hl}/${HS_HULL}`}${hsDrumOn(hsW.k) ? ' · 🥁 빠르게!' : ''}`;
+    const sides = hsMySides(); mine += `<br>${sides.length ? `🔥 ${sides.map(x => ({ L: '왼쪽', R: '오른쪽', F: '앞' })[x]).join('·')}으로 쏴요` : '🧭 배를 몰아요 (포수가 쏴요)'}`; }
+  let goal = P[1]; if (ph === 'wing') { const [n, c] = hsWingOcc(); goal += `<br>🕊️ 자리 잡은 배 ${n}/${c}척${hsW.on ? ` · 우리 배는 ${hsW.k + 1}호 자리` : ''}`; } if (ph === 'fire' && (s.fu || 0) > now) goal += `<br>🕊️ 학익진 ${Math.round((s.fb || 0) * 100)}% · ${s.fb >= 0.99 ? '총통 위력 2배!' : s.fb >= 0.5 ? '총통 위력 1.5배!' : '위력 그대로'}`;
+  if (ph === 'lure' && alive) { const c = L.filter(e => e.hp > 0), mx = c.reduce((a, e) => a + e.mx, 0) / c.length, mz = c.reduce((a, e) => a + e.mz, 0) / c.length, dd = Math.round(Math.hypot(mx - player.pos.x, mz - player.pos.z)); goal += `<br>🧭 왜선 함대까지 ${dd}m`; }
+  const html = `<b>${P[0]}</b>${tm}<div class="hint" style="margin:2px 0">${goal}</div><div>⛵ 왜선 ${alive}/${L.length}척 남음 · 💥 ${s.sunk | 0}척</div><div style="margin-top:4px">${mine}</div>`;
+  if (html !== hsW.hudHtml) { hsW.hudHtml = html; hsW.hud.innerHTML = html; }
+  const sides = hsW.on ? hsMySides() : []; $('hsFireBtn').classList.toggle('hidden', !hsW.on || !sides.length); $('hsDrumBtn').classList.toggle('hidden', !(hsW.on && hsW.seat === 3)); $('hsLeaveBtn').classList.toggle('hidden', !hsW.on);
+  { const cd = Math.max(0, hsW.cd - performance.now()); $('hsFireBtn').style.opacity = cd > 0 ? '0.55' : '1'; }
+}
+
+/* ---------- 🔁 매 프레임 ---------- */
+function hsInit() {
+  hsW = { on: false, k: -1, seat: 0, v: 0, cd: 0, b: 0, f: 0, beatT: 0, beatSeen: new Map(), fireSeen: new Map(), hits: {}, hr: '', built: false, ships: new Map(), ens: [], pose: {}, balls: [], pool: [], H: { r: null, list: [] }, reg: false, cine: false, ci: -1, tv: { on: false }, cand: null, tipT: 0, hudHtml: '', endShown: '', lastPh: '', lastR: '' };
+  hsUiInit();
+  $('tpHsOpen')?.addEventListener('click', () => hsAdmin('open')); $('tpHsIntro')?.addEventListener('click', () => hsAdmin('intro')); $('tpHsStart')?.addEventListener('click', () => hsAdmin('start'));
+  $('tpHsEnd')?.addEventListener('click', () => hsAdmin('end')); $('tpHsClose')?.addEventListener('click', () => hsAdmin('close')); $('tpHsTv')?.addEventListener('click', hsTvStart); $('tpHsGo')?.addEventListener('click', () => { closeModals(); if (!S.hs?.on) { toast('⚓ 먼저 "바다 열기"를 눌러요', 'warn'); return; } hsGo(); });
+}
+function hsTick(dt) {
+  if (!hsW) return; const s = S.hs, now = backend.now();
+  if (hsHost()) hsHostTick(dt);
+  { const tn = $('tpHsNow'); if (tn && performance.now() - (hsW.tnT || 0) > 1000) { hsW.tnT = performance.now(); let c = 0; for (let k = 0; k < HS_SHIPS; k++) if (hsCrew(k).length) c++; const t = !s?.on ? '지금: 닫혀 있어요' : `지금: ${(HS_PH[s.ph] || HS_PH.lobby)[0]} · 사람이 탄 판옥선 ${c}척 · 왜선 ${hsUnpack(s.e).filter(e => e.hp > 0).length}척 남음`; if (tn.textContent !== t) tn.textContent = t; } }
+  hsIntroTick();
+  const reg = hsRegion(); if (reg !== hsW.reg) { hsW.reg = reg; if (reg) hsBuild(); applyEnv(true); } if (hsW.cine !== hsW.cineEnv) { hsW.cineEnv = hsW.cine; applyEnv(true); }
+  if (!s?.on) { if (hsW.on) hsW.on = false; if (reg && !hv.travel && joined) { toast('⚓ 선생님이 한산도 바다를 닫았어요', 'info'); travelTo('home'); } hsW.join?.classList.add('hidden'); hsW.hud?.classList.add('hidden'); hsW.act?.classList.add('hidden'); if (hsW.g) hsW.g.visible = false; for (const g of hsW.ships.values()) g.visible = false; for (const e of hsW.ens) if (e.g) e.g.visible = false; return; }
+  if (hsW.lastR !== s.r) { hsW.lastR = s.r; hsW.hits = {}; hsW.hr = s.r; } // 새 판: 맞힌 수를 0부터
+  if (hsW.lastPh !== s.ph) { const was = hsW.lastPh; hsW.lastPh = s.ph; if (was && (reg || hsW.on)) { const P = HS_PH[s.ph]; if (P && s.ph !== 'intro') { showBanner(P[0], P[1], 6000); playSfx('fanfare'); } } if (!was && !reg && s.ph === 'lobby') toast('⚓ 한산도대첩 바다가 열렸어요! 위쪽 "출전" 버튼을 눌러요', 'info'); if (s.ph === 'lure' && !reg && was) showBanner('⚔️ 한산도대첩이 시작됐어요!', '위쪽 "⚓ 한산도대첩 출전!" 버튼으로 와요', 6000); }
+  if (s.ph === 'fire' || s.ph === 'wing' || s.ph === 'lure') { if (hsW.on) hsW.fought = s.r; }
+  if (s.ph === 'end' && hsW.endShown !== s.r && (reg || hsW.fought === s.r)) { hsW.endShown = s.r; const rw = hsW.fought === s.r ? hsReward() : ''; setTimeout(() => { const st = openHsEnd(); if (rw) { st.rw = rw; refillLife(); } }, 2500); }
+  const vis = reg || hsW.cine; if (hsW.g) hsW.g.visible = vis; if (!vis) { for (const g of hsW.ships.values()) g.visible = false; for (const e of hsW.ens) if (e.g) e.g.visible = false; hsHudTick(); return; }
+  hsBuild();
+  // 👫 내 자리 · 선장이면 배 몰기 · 아니면 선장 배를 따라가요
+  if (hsW.on) hsSelf(dt, now);
+  // 🚢 판옥선 그리기
+  for (let k = 0; k < HS_SHIPS; k++) { let g = hsW.ships.get(k); if (!g) { g = hsMakePanok(k); scene.add(g); hsW.ships.set(k, g); }
+    const P = hsCapPose(k), crew = hsCrew(k).length; if (P) hsW.pose[k] = P; const Q = P || (crew ? hsW.pose[k] : null) || (hsW.wingShow ? HS_SPOT(k) : HS_MOOR(k));
+    g.visible = true; g.position.set(Q[0], Math.sin(time * 1.3 + k) * 0.06, Q[1]); g.rotation.y = Q[2]; g.rotation.z = Math.sin(time * 0.9 + k) * 0.02; g.userData.flag.rotation.y = Math.sin(time * 3 + k) * 0.3;
+    const ko = (s.ko?.[k] || 0) > now, lab = `🚢 ${k + 1}호${crew ? ` 👫${crew}` : ''}${ko ? ' 🔧' : ''}`; if (g.userData.lt !== lab) { g.userData.lt = lab; g.userData.label.userData.set([lab]); }
+    if (ko && Math.random() < dt * 4) burst(new V3(Q[0], 2.5, Q[1]), [0x6A6A6A, 0x9A9A9A], 3, 1, 2, 1.2, 1); }
+  // ⛵ 왜선 그리기 (선생님 기기는 계산한 자리 그대로 · 다른 기기는 부드럽게 따라가요)
+  if (hsW.eStr !== s.e) { hsW.eStr = s.e; hsW.eArr = hsUnpack(s.e); } const src = hsHost() && hsW.H.r === s.r ? hsW.H.list : hsW.eArr; if (hsW.ens.length !== src.length || hsW.ensR !== s.r) { for (const e of hsW.ens) if (e.g) { scene.remove(e.g); } hsW.ensR = s.r; hsW.ens = src.map(e => ({ ...e, mx: e.x, mz: e.z, mh: e.h, sink: 0, g: null })); }
+  hsW.ens.forEach((e, i) => { const t = src[i]; if (!t) return; if (!e.g) { e.g = hsMakeWae(e.t); scene.add(e.g); } const k2 = Math.min(1, dt * 4); e.mx += (t.x - e.mx) * k2; e.mz += (t.z - e.mz) * k2; e.mh += Math.atan2(Math.sin(t.h - e.mh), Math.cos(t.h - e.mh)) * k2;
+    if (e.hp > 0 && t.hp <= 0) { burst(new V3(e.mx, 1.5, e.mz), [0xFF7A1A, 0xFFD23C, 0x3A3A3A], 30, 6, 3, 1.2, -4); if (hsW.reg) playSfx('cheer'); } e.hp = t.hp;
+    if (e.hp <= 0) { e.sink = Math.min(4, e.sink + dt); if (e.sink >= 4) { e.g.visible = false; return; } if (Math.random() < dt * 5) burst(new V3(e.mx, 1.2 - e.sink * 0.4, e.mz), [0x4A4A4A, 0x8A8A8A, 0xFF7A1A], 2, 1, 2, 1, 1); }
+    e.g.visible = true; e.g.position.set(e.mx, Math.sin(time * 1.5 + i) * 0.05 - e.sink * 0.7, e.mz); e.g.rotation.set(e.sink * 0.15, e.mh, Math.sin(time + i) * 0.03 + e.sink * 0.12); });
+  hsW.ringG.visible = s.ph === 'wing' || hsW.wingShow; if (hsW.ringG.visible) hsW.rings.forEach((m, k) => { m.material.opacity = 0.45 + Math.sin(time * 4 + k) * 0.3; m.scale.setScalar(hsW.on && hsW.k === k ? 1.2 + Math.sin(time * 5) * 0.08 : 1); });
+  // 🔥 친구가 쏜 총통 (보이기만 해요) · 🥁 북 소리
+  for (const [u, r] of remotes) { const p = hsParse(r.target?.hs); if (!p) continue; const fs = hsW.fireSeen.get(u); if (fs != null && fs !== p.f && hsRegion()) { const P = hsCapPose(p.k); if (P) { const sd = p.s === 1 ? ['L'] : p.s === 2 ? ['R'] : p.s === 3 ? ['F'] : ['L', 'R']; for (const x of sd) { const [dx, dz] = hsDir(P[2], x); hsBall(P[0] + dx * 1.9, P[1] + dz * 1.9, dx, dz, HS_RANGE * 0.8, false, null); } } } hsW.fireSeen.set(u, p.f);
+    const bs = hsW.beatSeen.get(u); if (!bs || bs.b !== p.b) hsW.beatSeen.set(u, { b: p.b, t: bs ? performance.now() : 0 }); }
+  hsBalls(dt);
+  if (s.ph === 'fire' && hsW.on && Math.random() < dt * 0.8) { const P = hsShipCenter(); const e = P && hsW.ens.find(e => e.hp > 0 && Math.hypot(e.mx - P[0], e.mz - P[1]) < 13); if (e) burst(new V3(P[0] + (Math.random() - 0.5) * 3, 2.2, P[1] + (Math.random() - 0.5) * 3), [0x6A4A2A, 0xFFFFFF], 4, 2, 1, 0.4, -6); } // 🏹 날아오는 화살
+  // 🚶 탈 배 찾기
+  hsW.cand = null; if (!hsW.on && reg) { let bd = 9; for (let k = 0; k < HS_SHIPS; k++) { const g = hsW.ships.get(k), d = Math.hypot(g.position.x - player.pos.x, g.position.z - player.pos.z); if (d < bd) { bd = d; hsW.cand = k; } } }
+  if (hsW.it) { if (hsW.cand != null) { const g = hsW.ships.get(hsW.cand); hsW.it.pos.set(g.position.x, 1.5, g.position.z); } else hsW.it.pos.set(0, -99, 0); }
+  hsHudTick();
+}
+function hsSelf(dt, now) {
+  const me = backend.uid, k = hsW.k, s = S.hs;
+  if (!hsRegion()) { hsW.on = false; return; }
+  for (const [u, sn] of hsCrew(k)) if (u !== me && sn === hsW.seat && u < me) { const f = hsFreeSeat(k); if (f < 0) { hsLeave('🚢 자리가 꽉 차서 내렸어요'); return; } hsW.seat = f; toast(`🚢 자리를 옮겼어요: ${HS_SEAT_N[f]}`, 'info'); break; } // 같은 자리를 고르면 기기 번호가 뒤인 쪽이 옮겨요
+  let P = hsW.seat === 0 ? null : hsCapPose(k);
+  if (hsW.seat > 0 && !P) { const crew = hsCrew(k).filter(c => c[1] > 0).sort((a, b) => a[1] - b[1]); if (crew[0]?.[0] === me) { const [a, f] = HS_SEATS[hsW.seat], h = player.heading; hsW.seat = 0; player.pos.x -= a * Math.cos(h) + f * Math.sin(h); player.pos.z -= -a * Math.sin(h) + f * Math.cos(h); toast('🧭 선장이 내려서 내가 선장이 됐어요! WASD로 배를 몰아요', 'info'); } }
+  const ko = (s.ko?.[k] || 0) > now;
+  if (hsW.seat === 0) { // 🧭 배 몰기
+    const p = player.pos; if (ko && hsW.koSeen !== s.ko[k]) { hsW.koSeen = s.ko[k]; const M = HS_MOOR(k); p.x = M[0]; p.z = M[1]; player.heading = M[2]; hsW.v = 0; toast('💥 배가 많이 부서져서 선착장으로 물러났어요. 12초 뒤 다시 출전!', 'warn'); }
+    let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y; ix = clamp(ix, -1, 1); iz = clamp(iz, -1, 1); if (ko || isFrozen() || bgOpen()) ix = iz = 0;
+    const maxV = 6.5 * (hsDrumOn(k) ? 1.3 : 1), want = iz > 0 ? maxV * iz : iz < 0 ? -2 * -iz : 0; hsW.v += clamp(want - hsW.v, -dt * (iz ? 2.2 : 0.8), dt * (iz ? 2.2 : 0.8));
+    player.heading -= ix * dt * (0.45 + 0.6 * Math.min(1, Math.abs(hsW.v) / 3));
+    let [qx, qz, hit] = hsPush(p.x + Math.sin(player.heading) * hsW.v * dt, p.z + Math.cos(player.heading) * hsW.v * dt, 1.9); if (hit) hsW.v *= 0.6;
+    for (let q = 0; q < HS_SHIPS; q++) { if (q === k) continue; const O = hsCapPose(q) || (hsCrew(q).length ? hsW.pose[q] : HS_MOOR(q)); if (!O) continue; const dx = qx - O[0], dz = qz - O[1], d = Math.hypot(dx, dz); if (d < 3.6 && d > 1e-3) { qx = O[0] + dx / d * 3.6; qz = O[1] + dz / d * 3.6; hsW.v *= 0.9; } } // 다른 판옥선과 부딪히면 비켜요
+    if (ko || Math.hypot(qx - p.x, qz - p.z) < 2) { p.x = qx; p.z = qz; }
+    p.y = HS_DECK; player.vy = 0; player.onGround = true; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = player.heading;
+    if (Math.abs(hsW.v) > 1 && Math.random() < dt * 8) burst(new V3(p.x - Math.sin(player.heading) * 4.2, 0.2, p.z - Math.cos(player.heading) * 4.2), [0xFFFFFF, 0xBFE4FF], 2, 1, 0.5, 0.6, -2);
+    { let d = player.heading + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 1.2); camDist = Math.max(camDist, 17); camPitch = Math.max(camPitch, 0.42); }
+    return; }
+  if (!P) return; const [x, z, h] = hsSeatAt(P, hsW.seat); player.pos.set(x, HS_DECK, z); player.vy = 0; player.onGround = true; player.heading = hsW.seat === 1 ? h + Math.PI / 2 : hsW.seat === 2 ? h - Math.PI / 2 : h; player.avatar.g.position.copy(player.pos); player.avatar.g.rotation.y = player.heading;
+  { let d = h + Math.PI - camYaw; d = Math.atan2(Math.sin(d), Math.cos(d)); camYaw += d * Math.min(1, dt * 1.2); camDist = Math.max(camDist, 17); camPitch = Math.max(camPitch, 0.42); }
+}
+function hsRemotes() { // updateRemotes 다음: 판옥선에 탄 친구들을 선장 배 자리에
+  if (!hsW?.reg || !S.hs?.on) return;
+  for (const [, r] of remotes) { const p = hsParse(r.target?.hs); if (!p || p.s === 0) continue; const P = hsCapPose(p.k); if (!P) continue; const [x, z, h] = hsSeatAt(P, p.s), hh = p.s === 1 ? h + Math.PI / 2 : p.s === 2 ? h - Math.PI / 2 : h; r.pos.set(x, HS_DECK, z); r.a.g.position.set(x, HS_DECK, z); r.a.g.rotation.y = hh; r.heading = hh; }
+}
+
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
 // state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
 function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
@@ -26037,7 +26476,7 @@ buildStarGame();
 initStarHud();
 initMemGame();
 initDropGame();
-initPlotAdmin(); initFestAdmin();
+initPlotAdmin(); initFestAdmin(); hsInit();
 makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); buildHistMuseum(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
@@ -26061,8 +26500,9 @@ function loop() {
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
+  if (joined) { try { hsTick(dt); } catch (e) { console.warn('hs', e); } } // ⚓ 1031e 한산도대첩
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
-  { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine())); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
+  { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine()) || !!hsW?.on); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
   updateFund(dt);
   if (joined) updateHome(dt);
   updateFx(dt); grassWind.value = time; waterTime.value = time;
@@ -26071,7 +26511,7 @@ function loop() {
   if (!joined) renderPreview(dt);
   updatePretty(dt);
   updateEnv(dt);
-  if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); }
+  if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); hsRemotes(); }
   updateTeachLooks(dt);
   poolTick(dt); // 🏊 1028o (아바타 위치를 다 정한 뒤)
   try { reefTick(dt); } catch (e) { console.warn('reef', e); } // 🤿 1031b
