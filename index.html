@@ -1472,7 +1472,7 @@
     <div id="tpRaid"></div>
 
     <h3>🏰 모래성</h3>
-    <p class="hint">바닷가 남쪽 모래사장: 🏰 우리 반 모래성(언제나 함께 쌓기 · 🌊 파도로 지우기) · 🏆 모래성 대회(모둠 터 ①~④ · 정한 시간 동안 쌓고 1분 투표 · 1등 모둠에 많이 쌓은 학생 🐚30, 참여 🐚10)</p>
+    <p class="hint">바닷가 남쪽 모래사장: 🏰 우리 반 모래성(언제나 함께 쌓기 · 🌊 파도로 지우기)</p>
     <div id="tpSand"></div>
 
     <h3>🏟️ 펫 체육관 관장 속성</h3>
@@ -11125,6 +11125,7 @@ function openCoinStore() {
   });
 }
 // ================= 🌊 바다 놀이 (1018a): 🚤 보트 경주 · 🏝️ 보물섬 =================
+const SEA_RACE_OFF = true, SAND_CONTEST_OFF = true; // 1031a 🚤 보트 경주 · 🏆 모둠 모래성 대회는 뺐어요 (코드는 남겨 둬요)
 const SEA_RINGS = [[104, 34], [118, 22], [134, 12], [150, 20], [156, 38], [146, 54], [128, 58], [110, 52]], SEA_START = [97, 40];
 const ISLE = { cx: 150, cz: 112, r: 11, dock: [77.8, 141] }; // dock: ⚓ 선착장 (1018b)
 // 🏝️ 과목별 섬 (1020b): 단서 3개(그 과목) → 보물상자 · 먼 섬은 좋은 배만 닿아요 (minH: 0 뗏목 · 1 나룻배 · 2 돛단배)
@@ -11141,13 +11142,13 @@ const sea = { on: false, next: 0, t0: 0, rings: [], boat: null, hud: null, posts
 function buildSeaFun() {
   const g = new THREE.Group(); g.name = 'SeaFun'; scene.add(g); const o = { solid: false };
   // 🚤 경주 고리 (물 위 둥근 문)
-  SEA_RINGS.forEach(([x, z], i) => { const nx = SEA_RINGS[(i + 1) % SEA_RINGS.length], a = Math.atan2(nx[0] - x, nx[1] - z);
+  if (!SEA_RACE_OFF) SEA_RINGS.forEach(([x, z], i) => { const nx = SEA_RINGS[(i + 1) % SEA_RINGS.length], a = Math.atan2(nx[0] - x, nx[1] - z);
     const r = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.22, 8, 28), new THREE.MeshLambertMaterial({ color: 0xFF9E3D, emissive: 0x000000 })); r.position.set(x, 1.7, z); r.rotation.y = a; g.add(r);
     for (const s of [-1, 1]) cyl(g, 0.35, 0.6, i % 2 ? 0xE2584A : 0xFFFFFF, x + Math.cos(a) * s * 2.8, 0.2, z - Math.sin(a) * s * 2.8, o); sea.rings.push(r); });
   sea.ringLabel = makeLabel(g, [''], 0.9, 0, -99, 0);
-  { const b = new THREE.Group(); b.position.set(BEACH.pierX1 - 1, 0, BEACH.pierZ - 2.2); g.add(b); box(b, 1.4, 0.5, 2.8, 0xFFFFFF, 0, 0.15, 0, o); box(b, 1.5, 0.12, 2.9, 0x4A9AE8, 0, 0.42, 0, o); }
-  signPlane(g, ['🚤 보트 경주'], 2.2, 0.6, BEACH.pierX1 - 3, 1.6, BEACH.pierZ - 1.45, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = Math.PI;
-  addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.6, text: () => sea.on ? null : ['🚤 보트 경주 시작', `고리 ${SEA_RINGS.length}개 · 내 최고 ${bag.seaBest ? (bag.seaBest / 1000).toFixed(1) + '초' : '-'}`], run: seaStart });
+  if (!SEA_RACE_OFF) { const b = new THREE.Group(); b.position.set(BEACH.pierX1 - 1, 0, BEACH.pierZ - 2.2); g.add(b); box(b, 1.4, 0.5, 2.8, 0xFFFFFF, 0, 0.15, 0, o); box(b, 1.5, 0.12, 2.9, 0x4A9AE8, 0, 0.42, 0, o); }
+  if (!SEA_RACE_OFF) signPlane(g, ['🚤 보트 경주'], 2.2, 0.6, BEACH.pierX1 - 3, 1.6, BEACH.pierZ - 1.45, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = Math.PI;
+  if (!SEA_RACE_OFF) addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.6, text: () => sea.on ? null : ['🚤 보트 경주 시작', `고리 ${SEA_RINGS.length}개 · 내 최고 ${bag.seaBest ? (bag.seaBest / 1000).toFixed(1) + '초' : '-'}`], run: seaStart });
   // 🏝️ 보물섬
   const isle = new THREE.Group(); isle.name = 'TreasureIsle'; scene.add(isle);
   cyl(isle, ISLE.r, 0.8, 0xF3DFA8, ISLE.cx, -0.2, ISLE.cz, o); cyl(isle, ISLE.r - 3, 0.9, 0x7FC46A, ISLE.cx, -0.1, ISLE.cz, o);
@@ -17938,6 +17939,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031a', d: '10월 31일', items: ['🧹 바다 정리: 🚤 보트 경주와 🏆 모둠 모래성 대회를 뺐어요 (🏰 우리 반 모래성은 그대로)'] },
   { id: '1029k', d: '10월 29일', items: ['🔗 기기 연결 코드: 🎒 가방 → "다른 기기로 옮기기"에서 6자리 숫자를 받아, 다른 기기 첫 화면에 넣고 들어가면 그 계정(집·가방) 그대로 이어져요 · 한 번 연결한 기기는 계속 그 계정'] },
   { id: '1029j', d: '10월 29일', items: ['🏯 안시성 전투 새 맵: 높은 돌 성벽(성가퀴·치·각루) · 성문 하나 · 안쪽 돌계단으로 성벽 위에 올라가 싸워요 · 해자 없음', '⛰️ 토산이 계단식 흙산으로 쌓여 올라가요 (올라갈 수 있어요 · 다 쌓으면 성벽 높이) · 🐉 당나라 진영 막사', '⚔️ 공방전 나라 점수판을 화면 오른쪽으로 옮겼어요'] },
   { id: '1029i', d: '10월 29일', items: ['🏯 성 공방전 역사 전투 시나리오: 안시성 전투 (645)! 고구려는 지키고 당나라는 공격 · ⚔️ 포위 → ⛰️ 토산 쌓기·빼앗기 → ❄️ 겨울', '📜 시작할 때 브리핑 · 끝나면 "실제 역사는?" 카드와 역사 퀴즈 (🐚 + 🏛️ 사회력)'] },
@@ -20320,12 +20322,12 @@ function buildSand() {
   { const C = SAND.c, bk = new THREE.Group(); bk.position.set(C.x - 5.4, 0, C.z + 3); g.add(bk); cyl(bk, 0.35, 0.5, 0x4A9AE8, 0, 0.25, 0, o); cyl(bk, 0.37, 0.05, 0x2F6EB8, 0, 0.5, 0, o); box(bk, 0.5, 0.06, 0.12, 0xE2584A, 0.45, 0.1, 0.3, { solid: false, ry: 0.5 }); } // 🪣 양동이 · 삽
   sandW.labels.c = makeLabel(g, ['🏰 우리 반 모래성'], 1.0, SAND.c.x, 5.6, SAND.c.z);
   addInteract({ pos: new V3(SAND.c.x - 4.6, 1, SAND.c.z), r: 3.4, text: () => ['🏰 모래성 쌓기', `우리 반 함께 · ${sandCount(sandCells('c'))}개`], run: () => openSandUI('c') });
-  SAND.p.forEach((C, k) => { pad(C, 0xE3CC92, false); const n = k + 1, fl = new THREE.Group(); fl.position.set(C.x - C.n * C.s / 2 - 0.9, 0, C.z); g.add(fl); cyl(fl, 0.05, 2.2, 0x8A5A34, 0, 1.1, 0, o); box(fl, 0.03, 0.5, 0.8, [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C][k], 0, 1.95, 0.42, o);
+  if (!SAND_CONTEST_OFF) SAND.p.forEach((C, k) => { pad(C, 0xE3CC92, false); const n = k + 1, fl = new THREE.Group(); fl.position.set(C.x - C.n * C.s / 2 - 0.9, 0, C.z); g.add(fl); cyl(fl, 0.05, 2.2, 0x8A5A34, 0, 1.1, 0, o); box(fl, 0.03, 0.5, 0.8, [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C][k], 0, 1.95, 0.42, o);
     sandW.labels['p' + n] = makeLabel(g, [`${'①②③④'[k]} 모둠 터`], 0.8, C.x, 3.8, C.z);
     addInteract({ pos: new V3(C.x - C.n * C.s / 2 - 1.2, 1, C.z), r: 3.0, text: () => sandPhase() === 'build' ? [`🏰 ${'①②③④'[k]} 모둠 모래성 쌓기`, `남은 시간 ${sandLeft()}`] : sandPhase() === 'vote' ? ['🗳️ 모래성 투표하기', '마음에 드는 모래성은?'] : null, run: () => sandPhase() === 'vote' ? openSandVote() : openSandUI(String(n)) }); });
-  makeLabel(g, ['🏆 모래성 대회장', '선생님이 대회를 열면 모둠 터에 쌓아요'], 0.9, 64.5, 7.2, -44);
+  if (!SAND_CONTEST_OFF) makeLabel(g, ['🏆 모래성 대회장', '선생님이 대회를 열면 모둠 터에 쌓아요'], 0.9, 64.5, 7.2, -44);
   batchStatic(g);
-  sandRender('c', true); for (let k = 1; k <= 4; k++) sandRender(String(k), true);
+  sandRender('c', true); if (!SAND_CONTEST_OFF) for (let k = 1; k <= 4; k++) sandRender(String(k), true);
   const ui = document.createElement('div'); ui.id = 'sandUI'; ui.className = 'sticker hidden';
   ui.style.cssText = 'position:fixed;right:10px;top:calc(76px + var(--safe-top, 0px));z-index:12;padding:8px 10px;width:min(92vw,330px);max-height:calc(100vh - 170px);overflow:auto;display:flex;flex-direction:column;gap:6px;align-items:center'; // 모래성이 가리지 않게 오른쪽 위
   document.body.append(ui); sandW.ui = ui;
@@ -20388,7 +20390,7 @@ function sandMyPlot() { const e = sandEv(); if (!e || bag.sandMine?.r !== e.r) r
 function sandResult() { const e = sandEv(); if (!e) return null; const votes = Object.values(S.sand?.v?.[e.r] || {}), cnt = [0, 0, 0, 0, 0]; for (const v of votes) if (v >= 1 && v <= 4) cnt[v]++; const mx = Math.max(...cnt.slice(1)); return { cnt, win: mx > 0 ? [1, 2, 3, 4].filter(n => cnt[n] === mx) : [] }; }
 function syncSand(prev, first) {
   if (!sandW.ui) return;
-  sandRender('c'); for (let k = 1; k <= 4; k++) sandRender(String(k));
+  sandRender('c'); if (!SAND_CONTEST_OFF) for (let k = 1; k <= 4; k++) sandRender(String(k));
   const st = sandStage(); if (!first && sandW.stage >= 0 && st > sandW.stage) { if (inBeach(player.pos.x, player.pos.z)) showBanner(`🏰 우리 반 모래성 ${st}단계!`, `함께 쌓은 블록 ${sandCount(sandCells('c'))}개`, 4000); else toast(`🏰 바닷가 우리 반 모래성이 ${st}단계가 됐어요!`, 'success'); }
   if (!first && sandCount(sandCells('c')) === 0 && sandCount(prev?.sand?.c || {}) > 0) { if (inBeach(player.pos.x, player.pos.z)) { showBanner('🌊 파도가 모래성을 쓸어 갔어요', '새 모래성을 함께 쌓아요!', 4000); burst(new V3(SAND.c.x, 1, SAND.c.z), [0x9AD8FF, 0xFFFFFF, 0x4A9AE8], 80, 6, 3); } }
   sandW.stage = st;
@@ -20411,14 +20413,14 @@ function updateSand(dt) {
 }
 function fillSandAdmin() {
   const box = $('tpSand'); if (!box || !isTeacher) return; const e = sandEv(), ph = sandPhase(), key = JSON.stringify([e, ph, sandCount(sandCells('c'))]); if (box.dataset.key === key) return; box.dataset.key = key; box.textContent = '';
-  box.append(el2('p', 'hint', `🏰 우리 반 모래성: ${sandStage()}단계 · 블록 ${sandCount(sandCells('c'))}개 · 🏆 대회: ${!e ? '열리지 않음' : ph === 'build' ? `쌓는 중 (${sandLeft()} 남음)` : ph === 'vote' ? `투표 중 (${sandLeft()} 남음)` : '결과 발표'}`));
+  box.append(el2('p', 'hint', `🏰 우리 반 모래성: ${sandStage()}단계 · 블록 ${sandCount(sandCells('c'))}개 ${SAND_CONTEST_OFF ? '' : ` · 🏆 대회: ${!e ? '열리지 않음' : ph === 'build' ? `쌓는 중 (${sandLeft()} 남음)` : ph === 'vote' ? `투표 중 (${sandLeft()} 남음)` : '결과 발표'}`}`));
   const row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
   const sel = el2('select', 'tinput', null); sel.style.width = 'auto'; for (const m of [3, 5, 7, 10]) { const op = document.createElement('option'); op.value = m; op.textContent = `${m}분 쌓기`; if (m === 5) op.selected = true; sel.append(op); }
   const go = el2('button', 'btn', '🏆 대회 시작 (모둠 터 비우고)'); go.style.background = 'var(--leaf)'; go.style.color = '#fff';
   go.onclick = () => { const t = backend.now(), t1 = t + (+sel.value) * 60000; adminDo({ 'sand/p': null, 'sand/v': null, 'sand/ev': { r: 's' + Math.floor(t / 1000).toString(36), t1, t2: t1 + 60000 } }, `🏆 모래성 대회 시작! ${sel.value}분 동안 쌓고 1분 투표`); };
   const end = el2('button', 'btn', '🏁 대회 끝내기'); end.style.background = '#fff'; end.disabled = !e; end.onclick = () => adminDo({ 'sand/ev': null, 'sand/p': null, 'sand/v': null }, '🏁 모래성 대회를 정리했어요');
   const wave = el2('button', 'btn danger', '🌊 파도 보내기 (반 모래성 지우기)'); wave.onclick = async () => { if (await confirmAction({ title: '🌊 파도를 보낼까요?', body: '우리 반 모래성이 모두 사라져요.', okText: '파도 보내기' })) adminDo({ 'sand/c': null }, '🌊 파도가 모래성을 쓸어 갔어요'); };
-  row.append(sel, go, end, wave); box.append(row);
+  if (SAND_CONTEST_OFF) row.append(wave); else row.append(sel, go, end, wave); box.append(row);
 }
 
 // ================= 🐾 동료 펫 (1024e · 체육관 배틀 펫 데리고 다니기) =================
