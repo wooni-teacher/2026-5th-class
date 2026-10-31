@@ -18124,6 +18124,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031f', d: '10월 31일', items: ['🧑‍🏫 선생님은 펫 센터에서 🥚 희귀 펫 알 펫과 🤿 바다 펫도 바로 데려올 수 있어요 (모두 데려오기 버튼)'] },
   { id: '1031e', d: '10월 31일', items: ['⚓ 한산도대첩(1592)! 판옥선 한 척에 4명(🧭 선장 · 🔥 좌포 · 🔥 우포 · 🥁 북)이 함께 타고 왜선과 싸우는 협동 해전 · ① 견내량에서 꾀어내기 → ② 학익진 → ③ 총공격', '🎬 임진왜란 배경부터 한산도 앞바다까지 이어지는 시작 영상 · 📺 선생님 TV 모드는 내레이션', '📝 끝나면 실제 역사 카드와 퀴즈 (🐚 · 🏛️ 사회력)'] },
   { id: '1031d', d: '10월 31일', items: ['🌊 바닷속이 더 넓어졌어요: 수조 벽 대신 끝없이 이어지는 바다 · 깊은 바다 빛과 물안개 · 둘레 바위 언덕과 해초 숲 · 다른 마을이 보이지 않아요'] },
   { id: '1031c', d: '10월 31일', items: ['🐾 바다 펫 9가지! 바닷속 탐험에서 관찰 퀴즈를 맞힌 생물(흰동가리·바다거북·해마·돌고래·상어·꽃게·가오리·불가사리·대왕고래)을 🐚60에 펫으로 데려와요 · 배틀 · 동료 펫으로 함께 다녀요'] },
@@ -20755,8 +20756,9 @@ function openPetCenter(tab = 'team') {
       });
     } else if (tab === 'adopt') {
       box.append(el2('p', 'hint', isTeacher ? '🧑‍🏫 선생님은 모든 펫을 바로 데려올 수 있어요.' : '가방에 있는 생물 1마리를 펫으로 데려와요 (한 종류에 한 마리). 곤충 채집·낚시·역사 마을에서 잡아요.'));
+      if (isTeacher) { const left = PET_IDS.filter(id => isRare(id) && !bag.pets[id]), rb = el2('button', 'btn', left.length ? `🥚 희귀·바다 펫 ${left.length}가지 모두 데려오기` : '🥚 희귀·바다 펫을 모두 데려왔어요'); rb.disabled = !left.length; rb.style.background = '#FFE066'; rb.onclick = () => { for (const id of left) { bag.pets[id] = petNew(id); bag.pets[id].lv = Math.max(bag.pets[id].lv, 8); } saveBag(); playSfx('fanfare'); toast(`🥚 희귀·바다 펫 ${left.length}가지를 데려왔어요!`, 'success'); refillLife(); }; const rr = el2('div', 'row-center'); rr.append(rb); box.append(rr); } // 🧑‍🏫 1031f 선생님은 희귀 펫도 열려요
       const g = el2('div', 'lp-grid');
-      for (const id of PET_IDS.filter(id => !isRare(id))) { const c = CRITTER[id], t = PT[petType(id)], own = !!bag.pets[id], n = bag.c[id] || 0, card = el2('div', 'lp-card' + (own ? ' done' : ''));
+      for (const id of PET_IDS.filter(id => !isRare(id) || isTeacher)) { const c = CRITTER[id], t = PT[petType(id)], own = !!bag.pets[id], n = bag.c[id] || 0, card = el2('div', 'lp-card' + (own ? ' done' : ''));
         { const ic = el2('div', 'lp-icon pet-big'); ic.append(petImg(id)); card.append(ic); } card.append(el2('div', 'lp-name', c.name), el2('div', 'hint', `${t.i} ${t.n} · ${own ? '내 펫' : isTeacher ? '' : `가방 ${n}`}`));
         const b = el2('button', 'btn lp-btn', own ? '✔' : '데려오기'); b.disabled = own || (!isTeacher && n < 1); b.onclick = () => { petAdopt(id); refillLife(); }; card.append(b); g.append(card); }
       box.append(g);
