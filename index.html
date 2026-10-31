@@ -12089,7 +12089,7 @@ function initControlUI() {
 }
 
 // ---------- 지도 ----------
-const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1285, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 }, MAPB_NV = { x0: 2318, x1: 2562, z0: -378, z1: -150, s: 1 };
+const MAPB_MAIN = { x0: -104, x1: 100, z0: -134, z1: 158, s: 2 }, MAPB_HV = { x0: 440, x1: 580, z0: -140, z1: 150, s: 2 }, MAPB_MATH = { x0: 1095, x1: 1285, z0: -52, z1: 56, s: 2.4 }, MAPB_EV = { x0: 1684, x1: 1936, z0: -52, z1: 52, s: 2 }, MAPB_SG = { x0: 2010, x1: 2190, z0: -90, z1: 90, s: 1.6 }, MAPB_TR = { x0: 2228, x1: 2312, z0: -40, z1: 40, s: 2.4 }, MAPB_NV = { x0: 2778, x1: 3022, z0: -378, z1: -150, s: 1 };
 let MAPB = MAPB_MAIN; // 바탕 그림: 1m = 2칸 (역사 마을은 3칸)
 const mapX = (x) => (x - MAPB.x0) * MAPB.s, mapZ = (z) => (z - MAPB.z0) * MAPB.s;
 const mapUI = { base: null, key: '', t: 0, show: store.get('sv-minimap') !== '0' };
@@ -17307,7 +17307,7 @@ const ROOMS = {
   bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
   gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
   mrc: { name: '수학 달리기장', icon: '🏃', cx: 1515, cz: 130, w: 34, d: 28, wall: 0xFFF1D6, floor: 0xC8A878, site: null }, // 🏃 수학 마을 달리기장 (1024m)
-  reef: { name: '바닷속 산호초', icon: '🤿', cx: 2480, cz: 0, w: 56, d: 56, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
+  reef: { name: '바닷속 산호초', icon: '🤿', cx: 3200, cz: 0, w: 56, d: 56, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
   egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
@@ -17612,7 +17612,7 @@ function buildReef(gIn, r) { // 바닷속: 모래 바닥 · 파란 물 · 바위
 }
 function reefTick(dt) {
   if (!reef.built) return; const here = joined && roomNow() === 'reef'; if (here !== reef.envHere) { reef.envHere = here; applyEnv(true); } const near = here || [...remotes.values()].some(r => inReef(r.pos.x, r.pos.z));
-  reef.g.visible = here; reef.sg.visible = here || near || (camera.position.x > 2380 && camera.position.x < 2580); if (!here && !near) { for (const it of Object.values(reef.its)) it.pos.set(0, -99, 0); return; }
+  reef.g.visible = here; reef.sg.visible = here || near || (camera.position.x > 3100 && camera.position.x < 3300); if (!here && !near) { for (const it of Object.values(reef.its)) it.pos.set(0, -99, 0); return; }
   for (const m of reef.movers) { const P = m.path, t = time * (P.sp || 0) + m.id.length;
     let x = P.c[0], z = P.c[1], y = P.y, hd = 0;
     if (P.r && P.sp) { x += Math.cos(t) * P.r; z += Math.sin(t) * P.r * (P.side ? 0.2 : 1); hd = Math.atan2(-Math.sin(t) * Math.sign(P.sp) * (P.side ? 0 : 1), -Math.cos(t) * Math.sign(P.sp)) ; if (P.side) hd = Math.PI / 2; else hd = Math.atan2(Math.cos(t) * Math.sign(P.sp), -Math.sin(t) * Math.sign(P.sp)) - Math.PI / 2; }
@@ -18110,6 +18110,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031l', d: '10월 31일', items: ['⛏️ 수학 광산 동굴에 들어가면 다른 곳으로 옮겨지던 문제를 고쳤어요 (해전 바다·바닷속이 광산 동굴과 겹쳐 있었어요 → 동쪽 먼 곳으로 옮겼어요)'] },
   { id: '1031k', d: '10월 31일', items: ['🧑‍🏫 관리화면 삼국 해전에서도 학생마다 나라를 정할 수 있어요 (💪 나라별 능력치 힘도 보여요)'] },
   { id: '1031j', d: '10월 31일', items: ['🧭 항해사가 친구 배에 타도 그 배가 10% 빨라지고, Q 돌진으로 배를 빠르게 해요'] },
   { id: '1031i', d: '10월 31일', items: ['🎽 해전 직업은 나라마다 같은 직업 2명까지! (나라 사람이 많으면 늘어나요) · 꽉 찬 직업은 🔒'] },
@@ -25745,7 +25746,7 @@ function boardRemotes(dt) { // updateRemotes 다음: 배·함께 타는 탈것�
    · 선생님 기기(연습 모드는 내 기기)가 피해·섬·점수를 계산해요 → state/nv { on, r, ph lobby|play|end, t, end, set, n, team{기기: 나라}, sc{나라: 점수}, hl{선장: 부서짐}, ko{선장: 다시 띄울 시각}, own{섬: 나라}, ct{섬: 차지하는 나라}, cp{섬: %}, win }
    · 학생은 접속 정보에만 써요: nv "C|배모양|철판|화포|발사|기술|직업" 또는 "W|선장|자리|발사|기술|직업" · nd "판|선장.맞힌수,…"
    · 1031h: 🎽 직업 4가지(항해사·포격수·조선공·척후병, Q 기술) · 🤖 컴퓨터 배(선생님 기기가 움직여요 · state/nv/bt) · 🧑‍🏫 선생님 참여 고르기 */
-var NV = { cx: 2440, cz: -264, x0: 2318, x1: 2562, z0: -378, z1: -150 };
+var NV = { cx: 2900, cz: -264, x0: 2778, x1: 3022, z0: -378, z1: -150 }; // 1031l: 수학 광산 동굴(x 2432~2528)과 겹쳐서 동쪽으로 옮겼어요
 var nvW = null;
 const NV_DECK = 0.3, NV_SC = 1.6, NV_KO = 12000, NV_RANGE = 22, NV_SEA_X = 106, NV_SEA_Z = 100;
 const NV_HULL = [12, 16, 20, 26], NV_SPD = [5.8, 6.4, 7.0, 7.4], NV_ARM = [0, 4, 8, 12], NV_UP_PR = { ar: [40, 80, 120], gn: [50, 100, 150] };
