@@ -18108,6 +18108,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031j', d: '10월 31일', items: ['🧭 항해사가 친구 배에 타도 그 배가 10% 빨라지고, Q 돌진으로 배를 빠르게 해요'] },
   { id: '1031i', d: '10월 31일', items: ['🎽 해전 직업은 나라마다 같은 직업 2명까지! (나라 사람이 많으면 늘어나요) · 꽉 찬 직업은 🔒'] },
   { id: '1031h', d: '10월 31일', items: ['🎽 해전 직업 4가지: 🧭 항해사(빠르게 · Q 돌진) · 💣 포격수(위력·사거리 · Q 일제 사격) · 🔨 조선공(튼튼 · Q 긴급 수리) · 🔭 척후병(장전 · 섬 빨리 · Q 정밀 조준)', '🤖 컴퓨터 배와 🧑‍🏫 선생님도 해전에 함께해요', '🖱️ 해전 버튼이 다른 버튼과 겹치지 않게 고쳤어요'] },
   { id: '1031g', d: '10월 31일', items: ['⚓ 삼국 해전! 성 공방전처럼 나라를 나눠 바다에서 싸워요 · 🛠️ 조선소에서 만든 내 배(뗏목·나룻배·돛단배·해적선)를 띄우고 친구는 🔥 포수 · 🔨 수리공으로 함께 타요', '🏝️ 섬 4곳 차지하기: 💰 보물섬(피해 +1) · 🌬️ 바람섬(빨라져요) · 🔨 나무섬(저절로 수리) · 🔭 등대섬(장전 빨라져요)', '💪 해전 능력: 🧮 수학력 → 포탄 위력 · 🔤 영어력 → 장전 · 🏛️ 사회력 → 배 튼튼함 · 📚 독서력 → 위력 · ⛵ 배 가게 "⚔️ 해전 강화"(🛡️ 철판 · 💣 화포)'] },
@@ -25747,7 +25748,7 @@ const NV_DECK = 0.3, NV_SC = 1.6, NV_KO = 12000, NV_RANGE = 22, NV_SEA_X = 106, 
 const NV_HULL = [12, 16, 20, 26], NV_SPD = [5.8, 6.4, 7.0, 7.4], NV_ARM = [0, 4, 8, 12], NV_UP_PR = { ar: [40, 80, 120], gn: [50, 100, 150] };
 const NV_ROLE = ['🧭 선장', '🔥 좌현 포수', '🔥 우현 포수', '🎯 앞 포수'];
 const NV_JOB = [ // 🎽 1031h 직업 (Q 기술)
-  { k: 'nav', icon: '🧭', n: '항해사', d: '선장이면 배가 20% 빨라지고 잘 돌아요', q: '💨 돌진: 2.5초 동안 아주 빠르게 (선장일 때 · 15초마다)', cd: 15000 },
+  { k: 'nav', icon: '🧭', n: '항해사', d: '선장이면 배 20% 빠르게·잘 돌아요 · 친구 배에 타도 그 배 10% 빠르게', q: '💨 돌진: 타고 있는 배가 2.5초 동안 아주 빠르게 (15초마다)', cd: 15000 }, // 1031j 포수로 타도 쓸모 있게
   { k: 'gun', icon: '💣', n: '포격수', d: '포탄 위력 +1 · 사거리 +4', q: '💥 일제 사격: 왼쪽·오른쪽·앞으로 한꺼번에 (15초마다)', cd: 15000 },
   { k: 'wright', icon: '🔨', n: '조선공', d: '선장이면 배 튼튼함 +6', q: '🔧 긴급 수리: 타고 있는 배 +6 (12초마다)', cd: 12000 },
   { k: 'scout', icon: '🔭', n: '척후병', d: '장전 25% 빨라요 · 섬을 1.6배 빨리 차지해요', q: '🎯 정밀 조준: 다음 한 발이 멀리·잘 맞아요 (10초마다)', cd: 10000 },
@@ -25898,7 +25899,7 @@ function nvBalls(dt) {
 }
 function nvSkill() { // 🎽 Q: 직업 기술
   if (!nvW?.on || !S.nv?.on) return; const J = NV_JOB[nvJob()], now = performance.now(); if (now < nvW.skT) { toast(`${J.icon} ${Math.ceil((nvW.skT - now) / 1000)}초 뒤에 또 써요`, 'info'); return; }
-  if (J.k === 'nav') { if (nvW.seat !== 0) { toast('🧭 돌진은 선장일 때 써요', 'info'); return; } nvW.dash = now + 2500; playSfx('jump'); }
+  if (J.k === 'nav') { if (nvW.seat === 0) nvW.dash = now + 2500; else { nvW.sk++; toast('💨 돌진! 선장 배가 빨라져요', 'info'); } playSfx('jump'); } // 타고 있으면 기술 카운터로 선장 기기에 알려요
   else if (J.k === 'gun') { nvFire(true); }
   else if (J.k === 'wright') { nvW.sk++; playSfx('build'); burst(new V3(player.pos.x, NV_DECK + 1.2, player.pos.z), [0x8FE08A, 0xFFFFFF], 10, 2, 2, 0.6, -2); }
   else if (J.k === 'scout') { nvW.aim = true; playSfx('pick'); toast('🎯 다음 한 발은 멀리 · 잘 맞아요!', 'info'); }
@@ -26002,7 +26003,7 @@ function nvHudTick() {
 
 /* ---------- 🔁 매 프레임 ---------- */
 function nvInit() {
-  nvW = { on: false, seat: 0, cap: '', q: 0, v: 0, cd: 0, f: 0, rp: 0, rpT: 0, hits: {}, hr: '', built: false, ships: new Map(), balls: [], pool: [], isl: {}, H: { r: null }, reg: false, act: null, tipT: 0, hudHtml: '', endShown: '', lastPh: '', lastR: '', fireSeen: new Map(), koSeen: 0, fxSeen: '', sk: 0, skT: 0, dash: 0, aim: false, tMe: true, botView: [], botT: {}, botM: {}, botF: {} };
+  nvW = { on: false, seat: 0, cap: '', q: 0, v: 0, cd: 0, f: 0, rp: 0, rpT: 0, hits: {}, hr: '', built: false, ships: new Map(), balls: [], pool: [], isl: {}, H: { r: null }, reg: false, act: null, tipT: 0, hudHtml: '', endShown: '', lastPh: '', lastR: '', fireSeen: new Map(), koSeen: 0, fxSeen: '', sk: 0, skT: 0, dash: 0, aim: false, tMe: true, botView: [], botT: {}, botM: {}, botF: {}, crewSk: {} };
   nvUiInit();
   const sel = $('tpNvSet'); if (sel) { for (const [k, v] of Object.entries(SIEGE_SETS)) if (!v.scen) sel.append(new Option(`${v.name} (${v.nat.map(N => N.name).join('·')})`, k)); sel.value = 'three'; }
   { const c = $('tpNvMe'); if (c) { c.checked = store.get('sv-nvme') !== '0'; nvW.tMe = c.checked; c.onchange = () => { nvW.tMe = c.checked; store.set('sv-nvme', c.checked ? '1' : '0'); }; } }
@@ -26060,9 +26061,10 @@ function nvSelf(dt, now) {
     if (nvKo(me)) { nvToDock('💥 배가 가라앉았어요! 12초 뒤 부두에서 다시 띄워요'); playSfx('oops'); return; }
     const p = player.pos, hh = Math.min(3, Math.floor(nvW.q / 25));
     let ix = (keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y; ix = clamp(ix, -1, 1); iz = clamp(iz, -1, 1); if (isFrozen() || bgOpen()) ix = iz = 0;
-    const nav = NV_JOB[nvJob()].k === 'nav', dash = nvW.dash > performance.now(), maxV = NV_SPD[hh] * (nvOwns(nvMine(), 'wind') ? 1.15 : 1) * (nav ? 1.2 : 1) * (dash ? 1.8 : 1), want = iz > 0 ? maxV * iz : iz < 0 ? -2 * -iz : 0; nvW.v += clamp(want - nvW.v, -dt * (iz ? 2.4 : 0.9), dt * (iz ? 2.4 : 0.9));
+    const crewNav = nvCrew(me).filter(([u]) => NV_JOB[nvParse(remotes.get(u)?.target?.nv)?.job]?.k === 'nav'); for (const [u] of crewNav) { const sk = nvParse(remotes.get(u)?.target?.nv)?.sk | 0, was = nvW.crewSk[u]; if (was != null && was !== sk) { nvW.dash = performance.now() + 2500; toast('💨 항해사 친구가 돌진을 썼어요!', 'info'); } nvW.crewSk[u] = sk; } // 🧭 1031j 배에 탄 항해사
+    const nav = NV_JOB[nvJob()].k === 'nav', dash = nvW.dash > performance.now(), maxV = NV_SPD[hh] * (nvOwns(nvMine(), 'wind') ? 1.15 : 1) * (nav ? 1.2 : crewNav.length ? 1.1 : 1) * (dash ? 1.8 : 1), want = iz > 0 ? maxV * iz : iz < 0 ? -2 * -iz : 0; nvW.v += clamp(want - nvW.v, -dt * (iz ? 2.4 : 0.9), dt * (iz ? 2.4 : 0.9));
     if (dash && nvW.v < maxV * 0.8) nvW.v = maxV * 0.8;
-    player.heading -= ix * dt * (0.55 + 0.6 * Math.min(1, Math.abs(nvW.v) / 3)) * (nav ? 1.25 : 1);
+    player.heading -= ix * dt * (0.55 + 0.6 * Math.min(1, Math.abs(nvW.v) / 3)) * (nav ? 1.25 : crewNav.length ? 1.1 : 1);
     let [qx, qz, hit] = nvPush(p.x + Math.sin(player.heading) * nvW.v * dt, p.z + Math.cos(player.heading) * nvW.v * dt, 2.0); if (hit) nvW.v *= 0.6;
     for (const O of nvShips()) { if (O.me || nvKo(O.u)) continue; const dx = qx - O.x, dz = qz - O.z, d = Math.hypot(dx, dz); if (d < 4.2 && d > 1e-3) { qx = O.x + dx / d * 4.2; qz = O.z + dz / d * 4.2; nvW.v *= 0.9; } }
     if (Math.hypot(qx - p.x, qz - p.z) < 2) { p.x = qx; p.z = qz; }
