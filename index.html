@@ -1511,6 +1511,8 @@
       <label class="sr-only" for="tpNvBots">컴퓨터 배</label><select id="tpNvBots" class="tinput" style="width:auto" title="나라마다 컴퓨터(🤖) 배 수"><option value="0">🤖 없음</option><option value="1" selected>🤖 나라마다 1척</option><option value="2">🤖 나라마다 2척</option><option value="3">🤖 나라마다 3척</option></select>
     </div>
     <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpNvMe" checked> 🧑‍🏫 선생님도 한 나라로 참여하기 (끄면 지켜보기)</label>
+    <div class="field">해전 나라 정하기 (자동 = 바다에 오면 사람이 적은 나라로)</div>
+    <div id="tpNvList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpNvOpen" type="button" style="background:#BFE0FF">⚓ 바다 열기</button><button class="btn" id="tpNvBal" type="button" style="background:#fff">⚖️ 능력치로 고르게 나누기</button><button class="btn" id="tpNvStart" type="button" style="background:#FFD23C">⚔️ 해전 시작</button><button class="btn" id="tpNvEnd" type="button" style="background:#fff">🏁 끝내기</button><button class="btn" id="tpNvClose" type="button" style="background:#fff">🧹 닫기</button><button class="btn" id="tpNvGo" type="button" style="background:#fff">🚢 바다로 가기</button></div>
     <h3>🙈 변신 숨바꼭질 (마을을 골라요)</h3>
     <p class="hint">마을을 고르고 참가자를 모은 뒤 시작하면, 참가자가 모두 그 마을로 옮겨지고 술래를 뽑아요. 숨기 40초 → 찾기 3분. 숨는 사람은 그 마을에 어울리는 물건으로 변신하고, 그 마을 울타리 안에서만 숨어요.</p>
@@ -18108,6 +18110,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031k', d: '10월 31일', items: ['🧑‍🏫 관리화면 삼국 해전에서도 학생마다 나라를 정할 수 있어요 (💪 나라별 능력치 힘도 보여요)'] },
   { id: '1031j', d: '10월 31일', items: ['🧭 항해사가 친구 배에 타도 그 배가 10% 빨라지고, Q 돌진으로 배를 빠르게 해요'] },
   { id: '1031i', d: '10월 31일', items: ['🎽 해전 직업은 나라마다 같은 직업 2명까지! (나라 사람이 많으면 늘어나요) · 꽉 찬 직업은 🔒'] },
   { id: '1031h', d: '10월 31일', items: ['🎽 해전 직업 4가지: 🧭 항해사(빠르게 · Q 돌진) · 💣 포격수(위력·사거리 · Q 일제 사격) · 🔨 조선공(튼튼 · Q 긴급 수리) · 🔭 척후병(장전 · 섬 빨리 · Q 정밀 조준)', '🤖 컴퓨터 배와 🧑‍🏫 선생님도 해전에 함께해요', '🖱️ 해전 버튼이 다른 버튼과 겹치지 않게 고쳤어요'] },
@@ -26010,11 +26013,27 @@ function nvInit() {
   $('tpNvOpen')?.addEventListener('click', () => nvAdmin('open')); $('tpNvStart')?.addEventListener('click', () => nvAdmin('start')); $('tpNvBal')?.addEventListener('click', () => nvAdmin('balance'));
   $('tpNvEnd')?.addEventListener('click', () => nvAdmin('end')); $('tpNvClose')?.addEventListener('click', () => nvAdmin('close')); $('tpNvGo')?.addEventListener('click', () => { closeModals(); if (!S.nv?.on) { toast('⚓ 먼저 "바다 열기"를 눌러요', 'warn'); return; } nvGo(); });
 }
+function nvFillAdmin() { // 🏳️ 1031k 관리화면: 학생마다 해전 나라 고르기 (성 공방전 목록과 같은 모양)
+  const box = $('tpNvList'); if (!box || $('teacherPanel')?.classList.contains('hidden')) return; const s = S.nv, list = sgStudents();
+  const key = [s?.on ? s.set + s.n : 'off', list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?')).join(','), JSON.stringify(s?.team || {})].join('|'); if (key === nvW.listKey || box.contains(document.activeElement)) return; nvW.listKey = key; box.textContent = '';
+  if (!s?.on) { box.append(el2('p', 'vempty', '⚓ 바다를 열면 학생마다 나라를 정할 수 있어요')); return; }
+  if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
+  const set = nvSet(), n = s.n;
+  list.forEach(([u, tg], i) => { const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot'); dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
+    row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
+    { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
+    const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 해전 나라`);
+    sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1)))); sel.value = String(s.team?.[u] || 0);
+    sel.onchange = () => { const v = +sel.value; backend.adminUpdate({ [`nv/team/${u}`]: v || null }); toast(v ? `${set.nat[v - 1].icon} ${set.nat[v - 1].name}(으)로 정했어요` : '자동으로 바꿨어요 (바다에 있으면 다시 자동 배정돼요)', 'info'); };
+    const find = el2('button', 'btn', '📍'); find.title = '이 학생 위에 빛기둥 보이기'; find.onclick = () => sgBeam(u); row.append(sel, find); box.append(row); });
+  const sum = {}, cnt = {}; for (const [u, tg] of list) { const t = s.team?.[u]; if (!t) continue; sum[t] = (sum[t] || 0) + (sgPowerOf(u, tg) ?? 0); cnt[t] = (cnt[t] || 0) + 1; }
+  box.append(el2('p', 'hint', '💪 나라별 능력치 힘: ' + set.nat.slice(0, n).map((N, k) => `${N.icon}${N.name} ${sum[k + 1] || 0} (${cnt[k + 1] || 0}명)`).join(' · ')));
+}
 function nvTick(dt) {
   if (!nvW) return; const s = S.nv, now = backend.now();
   if (s?.on) nvBotView(dt);
   if (nvHost()) nvHostTick(dt);
-  { const tn = $('tpNvNow'); if (tn && performance.now() - (nvW.tnT || 0) > 1000) { nvW.tnT = performance.now(); const t = !s?.on ? '지금: 닫혀 있어요' : `지금: ${s.ph === 'play' ? '⚔️ 해전 중' : s.ph === 'end' ? '🏁 끝' : '⚓ 출전 준비'} · ${nvSet().name} · ` + Array.from({ length: s.n }, (_, i) => { const N = nvNat(i + 1); return `${N.icon}${N.name} ${Object.values(s.team || {}).filter(v => v === i + 1).length}명 ${s.sc?.[i + 1] | 0}점`; }).join(' · '); if (tn.textContent !== t) tn.textContent = t; } }
+  { const tn = $('tpNvNow'); if (tn && performance.now() - (nvW.tnT || 0) > 1000) { nvW.tnT = performance.now(); const t = !s?.on ? '지금: 닫혀 있어요' : `지금: ${s.ph === 'play' ? '⚔️ 해전 중' : s.ph === 'end' ? '🏁 끝' : '⚓ 출전 준비'} · ${nvSet().name} · ` + Array.from({ length: s.n }, (_, i) => { const N = nvNat(i + 1); return `${N.icon}${N.name} ${Object.values(s.team || {}).filter(v => v === i + 1).length}명 ${s.sc?.[i + 1] | 0}점`; }).join(' · '); if (tn.textContent !== t) tn.textContent = t; nvFillAdmin(); } }
   const reg = nvRegion(); if (reg !== nvW.reg) { nvW.reg = reg; if (reg) nvBuild(); applyEnv(true); document.body.classList.toggle('nv-here', reg); }
   if (!s?.on) { if (nvW.on) nvW.on = false; if (reg && !hv.travel && joined) { toast('⚓ 선생님이 해전 바다를 닫았어요', 'info'); travelTo('home'); } nvW.join?.classList.add('hidden'); nvW.hud?.classList.add('hidden'); nvW.actEl?.classList.add('hidden'); if (nvW.g) nvW.g.visible = false; for (const g of nvW.ships.values()) g.visible = false; return; }
   if (nvW.lastR !== s.r) { nvW.lastR = s.r; nvW.hits = {}; nvW.hr = s.r; }
