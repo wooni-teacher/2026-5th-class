@@ -4614,7 +4614,7 @@ function sendPresence(time) {
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
   if (swimStMine()) d.ss = swimStMine(); // 🏊 1029b 고른 수영 동작
   if (myMot) d.mo = myMot; // 💃 1029e 사는 몸짓
-  if (nvW?.on) d.nv = nvPresCode(); { const nd = nvW ? nvHdCode() : ''; if (nd) d.nd = nd; } // ⚓ 1031g 해전 배 · 맞힌 배
+  if (nvW?.on) d.nv = nvPresCode(); if (nvW?.reg && S.nv?.on && bag.nvJob != null) d.nj = nvJob(); // 🎽 1031i 해전 직업(정원 세기) { const nd = nvW ? nvHdCode() : ''; if (nd) d.nd = nd; } // ⚓ 1031g 해전 배 · 맞힌 배
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
@@ -18108,6 +18108,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031i', d: '10월 31일', items: ['🎽 해전 직업은 나라마다 같은 직업 2명까지! (나라 사람이 많으면 늘어나요) · 꽉 찬 직업은 🔒'] },
   { id: '1031h', d: '10월 31일', items: ['🎽 해전 직업 4가지: 🧭 항해사(빠르게 · Q 돌진) · 💣 포격수(위력·사거리 · Q 일제 사격) · 🔨 조선공(튼튼 · Q 긴급 수리) · 🔭 척후병(장전 · 섬 빨리 · Q 정밀 조준)', '🤖 컴퓨터 배와 🧑‍🏫 선생님도 해전에 함께해요', '🖱️ 해전 버튼이 다른 버튼과 겹치지 않게 고쳤어요'] },
   { id: '1031g', d: '10월 31일', items: ['⚓ 삼국 해전! 성 공방전처럼 나라를 나눠 바다에서 싸워요 · 🛠️ 조선소에서 만든 내 배(뗏목·나룻배·돛단배·해적선)를 띄우고 친구는 🔥 포수 · 🔨 수리공으로 함께 타요', '🏝️ 섬 4곳 차지하기: 💰 보물섬(피해 +1) · 🌬️ 바람섬(빨라져요) · 🔨 나무섬(저절로 수리) · 🔭 등대섬(장전 빨라져요)', '💪 해전 능력: 🧮 수학력 → 포탄 위력 · 🔤 영어력 → 장전 · 🏛️ 사회력 → 배 튼튼함 · 📚 독서력 → 위력 · ⛵ 배 가게 "⚔️ 해전 강화"(🛡️ 철판 · 💣 화포)'] },
   { id: '1031f', d: '10월 31일', items: ['🧑‍🏫 선생님은 펫 센터에서 🥚 희귀 펫 알 펫과 🤿 바다 펫도 바로 데려올 수 있어요 (모두 데려오기 버튼)'] },
@@ -25781,6 +25782,9 @@ function nvParse(s) { const p = String(s || '').split('|'); if (p[0] === 'C' && 
 const nvUp = () => { const b = boatBag(); return isTeacher ? { ar: 3, gn: 3 } : { ar: Math.min(3, b.ar | 0), gn: Math.min(3, b.gn | 0) }; };
 function nvPresCode() { if (!nvW?.on) return ''; const j = nvJob(); if (nvW.seat === 0) { const u = nvUp(); return `C|${nvW.q}|${u.ar}|${u.gn}|${nvW.f % 1000}|${nvW.sk % 1000}|${j}`; } return `W|${nvW.cap}|${nvW.seat}|${nvW.f % 1000}|${nvW.sk % 1000}|${j}`.slice(0, 80); }
 const nvJob = () => Math.max(0, Math.min(3, bag.nvJob | 0)), nvJobSet = () => bag.nvJob != null;
+// 🎽 1031i 나라마다 같은 직업은 정원까지 (기본 2명 · 나라 사람이 8명보다 많으면 4명마다 1명씩 늘어요)
+const nvJobCap = (t) => Math.max(2, Math.ceil(Object.values(S.nv?.team || {}).filter(v => v === t).length / 4));
+function nvJobMates(t, j) { const out = []; if (!t) return out; for (const [u, r] of remotes) if (nvTeam(u) === t && Number.isFinite(r.target?.nj) && (r.target.nj | 0) === j) out.push(u); return out; } // 같은 나라에서 이 직업을 고른 친구 (나 빼고)
 function nvHdCode() { if (!nvW || !S.nv?.on || nvW.hr !== S.nv.r) return ''; const s = Object.entries(nvW.hits).filter(([, n]) => n > 0).slice(0, 14).map(([u, n]) => `${u}.${n}`).join(','); return s ? `${String(S.nv.r).slice(0, 12)}|${s}`.slice(0, 600) : ''; }
 function nvParseHd(s) { const i = String(s || '').indexOf('|'); if (i < 0) return { r: '', o: {} }; const r = s.slice(0, i), o = {}; for (const x of s.slice(i + 1).split(',')) { const j = x.lastIndexOf('.'); if (j > 0 && +x.slice(j + 1) > 0) o[x.slice(0, j)] = +x.slice(j + 1); } return { r, o }; }
 const nvSpOf = (u) => { if (u === backend?.uid) return sgMySp(); return String(remotes.get(u)?.target?.sp || '0000'); };
@@ -25904,8 +25908,9 @@ function openNvJob(after) { // 🎽 직업 고르기 (부두에서 언제든 바
   openLife('🎽 해전 직업 고르기', (box) => {
     box.textContent = ''; box.append(el2('p', 'hint', '직업마다 능력과 Q 기술이 달라요. 배 자리(선장·포수)와 따로예요. 부두에서 언제든 바꿀 수 있어요.'));
     const g = el2('div', 'lp-grid');
-    NV_JOB.forEach((J, i) => { const on = nvJobSet() && nvJob() === i, c = el2('button', 'lp-card' + (on ? ' done' : ''), ''); c.style.textAlign = 'left'; c.append(el2('div', 'lp-icon', J.icon), el2('div', 'lp-name', J.n), el2('div', 'hint', J.d), el2('div', 'hint', `Q ${J.q}`));
-      c.onclick = () => { if (nvW.on) { toast('⚓ 부두에서 바꿔요', 'warn'); return; } bag.nvJob = i; saveBag(); playSfx('pick'); toast(`${J.icon} ${J.n}(이)가 됐어요!`, 'success'); closeLife(); after?.(); }; g.append(c); });
+    const t = nvMine(), cap = nvJobCap(t); if (t) box.append(el2('p', 'hint', `${nvNat(t).icon} 우리 나라에서 같은 직업은 ${cap}명까지예요. 친구들과 나눠 골라요!`));
+    NV_JOB.forEach((J, i) => { const on = nvJobSet() && nvJob() === i, n = nvJobMates(t, i).length, full = !on && t && n >= cap, c = el2('button', 'lp-card' + (on ? ' done' : ''), ''); c.style.textAlign = 'left'; if (full) c.style.opacity = '0.5'; c.append(el2('div', 'lp-icon', full ? '🔒' : J.icon), el2('div', 'lp-name', J.n), el2('div', 'lp-sub', t ? `우리 나라 ${n + (on ? 1 : 0)}/${cap}명` : ''), el2('div', 'hint', J.d), el2('div', 'hint', `Q ${J.q}`));
+      c.onclick = () => { if (nvW.on) { toast('⚓ 부두에서 바꿔요', 'warn'); return; } if (full) { toast(`🔒 우리 나라 ${J.n}은(는) 벌써 ${cap}명이에요. 다른 직업을 골라요`, 'warn'); return; } bag.nvJob = i; saveBag(); playSfx('pick'); toast(`${J.icon} ${J.n}(이)가 됐어요!`, 'success'); closeLife(); after?.(); }; g.append(c); });
     box.append(g);
   });
 }
@@ -26014,6 +26019,9 @@ function nvTick(dt) {
   if (nvW.lastR !== s.r) { nvW.lastR = s.r; nvW.hits = {}; nvW.hr = s.r; }
   if (nvW.lastPh !== s.ph) { const was = nvW.lastPh; nvW.lastPh = s.ph; if (was && reg) { if (s.ph === 'play') { showBanner('⚔️ 해전 시작!', '상대 배를 가라앉히면 +10점 · 섬을 차지하면 3초마다 점수', 6000); playSfx('fanfare'); } } if (!was && !reg && s.ph === 'lobby') toast('⚓ 삼국 해전 바다가 열렸어요! 위쪽 "출전" 버튼을 눌러요', 'info'); if (s.ph === 'play' && !reg && was) showBanner('⚔️ 삼국 해전이 시작됐어요!', '위쪽 "⚓ 삼국 해전 출전!" 버튼으로 와요', 6000); }
   if (s.ph === 'play' && reg && nvMine()) nvW.fought = s.r;
+  if (reg && nvJobSet() && nvMine() && performance.now() - (nvW.jcT || 0) > 1500) { nvW.jcT = performance.now(); const t = nvMine(), j = nvJob(), mates = nvJobMates(t, j), cap = nvJobCap(t); // 🎽 동시에 골라 정원을 넘으면 기기 번호가 뒤인 친구가 다시 골라요
+    if (mates.length >= cap && mates.filter(u => u < backend.uid).length >= cap) { delete bag.nvJob; saveBag(); toast(`🔒 우리 나라 ${NV_JOB[j].n}이(가) ${cap}명을 넘었어요. 다른 직업을 골라요`, 'warn'); if (!nvW.on && $('lifePanel').classList.contains('hidden')) openNvJob(); }
+    else if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.includes('해전 직업')) refillLifeSoft(); }
   if (s.ph === 'end' && nvW.endShown !== s.r && (reg || nvW.fought === s.r)) { nvW.endShown = s.r; setTimeout(openNvEnd, 2500); }
   if (s.fx && s.fx !== nvW.fxSeen) { const was = nvW.fxSeen; nvW.fxSeen = s.fx; const [, t, v] = s.fx.split('|'); if (was && reg) { const N = nvNat(+t); if (String(v).startsWith('isl:')) { const I = NV_ISL.find(i => i.k === v.slice(4)); if (I && N) toast(`${N.icon} ${N.name}이(가) ${I.icon} ${I.n}을(를) 차지했어요! (${I.d})`, +t === nvMine() ? 'success' : 'info'); } else { const V = nvNat(+v); if (N && V) toast(`💥 ${N.icon} ${N.name} 수군이 ${V.icon} ${V.name} 배를 가라앉혔어요! +10`, +t === nvMine() ? 'success' : 'info'); } } }
   if (nvW.g) nvW.g.visible = reg; if (!reg) { for (const g of nvW.ships.values()) g.visible = false; nvHudTick(); return; }
