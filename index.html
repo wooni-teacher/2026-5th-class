@@ -9002,7 +9002,7 @@ function buildEnv() {
   env.fall.visible = false; scene.add(env.fall);
 }
 function applyEnv(force = false) {
-  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', key = season + night + mk; // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
+  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', rf = typeof roomNow === 'function' && joined && roomNow() === 'reef', key = season + night + mk + (rf ? 'reef' : ''); // 🤿 1031d 바닷속은 바다 빛 // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
   if (!force && key === env.key) return;
   const first = !env.key, snChanged = env.sn !== season + night; env.key = key; env.sn = season + night;
   scene.fog.near = 90; scene.fog.far = 240;
@@ -9028,6 +9028,7 @@ function applyEnv(force = false) {
   env.fall.material.size = season === 'wi' ? 0.22 : 0.32;
   if (!first && joined && snChanged) toast(`${SEASONS[season]} · ${night ? '🌙 밤' : '☀️ 낮'} 마을이에요`, 'info');
   if (mk) mcEnv(mk);
+  if (rf) reefEnv();
 }
 function updateEnv(dt) {
   env.t -= dt; if (env.t <= 0) { env.t = 5; applyEnv(); } // 5초마다 시각 확인
@@ -17269,7 +17270,7 @@ const ROOMS = {
   bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
   gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
   mrc: { name: '수학 달리기장', icon: '🏃', cx: 1515, cz: 130, w: 34, d: 28, wall: 0xFFF1D6, floor: 0xC8A878, site: null }, // 🏃 수학 마을 달리기장 (1024m)
-  reef: { name: '바닷속 산호초', icon: '🤿', cx: 1645, cz: 0, w: 40, d: 40, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
+  reef: { name: '바닷속 산호초', icon: '🤿', cx: 2480, cz: 0, w: 56, d: 56, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
   egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
@@ -17524,15 +17525,26 @@ const REEF_ANIMALS = [
   { id: 'school', icon: '🐟', n: '고등어 떼', fact: '아가미로 물속의 산소를 받아들여 숨을 쉬어요. 무리 지어 다니면 큰 물고기에게 잡아먹힐 위험이 줄어요.', qs: [['물고기가 물속에서 숨을 쉬는 기관은?', ['아가미', '폐', '코', '피부']], ['작은 물고기들이 떼를 지어 다니는 까닭으로 알맞은 것은?', ['천적에게서 몸을 지키려고', '잠을 자려고', '알을 낳으려고만', '햇빛을 피하려고']]] },
 ];
 const REEF_I = Object.fromEntries(REEF_ANIMALS.map(a => [a.id, a]));
-const reef = { built: false, movers: [], its: {}, g: null, q: null };
+const reef = { built: false, movers: [], its: {}, g: null, q: null, envHere: false };
+function reefEnv() { // 🤿 바닷속 빛: 깊은 파랑 · 가까운 바다 안개 (멀리 다른 마을이 보이지 않아요)
+  const sky = pretty.sky?.material.uniforms; if (sky) { sky.top.value.setHex(0x0A3A66); sky.bottom.value.setHex(0x1E7FB8); }
+  scene.background.setHex(0x125E8E); scene.fog.color.setHex(0x125E8E); scene.fog.near = 8; scene.fog.far = 58;
+  if (world.hemi) { world.hemi.intensity = 0.95; world.hemi.color.setHex(0x9FD8FF); } if (world.sun) { world.sun.intensity = 1.5; world.sun.color.setHex(0xBFE8FF); }
+  env.stars.visible = false; env.fall.visible = false;
+}
 const inReef = (x, z) => { const r = ROOMS.reef; return !!r && Math.abs(x - r.cx) <= r.w / 2 && Math.abs(z - r.cz) <= r.d / 2; };
-function buildReef(g, r) { // 바닷속: 모래 바닥 · 파란 물 · 바위 · 해초 · 산호 · 빛줄기 + 헤엄치는 생물
+function buildReef(gIn, r) { // 바닷속: 모래 바닥 · 파란 물 · 바위 · 해초 · 산호 · 빛줄기 + 헤엄치는 생물 (1031d: 다른 실내와 멀리 떨어져 따로 그룹)
+  const g = new THREE.Group(); g.name = 'ReefStatic'; scene.add(g); reef.sg = g; void gIn;
   const { cx, cz, w, d } = r, o = { solid: false };
-  box(g, w, 0.2, d, 0xE6D6A8, cx, 0, cz, { emissive: 0.15, surf: 'sand' });
-  { const m = new THREE.Mesh(new THREE.BoxGeometry(w + 4, 26, d + 4), new THREE.MeshBasicMaterial({ color: 0x1E6FA8, side: THREE.BackSide })); m.position.set(cx, 12, cz); g.add(m); } // 바깥이 비치지 않게 (불투명)
+  box(g, w, 0.2, d, 0xE6D6A8, cx, -0.12, cz, { surf: 'sand' });
+  { const sb = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0xE6D6A8, roughness: 1 })); sb.rotation.x = -Math.PI / 2; sb.position.set(cx, 0.005, cz); g.add(sb); } // 🌊 1031d 끝없이 이어지는 모래 바닥 (멀리는 바다 안개로 흐려져요 · 수조 상자는 없앴어요 · 다른 마을과 멀리 떨어진 곳 x 2480)
+  for (let k = 0; k < 90; k++) { const a = k * 2.399, rr = 31 + (k * 17 % 40), x = cx + Math.cos(a) * rr, z = cz + Math.sin(a) * rr, s2 = 1.5 + (k % 5) * 0.9; // 둘레: 바위 언덕 · 해초 숲 (가장자리를 자연스럽게)
+    if (k % 3 === 0) mesh(SPH_LO, g, s2 * 1.6, s2 * 1.1, s2 * 1.3, [0x6E7E84, 0x7A8A8E, 0x5E6E76][k % 3], x, s2 * 0.3, z, o);
+    else for (let q = 0; q < 4; q++) { const h = 3 + ((k + q) % 6) * 1.1; box(g, 0.22, h, 0.06, [0x2F7A3E, 0x3E8E4A, 0x5FAE52][(k + q) % 3], x + (q - 1.5) * 0.5, h / 2, z + ((q * 7) % 3 - 1) * 0.4, { solid: false, rz: ((q % 3) - 1) * 0.08 }); } }
+  for (const a of [0.3, 1.9, 3.4, 4.8]) { const x = cx + Math.cos(a) * 26, z = cz + Math.sin(a) * 26; for (let q = 0; q < 5; q++) mesh(SPH_LO, g, 2.4 + q * 0.3, 1.6 + (q % 2), 2.2, 0x6E7E84, x + Math.cos(a + 1.57) * (q - 2) * 2.6, 0.5, z + Math.sin(a + 1.57) * (q - 2) * 2.6, o); } // 가장자리 바위 줄
   for (let k = 0; k < 7; k++) { const ray = new THREE.Mesh(new THREE.PlaneGeometry(1.4 + (k % 3) * 0.6, 22), new THREE.MeshBasicMaterial({ color: 0xBFEFFF, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })); ray.position.set(cx - 16 + k * 5.2, 10, cz - 6 + (k % 4) * 4); ray.rotation.set(0, k * 0.7, 0.25); g.add(ray); } // 빛줄기
   for (const [x, z, s] of [[-15, -14, 2.2], [14, -15, 2.6], [-17, 6, 1.8], [16, 9, 2.0], [-4, -17, 1.6], [6, 16, 1.4], [-12, 15, 1.7]]) mesh(SPH_LO, g, s * 1.3, s * 0.9, s, 0x7A8A8E, cx + x, s * 0.35, cz + z, o); // 바위
-  for (let k = 0; k < 26; k++) { const x = cx + ((k * 37) % 36) - 18, z = cz + ((k * 53) % 36) - 18, h = 2 + (k % 5) * 0.7; if (Math.abs(x - cx) < 3 && z > cz + 14) continue; box(g, 0.18, h, 0.05, [0x3E8E4A, 0x5FAE52, 0x2F7A3E][k % 3], x, h / 2, z, { solid: false, rz: ((k % 5) - 2) * 0.06 }); } // 해초
+  for (let k = 0; k < 40; k++) { const x = cx + ((k * 37) % 50) - 25, z = cz + ((k * 53) % 50) - 25, h = 2 + (k % 5) * 0.7; if (Math.abs(x - cx) < 3 && z > cz + 14) continue; box(g, 0.18, h, 0.05, [0x3E8E4A, 0x5FAE52, 0x2F7A3E][k % 3], x, h / 2, z, { solid: false, rz: ((k % 5) - 2) * 0.06 }); } // 해초
   for (const [x, z] of [[-8, -6], [9, -4], [-2, 8], [11, 6], [-10, 4], [3, -11]]) { // 산호 무리
     for (let k = 0; k < 5; k++) cyl(g, 0.12 + (k % 2) * 0.05, 0.8 + k * 0.25, [0xFF7A8A, 0xFFB347, 0xB58CF0, 0xFF8FB3, 0x4FD1C5][(k + x) & 3 >= 0 ? (k + Math.abs(x)) % 5 : 0], cx + x + Math.cos(k * 1.3) * 0.6, (0.8 + k * 0.25) / 2, cz + z + Math.sin(k * 1.3) * 0.6, { solid: false, rz: (k - 2) * 0.2 });
     mesh(SPH_LO, g, 0.7, 0.5, 0.7, 0xFF9FB8, cx + x, 0.3, cz + z, o); }
@@ -17558,11 +17570,12 @@ function buildReef(g, r) { // 바닷속: 모래 바닥 · 파란 물 · 바위 �
   add('urchin', g2 => { ball(g2, 0.35, 0x3A2A4A, 0, 0.3, 0, o); for (let k = 0; k < 16; k++) { const a = k * 2.4, b = (k % 4) * 0.5; mesh(CONE, g2, 0.04, 0.5, 0.04, 0x2A1A3A, Math.cos(a) * 0.4, 0.3 + Math.sin(b) * 0.3, Math.sin(a) * 0.4, { solid: false, rx: Math.sin(a), rz: -Math.cos(a) }); } }, { c: C(9, -4), r: 0, y: 0, sp: 0 });
   add('kelp', g2 => { for (let k = 0; k < 6; k++) box(g2, 0.35, 4 + k * 0.4, 0.05, k % 2 ? 0x6B5A2A : 0x3E6A2A, (k - 2.5) * 0.35, (4 + k * 0.4) / 2, 0, { solid: false, rz: (k - 2.5) * 0.05 }); }, { c: C(-15, -3), r: 0, y: 0, sp: 0, sway: 1 });
   add('school', g2 => { for (let k = 0; k < 9; k++) { const f = fish(g2, 0x4A7A9A, 0.8, false); f.position.set(Math.cos(k * 0.7) * 0.9, (k % 3 - 1) * 0.5, Math.sin(k * 0.7) * 0.9); } }, { c: C(-2, 4), r: 7, y: 4.5, sp: -0.5 });
+  g.updateMatrixWorld(true); registerSolids(g, 'reef'); g.visible = false;
   reef.built = true;
 }
 function reefTick(dt) {
-  if (!reef.built) return; const here = joined && roomNow() === 'reef', near = here || [...remotes.values()].some(r => inReef(r.pos.x, r.pos.z));
-  reef.g.visible = here; if (!here && !near) { for (const it of Object.values(reef.its)) it.pos.set(0, -99, 0); return; }
+  if (!reef.built) return; const here = joined && roomNow() === 'reef'; if (here !== reef.envHere) { reef.envHere = here; applyEnv(true); } const near = here || [...remotes.values()].some(r => inReef(r.pos.x, r.pos.z));
+  reef.g.visible = here; reef.sg.visible = here || near || (camera.position.x > 2380 && camera.position.x < 2580); if (!here && !near) { for (const it of Object.values(reef.its)) it.pos.set(0, -99, 0); return; }
   for (const m of reef.movers) { const P = m.path, t = time * (P.sp || 0) + m.id.length;
     let x = P.c[0], z = P.c[1], y = P.y, hd = 0;
     if (P.r && P.sp) { x += Math.cos(t) * P.r; z += Math.sin(t) * P.r * (P.side ? 0.2 : 1); hd = Math.atan2(-Math.sin(t) * Math.sign(P.sp) * (P.side ? 0 : 1), -Math.cos(t) * Math.sign(P.sp)) ; if (P.side) hd = Math.PI / 2; else hd = Math.atan2(Math.cos(t) * Math.sign(P.sp), -Math.sin(t) * Math.sign(P.sp)) - Math.PI / 2; }
@@ -18060,6 +18073,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031d', d: '10월 31일', items: ['🌊 바닷속이 더 넓어졌어요: 수조 벽 대신 끝없이 이어지는 바다 · 깊은 바다 빛과 물안개 · 둘레 바위 언덕과 해초 숲 · 다른 마을이 보이지 않아요'] },
   { id: '1031c', d: '10월 31일', items: ['🐾 바다 펫 9가지! 바닷속 탐험에서 관찰 퀴즈를 맞힌 생물(흰동가리·바다거북·해마·돌고래·상어·꽃게·가오리·불가사리·대왕고래)을 🐚60에 펫으로 데려와요 · 배틀 · 동료 펫으로 함께 다녀요'] },
   { id: '1031b', d: '10월 31일', items: ['🤿 바닷속 탐험! 바닷가 선착장 끝 다이빙 부표에서 잠수해요 · 산호초를 헤엄치며 바다 생물 15가지를 관찰하고 과학 상식 퀴즈 (🐚 · 📚 독서력)', '📖 바다 도감 15가지를 다 모으면 🐚 100 · 📋 오늘의 할 일에 바닷속 미션'] },
   { id: '1031a', d: '10월 31일', items: ['🧹 바다 정리: 🚤 보트 경주와 🏆 모둠 모래성 대회를 뺐어요 (🏰 우리 반 모래성은 그대로)'] },
