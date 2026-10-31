@@ -4382,7 +4382,7 @@ function updatePlayer(dt) {
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
   const moving = Math.min(1, Math.hypot(mx, mz));
   if (moving > 0.05) {
-    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt; /* 🏊 물속은 천천히 */
+    const spd = SPEED * sgSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : inReef(p.x, p.z) ? 0.75 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt; /* 🏊 물속은 천천히 */
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -11148,6 +11148,9 @@ function buildSeaFun() {
   sea.ringLabel = makeLabel(g, [''], 0.9, 0, -99, 0);
   if (!SEA_RACE_OFF) { const b = new THREE.Group(); b.position.set(BEACH.pierX1 - 1, 0, BEACH.pierZ - 2.2); g.add(b); box(b, 1.4, 0.5, 2.8, 0xFFFFFF, 0, 0.15, 0, o); box(b, 1.5, 0.12, 2.9, 0x4A9AE8, 0, 0.42, 0, o); }
   if (!SEA_RACE_OFF) signPlane(g, ['🚤 보트 경주'], 2.2, 0.6, BEACH.pierX1 - 3, 1.6, BEACH.pierZ - 1.45, { font: 44, pad: 4, fg: '#FFFFFF', bg: '#2F5E9E', stroke: false }).rotation.y = Math.PI;
+  { const dv = new THREE.Group(); dv.position.set(BEACH.pierX1 - 0.6, 0, BEACH.pierZ + 1.6); g.add(dv); cyl(dv, 0.5, 0.9, 0xFF6B3D, 0, 0.3, 0, o); cyl(dv, 0.52, 0.18, 0xFFFFFF, 0, 0.55, 0, o); cyl(dv, 0.06, 1.6, 0xE8E8E8, 0, 1.4, 0, o); box(dv, 0.7, 0.45, 0.04, 0xE2584A, 0.36, 1.95, 0, o); box(dv, 0.7, 0.08, 0.05, 0xFFFFFF, 0.36, 1.95, 0, { solid: false, rz: 0.55 }); } // 🤿 다이빙 부표 (빨간 다이버 깃발)
+  makeLabel(g, ['🤿 바닷속 탐험', '여기서 E → 잠수!'], 0.8, BEACH.pierX1 - 1, 3.2, BEACH.pierZ + 1.2);
+  addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.6, text: () => sea.on || sail.on ? null : ['🤿 바닷속 탐험 (잠수하기)', `바다 생물 관찰 · 과학 퀴즈 · 도감 ${Object.keys(bag.reefDex || {}).filter(k => REEF_I[k]).length}/${REEF_ANIMALS.length}`], run: () => enterRoom('reef') }); // 🤿 1031b
   if (!SEA_RACE_OFF) addInteract({ pos: new V3(BEACH.pierX1 - 1, 1, BEACH.pierZ), r: 2.6, text: () => sea.on ? null : ['🚤 보트 경주 시작', `고리 ${SEA_RINGS.length}개 · 내 최고 ${bag.seaBest ? (bag.seaBest / 1000).toFixed(1) + '초' : '-'}`], run: seaStart });
   // 🏝️ 보물섬
   const isle = new THREE.Group(); isle.name = 'TreasureIsle'; scene.add(isle);
@@ -17252,6 +17255,7 @@ const ROOMS = {
   bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
   gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
   mrc: { name: '수학 달리기장', icon: '🏃', cx: 1515, cz: 130, w: 34, d: 28, wall: 0xFFF1D6, floor: 0xC8A878, site: null }, // 🏃 수학 마을 달리기장 (1024m)
+  reef: { name: '바닷속 산호초', icon: '🤿', cx: 1645, cz: 0, w: 40, d: 40, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
   egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
@@ -17485,6 +17489,99 @@ function swimPose(a, mv, dt) {
   else if (st === 4) { R.rotation.set(1.15 + 0.28 * s, 0, 0); R.position.y = 0.75 + 0.18 * s; a.armL.rotation.x = a.armR.rotation.x = t % P2; if (L) L.rotation.x = Rg.rotation.x = 0.45 * Math.sin(t + 1); } // 🦋 접영
   else { R.rotation.set(1.25, 0, 0); R.position.y = 0.75 + Math.abs(s) * 0.03; a.armL.rotation.x = t % P2; a.armR.rotation.x = (t + Math.PI) % P2; if (L) { L.rotation.x = 0.35 * Math.sin(t * 3); Rg.rotation.x = -L.rotation.x; } } // 🏊 자유형
 }
+// ================= 🤿 1031b 바닷속 탐험 (바닷가 선착장 끝에서 잠수 · 방 id 'reef') =================
+// 바닷속 산호초를 헤엄치며 바다 생물 15가지를 관찰해요 → 과학 상식 문제 (맞히면 🐚 · 📚 독서력) · 바다 도감 · 다 모으면 🐚100
+// · 저장: 이 기기 bag.reefDex {id:1} 찾은 생물 · bag.reefDay {d, got{id:1}} 오늘 보상 받은 생물 · bag.reefAll 1 = 다 모은 보상
+const REEF_ANIMALS = [
+  { id: 'clown', icon: '🐠', n: '흰동가리', fact: '말미잘의 독 촉수 사이에 숨어 살아요. 흰동가리는 말미잘을 청소해 주고, 말미잘은 흰동가리를 지켜 줘요.', qs: [['흰동가리가 함께 사는 바다 생물은?', ['말미잘', '해파리', '문어', '불가사리']], ['흰동가리와 말미잘처럼 서로 도우며 함께 사는 관계를 무엇이라고 할까요?', ['공생', '기생', '경쟁', '먹이 사슬']]] },
+  { id: 'turtle', icon: '🐢', n: '바다거북', fact: '폐로 숨을 쉬어서 가끔 물 위로 올라와 숨을 쉬어요. 알은 바닷가 모래사장에 구멍을 파고 낳아요.', qs: [['바다거북은 알을 어디에 낳을까요?', ['바닷가 모래사장', '바닷속 바위 틈', '산호 속', '해초 위']], ['바다거북이 숨을 쉬는 기관은?', ['폐', '아가미', '피부', '지느러미']]] },
+  { id: 'jelly', icon: '🪼', n: '해파리', fact: '몸의 대부분(약 95%)이 물이고 뇌가 없어요. 촉수에 있는 독침으로 먹이를 잡아요.', qs: [['해파리 몸의 대부분을 이루는 것은?', ['물', '뼈', '근육', '지방']], ['해파리가 먹이를 잡을 때 쓰는 것은?', ['촉수의 독침', '날카로운 이빨', '집게발', '부리']]] },
+  { id: 'octo', icon: '🐙', n: '문어', fact: '다리가 8개이고 심장이 3개예요. 위험하면 먹물을 뿜고 몸 색깔을 바꿔 숨어요.', qs: [['문어의 다리는 몇 개일까요?', ['8개', '6개', '10개', '12개']], ['문어가 적을 만나면 뿜어내는 것은?', ['먹물', '독가스', '거품', '전기']]] },
+  { id: 'star', icon: '⭐', n: '불가사리', fact: '팔이 잘려도 다시 자라나요(재생). 팔 아래의 작은 관족을 움직여 기어 다녀요.', qs: [['불가사리의 팔이 잘리면 어떻게 될까요?', ['다시 자라난다', '그대로 없다', '바로 죽는다', '껍질이 덮인다']], ['불가사리가 움직일 때 쓰는 것은?', ['팔 아래의 작은 관족', '지느러미', '꼬리', '날개']]] },
+  { id: 'horse', icon: '🐴', n: '해마', fact: '말을 닮았지만 물고기예요. 수컷의 배 주머니에서 알이 깨어나, 수컷이 새끼를 낳아요.', qs: [['해마는 누가 새끼를 낳을까요?', ['수컷', '암컷', '암수가 번갈아', '알에서 혼자 깨어난다']], ['해마는 어떤 동물 무리에 속할까요?', ['어류(물고기)', '포유류', '파충류', '갑각류']]] },
+  { id: 'dolph', icon: '🐬', n: '돌고래', fact: '물고기가 아니라 포유류예요. 머리 위 숨구멍으로 숨을 쉬고, 소리를 내 되돌아오는 메아리로 먹이와 길을 찾아요.', qs: [['돌고래는 어떤 동물 무리에 속할까요?', ['포유류', '어류', '양서류', '파충류']], ['돌고래가 먹이와 길을 찾을 때 쓰는 것은?', ['소리의 메아리(초음파)', '냄새', '빛', '전기']]] },
+  { id: 'shark', icon: '🦈', n: '상어', fact: '뼈가 말랑한 물렁뼈(연골)로 되어 있어요. 이빨이 빠져도 뒤에서 새 이빨이 계속 나와요.', qs: [['상어의 이빨이 빠지면 어떻게 될까요?', ['새 이빨이 계속 난다', '다시는 안 난다', '잇몸으로만 먹는다', '평생 한 번만 다시 난다']], ['상어의 뼈는 어떤 뼈일까요?', ['물렁뼈(연골)', '아주 단단한 뼈', '껍데기', '뼈가 없다']]] },
+  { id: 'crab', icon: '🦀', n: '꽃게', fact: '딱딱한 껍데기가 있는 갑각류예요. 자랄 때마다 껍데기를 벗는 탈피를 하고, 주로 옆으로 걸어요.', qs: [['게가 자라면서 껍데기를 벗는 것을 무엇이라 할까요?', ['탈피', '변태', '부화', '겨울잠']], ['꽃게는 주로 어느 방향으로 걸을까요?', ['옆으로', '앞으로', '뒤로', '위로']]] },
+  { id: 'whale', icon: '🐋', n: '대왕고래', fact: '지금 지구에 사는 동물 가운데 가장 커요(길이 약 30m). 포유류라서 새끼에게 젖을 먹여 키워요.', qs: [['지금 지구에 사는 동물 가운데 가장 큰 동물은?', ['대왕고래', '코끼리', '기린', '고래상어']], ['고래는 새끼를 어떻게 키울까요?', ['젖을 먹여 키운다', '알을 품는다', '먹이를 토해 준다', '혼자 자라게 둔다']]] },
+  { id: 'coral', icon: '🪸', n: '산호', fact: '돌이나 식물처럼 보이지만 작은 동물(폴립)이 모여 사는 거예요. 바닷물이 너무 따뜻해지면 하얗게 변해 죽기도 해요(백화 현상).', qs: [['산호는 무엇일까요?', ['동물', '식물', '돌', '버섯']], ['바닷물이 너무 따뜻해져 산호가 하얗게 변하는 것은?', ['백화 현상', '적조', '황사', '녹조']]] },
+  { id: 'ray', icon: '🫓', n: '가오리', fact: '몸이 넓고 납작해서 모래 바닥에 숨기 좋아요. 상어처럼 뼈가 물렁뼈인 물고기예요.', qs: [['가오리의 몸 모양에 대한 설명으로 알맞은 것은?', ['넓고 납작해서 바닥에 잘 숨는다', '동그란 공 모양이다', '가늘고 길다', '다리가 여러 개다']], ['가오리처럼 물렁뼈를 가진 물고기는?', ['상어', '고등어', '문어', '바다거북']]] },
+  { id: 'urchin', icon: '🌰', n: '성게', fact: '온몸이 뾰족한 가시로 덮여 있어 적으로부터 몸을 지켜요. 가시 사이의 관족으로 천천히 움직여요.', qs: [['성게의 가시는 어떤 역할을 할까요?', ['몸을 보호한다', '헤엄을 친다', '숨을 쉰다', '소리를 낸다']], ['성게와 불가사리처럼 관족으로 움직이는 동물은 어디에 살까요?', ['바다', '사막', '숲', '강 위 하늘']]] },
+  { id: 'kelp', icon: '🌿', n: '미역·다시마', fact: '햇빛을 받아 스스로 양분을 만들고(광합성) 산소를 내보내요. 바다 생물의 먹이와 집이 되어 줘요.', qs: [['미역과 다시마가 햇빛으로 양분을 만드는 것을 무엇이라 할까요?', ['광합성', '호흡', '소화', '증산']], ['미역과 다시마가 광합성을 할 때 내보내는 기체는?', ['산소', '이산화 탄소', '질소', '수소']]] },
+  { id: 'school', icon: '🐟', n: '고등어 떼', fact: '아가미로 물속의 산소를 받아들여 숨을 쉬어요. 무리 지어 다니면 큰 물고기에게 잡아먹힐 위험이 줄어요.', qs: [['물고기가 물속에서 숨을 쉬는 기관은?', ['아가미', '폐', '코', '피부']], ['작은 물고기들이 떼를 지어 다니는 까닭으로 알맞은 것은?', ['천적에게서 몸을 지키려고', '잠을 자려고', '알을 낳으려고만', '햇빛을 피하려고']]] },
+];
+const REEF_I = Object.fromEntries(REEF_ANIMALS.map(a => [a.id, a]));
+const reef = { built: false, movers: [], its: {}, g: null, q: null };
+const inReef = (x, z) => { const r = ROOMS.reef; return !!r && Math.abs(x - r.cx) <= r.w / 2 && Math.abs(z - r.cz) <= r.d / 2; };
+function buildReef(g, r) { // 바닷속: 모래 바닥 · 파란 물 · 바위 · 해초 · 산호 · 빛줄기 + 헤엄치는 생물
+  const { cx, cz, w, d } = r, o = { solid: false };
+  box(g, w, 0.2, d, 0xE6D6A8, cx, 0, cz, { emissive: 0.15, surf: 'sand' });
+  { const m = new THREE.Mesh(new THREE.BoxGeometry(w + 4, 26, d + 4), new THREE.MeshBasicMaterial({ color: 0x1E6FA8, side: THREE.BackSide })); m.position.set(cx, 12, cz); g.add(m); } // 바깥이 비치지 않게 (불투명)
+  for (let k = 0; k < 7; k++) { const ray = new THREE.Mesh(new THREE.PlaneGeometry(1.4 + (k % 3) * 0.6, 22), new THREE.MeshBasicMaterial({ color: 0xBFEFFF, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })); ray.position.set(cx - 16 + k * 5.2, 10, cz - 6 + (k % 4) * 4); ray.rotation.set(0, k * 0.7, 0.25); g.add(ray); } // 빛줄기
+  for (const [x, z, s] of [[-15, -14, 2.2], [14, -15, 2.6], [-17, 6, 1.8], [16, 9, 2.0], [-4, -17, 1.6], [6, 16, 1.4], [-12, 15, 1.7]]) mesh(SPH_LO, g, s * 1.3, s * 0.9, s, 0x7A8A8E, cx + x, s * 0.35, cz + z, o); // 바위
+  for (let k = 0; k < 26; k++) { const x = cx + ((k * 37) % 36) - 18, z = cz + ((k * 53) % 36) - 18, h = 2 + (k % 5) * 0.7; if (Math.abs(x - cx) < 3 && z > cz + 14) continue; box(g, 0.18, h, 0.05, [0x3E8E4A, 0x5FAE52, 0x2F7A3E][k % 3], x, h / 2, z, { solid: false, rz: ((k % 5) - 2) * 0.06 }); } // 해초
+  for (const [x, z] of [[-8, -6], [9, -4], [-2, 8], [11, 6], [-10, 4], [3, -11]]) { // 산호 무리
+    for (let k = 0; k < 5; k++) cyl(g, 0.12 + (k % 2) * 0.05, 0.8 + k * 0.25, [0xFF7A8A, 0xFFB347, 0xB58CF0, 0xFF8FB3, 0x4FD1C5][(k + x) & 3 >= 0 ? (k + Math.abs(x)) % 5 : 0], cx + x + Math.cos(k * 1.3) * 0.6, (0.8 + k * 0.25) / 2, cz + z + Math.sin(k * 1.3) * 0.6, { solid: false, rz: (k - 2) * 0.2 });
+    mesh(SPH_LO, g, 0.7, 0.5, 0.7, 0xFF9FB8, cx + x, 0.3, cz + z, o); }
+  { const lx = cx, lz = cz + d / 2 - 0.8; cyl(g, 0.06, 12, 0xE8D8B0, lx - 0.5, 6, lz, o); cyl(g, 0.06, 12, 0xE8D8B0, lx + 0.5, 6, lz, o); for (let k = 0; k < 10; k++) box(g, 1.0, 0.05, 0.08, 0xE8D8B0, lx, 0.6 + k * 1.1, lz, o); makeLabel(g, ['⬆️ 물 위로 (나가기)'], 0.6, lx, 3.2, lz - 0.3); } // 사다리
+  makeLabel(g, ['🤿 바닷속 산호초', '생물 가까이에서 E → 관찰하고 과학 퀴즈!'], 0.8, cx, 5.5, cz + d / 2 - 4);
+  // 🐟 생물 (움직이는 건 따로 그룹)
+  const mg = new THREE.Group(); mg.name = 'ReefLife'; scene.add(mg); reef.g = mg;
+  const fish = (par, col, s, stripe) => { const f = new THREE.Group(); par.add(f); mesh(SPH_MID, f, 0.5 * s, 0.32 * s, 0.22 * s, col, 0, 0, 0, o); mesh(CONE, f, 0.25 * s, 0.35 * s, 0.08 * s, col, -0.55 * s, 0, 0, { solid: false, rz: Math.PI / 2 }); ball(f, 0.05 * s, 0x111111, 0.32 * s, 0.07 * s, 0.17 * s, o); ball(f, 0.05 * s, 0x111111, 0.32 * s, 0.07 * s, -0.17 * s, o); if (stripe) for (const x of [-0.15, 0.15]) box(f, 0.06 * s, 0.6 * s, 0.46 * s, 0xFFFFFF, x * s, 0, 0, o); return f; };
+  const add = (id, fn, path) => { const grp = new THREE.Group(); mg.add(grp); fn(grp); reef.movers.push({ id, g: grp, path }); reef.its[id] = addInteract({ pos: new V3(0, -99, 0), r: 3.2, text: () => roomNow() === 'reef' ? [`🔍 ${REEF_I[id].icon} ${REEF_I[id].n} 관찰하기`, bag.reefDex?.[id] ? '✅ 도감에 있어요 · 퀴즈 다시 풀기' : '🆕 처음 보는 생물!'] : null, run: () => reefOpen(id) }); };
+  const C = (x, z) => [cx + x, cz + z];
+  add('clown', g2 => { fish(g2, 0xFF7A1A, 1.2, true); const an = new THREE.Group(); an.position.set(0, -1.2, 0); g2.add(an); for (let k = 0; k < 9; k++) cyl(an, 0.05, 0.7, 0xB58CF0, Math.cos(k * 0.7) * 0.35, 0.35, Math.sin(k * 0.7) * 0.35, { solid: false, rz: Math.cos(k) * 0.4 }); }, { c: C(-6, -6), r: 0.4, y: 1.3, sp: 1.2 });
+  add('turtle', g2 => { mesh(SPH_MID, g2, 1.1, 0.45, 0.9, 0x5E8A3A, 0, 0, 0, o); ball(g2, 0.32, 0x8FB46A, 1.15, 0.05, 0, o); for (const [x, z] of [[0.6, 0.8], [0.6, -0.8], [-0.6, 0.7], [-0.6, -0.7]]) box(g2, 0.5, 0.08, 0.3, 0x8FB46A, x, -0.05, z, { solid: false, ry: x * z }); }, { c: C(0, -2), r: 9, y: 3.2, sp: 0.18 });
+  add('jelly', g2 => { const mat = { solid: false, emissive: 0.5 }; mesh(SPH_MID, g2, 0.7, 0.45, 0.7, 0xFFB3E6, 0, 0, 0, mat); for (let k = 0; k < 8; k++) cyl(g2, 0.03, 1.6, 0xFFC9EE, Math.cos(k * 0.785) * 0.4, -0.8, Math.sin(k * 0.785) * 0.4, o); }, { c: C(10, -10), r: 1.2, y: 4, sp: 0.25, bob: 1 });
+  add('octo', g2 => { ball(g2, 0.55, 0xD8604A, 0, 0.5, 0, o); for (const x of [-0.18, 0.18]) ball(g2, 0.1, 0xFFFFFF, 0.42, 0.6, x, o); for (let k = 0; k < 8; k++) cyl(g2, 0.08, 1.0, 0xC8503A, Math.cos(k * 0.785) * 0.45, 0, Math.sin(k * 0.785) * 0.45, { solid: false, rx: Math.sin(k * 0.785) * 0.9, rz: -Math.cos(k * 0.785) * 0.9 }); }, { c: C(13, 7), r: 0, y: 0.5, sp: 0 });
+  add('star', g2 => { for (let k = 0; k < 5; k++) box(g2, 0.9, 0.12, 0.28, 0xFF8A3C, Math.cos(k * 1.257) * 0.42, 0, Math.sin(k * 1.257) * 0.42, { solid: false, ry: -k * 1.257 }); ball(g2, 0.25, 0xFF8A3C, 0, 0.02, 0, o); }, { c: C(-12, 12), r: 0, y: 0.16, sp: 0 });
+  add('horse', g2 => { for (let k = 0; k < 6; k++) ball(g2, 0.2 - k * 0.015, 0xF2C230, Math.sin(k * 0.5) * 0.25, 0.9 - k * 0.32, 0, o); mesh(CONE, g2, 0.08, 0.35, 0.08, 0xF2C230, 0.3, 1.0, 0, { solid: false, rz: -Math.PI / 2 }); ball(g2, 0.05, 0x111111, 0.12, 1.02, 0.15, o); }, { c: C(-10, 3), r: 0.3, y: 2.2, sp: 0.5, bob: 1 });
+  add('dolph', g2 => { mesh(SPH_MID, g2, 1.6, 0.45, 0.45, 0x8FA6B8, 0, 0, 0, o); mesh(CONE, g2, 0.18, 0.5, 0.1, 0x7A90A2, 0, 0.45, 0, o); mesh(CONE, g2, 0.4, 0.5, 0.08, 0x7A90A2, -1.6, 0, 0, { solid: false, rz: Math.PI / 2 }); ball(g2, 0.06, 0x111111, 1.0, 0.12, 0.3, o); }, { c: C(0, 2), r: 13, y: 6, sp: 0.3 });
+  add('shark', g2 => { mesh(SPH_MID, g2, 2.2, 0.55, 0.55, 0x6E7F8E, 0, 0, 0, o); mesh(CONE, g2, 0.3, 0.9, 0.1, 0x5E6E7C, 0, 0.7, 0, o); mesh(CONE, g2, 0.6, 0.9, 0.1, 0x5E6E7C, -2.2, 0, 0, { solid: false, rz: Math.PI / 2 }); box(g2, 0.9, 0.06, 1.6, 0x5E6E7C, 0.3, -0.2, 0, o); }, { c: C(2, -4), r: 15, y: 8, sp: -0.2 });
+  add('crab', g2 => { mesh(SPH_MID, g2, 0.6, 0.25, 0.45, 0xE2384A, 0, 0.1, 0, o); for (const z of [-0.45, 0.45]) { ball(g2, 0.16, 0xE2384A, 0.55, 0.15, z, o); for (let k = 0; k < 3; k++) box(g2, 0.06, 0.06, 0.5, 0xC8283A, -0.2 + k * 0.2, 0.05, z * 1.2, o); } }, { c: C(6, 12), r: 2.5, y: 0.2, sp: 0.4, side: 1 });
+  add('whale', g2 => { mesh(SPH_MID, g2, 7, 1.8, 2.0, 0x4E6E8E, 0, 0, 0, o); mesh(SPH_MID, g2, 5, 1.1, 1.6, 0xB8C8D8, 0.6, -0.9, 0, o); mesh(CONE, g2, 1.6, 2.0, 0.3, 0x4E6E8E, -7.2, 0, 0, { solid: false, rz: Math.PI / 2 }); ball(g2, 0.18, 0x111111, 5.2, 0.4, 1.3, o); }, { c: C(0, 0), r: 13, y: 13, sp: 0.06 });
+  add('coral', g2 => { for (let k = 0; k < 7; k++) cyl(g2, 0.18, 1.2 + k * 0.3, [0xFF7A8A, 0xFFB347, 0xB58CF0, 0xFF8FB3][k % 4], Math.cos(k) * 0.7, (1.2 + k * 0.3) / 2, Math.sin(k) * 0.7, { solid: false, rz: (k - 3) * 0.15 }); }, { c: C(3, -11), r: 0, y: 0.1, sp: 0 });
+  add('ray', g2 => { box(g2, 1.6, 0.1, 1.6, 0x9A7A5A, 0, 0, 0, { solid: false, ry: Math.PI / 4 }); cyl(g2, 0.04, 1.4, 0x8A6A4A, -1.4, 0, 0, { solid: false, rz: Math.PI / 2 }); }, { c: C(-4, 9), r: 4, y: 0.6, sp: 0.35 });
+  add('urchin', g2 => { ball(g2, 0.35, 0x3A2A4A, 0, 0.3, 0, o); for (let k = 0; k < 16; k++) { const a = k * 2.4, b = (k % 4) * 0.5; mesh(CONE, g2, 0.04, 0.5, 0.04, 0x2A1A3A, Math.cos(a) * 0.4, 0.3 + Math.sin(b) * 0.3, Math.sin(a) * 0.4, { solid: false, rx: Math.sin(a), rz: -Math.cos(a) }); } }, { c: C(9, -4), r: 0, y: 0, sp: 0 });
+  add('kelp', g2 => { for (let k = 0; k < 6; k++) box(g2, 0.35, 4 + k * 0.4, 0.05, k % 2 ? 0x6B5A2A : 0x3E6A2A, (k - 2.5) * 0.35, (4 + k * 0.4) / 2, 0, { solid: false, rz: (k - 2.5) * 0.05 }); }, { c: C(-15, -3), r: 0, y: 0, sp: 0, sway: 1 });
+  add('school', g2 => { for (let k = 0; k < 9; k++) { const f = fish(g2, 0x4A7A9A, 0.8, false); f.position.set(Math.cos(k * 0.7) * 0.9, (k % 3 - 1) * 0.5, Math.sin(k * 0.7) * 0.9); } }, { c: C(-2, 4), r: 7, y: 4.5, sp: -0.5 });
+  reef.built = true;
+}
+function reefTick(dt) {
+  if (!reef.built) return; const here = joined && roomNow() === 'reef', near = here || [...remotes.values()].some(r => inReef(r.pos.x, r.pos.z));
+  reef.g.visible = here; if (!here && !near) { for (const it of Object.values(reef.its)) it.pos.set(0, -99, 0); return; }
+  for (const m of reef.movers) { const P = m.path, t = time * (P.sp || 0) + m.id.length;
+    let x = P.c[0], z = P.c[1], y = P.y, hd = 0;
+    if (P.r && P.sp) { x += Math.cos(t) * P.r; z += Math.sin(t) * P.r * (P.side ? 0.2 : 1); hd = Math.atan2(-Math.sin(t) * Math.sign(P.sp) * (P.side ? 0 : 1), -Math.cos(t) * Math.sign(P.sp)) ; if (P.side) hd = Math.PI / 2; else hd = Math.atan2(Math.cos(t) * Math.sign(P.sp), -Math.sin(t) * Math.sign(P.sp)) - Math.PI / 2; }
+    if (P.bob) y += Math.sin(time * 1.3 + x) * 0.5; m.g.position.set(x, y, z); m.g.rotation.y = hd; if (P.sway) m.g.rotation.z = Math.sin(time * 0.8) * 0.06;
+    reef.its[m.id].pos.set(x, Math.min(2, y), z); }
+  const swimIn = (a, mv) => { if (!a?.g) return; a.g.position.y += 0.9 + Math.sin(time * 2 + a.g.position.x) * 0.08; swimPose(a, mv, dt); };
+  if (here && player.avatar) { const mv = Math.min(1, Math.hypot((keys.d || keys.arrowright ? 1 : 0) - (keys.a || keys.arrowleft ? 1 : 0) + joy.x, (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y)); player.avatar.swSt = swimStMine(); swimIn(player.avatar, mv);
+    if (Math.random() < dt * 1.5) burst(player.avatar.g.position.clone().add(new V3(0, 2, 0)), [0xFFFFFF, 0xBFEFFF], 3, 0.6, 1.5, 0.3, 2); }
+  for (const r of remotes.values()) if (inReef(r.pos.x, r.pos.z) && r.a) { r.a.swSt = Math.min(SWIM_ST.length - 1, Math.max(0, r.target?.ss | 0)); swimIn(r.a, 0.6); }
+}
+function reefOpen(id) {
+  const A = REEF_I[id]; if (!A) return; const Q0 = A.qs[Math.floor(Math.random() * A.qs.length)], idx = hShuffle([0, 1, 2, 3]), Q = { q: Q0[0], o: idx.map(i => Q0[1][i]), a: idx.indexOf(0) };
+  const st = { pick: -1, sh: '' }; reef.q = st;
+  openLife(`🔍 ${A.icon} ${A.n}`, (box) => {
+    if (reef.q !== st) return; box.textContent = '';
+    const card = el2('div', ''); card.style.cssText = 'background:#E6F4FF;border-radius:14px;padding:10px 12px;text-align:left;margin-bottom:8px'; card.append(el2('div', '', `${A.icon}`), el2('b', '', A.n), el2('p', '', A.fact)); card.firstChild.style.fontSize = '40px'; box.append(card);
+    box.append(Object.assign(el2('p', 'lp-big', `🧪 ${Q.q}`), { style: 'font-size:18px' }));
+    const g = el2('div', ''); g.style.cssText = 'display:grid;gap:6px';
+    Q.o.forEach((o, j) => { const b = el2('button', 'btn', o); b.style.cssText = `text-align:left;font-size:16px;background:${st.pick < 0 ? '#fff' : j === Q.a ? '#BDE8B0' : j === st.pick ? '#F6C9C0' : '#fff'}`; b.disabled = st.pick >= 0;
+      b.onclick = () => { if (st.pick >= 0) return; st.pick = j; const ok = j === Q.a; playSfx(ok ? 'right' : 'wrong'); st.sh = ok ? reefReward(id) : '🐢 아쉬워요! 설명을 다시 읽고 또 도전해요'; refillLife(); }; g.append(b); });
+    box.append(g); if (st.sh) box.append(el2('p', 'hint', st.sh));
+    const n = Object.keys(bag.reefDex || {}).filter(k => REEF_I[k]).length; box.append(el2('p', 'hint', `🤿 바다 도감 ${n}/${REEF_ANIMALS.length}${n >= REEF_ANIMALS.length ? ' · 🎉 모두 찾았어요!' : ''}`));
+  });
+}
+function reefReward(id) {
+  if (isTeacher) return '✅ 정답! (선생님은 연습만 해요)';
+  bag.reefDex ||= {}; const first = !bag.reefDex[id]; bag.reefDex[id] = 1;
+  if (bag.reefDay?.d !== dayNum()) bag.reefDay = { d: dayNum(), got: {} };
+  let sh = 0; if (!bag.reefDay.got[id]) { bag.reefDay.got[id] = 1; sh = giveShellCapped(first ? 15 : 5); addStat('read', 2); }
+  const all = REEF_ANIMALS.every(a => bag.reefDex[a.id]); let bonus = 0; if (all && !bag.reefAll) { bag.reefAll = 1; bonus = giveShellCapped(100); setTimeout(() => { showBanner('🤿 바다 도감 완성!', `바닷속 생물 ${REEF_ANIMALS.length}가지를 모두 찾았어요 · 🐚 +${bonus}`, 6000); playSfx('fanfare'); burst(player.pos.clone().setY(2.5), RAINBOW, 60, 6, 3); }, 600); }
+  saveBag(); updateHUD(null); playSfx('coin');
+  return `✅ 정답!${first ? ' 🆕 바다 도감에 새로 올렸어요' : ''}${sh ? ` · 🐚 +${sh} · 📚 독서력 +2` : ' · (오늘 이 생물 보상은 받았어요)'}`;
+}
 function poolTick(dt) { // 매 프레임 (아바타 위치를 다 정한 뒤)
   if (!pool.built) return;
   if (pool.water && roomNow() === 'gym') pool.water.material.opacity = 0.74 + Math.sin(time * 2) * 0.04;
@@ -17555,6 +17652,7 @@ function buildInteriors() {
     bld.artLabel = makeLabel(g, [''], 0.8, cx + 6, 4.4, cz - d / 2 + 1);
   }
   // ---------- 🏊 아쿠아센터 (1028o · 예전 배드민턴 체육관) ----------
+  { const r = ROOMS.reef; buildReef(g, r); } // 🤿 1031b
   { const r = ROOMS.gym; roomShell(g, r); buildPool(g, r); bld.gymLabel = makeLabel(g, [''], 0.8, r.cx, 4.0, r.cz - r.d / 2 + 1); }
   // ---------- 📜 서당 (한옥 교실): 서안·방석에 앉으면 사회 학습지를 펴요 ----------
   { const r = ROOMS.sd, { cx, cz, w, d } = r; roomShell(g, r);
@@ -17637,6 +17735,7 @@ async function enterRoom(id) {
   if (id === 'gw') { toast(gwOpen() ? `📜 ${S.gw.title || '과거시험'}! 빈 자리(서안)에 앉아 시험지를 펴요` : '📜 과거시험장이에요. 선생님은 앞쪽에서 문제를 올려 시험장을 열어요', 'info'); return; }
   if (id === 'mrc') { toast(mrunOpen() ? `🏃 ${S.mrun.title || '수학 달리기'}! 뒤쪽 의자에 앉아 문제를 풀며 달려요` : '🏃 수학 달리기장이에요. 선생님은 앞쪽 순위판 앞에서 경주를 열어요', 'info'); return; }
   if (id === 'egb') { toast(egOpen() ? `🔔 ${S.eg.title || '영어 골든벨'}! 빈 방석에 앉아 골든벨 문제지를 펴요` : '🔔 영어 골든벨 홀이에요. 선생님은 무대 앞에서 문제를 올려 골든벨을 열어요', 'info'); return; }
+  if (id === 'reef') { toast('🤿 바닷속 산호초예요! 헤엄치는 생물 가까이 가서 E를 누르면 관찰하고 과학 퀴즈를 풀어요', 'info'); return; }
   if (id === 'gym') { toast('🏊 아쿠아센터예요! 물에 들어가 헤엄치고, 🏁 출발대 옆에서 수영 경주, 🌊 사다리 옆에서 워터슬라이드!', 'info'); return; }
   if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
@@ -17648,7 +17747,8 @@ async function exitRoom(id) {
   $('travelText').textContent = '🌳 밖으로 나가는 중…'; $('travelFx').classList.remove('hidden');
   await sleep(350);
   let x, z, h;
-  if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
+  if (id === 'reef') { x = BEACH.pierX1 - 2.6; z = BEACH.pierZ; h = -Math.PI / 2; } // 🤿 선착장 끝으로
+  else if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
   else if (id === 'sd') { const sp = HV_SITE.seodang.pos; x = sp[0]; z = sp[1] + 7; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); }
   else if (id === 'mus') { x = MUS_SPOT[0]; z = MUS_SPOT[1] - 6; h = Math.PI; mus.g = null; } // 🏛️ 박물관 문 앞
   else if (id[0] === 'p' && id[1] === 'g') { const [gx, gz, gr = 0] = PG_SPOT[+id[2]]; x = gx + Math.sin(gr) * 5.4; z = gz + Math.cos(gr) * 5.4; h = gr; } // 🏟️ 마을 체육관 문 앞
@@ -17939,6 +18039,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1031b', d: '10월 31일', items: ['🤿 바닷속 탐험! 바닷가 선착장 끝 다이빙 부표에서 잠수해요 · 산호초를 헤엄치며 바다 생물 15가지를 관찰하고 과학 상식 퀴즈 (🐚 · 📚 독서력)', '📖 바다 도감 15가지를 다 모으면 🐚 100 · 📋 오늘의 할 일에 바닷속 미션'] },
   { id: '1031a', d: '10월 31일', items: ['🧹 바다 정리: 🚤 보트 경주와 🏆 모둠 모래성 대회를 뺐어요 (🏰 우리 반 모래성은 그대로)'] },
   { id: '1029k', d: '10월 29일', items: ['🔗 기기 연결 코드: 🎒 가방 → "다른 기기로 옮기기"에서 6자리 숫자를 받아, 다른 기기 첫 화면에 넣고 들어가면 그 계정(집·가방) 그대로 이어져요 · 한 번 연결한 기기는 계속 그 계정'] },
   { id: '1029j', d: '10월 29일', items: ['🏯 안시성 전투 새 맵: 높은 돌 성벽(성가퀴·치·각루) · 성문 하나 · 안쪽 돌계단으로 성벽 위에 올라가 싸워요 · 해자 없음', '⛰️ 토산이 계단식 흙산으로 쌓여 올라가요 (올라갈 수 있어요 · 다 쌓으면 성벽 높이) · 🐉 당나라 진영 막사', '⚔️ 공방전 나라 점수판을 화면 오른쪽으로 옮겼어요'] },
@@ -24602,6 +24703,7 @@ const DQ_FUN = [
   { id: 'don', icon: '🐷', t: '반 기부함이나 캡슐 저금통에 🐚10 넣기', hint: '광장 기부함 · 캡슐뽑기 저금통', goal: 10, cur: () => (DON_DAY - donLeft('fund')) + (DON_DAY - donLeft('caps')) },
   { id: 'pet', icon: '🐾', t: '우리 집 펫 한 번 돌보기', hint: '우리 집에서 펫에게 밥·간식·놀이', goal: 1, cur: () => Object.values(bag.hpet?.pets || {}).some(p => p?.day?.d === dayNum() && Object.keys(p.day).length > 1) ? 1 : 0 },
   { id: 'cart', icon: '🛒', t: '수레 레이스 한 판 달리기', hint: '수학 마을 수레 레이스장', goal: 1, cur: () => bag.cartDay?.d === dayNum() && (bag.cartDay.n | 0) > 0 ? 1 : 0 },
+  { id: 'reef', icon: '🤿', t: '바닷속 생물 2마리 관찰 퀴즈 맞히기', hint: '바닷가 선착장 끝 🤿 다이빙 부표', goal: 2, cur: () => bag.reefDay?.d === dayNum() ? Object.keys(bag.reefDay.got || {}).length : 0 }, // 🤿 1031b
   { id: 'swim', icon: '🏊', t: '아쿠아센터 수영 경주 한 판', hint: '광장 옆 🏊 아쿠아센터 (예전 체육관)', goal: 1, cur: () => (bag.swimDay?.d === dayNum() && (bag.swimDay.n | 0) > 0) || (bag.swmDay?.d === dayNum() && bag.swmDay.p) ? 1 : 0 },
 ];
 const DQ_SCR = { id: 'scr', icon: '🎭', t: '꿈끼 대본 퀴즈 한 판 풀기', hint: '🎤 꿈나무 무대 옆 대본 게시판 → 빈칸 퀴즈나 다음 구절', goal: 1, cur: () => bag.scrDay?.d === dayNum() && (bag.scrDay.n | 0) > 0 ? 1 : 0, bonus: true }; // 🎭 1029c 대본이 올라와 있으면 보너스 미션
@@ -25935,6 +26037,7 @@ function loop() {
   if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); }
   updateTeachLooks(dt);
   poolTick(dt); // 🏊 1028o (아바타 위치를 다 정한 뒤)
+  try { reefTick(dt); } catch (e) { console.warn('reef', e); } // 🤿 1031b
 
   world.crates.forEach((c, k) => {
     const vis = crateVisible(c.i);
