@@ -14603,7 +14603,7 @@ WEAR.b[13] = { icon: '🍋', name: '줄무늬 래쉬가드', price: 600, rash: [
 /* 🎭 1029d 꿈끼왕 칭호로 열리는 안중근 꾸미기 (살 수 없어요) */
 WEAR.h[14] = { icon: '🇰🇷', name: '태극 머리띠', kk: 1 }; WEAR.f[9] = { icon: '🥸', name: '안중근 콧수염', kk: 1 }; WEAR.b[16] = { icon: '🧥', name: '안중근 코트', kk: 1, rash: [0x262A33, 0xF4F1EA, 0x262A33], coat: 1 };
 const WEAR_SLOT = { h: '모자', f: '얼굴', b: '등·옷' };
-const wearOwn = (slot, i) => !!bag.own[slot + i] || (!!WEAR[slot][i]?.kk && (isTeacher || kkHas(backend?.uid))) || (isTeacher && !!(WEAR[slot][i]?.star || WEAR[slot][i]?.badge || WEAR[slot][i]?.ss)); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 · 🏅 배지 옷을 모두 입어 봐요
+const wearOwn = (slot, i) => !!bag.own[slot + i] || (!!WEAR[slot][i]?.kk && (isTeacher || kkHas(backend?.uid) || !!tgOf(backend?.uid)?.kkw)) || (isTeacher && !!(WEAR[slot][i]?.star || WEAR[slot][i]?.badge || WEAR[slot][i]?.ss)); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 · 🏅 배지 옷을 모두 입어 봐요
 bag.own ||= {}; bag.wear ||= { h: 0, f: 0, b: 0 }; bag.seen ||= {}; bag.badges ||= {};
 for (const id of Object.keys(bag.c || {})) bag.seen[id] ||= 1; // 이미 가진 생물은 '잡아 본 생물'로
 const myWearCode = () => { const h = bag.wear.h || 0, f = bag.wear.f || 0, b = bag.wear.b || 0; return h < 10 && f < 10 && b < 10 ? h * 100 + f * 10 + b : 1000 + h * 400 + f * 20 + b; }; // 1028n: 10번째 옷부터는 1000 + 20진법
@@ -18156,6 +18156,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1101m', d: '11월 1일', items: ['🏷️ 선생님이 🦎히로친구 · 🎭꿈끼왕 · 시즌 칭호(🍂수확꾼 · 🎭꿈끼스타 · 👑수확제왕)도 직접 줄 수 있어요 (꿈끼왕을 받으면 안중근 꾸미기도 열려요)'] },
   { id: '1101l', d: '11월 1일', items: ['✍️ 한글 마을 시 게시판이 「운을 띄운 삼행시」로 바뀌었어요 · 선생님이 띄운 운(예: 한·글·날)으로 줄을 시작해요', '✅ 선생님이 내 시를 걸면 📚 독서력 +3 · 🐚 10 (하루 한 번)', '👍 걸린 친구 시에 한 표! 게시판에는 투표 많은 시 3편이 걸려요'] },
   { id: '1101k', d: '11월 1일', items: ['🕵️ 정보 탐정단 단서 8개가 마을 밖이 아니라 「정보 탐정단 본부」 건물 안 새 공간으로 들어갔어요 · 본부 앞에서 E로 들어가 가운데 🗂️ 사건 게시판과 벽을 따라 놓인 단서를 살펴요'] },
   { id: '1101j', d: '11월 1일', items: ['🕵️ 한글 마을 「정보 탐정단」: 덜렁이는 내일 학교에 가야 할까? 본부 안 단서 8개를 찾아 출처를 밝히고 믿을 만한지 판단해요', '👥 선생님이 모둠전을 시작하면 1~4모둠을 골라 한 친구가 찾은 단서를 모둠 모두가 함께 봐요 · 모둠 대표가 최종 답을 한 번 제출', '📣 진실 공개 때 통과 여부와 단서별 판단이 나오고 ✍️ 되돌아보기를 내면 📚 독서력 +3 · 🐚'] },
@@ -23878,8 +23879,9 @@ async function praiseGive(u, nm, dir = 1) {
 const stg = { tab: 'talk', k: 'math', n: 10, sel: new Set() };
 // 🏷️ 1026b 선생님이 주는 칭호: state/tgive/{명단 이름 또는 기기}/{칭호 키} = 이번 주 번호(그 주만) 또는 -1(계속)
 const TT_DEF = { sum: ['👑종합1등', 'sum'], tri: ['🌟삼관왕', 'tri'], mr: ['⛏️금광왕', 'mr'], eg: ['🔔골든벨', 'eg'], egl: ['🔔최후의1인', 'egl'], gw: ['🎓장원', 'gw'], egm: ['🏅골든벨마스터', 'egm'] };
-const ttDef = (k) => TT_DEF[k] || (k.startsWith('r_') && rankCats()[k.slice(2)] ? [`${MEDAL[0]}${rankCats()[k.slice(2)].icon}${(rankCats()[k.slice(2)].name || '').slice(0, 2)}1등`, ''] : null);
-const TT_ORDER = () => [...Object.keys(TT_DEF), ...Object.keys(rankCats()).map(k => `r_${k}`)];
+const TT_EXTRA = () => ({ kkw: ['🎭꿈끼왕', ''], hiro: ['🦎히로친구', ''], ...Object.fromEntries(Object.entries(SSN_TITLE).map(([k, [t]]) => [k, [t, '']])) }); // 🏷️ 1101m 선생님이 직접 줄 수 있게
+const ttDef = (k) => TT_DEF[k] || TT_EXTRA()[k] || (k.startsWith('r_') && rankCats()[k.slice(2)] ? [`${MEDAL[0]}${rankCats()[k.slice(2)].icon}${(rankCats()[k.slice(2)].name || '').slice(0, 2)}1등`, ''] : null);
+const TT_ORDER = () => [...Object.keys(TT_DEF), ...Object.keys(TT_EXTRA()), ...Object.keys(rankCats()).map(k => `r_${k}`)];
 const tgKey = (k) => String(k || '').replace(/[.#$\[\]\/]/g, '_').slice(0, 40);
 const tgOk = (v) => v === -1 || v === weekNum();
 function tgOf(u, data) { const o = {}, nm = rosterOf(u, data); for (const key of [u, nm && tgKey(nm)]) { if (!key) continue; for (const [k, v] of Object.entries(S.tgive?.[key] || {})) if (tgOk(v) && ttDef(k)) o[k] = v; } return o; }
