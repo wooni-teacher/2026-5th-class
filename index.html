@@ -4581,7 +4581,7 @@ function onPlayers(type, uid, data) {
   }
   if (!r.target || r.target.x !== data.x || r.target.z !== data.z || r.target.m !== data.m) r.seenAt = performance.now();
   r.target = data;
-  { const nm = nickOf(uid, data) + titleText(uid, data) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
+  { const nm = nickOf(uid, data) + warLvTag(uid, data) + titleText(uid, data) + praiseTag(uid, data) + hpetTag(data.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } }
   // 받은 위치를 시간과 함께 모아 두고, 조금 늦게(REMOTE_DELAY) 사이를 이어서 보여 줘요 → 인터넷이 들쭉날쭉해도 부드럽게
   const now = performance.now(), last = r.buf[r.buf.length - 1];
   if (last && now - last.t > 1000) r.buf.push({ ...last, t: now - PRESENCE_INTERVAL * 1000 }); // 멈췄다가 다시 걸으면 바로 출발
@@ -4629,6 +4629,9 @@ function updateRemotes(dt) {
   }
 }
 const PRESENCE_INTERVAL = 0.5; // 초
+const myLvSum = () => ['math', 'eng', 'soc', 'read'].reduce((t, k) => t + statLv(k), 0); // 📊 1101o 능력치 레벨 합 (수학·영어·사회·독서)
+function lvOfU(u, tg) { if (u === backend?.uid || tg?.me) return isTeacher ? null : myLvSum(); const T = tg || remotes.get(u)?.target; if (T?.t) return null; const v = T?.sl; return Number.isInteger(v) ? v : null; }
+function warLvTag(u, data) { if (!(S.siege?.on || S.nv?.on)) return ''; const v = lvOfU(u, data); return v == null ? '' : ` Lv${v}`; } // ⚔️ 공방전·해전 중에는 이름표에 레벨
 function sgMySp() { return ['math', 'eng', 'soc', 'read'].map(k => Math.min(9, statTier(k))).join(''); } // 💪 1027o 수학·영어·사회·독서 단계 (0~4)
 let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0;
 for (const ev of ['keydown', 'pointerdown', 'touchstart', 'wheel']) addEventListener(ev, () => { lastInputAt = Date.now(); }, { capture: true, passive: true }); // 💤 잠수 판단: 마지막으로 누른 때
@@ -4644,7 +4647,7 @@ function sendPresence(time) {
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
-  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
+  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); if (!isTeacher) d.sl = Math.min(99, myLvSum()); { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -10367,9 +10370,9 @@ const rankNick = (u, e) => nickOf(u, e) || '친구';
 function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · (선생님) 오래된 주 지우기
   if (!joined || !stateLoaded || !backend) return;
   const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn;
-  const me = backend.uid, tl = (cleanNick(myNick) || '') + titleText(me) + praiseTag(me) + hpetTag(hpetCode());
+  const me = backend.uid, tl = (cleanNick(myNick) || '') + warLvTag(me) + titleText(me) + praiseTag(me) + hpetTag(hpetCode());
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
-  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
+  for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + warLvTag(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -18164,6 +18167,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1101o', d: '11월 1일', items: ['⚔️ 공방전 · ⚓ 해전 중에는 이름표에 학생 레벨(Lv = 수학+영어+사회+독서 레벨 합)이 같이 떠요 · 선생님 팀 목록에도 Lv가 보여요'] },
   { id: '1101n', d: '11월 1일', items: ['💬 채팅 말풍선이 이름표 · 칭호에 가려지지 않게 맨 위로 올라가요', '✨ 선생님 머리 위 「🧑‍🏫 선생님」 글자 대신 몸 주변에 금빛 아우라가 자동으로 나와요'] },
   { id: '1101m', d: '11월 1일', items: ['🏷️ 선생님이 🦎히로친구 · 🎭꿈끼왕 · 시즌 칭호(🍂수확꾼 · 🎭꿈끼스타 · 👑수확제왕)도 직접 줄 수 있어요 (꿈끼왕을 받으면 안중근 꾸미기도 열려요)'] },
   { id: '1101l', d: '11월 1일', items: ['✍️ 한글 마을 시 게시판이 「운을 띄운 삼행시」로 바뀌었어요 · 선생님이 띄운 운(예: 한·글·날)으로 줄을 시작해요', '✅ 선생님이 내 시를 걸면 📚 독서력 +3 · 🐚 10 (하루 한 번)', '👍 걸린 친구 시에 한 표! 게시판에는 투표 많은 시 3편이 걸려요'] },
@@ -23366,7 +23370,7 @@ function fillSiegeAdmin(force) {
   const roles = s ? Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `${R.icon}${Object.keys(s.role || {}).filter(u => sgRoleOf(u) === k).length}`).join(' ') : '';
   $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초 · 역할 ${roles}` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
   $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on;
-  const list = sgStudents(), key = [setKey, n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?')).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
+  const list = sgStudents(), key = [setKey, n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?') + (lvOfU(u, tg) ?? '')).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
   if (!force && key === sgw.listKey) return; sgw.listKey = key;
   const box = $('tpSgList'); box.textContent = '';
   if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
@@ -23374,6 +23378,7 @@ function fillSiegeAdmin(force) {
     const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot');
     dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
     row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
+    { const lv = lvOfU(u, u === backend.uid ? { me: 1 } : tg); if (lv != null) { const l = el2('span', 'hint', `Lv${lv}`); l.title = '능력치 레벨 합 (수학+영어+사회+독서)'; l.style.cssText = 'margin:0 2px;font-weight:800;white-space:nowrap;color:#3E6FD8'; row.append(l); } }
     { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.title = pw == null ? '아직 능력치 정보가 없어요 (새로고침하면 보여요)' : '능력치 힘 = 영어+수학+사회 단계 + 독서 단계×2'; b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1))));
@@ -26111,6 +26116,7 @@ function nvFillAdmin() { // 🏳️ 1031k 관리화면: 학생마다 해전 나�
   const set = nvSet(), n = s.n;
   list.forEach(([u, tg], i) => { const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot'); dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
     row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
+    { const lv = lvOfU(u, u === backend.uid ? { me: 1 } : tg); if (lv != null) { const l = el2('span', 'hint', `Lv${lv}`); l.title = '능력치 레벨 합 (수학+영어+사회+독서)'; l.style.cssText = 'margin:0 2px;font-weight:800;white-space:nowrap;color:#3E6FD8'; row.append(l); } }
     { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 해전 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1)))); sel.value = String(s.team?.[u] || 0);
