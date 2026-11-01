@@ -2185,7 +2185,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2238,6 +2238,7 @@ function normalize(v) {
     scr: v.scr && typeof v.scr === 'object' && typeof v.scr.x === 'string' ? { n: +v.scr.n || 0, t: String(v.scr.t || '').slice(0, 40), x: v.scr.x.slice(0, 12000), at: +v.scr.at || 0, ...(typeof v.scr.ld === 'string' && v.scr.ld ? { ld: v.scr.ld.slice(0, 12) } : {}) } : null, // 🎭 1029c
     kkw: Object.fromEntries(Object.entries(plainObj(v.kkw)).filter(([k, x]) => k.length <= 64 && x === 1).slice(0, 80)), // 🎭 1029d 꿈끼왕
     scrp: Object.fromEntries(Object.entries(plainObj(v.scrp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: String(x.r || '').slice(0, 12), nm: String(x.nm || '').slice(0, 12), b: Math.min(100, Math.max(0, x.b | 0)), p: x.p | 0, at: +x.at || 0 }])),
+    esc: Object.fromEntries(['esm', 'ese', 'ess', 'esc'].map(k => [k, Object.fromEntries(Object.entries(plainObj(plainObj(v.esc)[k])).filter(([u, x]) => x && typeof x === 'object' && +x.t > 0).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), t: +x.t, s: Math.min(3, x.s | 0), at: +x.at || 0 }]))])), // 🔐 1101a
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
@@ -2578,7 +2579,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3088,6 +3089,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async sspSet(sid, lv) { try { await D.set(R(`state/ssp/${uid}/${sid}`), lv); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🗓️ 1028n 시즌 단계
     async scrpSet(o) { try { await D.set(R(`state/scrp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1029c
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
+    async escSet(room, o) { try { await D.set(R(`state/esc/${room}/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🔐 1101a 방탈출 기록
     async wrapAnswer(o) { try { await D.set(R(`state/wrapa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📝 1028k 수업 마무리
     async egAnswer(o) { try { await D.set(R(`state/ega/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async mrunStep(o) { try { await D.set(R(`state/mrunp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
@@ -17307,6 +17309,10 @@ const ROOMS = {
   bg2: { name: '부루마블 방', icon: '🏙️', cx: 1582, cz: -92, w: 24, d: 20, wall: 0xE3ECFF, floor: 0xC9B48E, site: null },
   gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
   mrc: { name: '수학 달리기장', icon: '🏃', cx: 1515, cz: 130, w: 34, d: 28, wall: 0xFFF1D6, floor: 0xC8A878, site: null }, // 🏃 수학 마을 달리기장 (1024m)
+  esm: { name: '수학 비밀 금고', icon: '🧮', cx: 1450, cz: -150, w: 22, d: 18, wall: 0xE6EEFA, floor: 0xC8B48E, site: null }, // 🔐 1101a 방탈출 (반월쉼터)
+  ese: { name: '영어 마법 도서관', icon: '🔤', cx: 1515, cz: -150, w: 22, d: 18, wall: 0xF0E6FA, floor: 0xB89B74, site: null },
+  ess: { name: '역사 수장고', icon: '🏛️', cx: 1580, cz: -150, w: 22, d: 18, wall: 0xF6EBDA, floor: 0xC9A27A, site: null },
+  esc: { name: '과학 실험실', icon: '🔬', cx: 1515, cz: -200, w: 22, d: 18, wall: 0xE2F6F4, floor: 0xD8DEE0, site: null },
   reef: { name: '바닷속 산호초', icon: '🤿', cx: 3200, cz: 0, w: 56, d: 56, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
   egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
@@ -17724,6 +17730,7 @@ function buildInteriors() {
   }
   // ---------- 🏊 아쿠아센터 (1028o · 예전 배드민턴 체육관) ----------
   { const r = ROOMS.reef; buildReef(g, r); } // 🤿 1031b
+  escBuild(g); // 🔐 1101a 방탈출 방 4개
   { const r = ROOMS.gym; roomShell(g, r); buildPool(g, r); bld.gymLabel = makeLabel(g, [''], 0.8, r.cx, 4.0, r.cz - r.d / 2 + 1); }
   // ---------- 📜 서당 (한옥 교실): 서안·방석에 앉으면 사회 학습지를 펴요 ----------
   { const r = ROOMS.sd, { cx, cz, w, d } = r; roomShell(g, r);
@@ -17806,6 +17813,7 @@ async function enterRoom(id) {
   if (id === 'gw') { toast(gwOpen() ? `📜 ${S.gw.title || '과거시험'}! 빈 자리(서안)에 앉아 시험지를 펴요` : '📜 과거시험장이에요. 선생님은 앞쪽에서 문제를 올려 시험장을 열어요', 'info'); return; }
   if (id === 'mrc') { toast(mrunOpen() ? `🏃 ${S.mrun.title || '수학 달리기'}! 뒤쪽 의자에 앉아 문제를 풀며 달려요` : '🏃 수학 달리기장이에요. 선생님은 앞쪽 순위판 앞에서 경주를 열어요', 'info'); return; }
   if (id === 'egb') { toast(egOpen() ? `🔔 ${S.eg.title || '영어 골든벨'}! 빈 방석에 앉아 골든벨 문제지를 펴요` : '🔔 영어 골든벨 홀이에요. 선생님은 무대 앞에서 문제를 올려 골든벨을 열어요', 'info'); return; }
+  if (ESC_ROOMS[id]) { setTimeout(() => { if (!esc.run && roomNow() === id) escIntro(id); }, 400); return; } // 🔐
   if (id === 'reef') { toast('🤿 바닷속 산호초예요! 헤엄치는 생물 가까이 가서 E를 누르면 관찰하고 과학 퀴즈를 풀어요', 'info'); return; }
   if (id === 'gym') { toast('🏊 아쿠아센터예요! 물에 들어가 헤엄치고, 🏁 출발대 옆에서 수영 경주, 🌊 사다리 옆에서 워터슬라이드!', 'info'); return; }
   if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
@@ -17827,6 +17835,7 @@ async function exitRoom(id) {
   else if (id === 'gw') { x = GW_HOUSE.x; z = GW_HOUSE.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 📜 과거시험장 문 앞
   else if (id === 'mrc') { x = MR_HALL.x; z = MR_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🏃 달리기장 문 앞
   else if (id === 'egb') { x = EG_HALL.x; z = EG_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🔔 골든벨 홀 문 앞
+  else if (ESC_ROOMS[id]) { x = BG_HOUSE.x + 1.5; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; esc.run = null; escMarks(); } // 🔐 방탈출 → 반월쉼터 문 앞
   else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
   else { const p = buildingDoor(ROOMS[id].site), info = world.sites[ROOMS[id].site]; const f = info?.def?.front || [0, 1]; x = (p?.x ?? 0) + f[0] * 1.6; z = (p?.z ?? 8) + f[1] * 1.6; h = Math.atan2(f[0], f[1]); }
@@ -18110,6 +18119,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1101a', d: '11월 1일', items: ['🔐 과목별 방탈출! 🎲 반월쉼터에서 🧮 수학 비밀 금고 · 🔤 영어 마법 도서관 · 🏛️ 역사 수장고 · 🔬 과학 실험실', '단서 상자 3개(🔴🟡🔵) 문제 → 🔐 자물쇠 비밀번호 → 🚪 탈출구 마지막 문제 · ⏱️ 시간 기록 · 🏆 우리 반 빠른 탈출 · 방마다 하루 한 번 🐚 + 그 과목 능력치'] },
   { id: '1031l', d: '10월 31일', items: ['⛏️ 수학 광산 동굴에 들어가면 다른 곳으로 옮겨지던 문제를 고쳤어요 (해전 바다·바닷속이 광산 동굴과 겹쳐 있었어요 → 동쪽 먼 곳으로 옮겼어요)'] },
   { id: '1031k', d: '10월 31일', items: ['🧑‍🏫 관리화면 삼국 해전에서도 학생마다 나라를 정할 수 있어요 (💪 나라별 능력치 힘도 보여요)'] },
   { id: '1031j', d: '10월 31일', items: ['🧭 항해사가 친구 배에 타도 그 배가 10% 빨라지고, Q 돌진으로 배를 빠르게 해요'] },
@@ -26136,6 +26146,190 @@ function nvBotView(dt) { // 모든 기기: 컴퓨터 배 그릴 자리
   nvW.botView = out;
 }
 
+// ================= 🔐 1101a 과목별 방탈출 (🎲 반월쉼터에서 들어가요) =================
+// 방 4개(ROOMS esm·ese·ess·esc): 🧮 수학 비밀 금고 · 🔤 영어 마법 도서관 · 🏛️ 사회 역사 수장고 · 🔬 과학 실험실
+// 순서: ① 방 곳곳 단서 상자 3개(🔴🟡🔵)에서 문제 → 맞히면 숫자(영어는 알파벳) ② 자물쇠 상자에 색 순서대로 비밀번호 → 🗝️ 열쇠
+//      ③ 탈출문의 마지막 문제(수학 서술형 · 영어 문장 순서 · 사회 사건 순서 · 과학 모두 고르기) → 탈출!
+// · 문제·비밀번호는 기기마다 달라요(친구와 같은 방에 들어가 말로 도와줄 수 있어요) · 틀리면 10초 · 💡 힌트 2번(각 30초)
+// · 기록: state/esc/{방}/{기기} { n 이름, t 걸린 ms, s 별, at } (자기 칸만 써요 · 최고 기록만) · 보상: 방마다 하루 한 번 🐚 + 그 과목 능력치
+const ESC_ROOMS = {
+  esm: { st: 'math', icon: '🧮', n: '수학 비밀 금고', col: 0x2F6FB5, story: '수학 박사님의 연구실 문이 잠겨 버렸어요! 박사님이 남긴 단서 상자 3개의 문제를 풀어 금고 비밀번호를 찾고, 마지막 계산으로 탈출해요.', fin: '📐 마지막 계산 문제' },
+  ese: { st: 'eng', icon: '🔤', n: '영어 마법 도서관', col: 0x8A4FC8, story: '마법 도서관의 책들이 문을 잠갔어요! 단서 책 3권의 영어 단어를 맞혀 알파벳 자물쇠를 열고, 흩어진 영어 문장을 바르게 이어 탈출해요.', fin: '📜 흩어진 영어 문장' },
+  ess: { st: 'soc', icon: '🏛️', n: '역사 수장고', col: 0xB0502E, story: '박물관 수장고에 갇혔어요! 유물 상자 3개의 역사 문제를 풀어 비밀번호를 찾고, 사건을 일어난 순서대로 놓아 탈출해요.', fin: '📜 사건 순서 맞추기' },
+  esc: { st: 'read', icon: '🔬', n: '과학 실험실', col: 0x2AA6A0, story: '실험실 문이 고장 나 잠겼어요! 실험 상자 3개의 과학 문제를 풀어 비밀번호를 찾고, 마지막 실험 문제를 풀어 탈출해요.', fin: '🧪 마지막 실험 문제' },
+};
+const ESC_COLS = [['🔴', 0xE2584A], ['🟡', 0xF2C230], ['🔵', 0x3E8FE8]];
+const ESC_HINT_T = 30000, ESC_WRONG_T = 10000;
+const ESC_Q = {
+  esm: [
+    { q: '3.5 × 4 = ?', n: 14 }, { q: '0.6 × 0.3 = ?', n: 0.18 }, { q: '1.2 × 15 = ?', n: 18 }, { q: '5 × 0.07 = ?', n: 0.35 },
+    { q: '2/3 × 6 = ? (자연수로)', n: 4 }, { q: '3/4 × 2/5 = ?', o: ['3/10', '5/9', '6/9', '5/20'], a: 0 }, { q: '1과 1/2 × 4 = ?', n: 6 },
+    { q: '직육면체의 면은 모두 몇 개일까요?', n: 6 }, { q: '직육면체의 모서리는 모두 몇 개일까요?', n: 12 }, { q: '직육면체의 꼭짓점은 모두 몇 개일까요?', n: 8 },
+    { q: '4, 6, 8, 10의 평균은?', n: 7 }, { q: '3456을 올림하여 백의 자리까지 나타내면?', n: 3500 }, { q: '7849를 버림하여 천의 자리까지 나타내면?', n: 7000 },
+    { q: '10 이상 15 미만인 자연수는 몇 개일까요?', n: 5 }, { q: '합동인 두 도형에서 대응변의 길이는?', o: ['서로 같아요', '두 배예요', '절반이에요', '알 수 없어요'], a: 0 },
+    { q: '선대칭도형에서 대칭축은 대응점을 이은 선분을 어떻게 나눌까요?', o: ['똑같이 둘로', '셋으로', '나누지 않아요', '1:2로'], a: 0 },
+  ],
+  ese: (() => { const out = []; for (const L of Object.keys(EV_WORDS)) for (const [w, m, e] of EV_WORDS[L]) if (/^[a-z]+$/i.test(w) && w.length >= 3) out.push({ w, m, e, L }); return out; })(),
+  ess: [
+    { q: '단군왕검이 세운 우리 역사의 첫 나라는?', o: ['고조선', '고구려', '백제', '고려'], a: 0 }, { q: '광개토 대왕이 영토를 크게 넓힌 나라는?', o: ['고구려', '백제', '신라', '가야'], a: 0 },
+    { q: '불국사와 석굴암을 만든 나라는?', o: ['신라', '고구려', '고조선', '발해'], a: 0 }, { q: '고구려 사람들이 세운 발해의 첫 임금은?', o: ['대조영', '왕건', '김유신', '주몽'], a: 0 },
+    { q: '고려를 세운 사람은?', o: ['왕건', '견훤', '궁예', '대조영'], a: 0 }, { q: '철을 잘 다루고 여러 작은 나라가 모여 있던 나라는?', o: ['가야', '발해', '고려', '고조선'], a: 0 },
+    { q: '삼국을 통일한 나라는?', o: ['신라', '고구려', '백제', '가야'], a: 0 }, { q: '서희가 말로 거란을 물리치고 땅을 얻은 일은 어느 시대일까요?', o: ['고려', '고조선', '삼국', '발해'], a: 0 },
+    { q: '부처의 힘으로 몽골의 침입을 이겨 내려고 새긴 것은?', o: ['팔만대장경', '첨성대', '고인돌', '칠지도'], a: 0 }, { q: '고조선의 무덤으로, 큰 돌을 올려 만든 것은?', o: ['고인돌', '석굴암', '첨성대', '다보탑'], a: 0 },
+    { q: '고려청자로 유명한, 흙에 무늬를 파고 다른 흙을 채워 넣는 기법은?', o: ['상감 기법', '목판 인쇄', '단청', '온돌'], a: 0 }, { q: '세계에서 가장 오래된 금속 활자 인쇄본으로 남아 있는 고려의 책은?', o: ['직지심체요절', '삼국사기', '훈민정음', '동의보감'], a: 0 },
+    { q: '강감찬이 거란군을 크게 물리친 싸움은?', o: ['귀주 대첩', '살수 대첩', '안시성 전투', '황산벌 전투'], a: 0 }, { q: '을지문덕이 수나라 군대를 물리친 싸움은?', o: ['살수 대첩', '귀주 대첩', '행주 대첩', '진주 대첩'], a: 0 },
+  ],
+  esc: [
+    { q: '스스로 양분을 만드는 생물(생산자)은?', o: ['식물', '토끼', '곰팡이', '독수리'], a: 0 }, { q: '죽은 생물이나 배출물을 분해하는 생물(분해자)은?', o: ['곰팡이와 세균', '벼와 풀', '메뚜기', '개구리'], a: 0 },
+    { q: '먹이 사슬이 여러 개 얽혀 그물처럼 연결된 것은?', o: ['먹이 그물', '먹이 피라미드', '생태 사슬', '광합성'], a: 0 }, { q: '공기 중의 수증기가 차가운 물체 표면에 맺히는 것은?', o: ['이슬', '안개', '구름', '눈'], a: 0 },
+    { q: '습도를 잴 때 쓰는 기구는?', o: ['건습구 습도계', '풍향계', '온도계만', '자석'], a: 0 }, { q: '바람은 어디에서 어디로 불까요?', o: ['고기압에서 저기압으로', '저기압에서 고기압으로', '늘 남쪽으로', '위에서 아래로만'], a: 0 },
+    { q: '맑은 날 낮에 바닷가에서 부는 바람은?', o: ['바다에서 육지로 (해풍)', '육지에서 바다로 (육풍)', '바람이 없어요', '위로만 불어요'], a: 0 }, { q: '100 m를 20초 동안 달린 사람의 속력은? (m/s)', n: 5 },
+    { q: '속력을 구하는 식은?', o: ['이동 거리 ÷ 걸린 시간', '걸린 시간 ÷ 이동 거리', '이동 거리 × 걸린 시간', '무게 ÷ 시간'], a: 0 }, { q: '푸른색 리트머스 종이를 붉게 바꾸는 용액은?', o: ['산성 용액', '염기성 용액', '모든 용액', '물만'], a: 0 },
+    { q: '페놀프탈레인 용액을 넣으면 붉게 변하는 용액은?', o: ['염기성 용액', '산성 용액', '설탕물', '소금물'], a: 0 }, { q: '식초는 어떤 성질의 용액일까요?', o: ['산성', '염기성', '중성', '기체'], a: 0 },
+    { q: '석회수는 어떤 성질의 용액일까요?', o: ['염기성', '산성', '중성', '고체'], a: 0 }, { q: '자동차가 2시간 동안 120 km를 갔어요. 속력은 시속 몇 km?', n: 60 },
+  ],
+};
+const ESC_FIN = {
+  esm: [{ q: '한 봉지에 2/5 kg인 쌀이 15봉지 있어요. 쌀은 모두 몇 kg일까요?', n: 6 }, { q: '1분에 0.8 L씩 물이 나오는 수도로 12분 동안 물을 받았어요. 받은 물의 반을 썼다면 남은 물은 몇 L일까요?', n: 4.8 },
+    { q: '수학 점수가 85점, 90점, 95점, 90점이에요. 평균은 몇 점일까요?', n: 90 }, { q: '가로 5 cm, 세로 4 cm, 높이 3 cm인 직육면체의 모든 모서리 길이의 합은 몇 cm일까요?', n: 48 }, { q: '한 모서리가 7 cm인 정육면체의 모든 모서리 길이의 합은 몇 cm일까요?', n: 84 }],
+  ess: [['고조선 건국', '고구려 광개토 대왕의 정복', '신라의 삼국 통일', '발해 건국', '고려 건국', '귀주 대첩 (거란 물리침)', '팔만대장경 완성']],
+  esc: [{ q: '염기성 용액을 모두 고르세요', all: ['석회수', '비눗물', '유리 세정제', '빨랫비누 물'], no: ['식초', '레몬즙', '탄산수', '묽은 염산'] }, { q: '산성 용액을 모두 고르세요', all: ['식초', '레몬즙', '탄산수', '사이다'], no: ['석회수', '비눗물', '유리 세정제', '암모니아수'] }, { q: '분해자를 모두 고르세요', all: ['곰팡이', '버섯', '세균'], no: ['벼', '토끼', '매', '개구리', '소나무'] }, { q: '생산자를 모두 고르세요', all: ['벼', '소나무', '해바라기'], no: ['토끼', '곰팡이', '뱀', '세균', '메뚜기'] }],
+};
+const esc = { run: null, its: [], marks: {}, hud: null };
+const escRoomNow = () => { const r = roomNow(); return ESC_ROOMS[r] ? r : ''; };
+function escSpots(id) { const R = ROOMS[id], { cx, cz, w, d } = R; return [[cx - w / 2 + 1.6, cz - d / 2 + 2.2], [cx + w / 2 - 1.6, cz - d / 2 + 2.2], [cx - w / 2 + 1.6, cz + 1.5], [cx + w / 2 - 1.6, cz + 1.5], [cx - 4.5, cz + d / 2 - 3.6], [cx + 4.5, cz + d / 2 - 3.6]]; }
+function escBuild(g) { // 방 꾸미기 (방마다 색 · 소품) + 단서 상자 자리 6곳 · 자물쇠 상자 · 탈출문
+  const o = { solid: false };
+  for (const [id, E] of Object.entries(ESC_ROOMS)) {
+    const R = ROOMS[id], { cx, cz, w, d } = R; roomShell(g, R);
+    { const c = new THREE.Color(E.col).lerp(new THREE.Color(0xFFFFFF), 0.55).getHex(); box(g, w * 0.5, 0.04, d * 0.45, c, cx, 0.125, cz - 0.5, { solid: false, emissive: 0.1 }); } // 가운데 카펫
+    for (let k = 0; k < 4; k++) box(g, 2.2, 2.4, 0.5, 0x7A5234, cx - w / 2 + 2.2 + k * 2.6 + (k > 1 ? w - 11.6 : 0), 1.2, cz - d / 2 + 0.5); // 책장·선반
+    for (let k = 0; k < 8; k++) box(g, 0.32, 0.5, 0.36, [0xE2584A, 0x3E8FE8, 0xF2C230, 0x5FBE5A][k % 4], cx - w / 2 + 1.4 + (k % 4) * 0.5 + (k > 3 ? w - 4.9 : 0), 1.65, cz - d / 2 + 0.75, o);
+    const deco = id === 'esm' ? ['📐 x + y = ?', '∑ π √ ÷'] : id === 'ese' ? ['📖 Open the door!', 'A B C … Z'] : id === 'ess' ? ['🏺 유물 수장고', '고조선 → 고려'] : ['🧪 실험실', '산성 · 염기성'];
+    signPlane(g, deco, 4.6, 1.3, cx, 1.9, cz - d / 2 + 0.46, { font: 46, pad: 6, fg: '#FFFFFF', bg: '#2E3B33', stroke: false }).rotation.y = 0;
+    if (id === 'esc') for (let k = 0; k < 5; k++) { cyl(g, 0.16, 0.5, [0xE2584A, 0x5FBE5A, 0x3E8FE8, 0xB58CF0, 0xF2C230][k], cx - 1.6 + k * 0.8, 1.15, cz - 1, { solid: false, emissive: 0.4 }); }
+    if (id === 'ess') for (const s of [-1, 1]) { cyl(g, 0.5, 1.0, 0xC8A070, cx + s * 3.2, 0.5, cz - 1); mesh(SPH_LO, g, 0.45, 0.6, 0.45, 0x9A6B3E, cx + s * 3.2, 1.3, cz - 1, o); }
+    if (id === 'esm') { box(g, 1.2, 1.2, 1.2, 0xE8E8EE, cx - 3, 0.6, cz - 1); mesh(CONE, g, 0.7, 1.4, 0.7, 0xF2C230, cx + 3, 0.7, cz - 1); }
+    if (id === 'ese') for (let k = 0; k < 6; k++) box(g, 0.5, 0.08, 0.7, [0xE2584A, 0x8A4FC8, 0x3E8FE8][k % 3], cx - 2.5 + k, 2.2 + Math.sin(k) * 0.4, cz - 1, { solid: false, ry: k * 0.6, emissive: 0.3 }); // 떠 있는 책
+    box(g, 1.6, 0.9, 1.0, 0x6B4226, cx, 0.45, cz - d / 2 + 2.6); box(g, 1.7, 0.18, 1.1, 0xC8A050, cx, 0.95, cz - d / 2 + 2.6, o); // 🔐 자물쇠 상자
+    esc.marks[id] = { lockLab: makeLabel(g, ['🔐 자물쇠 상자'], 0.6, cx, 1.9, cz - d / 2 + 2.6), door: box(g, 1.8, 2.6, 0.12, 0xE2584A, cx + w / 2 - 2.4, 1.3, cz - d / 2 + 0.36, o), doorLab: makeLabel(g, ['🚪 탈출구 (잠김)'], 0.6, cx + w / 2 - 2.4, 3.0, cz - d / 2 + 0.6), boxes: [] };
+    for (const [x, z] of escSpots(id)) { const bg = new THREE.Group(); bg.position.set(x, 0, z); box(bg, 0.9, 0.6, 0.7, 0x8A5A34, 0, 0.3, 0, o); const lid = box(bg, 0.95, 0.12, 0.75, 0xFFFFFF, 0, 0.66, 0, o); const lab = makeLabel(bg, ['❓'], 0.55, 0, 1.3, 0); g.add(bg); esc.marks[id].boxes.push({ g: bg, lid, lab }); }
+  }
+  esc.it = addInteract({ pos: new V3(0, -99, 0), r: 1.9, text: () => esc.act?.[0] || null, run: () => esc.act?.[1]?.() });
+}
+function escPick(L, n) { return hShuffle([...L]).slice(0, n); }
+function escStart(id) {
+  const E = ESC_ROOMS[id], cols = hShuffle([0, 1, 2]), spots = hShuffle([0, 1, 2, 3, 4, 5]).slice(0, 3);
+  const qs = id === 'ese' ? escPick(ESC_Q.ese, 3) : escPick(ESC_Q[id], 3);
+  const clues = cols.map((c, i) => ({ c, spot: spots[i], q: qs[i], done: false, v: id === 'ese' ? qs[i].w[0].toUpperCase() : String(Math.floor(Math.random() * 10)) }));
+  const order = hShuffle([0, 1, 2]); // 자물쇠 색 순서
+  esc.run = { id, t0: performance.now(), pen: 0, hints: 2, clues, order, key: false, done: false, fin: null };
+  playSfx('fanfare'); showBanner(`${E.icon} ${E.n} 시작!`, '방 곳곳의 ❓ 단서 상자 3개를 찾아 E를 눌러요', 5000); escMarks();
+}
+function escTime() { const r = esc.run; return r ? (r.end || performance.now()) - r.t0 + r.pen : 0; }
+const escFmt = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+function escMarks() { // 상자 모양 (열린 상자 · 색 표시)
+  for (const [id, M] of Object.entries(esc.marks)) { const r = esc.run?.id === id ? esc.run : null;
+    M.boxes.forEach((B, k) => { const cl = r?.clues.find(c => c.spot === k); B.g.visible = !!cl; if (!cl) return; B.lid.material = B.lid.material.clone(); B.lid.material.color.setHex(ESC_COLS[cl.c][1]); B.lid.position.y = cl.done ? 0.9 : 0.66; B.lid.rotation.x = cl.done ? -0.9 : 0; B.lab.userData.set([cl.done ? `${ESC_COLS[cl.c][0]} ${cl.v}` : `${ESC_COLS[cl.c][0]} ❓`]); });
+    M.lockLab.userData.set([r?.key ? '🔓 열렸어요 · 🗝️' : r ? `🔐 ${r.order.map(i => ESC_COLS[r.clues[i].c][0]).join(' → ')}` : '🔐 자물쇠 상자']); M.doorLab.userData.set([r?.done ? '🚪 탈출 성공!' : r?.key ? '🚪 탈출구 (🗝️ 열쇠로 열어요)' : '🚪 탈출구 (잠김)']); M.door.material.color.setHex(r?.done ? 0x5FBE5A : 0xE2584A); }
+}
+function escAsk(title, Q, onOk) { // 문제 하나 (객관식 · 숫자 입력)
+  const st = { pick: -1, opts: Q.o ? hShuffle(Q.o.map((t, i) => [t, i])) : null };
+  openLife(title, (box) => {
+    box.textContent = ''; box.append(Object.assign(el2('p', 'lp-big', Q.q), { style: 'font-size:20px' }));
+    const wrong = () => { esc.run.pen += ESC_WRONG_T; playSfx('wrong'); toast(`❌ 아쉬워요! 10초가 더해졌어요`, 'warn'); };
+    if (st.opts) { const g = el2('div', ''); g.style.cssText = 'display:grid;gap:6px'; st.opts.forEach(([t, i]) => { const b = el2('button', 'btn', t); b.style.cssText = 'text-align:left;font-size:17px;background:#fff'; b.onclick = () => { if (i === Q.a) { playSfx('right'); closeLife(); onOk(); } else { wrong(); b.disabled = true; b.style.background = '#F6C9C0'; } }; g.append(b); }); box.append(g); }
+    else { const row = el2('div', 'row-center'), inp = document.createElement('input'); inp.className = 'tinput'; inp.inputMode = 'decimal'; inp.placeholder = '답을 숫자로'; inp.style.cssText = 'width:160px;font-size:20px;text-align:center'; const b = el2('button', 'btn', '확인'); b.style.background = '#FFD23C';
+      const go = () => { const v = parseFloat(String(inp.value).replace(/,/g, '')); if (!Number.isFinite(v)) return; if (Math.abs(v - Q.n) < 1e-6) { playSfx('right'); closeLife(); onOk(); } else { wrong(); inp.value = ''; inp.focus(); } };
+      b.onclick = go; inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') go(); }; row.append(inp, b); box.append(row); setTimeout(() => inp.focus(), 100); }
+  });
+}
+function escClue(k) {
+  const r = esc.run, cl = r.clues[k]; if (cl.done) { toast(`${ESC_COLS[cl.c][0]} 이 상자의 ${r.id === 'ese' ? '알파벳' : '숫자'}는 ${cl.v}`, 'info'); return; }
+  const Q = r.id === 'ese' ? (() => { const L = ESC_Q.ese.filter(x => x.w !== cl.q.w), wrong = escPick(L, 3).map(x => x.w); const o = [cl.q.w, ...wrong]; return { q: `${cl.q.e} "${cl.q.m}"을(를) 영어로?`, o, a: 0 }; })() : cl.q;
+  escAsk(`${ESC_COLS[cl.c][0]} 단서 상자`, Q, () => { cl.done = true; escMarks(); playSfx('coin'); showBanner(`${ESC_COLS[cl.c][0]} ${r.id === 'ese' ? '알파벳' : '숫자'} ${cl.v}!`, `단서 ${r.clues.filter(c => c.done).length}/3 · 자물쇠 상자에 색 순서대로 넣어요`, 3500); });
+}
+function escLock() {
+  const r = esc.run; if (r.key) { toast('🗝️ 열쇠를 벌써 찾았어요! 탈출구로 가요', 'info'); return; } const eng = r.id === 'ese', want = r.order.map(i => r.clues[i].v).join('');
+  openLife('🔐 자물쇠 상자', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', `색 순서: ${r.order.map(i => ESC_COLS[r.clues[i].c][0]).join(' → ')} · ${eng ? '알파벳' : '숫자'} 3개를 순서대로 넣어요`));
+    box.append(el2('p', '', `찾은 단서: ${r.clues.map(c => `${ESC_COLS[c.c][0]} ${c.done ? c.v : '?'}`).join(' · ')}`));
+    const row = el2('div', 'row-center'), inp = document.createElement('input'); inp.className = 'tinput'; inp.maxLength = 3; inp.placeholder = eng ? 'ABC' : '000'; inp.inputMode = eng ? 'text' : 'numeric'; inp.style.cssText = 'width:140px;font-size:26px;text-align:center;letter-spacing:6px;text-transform:uppercase'; const b = el2('button', 'btn', '열기'); b.style.background = '#FFD23C';
+    const go = () => { const v = String(inp.value).trim().toUpperCase(); if (v.length < 3) return; if (v === want) { r.key = true; escMarks(); playSfx('fanfare'); closeLife(); showBanner('🔓 상자가 열렸어요!', `🗝️ 열쇠를 찾았어요 · 탈출구에서 ${ESC_ROOMS[r.id].fin}를 풀어요`, 4500); } else { r.pen += ESC_WRONG_T; playSfx('wrong'); toast('❌ 비밀번호가 달라요! 10초가 더해졌어요', 'warn'); inp.value = ''; } };
+    b.onclick = go; inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') go(); }; row.append(inp, b); box.append(row); setTimeout(() => inp.focus(), 100);
+  });
+}
+function escFinal() {
+  const r = esc.run; if (!r.key) { toast('🔒 탈출구가 잠겼어요. 자물쇠 상자에서 🗝️ 열쇠를 먼저 찾아요', 'warn'); return; } if (r.done) return;
+  const id = r.id, E = ESC_ROOMS[id];
+  if (id === 'esm') { r.fin ||= escPick(ESC_FIN.esm, 1)[0]; escAsk(`🚪 ${E.fin}`, r.fin, escWin); return; }
+  if (id === 'ese') { r.fin ||= (() => { const L = []; for (const k of Object.keys(EV_SENTS)) for (const [en, ko] of EV_SENTS[k]) { const w = en.split(' '); if (w.length >= 4 && w.length <= 8) L.push([en, ko]); } return escPick(L, 1)[0]; })(); escOrder(`🚪 ${E.fin}`, `뜻: ${r.fin[1]}`, r.fin[0].split(' '), false); return; }
+  if (id === 'ess') { r.fin ||= (() => { const T = ESC_FIN.ess[0], idx = hShuffle(T.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); return idx.map(i => T[i]); })(); escOrder(`🚪 ${E.fin}`, '먼저 일어난 일부터 차례대로 눌러요', r.fin, true); return; }
+  r.fin ||= escPick(ESC_FIN.esc, 1)[0]; const F = r.fin, items = r.finItems ||= hShuffle([...F.all, ...escPick(F.no, Math.max(2, 6 - F.all.length))]), sel = new Set();
+  openLife(`🚪 ${E.fin}`, (box) => {
+    box.textContent = ''; box.append(Object.assign(el2('p', 'lp-big', F.q), { style: 'font-size:20px' }));
+    const g = el2('div', 'row-center wrap'); items.forEach(t => { const b = el2('button', 'btn', t); b.style.background = sel.has(t) ? '#BDE8B0' : '#fff'; b.onclick = () => { if (sel.has(t)) sel.delete(t); else sel.add(t); b.style.background = sel.has(t) ? '#BDE8B0' : '#fff'; }; g.append(b); }); box.append(g);
+    const ok = el2('button', 'btn', '✅ 다 골랐어요'); ok.style.background = '#FFD23C'; ok.onclick = () => { const good = F.all.every(t => sel.has(t)) && [...sel].every(t => F.all.includes(t)); if (good) { playSfx('right'); closeLife(); escWin(); } else { r.pen += ESC_WRONG_T; playSfx('wrong'); toast('❌ 다시 살펴봐요! 10초가 더해졌어요', 'warn'); } }; const rr = el2('div', 'row-center'); rr.append(ok); box.append(rr);
+  });
+}
+function escOrder(title, sub, right, hist) { // 순서대로 누르기 (영어 문장 · 사회 사건) · 같은 낱말이 두 번 나와도 괜찮아요
+  const r = esc.run, pool = hShuffle(right.map((t, i) => [t, i])), used = new Set(); let n = 0;
+  openLife(title, (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', sub), Object.assign(el2('p', 'lp-big', n ? right.slice(0, n).join(hist ? ' → ' : ' ') : '…'), { style: 'font-size:19px;min-height:30px' }));
+    const g = el2('div', 'row-center wrap'); pool.forEach(([t, i]) => { if (used.has(i)) return; const b = el2('button', 'btn', t); b.style.cssText = 'background:#fff;font-size:17px';
+      b.onclick = () => { if (right[n] === t) { used.add(i); n++; playSfx('pick'); if (n === right.length) { playSfx('right'); closeLife(); escWin(); return; } refillLife(); } else { r.pen += ESC_WRONG_T / 2; playSfx('wrong'); toast('❌ 순서가 아니에요! 5초가 더해졌어요', 'warn'); } }; g.append(b); }); box.append(g);
+  });
+}
+function escStars(ms, hintsUsed) { return Math.max(1, (ms <= 300000 ? 3 : ms <= 480000 ? 2 : 1) - (hintsUsed >= 2 ? 1 : 0)); }
+async function escWin() {
+  const r = esc.run; r.done = true; r.end = performance.now(); escMarks(); const ms = escTime(), used = 2 - r.hints, st = escStars(ms, used), E = ESC_ROOMS[r.id];
+  burst(player.pos.clone().setY(2), [0xFFD23C, 0x5FBE5A, 0x3E8FE8, 0xE2584A], 60, 7, 4, 1.4, -4); playSfx('fanfare');
+  let rw = ''; if (!isTeacher) { bag.escDay ||= {}; if (bag.escDay.d !== dayNum()) bag.escDay = { d: dayNum(), got: {} }; if (!bag.escDay.got[r.id]) { bag.escDay.got[r.id] = 1; const sh = giveShellCapped([0, 10, 15, 20][st]); addStat(E.st, st + 1); rw = `🎁 🐚 +${sh} · ${STATS[E.st]?.icon || ''} ${STATS[E.st]?.name || ''} +${st + 1}`; } else rw = '🎁 오늘 보상은 받았어요 (기록은 남아요)'; saveBag(); updateHUD(null); }
+  bag.escBest ||= {}; const best = bag.escBest[r.id], nb = !best || ms < best; if (nb) { bag.escBest[r.id] = Math.round(ms); saveBag(); }
+  if (nb && backend.mode === 'firebase' && !isTeacher) { try { await backend.escSet(r.id, { n: (cleanNick(myNick) || '친구').slice(0, 12), t: Math.round(ms), s: st, at: backend.now() }); } catch (e) { } } else if (nb && backend.mode !== 'firebase') backend.escSet?.(r.id, { n: (cleanNick(myNick) || '나').slice(0, 12), t: Math.round(ms), s: st, at: backend.now() });
+  openLife(`🎉 ${E.n} 탈출 성공!`, (box) => {
+    box.textContent = ''; box.append(el2('p', 'lp-big', `${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} · ⏱️ ${escFmt(ms)}`), el2('p', 'hint', `${nb ? '🏅 내 최고 기록!' : `내 최고 기록 ${escFmt(best)}`} · 힌트 ${used}번 · 5분 안 ⭐⭐⭐ · 8분 안 ⭐⭐`));
+    if (rw) box.append(el2('p', '', rw)); escBoard(box, r.id);
+    const row = el2('div', 'row-center wrap'), again = el2('button', 'btn', '🔁 다시 도전'); again.onclick = () => { closeLife(); escStart(r.id); }; const out = el2('button', 'btn', '🚪 밖으로'); out.onclick = () => { closeLife(); exitRoom(r.id); }; row.append(again, out); box.append(row);
+  });
+}
+function escBoard(box, id) { // 🏆 우리 반 기록 (빠른 순 5명)
+  const L = Object.entries(S.esc?.[id] || {}).map(([u, v]) => [u, v]).filter(([, v]) => v && v.t > 0).sort((a, b) => a[1].t - b[1].t).slice(0, 5);
+  box.append(el2('h3', 'lp-sec', '🏆 우리 반 빠른 탈출'));
+  if (!L.length) { box.append(el2('p', 'hint', '아직 기록이 없어요. 첫 번째 탈출자가 되어 봐요!')); return; }
+  L.forEach(([u, v], i) => box.append(el2('p', '', `${['🥇', '🥈', '🥉', '4', '5'][i]} ${v.n || '친구'} · ${escFmt(v.t)} ${'⭐'.repeat(v.s | 0)}${u === backend.uid ? ' ← 나' : ''}`)));
+}
+function escHint() {
+  const r = esc.run; if (!r || r.done) return; if (r.hints <= 0) { toast('💡 힌트를 다 썼어요', 'info'); return; } r.hints--; r.pen += ESC_HINT_T;
+  const left = r.clues.filter(c => !c.done);
+  if (left.length) { const cl = left[0], [x, z] = escSpots(r.id)[cl.spot]; const m = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 10, 12, 1, true), new THREE.MeshBasicMaterial({ color: ESC_COLS[cl.c][1], transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide })); m.position.set(x, 5, z); scene.add(m); setTimeout(() => { scene.remove(m); m.geometry.dispose(); }, 8000); toast(`💡 ${ESC_COLS[cl.c][0]} 상자 위에 빛기둥이 8초 동안 보여요 (+30초)`, 'info'); return; }
+  if (!r.key) { toast(`💡 비밀번호는 ${r.order.map(i => ESC_COLS[r.clues[i].c][0]).join('')} 순서: 첫 글자는 "${r.clues[r.order[0]].v}" (+30초)`, 'info'); return; }
+  const id = r.id; if (id === 'esm' && r.fin) toast('💡 문제의 수들을 식으로 써 보고, 순서대로 하나씩 계산해요 (+30초)', 'info'); else if (id === 'ese' && r.fin) toast(`💡 첫 단어는 "${r.fin[0].split(' ')[0]}" (+30초)`, 'info'); else if (id === 'ess' && r.fin) toast(`💡 가장 먼저 일어난 일은 "${r.fin[0]}" (+30초)`, 'info'); else if (id === 'esc' && r.fin) toast(`💡 정답은 ${r.fin.all.length}개예요 (+30초)`, 'info'); else toast('💡 탈출구에서 마지막 문제를 열어 봐요 (+30초)', 'info');
+}
+function escHudInit() { const h = document.createElement('div'); h.id = 'escHud'; h.className = 'sticker hidden'; h.style.cssText = 'position:fixed;left:50%;top:calc(76px + var(--safe-top));transform:translateX(-50%);padding:6px 12px;z-index:9;display:flex;gap:10px;align-items:center;font-size:16px'; h.innerHTML = '<b id="escT"></b><button class="btn" id="escHintBtn" style="background:#FFE066;font-size:14px;padding:4px 10px">💡 힌트</button>'; document.body.append(h); esc.hud = h; $('escHintBtn').onclick = escHint; }
+function escTick() {
+  if (!esc.hud) escHudInit(); const id = escRoomNow(), r = esc.run;
+  if (r && id !== r.id && !hv.travel) { esc.run = null; escMarks(); }
+  const show = !!id && !!esc.run; esc.hud.classList.toggle('hidden', !show);
+  if (show) { const R = esc.run, t = `${ESC_ROOMS[R.id].icon} ⏱️ ${escFmt(escTime())} · 단서 ${R.clues.filter(c => c.done).length}/3${R.key ? ' · 🗝️' : ''}`; if ($('escT').textContent !== t) $('escT').textContent = t; $('escHintBtn').textContent = `💡 힌트 ${R.hints}`; $('escHintBtn').disabled = R.done || R.hints <= 0; }
+  esc.act = null; if (!id) { esc.it.pos.set(0, -99, 0); return; }
+  const p = player.pos, R0 = ROOMS[id], near = (x, z, rr = 1.9) => Math.hypot(p.x - x, p.z - z) < rr;
+  if (!esc.run) { const [x, z] = [R0.cx, R0.cz + R0.d / 2 - 3.2]; if (near(x, z, 3)) { esc.act = [[`${ESC_ROOMS[id].icon} 방탈출 시작하기`, '⏱️ 시간을 재요 · 💡 힌트 2번'], () => escIntro(id)]; esc.it.pos.set(x, 1, z); return; } esc.it.pos.set(0, -99, 0); return; }
+  const run = esc.run, sp = escSpots(id);
+  for (const cl of run.clues) { const [x, z] = sp[cl.spot]; if (near(x, z)) { esc.act = [[`${ESC_COLS[cl.c][0]} 단서 상자 열기`, cl.done ? `${id === 'ese' ? '알파벳' : '숫자'} ${cl.v}` : '문제를 풀어요'], () => escClue(run.clues.indexOf(cl))]; esc.it.pos.set(x, 1, z); return; } }
+  const lx = R0.cx, lz = R0.cz - R0.d / 2 + 2.6; if (near(lx, lz + 1, 2.2)) { esc.act = [['🔐 자물쇠 상자', run.key ? '🔓 열렸어요' : `${run.order.map(i => ESC_COLS[run.clues[i].c][0]).join(' → ')} 비밀번호`], escLock]; esc.it.pos.set(lx, 1, lz + 1); return; }
+  const dx = R0.cx + R0.w / 2 - 2.4, dz = R0.cz - R0.d / 2 + 1.2; if (near(dx, dz, 2.2)) { esc.act = [[run.done ? '🎉 탈출 성공!' : '🚪 탈출구', run.key ? ESC_ROOMS[id].fin : '🔒 열쇠가 필요해요'], run.done ? () => escWin() : escFinal]; esc.it.pos.set(dx, 1, dz); return; }
+  esc.it.pos.set(0, -99, 0);
+}
+function escIntro(id) {
+  const E = ESC_ROOMS[id]; openLife(`${E.icon} ${E.n}`, (box) => {
+    box.textContent = ''; box.append(el2('p', '', E.story), el2('p', 'hint', '① ❓ 단서 상자 3개(🔴🟡🔵) 문제 풀기 → ② 🔐 자물쇠 상자에 색 순서대로 비밀번호 → ③ 🚪 탈출구 마지막 문제 · 틀리면 +10초 · 💡 힌트 2번(+30초)'));
+    box.append(el2('p', 'hint', '친구와 같이 들어와도 문제와 비밀번호는 사람마다 달라요. 서로 말로 도와줘요!'));
+    if (bag.escBest?.[id]) box.append(el2('p', 'hint', `🏅 내 최고 기록 ${escFmt(bag.escBest[id])}`)); escBoard(box, id);
+    const b = el2('button', 'btn', '⏱️ 시작!'); b.style.background = '#FFD23C'; b.onclick = () => { closeLife(); escStart(id); }; const rr = el2('div', 'row-center'); rr.append(b); box.append(rr);
+  });
+}
+
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
 // state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
 function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
@@ -26428,8 +26622,8 @@ function buildBoardCafe() {
   // 문 옆 큰 주사위 · 말
   { const dc = box(g, 1.3, 1.3, 1.3, 0xFFFFFF, x - w / 2 - 1.2, 0.65, z + d / 2 - 0.3); dc.rotation.y = 0.4; for (const [dx, dy] of [[0, 0], [-0.3, 0.3], [0.3, -0.3]]) ball(g, 0.1, 0xE2584A, x - w / 2 - 1.2 + dx * 0.9, 0.65 + dy, z + d / 2 + 0.38, o); }
   { const mx = x + w / 2 + 1.2, mz = z + d / 2 - 0.4; cyl(g, 0.5, 0.25, 0x5FBE5A, mx, 0.12, mz); mesh(CONE, g, 0.45, 1.0, 0.45, 0x5FBE5A, mx, 0.25, mz, o); ball(g, 0.32, 0x5FBE5A, mx, 1.4, mz, o); }
-  makeLabel(g, ['🎲 반월쉼터', BOARD_GAMES.map(G => `${G.icon} ${G.n}`).join(' · ')], 1.2, x, 6.8, z);
-  addInteract({ pos: new V3(x, 1, z + d / 2 + 1.4), r: 2.8, text: () => ['🎲 반월쉼터 들어가기', '보드게임 방을 골라요'], run: openBoardCafe });
+  makeLabel(g, ['🎲 반월쉼터', BOARD_GAMES.map(G => `${G.icon} ${G.n}`).join(' · ') + ' · 🔐 방탈출'], 1.2, x, 6.8, z);
+  addInteract({ pos: new V3(x, 1, z + d / 2 + 1.4), r: 2.8, text: () => ['🎲 반월쉼터 들어가기', '보드게임 · 🔐 방탈출'], run: openBoardCafe });
   registerSolids(g, 'boardcafe'); batchStatic(g);
 }
 function openBoardCafe() {
@@ -26440,6 +26634,9 @@ function openBoardCafe() {
       card.append(el2('div', 'lp-icon', R.icon), el2('div', 'lp-name', R.name), el2('div', 'lp-sub', gs.map(G => `${G.icon} ${G.n} · ${G.d}`).join(' / ')));
       const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); grid.append(card); }
     box.append(grid);
+    box.append(el2('h3', 'lp-sec', '🔐 과목별 방탈출')); box.append(el2('p', 'hint', '단서 상자 3개 → 자물쇠 → 탈출구! 시간을 재고 우리 반 빠른 기록에 올라가요. 방마다 하루 한 번 보상 (🐚 + 그 과목 능력치)'));
+    const g2 = el2('div', 'lp-grid'); for (const [rk, E] of Object.entries(ESC_ROOMS)) { const card = el2('div', 'lp-card' + (bag.escBest?.[rk] ? ' done' : '')); card.append(el2('div', 'lp-icon', E.icon), el2('div', 'lp-name', E.n), el2('div', 'lp-sub', bag.escBest?.[rk] ? `🏅 내 기록 ${escFmt(bag.escBest[rk])}` : '아직 도전 전'));
+      const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); g2.append(card); } box.append(g2);
   });
 }
 function buildBoardRooms(gAll) {
@@ -26508,6 +26705,7 @@ function loop() {
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { try { nvTick(dt); } catch (e) { console.warn('nv', e); } } // ⚓ 1031g 삼국 해전
+  if (joined && esc.it) { try { escTick(); } catch (e) { console.warn('esc', e); } } // 🔐 1101a 방탈출
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
   { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine()) || !!nvW?.on); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
   updateFund(dt);
