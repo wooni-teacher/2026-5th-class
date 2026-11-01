@@ -18119,6 +18119,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1101b', d: '11월 1일', items: ['🦎 방탈출 이야기 「히로와 사라진 타임캡슐」! 우리 반 도마뱀 히로와 함께 방마다 🗺️ 지도 조각을 찾아요 · 단서 상자마다 쪽지 이야기 · 네 조각을 모으면 🎁 타임캡슐과 🏷️ 🦎히로친구 칭호'] },
   { id: '1101a', d: '11월 1일', items: ['🔐 과목별 방탈출! 🎲 반월쉼터에서 🧮 수학 비밀 금고 · 🔤 영어 마법 도서관 · 🏛️ 역사 수장고 · 🔬 과학 실험실', '단서 상자 3개(🔴🟡🔵) 문제 → 🔐 자물쇠 비밀번호 → 🚪 탈출구 마지막 문제 · ⏱️ 시간 기록 · 🏆 우리 반 빠른 탈출 · 방마다 하루 한 번 🐚 + 그 과목 능력치'] },
   { id: '1031l', d: '10월 31일', items: ['⛏️ 수학 광산 동굴에 들어가면 다른 곳으로 옮겨지던 문제를 고쳤어요 (해전 바다·바닷속이 광산 동굴과 겹쳐 있었어요 → 동쪽 먼 곳으로 옮겼어요)'] },
   { id: '1031k', d: '10월 31일', items: ['🧑‍🏫 관리화면 삼국 해전에서도 학생마다 나라를 정할 수 있어요 (💪 나라별 능력치 힘도 보여요)'] },
@@ -25316,11 +25317,12 @@ const TITLE_INFO = [ // [키, 글, 얻는 법, 겉모습]
   ['gw', '🎓장원', '📜 과거시험 장원급제', '어사화(꽃 달린 사모) + 손에 홍패'],
   ['egm', '🏅골든벨마스터', '골든벨을 3번 울리면 (계속 가져요)', '머리 옆 작은 금종'],
   ['kkw', '🎭꿈끼왕', '🎭 꿈끼 대본 골든벨에서 모든 문제를 맞히면 (계속 가져요)', '👕 옷가게에서 안중근 꾸미기 (콧수염 · 태극 머리띠 · 코트)'],
+  ['hiro', '🦎히로친구', '🔐 방탈출 네 방을 모두 탈출하고 히로의 타임캡슐을 찾으면 (계속 가져요)', '이름표 칭호'],
   ['ssa', '🍂수확꾼', '🍂 시즌 1 패스 2단계 (계속 가져요)', '이름표 칭호'], ['ssb', '🎭꿈끼스타', '🍂 시즌 1 패스 7단계', '이름표 칭호'], ['ssc', '👑수확제왕', '🍂 시즌 1 패스 10단계', '이름표 칭호'],
 ];
 const ttTeacher = (u, data) => u === backend?.uid ? isTeacher : !!data?.t; // 🧑‍🏫 선생님(등록된 기기만 t를 보낼 수 있어요)
 function titlesOf(u, data) { // 가진 칭호 [키, 글, 겉모습] (위에 있을수록 높아요)
-  if (ttTeacher(u, data)) return [['kkw', '🎭꿈끼왕', ''], ...Object.entries(SSN_TITLE).map(([k, [t]]) => [k, t, '']), ['sum', '👑종합1등', 'sum'], ['tri', '🌟삼관왕', 'tri'], ['mr', '⛏️금광왕', 'mr'], ['eg', '🔔골든벨', 'eg'], ['egl', '🔔최후의1인', 'egl'], ['gw', '🎓장원', 'gw'], ['egm', '🏅골든벨마스터', 'egm'], ...Object.keys(rankCats()).map(k => [`r_${k}`, `${MEDAL[0]}${rankCats()[k].icon}${(rankCats()[k].name || '').slice(0, 2)}1등`, ''])]; // 🧑‍🏫 선생님은 모든 칭호를 달 수 있어요
+  if (ttTeacher(u, data)) return [['kkw', '🎭꿈끼왕', ''], ['hiro', '🦎히로친구', ''], ...Object.entries(SSN_TITLE).map(([k, [t]]) => [k, t, '']), ['sum', '👑종합1등', 'sum'], ['tri', '🌟삼관왕', 'tri'], ['mr', '⛏️금광왕', 'mr'], ['eg', '🔔골든벨', 'eg'], ['egl', '🔔최후의1인', 'egl'], ['gw', '🎓장원', 'gw'], ['egm', '🏅골든벨마스터', 'egm'], ...Object.keys(rankCats()).map(k => [`r_${k}`, `${MEDAL[0]}${rankCats()[k].icon}${(rankCats()[k].name || '').slice(0, 2)}1등`, ''])]; // 🧑‍🏫 선생님은 모든 칭호를 달 수 있어요
   const out = [], a = gwHas(u, data), b = egHas(u, data), c = mrHas(u, data);
   if (sumHas(u)) out.push(['sum', '👑종합1등', 'sum']);
   if (a && b && c) out.push(['tri', '🌟삼관왕', 'tri']);
@@ -25329,6 +25331,7 @@ function titlesOf(u, data) { // 가진 칭호 [키, 글, 겉모습] (위에 있�
   if (a) out.push(['gw', '🎓장원', 'gw']);
   if (egMaster(u, data)) out.push(['egm', '🏅골든벨마스터', 'egm']);
   if (kkHas(u, data)) out.push(['kkw', '🎭꿈끼왕', '']); // 🎭 1029d
+  if (escHiroHas(u)) out.push(['hiro', '🦎히로친구', '']); // 🦎 1101b
   out.push(...ssnTitles(u)); // 🗓️ 1028n 시즌 칭호
   if (S.rank) { const w = weekNum() - 1; for (const k of Object.keys(rankCats())) { const i = rankList(w, k).slice(0, 3).findIndex(x => rankHas(x, u)); if (i >= 0) out.push([`r_${k}`, `${MEDAL[i]}${rankCats()[k].icon}${(rankCats()[k].name || '').slice(0, 2)}${i + 1}등`, '']); } }
   return ttGiven(out, u, data);
@@ -26159,6 +26162,36 @@ const ESC_ROOMS = {
   esc: { st: 'read', icon: '🔬', n: '과학 실험실', col: 0x2AA6A0, story: '실험실 문이 고장 나 잠겼어요! 실험 상자 3개의 과학 문제를 풀어 비밀번호를 찾고, 마지막 실험 문제를 풀어 탈출해요.', fin: '🧪 마지막 실험 문제' },
 };
 const ESC_COLS = [['🔴', 0xE2584A], ['🟡', 0xF2C230], ['🔵', 0x3E8FE8]];
+// 🦎 1101b 스토리: 우리 반 도마뱀 히로와 사라진 타임캡슐 (방마다 지도 조각 1개 · 4개를 모으면 타임캡슐 · 🦎히로친구 칭호)
+const ESC_TALE = '우리 반 도마뱀 🦎 히로가 밤마다 학교를 탐험하다가 오래된 "반월초 타임캡슐 지도"를 찾았어요! 그런데 지도를 물고 뛰어다니다 그만 네 조각으로 찢어졌고, 조각은 반월쉼터의 신비한 방 네 곳으로 날아가 버렸어요. 히로와 함께 방을 탈출하며 지도 조각을 모아요!';
+const ESC_STORY = {
+  esm: { intro: '🦎 히로: 여기는 옛날 수학 박사님의 연구실이야! 지도 조각이 금고 안으로 쏙 들어갔는데 문까지 잠겨 버렸어. 박사님이 남긴 단서 상자를 같이 열어 줘!', notes: ['📜 박사님 쪽지: "숫자는 거짓말을 하지 않는다. 곱셈은 수를 크게도, 작게도 만들지."', '🦎 히로: 금고에 색깔이 그려져 있어! 색 순서대로 숫자를 넣으면 될 것 같아.', '📜 박사님 쪽지: "마지막 문은 생활 속 계산으로 열린다."'], end: '🦎 히로: 해냈다! 금고 안에서 지도 조각 ①을 찾았어. 뒷면에 "보물은 반월쉼터 가까이에"라고 적혀 있어!', piece: '🗺️ 지도 조각 ①' },
+  ese: { intro: '🦎 히로: 우와, 책이 둥둥 떠다녀! 마법 책들이 지도 조각을 숨기고 문을 잠갔대. 이 책들은 영어로만 대답한대!', notes: ['📖 떠다니는 책: "Find the words, open the lock!"', '🦎 히로: 단어의 첫 글자를 모으면 알파벳 자물쇠 비밀번호야!', '📖 커다란 책: "흩어진 문장을 바르게 이으면 문이 열린단다."'], end: '🦎 히로: 마법 책이 지도 조각 ②를 돌려줬어! "The treasure is under the big tree." 라고 적혀 있네?', piece: '🗺️ 지도 조각 ②' },
+  ess: { intro: '🦎 히로: 쉿! 여기는 박물관 수장고야. 오래된 유물 사이에 지도 조각이 끼어 있어. 그런데 이 문은 역사를 아는 사람에게만 열린대!', notes: ['🏺 관장님 쪽지: "유물은 자기가 살던 시대를 기억한다."', '🦎 히로: 고조선부터 고려까지… 순서가 중요해 보여!', '🏺 관장님 쪽지: "먼저 일어난 일부터 차례대로 놓아라."'], end: '🦎 히로: 지도 조각 ③이야! "타임캡슐은 오래전 선배들이 묻었다"라고 쓰여 있어.', piece: '🗺️ 지도 조각 ③' },
+  esc: { intro: '🦎 히로: 실험실 장치가 고장 나서 문이 잠겼어! 지도 조각은 실험대 위 유리 상자 안에 있어. 과학 지식으로 장치를 고쳐 줘!', notes: ['🧪 과학자 쪽지: "자연은 서로 이어져 있다. 생산자, 소비자, 분해자!"', '🦎 히로: 나도 먹이 그물 속 동물이야! 귀뚜라미를 제일 좋아하거든.', '🧪 과학자 쪽지: "마지막 장치는 성질을 바르게 나누면 멈춘다."'], end: '🦎 히로: 지도 조각 ④를 찾았어! 이제 조각을 다 모으면…!', piece: '🗺️ 지도 조각 ④' },
+};
+const escPieces = () => Object.keys(ESC_ROOMS).filter(k => bag.escMap?.[k] || bag.escBest?.[k] || isTeacher).length;
+const escHiroHas = (u) => u === backend?.uid ? (isTeacher || escPieces() === 4) : Object.keys(ESC_ROOMS).every(k => S.esc?.[k]?.[u]); // 🦎히로친구 (4방 모두 탈출 · 기록으로 확인)
+function escTimeCapsule() {
+  if (escPieces() < 4) { toast(`🗺️ 지도 조각 ${escPieces()}/4 · 네 방을 모두 탈출해요`, 'info'); return; }
+  openLife('🎁 히로의 타임캡슐', (box) => {
+    box.textContent = ''; box.append(el2('p', 'lp-big', '🦎 지도 네 조각을 맞췄어!'));
+    box.append(el2('p', '', '🦎 히로: "반월쉼터 앞 큰 나무 아래…" 바로 여기야! 같이 파 보자! 영차, 영차…'));
+    box.append(el2('p', '', '📦 녹슨 상자 안에는 오래전 선배들이 쓴 편지가 들어 있었어요.'));
+    box.append(Object.assign(el2('p', ''), { style: 'background:#FFF6D8;border-radius:12px;padding:10px 12px;font-style:italic', textContent: '"미래의 반월초 친구들에게. 어려운 문제를 만나도 친구와 힘을 모아 끝까지 도전하는 사람이 되길 바라요. 우리는 언제나 너희를 응원해!"' }));
+    box.append(el2('p', '', '🦎 히로: 우리가 해냈어! 너는 이제 나의 진짜 친구야!'));
+    if (!bag.escCap && !isTeacher) { bag.escCap = 1; const sh = giveShellCapped(100); saveBag(); updateHUD(null); playSfx('fanfare'); burst(player.pos.clone().setY(2), [0xFFD23C, 0x5FBE5A, 0xE2584A], 70, 7, 4, 1.4, -4); box.append(el2('p', 'lp-big', `🎁 🐚 +${sh} · 🏷️ 칭호 🦎히로친구`)); }
+    else box.append(el2('p', 'hint', '🏷️ 칭호 🦎히로친구를 가졌어요 (능력치 → 내 칭호에서 달아요)'));
+  });
+}
+function escHiroModel(g, x, z, ry = 0) { // 🦎 히로 (크레스티드 게코): 화분 받침 위
+  const o = { solid: false }, h = new THREE.Group(); h.position.set(x, 0, z); h.rotation.y = ry; g.add(h); const sk = 0xD9954E, dk = 0xA8652E;
+  cyl(h, 0.45, 0.6, 0x8A5A34, 0, 0.3, 0); cyl(h, 0.42, 0.06, 0x6B4226, 0, 0.62, 0, o); for (let k = 0; k < 3; k++) box(h, 0.05, 0.5, 0.18, 0x5FAE52, -0.2 + k * 0.2, 0.9, -0.2, { solid: false, rz: (k - 1) * 0.3 });
+  box(h, 0.36, 0.18, 0.62, sk, 0, 0.78, 0, o); box(h, 0.3, 0.2, 0.3, sk, 0, 0.86, 0.42, o); box(h, 0.12, 0.1, 0.5, dk, 0, 0.76, -0.52, { solid: false, rx: 0.3 });
+  for (const sx of [-1, 1]) { mesh(SPH_LO, h, 0.07, 0.07, 0.07, 0x1E1A16, sx * 0.13, 0.92, 0.52, o); mesh(CONE, h, 0.04, 0.12, 0.04, dk, sx * 0.12, 1.0, 0.44, o); for (const zz of [0.2, -0.2]) box(h, 0.12, 0.06, 0.08, sk, sx * 0.24, 0.7, zz, o); }
+  for (let k = 0; k < 4; k++) mesh(CONE, h, 0.03, 0.08, 0.03, dk, 0, 0.9, 0.2 - k * 0.15, o);
+  makeLabel(h, ['🦎 히로'], 0.45, 0, 1.5, 0); return h;
+}
 const ESC_HINT_T = 30000, ESC_WRONG_T = 10000;
 const ESC_Q = {
   esm: [
@@ -26213,6 +26246,7 @@ function escBuild(g) { // 방 꾸미기 (방마다 색 · 소품) + 단서 상�
     if (id === 'ese') for (let k = 0; k < 6; k++) box(g, 0.5, 0.08, 0.7, [0xE2584A, 0x8A4FC8, 0x3E8FE8][k % 3], cx - 2.5 + k, 2.2 + Math.sin(k) * 0.4, cz - 1, { solid: false, ry: k * 0.6, emissive: 0.3 }); // 떠 있는 책
     box(g, 1.6, 0.9, 1.0, 0x6B4226, cx, 0.45, cz - d / 2 + 2.6); box(g, 1.7, 0.18, 1.1, 0xC8A050, cx, 0.95, cz - d / 2 + 2.6, o); // 🔐 자물쇠 상자
     esc.marks[id] = { lockLab: makeLabel(g, ['🔐 자물쇠 상자'], 0.6, cx, 1.9, cz - d / 2 + 2.6), door: box(g, 1.8, 2.6, 0.12, 0xE2584A, cx + w / 2 - 2.4, 1.3, cz - d / 2 + 0.36, o), doorLab: makeLabel(g, ['🚪 탈출구 (잠김)'], 0.6, cx + w / 2 - 2.4, 3.0, cz - d / 2 + 0.6), boxes: [] };
+    escHiroModel(g, cx - 2.4, cz + d / 2 - 2.2, 0.4); // 🦎 1101b
     for (const [x, z] of escSpots(id)) { const bg = new THREE.Group(); bg.position.set(x, 0, z); box(bg, 0.9, 0.6, 0.7, 0x8A5A34, 0, 0.3, 0, o); const lid = box(bg, 0.95, 0.12, 0.75, 0xFFFFFF, 0, 0.66, 0, o); const lab = makeLabel(bg, ['❓'], 0.55, 0, 1.3, 0); g.add(bg); esc.marks[id].boxes.push({ g: bg, lid, lab }); }
   }
   esc.it = addInteract({ pos: new V3(0, -99, 0), r: 1.9, text: () => esc.act?.[0] || null, run: () => esc.act?.[1]?.() });
@@ -26247,7 +26281,7 @@ function escAsk(title, Q, onOk) { // 문제 하나 (객관식 · 숫자 입력)
 function escClue(k) {
   const r = esc.run, cl = r.clues[k]; if (cl.done) { toast(`${ESC_COLS[cl.c][0]} 이 상자의 ${r.id === 'ese' ? '알파벳' : '숫자'}는 ${cl.v}`, 'info'); return; }
   const Q = r.id === 'ese' ? (() => { const L = ESC_Q.ese.filter(x => x.w !== cl.q.w), wrong = escPick(L, 3).map(x => x.w); const o = [cl.q.w, ...wrong]; return { q: `${cl.q.e} "${cl.q.m}"을(를) 영어로?`, o, a: 0 }; })() : cl.q;
-  escAsk(`${ESC_COLS[cl.c][0]} 단서 상자`, Q, () => { cl.done = true; escMarks(); playSfx('coin'); showBanner(`${ESC_COLS[cl.c][0]} ${r.id === 'ese' ? '알파벳' : '숫자'} ${cl.v}!`, `단서 ${r.clues.filter(c => c.done).length}/3 · 자물쇠 상자에 색 순서대로 넣어요`, 3500); });
+  escAsk(`${ESC_COLS[cl.c][0]} 단서 상자`, Q, () => { cl.done = true; escMarks(); playSfx('coin'); const n = r.clues.filter(c => c.done).length; showBanner(`${ESC_COLS[cl.c][0]} ${r.id === 'ese' ? '알파벳' : '숫자'} ${cl.v}! (단서 ${n}/3)`, ESC_STORY[r.id].notes[n - 1], 6000); });
 }
 function escLock() {
   const r = esc.run; if (r.key) { toast('🗝️ 열쇠를 벌써 찾았어요! 탈출구로 가요', 'info'); return; } const eng = r.id === 'ese', want = r.order.map(i => r.clues[i].v).join('');
@@ -26285,10 +26319,13 @@ async function escWin() {
   const r = esc.run; r.done = true; r.end = performance.now(); escMarks(); const ms = escTime(), used = 2 - r.hints, st = escStars(ms, used), E = ESC_ROOMS[r.id];
   burst(player.pos.clone().setY(2), [0xFFD23C, 0x5FBE5A, 0x3E8FE8, 0xE2584A], 60, 7, 4, 1.4, -4); playSfx('fanfare');
   let rw = ''; if (!isTeacher) { bag.escDay ||= {}; if (bag.escDay.d !== dayNum()) bag.escDay = { d: dayNum(), got: {} }; if (!bag.escDay.got[r.id]) { bag.escDay.got[r.id] = 1; const sh = giveShellCapped([0, 10, 15, 20][st]); addStat(E.st, st + 1); rw = `🎁 🐚 +${sh} · ${STATS[E.st]?.icon || ''} ${STATS[E.st]?.name || ''} +${st + 1}`; } else rw = '🎁 오늘 보상은 받았어요 (기록은 남아요)'; saveBag(); updateHUD(null); }
+  let newPiece = false; if (!bag.escMap?.[r.id]) { (bag.escMap ||= {})[r.id] = 1; newPiece = true; saveBag(); } // 🗺️ 지도 조각
   bag.escBest ||= {}; const best = bag.escBest[r.id], nb = !best || ms < best; if (nb) { bag.escBest[r.id] = Math.round(ms); saveBag(); }
   if (nb && backend.mode === 'firebase' && !isTeacher) { try { await backend.escSet(r.id, { n: (cleanNick(myNick) || '친구').slice(0, 12), t: Math.round(ms), s: st, at: backend.now() }); } catch (e) { } } else if (nb && backend.mode !== 'firebase') backend.escSet?.(r.id, { n: (cleanNick(myNick) || '나').slice(0, 12), t: Math.round(ms), s: st, at: backend.now() });
   openLife(`🎉 ${E.n} 탈출 성공!`, (box) => {
     box.textContent = ''; box.append(el2('p', 'lp-big', `${'⭐'.repeat(st)}${'☆'.repeat(3 - st)} · ⏱️ ${escFmt(ms)}`), el2('p', 'hint', `${nb ? '🏅 내 최고 기록!' : `내 최고 기록 ${escFmt(best)}`} · 힌트 ${used}번 · 5분 안 ⭐⭐⭐ · 8분 안 ⭐⭐`));
+    box.append(Object.assign(el2('p', ''), { style: 'background:#FFF1DE;border-radius:12px;padding:10px 12px', textContent: ESC_STORY[r.id].end }), el2('p', newPiece ? 'lp-big' : 'hint', `${newPiece ? '✨ 새로 얻었어요: ' : ''}${ESC_STORY[r.id].piece} · 모은 조각 ${escPieces()}/4`));
+    if (escPieces() === 4) { const cb = el2('button', 'btn', '🎁 히로의 타임캡슐 열기'); cb.style.background = '#FFD23C'; cb.onclick = escTimeCapsule; const r2 = el2('div', 'row-center'); r2.append(cb); box.append(r2); }
     if (rw) box.append(el2('p', '', rw)); escBoard(box, r.id);
     const row = el2('div', 'row-center wrap'), again = el2('button', 'btn', '🔁 다시 도전'); again.onclick = () => { closeLife(); escStart(r.id); }; const out = el2('button', 'btn', '🚪 밖으로'); out.onclick = () => { closeLife(); exitRoom(r.id); }; row.append(again, out); box.append(row);
   });
@@ -26323,7 +26360,7 @@ function escTick() {
 }
 function escIntro(id) {
   const E = ESC_ROOMS[id]; openLife(`${E.icon} ${E.n}`, (box) => {
-    box.textContent = ''; box.append(el2('p', '', E.story), el2('p', 'hint', '① ❓ 단서 상자 3개(🔴🟡🔵) 문제 풀기 → ② 🔐 자물쇠 상자에 색 순서대로 비밀번호 → ③ 🚪 탈출구 마지막 문제 · 틀리면 +10초 · 💡 힌트 2번(+30초)'));
+    box.textContent = ''; box.append(Object.assign(el2('p', ''), { style: 'background:#FFF1DE;border-radius:12px;padding:10px 12px', textContent: ESC_STORY[id].intro }), el2('p', 'hint', `🗺️ 모은 지도 조각 ${escPieces()}/4${bag.escMap?.[id] ? ' · 이 방 조각은 찾았어요 ✅' : ''}`), el2('p', 'hint', '① ❓ 단서 상자 3개(🔴🟡🔵) 문제 풀기 → ② 🔐 자물쇠 상자에 색 순서대로 비밀번호 → ③ 🚪 탈출구 마지막 문제 · 틀리면 +10초 · 💡 힌트 2번(+30초)'));
     box.append(el2('p', 'hint', '친구와 같이 들어와도 문제와 비밀번호는 사람마다 달라요. 서로 말로 도와줘요!'));
     if (bag.escBest?.[id]) box.append(el2('p', 'hint', `🏅 내 최고 기록 ${escFmt(bag.escBest[id])}`)); escBoard(box, id);
     const b = el2('button', 'btn', '⏱️ 시작!'); b.style.background = '#FFD23C'; b.onclick = () => { closeLife(); escStart(id); }; const rr = el2('div', 'row-center'); rr.append(b); box.append(rr);
@@ -26634,8 +26671,9 @@ function openBoardCafe() {
       card.append(el2('div', 'lp-icon', R.icon), el2('div', 'lp-name', R.name), el2('div', 'lp-sub', gs.map(G => `${G.icon} ${G.n} · ${G.d}`).join(' / ')));
       const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); grid.append(card); }
     box.append(grid);
-    box.append(el2('h3', 'lp-sec', '🔐 과목별 방탈출')); box.append(el2('p', 'hint', '단서 상자 3개 → 자물쇠 → 탈출구! 시간을 재고 우리 반 빠른 기록에 올라가요. 방마다 하루 한 번 보상 (🐚 + 그 과목 능력치)'));
-    const g2 = el2('div', 'lp-grid'); for (const [rk, E] of Object.entries(ESC_ROOMS)) { const card = el2('div', 'lp-card' + (bag.escBest?.[rk] ? ' done' : '')); card.append(el2('div', 'lp-icon', E.icon), el2('div', 'lp-name', E.n), el2('div', 'lp-sub', bag.escBest?.[rk] ? `🏅 내 기록 ${escFmt(bag.escBest[rk])}` : '아직 도전 전'));
+    box.append(el2('h3', 'lp-sec', '🔐 히로와 사라진 타임캡슐 (과목별 방탈출)')); box.append(Object.assign(el2('p', ''), { style: 'background:#FFF1DE;border-radius:12px;padding:8px 12px', textContent: ESC_TALE }), el2('p', 'hint', `🗺️ 모은 지도 조각 ${escPieces()}/4 · 단서 상자 3개 → 자물쇠 → 탈출구! 방마다 하루 한 번 보상 (🐚 + 그 과목 능력치)`));
+    if (escPieces() === 4) { const cb = el2('button', 'btn', '🎁 히로의 타임캡슐 열기'); cb.style.background = '#FFD23C'; cb.onclick = escTimeCapsule; const r2 = el2('div', 'row-center'); r2.append(cb); box.append(r2); }
+    const g2 = el2('div', 'lp-grid'); for (const [rk, E] of Object.entries(ESC_ROOMS)) { const card = el2('div', 'lp-card' + (bag.escBest?.[rk] ? ' done' : '')); card.append(el2('div', 'lp-icon', E.icon), el2('div', 'lp-name', E.n), el2('div', 'lp-sub', `${bag.escMap?.[rk] ? '🗺️✅ ' : ''}${bag.escBest?.[rk] ? `🏅 내 기록 ${escFmt(bag.escBest[rk])}` : '아직 도전 전'}`));
       const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); g2.append(card); } box.append(g2);
   });
 }
