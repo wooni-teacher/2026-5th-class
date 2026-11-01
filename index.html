@@ -1040,7 +1040,7 @@
 </div>
 <div id="sgBar" class="sticker hidden">
   <div id="sgAmmo" style="font-weight:800"></div>
-  <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="sgThrow">🏹 쏘기 (F)</button><button class="btn hidden" id="sgDashBtn" style="background:#FFE066">⚡ 돌격 (Q)</button><button class="btn hidden" id="sgWaveBtn" style="background:#CDEFC2">🌿 치유의 물결 (Q)</button><button class="btn hidden" id="sgSharpBtn" style="background:#E8E4DC">⚔️ 무기 갈기</button><button class="btn hidden" id="sgBarBtn" style="background:#C9A65E;color:#fff">🪵 목책 세우기</button><button class="btn hidden" id="sgSkHorn" style="background:#FFE9A8">📯 나팔</button><button class="btn hidden" id="sgSkShield" style="background:#DDEBFF">🛡️ 방패진</button><button class="btn hidden" id="sgSkFire" style="background:#FFD2C2">🔥 화공</button><button class="btn hidden" id="sgArmBtn" style="background:#E8E4DC">🛡️ 내 갑옷</button><button class="btn" id="sgRoleBtn" style="background:#fff">🎭 역할</button><button class="btn hidden" id="sgHome" style="background:#fff">⛲ 광장으로</button></div>
+  <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="sgThrow">🏹 쏘기 (F)</button><button class="btn hidden" id="sgDashBtn" style="background:#FFE066">⚡ 돌격 (Q)</button><button class="btn hidden" id="sgMultiBtn" style="background:#FFC9A0">🏹 멀티샷 (R)</button><button class="btn hidden" id="sgWaveBtn" style="background:#CDEFC2">🌿 치유의 물결 (Q)</button><button class="btn hidden" id="sgSharpBtn" style="background:#E8E4DC">⚔️ 무기 갈기</button><button class="btn hidden" id="sgBarBtn" style="background:#C9A65E;color:#fff">🪵 목책 세우기</button><button class="btn hidden" id="sgSkHorn" style="background:#FFE9A8">📯 나팔</button><button class="btn hidden" id="sgSkShield" style="background:#DDEBFF">🛡️ 방패진</button><button class="btn hidden" id="sgSkFire" style="background:#FFD2C2">🔥 화공</button><button class="btn hidden" id="sgArmBtn" style="background:#E8E4DC">🛡️ 내 갑옷</button><button class="btn" id="sgRoleBtn" style="background:#fff">🎭 역할</button><button class="btn hidden" id="sgHome" style="background:#fff">⛲ 광장으로</button></div>
 </div>
 <div id="ctfBar" class="sticker hidden" role="status" aria-live="polite"><div id="ctfScore"></div><div id="ctfInfo"></div><div id="ctfMine"></div></div>
 <div id="meetBar" class="sticker hidden" role="group" aria-label="학급회의 반응">
@@ -4629,9 +4629,9 @@ function updateRemotes(dt) {
   }
 }
 const PRESENCE_INTERVAL = 0.5; // 초
-const myLvSum = () => ['math', 'eng', 'soc', 'read'].reduce((t, k) => t + statLv(k), 0); // 📊 1101o 능력치 레벨 합 (수학·영어·사회·독서)
-function lvOfU(u, tg) { if (u === backend?.uid || tg?.me) return isTeacher ? null : myLvSum(); const T = tg || remotes.get(u)?.target; if (T?.t) return null; const v = T?.sl; return Number.isInteger(v) ? v : null; }
-function warLvTag(u, data) { if (!(S.siege?.on || S.nv?.on)) return ''; const v = lvOfU(u, data); return v == null ? '' : ` Lv${v}`; } // ⚔️ 공방전·해전 중에는 이름표에 레벨
+function myRoleLv() { if (isTeacher || !S.siege?.on || !sgMine()) return null; const st = SG_ROLES[sgMyRole()]?.st; return st ? statLv(st) : null; } // 📊 1101p 공방전 내 직업 과목 레벨
+function lvOfU(u, tg) { if (!S.siege?.on) return null; const st = SG_ROLES[sgRoleOf(u)]?.st; if (!st) return null; if (u === backend?.uid || tg?.me) { const v = myRoleLv(); return v == null ? null : { st, v }; } const T = tg || remotes.get(u)?.target; if (T?.t) return null; const v = T?.sl; return Number.isInteger(v) ? { st, v } : null; }
+function warLvTag(u, data) { const L = lvOfU(u, data); return L ? ` ${STATS[L.st].icon}Lv${L.v}` : ''; } // ⚔️ 공방전 중 이름표: 맡은 직업 과목 레벨 (보병·장군 수학 · 궁병·대장장이 영어 · 왕 사회)
 function sgMySp() { return ['math', 'eng', 'soc', 'read'].map(k => Math.min(9, statTier(k))).join(''); } // 💪 1027o 수학·영어·사회·독서 단계 (0~4)
 let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0;
 for (const ev of ['keydown', 'pointerdown', 'touchstart', 'wheel']) addEventListener(ev, () => { lastInputAt = Date.now(); }, { capture: true, passive: true }); // 💤 잠수 판단: 마지막으로 누른 때
@@ -4647,7 +4647,7 @@ function sendPresence(time) {
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
-  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); if (!isTeacher) d.sl = Math.min(99, myLvSum()); { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
+  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); { const rl = myRoleLv(); if (rl != null) d.sl = rl; } { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -18167,7 +18167,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
-  { id: '1101o', d: '11월 1일', items: ['⚔️ 공방전 · ⚓ 해전 중에는 이름표에 학생 레벨(Lv = 수학+영어+사회+독서 레벨 합)이 같이 떠요 · 선생님 팀 목록에도 Lv가 보여요'] },
+  { id: '1101p', d: '11월 1일', items: ['⚔️ 공방전 이름표에 맡은 직업 과목 레벨만 떠요 (보병·장군 🧮수학 · 궁병·대장장이 🔤영어 · 왕 🏛️사회)', '🏹 궁병 새 스킬 「멀티샷」(R · 15초마다): 부채꼴로 화살이 한꺼번에! 영어력 단계마다 한 발씩 늘어요 (5~9발)'] },
   { id: '1101n', d: '11월 1일', items: ['💬 채팅 말풍선이 이름표 · 칭호에 가려지지 않게 맨 위로 올라가요', '✨ 선생님 머리 위 「🧑‍🏫 선생님」 글자 대신 몸 주변에 금빛 아우라가 자동으로 나와요'] },
   { id: '1101m', d: '11월 1일', items: ['🏷️ 선생님이 🦎히로친구 · 🎭꿈끼왕 · 시즌 칭호(🍂수확꾼 · 🎭꿈끼스타 · 👑수확제왕)도 직접 줄 수 있어요 (꿈끼왕을 받으면 안중근 꾸미기도 열려요)'] },
   { id: '1101l', d: '11월 1일', items: ['✍️ 한글 마을 시 게시판이 「운을 띄운 삼행시」로 바뀌었어요 · 선생님이 띄운 운(예: 한·글·날)으로 줄을 시작해요', '✅ 선생님이 내 시를 걸면 📚 독서력 +3 · 🐚 10 (하루 한 번)', '👍 걸린 친구 시에 한 표! 게시판에는 투표 많은 시 3편이 걸려요'] },
@@ -21952,7 +21952,7 @@ const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 독�
   king: { icon: '👑', name: '왕', hp: 15, st: 'soc', tag: '우리 나라의 왕 · ❤️ 15 · 나라마다 1명', can: ['📣 왕의 함성(Q · 35초마다): 둘레 12걸음 우리 편 모두 피해 +1 · 발이 빨라져요', '🏰 우리 성 안에서는 맞지 않아요 · 🚩 거점을 2배로 빨리 차지해요', '⚠️ 쓰러지면 상대 나라 +30점 · 30초 동안 못 일어나요', '🗡️ 왕의 검(F) · 피해 2 · 🏛️ 사회력이 오를수록 함성이 길어져요'] },
   gen: { icon: '🎖️', name: '장군', hp: 12, st: 'math', tag: '🌀 큰 칼로 둘레를 휩쓸어요 · ❤️ 12 · 나라마다 1명', can: ['🗡️ 큰 칼 베기(F) · 피해 3 · 성문도 베어요', '🌀 회오리 베기(Q · 12초마다): 내 둘레 4걸음 상대 모두 피해', '🧮 수학력이 오를수록 더 세져요'] },
   sol: { icon: '⚔️', name: '보병', hp: 9, st: 'math', tag: '🗡️ 검으로 앞에서 싸워요 · ❤️ 9', can: ['🗡️ 가까이 가서 베기(F) · 피해 4 · 성문도 베어요', '⚡ 돌격(Q): 앞으로 확 달려가며 부딪힌 상대 +1 · 10초마다', '🧮 수학력이 오를수록 더 세져요 · 창고: ⛓️ 강철 검'] },
-  arch: { icon: '🏹', name: '궁병', hp: 6, st: 'eng', tag: '🏹 멀리서 활을 쏴요 · ❤️ 6', can: ['🏹 활(F 꾹 누르기 → 놓기): 오래 당길수록 멀리·세게 · 가득 당기면 피해 3', '💨 구르기(Q · 8초마다): 휙 피하면서 1.5초 동안 안 맞아요', '🔤 영어력이 오를수록 화살이 세져요'] },
+  arch: { icon: '🏹', name: '궁병', hp: 6, st: 'eng', tag: '🏹 멀리서 활을 쏴요 · ❤️ 6', can: ['🏹 활(F 꾹 누르기 → 놓기): 오래 당길수록 멀리·세게 · 가득 당기면 피해 3', '💨 구르기(Q · 8초마다): 휙 피하면서 1.5초 동안 안 맞아요', '🏹 멀티샷(R · 15초마다): 부채꼴로 화살 5발 (영어력 단계마다 +1발 · 최대 9발)', '🔤 영어력이 오를수록 화살이 세져요'] },
   smith: { icon: '⚒️', name: '대장장이', hp: 7, st: 'eng', tag: '🔨 망치로 싸우고 우리 편을 강하게 · ❤️ 7', can: ['🔨 망치 치기(F) · 피해 2 · 성문 3 · 맞은 상대는 1.5초 어질어질(느려져요)', '⚔️ 무기 갈아 주기 (⛓️2): 친구가 60초 동안 피해 +1 · 🛡️ 갑옷 (가죽 ⛓️2 → 철 ⛓️5 · 체력 +2씩)', '🔧 우리 성문 앞 E: 수리 · 🧱 성벽 강화 · 🪵 목책 · 🏅 도와줄 때마다 우리 나라 +1점', '🪨 산성을 차지하면 산성 투석기를 쏠 수 있어요 (🪵4 ⛓️3 · 상대 성문 -10)'] },
   pow: { icon: '⛓️', name: '포로', hp: 4, st: null, off: true, tag: '함락된 나라에서 끌려온 포로 · ❤️ 4', can: ['👊 주먹(F) · 피해 1 · 스킬은 없어요'] },
   med: { icon: '🌿', name: '의원', hp: 5, st: 'read', off: true, tag: '(체험장 전용)', can: [] }, // 체험장 이름표용 (공방전에서는 없어요)
@@ -22351,7 +22351,7 @@ function syncSiege(prev, first) {
     for (let t = 1; t <= s.n; t++) if (s.fall?.[t] && !p.fall?.[t]) { const N = set.nat[t - 1], X = set.nat[s.fall[t] - 1]; playSfx('fanfare'); const ca = castleAt(t); burst(new V3(ca.x, 4, ca.z), [X.col, 0xFFFFFF, 0xFFE066], 90, 8, 4); showBanner(`🏳️ ${N.icon} ${N.name} 성 함락!`, `${X.icon} ${X.name}이(가) 성을 차지했어요${me === s.fall[t] ? ' · 우리 나라 +50점!' : ''}\n${N.name} 친구들은 ${X.name}의 ⛓️ 포로가 되어 함께 싸워요`, 6000); }
     { const mt = s.team?.[backend.uid], pt = p.team?.[backend.uid]; if (mt && pt && mt !== pt && !isTeacher) { const X = set.nat[mt - 1]; setTimeout(() => { sgSpawn(); toast(`⛓️ 이제 ${X.icon} ${X.name}의 포로예요. 👊 주먹으로만 싸울 수 있어요`, 'warn'); }, 1200); } }
     for (const st of SG_SITES) { const o = s.own?.[st.k] || 0, po = p.own?.[st.k] || 0; if (o !== po) { const N = set.nat[o - 1]; toast(o ? `${st.icon} ${N.icon} ${N.name}이(가) ${st.name}을(를) 차지했어요!` : `${st.icon} ${st.name}이(가) 주인 없는 땅이 됐어요`, o === me ? 'success' : 'info'); if (o === me) playSfx('right'); } }
-    for (const [u, v] of Object.entries(s.shot || {})) { if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t; if (u !== backend.uid) { if (v.m) sgMeleeFx(v.x, v.z, v.dx, v.dz, v.m, sgGradeOf(u, sgRoleOf(u))); else sgLaunch(v.x, v.z, v.dx, v.dz, v.v, v.a ?? sgWeap().ang, false, sgTeamOf(u), 0, 0, 0, sgRoleOf(u) === 'arch' ? sgGradeOf(u, 'arch') : 0); } }
+    for (const [u, v] of Object.entries(s.shot || {})) { if (!v || sgw.shots[u] === v.t) continue; sgw.shots[u] = v.t; if (u !== backend.uid) { if (v.m === 9) { const n = sgMultiN(sgTierOf(u, 'eng')), gr = sgGradeOf(u, 'arch'), t = sgTeamOf(u); sgMultiFan(v.x, v.z, v.dx, v.dz, n).forEach(([dx, dz], i) => setTimeout(() => sgLaunch(v.x + dx * 0.6, v.z + dz * 0.6, dx, dz, v.v, v.a ?? 0.3, false, t, 0, 0, 0, gr), i * 35)); } else if (v.m) sgMeleeFx(v.x, v.z, v.dx, v.dz, v.m, sgGradeOf(u, sgRoleOf(u))); else sgLaunch(v.x, v.z, v.dx, v.dz, v.v, v.a ?? sgWeap().ang, false, sgTeamOf(u), 0, 0, 0, sgRoleOf(u) === 'arch' ? sgGradeOf(u, 'arch') : 0); } }
     for (const [u, v] of Object.entries(s.fx || {})) { if (!v || sgw.fxSeen[u] === v.t) continue; sgw.fxSeen[u] = v.t; if (u !== backend.uid) sgPlayFx(v, false); }
     for (const t of [1, 2, 3, 4]) for (const k of ['steel']) if (sgBuff(t, k) && !(p.buff?.[t]?.[k] > backend.now() - 1000)) { const N = set.nat[t - 1]; if (N) toast(k === 'steel' ? `⛓️ ${N.name}이(가) 강철 무기를 들었어요! (60초 피해 2배)` : `📯 ${N.name}이(가) 진격 나팔을 불었어요! (30초)`, t === me ? 'success' : 'warn'); }
   }
@@ -22424,6 +22424,22 @@ function sgDrawRelease() {
   sgLaunch(sx, sz, dx, dz, v, a, true, sgMine(), W.dmg * (full ? 2 : 1) * (sgBuff(sgMine(), 'steel') ? 2 : 1), pd, sgPow('eng'), sgGradeOf(backend.uid, 'arch'));
   backend.sgShot({ x: +sx.toFixed(2), z: +sz.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: +v.toFixed(2), a: +a.toFixed(3) });
   if (full) burst(new V3(sx, 1.7, sz), [0xFFE066, 0xFFFFFF], 12, 2, 1); renderSgBar(true);
+}
+const SG_MULTI = { cd: 15000, fan: 0.95, rng: 18 }; // 🏹 1101p 궁병 멀티샷: 부채꼴로 화살 여러 발
+const sgMultiN = (tier) => 5 + Math.min(4, tier | 0); // 영어력 단계마다 1발씩 더 (5~9발)
+const sgMultiLeft = () => Math.max(0, Math.ceil(((sgw.mCd || 0) - performance.now()) / 1000));
+function sgMultiFan(x, z, dx, dz, n) { const base = Math.atan2(dx, dz), out = []; for (let i = 0; i < n; i++) { const an = base + SG_MULTI.fan * (n === 1 ? 0 : i / (n - 1) - 0.5); out.push([Math.sin(an), Math.cos(an)]); } return out; }
+function sgMulti() {
+  if (spec.on || !S.siege || !siegeRegion() || sgMyRole() !== 'arch') return;
+  if (!sgCan()) { if (sgBreak()) toast('🗺️ 지금은 작전 시간이에요. 후반전에 써요', 'info'); return; }
+  if (sgMultiLeft()) { toast(`⏳ 멀티샷은 ${sgMultiLeft()}초 뒤에 다시 쓸 수 있어요`, 'info'); return; }
+  sgw.mCd = performance.now() + SG_MULTI.cd; sgw.draw = 0;
+  const W = WEAPONS.bow, p = player.pos, f = sgAimDir(), n = sgMultiN(statTier('eng')), steel = sgBuff(sgMine(), 'steel'), pd = 1 + sgPow('eng') + (steel ? 1 : 0), gr = sgGradeOf(backend.uid, 'arch');
+  const c = sgAimShot(W, { x: p.x + f.x * SG_MULTI.rng, y: 1.2, z: p.z + f.z * SG_MULTI.rng });
+  player.heading = Math.atan2(c.dx, c.dz); playAct(player.avatar, 'cheer'); playSfx('cast');
+  sgMultiFan(p.x, p.z, c.dx, c.dz, n).forEach(([dx, dz], i) => setTimeout(() => { if (!sgCan()) return; const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6; sgLaunch(sx, sz, dx, dz, c.v, c.a, true, sgMine(), W.dmg * (steel ? 2 : 1), pd, sgPow('eng'), gr); }, i * 35));
+  backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: +c.dx.toFixed(3), dz: +c.dz.toFixed(3), v: +Math.min(40, c.v).toFixed(2), a: +Math.max(-1, Math.min(1.6, c.a)).toFixed(3), m: 9 });
+  burst(new V3(p.x + c.dx, 1.7, p.z + c.dz), [0xFFE066, 0xFF9A4A, 0xFFFFFF], 24, 3, 1.4); toast(`🏹 멀티샷! 화살 ${n}발 (한 발 피해 ${pd})`, 'success'); renderSgBar(true);
 }
 const sgQLeft = () => Math.max(0, Math.ceil(((sgw.qCd || 0) - performance.now()) / 1000));
 function sgQ() { // Q: 직업마다 다른 스킬
@@ -23315,7 +23331,7 @@ function renderSgBar(force) {
   const show = !!S.siege && siegeRegion() && !!sgMine();
   $('sgBar').classList.toggle('hidden', !show); if (!show) return;
   const W = sgWeap(), role = sgMyRole(), w = sgWinner(), hurt = sgHurt(backend.uid), cd = Math.max(0, sgw.cool);
-  const k = [Math.ceil(cd * 10), sgDashLeft(), sgQLeft(), Math.round(sgDrawK() * 8), !!sgw.draw, sgBreak(), Math.ceil(((sgw.waveCd || 0) - performance.now()) / 1000), sgw.healTarget, sgPB(sgw.healTarget || backend.uid, 'sharp'), sgPB(backend.uid, 'sharp'), !!sgw.fireAim, sgKingSafe(backend.uid), w, hurt, role, (sgRes(sgMine()).w || 0) >= 4, sgCurHp(backend.uid), sgMaxHp(backend.uid), ['horn', 'shield', 'fire'].map(q => sgBuff(sgMine(), q)).join(), JSON.stringify(sgRes(sgMine()))].join('|'); if (!force && k === sgw.barKey2) return; sgw.barKey2 = k;
+  const k = [Math.ceil(cd * 10), sgDashLeft(), sgQLeft(), sgMultiLeft(), Math.round(sgDrawK() * 8), !!sgw.draw, sgBreak(), Math.ceil(((sgw.waveCd || 0) - performance.now()) / 1000), sgw.healTarget, sgPB(sgw.healTarget || backend.uid, 'sharp'), sgPB(backend.uid, 'sharp'), !!sgw.fireAim, sgKingSafe(backend.uid), w, hurt, role, (sgRes(sgMine()).w || 0) >= 4, sgCurHp(backend.uid), sgMaxHp(backend.uid), ['horn', 'shield', 'fire'].map(q => sgBuff(sgMine(), q)).join(), JSON.stringify(sgRes(sgMine()))].join('|'); if (!force && k === sgw.barKey2) return; sgw.barKey2 = k;
   const me = backend.uid, R = SG_ROLES[role] || SG_ROLES.sol;
   const sharpTag = sgPB(backend.uid, 'sharp') ? ' · ⚔️+1' : '';
   $('sgAmmo').textContent = w ? '🏁 전쟁이 끝났어요' : hurt ? '🤕 쓰러졌어요 · 곧 우리 성에서 다시 일어나요' : `${R.icon} ${R.name} · ❤️ ${sgCurHp(me)}/${sgMaxHp(me)}${sharpTag}${sgArm(me) ? ` · ${SG_ARM[sgArm(me)].name}` : ''}${role === 'king' ? ` · 🗡️ 왕의 검 (피해 ${SG_KING.pd})${sgKingSafe(backend.uid) ? ' · 🏰 성 안이라 안전해요' : ' · ⚠️ 성 밖이에요!'}` : role === 'sch' ? ` · ✨ 기운 구슬 (피해 ${SG_FAN.pd})` : role === 'sol' ? ` · 🗡️ 검 (피해 ${sgSwordDmg()})` : role === 'smith' ? ` · 🔨 망치 (피해 ${SG_HAMMER.pd + Math.floor(statTier('read') / 2)} · 성문 ${SG_HAMMER.gate})` : role === 'gen' ? ` · 🗡️ 큰 칼 (피해 ${SG_GEN.pd + sgPow('math')})` : role === 'pow' ? ' · 👊 주먹 (피해 1)' : role === 'arch' ? (sgw.draw ? ` · 🏹 당기는 중 ${'▮'.repeat(Math.round(sgDrawK() * 8))}${'▯'.repeat(8 - Math.round(sgDrawK() * 8))} ${sgDrawK() >= 1 ? '가득! 놓아요' : ''}` : ` · 🏹 활 (가득 당기면 피해 ${3 + sgPow('eng')})`) : ` · ${W.icon} ${W.name} (피해 ${sgPlayerDmg()})`}${sgBreak() ? ' · 🗺️ 작전 시간' : ''}`;
@@ -23325,6 +23341,7 @@ function renderSgBar(force) {
   { const wl = Math.max(0, Math.ceil(((sgw.waveCd || 0) - performance.now()) / 1000)); $('sgWaveBtn').classList.toggle('hidden', !!w || role !== 'med'); $('sgWaveBtn').disabled = hurt || wl > 0; $('sgWaveBtn').textContent = wl ? `🌿 ${wl}초` : '🌿 치유의 물결 (Q)'; }
   { const tg = sgw.healTarget || backend.uid, on = sgPB(tg, 'sharp'); $('sgSharpBtn').classList.toggle('hidden', !!w || role !== 'smith'); $('sgSharpBtn').disabled = hurt || on; $('sgSharpBtn').textContent = on ? '⚔️ 날카로워요' : `⚔️ ${sgw.healTarget ? '친구' : '내'} 무기 갈기 (⛓️${SG_SHARP.cost})`; }
   { const ql = role === 'sol' ? sgDashLeft() : sgQLeft(), nm = { sol: '⚡ 돌격', gen: '🌀 회오리 베기', arch: '💨 구르기', king: '📣 왕의 함성' }[role]; $('sgDashBtn').classList.toggle('hidden', !!w || !nm); $('sgDashBtn').disabled = hurt || ql > 0 || sgBreak(); if (nm) $('sgDashBtn').textContent = ql ? `${nm.split(' ')[0]} ${ql}초` : `${nm} (Q)`; }
+  { const ml = sgMultiLeft(); $('sgMultiBtn').classList.toggle('hidden', !!w || role !== 'arch'); $('sgMultiBtn').disabled = hurt || ml > 0 || sgBreak(); $('sgMultiBtn').textContent = ml ? `🏹 ${ml}초` : `🏹 멀티샷 ${sgMultiN(statTier('eng'))}발 (R)`; }
   for (const [id, k] of [['sgSkHorn', 'horn'], ['sgSkShield', 'shield'], ['sgSkFire', 'fire']]) { $(id).classList.toggle('hidden', !!w || role !== 'sch'); $(id).disabled = hurt || sgBuff(sgMine(), k); }
   $('sgSkFire').textContent = sgw.fireAim ? '🔥 여기에! (F)' : '🔥 화공'; $('sgSkFire').style.outline = sgw.fireAim ? '3px solid #FF4A1A' : '';
   $('sgArmBtn').classList.toggle('hidden', !!w || role !== 'smith'); $('sgArmBtn').disabled = hurt || sgArm(me) >= 2; $('sgArmBtn').textContent = sgArm(me) >= 2 ? '🛡️ 철 갑옷 완성' : `🛡️ 내 ${SG_ARM[sgArm(me) + 1].name} (⛓️${SG_ARM[sgArm(me) + 1].cost})`;
@@ -23370,7 +23387,7 @@ function fillSiegeAdmin(force) {
   const roles = s ? Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `${R.icon}${Object.keys(s.role || {}).filter(u => sgRoleOf(u) === k).length}`).join(' ') : '';
   $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초 · 역할 ${roles}` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
   $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on;
-  const list = sgStudents(), key = [setKey, n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?') + (lvOfU(u, tg) ?? '')).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
+  const list = sgStudents(), key = [setKey, n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?') + (lvOfU(u, tg)?.v ?? '')).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
   if (!force && key === sgw.listKey) return; sgw.listKey = key;
   const box = $('tpSgList'); box.textContent = '';
   if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
@@ -23378,7 +23395,7 @@ function fillSiegeAdmin(force) {
     const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot');
     dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
     row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
-    { const lv = lvOfU(u, u === backend.uid ? { me: 1 } : tg); if (lv != null) { const l = el2('span', 'hint', `Lv${lv}`); l.title = '능력치 레벨 합 (수학+영어+사회+독서)'; l.style.cssText = 'margin:0 2px;font-weight:800;white-space:nowrap;color:#3E6FD8'; row.append(l); } }
+    { const lv = lvOfU(u, u === backend.uid ? { me: 1 } : tg); if (lv != null) { const l = el2('span', 'hint', `${STATS[lv.st].icon}Lv${lv.v}`); l.title = '맡은 직업 과목 레벨'; l.style.cssText = 'margin:0 2px;font-weight:800;white-space:nowrap;color:#3E6FD8'; row.append(l); } }
     { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.title = pw == null ? '아직 능력치 정보가 없어요 (새로고침하면 보여요)' : '능력치 힘 = 영어+수학+사회 단계 + 독서 단계×2'; b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1))));
@@ -23443,9 +23460,11 @@ function initSiegeUI() {
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) $('sgThrow').addEventListener(ev, () => sgDrawRelease()); // 🏹 손을 떼면 쏴요
   addEventListener('keyup', e => { if (e.key.toLowerCase() === 'f' && sgw.draw) sgDrawRelease(); });
   $('sgDashBtn').addEventListener('pointerdown', e => { e.preventDefault(); sgQ(); });
+  $('sgMultiBtn').addEventListener('pointerdown', e => { e.preventDefault(); sgMulti(); });
   $('sgWaveBtn').addEventListener('pointerdown', e => { e.preventDefault(); sgHealWave(); });
   $('sgSharpBtn').onclick = () => sgSharpen(sgw.healTarget || backend.uid);
   addEventListener('keydown', e => { if (e.target instanceof Element && e.target.matches('input, textarea, select')) return; const k = e.key.toLowerCase();
+    if (k === 'r' && !e.repeat && !placing.active && S.siege && siegeRegion() && sgMyRole() === 'arch') sgMulti(); // 🏹 1101p 멀티샷
     if (k === 'q' && !e.repeat) { if (S.siege && siegeRegion()) sgQ(); else if (trw.role === 'sol' && trRegion()) trDash(); else if (trRegion() && (trw.role === 'arch' || trw.role === 'gen')) trQ(); }
     if (k === 'escape' && sgw.fireAim) { sgw.fireAim = 0; renderSgBar(true); } });
   $('sgBarBtn').onclick = sgPlaceBar; $('sgRoleBtn').onclick = openSgRole;
@@ -26116,7 +26135,7 @@ function nvFillAdmin() { // 🏳️ 1031k 관리화면: 학생마다 해전 나�
   const set = nvSet(), n = s.n;
   list.forEach(([u, tg], i) => { const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot'); dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
     row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
-    { const lv = lvOfU(u, u === backend.uid ? { me: 1 } : tg); if (lv != null) { const l = el2('span', 'hint', `Lv${lv}`); l.title = '능력치 레벨 합 (수학+영어+사회+독서)'; l.style.cssText = 'margin:0 2px;font-weight:800;white-space:nowrap;color:#3E6FD8'; row.append(l); } }
+    { const lv = lvOfU(u, u === backend.uid ? { me: 1 } : tg); if (lv != null) { const l = el2('span', 'hint', `${STATS[lv.st].icon}Lv${lv.v}`); l.title = '맡은 직업 과목 레벨'; l.style.cssText = 'margin:0 2px;font-weight:800;white-space:nowrap;color:#3E6FD8'; row.append(l); } }
     { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 해전 나라`);
     sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1)))); sel.value = String(s.team?.[u] || 0);
