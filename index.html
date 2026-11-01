@@ -13602,6 +13602,12 @@ const TL_CONE = new THREE.ConeGeometry(1, 1, 8);
 const TL_RING = new THREE.RingGeometry(0.62, 0.8, 32);
 const TL_TORUS = new THREE.TorusGeometry(1, 0.2, 6, 16);
 const tlRingMat = new THREE.MeshBasicMaterial({ color: 0xFFD24A, transparent: true, opacity: 0.75, depthWrite: false, side: THREE.DoubleSide });
+const TL_AURA_CYL = new THREE.CylinderGeometry(0.72, 0.9, 2.3, 24, 1, true), TL_AURA_DOT = new THREE.SphereGeometry(0.06, 6, 4); // ✨ 1101n 선생님 아우라
+const tlAuraMat = new THREE.MeshBasicMaterial({ color: 0xFFD24A, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+const tlAuraMat2 = new THREE.MeshBasicMaterial({ color: 0xFFF1A8, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+const tlAuraDotMat = new THREE.MeshBasicMaterial({ color: 0xFFF6C8, transparent: true, opacity: 0.95, depthWrite: false, blending: THREE.AdditiveBlending });
+function tlAuraTick(au) { const t = performance.now() / 1000, [c1, c2] = au.userData.c; c1.rotation.y = t * 0.6; c2.rotation.y = -t * 0.9; const p = 0.5 + 0.5 * Math.sin(t * 2.4); tlAuraMat.opacity = 0.12 + 0.1 * p; tlAuraMat2.opacity = 0.08 + 0.08 * (1 - p); c1.scale.set(1 + 0.05 * p, 1, 1 + 0.05 * p);
+  for (const sp of au.userData.sp) { const k = (t * 0.35 + sp.userData.ph) % 1, a = sp.userData.a + t * 1.2; sp.position.set(Math.cos(a) * 0.82, 0.1 + k * 2.4, Math.sin(a) * 0.82); const sc = Math.sin(k * Math.PI); sp.scale.setScalar(0.4 + sc); } }
 function setTeachLook(a, code) {
   code = Number.isInteger(code) && code >= 1 && code <= 32 ? code : 0;
   if ((a.tcode || 0) === code) return;
@@ -13612,7 +13618,9 @@ function setTeachLook(a, code) {
   const n = code - 1, hat = n % 4, item = (n >> 2) % 4, trail = n >> 4, o = { solid: false }, objs = [], GOLD = 0xFFC93C;
   const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
   if (hat && a.badge) a.badge.position.y = 3.02; // 모자 위로 동물 배지를 살짝 올려요
-  objs.push(a.tlLab = makeLabel(a.g, ['🧑‍🏫 선생님'], 0.5, 0, hat ? 3.55 : 3.28, 0, { bg: '#FFD84D', fg: '#3B2F2A', font: 52, pad: 10 })); // 선생님 표시 (titleTick이 이름표 바로 위로 맞춰요)
+  a.tlLab = null; { const au = new THREE.Group(); au.name = 'tlAura'; a.g.add(au); objs.push(au); a.tlAura = au; // ✨ 1101n 선생님 표시 글자 대신 몸 주변 금빛 아우라 (titleTick이 움직여요)
+    const c1 = new THREE.Mesh(TL_AURA_CYL, tlAuraMat), c2 = new THREE.Mesh(TL_AURA_CYL, tlAuraMat2); c1.position.y = 1.15; c2.position.y = 1.0; c2.scale.set(0.78, 0.85, 0.78); au.add(c1, c2); au.userData.c = [c1, c2]; au.userData.sp = [];
+    for (let k = 0; k < 8; k++) { const sp = new THREE.Mesh(TL_AURA_DOT, tlAuraDotMat); sp.userData.a = k / 8 * Math.PI * 2; sp.userData.ph = k / 8; au.add(sp); au.userData.sp.push(sp); } }
   const ring = new THREE.Mesh(TL_RING, tlRingMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); // 금빛 고리
   a.tlHat = null;
   if (hat === 1) a.tlHat = add(a.head, g => { // 학사모
@@ -18156,7 +18164,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
-  { id: '1101n', d: '11월 1일', items: ['💬 채팅 말풍선이 이름표 · 칭호 · 🧑‍🏫 선생님 표시에 가려지지 않게 맨 위로 올라가요'] },
+  { id: '1101n', d: '11월 1일', items: ['💬 채팅 말풍선이 이름표 · 칭호에 가려지지 않게 맨 위로 올라가요', '✨ 선생님 머리 위 「🧑‍🏫 선생님」 글자 대신 몸 주변에 금빛 아우라가 자동으로 나와요'] },
   { id: '1101m', d: '11월 1일', items: ['🏷️ 선생님이 🦎히로친구 · 🎭꿈끼왕 · 시즌 칭호(🍂수확꾼 · 🎭꿈끼스타 · 👑수확제왕)도 직접 줄 수 있어요 (꿈끼왕을 받으면 안중근 꾸미기도 열려요)'] },
   { id: '1101l', d: '11월 1일', items: ['✍️ 한글 마을 시 게시판이 「운을 띄운 삼행시」로 바뀌었어요 · 선생님이 띄운 운(예: 한·글·날)으로 줄을 시작해요', '✅ 선생님이 내 시를 걸면 📚 독서력 +3 · 🐚 10 (하루 한 번)', '👍 걸린 친구 시에 한 표! 게시판에는 투표 많은 시 3편이 걸려요'] },
   { id: '1101k', d: '11월 1일', items: ['🕵️ 정보 탐정단 단서 8개가 마을 밖이 아니라 「정보 탐정단 본부」 건물 안 새 공간으로 들어갔어요 · 본부 앞에서 E로 들어가 가운데 🗂️ 사건 게시판과 벽을 따라 놓인 단서를 살펴요'] },
@@ -25504,6 +25512,7 @@ function titleTick(dt) {
     if (a.ttWings) { const fl = Math.sin(performance.now() / 120) * 0.5; for (const w of a.ttWings) w.rotation.y = w.userData.s * (0.3 + fl); }
     if (a.ttBellSw) a.ttBellSw.rotation.z = Math.sin(performance.now() / 260) * 0.25;
     if (a.ttDrHead) a.ttDrHead.rotation.y = Math.sin(performance.now() / 900) * 0.5;
+    if (a.tlAura?.parent && a.g.visible !== false) tlAuraTick(a.tlAura);
     ttFx(a, a.ttOn && (me ? joined : !!data) && a.g.visible !== false, dt);
     if (a.badge) { let top = a.badge.position.y + a.badge.scale.y / 2; // 🏷️ 이름표 위로 차곡차곡 (선생님 표시 · 골든벨 도전 표시가 이름표와 겹치지 않게)
       if (a.tlLab?.parent) { a.tlLab.position.y = top + 0.07 + a.tlLab.scale.y / 2; top = a.tlLab.position.y + a.tlLab.scale.y / 2; }
