@@ -18119,6 +18119,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1101c', d: '11월 1일', items: ['🔐 반월쉼터가 「반월 방탈출 카페」로 바뀌었어요 (보라 지붕 · 문 앞에 🦎 히로) · 보드게임 방도 그대로 있어요', '📋 11월 2일부터 오늘의 할 일 놀이 미션에 「🔐 방탈출 1곳 탈출하기」가 나와요 (⭐ 시즌 별)'] },
   { id: '1101b', d: '11월 1일', items: ['🦎 방탈출 이야기 「히로와 사라진 타임캡슐」! 우리 반 도마뱀 히로와 함께 방마다 🗺️ 지도 조각을 찾아요 · 단서 상자마다 쪽지 이야기 · 네 조각을 모으면 🎁 타임캡슐과 🏷️ 🦎히로친구 칭호'] },
   { id: '1101a', d: '11월 1일', items: ['🔐 과목별 방탈출! 🎲 반월쉼터에서 🧮 수학 비밀 금고 · 🔤 영어 마법 도서관 · 🏛️ 역사 수장고 · 🔬 과학 실험실', '단서 상자 3개(🔴🟡🔵) 문제 → 🔐 자물쇠 비밀번호 → 🚪 탈출구 마지막 문제 · ⏱️ 시간 기록 · 🏆 우리 반 빠른 탈출 · 방마다 하루 한 번 🐚 + 그 과목 능력치'] },
   { id: '1031l', d: '10월 31일', items: ['⛏️ 수학 광산 동굴에 들어가면 다른 곳으로 옮겨지던 문제를 고쳤어요 (해전 바다·바닷속이 광산 동굴과 겹쳐 있었어요 → 동쪽 먼 곳으로 옮겼어요)'] },
@@ -24797,6 +24798,7 @@ const DQ_FUN = [
   { id: 'pet', icon: '🐾', t: '우리 집 펫 한 번 돌보기', hint: '우리 집에서 펫에게 밥·간식·놀이', goal: 1, cur: () => Object.values(bag.hpet?.pets || {}).some(p => p?.day?.d === dayNum() && Object.keys(p.day).length > 1) ? 1 : 0 },
   { id: 'cart', icon: '🛒', t: '수레 레이스 한 판 달리기', hint: '수학 마을 수레 레이스장', goal: 1, cur: () => bag.cartDay?.d === dayNum() && (bag.cartDay.n | 0) > 0 ? 1 : 0 },
   { id: 'reef', icon: '🤿', t: '바닷속 생물 2마리 관찰 퀴즈 맞히기', hint: '바닷가 선착장 끝 🤿 다이빙 부표', goal: 2, cur: () => bag.reefDay?.d === dayNum() ? Object.keys(bag.reefDay.got || {}).length : 0 }, // 🤿 1031b
+  { id: 'esc', icon: '🔐', t: '방탈출 1곳 탈출하기', hint: '광장 북서쪽 🔐 반월 방탈출 카페 (히로와 사라진 타임캡슐)', goal: 1, cur: () => bag.escDay?.d === dayNum() ? Object.keys(bag.escDay.got || {}).length : 0, from: 20759 }, // 🔐 1101c (11월 2일부터)
   { id: 'swim', icon: '🏊', t: '아쿠아센터 수영 경주 한 판', hint: '광장 옆 🏊 아쿠아센터 (예전 체육관)', goal: 1, cur: () => (bag.swimDay?.d === dayNum() && (bag.swimDay.n | 0) > 0) || (bag.swmDay?.d === dayNum() && bag.swmDay.p) ? 1 : 0 },
 ];
 const DQ_SCR = { id: 'scr', icon: '🎭', t: '꿈끼 대본 퀴즈 한 판 풀기', hint: '🎤 꿈나무 무대 옆 대본 게시판 → 빈칸 퀴즈나 다음 구절', goal: 1, cur: () => bag.scrDay?.d === dayNum() && (bag.scrDay.n | 0) > 0 ? 1 : 0, bonus: true }; // 🎭 1029c 대본이 올라와 있으면 보너스 미션
@@ -24804,7 +24806,7 @@ const DQ_WRAP = { id: 'wrap', icon: '📝', t: '오늘 수업 마무리 퀴즈 �
 const dqW = { btn: null, key: '', t: 0, told: -1 };
 function dqList() { // 오늘 미션: 날짜 + 기기 번호로 정해요 (하루 동안 그대로)
   const u = String(backend?.uid || 'me'); let h = dayNum() * 31; for (const c of u) h = (h * 33 + c.charCodeAt(0)) >>> 0;
-  const st = [...DQ_STUDY], a = st.splice(h % st.length, 1)[0], b = st[(h >>> 3) % st.length], f = DQ_FUN[(h >>> 6) % DQ_FUN.length];
+  const st = [...DQ_STUDY], a = st.splice(h % st.length, 1)[0], b = st[(h >>> 3) % st.length], FUN = DQ_FUN.filter(m => !m.from || dayNum() >= m.from), f = FUN[(h >>> 6) % FUN.length];
   const L = [a, b, f]; const W = S.wrap; if (W?.n && Math.floor(((W.at || W.n * 1000) + 9 * 3600000) / 86400000) === dayNum()) L.push(DQ_WRAP); if (S.scr?.x) L.push(DQ_SCR); return L;
 }
 function dqCode() { if (bag.dq?.d !== dayNum()) return ''; return dqList().map(m => `${m.id}:${bag.dq.done?.[m.id] ? 1 : 0}`).join(',').slice(0, 80); } // 📋 1028m 선생님 현황판으로 (earn/{uid}/q)
@@ -26651,30 +26653,33 @@ function bgOpen() { return !!bgw.game; }
 function buildBoardCafe() {
   const g = new THREE.Group(); g.name = 'BoardCafe'; scene.add(g); const o = { solid: false }, { x, z, w, d } = BG_HOUSE;
   box(g, w, 3.4, d, 0xFFF1DC, x, 1.7, z); box(g, w + 0.4, 0.3, d + 0.4, 0xC9724A, x, 3.5, z, o);
-  mesh(GABLE, g, w + 1.2, 2.2, d + 1.0, 0xE2584A, x, 3.6, z, { solid: false });
-  for (let k = 0; k < 6; k++) box(g, 1.25, 0.08, 1.1, k % 2 ? 0xFFFFFF : 0x2F8FD0, x - w / 2 + 0.9 + k * 1.65, 2.75, z + d / 2 + 0.55, { solid: false, rx: 0.4 }); // 줄무늬 차양
+  mesh(GABLE, g, w + 1.2, 2.2, d + 1.0, 0x5A3E8A, x, 3.6, z, { solid: false }); // 🔐 1101c 방탈출 카페: 보라 지붕
+  for (let k = 0; k < 6; k++) box(g, 1.25, 0.08, 1.1, k % 2 ? 0x2E2A3A : 0xF2C230, x - w / 2 + 0.9 + k * 1.65, 2.75, z + d / 2 + 0.55, { solid: false, rx: 0.4 }); // 줄무늬 차양
   box(g, 1.8, 2.4, 0.12, 0x7A4A2A, x, 1.2, z + d / 2 + 0.02, o); ball(g, 0.08, C.gold, x + 0.6, 1.2, z + d / 2 + 0.1, o); // 문
   for (const sx of [-3, 3]) { box(g, 1.6, 1.2, 0.1, 0xBFE6FF, x + sx, 1.8, z + d / 2 + 0.03, { solid: false, emissive: 0.2 }); box(g, 1.8, 0.12, 0.25, 0xFFFFFF, x + sx, 1.15, z + d / 2 + 0.1, o); }
-  signPlane(g, ['🎲 반월쉼터', '보드게임 카페'], 4.4, 1.3, x, 4.6, z + d / 2 + 0.6, { font: 50, pad: 6, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false });
+  signPlane(g, ['🔐 반월 방탈출 카페 · 🦎 히로와 사라진 타임캡슐'], 6.4, 0.75, x, 3.25, z + d / 2 + 0.95, { font: 40, pad: 4, fg: '#FFE066', bg: '#2E2A3A', stroke: false }).rotation.y = 0; // 처마 아래 · 밖(+z)을 보게 (지붕에 가려지지 않게)
+  escHiroModel(g, x + 2.4, z + d / 2 + 1.8, 0.3).scale.setScalar(1.6); // 🦎 문 앞 히로 (크게)
+  for (const [qx, qy, t] of [[-3.6, 2.6, '❓'], [3.6, 2.6, '🔐'], [0, 6.2, '🗝️']]) makeLabel(g, [t], 0.9, x + qx, qy, z + d / 2 + 0.3); // 물음표 · 자물쇠 장식
   // 문 옆 큰 주사위 · 말
   { const dc = box(g, 1.3, 1.3, 1.3, 0xFFFFFF, x - w / 2 - 1.2, 0.65, z + d / 2 - 0.3); dc.rotation.y = 0.4; for (const [dx, dy] of [[0, 0], [-0.3, 0.3], [0.3, -0.3]]) ball(g, 0.1, 0xE2584A, x - w / 2 - 1.2 + dx * 0.9, 0.65 + dy, z + d / 2 + 0.38, o); }
   { const mx = x + w / 2 + 1.2, mz = z + d / 2 - 0.4; cyl(g, 0.5, 0.25, 0x5FBE5A, mx, 0.12, mz); mesh(CONE, g, 0.45, 1.0, 0.45, 0x5FBE5A, mx, 0.25, mz, o); ball(g, 0.32, 0x5FBE5A, mx, 1.4, mz, o); }
-  makeLabel(g, ['🎲 반월쉼터', BOARD_GAMES.map(G => `${G.icon} ${G.n}`).join(' · ') + ' · 🔐 방탈출'], 1.2, x, 6.8, z);
-  addInteract({ pos: new V3(x, 1, z + d / 2 + 1.4), r: 2.8, text: () => ['🎲 반월쉼터 들어가기', '보드게임 · 🔐 방탈출'], run: openBoardCafe });
+  makeLabel(g, ['🔐 반월 방탈출 카페', `방탈출 4곳 · ${BOARD_GAMES.map(G => `${G.icon} ${G.n}`).join(' · ')}`], 1.2, x, 7.4, z);
+  addInteract({ pos: new V3(x, 1, z + d / 2 + 1.4), r: 2.8, text: () => ['🔐 반월 방탈출 카페 들어가기', `🗺️ 지도 조각 ${escPieces()}/4 · 🎲 보드게임도 있어요`], run: openBoardCafe });
   registerSolids(g, 'boardcafe'); batchStatic(g);
 }
-function openBoardCafe() {
-  openLife('🎲 반월쉼터', (box) => {
-    box.textContent = ''; box.append(el2('p', 'hint', '친구들과 함께 앉아서 보드게임을 해요. 방에 들어가 탁자 앞에서 E를 누르면 게임이 열려요.'));
+function openBoardCafe() { // 🔐 1101c 반월쉼터 = 방탈출 카페 (보드게임 방도 그대로)
+  openLife('🔐 반월 방탈출 카페', (box) => {
+    box.textContent = '';
+    box.append(el2('h3', 'lp-sec', '🦎 히로와 사라진 타임캡슐')); box.append(Object.assign(el2('p', ''), { style: 'background:#FFF1DE;border-radius:12px;padding:8px 12px', textContent: ESC_TALE }), el2('p', 'hint', `🗺️ 모은 지도 조각 ${escPieces()}/4 · 단서 상자 3개 → 자물쇠 → 탈출구! 방마다 하루 한 번 보상 (🐚 + 그 과목 능력치)`));
+    if (escPieces() === 4) { const cb = el2('button', 'btn', '🎁 히로의 타임캡슐 열기'); cb.style.background = '#FFD23C'; cb.onclick = escTimeCapsule; const r2 = el2('div', 'row-center'); r2.append(cb); box.append(r2); }
+    const g2 = el2('div', 'lp-grid'); for (const [rk, E] of Object.entries(ESC_ROOMS)) { const today = bag.escDay?.d === dayNum() && bag.escDay.got?.[rk], card = el2('div', 'lp-card' + (bag.escBest?.[rk] ? ' done' : '')); card.append(el2('div', 'lp-icon', E.icon), el2('div', 'lp-name', E.n), el2('div', 'lp-sub', `${bag.escMap?.[rk] || bag.escBest?.[rk] ? '🗺️✅ ' : ''}${bag.escBest?.[rk] ? `🏅 ${escFmt(bag.escBest[rk])}` : '아직 도전 전'}${today ? ' · 오늘 보상 ✔' : ''}`));
+      const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); g2.append(card); } box.append(g2);
+    box.append(el2('h3', 'lp-sec', '🎲 보드게임 방')); box.append(el2('p', 'hint', '친구들과 함께 앉아서 보드게임을 해요. 방에 들어가 탁자 앞에서 E를 누르면 게임이 열려요.'));
     const grid = el2('div', 'lp-grid'), rooms = [...new Set(BOARD_GAMES.map(G => G.room))];
     for (const rk of rooms) { const R = ROOMS[rk], gs = BOARD_GAMES.filter(G => G.room === rk), card = el2('div', 'lp-card');
       card.append(el2('div', 'lp-icon', R.icon), el2('div', 'lp-name', R.name), el2('div', 'lp-sub', gs.map(G => `${G.icon} ${G.n} · ${G.d}`).join(' / ')));
       const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); grid.append(card); }
     box.append(grid);
-    box.append(el2('h3', 'lp-sec', '🔐 히로와 사라진 타임캡슐 (과목별 방탈출)')); box.append(Object.assign(el2('p', ''), { style: 'background:#FFF1DE;border-radius:12px;padding:8px 12px', textContent: ESC_TALE }), el2('p', 'hint', `🗺️ 모은 지도 조각 ${escPieces()}/4 · 단서 상자 3개 → 자물쇠 → 탈출구! 방마다 하루 한 번 보상 (🐚 + 그 과목 능력치)`));
-    if (escPieces() === 4) { const cb = el2('button', 'btn', '🎁 히로의 타임캡슐 열기'); cb.style.background = '#FFD23C'; cb.onclick = escTimeCapsule; const r2 = el2('div', 'row-center'); r2.append(cb); box.append(r2); }
-    const g2 = el2('div', 'lp-grid'); for (const [rk, E] of Object.entries(ESC_ROOMS)) { const card = el2('div', 'lp-card' + (bag.escBest?.[rk] ? ' done' : '')); card.append(el2('div', 'lp-icon', E.icon), el2('div', 'lp-name', E.n), el2('div', 'lp-sub', `${bag.escMap?.[rk] ? '🗺️✅ ' : ''}${bag.escBest?.[rk] ? `🏅 내 기록 ${escFmt(bag.escBest[rk])}` : '아직 도전 전'}`));
-      const b = el2('button', 'btn lp-btn', '들어가기 🚪'); b.onclick = () => { closeLife(); enterRoom(rk); }; card.append(b); g2.append(card); } box.append(g2);
   });
 }
 function buildBoardRooms(gAll) {
