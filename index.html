@@ -722,6 +722,7 @@
   #sgHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(250px, 46vw); z-index: 3; font-size: 14px; } /* 1029j 오른쪽으로 */
   /* ⚓ 1031g 삼국 해전 */
   #nvHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(270px, 48vw); z-index: 3; font-size: 14px; line-height: 1.45; }
+  #stgCard { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(96px + var(--safe-bottom, 0px)); width: min(420px, 92vw); padding: 8px 10px; z-index: 8; } /* 🎤 1101d 연습 플레이어 */
   body.nv-here #rideBtn, body.nv-here #controls, body.nv-here #praiseBtn { display: none !important; } /* 1031h 해전 버튼과 겹치지 않게 */
   #nvAct { position: fixed; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(150px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: row-reverse; gap: 8px; align-items: flex-end; z-index: 4; }
   body.touch #nvAct { bottom: calc(282px + var(--safe-bottom)); }
@@ -1514,6 +1515,12 @@
     <div class="field">해전 나라 정하기 (자동 = 바다에 오면 사람이 적은 나라로)</div>
     <div id="tpNvList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpNvOpen" type="button" style="background:#BFE0FF">⚓ 바다 열기</button><button class="btn" id="tpNvBal" type="button" style="background:#fff">⚖️ 능력치로 고르게 나누기</button><button class="btn" id="tpNvStart" type="button" style="background:#FFD23C">⚔️ 해전 시작</button><button class="btn" id="tpNvEnd" type="button" style="background:#fff">🏁 끝내기</button><button class="btn" id="tpNvClose" type="button" style="background:#fff">🧹 닫기</button><button class="btn" id="tpNvGo" type="button" style="background:#fff">🚢 바다로 가기</button></div>
+    <h3>🎤 꿈나무 무대 (꿈끼 발표회 연습)</h3>
+    <p class="hint" id="tpStgNow"></p>
+    <p class="hint">마을 꿈나무 무대(예전 회전목마 자리) → 🎭 공연장. 안에서는 모두 안중근 복장, 마이크 앞에서 🎵 AR 따라 부르기 · 🎶 MR 혼자 연습 · 대본 자막. 음원은 유튜브 링크로 틀어요.</p>
+    <div class="row-center wrap"><label class="row-center" style="gap:4px">발표회 날 <input type="date" id="tpStgDd" class="tinput" style="width:auto"></label></div>
+    <div class="row-center wrap" style="margin-top:4px"><input id="tpStgAr" class="tinput" placeholder="AR 유튜브 링크" style="flex:1;min-width:200px"><input id="tpStgMr" class="tinput" placeholder="MR 유튜브 링크" style="flex:1;min-width:200px"></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpStgSave" type="button" style="background:#FFD23C">💾 저장</button><button class="btn" id="tpStgTvAr" type="button" style="background:#fff">📺 AR 영상 크게 (TV)</button><button class="btn" id="tpStgTvMr" type="button" style="background:#fff">📺 MR 영상 크게 (TV)</button><button class="btn" id="tpStgGo" type="button" style="background:#fff">🎤 공연장으로 가기</button></div>
     <h3>🙈 변신 숨바꼭질 (마을을 골라요)</h3>
     <p class="hint">마을을 고르고 참가자를 모은 뒤 시작하면, 참가자가 모두 그 마을로 옮겨지고 술래를 뽑아요. 숨기 40초 → 찾기 3분. 숨는 사람은 그 마을에 어울리는 물건으로 변신하고, 그 마을 울타리 안에서만 숨어요.</p>
     <div class="row-center wrap"><label style="font-size:16px">🗺️ 숨바꼭질 마을 <select id="tpHideV" class="tinput" style="width:auto"><option value="main">🏫 메인 마을</option><option value="hv">🏯 역사 마을</option><option value="ev">🗽 영어 마을</option><option value="math">⛏️ 수학 마을</option><option value="field">🏡 들판 마을 (예전 우리 집 마을)</option></select></label></div>
@@ -1937,7 +1944,7 @@ const CFG = {
     { id: 'gar_weed', place: '🌳 독서 나무', title: '독서 나무 가꾸기', desc: '독서 나무가 잘 자라게 둘레를 가꿔요 (물 주기)', reward: 'books' },
     { id: 'plz_clean', place: '🏫 광장', title: '광장 쓰레기 줍기', desc: '광장을 깨끗하게 만들어요', reward: 'plaza' },
     { id: 'plz_deco', place: '🏫 광장', title: '광장 꾸미기', desc: '광장을 알록달록하게 꾸며요', reward: 'plaza' },
-    { id: 'pg_turn', place: '🏊 아쿠아센터', title: '아쿠아센터 차례 지키기', desc: '줄을 서서 차례대로 미끄럼틀을 타요', reward: 'carousel' },
+    { id: 'pg_turn', place: '🏊 아쿠아센터', title: '아쿠아센터 차례 지키기', desc: '줄을 서서 차례대로 미끄럼틀을 타요', reward: 'rainbow' }, // 1101d 회전목마 대신
     { id: 'art_tidy', place: '🎨 미술 공방', title: '미술 공방 정리하기', desc: '쓴 물감과 붓을 제자리에 둬요', reward: 'stage' },
   ],
   // 게시판 공지 (선생님이 이 중에서만 골라요, 순서를 바꾸면 저장된 번호의 뜻이 바뀌어요)
@@ -1973,7 +1980,7 @@ const CFG = {
   REWARDS: [
     { id: 'carousel', name: '회전목마', icon: '🎠', pos: [24, -44] },
     { id: 'rainbow', name: '무지개 다리', icon: '🌈', pos: [-24, -44] },
-    { id: 'stage', name: '꿈나무 무대', icon: '🎤', pos: [-48, -42] },
+    { id: 'stage', name: '꿈나무 무대', icon: '🎤', pos: [24, -44] }, // 1101d 예전 회전목마 자리로 옮겼어요 (원래 [-48, -42] 도감관 뒤)
     { id: 'sunflower', name: '해바라기 정원', icon: '🌻', pos: [48, -42] },
     { id: 'camp', name: '캠핑장', icon: '⛺', pos: [-46, 48] },
   ],
@@ -2185,7 +2192,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {} }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2221,6 +2228,7 @@ function normalize(v) {
     nick: toObj(v.nick), idea: plainObj(v.idea), badm: Object.fromEntries(['c0', 'c1'].filter(k => plainObj(v.badm)[k]?.s).map(k => [k, v.badm[k]])), eng: toObj(v.eng),
     pots: v.pots || {}, pest: v.pest ? { ...v.pest, got: v.pest.got || {} } : null,
     hist: { n: Object.fromEntries(Object.entries(toObj(v.hist?.n)).map(([k, x]) => [k, toObj(x)])), b: toObj(v.hist?.b) }, histSrc: v.histSrc || null, kick: toObj(v.kick), upvote: v.upvote ? { ...v.upvote, c: toObj(v.upvote.c), v: toObj(v.upvote.v) } : null, uphist: toObj(v.uphist),
+    stg: v.stg && typeof v.stg === 'object' ? { dd: /^\d{4}-\d{2}-\d{2}$/.test(String(v.stg.dd || '')) ? v.stg.dd : '', ar: ytId(v.stg.ar), mr: ytId(v.stg.mr) } : null, // 🎤 1101d
     nv: v.nv && typeof v.nv === 'object' && v.nv.on ? { ...v.nv, r: String(v.nv.r || ''), ph: String(v.nv.ph || 'lobby'), t: +v.nv.t || 0, end: +v.nv.end || 0, set: String(v.nv.set || 'three'), n: Math.max(2, Math.min(4, v.nv.n | 0)), team: toObj(v.nv.team), sc: toObj(v.nv.sc), hl: toObj(v.nv.hl), ko: toObj(v.nv.ko), own: toObj(v.nv.own), ct: toObj(v.nv.ct), cp: toObj(v.nv.cp), win: v.nv.win | 0 } : null, // ⚓ 1031g
     siege: v.siege ? { ...v.siege, team: v.siege.team || {}, hp: toObj(v.siege.hp), score: toObj(v.siege.score), down: toObj(v.siege.down), lv: toObj(v.siege.lv), own: toObj(v.siege.own), cap: toObj(v.siege.cap), res: Object.fromEntries(Object.entries(toObj(v.siege.res)).map(([k, x]) => [k, toObj(x)])), buff: Object.fromEntries(Object.entries(toObj(v.siege.buff)).map(([k, x]) => [k, toObj(x)])), role: v.siege.role || {}, php: v.siege.php || {}, arm: v.siege.arm || {}, hurt: v.siege.hurt || {}, safe: v.siege.safe || {}, bar: v.siege.bar || {}, cat: v.siege.cat || {}, shot: v.siege.shot || {}, fx: v.siege.fx || {}, fall: toObj(v.siege.fall), cc: toObj(v.siege.cc), kd: toObj(v.siege.kd) } : null,
     roster: typeof v.roster === 'string' ? v.roster.slice(0, 500) : '',
@@ -6312,7 +6320,7 @@ const rewardHas = (id, st = S) => ACT_REWARD[id]?.type === 'place' ? !!st.unlock
 const actDecor = {};
 // ---------- 🎁 공동 미션 꾸미기 보상 (장소 5곳 + 꾸미기 14가지) ----------
 // 꾸미기 보상은 열리면 정해진 자리에 생겨요. 저장: unlocks/{id} = 연 미션 번호 (예전 마을 활동 보상은 actDone/{id})
-const DECOR_OFF = new Set(['arch', 'cherry', 'lights', 'pinwheel', 'snowman', 'sandbox', 'lantern', 'clock', 'icecream', 'bigtree']), REWARD_OFF = new Set(['camp', 'sunflower']); // 1017i 광장 마을 정리 (렉 줄이기 · 선생님 요청) — 저장된 기록은 그대로, 보이지만 않아요
+const DECOR_OFF = new Set(['arch', 'cherry', 'lights', 'pinwheel', 'snowman', 'sandbox', 'lantern', 'clock', 'icecream', 'bigtree']), REWARD_OFF = new Set(['camp', 'sunflower', 'carousel']); // 1101d 🎠 회전목마는 없애고 그 자리에 🎤 꿈나무 무대 // 1017i 광장 마을 정리 (렉 줄이기 · 선생님 요청) — 저장된 기록은 그대로, 보이지만 않아요
 const NEW_DECOR = [
   { id: 'arch',     icon: '🎈', name: '풍선 아치',      where: '학교 앞 길',       pos: [0, -24] },
   { id: 'cherry',   icon: '🌸', name: '벚꽃 나무',      where: '박물관 북쪽',     pos: [-36, -36] },
@@ -9031,7 +9039,7 @@ function buildEnv() {
   env.fall.visible = false; scene.add(env.fall);
 }
 function applyEnv(force = false) {
-  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', rf = typeof roomNow === 'function' && joined && roomNow() === 'reef', key = season + night + mk + (rf ? 'reef' : '') + (nvEnvOn() ? 'nv' : ''); // 🤿 1031d 바닷속은 바다 빛 // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
+  const season = seasonNow(), night = isNight(), mk = typeof mineHere === 'function' ? mineHere() : '', rf = typeof roomNow === 'function' && joined && roomNow() === 'reef', key = season + night + mk + (rf ? 'reef' : '') + (nvEnvOn() ? 'nv' : '') + (joined && roomNow() === 'stg' ? 'stg' : ''); // 🤿 1031d 바닷속은 바다 빛 // ⛏️ 1024b: 광산 동굴 안은 동굴 빛
   if (!force && key === env.key) return;
   const first = !env.key, snChanged = env.sn !== season + night; env.key = key; env.sn = season + night;
   scene.fog.near = 90; scene.fog.far = 240;
@@ -9059,6 +9067,7 @@ function applyEnv(force = false) {
   if (mk) mcEnv(mk);
   if (rf) reefEnv();
   if (nvEnvOn()) nvEnv(); // ⚓ 1031g 해전 바다
+  if (joined && roomNow() === 'stg') stgEnv(); // 🎤 1101d 어두운 숲 무대
 }
 function updateEnv(dt) {
   env.t -= dt; if (env.t <= 0) { env.t = 5; applyEnv(); } // 5초마다 시각 확인
@@ -13621,8 +13630,8 @@ function updateTeachLooks(dt) {
   tlRingMat.opacity = 0.55 + Math.sin(time * 3) * 0.25;
   if (player.avatar) setTeachLook(player.avatar, isTeacher ? tlCode() : 0);
   for (const r of remotes.values()) setTeachLook(r.a, r.target.t | 0);
-  if (player.avatar) setWear(player.avatar, myWearCode());
-  for (const r of remotes.values()) setWear(r.a, r.target.w | 0);
+  if (player.avatar) setWear(player.avatar, inStage(player.pos.x, player.pos.z) ? STG_AHN : myWearCode()); // 🎤 1101d 공연장 안은 모두 안중근 복장
+  for (const r of remotes.values()) setWear(r.a, inStage(r.pos.x, r.pos.z) ? STG_AHN : r.target.w | 0);
   { const t = bag.ssTrail | 0; if (player.avatar && t && ssOwn('t' + t)) ssnTrailFx(player.avatar, t); for (const r of remotes.values()) if (r.target.sx) ssnTrailFx(r.a, r.target.sx); } // 👣 1028n
   for (const a of [player.avatar, ...[...remotes.values()].map(r => r.a)]) { // ⭐ 랭킹 보상 옷: 도는 별 · 퍼덕이는 날개 · 불씨·별가루
     if (!a?.wearSpin) continue;
@@ -14162,7 +14171,7 @@ function openMeetAdmin() { closeModals(); $('teacherPanel').classList.remove('hi
 const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투표'], ['village', '🏘️ 마을'], ['play', '🎮 놀이'], ['setup', '⚙️ 설정']];
 // 1022b: 탭마다 보여 줄 순서 (제목으로 찾아요) · 마을 탭은 마을별 묶음 · 목록에 없는 것(선생님 모습·게시판 공지·업데이트 투표·마을 미션 기록·보상 투표 등)은 숨겨요
 const TP_LAYOUT = {
-  class: [/수업 도구/, /수업 마무리/, /🗓️ 시즌/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
+  class: [/수업 도구/, /수업 마무리/, /꿈나무 무대/, /🗓️ 시즌/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/성 공방전/, /삼국 해전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
@@ -17313,6 +17322,7 @@ const ROOMS = {
   ese: { name: '영어 마법 도서관', icon: '🔤', cx: 1515, cz: -150, w: 22, d: 18, wall: 0xF0E6FA, floor: 0xB89B74, site: null },
   ess: { name: '역사 수장고', icon: '🏛️', cx: 1580, cz: -150, w: 22, d: 18, wall: 0xF6EBDA, floor: 0xC9A27A, site: null },
   esc: { name: '과학 실험실', icon: '🔬', cx: 1515, cz: -200, w: 22, d: 18, wall: 0xE2F6F4, floor: 0xD8DEE0, site: null },
+  stg: { name: '꿈나무 무대 공연장', icon: '🎤', cx: 1515, cz: -270, w: 36, d: 30, wall: 0x0B1226, floor: 0x141B2E, site: null }, // 🎤 1101d 꿈끼 발표회 연습 (가시나무 숲 무대)
   reef: { name: '바닷속 산호초', icon: '🤿', cx: 3200, cz: 0, w: 56, d: 56, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
   egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
@@ -17731,6 +17741,7 @@ function buildInteriors() {
   // ---------- 🏊 아쿠아센터 (1028o · 예전 배드민턴 체육관) ----------
   { const r = ROOMS.reef; buildReef(g, r); } // 🤿 1031b
   escBuild(g); // 🔐 1101a 방탈출 방 4개
+  stgBuild(g); // 🎤 1101d 꿈나무 무대 공연장
   { const r = ROOMS.gym; roomShell(g, r); buildPool(g, r); bld.gymLabel = makeLabel(g, [''], 0.8, r.cx, 4.0, r.cz - r.d / 2 + 1); }
   // ---------- 📜 서당 (한옥 교실): 서안·방석에 앉으면 사회 학습지를 펴요 ----------
   { const r = ROOMS.sd, { cx, cz, w, d } = r; roomShell(g, r);
@@ -17813,6 +17824,7 @@ async function enterRoom(id) {
   if (id === 'gw') { toast(gwOpen() ? `📜 ${S.gw.title || '과거시험'}! 빈 자리(서안)에 앉아 시험지를 펴요` : '📜 과거시험장이에요. 선생님은 앞쪽에서 문제를 올려 시험장을 열어요', 'info'); return; }
   if (id === 'mrc') { toast(mrunOpen() ? `🏃 ${S.mrun.title || '수학 달리기'}! 뒤쪽 의자에 앉아 문제를 풀며 달려요` : '🏃 수학 달리기장이에요. 선생님은 앞쪽 순위판 앞에서 경주를 열어요', 'info'); return; }
   if (id === 'egb') { toast(egOpen() ? `🔔 ${S.eg.title || '영어 골든벨'}! 빈 방석에 앉아 골든벨 문제지를 펴요` : '🔔 영어 골든벨 홀이에요. 선생님은 무대 앞에서 문제를 올려 골든벨을 열어요', 'info'); return; }
+  if (id === 'stg') return; // 🎤 안내는 stgTick이 해요
   if (ESC_ROOMS[id]) { setTimeout(() => { if (!esc.run && roomNow() === id) escIntro(id); }, 400); return; } // 🔐
   if (id === 'reef') { toast('🤿 바닷속 산호초예요! 헤엄치는 생물 가까이 가서 E를 누르면 관찰하고 과학 퀴즈를 풀어요', 'info'); return; }
   if (id === 'gym') { toast('🏊 아쿠아센터예요! 물에 들어가 헤엄치고, 🏁 출발대 옆에서 수영 경주, 🌊 사다리 옆에서 워터슬라이드!', 'info'); return; }
@@ -17835,6 +17847,7 @@ async function exitRoom(id) {
   else if (id === 'gw') { x = GW_HOUSE.x; z = GW_HOUSE.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 📜 과거시험장 문 앞
   else if (id === 'mrc') { x = MR_HALL.x; z = MR_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🏃 달리기장 문 앞
   else if (id === 'egb') { x = EG_HALL.x; z = EG_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🔔 골든벨 홀 문 앞
+  else if (id === 'stg') { const sp = rewardSpots.stage?.spot, p = sp ? sp.localToWorld(new V3(0, 0, -5.2)) : new V3(24, 0, -38); x = p.x; z = p.z; h = sp ? sp.rotation.y : 0; stgCardClose(); } // 🎤 마을 꿈나무 무대 앞
   else if (ESC_ROOMS[id]) { x = BG_HOUSE.x + 1.5; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; esc.run = null; escMarks(); } // 🔐 방탈출 → 반월쉼터 문 앞
   else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
   else if (id === 'era') { const E = hist.curEra || HIST_ERAS[0]; x = HIST.path + E.side * 3.5; z = E.z; h = Math.atan2(-E.side, 0); }
@@ -18119,6 +18132,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1101d', d: '11월 1일', items: ['🎤 꿈나무 무대가 예전 🎠 회전목마 자리로 옮겼어요! 🎭 공연장에 들어가면 어두운 가시나무 숲 무대 · 모두 안중근 복장', '🎤 마이크 앞에 서서 🎵 AR 따라 부르기 · 🎶 MR 혼자 연습 · 📜 대본 자막이 노래를 따라가요 · 꿈끼 발표회 D-day'] },
   { id: '1101c', d: '11월 1일', items: ['🔐 반월쉼터가 「반월 방탈출 카페」로 바뀌었어요 (보라 지붕 · 문 앞에 🦎 히로) · 보드게임 방도 그대로 있어요', '📋 11월 2일부터 오늘의 할 일 놀이 미션에 「🔐 방탈출 1곳 탈출하기」가 나와요 (⭐ 시즌 별)'] },
   { id: '1101b', d: '11월 1일', items: ['🦎 방탈출 이야기 「히로와 사라진 타임캡슐」! 우리 반 도마뱀 히로와 함께 방마다 🗺️ 지도 조각을 찾아요 · 단서 상자마다 쪽지 이야기 · 네 조각을 모으면 🎁 타임캡슐과 🏷️ 🦎히로친구 칭호'] },
   { id: '1101a', d: '11월 1일', items: ['🔐 과목별 방탈출! 🎲 반월쉼터에서 🧮 수학 비밀 금고 · 🔤 영어 마법 도서관 · 🏛️ 역사 수장고 · 🔬 과학 실험실', '단서 상자 3개(🔴🟡🔵) 문제 → 🔐 자물쇠 비밀번호 → 🚪 탈출구 마지막 문제 · ⏱️ 시간 기록 · 🏆 우리 반 빠른 탈출 · 방마다 하루 한 번 🐚 + 그 과목 능력치'] },
@@ -26369,6 +26383,120 @@ function escIntro(id) {
   });
 }
 
+// ================= 🎤 1101d 꿈나무 무대 공연장 (꿈끼 발표회 연습) =================
+// 마을 🎤 꿈나무 무대(예전 회전목마 자리)에서 "공연장 들어가기" → 실내 ROOMS.stg: 어두운 가시나무 숲 무대 · 파란 조명 · 마이크 25개
+// · 공연장 안에서는 모두 안중근 복장으로 보여요(입은 옷은 그대로) · 마이크 앞에 서면 🎵 연습 플레이어(AR 따라 부르기 · MR 혼자 연습 · 대본 자막)
+// · 음원은 선생님이 준 유튜브 영상으로 틀어요(음원 파일은 공개 저장소에 올리지 않아요) · 대본의 시간 표시(0:23 등)에 맞춰 자막이 따라가요
+// · 선생님: 관리화면 '🎤 꿈나무 무대'에서 D-day · AR/MR 링크 · 📺 영상 크게(전체 화면)
+// · 저장: state/stg { dd 'YYYY-MM-DD', ar 유튜브 id, mr 유튜브 id }
+const STG_DEF = { dd: '2026-11-20', ar: 'EU82ez-KLq4', mr: 'PqGMbVmEyKE' };
+const STG_AHN = 1000 + 14 * 400 + 9 * 20 + 16; // 🇰🇷 태극 머리띠 · 🥸 콧수염 · 🧥 안중근 코트
+const stgCfg = () => ({ dd: S.stg?.dd || STG_DEF.dd, ar: S.stg?.ar || STG_DEF.ar, mr: S.stg?.mr || STG_DEF.mr });
+function stgDday() { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(stgCfg().dd); if (!m) return null; return Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000 - dayNum(); }
+function stgDtxt() { const n = stgDday(); return n == null ? '' : n > 0 ? `D-${n}` : n === 0 ? 'D-DAY' : `D+${-n}`; }
+const inStage = (x, z) => { const r = ROOMS.stg; return !!r && Math.abs(x - r.cx) <= r.w / 2 && Math.abs(z - r.cz) <= r.d / 2; };
+const ytId = (s) => { s = String(s || '').trim(); const m = s.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([\w-]{11})/); return m ? m[1] : /^[\w-]{11}$/.test(s) ? s : ''; };
+const stgW = { mics: [], it: null, stand: -1, card: null, yt: null, kind: '', ytReady: false, cues: [], lastCue: -2, tv: null, dLab: null, outLab: null, outIt: null, envHere: false, filled: '' };
+function stgMics() { const r = ROOMS.stg, out = [[r.cx, r.cz - 3.4, 1]]; for (let row = 0; row < 3; row++) for (let c = 0; c < 8; c++) out.push([r.cx - 8.75 + c * 2.5 + (row % 2) * 0.6, r.cz - 6 - row * 2.6, 0]); return out; } // [x, z, 주인공]
+function stgEnv() { // 🌲 어두운 가시나무 숲 · 파란 무대 조명
+  const sky = pretty.sky?.material.uniforms; if (sky) { sky.top.value.setHex(0x02040C); sky.bottom.value.setHex(0x0A1630); }
+  scene.background.setHex(0x040814); scene.fog.color.setHex(0x0A1A3A); scene.fog.near = 14; scene.fog.far = 52;
+  if (world.hemi) { world.hemi.intensity = 0.55; world.hemi.color.setHex(0x6E8FE0); } if (world.sun) { world.sun.intensity = 0.7; world.sun.color.setHex(0x8FB0FF); }
+  env.stars.visible = false; env.fall.visible = false;
+}
+function stgBuild(g) {
+  const r = ROOMS.stg, { cx, cz, w, d } = r, o = { solid: false }, H = 9, back = cz - d / 2;
+  box(g, w + 30, 0.1, d + 30, 0x070B16, cx, -0.06, cz, o); box(g, w, 0.2, d, 0x141B2E, cx, 0, cz);
+  box(g, w + 0.6, H, 0.3, 0x0B1226, cx, H / 2, back); for (const s of [-1, 1]) box(g, 0.3, H, d, 0x0B1226, cx + s * w / 2, H / 2, cz);
+  for (const s of [-1, 1]) box(g, w / 2 - 1.4, 3, 0.3, 0x0B1226, cx + s * (w / 4 + 0.7), 1.5, cz + d / 2); // 앞벽은 낮게 (카메라가 넘어 봐요)
+  box(g, w, 0.2, d - 8, 0x05080F, cx, H, cz - 4, o); // 천장 (앞쪽은 열려 있어요)
+  // 무대 (계단 두 칸으로 올라가요)
+  const sz0 = back + 0.3, sz1 = cz - 1.4, sd = sz1 - sz0; box(g, w - 2, 0.65, sd, 0x1C2440, cx, 0.425, sz0 + sd / 2); box(g, w - 2, 0.04, sd, 0x2A4A8A, cx, 0.77, sz0 + sd / 2, { solid: false, emissive: 0.25 });
+  box(g, 8, 0.4, 1.0, 0x1C2440, cx, 0.2, sz1 + 0.5); box(g, w - 2, 0.08, 0.12, 0x6FA8FF, cx, 0.78, sz1 - 0.05, { solid: false, emissive: 0.8 }); // 앞 계단 · 무대 끝 빛줄
+  // 🌲 가시나무 숲 (뒤 · 양옆)
+  for (let k = 0; k < 70; k++) { const side = k % 5, t = ((k * 37) % 100) / 100; let x, z;
+    if (side < 3) { x = cx - w / 2 + 1 + t * (w - 2); z = back + 0.6 + ((k * 13) % 5) * 0.5; } else { x = cx + (side === 3 ? -1 : 1) * (w / 2 - 1 - ((k * 7) % 4) * 0.5); z = back + 2 + t * (sd - 3); }
+    const hh = 7 + ((k * 11) % 30) / 10, rr = 0.1 + ((k * 3) % 5) * 0.025; cyl(g, rr, hh, k % 3 ? 0x9FB4D8 : 0xC8D6EE, x, hh / 2 + 0.75, z, { solid: false, emissive: 0.3 });
+    for (let q = 0; q < 3; q++) { const y = 2.5 + q * 1.6 + (k % 3) * 0.4, s2 = (q + k) % 2 ? 1 : -1, L = 0.8 + ((k + q) % 3) * 0.4; box(g, L, 0.05, 0.05, 0x2A3A60, x + s2 * L / 2, y, z, { solid: false, rz: s2 * 0.5 }); mesh(CONE, g, 0.04, 0.16, 0.04, 0x1E2A48, x + s2 * L * 0.8, y + s2 * L * 0.25, z, { solid: false, rz: -s2 * 0.9 }); } } // 가지 · 가시
+  // 💡 파란 조명 (빛기둥)
+  const beam = (x, z, col, op, rad) => { const m = new THREE.Mesh(new THREE.ConeGeometry(rad, H - 0.6, 24, 1, true), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })); m.position.set(x, (H - 0.6) / 2 + 0.6, z); g.add(m); return m; };
+  for (let k = 0; k < 5; k++) beam(cx - 11 + k * 5.5, back + 4 + (k % 2) * 3, 0x3E7BFF, 0.07, 3.2); stgW.lead = beam(cx, cz - 3.4, 0xCFE4FF, 0.14, 1.6); // 주인공 자리 흰 조명
+  // 🎤 마이크 (자리)
+  stgW.mics = stgMics().map(([x, z, lead], i) => { const y0 = 0.77; cyl(g, 0.25, 0.04, 0x2A2E36, x, y0 + 0.02, z, o); cyl(g, 0.03, 1.45, lead ? 0xE0B84A : 0x8A93A6, x, y0 + 0.73, z, o); mesh(SPH_LO, g, 0.1, 0.13, 0.1, lead ? 0xFFD23C : 0x30343C, x, y0 + 1.5, z, { solid: false, emissive: lead ? 0.5 : 0.1 });
+    makeLabel(g, [lead ? '⭐ 주인공' : `${i}`], lead ? 0.42 : 0.32, x, y0 + 1.95, z); return { x, z, lead: !!lead }; });
+  // 객석
+  for (let row = 0; row < 4; row++) for (let c = 0; c < 10; c++) { if (c === 4 || c === 5) continue; const x = cx - 11.25 + c * 2.5, z = cz + 3 + row * 2.4; box(g, 1.4, 0.5, 1.0, 0x5A1E2E, x, 0.35, z); box(g, 1.4, 0.9, 0.18, 0x6E2436, x, 0.85, z + 0.5, o); }
+  stgW.dLab = makeLabel(g, ['🎤 꿈나무 무대'], 1.5, cx, 7.2, sz1 - 1);
+  signPlane(g, ['🎤 꿈나무 무대 · 공연장', '마이크 앞에서 E: 연습 플레이어'], 4.6, 1.1, cx + 7, 2.2, cz + d / 2 - 0.25, { font: 42, pad: 6, fg: '#FFE066', bg: '#141B2E', stroke: false });
+  stgW.it = addInteract({ pos: new V3(0, -99, 0), r: 1.6, text: () => stgW.act?.[0] || null, run: () => stgW.act?.[1]?.() });
+}
+// ---------- 🎵 연습 플레이어 (유튜브 · 대본 자막) ----------
+function stgYTApi() { if (window.YT?.Player || stgW.apiLoading) return; stgW.apiLoading = true; const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true; document.head.append(s); window.onYouTubeIframeAPIReady = () => { stgW.ytReady = true; if (stgW.pend) { const k = stgW.pend; stgW.pend = null; stgPlay(k); } }; }
+function stgCardInit() {
+  const c = document.createElement('div'); c.id = 'stgCard'; c.className = 'sticker hidden';
+  c.innerHTML = '<div class="row-center" style="justify-content:space-between;gap:6px"><b id="stgCT">🎤 꿈나무 무대</b><button class="btn" id="stgCX" style="padding:2px 10px;background:#fff">✖</button></div>'
+    + '<div class="row-center wrap" style="gap:6px;margin:4px 0"><button class="btn" id="stgAR" style="font-size:14px">🎵 AR 따라 부르기</button><button class="btn" id="stgMR" style="font-size:14px">🎶 MR 혼자 연습</button><button class="btn" id="stgSG" style="font-size:14px;background:#EDE3FB">📜 대본 게임</button></div>'
+    + '<div id="stgVid" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden"><div id="stgYT" style="width:100%;height:100%"></div></div>'
+    + '<div id="stgLines" style="max-height:170px;overflow:auto;margin-top:6px;font-size:15px;line-height:1.55;text-align:left"></div>';
+  document.body.append(c); stgW.card = c; $('stgCX').onclick = stgCardClose; $('stgAR').onclick = () => stgPlay('ar'); $('stgMR').onclick = () => stgPlay('mr'); $('stgSG').onclick = () => { if (S.scr?.x) openScript(); else toast('선생님이 아직 대본을 올리지 않았어요', 'info'); };
+}
+function stgCardOpen() { if (!stgW.card) stgCardInit(); stgW.card.classList.remove('hidden'); $('stgCT').textContent = `🎤 꿈나무 무대 · 꿈끼 발표회 ${stgDtxt()}`; stgLines(); stgYTApi(); }
+function stgCardClose() { stgStop(); stgW.card?.classList.add('hidden'); }
+function stgStop() { try { stgW.yt?.destroy?.(); } catch (e) { } stgW.yt = null; stgW.kind = ''; const v = $('stgVid'); if (v) v.innerHTML = '<div id="stgYT" style="width:100%;height:100%"></div>'; }
+function stgPlay(kind) {
+  const id = stgCfg()[kind]; if (!id) { toast('선생님이 아직 음원 링크를 넣지 않았어요', 'info'); return; } stgStop(); stgW.kind = kind; $('stgAR').style.background = kind === 'ar' ? '#FFE066' : '#fff'; $('stgMR').style.background = kind === 'mr' ? '#FFE066' : '#fff';
+  if (window.YT?.Player) { stgW.yt = new YT.Player('stgYT', { videoId: id, playerVars: { autoplay: 1, rel: 0, playsinline: 1, modestbranding: 1 }, events: { onError: () => stgYTFail(id) } }); }
+  else { stgW.pend = kind; $('stgVid').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media" allowfullscreen title="${kind === 'ar' ? 'AR' : 'MR'} 음원"></iframe>`; }
+  toast(kind === 'ar' ? '🎵 AR: 가사를 들으며 따라 불러요' : '🎶 MR: 반주에 맞춰 스스로 불러요', 'info');
+}
+function stgYTFail(id) { $('stgVid').innerHTML = `<div style="color:#fff;padding:16px;text-align:center">영상을 여기서 틀 수 없어요 (학교 기기에서 유튜브가 막혔을 수 있어요)<br><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener" style="color:#FFE066">유튜브에서 열기</a></div>`; }
+function stgLines() { // 대본: 내 배역 대사를 강조 · 시간 표시가 있으면 자막처럼 따라가요
+  const box = $('stgLines'); if (!box) return; box.textContent = ''; stgW.cues = []; stgW.lastCue = -2;
+  if (!S.scr?.x) { box.append(el2('p', 'hint', '선생님이 대본을 올리면 여기에 대사가 보여요')); return; }
+  const items = scrItems(), lead = scrIsLead() || isTeacher, me = scrLead(); let cueEl = null;
+  for (const it of items) {
+    if (it.k === 'c') { const m = /^(\d{1,2}):(\d{2})/.exec(it.t); cueEl = el2('div', '', `⏱️ ${it.t}`); cueEl.style.cssText = 'font-weight:900;color:#5A3E96;margin-top:6px'; box.append(cueEl); if (m) stgW.cues.push([+m[1] * 60 + +m[2], cueEl]); continue; }
+    if (it.k !== 'l') continue; const all = SCR_ALL.test(it.sp), mine = all || (lead && it.sp === me), row = el2('div', '', `${it.sp}: ${it.t}`); row.style.cssText = `padding:1px 4px;border-radius:6px;${mine ? 'background:#FFF1C2;font-weight:800' : 'color:#6B5A4A'}`; box.append(row); }
+  box.prepend(el2('p', 'hint', lead ? `⭐ 주인공(${me}) 대사와 다함께 대사를 모두 외워요` : '🙌 노란 줄(다함께) 대사를 외워요'));
+}
+function stgCueTick() { const p = stgW.yt; if (!p?.getCurrentTime || !stgW.cues.length) return; let t = 0; try { t = p.getCurrentTime(); } catch (e) { return; } let i = -1; stgW.cues.forEach(([s], k) => { if (t >= s) i = k; }); if (i === stgW.lastCue) return; stgW.lastCue = i;
+  stgW.cues.forEach(([, el], k) => { el.style.background = k === i ? '#5A3E96' : ''; el.style.color = k === i ? '#fff' : '#5A3E96'; }); if (i >= 0) { const el = stgW.cues[i][1], box = $('stgLines'); box.scrollTo({ top: el.offsetTop - box.offsetTop - 4, behavior: 'smooth' }); } }
+// ---------- 📺 선생님 전체 화면 ----------
+function stgTv(kind) {
+  const id = stgCfg()[kind]; if (!id) { toast('링크를 먼저 넣어요', 'warn'); return; } closeModals();
+  if (!stgW.tv) { const d = document.createElement('div'); d.id = 'stgTv'; d.style.cssText = 'position:fixed;inset:0;z-index:95;background:#000;display:flex;flex-direction:column'; document.body.append(d); stgW.tv = d; }
+  const d = stgW.tv; d.innerHTML = `<div style="display:flex;gap:8px;align-items:center;padding:8px 12px;background:#0A1226;color:#FFE066;font-weight:900;font-size:18px"><span style="flex:1">🎤 꿈나무 무대 · 꿈끼 발표회 ${stgDtxt()} · ${kind === 'ar' ? '🎵 AR' : '🎶 MR'}</span><button class="btn" id="stgTvA" style="color:#3B2F2A">🎵 AR</button><button class="btn" id="stgTvM" style="color:#3B2F2A">🎶 MR</button><button class="btn" id="stgTvX" style="background:#fff;color:#3B2F2A">✖ 닫기</button></div><iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0" style="flex:1;width:100%;border:0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen title="꿈나무 무대 영상"></iframe>`;
+  d.classList.remove('hidden'); d.style.display = 'flex'; $('stgTvA').onclick = () => stgTv('ar'); $('stgTvM').onclick = () => stgTv('mr'); $('stgTvX').onclick = () => { d.innerHTML = ''; d.style.display = 'none'; try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { } };
+  try { d.requestFullscreen?.(); } catch (e) { }
+}
+async function stgSave() {
+  const dd = $('tpStgDd').value, ar = ytId($('tpStgAr').value), mr = ytId($('tpStgMr').value);
+  if ($('tpStgAr').value.trim() && !ar) { toast('AR 링크가 유튜브 주소가 아니에요', 'warn'); return; } if ($('tpStgMr').value.trim() && !mr) { toast('MR 링크가 유튜브 주소가 아니에요', 'warn'); return; }
+  const r = await backend.adminUpdate({ stg: { dd: /^\d{4}-\d{2}-\d{2}$/.test(dd) ? dd : STG_DEF.dd, ar: ar || STG_DEF.ar, mr: mr || STG_DEF.mr } }); toast(r?.ok ? `💾 저장했어요 · ${stgDtxt()}` : '⚠️ 저장하지 못했어요. database.rules.json(stg)을 먼저 게시해요', r?.ok ? 'success' : 'warn'); stgW.filled = '';
+}
+function stgInit() {
+  $('tpStgSave')?.addEventListener('click', stgSave); $('tpStgTvAr')?.addEventListener('click', () => stgTv('ar')); $('tpStgTvMr')?.addEventListener('click', () => stgTv('mr'));
+  $('tpStgGo')?.addEventListener('click', () => { closeModals(); enterRoom('stg'); });
+  setInterval(() => { try { stgCueTick(); } catch (e) { } }, 400);
+}
+function stgTick(dt) {
+  // 마을 꿈나무 무대: 공연장 입구 · D-day
+  const sp = rewardSpots.stage?.spot;
+  if (sp && !stgW.outIt) { stgW.outLab = makeLabel(sp, ['🎤 꿈나무 무대'], 1.1, 0, 6.6, 0); const wp = sp.localToWorld(new V3(0, 1, -3.8)); stgW.outIt = addInteract({ pos: wp, r: 2.6, text: () => ['🎭 공연장 들어가기 (꿈끼 발표회 연습)', `🎵 AR · MR · 마이크 연습 · ${stgDtxt()}`], run: () => enterRoom('stg') }); }
+  { const t = stgDtxt(); if (stgW.dt !== t) { stgW.dt = t; stgW.outLab?.userData.set(['🎤 꿈나무 무대', `꿈끼 발표회 ${t}`]); stgW.dLab?.userData.set(['🎤 꿈나무 무대', `꿈끼 발표회 ${t}`]); } }
+  // 관리화면 채우기
+  { const dd = $('tpStgDd'); if (dd && !$('teacherPanel').classList.contains('hidden')) { const C = stgCfg(), k = JSON.stringify(C); if (stgW.filled !== k && ![dd, $('tpStgAr'), $('tpStgMr')].includes(document.activeElement)) { stgW.filled = k; dd.value = C.dd; $('tpStgAr').value = `https://www.youtube.com/watch?v=${C.ar}`; $('tpStgMr').value = `https://www.youtube.com/watch?v=${C.mr}`; } const n = $('tpStgNow'), t = `지금: 꿈끼 발표회 ${C.dd} (${stgDtxt()}) · 대본 ${S.scr?.x ? '올라와 있어요' : '없음'}`; if (n && n.textContent !== t) n.textContent = t; } }
+  const here = joined && roomNow() === 'stg'; if (here !== stgW.envHere) { stgW.envHere = here; applyEnv(true); if (!here) { stgCardClose(); stgW.stand = -1; } else toast(`🎤 꿈나무 무대 공연장이에요! 모두 안중근 복장 · 마이크 앞에서 E를 누르면 연습 플레이어 (${stgDtxt()})`, 'info'); }
+  if (!here || !stgW.it) { if (stgW.it) stgW.it.pos.set(0, -99, 0); return; }
+  if (stgW.lead) stgW.lead.material.opacity = 0.11 + Math.sin(time * 2) * 0.04;
+  const p = player.pos;
+  if (stgW.stand >= 0) { const M = stgW.mics[stgW.stand]; const moving = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(k => keys[k]) || joy.x || joy.y; if (moving) stgW.stand = -1; else if (Math.hypot(p.x - M.x, p.z - (M.z - 0.55)) > 0.3) { p.x = M.x; p.z = M.z - 0.55; player.heading = 0; } }
+  let best = -1, bd = 1.5; stgW.mics.forEach((M, i) => { const dd2 = Math.hypot(p.x - M.x, p.z - M.z); if (dd2 < bd) { bd = dd2; best = i; } });
+  stgW.act = null; if (best >= 0) { const M = stgW.mics[best], taken = [...remotes.values()].some(r => Math.hypot(r.pos.x - M.x, r.pos.z - (M.z - 0.55)) < 0.6);
+    stgW.act = [[stgW.stand === best ? '🎵 연습 플레이어 열기' : M.lead ? '⭐ 주인공 마이크 앞에 서기' : `🎤 ${best}번 마이크 앞에 서기`, taken && stgW.stand !== best ? '친구가 서 있어요' : 'AR 따라 부르기 · MR 혼자 연습 · 대본 자막'], () => { if (taken && stgW.stand !== best) { toast('🎤 친구가 서 있어요. 다른 마이크로 가요', 'info'); return; } stgW.stand = best; p.x = M.x; p.z = M.z - 0.55; p.y = 0.8; player.heading = 0; camYaw = 0; camPitch = 0.25; stgCardOpen(); }];
+    stgW.it.pos.set(M.x, 1.6, M.z); } else stgW.it.pos.set(0, -99, 0);
+}
+
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
 // state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
 function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
@@ -26723,7 +26851,7 @@ buildStarGame();
 initStarHud();
 initMemGame();
 initDropGame();
-initPlotAdmin(); initFestAdmin(); nvInit();
+initPlotAdmin(); initFestAdmin(); nvInit(); stgInit();
 makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); buildHistMuseum(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
@@ -26748,6 +26876,7 @@ function loop() {
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { try { nvTick(dt); } catch (e) { console.warn('nv', e); } } // ⚓ 1031g 삼국 해전
+  if (joined) { try { stgTick(dt); } catch (e) { console.warn('stg', e); } } // 🎤 1101d
   if (joined && esc.it) { try { escTick(); } catch (e) { console.warn('esc', e); } } // 🔐 1101a 방탈출
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
   { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine()) || !!nvW?.on); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
