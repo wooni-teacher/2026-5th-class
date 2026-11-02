@@ -2196,7 +2196,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kdet: null, kdetp: {}, kdeta: {} }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, kdet: null, kdetp: {}, kdeta: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2258,6 +2258,8 @@ function normalize(v) {
     esc: Object.fromEntries(['esm', 'ese', 'ess', 'esc'].map(k => [k, Object.fromEntries(Object.entries(plainObj(plainObj(v.esc)[k])).filter(([u, x]) => x && typeof x === 'object' && +x.t > 0).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), t: +x.t, s: Math.min(3, x.s | 0), at: +x.at || 0 }]))])), // 🔐 1101a
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
+    kb: v.kb && typeof v.kb === 'object' ? { open: v.kb.open === true, n: v.kb.n | 0, title: String(v.kb.title || '').slice(0, 30), cur: v.kb.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.kb.ph) ? v.kb.ph : 'wait', lim: Math.min(120, Math.max(0, v.kb.lim | 0)), qt: +v.kb.qt || 0, qs: Object.values(toObj(v.kb.qs)).slice(0, 30).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), ...(/^\d{1,4}-\d{1,4}$/.test(String(q?.y || '')) ? { y: q.y } : {}) })), rev: Object.fromEntries(Object.entries(toObj(v.kb.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.kb.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.kb.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.kb.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])) } : null, // 🎭 1102a 꿈끼 골든벨
+    kba: Object.fromEntries(Object.entries(plainObj(v.kba)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0, k: v.egc.k === 'last' ? 'last' : 'win', u: Object.fromEntries(Object.entries(plainObj(v.egc.u)).filter(([u]) => ANON_ID.test(u)).slice(0, 40).map(([u, x]) => [u, String(x || '').slice(0, 12)])) } : null,
     caps: v.caps && typeof v.caps === 'object' ? { n: Math.max(0, v.caps.n | 0), ...(v.caps.g ? { g: Math.min(1e6, Math.max(1000, v.caps.g | 0)) } : {}), r: v.caps.r | 0, log: Object.fromEntries(Object.entries(plainObj(v.caps.log)).filter(([d, x]) => /^[0-9]{1,6}$/.test(d) && Number.isFinite(+x)).map(([d, x]) => [d, +x | 0])) } : null,
@@ -2596,7 +2598,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3113,6 +3115,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async kdetaSet(g, o) { try { const r = await D.runTransaction(R(`state/kdeta/${g}`), (cur) => cur ? undefined : o); return { ok: !!r.committed }; } catch (e) { return { ok: false }; } }, // 🕵️ 모둠 최종 답(먼저 낸 한 번)
     async wrapAnswer(o) { try { await D.set(R(`state/wrapa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📝 1028k 수업 마무리
     async egAnswer(o) { try { await D.set(R(`state/ega/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async kbAnswer(o) { try { await D.set(R(`state/kba/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1102a 꿈끼 골든벨 답
     async mrunStep(o) { try { await D.set(R(`state/mrunp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async capsGive(amt) { // 🎰 캡슐뽑기 저금통: 한 번에 500까지 · 목표를 넘지 않게 · 그날 모인 양도 같이 (14일 지난 기록은 지워요)
       if (!online) return { ok: false, reason: 'offline' }; let add = 0;
@@ -18167,6 +18170,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102a', d: '11월 2일', items: ['🎭 꿈끼 골든벨이 영어 골든벨과 완전히 따로예요 · 관리화면 꿈나무 무대 → 🔔 꿈끼 골든벨에서 대본 문제를 바로 만들어 공연장에서 열어요', '🔔 영어 골든벨 진행 창에는 이제 영어 문제만 (회차·문제 은행·칭호가 섞이지 않아요)'] },
   { id: '1101p', d: '11월 1일', items: ['⚔️ 공방전 이름표에 맡은 직업 과목 레벨만 떠요 (보병·장군 🧮수학 · 궁병·대장장이 🔤영어 · 왕 🏛️사회)', '🏹 궁병 새 스킬 「멀티샷」(R · 15초마다): 부채꼴로 화살이 한꺼번에! 영어력 단계마다 한 발씩 늘어요 (5~9발)'] },
   { id: '1101n', d: '11월 1일', items: ['💬 채팅 말풍선이 이름표 · 칭호에 가려지지 않게 맨 위로 올라가요', '✨ 선생님 머리 위 「🧑‍🏫 선생님」 글자 대신 몸 주변에 금빛 아우라가 자동으로 나와요'] },
   { id: '1101m', d: '11월 1일', items: ['🏷️ 선생님이 🦎히로친구 · 🎭꿈끼왕 · 시즌 칭호(🍂수확꾼 · 🎭꿈끼스타 · 👑수확제왕)도 직접 줄 수 있어요 (꿈끼왕을 받으면 안중근 꾸미기도 열려요)'] },
@@ -24637,7 +24641,6 @@ function openEgAdmin() {
       sel('문제 수', [5, 10, 15, 20, 30, 40], eg.cnt, (v) => { eg.cnt = v; renderUnits(); }, (v) => `${v}문제`);
       sel('제한 시간', [0, 10, 15, 20, 30, 45], eg.lim, (v) => { eg.lim = v; }, (v) => v ? `${v}초` : '없음 (선생님이 마감)');
       { const l = el2('label', null, ''); l.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = eg.mix; cb.onchange = () => { eg.mix = cb.checked; }; l.append(cb, ' 문제 섞기'); opt.append(l); }
-      { const l = el2('label', null, ''); l.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!eg.venue; cb.onchange = () => { eg.venue = cb.checked; }; l.append(cb, ' 🎤 꿈나무 무대 공연장에서 열기'); opt.append(l); eg.venueCb = cb; } // 🎤 1101g
       let parsed = { qs: [], errs: [] };
       function renderUnits() {
         parsed = egParse(ta.value); uw.textContent = ''; const us = egUnitsOf(parsed.qs);
@@ -24655,10 +24658,8 @@ function openEgAdmin() {
         renderUnits(); if (parsed.errs.length) return; let pool = parsed.qs.filter(q => eg.sel.has(q.u)); if (!pool.length) { err.textContent = '출제할 단원을 골라요'; return; }
         if (eg.mix) pool = evShuffle(pool); const qs = pool.slice(0, Math.min(40, eg.cnt)), us = egUnitsOf(qs).map(([u]) => u).slice(0, 12);
         bag.egKey = { n, a: qs.map(q => q.a), show: qs.map(q => q.show), t: qs.map(q => q.t), fix: {} }; bag.egBank = ta.value; bag.egSel = [...eg.sel]; saveBag();
-        const kk = qs.every(q => q.u === '꿈끼 대본') ? 1 : 0; // 🎭 1029d 대본 골든벨: 끝까지 다 맞히면 꿈끼왕
-        const ok = await backend.adminUpdate({ eg: { open: true, n, title: (ti.value.trim() || `제${n}회 영어 골든벨`).slice(0, 30), us, qs: qs.map(q => ({ q: q.q, t: q.t, o: q.o, s: q.s || '', ...(q.y ? { y: q.y } : {}) })), cur: 0, ph: 'wait', lim: eg.lim, at: Date.now(), ...(kk ? { kk } : {}), ...(eg.venue ? { v: 'stg' } : {}) }, ega: null });
-        if (!ok.ok) { err.textContent = '⚠️ 올리지 못했어요. database.rules.json을 다시 게시해 주세요'; return; } playSfx('fanfare'); toast(eg.venue ? `🔔 ${n}회 골든벨이 🎤 꿈나무 무대 공연장에서 열렸어요! (${qs.length}문제)` : `🔔 ${n}회 영어 골든벨이 열렸어요! (${qs.length}문제)`, 'success'); setTimeout(refillLife, 300); };
-      if (S.scr?.x) { const kb = el2('button', 'btn', '🎭 꿈끼 대본으로 문제 만들기'); kb.style.background = '#FFE1EC'; kb.onclick = () => { const bank = scrStageBank(); if (!bank) { toast('대본에서 문제를 만들지 못했어요', 'warn'); return; } ta.value = eg.draft = bank; eg.sel = null; ti.value = eg.draftT = '꿈끼 골든벨'; eg.venue = true; if (eg.venueCb) eg.venueCb.checked = true; renderUnits(); toast(`🎭 대본 문제를 만들었어요 (🎵 음원 듣고 다음 대사 ${(bank.match(/듣기구간/g) || []).length}문제 포함) · 끝까지 다 맞히면 🎭꿈끼왕!`, 'success'); }; row.append(kb); }
+        const ok = await backend.adminUpdate({ eg: { open: true, n, title: (ti.value.trim() || `제${n}회 영어 골든벨`).slice(0, 30), us, qs: qs.map(q => ({ q: q.q, t: q.t, o: q.o, s: q.s || '', ...(q.y ? { y: q.y } : {}) })), cur: 0, ph: 'wait', lim: eg.lim, at: Date.now() }, ega: null }); // 🎭 1102a 꿈끼 골든벨은 state/kb로 따로
+        if (!ok.ok) { err.textContent = '⚠️ 올리지 못했어요. database.rules.json을 다시 게시해 주세요'; return; } playSfx('fanfare'); toast(`🔔 ${n}회 영어 골든벨이 열렸어요! (${qs.length}문제)`, 'success'); setTimeout(refillLife, 300); };
       row.append(def, sv, go);
       box.append(el2('h3', 'lp-sec', '골든벨 이름'), ti, el2('h3', 'lp-sec', '문제 은행'), ta, err, el2('h3', 'lp-sec', '출제 단원 (눌러서 고르기)'), uw, info, opt, row);
       renderUnits();
@@ -24721,12 +24722,12 @@ function egMark(a, kind) { // 머리 위 🙋 살아 있음 · 💤 탈락 (골�
   if ((a.egKind || '') === kind) return; a.egKind = kind;
   if (!kind) { if (a.egM) a.egM.visible = false; return; }
   if (!a.egM) { a.egM = makeLabel(a.g, [''], 0.55, 0, 3.95, 0); }
-  a.egM.visible = true; a.egM.userData.set([kind === 'win' ? '🔔 골든벨' : kind === 'on' ? '🙋 도전 중' : '💤 탈락']);
+  a.egM.visible = true; a.egM.userData.set([kind === 'win' ? '🔔 골든벨' : kind === 'kk' ? '🎭 꿈끼왕' : kind === 'on' ? '🙋 도전 중' : '💤 탈락']);
 }
 function egTick(dt) {
   if (eg.bigBell) { const G0 = S.eg, ring = G0?.ph === 'end' && Object.keys(G0.win || {}).length; eg.ringT = (eg.ringT || 0) + dt; const sw = ring ? Math.sin(eg.ringT * 9) * 0.35 : Math.sin(eg.ringT * 1.2) * 0.04; eg.bigBell.rotation.z = sw; if (eg.roofBell) eg.roofBell.rotation.z = egOpen() ? Math.sin(eg.ringT * 3) * 0.12 : 0; }
   if ((eg.t = (eg.t || 0) - dt) > 0) return; eg.t = 0.4;
-  const G = S.eg, kindOf = (u, pos) => !G?.open || G.ph === 'wait' || !pos || !egHall(pos) || !G.p?.[u] ? '' : G.win?.[u] ? 'win' : G.out?.[u] == null ? 'on' : 'out';
+  const G = S.eg, kindOf = (u, pos) => (!G?.open || G.ph === 'wait' || !pos || !egHall(pos) || !G.p?.[u] ? '' : G.win?.[u] ? 'win' : G.out?.[u] == null ? 'on' : 'out') || kbKindOf(u, pos); // 🎭 1102a 꿈끼 골든벨 표시도
   if (player.avatar) egMark(player.avatar, joined ? kindOf(backend?.uid, player.pos) : '');
   for (const [u, r] of remotes) if (r.a) egMark(r.a, kindOf(u, r.a.g.position));
   if (roomNow() === 'egb' || eg.bKey === '') egDrawBoard();
@@ -24740,6 +24741,101 @@ function egTick(dt) {
   if (isTeacher) { const key = bag.egKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + G.lim * 1000 + 1500 && !eg.autoBusy) { eg.autoBusy = true; egReveal().finally(() => { setTimeout(() => { eg.autoBusy = false; }, 2000); }); }
     if (G.open && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 진행') { const k = JSON.stringify([G.ph, G.cur, egAliveN(G), Object.keys(S.ega || {}).length, Object.values(S.ega || {}).map(v => Object.keys(v?.a || {}).length).join(), G.ph === 'q' ? egLeft(G) : 0]); if (k !== eg.aKey) { eg.aKey = k; if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') refillLife(); } } }
 }
+// ================= 🎭 1102a 꿈끼 골든벨 (영어 골든벨과 완전히 따로 · 꿈나무 무대 공연장) =================
+// 선생님: 관리화면 꿈나무 무대 → 🔔 꿈끼 골든벨 (대본에서 문제 자동 · 고쳐 쓸 수 있어요) · 학생: 공연장 안에서 문제지가 떠요
+// 틀리거나 답을 안 내면 탈락 · 끝까지 다 맞힌 친구는 🎭꿈끼왕 (아무도 못 남으면 꿈끼왕 없음) · 영어 골든벨 회차·칭호·문제 은행과 섞이지 않아요
+// · 저장: state/kb {open, n, title, qs [{q, t, o, y}], cur, ph wait|q|rev|end, rev, p, out, lim, qt, win, at} · state/kba/{uid} {r, nm, a, t}
+// · 정답은 선생님 기기에만 (bag.kbKey 이번 판 정답 · bag.kbBank 고친 문제 은행)
+const kb = { draft: null, cnt: 10, lim: 20, mix: true, seenN: 0, sKey: '', aKey: '', t: 0, autoBusy: false, ans: null, lastL: null, said: '' };
+const kbOpen = () => !!S.kb?.open;
+const kbHere = () => roomNow() === 'stg';
+const kbKindOf = (u, pos) => { const G = S.kb; return !G?.open || G.ph === 'wait' || !pos || !inStage(pos.x, pos.z) || !G.p?.[u] ? '' : G.win?.[u] ? 'kk' : G.out?.[u] == null ? 'on' : 'out'; };
+const kbLeft = (G) => G?.ph === 'q' && G.lim ? Math.max(0, Math.ceil((G.qt + G.lim * 1000 - Date.now()) / 1000)) : -1;
+const kbLeftText = (G, l) => `${G.cur + 1} / ${(G.qs || []).length}번 문제 · ${G.ph === 'q' ? `답을 고르고 제출해요 (마감 전엔 바꿀 수 있어요)${l >= 0 ? ` · ⏱️ ${l}초` : ''}` : '정답 공개!'}`;
+function kbAdmin() {
+  if (!isTeacher) return;
+  openLife('🎭 꿈끼 골든벨 진행', (box) => {
+    box.textContent = ''; const G = S.kb, key = bag.kbKey;
+    if (!G?.open) {
+      const n = (S.kb?.n || 0) + 1;
+      box.append(el2('p', 'hint', '🎭 꿈끼 대본으로 만든 골든벨이에요 (영어 골든벨과 따로). 대본에서 🎵 음원 구간을 듣고 다음 대사 고르기 + 빈칸·다음 구절 문제를 자동으로 만들어요. 아래 문제를 고쳐 써도 돼요. 공연장 안 학생들에게 문제지가 떠요. 끝까지 다 맞히면 🎭꿈끼왕!'));
+      if (!S.scr?.x && !kb.draft && !bag.kbBank) { box.append(el2('p', 'err', '🎭 꿈끼 대본을 먼저 올려요 (대본이 있어야 문제를 만들어요)')); return; }
+      const ta = document.createElement('textarea'); ta.className = 'tinput'; ta.rows = 9; ta.style.cssText = 'width:100%;font-size:14px'; ta.value = kb.draft ?? bag.kbBank ?? scrStageBank() ?? ''; ta.oninput = () => { kb.draft = ta.value; info(); }; ta.onkeydown = (e) => e.stopPropagation();
+      const err = el2('p', 'err', ''), inf = el2('p', 'hint', ''), ti = el2('input', 'tinput'); ti.maxLength = 30; ti.value = kb.title || `제${n}회 꿈끼 골든벨`; ti.oninput = () => { kb.title = ti.value; }; ti.onkeydown = (e) => e.stopPropagation();
+      let parsed = { qs: [], errs: [] }; function info() { parsed = egParse(ta.value); inf.textContent = `문제 ${parsed.qs.length}개 중 ${Math.min(parsed.qs.length, kb.cnt)}문제를 내요 (🎵 음원 문제 ${parsed.qs.filter(q => q.y).length}개)`; err.textContent = parsed.errs.slice(0, 3).join(' · '); }
+      const opt = el2('div', 'row-center wrap'), sel = (lbl, vals, cur, fn, fmt) => { const l = el2('label', null, lbl); l.style.fontSize = '15px'; const s2 = el2('select', 'tinput', null); s2.style.width = 'auto'; for (const v of vals) { const op = document.createElement('option'); op.value = v; op.textContent = fmt(v); if (v === cur) op.selected = true; s2.append(op); } s2.onchange = () => fn(+s2.value); l.append(' ', s2); opt.append(l); };
+      sel('문제 수', [5, 10, 15, 20, 30], kb.cnt, (v) => { kb.cnt = v; info(); }, (v) => `${v}문제`); sel('제한 시간', [0, 15, 20, 30, 45], kb.lim, (v) => { kb.lim = v; }, (v) => v ? `${v}초` : '없음 (선생님이 마감)');
+      { const l = el2('label', null, ''); l.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = kb.mix; cb.onchange = () => { kb.mix = cb.checked; }; l.append(cb, ' 문제 섞기'); opt.append(l); }
+      const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = fn; row.append(b); return b; };
+      B('🔄 대본에서 새로 만들기', '#FFE1EC', () => { const bank = scrStageBank(); if (!bank) { toast('대본에서 문제를 만들지 못했어요', 'warn'); return; } ta.value = kb.draft = bank; info(); });
+      B('💾 저장', '#fff', () => { bag.kbBank = ta.value; saveBag(); toast('💾 이 기기에 꿈끼 문제를 저장했어요', 'success'); });
+      B('🔔 꿈끼 골든벨 열기', '#FFD23C', async () => { info(); if (parsed.errs.length) return; let pool = parsed.qs; if (!pool.length) { err.textContent = '문제가 없어요'; return; } if (kb.mix) pool = evShuffle(pool); const qs = pool.slice(0, Math.min(30, kb.cnt));
+        bag.kbKey = { n, a: qs.map(q => q.a), show: qs.map(q => q.show), t: qs.map(q => q.t), fix: {} }; bag.kbBank = ta.value; saveBag();
+        const ok = await backend.adminUpdate({ kb: { open: true, n, title: (ti.value.trim() || `제${n}회 꿈끼 골든벨`).slice(0, 30), qs: qs.map(q => ({ q: q.q, t: q.t, o: q.o, ...(q.y ? { y: q.y } : {}) })), cur: 0, ph: 'wait', lim: kb.lim, at: Date.now() }, kba: null });
+        if (!ok.ok) { err.textContent = '⚠️ 올리지 못했어요. database.rules.json(kb)을 먼저 게시해요'; return; } kb.title = ''; playSfx('fanfare'); toast(`🎭 꿈끼 골든벨이 공연장에서 열렸어요! (${qs.length}문제)`, 'success'); setTimeout(refillLife, 300); });
+      box.append(el2('h3', 'lp-sec', '골든벨 이름'), ti, el2('h3', 'lp-sec', '꿈끼 문제 (문제: / 듣기구간: / 보기: / 정답:)'), ta, err, inf, opt, row); info();
+      const kw = Object.keys(S.kkw || {}); if (kw.length) box.append(el2('p', 'hint', `🎭 꿈끼왕: ${kw.map(k => ANON_ID.test(k) && !rosterNames().includes(k) ? (nickOf(k, remotes.get(k)?.target) || '친구') : k).join(', ')}`));
+      return;
+    }
+    const qs = G.qs || [], Q = qs[G.cur], noKey = !key || key.n !== G.n, subs = Object.entries(S.kba || {}).filter(([, v]) => v?.r === G.n), pn = Object.keys(G.p || {}).length;
+    box.append(el2('p', 'lp-big', `${G.title} · ${G.ph === 'wait' ? '시작 전' : G.ph === 'end' ? '끝' : `${G.cur + 1} / ${qs.length}번`}${pn ? ` · 🙋 ${egAliveN(G)}/${pn}명` : ''}`));
+    if (noKey) box.append(el2('p', 'err', '⚠️ 이 기기에 정답이 없어요. 문제를 올린 선생님 기기에서 진행해요.'));
+    if (Q && G.ph !== 'wait' && G.ph !== 'end') { const qp = el2('p', 'hint', `${G.cur + 1}. ${Q.q}`); qp.style.whiteSpace = 'pre-line'; box.append(qp); if (!noKey) box.append(el2('p', 'hint', `🔑 정답: ${key.show?.[G.cur] || ''}`)); box.append(el2('p', 'hint', `✋ 답을 낸 친구: ${subs.filter(([, v]) => v.a?.[G.cur] != null).length}명${G.ph === 'q' && kbLeft(G) >= 0 ? ` · ⏱️ ${kbLeft(G)}초 (끝나면 자동 마감)` : ''}`)); }
+    const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = fn; row.append(b); return b; }, last = G.cur >= qs.length - 1;
+    if (G.ph === 'wait') B('▶ 1번 문제 내기', '#FFD23C', () => kbAsk(0));
+    if (G.ph === 'q') { B('⏹ 마감하고 정답 공개', '#FFD23C', () => kbReveal()); if (Q?.y) B('📺 음원 구간 다시 들려주기 (TV)', '#BFE3F7', () => egClipTv(Q.y)); }
+    if (G.ph === 'rev' && !last) B(`▶ ${G.cur + 2}번 문제 내기`, '#FFD23C', () => kbAsk(G.cur + 1));
+    if (G.ph === 'rev') B(last ? '🏁 결과 발표' : '🏁 여기서 끝내고 결과 발표', last ? '#FFD23C' : '#fff', () => kbFinish());
+    if (G.ph === 'rev' && pn) B('🔄 패자부활', '#E3F0FF', async () => { if (!await confirmAction({ title: '패자부활 할까요?', body: '탈락한 친구와 늦게 온 친구(답을 한 번이라도 낸 친구)가 모두 다시 참가해요.', okText: '부활!' })) return; const p = { ...(G.p || {}) }; for (const [u, v] of subs) p[u] ||= (v.nm || '친구').slice(0, 12); adminDo({ 'kb/p': p, 'kb/out': null }, '🔄 패자부활! 모두 다시 도전해요').then(() => setTimeout(refillLife, 300)); });
+    if (G.ph === 'end') B('🔒 꿈끼 골든벨 닫기', '#fff', () => adminDo({ 'kb/open': false }, '🔒 꿈끼 골든벨을 닫았어요').then(() => setTimeout(refillLife, 300)));
+    B('🗑️ 그만두기', '#fff', async () => { if (await confirmAction({ title: '꿈끼 골든벨을 그만둘까요?', body: '이번 판이 사라져요. (받은 꿈끼왕은 그대로)', okText: '그만두기' })) adminDo({ kb: { open: false, n: G.n, ph: 'end' }, kba: null }, '🗑️ 꿈끼 골든벨을 그만뒀어요').then(() => setTimeout(refillLife, 300)); });
+    box.append(row);
+    if (pn && G.ph !== 'wait') { box.append(el2('h3', 'lp-sec', `🙋 참가 ${pn}명`)); const rw = el2('div', 'row-center wrap'); for (const [u, nm] of Object.entries(G.p)) { const o2 = G.out?.[u], sp = el2('span', null, `${o2 == null ? (G.win?.[u] ? '🎭' : '🙋') : '💤'} ${nm}${o2 != null ? ` (${o2 + 1}번)` : ''}`); sp.style.cssText = `display:inline-block;padding:3px 9px;margin:2px;border-radius:12px;font-size:15px;background:${o2 == null ? '#CDEFC2' : '#E6E6E6'}`; rw.append(sp); } box.append(rw); }
+  });
+}
+function kbAsk(i) { const G = S.kb; if (!G) return; adminDo({ 'kb/ph': 'q', 'kb/cur': i, 'kb/qt': Date.now() }, `▶ ${i + 1}번 문제!`).then(() => { const Q = G.qs?.[i]; if (Q?.y) setTimeout(() => egClipTv(Q.y), 400); setTimeout(refillLife, 300); }); }
+function kbJudge(G, key, i) {
+  const Q = G.qs[i], p = { ...(G.p || {}) }, out = { ...(G.out || {}) }, subs = Object.entries(S.kba || {}).filter(([, v]) => v?.r === G.n);
+  if (i === 0 || !Object.keys(p).length) for (const [u, v] of subs) if (v.a?.[i] != null && !p[u]) p[u] = (v.nm || '친구').slice(0, 12);
+  for (const u of Object.keys(p)) { if (out[u] != null && out[u] !== i) continue; const a = S.kba?.[u]?.r === G.n ? S.kba[u].a?.[i] : null, fx = a != null ? key.fix?.[i]?.[a] : null, ok = a != null && (fx != null ? fx : gwOk(Q, key.a[i], a)); if (ok) delete out[u]; else out[u] = i; }
+  return { p, out };
+}
+async function kbReveal() { const G = S.kb, key = bag.kbKey; if (!G || G.ph !== 'q') return; if (!key || key.n !== G.n) { toast('⚠️ 이 기기에 정답이 없어요', 'warn'); return; } const i = G.cur, { p, out } = kbJudge(G, key, i), now = Object.keys(p).filter(u => out[u] == null).length;
+  if (await adminDo({ 'kb/ph': 'rev', [`kb/rev/${i}`]: key.show[i] || '', 'kb/p': p, 'kb/out': out }, `📣 정답 공개! 🙋 ${now}명 살아남았어요`)) setTimeout(refillLife, 300); }
+async function kbFinish() { const G = S.kb; if (!G) return; const win = {}; for (const [u, nm] of Object.entries(G.p || {})) if (G.out?.[u] == null) win[u] = nm;
+  const upd = { 'kb/ph': 'end', 'kb/win': Object.keys(win).length ? win : null }; for (const [u, nm] of Object.entries(win)) upd[`kkw/${rosterNames().includes(nm) ? nm : u}`] = 1;
+  if (await adminDo(upd, Object.keys(win).length ? `🎭 꿈끼왕: ${Object.values(win).join(', ')}` : '🎭 이번엔 끝까지 남은 친구가 없어요')) setTimeout(refillLife, 300); }
+function kbPlay() {
+  if (!kbOpen()) return; kb.sKey = JSON.stringify([S.kb.n, S.kb.cur, S.kb.ph]);
+  openLife('🎭 꿈끼 골든벨 문제지', (box) => {
+    box.textContent = ''; const G = S.kb, qs = G.qs || [], Q = qs[G.cur], me = backend.uid, mine = S.kba?.[me]?.r === G.n ? S.kba[me] : null, inP = !!G.p?.[me], out = G.out?.[me];
+    box.append(el2('p', 'lp-big', G.title || '꿈끼 골든벨'));
+    if (G.ph === 'end') { const w = Object.values(G.win || {}); box.append(el2('p', 'lp-big', w.length ? `🎭 꿈끼왕: ${w.join(', ')}` : '🎭 이번엔 끝까지 남은 친구가 없어요'), el2('p', 'hint', G.win?.[me] ? '🎉 끝까지 다 맞혔어요! 🎭꿈끼왕이에요' : inP ? `${out != null ? out + 1 : qs.length}번 문제까지 도전했어요` : '이번 판에는 참가하지 않았어요')); return; }
+    if (G.ph === 'wait' || !Q) { box.append(el2('p', 'hint', `모두 ${qs.length}문제예요. 1번 문제가 나오면 여기서 답해요. 1번 문제에 답하면 참가! 끝까지 다 맞히면 🎭꿈끼왕`)); return; }
+    if (inP) box.append(out == null ? el2('p', 'hint', '🙋 살아 있어요! 끝까지 버텨요') : el2('p', 'err', `😢 ${out + 1}번 문제에서 탈락했어요 · 계속 풀며 연습해요`)); else if (G.cur > 0) box.append(el2('p', 'hint', '👀 이번 판은 구경하며 연습해요'));
+    const lh = el2('p', 'hint', kbLeftText(G, kbLeft(G))); lh.id = 'kbLeftTxt'; box.append(lh);
+    const qp = el2('p', 'lp-big', `${G.cur + 1}. ${Q.q}`); qp.style.whiteSpace = 'pre-line'; box.append(qp);
+    if (Q.y) { const sb = el2('button', 'btn', '🎧 음원 구간 듣기 (내 기기 · 이어폰)'); sb.style.background = '#BFE3F7'; const vb = el2('div', ''); vb.style.cssText = 'width:100%;max-width:360px;margin:4px auto'; sb.onclick = () => { const [a, b2] = String(Q.y).split('-').map(Number); vb.innerHTML = `<iframe src="https://www.youtube.com/embed/${stgCfg().ar}?start=${a}&end=${b2}&autoplay=1&rel=0&playsinline=1" style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px" allow="autoplay; encrypted-media" title="음원 구간"></iframe>`; }; const r0 = el2('div', 'row-center'); r0.append(sb); box.append(r0, vb); }
+    const my = mine?.a?.[G.cur], send = async (v) => { if (G.ph !== 'q' || (G.lim && kbLeft(S.kb) === 0)) { toast('⏱️ 시간이 끝났어요', 'warn'); return; } const r = await backend.kbAnswer({ r: G.n, nm: (rosterOf(me) || cleanNick(myNick) || '친구').slice(0, 12), a: { ...(mine?.a || {}), [G.cur]: String(v).slice(0, 40) }, t: { ...(mine?.t || {}), [G.cur]: Date.now() } }); if (r.ok) { playSfx('pick'); toast(`🎭 제출했어요: ${Q.t === 'mc' ? `${v}번` : v}`, 'success'); setTimeout(refillLife, 250); } else toast('⚠️ 제출하지 못했어요 (마감됐을 수 있어요)', 'warn'); };
+    if (G.ph === 'rev') { const key = G.rev?.[G.cur] || '', ok = my != null && (Q.t === 'sa' ? key.split('/').some(k => gwNorm(k) === gwNorm(my)) : Q.t === 'mc' ? key.startsWith(`${my}번`) : key === my);
+      box.append(el2('p', 'lp-big', `정답: ${key}`), el2('p', 'hint', my == null ? '답을 내지 않았어요' : `내 답: ${Q.t === 'mc' ? `${my}번 ${Q.o[+my - 1] || ''}` : my} ${ok ? '⭕' : '❌'}`)); if (inP) box.append(el2('p', 'lp-big', out == null ? '🙋 살아남았어요!' : out === G.cur ? '😢 탈락…' : '')); return; }
+    if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 적어요'; const dk = `${G.n}|${G.cur}`; inp.value = kb.ans?.k === dk ? kb.ans.v : (my || ''); inp.oninput = () => { kb.ans = { k: dk, v: inp.value }; }; inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') b.onclick(); }; const b = el2('button', 'btn', '🎭 제출'); b.style.background = '#FFD23C'; b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (nickBad(v) || thxBadWord(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; const rw = el2('div', 'row-center wrap'); rw.append(inp, b); box.append(rw); }
+    else { const grid = el2('div', 'mx-opts'); Q.o.forEach((op, i) => { const v = Q.t === 'ox' ? op : String(i + 1), b = el2('button', 'btn mx-opt', Q.t === 'ox' ? (op === 'O' ? '⭕ O' : '❌ X') : `${i + 1}) ${op}`); if (my === v) b.style.background = '#FFE066'; b.onclick = () => send(v); grid.append(b); }); box.append(grid); }
+    if (my != null) box.append(el2('p', 'hint', `✅ 제출한 답: ${Q.t === 'mc' ? `${my}번` : my}`));
+  });
+}
+function kbTick() {
+  if (!joined || !stateLoaded) return; const G = S.kb; if (!G) return;
+  if (G.open && G.n !== kb.seenN) { if (kb.seenN && !isTeacher) toast(`🎭 ${G.title || '꿈끼 골든벨'}이 열렸어요! 🎤 꿈나무 무대 → 공연장으로 와요`, 'info'); kb.seenN = G.n; }
+  if (!isTeacher && G.ph === 'end' && bag.kbDone !== G.n && G.p?.[backend.uid]) { bag.kbDone = G.n; const me = backend.uid, o = G.out?.[me], s = o != null ? o : (G.qs || []).length; if (s) { addStat('read', Math.min(30, s * 2), true); earnShell(Math.min(40, s * 3)); }
+    if (G.win?.[me]) { earnShell(100); burst(player.pos.clone().setY(2), RAINBOW, 80, 6, 3); showBanner('🎭 꿈끼왕!', `꿈끼 골든벨을 끝까지 다 맞혔어요 · 🏷️ 칭호 🎭꿈끼왕 · 👕 옷가게에 안중근 꾸미기가 열렸어요 · 🐚 +${100 + Math.min(40, s * 3)}`, 7000); } saveBag(); }
+  if (!isTeacher && G.open && kbHere()) { const k = JSON.stringify([G.n, G.cur, G.ph]), title = '🎭 꿈끼 골든벨 문제지', open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === title;
+    if (k !== kb.sKey) { if (open || G.ph === 'q') kbPlay(); else kb.sKey = k; }
+    else if (G.ph === 'q' && G.lim && open) { const l = kbLeft(G); if (l !== kb.lastL) { kb.lastL = l; const el = $('kbLeftTxt'); if (el) el.textContent = kbLeftText(G, l); } } }
+  if (isTeacher) { const key = bag.kbKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + G.lim * 1000 + 1500 && !kb.autoBusy) { kb.autoBusy = true; kbReveal().finally(() => setTimeout(() => { kb.autoBusy = false; }, 2000)); }
+    if (G.open && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🎭 꿈끼 골든벨 진행') { const k = JSON.stringify([G.ph, G.cur, egAliveN(G), Object.values(S.kba || {}).map(v => Object.keys(v?.a || {}).length).join(), G.ph === 'q' ? kbLeft(G) : 0]); if (k !== kb.aKey) { kb.aKey = k; if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') refillLife(); } } }
+}
+setInterval(() => { try { kbTick(); } catch (e) { console.warn('kb', e); } }, 400);
 // ================= 📝 1028k 수업 마무리 퀴즈 (영어 · 수학 · 사회) =================
 // 선생님이 과목·단원·문제 수를 골라 열면 → 학생 화면에 바로 문제지가 떠요 (마을 어디에 있든) → 모두 내면 선생님 화면에서 바로 채점·문제별 정답률
 // → 📊 결과 공개를 누르면 학생마다 맞힌 수만큼 그 과목 능력치 + 🐚 (한 번)
@@ -26568,10 +26664,7 @@ async function stgSave() {
 function stgInit() {
   $('tpStgSave')?.addEventListener('click', stgSave); $('tpStgTvAr')?.addEventListener('click', () => stgTv('ar')); $('tpStgTvMr')?.addEventListener('click', () => stgTv('mr'));
   $('tpStgGo')?.addEventListener('click', () => { closeModals(); enterRoom('stg'); });
-  $('tpStgBell')?.addEventListener('click', () => { closeModals(); // 🔔 1101g · 1101h: 영어 문제 대신 꿈끼 대본 문제로 채워서 열어요
-    if (!S.eg?.open) { if (!S.scr?.x) { toast('🎭 꿈끼 대본을 먼저 올려요 (대본이 있어야 문제를 만들어요)', 'warn'); return; } const bank = scrStageBank(); if (!bank) { toast('대본에서 문제를 만들지 못했어요', 'warn'); return; } eg.draft = bank; eg.draftT = '꿈끼 골든벨'; eg.sel = null; eg.venue = true; }
-    else if (S.eg.v !== 'stg') toast('🔔 지금 영어 골든벨이 열려 있어요. 끝내고 다시 눌러요', 'info');
-    openEgAdmin(); });
+  $('tpStgBell')?.addEventListener('click', () => { closeModals(); kbAdmin(); }); // 🎭 1102a 영어 골든벨과 따로인 꿈끼 골든벨
   setInterval(() => { try { stgCueTick(); } catch (e) { } }, 400);
 }
 function stgTick(dt) {
@@ -26582,7 +26675,7 @@ function stgTick(dt) {
   // 관리화면 채우기
   { const dd = $('tpStgDd'); if (dd && !$('teacherPanel').classList.contains('hidden')) { const C = stgCfg(), k = JSON.stringify(C); if (stgW.filled !== k && ![dd, $('tpStgAr'), $('tpStgMr')].includes(document.activeElement)) { stgW.filled = k; dd.value = C.dd; $('tpStgAr').value = `https://www.youtube.com/watch?v=${C.ar}`; $('tpStgMr').value = `https://www.youtube.com/watch?v=${C.mr}`; } const n = $('tpStgNow'), t = `지금: 꿈끼 발표회 ${C.dd} (${stgDtxt()}) · 대본 ${S.scr?.x ? '올라와 있어요' : '없음'}`; if (n && n.textContent !== t) n.textContent = t; } }
   const here = joined && roomNow() === 'stg'; if (here !== stgW.envHere) { stgW.envHere = here; applyEnv(true); if (!here) { stgCardClose(); stgW.stand = -1; } else toast(`🎤 꿈나무 무대 공연장이에요! 모두 안중근 복장 · 마이크 앞에서 E를 누르면 연습 플레이어 (${stgDtxt()})`, 'info'); }
-  { const G = S.eg, t = G?.open && G.v === 'stg' ? (G.ph === 'end' ? '🔔 골든벨 끝!' : G.ph === 'wait' ? '🔔 곧 꿈끼 골든벨!' : `🔔 꿈끼 골든벨 ${G.cur + 1}/${(G.qs || []).length}번 · 🙋 ${egAliveN(G)}명`) : ''; if (stgW.bT !== t) { stgW.bT = t; stgW.bLab?.userData.set([t]); if (stgW.bLab) stgW.bLab.visible = !!t; } }
+  { const G = S.kb, t = G?.open ? (G.ph === 'end' ? '🔔 골든벨 끝!' : G.ph === 'wait' ? '🔔 곧 꿈끼 골든벨!' : `🎭 꿈끼 골든벨 ${G.cur + 1}/${(G.qs || []).length}번 · 🙋 ${egAliveN(G)}명`) : ''; if (stgW.bT !== t) { stgW.bT = t; stgW.bLab?.userData.set([t]); if (stgW.bLab) stgW.bLab.visible = !!t; } }
   if (!here || !stgW.it) { if (stgW.it) stgW.it.pos.set(0, -99, 0); return; }
   if (stgW.lead) stgW.lead.material.opacity = 0.11 + Math.sin(time * 2) * 0.04;
   { const on = stgW.stand >= 0 && stgW.card && !stgW.card.classList.contains('hidden'); if (!on) { stgW.sessT = 0; stgW.sessDone = false; } else if (!stgW.sessDone) { stgW.sessT = (stgW.sessT || 0) + dt; if (stgW.sessT >= 60) { stgW.sessDone = true; if (bag.stgDay?.d !== dayNum()) bag.stgDay = { d: dayNum(), n: 0 }; bag.stgDay.n++; saveBag(); playSfx('coin'); toast(`🎭 꿈끼 대본 연습 ${bag.stgDay.n}회 했어요!${bag.stgDay.n < 3 ? ' (마이크에서 내려왔다가 다시 서면 또 세요)' : ' 👏'}`, 'success'); } } } // 🎭 1101f 마이크 앞에서 플레이어를 켜고 1분 = 연습 1회
