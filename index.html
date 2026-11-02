@@ -2196,7 +2196,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, kdet: null, kdetp: {}, kdeta: {} }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2259,6 +2259,9 @@ function normalize(v) {
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
     kb: v.kb && typeof v.kb === 'object' ? { open: v.kb.open === true, n: v.kb.n | 0, title: String(v.kb.title || '').slice(0, 30), cur: v.kb.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.kb.ph) ? v.kb.ph : 'wait', lim: Math.min(120, Math.max(0, v.kb.lim | 0)), qt: +v.kb.qt || 0, qs: Object.values(toObj(v.kb.qs)).slice(0, 30).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), ...(/^\d{1,4}-\d{1,4}$/.test(String(q?.y || '')) ? { y: q.y } : {}) })), rev: Object.fromEntries(Object.entries(toObj(v.kb.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.kb.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.kb.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.kb.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])) } : null, // 🎭 1102a 꿈끼 골든벨
+    cloth: Object.fromEntries(Object.entries(plainObj(v.cloth)).filter(([u, x]) => ANON_ID.test(u) && x && /^[0-9a-f]{256}$/.test(x.d || '')).slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), d: x.d, at: +x.at || 0, ...(x.ok === 1 ? { ok: 1 } : {}) }])), // 👕 1102c
+    clothv: Object.fromEntries(Object.entries(plainObj(v.clothv)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string' && ANON_ID.test(t)).slice(0, 80)),
+    clothshop: Object.fromEntries(Object.entries(plainObj(v.clothshop)).filter(([k, x]) => ANON_ID.test(k) && x && /^[0-9a-f]{256}$/.test(x.d || '')).slice(0, 30).map(([k, x]) => [k, { n: String(x.n || '').slice(0, 12), d: x.d, at: +x.at || 0 }])),
     kba: Object.fromEntries(Object.entries(plainObj(v.kba)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     ega: Object.fromEntries(Object.entries(plainObj(v.ega)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: x.r | 0, nm: String(x.nm || '').slice(0, 12), a: toObj(x.a), t: toObj(x.t) }])),
     egc: v.egc && typeof v.egc === 'object' ? { n: v.egc.n | 0, names: String(v.egc.names || '').slice(0, 60), c: v.egc.c | 0, w: v.egc.w | 0, k: v.egc.k === 'last' ? 'last' : 'win', u: Object.fromEntries(Object.entries(plainObj(v.egc.u)).filter(([u]) => ANON_ID.test(u)).slice(0, 40).map(([u, x]) => [u, String(x || '').slice(0, 12)])) } : null,
@@ -2598,7 +2601,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3115,6 +3118,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async kdetaSet(g, o) { try { const r = await D.runTransaction(R(`state/kdeta/${g}`), (cur) => cur ? undefined : o); return { ok: !!r.committed }; } catch (e) { return { ok: false }; } }, // 🕵️ 모둠 최종 답(먼저 낸 한 번)
     async wrapAnswer(o) { try { await D.set(R(`state/wrapa/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 📝 1028k 수업 마무리
     async egAnswer(o) { try { await D.set(R(`state/ega/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async clothSet(o) { try { await D.set(R(`state/cloth/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 👕 1102c 내 옷 디자인
+    async clothvSet(t) { try { await D.set(R(`state/clothv/${uid}`), t || null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async kbAnswer(o) { try { await D.set(R(`state/kba/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1102a 꿈끼 골든벨 답
     async mrunStep(o) { try { await D.set(R(`state/mrunp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async capsGive(amt) { // 🎰 캡슐뽑기 저금통: 한 번에 500까지 · 목표를 넘지 않게 · 그날 모인 양도 같이 (14일 지난 기록은 지워요)
@@ -4059,7 +4064,7 @@ function makeAvatar(animalIdx, shirtIdx, hairIdx = 0, hairColorIdx = 0, parent =
   const legL = limb(-0.2, 0.6, 0.32, 0.6, 0.36, C.pants, 0x3B3B46);
   const legR = limb(0.2, 0.6, 0.32, 0.6, 0.36, C.pants, 0x3B3B46);
   box(rig, 0.8, 0.66, 0.5, shirt, 0, 0.92, 0, o);                                   // 몸
-  box(rig, 0.3, 0.2, 0.04, new THREE.Color(shirt).lerp(new THREE.Color(0xFFFFFF), 0.5).getHex(), 0, 1.02, 0.26, o); // 옷 무늬
+  const mark = box(rig, 0.3, 0.2, 0.04, new THREE.Color(shirt).lerp(new THREE.Color(0xFFFFFF), 0.5).getHex(), 0, 1.02, 0.26, o); // 옷 무늬 (👕 1102c 앞판 그림을 입으면 숨겨요)
   const armL = limb(-0.52, 1.2, 0.24, 0.52, 0.28, shirt, C.skin);
   const armR = limb(0.52, 1.2, 0.24, 0.52, 0.28, shirt, C.skin);
   const head = new THREE.Group(); head.position.y = 0; rig.add(head);
@@ -4080,7 +4085,7 @@ function makeAvatar(animalIdx, shirtIdx, hairIdx = 0, hairColorIdx = 0, parent =
   const badge = makeLabel(g, [''], 0.48, 0, 2.75, 0, { font: 60, pad: 6, fg: '#FFFFFF' }); // 🏷️ 닉네임 (예전 동물 배지 자리)
   parent.add(g);
   for (const e of eyes) e.userData.sy = e.scale.y;
-  const av = { g, rig, head, legL, legR, armL, armR, book, eyes, badge, phase: 0, idle: Math.random() * 6, blink: 1 + Math.random() * 3, still: 0, squash: 0, air: 0, act: null };
+  const av = { g, rig, head, legL, legR, armL, armR, book, eyes, badge, mark, phase: 0, idle: Math.random() * 6, blink: 1 + Math.random() * 3, still: 0, squash: 0, air: 0, act: null };
   makeProps(av);
   return av;
 }
@@ -4650,7 +4655,7 @@ function sendPresence(time) {
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
   { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on) { d.v = CART_V; } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
-  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); { const rl = myRoleLv(); if (rl != null) d.sl = rl; } { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
+  { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); { const cf = clothMyCode(); if (cf) d.cf = cf; } // 👕 1102c 입은 앞판 { const rl = myRoleLv(); if (rl != null) d.sl = rl; } { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
@@ -14707,6 +14712,7 @@ function openWardrobe() {
   openLife('👕 옷가게 · 내 옷장', (box) => {
     box.textContent = '';
     box.append(el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`), el2('p', 'hint', '산 옷은 이 기기에 저장되고, 입은 모습은 친구들에게도 보여요. 🏅 표시는 도감 배지를 받으면 생기고, ⭐ 표시는 주간 능력치 랭킹 1~3등 보상이에요.'));
+    clothWardrobeBox(box); // 👕 1102c 내가 만든 옷
     for (const slot of ['h', 'f', 'b']) {
       box.append(el2('h3', 'lp-sec', `${WEAR_SLOT[slot]} ${bag.wear[slot] ? `· 지금: ${WEAR[slot][bag.wear[slot]].icon} ${WEAR[slot][bag.wear[slot]].name}` : ''}`));
       const grid = el2('div', 'lp-grid');
@@ -18170,6 +18176,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102c', d: '11월 2일', items: ['👕 내가 만든 옷! 👕 옷가게 → 🎨 내 옷 디자인하기에서 옷 앞판을 16×16 칸으로 그려 입어요 (선생님이 ✅ 승인하면 친구들에게도 보여요)', '👗 옷 디자인 공모전: 마음에 드는 친구 옷에 👍 한 표 · 선생님이 고른 옷은 🏪 옷가게 상품(🐚 30)이 되고 디자이너는 🐚 50'] },
   { id: '1102b', d: '11월 2일', items: ['⭐ 능력치 레벨 경험치가 바뀌었어요: 최고 Lv12까지 누적 1000점 (예전 2000점) · 모은 경험치는 그대로라 레벨이 올라가요'] },
   { id: '1102a', d: '11월 2일', items: ['🎭 꿈끼 골든벨이 영어 골든벨과 완전히 따로예요 · 관리화면 꿈나무 무대 → 🔔 꿈끼 골든벨에서 대본 문제를 바로 만들어 공연장에서 열어요', '🔔 영어 골든벨 진행 창에는 이제 영어 문제만 (회차·문제 은행·칭호가 섞이지 않아요)'] },
   { id: '1101p', d: '11월 1일', items: ['⚔️ 공방전 이름표에 맡은 직업 과목 레벨만 떠요 (보병·장군 🧮수학 · 궁병·대장장이 🔤영어 · 왕 🏛️사회)', '🏹 궁병 새 스킬 「멀티샷」(R · 15초마다): 부채꼴로 화살이 한꺼번에! 영어력 단계마다 한 발씩 늘어요 (5~9발)'] },
@@ -27043,6 +27050,88 @@ function kdPhTick() {
   { const ph = S.kdet?.on ? S.kdet.ph : ''; if (ph !== kvW.kdPh) { if (kvW.kdPh && ph === 'rev' && !isTeacher) showBanner('📣 진실 공개!', '🕵️ 정보 탐정단 본부에서 통과 여부를 확인해요', 5000); if (ph === 'play' && kvW.kdPh === '' && !isTeacher) showBanner('🕵️ 정보 탐정단 모둠전 시작!', '본부에서 우리 모둠을 고르고 단서 8개를 찾아요', 5000); kvW.kdPh = ph; } }
 }
 
+// ================= 👕 1102c 내가 만든 옷 (앞판 픽셀 디자인 · 공모전 · 옷가게 상품) =================
+// 학생: 👕 옷가게 → 🎨 앞판 16×16 그리기 → 내 화면엔 바로 · 선생님 ✅ 승인하면 친구 화면에도 · 👗 공모전에서 👍 한 표 · 선생님이 🏪 상품으로 → 모두 🐚로 사서 입어요
+// · state/cloth/{uid} {n, d 256자(0~f 색), at, ok} · state/clothv/{uid} 투표한 디자인 기기 · state/clothshop/{기기} {n, d, at} (선생님) · 접속 정보 cf: 'm' 내 디자인 | 's:기기' 상품
+// · 이 기기: bag.cf 입은 것 · bag.own['cs:기기'] 산 상품 · bag.csRw 상품이 된 보상
+const CLOTH_N = 16, CLOTH_PRICE = 30, CLOTH_RW = 50;
+const CLOTH_PAL = ['', '#FFFFFF', '#2B2B36', '#E2584A', '#F28C28', '#F2C230', '#5FBE5A', '#7FD3F0', '#3E8FE8', '#26407A', '#8A4FC8', '#FF8FB3', '#8A5A34', '#9AA0A8', '#F1DFC0', '#7FE0C0']; // 0 = 비움(셔츠 색)
+const clothOk = (d) => typeof d === 'string' && /^[0-9a-f]{256}$/.test(d);
+const clothBlank = () => '0'.repeat(CLOTH_N * CLOTH_N);
+const clothW = { texC: new Map(), t: 0, edit: null, col: 3, down: false };
+function clothTex(d) { let t = clothW.texC.get(d); if (t) return t; const c = document.createElement('canvas'); c.width = c.height = CLOTH_N; const x = c.getContext('2d');
+  for (let i = 0; i < CLOTH_N * CLOTH_N; i++) { const k = parseInt(d[i], 16); if (!k) continue; x.fillStyle = CLOTH_PAL[k]; x.fillRect(i % CLOTH_N, Math.floor(i / CLOTH_N), 1, 1); }
+  t = new THREE.CanvasTexture(c); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace; if (clothW.texC.size > 60) clothW.texC.clear(); clothW.texC.set(d, t); return t; }
+function clothCanvas(d, px = 96, bg = '#E8EEF6') { const c = document.createElement('canvas'), s = Math.max(1, Math.floor(px / CLOTH_N)); c.width = c.height = s * CLOTH_N; c.style.cssText = `width:${s * CLOTH_N}px;height:${s * CLOTH_N}px;image-rendering:pixelated;border-radius:8px;border:2px solid #D8CFC0;background:${bg}`; const x = c.getContext('2d');
+  for (let i = 0; i < CLOTH_N * CLOTH_N; i++) { const k = parseInt(d[i], 16); if (!k) continue; x.fillStyle = CLOTH_PAL[k]; x.fillRect((i % CLOTH_N) * s, Math.floor(i / CLOTH_N) * s, s, s); } return c; }
+function setCloth(a, d) { // 앞판 그림 입히기 ('' = 벗기)
+  d = clothOk(d) ? d : ''; if ((a.clothD || '') === d) return; a.clothD = d;
+  if (!d) { if (a.clothP) a.clothP.visible = false; if (a.mark) a.mark.visible = true; return; }
+  if (!a.clothP) { a.clothP = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.64), new THREE.MeshLambertMaterial({ transparent: true, alphaTest: 0.5 })); a.clothP.position.set(0, 0.92, 0.256); a.rig.add(a.clothP); }
+  a.clothP.material.map = clothTex(d); a.clothP.material.needsUpdate = true; a.clothP.visible = true; if (a.mark) a.mark.visible = false;
+}
+const clothShopD = (k) => clothOk(S.clothshop?.[k]?.d) ? S.clothshop[k].d : '';
+function clothOfCode(u, cf, mine) { if (cf === 'm') { const c = S.cloth?.[u]; return c && clothOk(c.d) && (mine || c.ok) ? c.d : ''; } if (typeof cf === 'string' && cf.startsWith('s:')) return clothShopD(cf.slice(2)); return ''; }
+const clothMyCode = () => { const c = bag.cf || ''; if (c === 'm') return S.cloth?.[backend?.uid] ? 'm' : ''; if (c.startsWith('s:')) return bag.own['cs:' + c.slice(2)] && S.clothshop?.[c.slice(2)] ? c : ''; return ''; };
+const clothCoat = (a) => wearDecode(Math.floor((a.wearKey || 0) / 100))[2] === 16; // 🧥 안중근 코트를 입으면 앞판은 가려져요
+function clothTick(dt) {
+  if (!joined || (clothW.t = (clothW.t || 0) - dt) > 0) return; clothW.t = 0.5;
+  if (player.avatar) { setCloth(player.avatar, clothOfCode(backend.uid, clothMyCode(), true)); if (player.avatar.clothP) player.avatar.clothP.visible = !!player.avatar.clothD && !clothCoat(player.avatar); }
+  for (const [u, r] of remotes) { if (!r.a) continue; setCloth(r.a, clothOfCode(u, r.target?.cf, false)); if (r.a.clothP) r.a.clothP.visible = !!r.a.clothD && !clothCoat(r.a); }
+  if (!isTeacher) { const me = S.clothshop?.[backend.uid]; if (me && bag.csRw !== me.at) { bag.csRw = me.at; bag.own['cs:' + backend.uid] = true; const sh = giveShellCapped(CLOTH_RW); saveBag(); updateHUD(null); playSfx('fanfare'); showBanner('🏪 내 옷이 옷가게 상품이 됐어요!', `친구들이 🐚로 사서 입을 수 있어요 · 디자이너 보상 🐚 +${sh}`, 6000); } }
+}
+function clothDesigner() {
+  const me = backend.uid, cur = S.cloth?.[me]; clothW.edit = (clothW.edit && clothW.edit.length === 256) ? clothW.edit : (cur && clothOk(cur.d) ? cur.d : clothBlank());
+  openLife('🎨 내 옷 디자인 (앞판)', (box) => {
+    box.textContent = ''; const E = clothW.edit.split('');
+    box.append(el2('p', 'hint', '칸을 눌러(끌어서) 색칠해요. 빈 칸은 셔츠 색이 그대로 보여요. 저장하면 내 화면에선 바로 입을 수 있고, 선생님이 ✅ 승인하면 친구들 화면에도 보이고 👗 공모전에 올라가요. 고운 그림으로!'));
+    if (cur) box.append(el2('p', cur.ok ? 'hint' : 'err', cur.ok ? '✅ 승인된 디자인이에요 (다시 저장하면 다시 승인을 받아요)' : '⏳ 선생님 승인을 기다리는 중이에요'));
+    const pal = el2('div', 'row-center wrap'); CLOTH_PAL.forEach((c, k) => { const b = el2('button', 'btn', k ? '' : '🧽'); b.title = k ? c : '지우개'; b.style.cssText = `width:34px;height:34px;padding:0;border-radius:8px;background:${k ? c : '#fff'};outline:${clothW.col === k ? '3px solid #E2584A' : 'none'};font-size:16px`; b.onclick = () => { clothW.col = k; refillLife(); }; pal.append(b); }); box.append(pal);
+    const wrap = el2('div', ''); wrap.style.cssText = 'display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin:6px 0';
+    const cell = Math.min(20, Math.floor((Math.min(window.innerWidth, 520) - 60) / CLOTH_N)), grid = el2('div', ''); grid.style.cssText = `display:grid;grid-template-columns:repeat(${CLOTH_N},${cell}px);gap:1px;background:#C8BFB0;padding:1px;border-radius:6px;touch-action:none;user-select:none`;
+    const prev = el2('div', ''), drawPrev = () => { prev.textContent = ''; const c = clothCanvas(E.join(''), 64, '#' + new THREE.Color(CFG.SHIRTS[myShirt] ?? 0x4A9AE8).getHexString()); prev.append(c, el2('div', 'hint', '내 셔츠에 입힌 모습')); };
+    const cells = []; for (let i = 0; i < CLOTH_N * CLOTH_N; i++) { const c = el2('div', ''); const k = parseInt(E[i], 16); c.style.cssText = `width:${cell}px;height:${cell}px;background:${k ? CLOTH_PAL[k] : ((i + Math.floor(i / CLOTH_N)) % 2 ? '#F4F1EA' : '#FFFFFF')}`; c.dataset.i = i; cells.push(c); grid.append(c); }
+    const paint = (el) => { const i = +el?.dataset?.i; if (!Number.isInteger(i) || el.parentNode !== grid) return; const v = clothW.col.toString(16); if (E[i] === v) return; E[i] = v; clothW.edit = E.join(''); const k = clothW.col; el.style.background = k ? CLOTH_PAL[k] : ((i + Math.floor(i / CLOTH_N)) % 2 ? '#F4F1EA' : '#FFFFFF'); };
+    grid.onpointerdown = (e) => { e.preventDefault(); clothW.down = true; grid.setPointerCapture?.(e.pointerId); paint(document.elementFromPoint(e.clientX, e.clientY)); };
+    grid.onpointermove = (e) => { if (clothW.down) paint(document.elementFromPoint(e.clientX, e.clientY)); };
+    grid.onpointerup = grid.onpointercancel = () => { clothW.down = false; drawPrev(); };
+    wrap.append(grid, prev); box.append(wrap); drawPrev();
+    const row = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = fn; row.append(b); return b; };
+    B('🧹 모두 지우기', '#fff', () => { clothW.edit = clothBlank(); refillLife(); });
+    if (cur && clothOk(cur.d)) B('↩️ 저장한 그림으로', '#fff', () => { clothW.edit = cur.d; refillLife(); });
+    B('💾 저장하고 입기', '#FFD23C', async () => { const d = E.join(''); if (!/[1-9a-f]/.test(d)) { toast('🎨 한 칸 이상 색칠해요', 'warn'); return; } const r = await backend.clothSet({ n: (rosterOf(me) || cleanNick(myNick) || '친구').slice(0, 12), d, at: backend.now() }); if (!r?.ok) { toast('⚠️ 저장하지 못했어요 (database.rules.json)', 'warn'); return; } bag.cf = 'm'; saveBag(); playSfx('coin'); toast(isTeacher ? '👕 저장했어요' : '👕 저장했어요! 내 화면에선 바로 입었어요 · 선생님이 승인하면 친구들에게도 보여요', 'success'); refillLife(); });
+    B('👕 옷가게로', '#fff', () => openWardrobe());
+    box.append(row);
+  });
+}
+function clothVotes() { const ok = new Set(Object.entries(S.cloth || {}).filter(([, c]) => c?.ok).map(([u]) => u)), n = {}; for (const [v, t] of Object.entries(S.clothv || {})) if (ok.has(t) && t !== v) n[t] = (n[t] | 0) + 1; return n; }
+function clothContest() {
+  openLife('👗 옷 디자인 공모전', (box) => {
+    box.textContent = ''; const me = backend.uid, V = clothVotes(), myV = S.clothv?.[me] || '', L = Object.entries(S.cloth || {}).filter(([, c]) => c?.ok && clothOk(c.d)).sort((a, b) => (V[b[0]] | 0) - (V[a[0]] | 0) || b[1].at - a[1].at);
+    box.append(el2('p', 'hint', '친구들이 만든 옷 앞판이에요. 마음에 드는 디자인에 👍 한 표! (내 것 빼고 · 다시 누르면 취소) 선생님이 고른 디자인은 🏪 옷가게 상품이 돼요.'));
+    { const r = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', '🎨 내 옷 디자인하기'), b2 = el2('button', 'btn', '👕 옷가게'); b1.style.background = '#FFD23C'; b2.style.background = '#fff'; b1.onclick = clothDesigner; b2.onclick = openWardrobe; r.append(b1, b2); box.append(r); }
+    if (!L.length) box.append(el2('p', 'hint', '아직 승인된 디자인이 없어요'));
+    const grid = el2('div', 'lp-grid');
+    L.forEach(([u, c], i) => { const card = el2('div', 'lp-card' + (S.clothshop?.[u] ? ' done' : '')), own = u === me, n = V[u] | 0; card.append(clothCanvas(c.d, 80), el2('div', 'lp-name', `${i < 3 && n ? ['🥇', '🥈', '🥉'][i] + ' ' : ''}${c.n || '친구'}`), el2('div', 'lp-sub', `👍 ${n}${S.clothshop?.[u] ? ' · 🏪 상품' : ''}`));
+      const b = el2('button', 'btn lp-btn', myV === u ? '👍 내 표' : '👍 한 표'); b.style.background = myV === u ? '#FFD23C' : ''; b.disabled = own || isTeacher; b.onclick = async () => { const r = await backend.clothvSet(myV === u ? null : u); if (r?.ok) { playSfx('pick'); refillLife(); } else toast('⚠️ 투표하지 못했어요 (database.rules.json)', 'warn'); }; card.append(b);
+      if (isTeacher) { const s2 = el2('button', 'btn lp-btn', S.clothshop?.[u] ? '🏪 상품 내리기' : '🏪 옷가게 상품으로'); s2.style.background = '#E3F0FF'; s2.onclick = () => adminDo({ [`clothshop/${u}`]: S.clothshop?.[u] ? null : { n: c.n || '친구', d: c.d, at: Date.now() } }, S.clothshop?.[u] ? '🏪 상품에서 내렸어요' : `🏪 ${c.n || '친구'}의 옷이 옷가게 상품이 됐어요 (디자이너 🐚 ${CLOTH_RW})`).then(() => setTimeout(refillLife, 300)); const x = el2('button', 'btn lp-btn', '🙈 승인 취소'); x.style.background = '#fff'; x.onclick = () => adminDo({ [`cloth/${u}/ok`]: null }, '🙈 승인을 취소했어요').then(() => setTimeout(refillLife, 300)); card.append(s2, x); }
+      grid.append(card); });
+    box.append(grid);
+    if (isTeacher) { const W = Object.entries(S.cloth || {}).filter(([, c]) => c && !c.ok && clothOk(c.d)); box.append(el2('h3', 'lp-sec', `🧑‍🏫 승인 기다리는 디자인 ${W.length}개`)); const g2 = el2('div', 'lp-grid');
+      for (const [u, c] of W) { const card = el2('div', 'lp-card'); card.append(clothCanvas(c.d, 80), el2('div', 'lp-name', c.n || '친구')); const y = el2('button', 'btn lp-btn', '✅ 승인'), n = el2('button', 'btn lp-btn', '🗑️ 지우기'); y.style.background = '#CDEFC2'; n.style.background = '#fff'; y.onclick = () => adminDo({ [`cloth/${u}/ok`]: 1 }, '✅ 승인했어요 (친구들 화면에도 보여요)').then(() => setTimeout(refillLife, 300)); n.onclick = () => adminDo({ [`cloth/${u}`]: null }, '🗑️ 지웠어요').then(() => setTimeout(refillLife, 300)); card.append(y, n); g2.append(card); }
+      box.append(g2); const r = el2('div', 'row-center wrap'), vr = el2('button', 'btn', '🔄 투표 새로 시작'); vr.style.background = '#fff'; vr.onclick = () => adminDo({ clothv: null }, '🔄 공모전 투표를 새로 시작해요').then(() => setTimeout(refillLife, 300)); r.append(vr); box.append(r); }
+  });
+}
+function clothWardrobeBox(box) { // 👕 옷가게 맨 위: 내가 만든 옷 · 친구들이 만든 옷(상품)
+  const me = backend.uid, mine = S.cloth?.[me], cf = clothMyCode();
+  box.append(el2('h3', 'lp-sec', `🎨 옷 앞판 · 지금: ${cf === 'm' ? '내가 만든 옷' : cf ? `${S.clothshop?.[cf.slice(2)]?.n || '친구'}의 옷` : '기본'}`));
+  const r = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', mine ? '🎨 내 옷 고치기' : '🎨 내 옷 디자인하기'), b2 = el2('button', 'btn', '👗 디자인 공모전'); b1.style.background = '#FFD23C'; b2.style.background = '#FFE1EC'; b1.onclick = clothDesigner; b2.onclick = clothContest; r.append(b1, b2); box.append(r);
+  const grid = el2('div', 'lp-grid'), wear = (code) => { bag.cf = bag.cf === code ? '' : code; saveBag(); playSfx('pick'); refillLife(); };
+  if (mine && clothOk(mine.d)) { const card = el2('div', 'lp-card' + (cf === 'm' ? ' done' : '')); card.append(clothCanvas(mine.d, 64), el2('div', 'lp-name', '내가 만든 옷'), el2('div', 'lp-sub', mine.ok ? '✅ 친구들에게도 보여요' : '⏳ 승인 전 (나만 보여요)')); const b = el2('button', 'btn lp-btn', cf === 'm' ? '벗기' : '입기'); b.onclick = () => wear('m'); card.append(b); grid.append(card); }
+  for (const [k, it] of Object.entries(S.clothshop || {})) { if (!clothOk(it?.d)) continue; const own = !!bag.own['cs:' + k] || k === me || isTeacher, on = cf === 's:' + k, card = el2('div', 'lp-card' + (on ? ' done' : '')); card.append(clothCanvas(it.d, 64), el2('div', 'lp-name', `${it.n || '친구'}의 옷`), el2('div', 'lp-sub', own ? (on ? '입는 중' : '내 옷') : `🐚 ${CLOTH_PRICE}`));
+    const b = el2('button', 'btn lp-btn', own ? (on ? '벗기' : '입기') : '사기'); b.disabled = !own && (bag.shell || 0) < CLOTH_PRICE; b.onclick = () => { if (!own) { if ((bag.shell || 0) < CLOTH_PRICE) return; bag.shell -= CLOTH_PRICE; bag.own['cs:' + k] = true; bag.cf = 's:' + k; saveBag(); playSfx('coin'); toast(`👕 ${it.n || '친구'}의 옷을 샀어요! 바로 입었어요`, 'success'); refillLife(); return; } if (k === me || isTeacher) bag.own['cs:' + k] = true; wear('s:' + k); }; card.append(b); grid.append(card); }
+  if (grid.children.length) box.append(grid); else box.append(el2('p', 'hint', '아직 만든 옷이 없어요. 🎨 내 옷을 디자인해 봐요!'));
+}
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
 // state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
 function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
@@ -27415,7 +27504,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); try { clothTick(dt); } catch (e) { console.warn('cloth', e); } mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt); mtFunTick(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
