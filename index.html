@@ -17344,7 +17344,7 @@ function initThxUI() {
    ===================================================================== */
 const ROOMS = {
   lib: { name: '펫 체육관', icon: '🐾', cx: 1450, cz: 0, w: 28, d: 22, wall: 0xFFF1D6, floor: 0xD8C4A0, site: 'Library' }, // 예전 도서관 (독서 책상은 왼쪽 구석에)
-  art: { name: '미술 공방', icon: '🎨', cx: 1510, cz: 0, w: 20, d: 15, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' },
+  art: { name: '미술 공방 · 옷 디자인 공모전', icon: '🎨', cx: 1510, cz: 0, w: 32, d: 24, wall: 0xFFE8F2, floor: 0xE8D8C0, site: 'Art' }, // 👗 1102d 넓혀서 공모전장 (예전 20×15)
   gym: { name: '아쿠아센터', icon: '🏊', cx: 1580, cz: 0, w: 30, d: 30, wall: 0xDDF3FF, floor: 0xE8F2F4, site: 'Playground' }, // 🏊 1028o 체육관 → 수영장 (방 id는 그대로)
   gh: { name: '온실 도서관', icon: '📚', cx: 1510, cz: 40, w: 22, d: 16, wall: 0xE6F7EE, floor: 0xB89B74, site: 'Garden' },
   sd: { name: '서당', icon: '📜', cx: 1450, cz: 40, w: 20, d: 16, wall: 0xF1E4CC, floor: 0xC79A64, site: 'hv:seodang' },
@@ -17778,6 +17778,7 @@ function buildInteriors() {
     }
     box(g, 3, 1, 1, 0xC8D2DC, cx + 8, 0.5, cz - 4); for (let k = 0; k < 6; k++) cyl(g, 0.18, 0.3, [0xE2584A, 0xFFD23C, 0x4A9AE8, 0x5FBE5A, 0x9A5AD8, 0xFF9AC0][k], cx + 6.9 + k * 0.45, 1.15, cz - 4, o);
     bld.artLabel = makeLabel(g, [''], 0.8, cx + 6, 4.4, cz - d / 2 + 1);
+    clothHallBuild(g, r); // 👗 1102d 옷 디자인 공모전장
   }
   // ---------- 🏊 아쿠아센터 (1028o · 예전 배드민턴 체육관) ----------
   { const r = ROOMS.reef; buildReef(g, r); } // 🤿 1031b
@@ -17873,7 +17874,7 @@ async function enterRoom(id) {
   if (id === 'gym') { toast('🏊 아쿠아센터예요! 물에 들어가 헤엄치고, 🏁 출발대 옆에서 수영 경주, 🌊 사다리 옆에서 워터슬라이드!', 'info'); return; }
   if (id.startsWith('bg')) { toast(`🎲 ${r.icon} ${r.name}이에요! 탁자 앞에서 E를 누르면 앉아서 게임을 해요`, 'info'); return; }
   if (id[0] === 'p' && id[1] === 'g') { const L = pbLeaders()[+id[2] - 1]; toast(`🏟️ ${id[2]}단계 펫 체육관! ${L.icon} ${L.n}에게 도전해요`, 'info'); return; }
-  toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 내 그림 작업실이에요! 이젤 앞에서 E를 눌러 그림을 그려요', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
+  toast({ lib: '🐾 펫 체육관이에요! 🩺 펫 센터에서 펫을 데려오고, 💿 기술머신으로 기술을 배우고, 🏆 관장에게 도전해요 (📒 독서 책상은 광장으로 옮겼어요)', art: '🎨 미술 공방이에요! 이젤에서 그림 · 🎨 디자인 책상에서 내 옷 · 양쪽 마네킹은 👗 옷 디자인 공모전', gh: '🌿 온실이에요! 오른쪽 씨앗 가게에서 씨앗을 심고, 하루에 한 번 물을 줘요', gym: '🏸 체육관이에요! 배드민턴 코트가 2면 있어요. 코트 옆에서 E를 눌러 단식·복식을 시작해요', sd: '📜 서당이에요! 빈 방석 앞에서 E를 누르면 자리에 앉아 사회 학습지를 펴요', etr: '🏋️ 영어 훈련소예요! 빈 책상 앞에서 E를 누르면 자리에 앉아 레슨별 학습지와 쓰기 연습을 펴요', era: `🏛️ ${hist.curEra ? `${hist.curEra.icon} ${hist.curEra.b} 안이에요! 왼쪽 책상에서 ${hist.curEra.n} 시대 퀴즈를 풀어요` : '시대관이에요'}` }[id], 'info');
 }
 async function exitRoom(id) {
   if (hv.travel) return;
@@ -18176,6 +18177,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102d', d: '11월 2일', items: ['🎨 미술 공방이 넓어져 👗 옷 디자인 공모전장이 됐어요! 양쪽 마네킹에 👍 많은 순서로 친구 옷이 걸리고, 🎨 디자인 책상 · 👗 공모전 게시판이 있어요', '🏁 공모전이 끝나면 🥇 1등 옷이 🏪 옷가게 상품이 돼요'] },
   { id: '1102c', d: '11월 2일', items: ['👕 내가 만든 옷! 👕 옷가게 → 🎨 내 옷 디자인하기에서 옷 앞판을 16×16 칸으로 그려 입어요 (선생님이 ✅ 승인하면 친구들에게도 보여요)', '👗 옷 디자인 공모전: 마음에 드는 친구 옷에 👍 한 표 · 선생님이 고른 옷은 🏪 옷가게 상품(🐚 30)이 되고 디자이너는 🐚 50'] },
   { id: '1102b', d: '11월 2일', items: ['⭐ 능력치 레벨 경험치가 바뀌었어요: 최고 Lv12까지 누적 1000점 (예전 2000점) · 모은 경험치는 그대로라 레벨이 올라가요'] },
   { id: '1102a', d: '11월 2일', items: ['🎭 꿈끼 골든벨이 영어 골든벨과 완전히 따로예요 · 관리화면 꿈나무 무대 → 🔔 꿈끼 골든벨에서 대본 문제를 바로 만들어 공연장에서 열어요', '🔔 영어 골든벨 진행 창에는 이제 영어 문제만 (회차·문제 은행·칭호가 섞이지 않아요)'] },
@@ -27108,7 +27110,7 @@ function clothVotes() { const ok = new Set(Object.entries(S.cloth || {}).filter(
 function clothContest() {
   openLife('👗 옷 디자인 공모전', (box) => {
     box.textContent = ''; const me = backend.uid, V = clothVotes(), myV = S.clothv?.[me] || '', L = Object.entries(S.cloth || {}).filter(([, c]) => c?.ok && clothOk(c.d)).sort((a, b) => (V[b[0]] | 0) - (V[a[0]] | 0) || b[1].at - a[1].at);
-    box.append(el2('p', 'hint', '친구들이 만든 옷 앞판이에요. 마음에 드는 디자인에 👍 한 표! (내 것 빼고 · 다시 누르면 취소) 선생님이 고른 디자인은 🏪 옷가게 상품이 돼요.'));
+    box.append(el2('p', 'hint', '친구들이 만든 옷 앞판이에요. 마음에 드는 디자인에 👍 한 표! (내 것 빼고 · 다시 누르면 취소) 공모전이 끝나면 🥇 1등 옷은 🏪 옷가게 상품이 돼요. 🎨 미술 공방 마네킹에도 걸려요.'));
     { const r = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', '🎨 내 옷 디자인하기'), b2 = el2('button', 'btn', '👕 옷가게'); b1.style.background = '#FFD23C'; b2.style.background = '#fff'; b1.onclick = clothDesigner; b2.onclick = openWardrobe; r.append(b1, b2); box.append(r); }
     if (!L.length) box.append(el2('p', 'hint', '아직 승인된 디자인이 없어요'));
     const grid = el2('div', 'lp-grid');
@@ -27119,8 +27121,38 @@ function clothContest() {
     box.append(grid);
     if (isTeacher) { const W = Object.entries(S.cloth || {}).filter(([, c]) => c && !c.ok && clothOk(c.d)); box.append(el2('h3', 'lp-sec', `🧑‍🏫 승인 기다리는 디자인 ${W.length}개`)); const g2 = el2('div', 'lp-grid');
       for (const [u, c] of W) { const card = el2('div', 'lp-card'); card.append(clothCanvas(c.d, 80), el2('div', 'lp-name', c.n || '친구')); const y = el2('button', 'btn lp-btn', '✅ 승인'), n = el2('button', 'btn lp-btn', '🗑️ 지우기'); y.style.background = '#CDEFC2'; n.style.background = '#fff'; y.onclick = () => adminDo({ [`cloth/${u}/ok`]: 1 }, '✅ 승인했어요 (친구들 화면에도 보여요)').then(() => setTimeout(refillLife, 300)); n.onclick = () => adminDo({ [`cloth/${u}`]: null }, '🗑️ 지웠어요').then(() => setTimeout(refillLife, 300)); card.append(y, n); g2.append(card); }
-      box.append(g2); const r = el2('div', 'row-center wrap'), vr = el2('button', 'btn', '🔄 투표 새로 시작'); vr.style.background = '#fff'; vr.onclick = () => adminDo({ clothv: null }, '🔄 공모전 투표를 새로 시작해요').then(() => setTimeout(refillLife, 300)); r.append(vr); box.append(r); }
+      box.append(g2); const r = el2('div', 'row-center wrap'), cl = el2('button', 'btn', '🏁 공모전 마감 (1등 → 옷가게 상품)'), vr = el2('button', 'btn', '🔄 투표만 새로 시작'); cl.style.background = '#FFD23C'; vr.style.background = '#fff'; cl.onclick = clothClose; vr.onclick = () => adminDo({ clothv: null }, '🔄 공모전 투표를 새로 시작해요').then(() => setTimeout(refillLife, 300)); r.append(cl, vr); box.append(r); }
   });
+}
+// ---------- 👗 1102d 미술 공방 공모전장: 양쪽 벽 마네킹 10개(👍 많은 순) · 🎨 디자인 책상 · 👗 공모전 게시판 ----------
+const clothHall = { mq: [], key: '', it: null };
+function clothHallBuild(g, r) {
+  const { cx, cz, w, d } = r, o = { solid: false };
+  box(g, 6.4, 0.04, d - 4, 0xF6E3EE, cx - w / 2 + 3.4, 0.125, cz, o); box(g, 6.4, 0.04, d - 4, 0xF6E3EE, cx + w / 2 - 3.4, 0.125, cz, o); // 런웨이 카펫
+  for (let k = 0; k < 10; k++) { const side = k < 5 ? 1 : -1, j = k % 5, x = cx + side * (w / 2 - 2.2), z = cz - d / 2 + 4 + j * 4, m = new THREE.Group(); m.position.set(x, 0, z); m.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2; g.add(m);
+    cyl(m, 0.5, 0.2, 0xD8CFC0, 0, 0.1, 0); cyl(m, 0.06, 0.6, 0x8A8A94, 0, 0.5, 0, o); box(m, 0.8, 0.66, 0.5, 0xFFFFFF, 0, 1.15, 0); mesh(SPH_LO, m, 0.36, 0.42, 0.36, 0xF4EEE6, 0, 1.75, 0, o);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.64), new THREE.MeshLambertMaterial({ transparent: true, alphaTest: 0.5 })); p.position.set(0, 1.15, 0.256); p.visible = false; m.add(p);
+    const lab = makeLabel(m, ['빈 마네킹'], 0.5, 0, 2.45, 0); clothHall.mq.push({ m, p, lab, x, z }); }
+  // 🎨 디자인 책상 · 👗 공모전 게시판 (앞쪽 양옆)
+  box(g, 2.4, 0.9, 1.2, 0xB07C50, cx + 9, 0.45, cz + d / 2 - 4); box(g, 2.2, 0.04, 1.0, 0xFFFFFF, cx + 9, 0.92, cz + d / 2 - 4, o); makeLabel(g, ['🎨 옷 디자인 책상', '내 옷 앞판 그리기 · E'], 0.7, cx + 9, 2.4, cz + d / 2 - 4);
+  for (const sx of [-1.2, 1.2]) cyl(g, 0.08, 2.4, 0x7A4A2A, cx - 9 + sx, 1.2, cz + d / 2 - 4.6); box(g, 2.8, 1.6, 0.12, 0xFFE1EC, cx - 9, 1.9, cz + d / 2 - 4.6); makeLabel(g, ['👗 옷 디자인 공모전', '👍 투표 · 1등은 옷가게 상품! · E'], 0.7, cx - 9, 3.3, cz + d / 2 - 4.6);
+  addInteract({ pos: new V3(cx + 9, 1, cz + d / 2 - 2.6), r: 2.0, text: () => roomNow() === 'art' ? ['🎨 옷 디자인 책상', '내 옷 앞판 그리기'] : null, run: () => clothDesigner() });
+  addInteract({ pos: new V3(cx - 9, 1, cz + d / 2 - 3.2), r: 2.0, text: () => roomNow() === 'art' ? ['👗 옷 디자인 공모전', '친구 옷에 👍 투표'] : null, run: () => clothContest() });
+  clothHall.it = addInteract({ pos: new V3(0, -99, 0), r: 1.9, text: () => clothHall.act?.[0] || null, run: () => clothHall.act?.[1]?.() });
+}
+function clothHallTick() {
+  if (!clothHall.mq.length || roomNow() !== 'art') { if (clothHall.it) clothHall.it.pos.set(0, -99, 0); return; }
+  const V = clothVotes(), L = Object.entries(S.cloth || {}).filter(([, c]) => c?.ok && clothOk(c.d)).sort((a, b) => (V[b[0]] | 0) - (V[a[0]] | 0) || b[1].at - a[1].at).slice(0, 10), k = JSON.stringify(L.map(([u, c]) => [u, c.d.length, c.at, V[u] | 0, !!S.clothshop?.[u]]));
+  if (k !== clothHall.key) { clothHall.key = k; clothHall.mq.forEach((M, i) => { const e = L[i]; if (!e) { M.p.visible = false; M.lab.userData.set(['빈 마네킹']); return; } const [u, c] = e, n = V[u] | 0; M.p.material.map = clothTex(c.d); M.p.material.needsUpdate = true; M.p.visible = true; M.lab.userData.set([`${i < 3 && n ? ['🥇', '🥈', '🥉'][i] + ' ' : ''}${c.n || '친구'} 👍${n}${S.clothshop?.[u] ? ' 🏪' : ''}`]); }); }
+  const p = player.pos; let best = null, bd = 99; L.forEach(([u, c], i) => { const M = clothHall.mq[i], dd = Math.hypot(p.x - M.x, p.z - M.z); if (dd < 3.2 && dd < bd) { bd = dd; best = [[`👗 ${c.n || '친구'}의 옷 · 👍 ${V[u] | 0}`, '공모전에서 투표하기'], () => clothContest()]; } });
+  clothHall.act = best; if (best) clothHall.it.pos.set(p.x, 1, p.z); else clothHall.it.pos.set(0, -99, 0);
+}
+async function clothClose() { // 🏁 공모전 마감: 1등(같은 표면 모두) → 옷가게 상품 · 투표 새로
+  const V = clothVotes(), mx = Math.max(0, ...Object.values(V)); if (!mx) { toast('👍 아직 표를 받은 디자인이 없어요', 'info'); return; }
+  const win = Object.entries(S.cloth || {}).filter(([u, c]) => c?.ok && clothOk(c.d) && (V[u] | 0) === mx);
+  if (!await confirmAction({ title: '공모전을 마감할까요?', body: `🥇 ${win.map(([, c]) => c.n || '친구').join(', ')} (👍 ${mx})의 옷이 옷가게 상품이 되고, 투표는 새로 시작해요.`, okText: '마감!' })) return;
+  const upd = { clothv: null }; for (const [u, c] of win) if (!S.clothshop?.[u]) upd[`clothshop/${u}`] = { n: c.n || '친구', d: c.d, at: Date.now() };
+  if (await adminDo(upd, `🏁 공모전 마감! 🥇 ${win.map(([, c]) => c.n || '친구').join(', ')}의 옷이 🏪 옷가게 상품이 됐어요`)) { playSfx('fanfare'); setTimeout(refillLife, 300); }
 }
 function clothWardrobeBox(box) { // 👕 옷가게 맨 위: 내가 만든 옷 · 친구들이 만든 옷(상품)
   const me = backend.uid, mine = S.cloth?.[me], cf = clothMyCode();
@@ -27504,7 +27536,7 @@ function loop() {
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
   if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
-  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); try { clothTick(dt); } catch (e) { console.warn('cloth', e); } mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
+  updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); try { clothTick(dt); clothHallTick(); } catch (e) { console.warn('cloth', e); } mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt); mtFunTick(dt);
   if (joined) updateHanok(dt);
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
