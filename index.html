@@ -18177,6 +18177,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102e', d: '11월 2일', items: ['📋 선생님 「반 전체 오늘의 할 일」에서 학생마다 미션별 진행(예: 🔤 7/10)과 진행률 %, 미션별 완료 인원·평균이 보여요'] },
   { id: '1102d', d: '11월 2일', items: ['🎨 미술 공방이 넓어져 👗 옷 디자인 공모전장이 됐어요! 양쪽 마네킹에 👍 많은 순서로 친구 옷이 걸리고, 🎨 디자인 책상 · 👗 공모전 게시판이 있어요', '🏁 공모전이 끝나면 🥇 1등 옷이 🏪 옷가게 상품이 돼요'] },
   { id: '1102c', d: '11월 2일', items: ['👕 내가 만든 옷! 👕 옷가게 → 🎨 내 옷 디자인하기에서 옷 앞판을 16×16 칸으로 그려 입어요 (선생님이 ✅ 승인하면 친구들에게도 보여요)', '👗 옷 디자인 공모전: 마음에 드는 친구 옷에 👍 한 표 · 선생님이 고른 옷은 🏪 옷가게 상품(🐚 30)이 되고 디자이너는 🐚 50'] },
   { id: '1102b', d: '11월 2일', items: ['⭐ 능력치 레벨 경험치가 바뀌었어요: 최고 Lv12까지 누적 1000점 (예전 2000점) · 모은 경험치는 그대로라 레벨이 올라가요'] },
@@ -25002,7 +25003,7 @@ function dqList() { // 오늘 미션: 날짜 + 기기 번호로 정해요 (하�
   const st = [...DQ_STUDY], a = st.splice(h % st.length, 1)[0], b = dqScrMust() ? DQ_SCR3 : st[(h >>> 3) % st.length], FUN = DQ_FUN.filter(m => !m.from || dayNum() >= m.from), f = FUN[(h >>> 6) % FUN.length];
   const L = [a, b, f]; const W = S.wrap; if (W?.n && Math.floor(((W.at || W.n * 1000) + 9 * 3600000) / 86400000) === dayNum()) L.push(DQ_WRAP); if (S.scr?.x && !dqScrMust()) L.push(DQ_SCR); return L;
 }
-function dqCode() { if (bag.dq?.d !== dayNum()) return ''; return dqList().map(m => `${m.id}:${bag.dq.done?.[m.id] ? 1 : 0}`).join(',').slice(0, 80); } // 📋 1028m 선생님 현황판으로 (earn/{uid}/q)
+function dqCode() { if (bag.dq?.d !== dayNum()) return ''; return dqList().map(m => { const g = Math.max(1, Math.min(999, m.goal | 0)), c = bag.dq.done?.[m.id] ? g : Math.max(0, Math.min(g, m.cur() | 0)); return `${m.id}:${c}/${g}`; }).join(',').slice(0, 120); } // 📋 1102e 진행 정도까지 (id:지금/목표) // 📋 1028m 선생님 현황판으로 (earn/{uid}/q)
 const dqDone = (m) => Math.min(m.goal, m.cur() | 0) >= m.goal;
 function dqTick() {
   if (!joined || isTeacher || !stateLoaded) { dqBtn(false); return; }
@@ -25050,17 +25051,22 @@ function openDqAdmin() {
   openLife('📋 반 전체 오늘의 할 일', (box) => {
     box.textContent = ''; const today = dayNum(), all = dqAdm.data;
     if (!all) { box.append(el2('p', 'vempty', dqAdm.busy ? '불러오는 중…' : '⚠️ 기록을 불러오지 못했어요 (database.rules.json을 다시 게시해 주세요)')); return; }
-    const rows = Object.entries(all).filter(([, v]) => v && v.d === today && typeof v.q === 'string').map(([u, v]) => { const ms = v.q ? v.q.split(',').map(x => x.split(':')).filter(x => DQ_ALL[x[0]]) : [], base = ms.filter(([id]) => !DQ_ALL[id].bonus), n = base.filter(x => x[1] === '1').length; return { u, nm: v.r || v.n || '친구', ms, n, total: base.length, w: v.w | 0, at: v.at | 0 }; });
-    rows.sort((a, b) => b.n - a.n || b.w - a.w || a.nm.localeCompare(b.nm, 'ko'));
+    const rows = Object.entries(all).filter(([, v]) => v && v.d === today && typeof v.q === 'string').map(([u, v]) => { const ms = (v.q ? v.q.split(',').map(x => x.split(':')).filter(x => DQ_ALL[x[0]]) : []).map(([id, p]) => { const m = DQ_ALL[id]; if (/^\d+\/\d+$/.test(p || '')) { const [c, g] = p.split('/').map(Number); return { id, c: Math.min(c, g), g, ok: c >= g }; } const ok = p === '1', g = m.goal || 1; return { id, c: ok ? g : null, g, ok }; }), base = ms.filter(x => !DQ_ALL[x.id].bonus), n = base.filter(x => x.ok).length, pc = base.length ? Math.round(base.reduce((t, x) => t + (x.c == null ? (x.ok ? 1 : 0) : x.c / x.g), 0) / base.length * 100) : 0; return { u, nm: v.r || v.n || '친구', ms, n, total: base.length, pc, w: v.w | 0, at: v.at | 0 }; }); // 📋 1102e 미션마다 지금/목표
+    rows.sort((a, b) => b.n - a.n || b.pc - a.pc || b.w - a.w || a.nm.localeCompare(b.nm, 'ko'));
     const doneAll = rows.filter(r => r.total && r.n >= r.total).length, some = rows.filter(r => r.n > 0 && r.n < r.total).length, zero = rows.filter(r => !r.n).length;
     const ros = rosterNames(), seen = new Set(rows.map(r => r.nm)), absent = ros.filter(nm => !seen.has(nm));
     box.append(el2('p', 'lp-big', `✅ 모두 완료 ${doneAll}명 · 🟡 하는 중 ${some}명 · ⬜ 아직 ${zero}명`));
+    { const avg = rows.length ? Math.round(rows.reduce((t, r) => t + r.pc, 0) / rows.length) : 0, bar = el2('div', ''); bar.style.cssText = 'height:14px;border-radius:7px;background:#EEE;overflow:hidden;margin:2px 0 6px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${avg}%;background:linear-gradient(90deg,#FFD23C,#5FBE5A)`; bar.append(f); box.append(el2('p', 'hint', `📊 반 전체 평균 진행 ${avg}% (미션마다 지금/목표를 모은 값)`), bar); }
+    { const by = {}; for (const r of rows) for (const x of r.ms) { const B = by[x.id] ||= { n: 0, ok: 0, sum: 0, cnt: 0 }; B.n++; if (x.ok) B.ok++; if (x.c != null) { B.sum += x.c / x.g; B.cnt++; } }
+      const tb = el2('div', ''); tb.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:6px';
+      for (const [id, B] of Object.entries(by)) { const m = DQ_ALL[id], c = el2('div', ''); c.style.cssText = 'background:#fff;border-radius:10px;padding:6px 8px;box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:14px;text-align:left'; c.title = m.t; c.append(el2('b', '', `${m.icon} ${m.t.length > 12 ? m.t.slice(0, 12) + '…' : m.t}`), el2('div', 'hint', `완료 ${B.ok}/${B.n}명${B.cnt ? ` · 평균 ${Math.round(B.sum / B.cnt * 100)}%` : ''}`)); tb.append(c); }
+      if (rows.length) { box.append(el2('h3', 'lp-sec', '🎯 미션별 (오늘 그 미션을 받은 학생 기준)')); box.append(tb); } }
     box.append(el2('p', 'hint', `학생 기기가 15초 안에 알려 줘요 · 이 화면은 15초마다 새로 불러와요 (마지막 ${new Date(dqAdm.at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })})`));
     const rb = el2('button', 'btn', '🔄 지금 새로 불러오기'); rb.style.background = '#fff'; rb.onclick = dqAdmLoad; const r0 = el2('div', 'row-center'); r0.append(rb); box.append(r0);
     const list = el2('div', '');
     for (const r of rows) { const row = el2('div', ''); row.style.cssText = `display:flex;align-items:center;gap:8px;padding:7px 10px;margin:4px 0;border-radius:10px;background:${r.total && r.n >= r.total ? '#E5F7DF' : r.n ? '#FFF6D8' : '#fff'};box-shadow:0 1px 3px rgba(0,0,0,.06)`;
-      const nm = el2('b', '', r.nm); nm.style.cssText = 'min-width:84px'; const ic = el2('span', '', r.ms.map(([id, ok]) => `${ok === '1' ? '✅' : '⬜'}${DQ_ALL[id].icon}`).join(' ')); ic.style.cssText = 'flex:1;font-size:17px'; ic.title = r.ms.map(([id, ok]) => `${DQ_ALL[id].t} ${ok === '1' ? '완료' : '아직'}`).join('\n');
-      const Z2 = ssnNow(); row.append(nm, ic, el2('span', '', `${r.n}/${r.total}`), el2('span', 'hint', `⭐${r.w}${Z2 && !Z2.finale ? ` · ${Z2.icon}${sspLv(r.u, Z2.id)}단계` : ''}`)); list.append(row); }
+      const nm = el2('b', '', r.nm); nm.style.cssText = 'min-width:84px'; const ic = el2('span', ''); ic.style.cssText = 'flex:1;display:flex;flex-wrap:wrap;gap:4px'; for (const x of r.ms) { const m = DQ_ALL[x.id], ch = el2('span', '', `${x.ok ? '✅' : x.c ? '🟡' : '⬜'}${m.icon} ${x.c == null ? (x.ok ? '완료' : '') : `${x.c}/${x.g}`}`); ch.title = `${m.t} · ${x.c == null ? (x.ok ? '완료' : '아직 (학생이 새로고침하면 숫자가 보여요)') : `${x.c}/${x.g}`}`; ch.style.cssText = `font-size:14px;padding:2px 7px;border-radius:10px;white-space:nowrap;background:${x.ok ? '#CDEFC2' : x.c ? '#FFE9A8' : '#F0F0F0'}${m.bonus ? ';outline:1px dashed #C8A0E0' : ''}`; ic.append(ch); }
+      const Z2 = ssnNow(); row.append(nm, ic, el2('span', '', `${r.n}/${r.total} · ${r.pc}%`), el2('span', 'hint', `⭐${r.w}${Z2 && !Z2.finale ? ` · ${Z2.icon}${sspLv(r.u, Z2.id)}단계` : ''}`)); list.append(row); }
     if (!rows.length) list.append(el2('p', 'vempty', '오늘 기록이 아직 없어요. 학생들이 들어오면 15초 안에 나와요 (학생도 새 버전으로 새로고침해야 해요)'));
     box.append(list);
     if (absent.length) box.append(el2('p', 'hint', `👀 오늘 아직 기록이 없는 학생 (명단 기준): ${absent.join(', ')}`));
