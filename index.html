@@ -1497,7 +1497,7 @@
     <div id="tpScap"></div>
 
     <h3>⭐ 능력치 레벨 경험치</h3>
-    <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv12). 능력치는 하루 상한(위에서 정해요)까지 오르니, 합계 2000점이면 매일 꾸준히 할 때 약 한 달이에요. Lv3·6·9·12마다 성 공방전 역할이 강해져요.</p>
+    <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv12). 능력치는 하루 상한(위에서 정해요)까지 오르니, 기본 합계 1000점이에요 (하루 상한까지 매일 꾸준히 하면 약 2~3주). Lv3·6·9·12마다 성 공방전 역할이 강해져요.</p>
     <div id="tpLvx"></div>
 
     <h3>💬 채팅</h3>
@@ -18170,6 +18170,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102b', d: '11월 2일', items: ['⭐ 능력치 레벨 경험치가 바뀌었어요: 최고 Lv12까지 누적 1000점 (예전 2000점) · 모은 경험치는 그대로라 레벨이 올라가요'] },
   { id: '1102a', d: '11월 2일', items: ['🎭 꿈끼 골든벨이 영어 골든벨과 완전히 따로예요 · 관리화면 꿈나무 무대 → 🔔 꿈끼 골든벨에서 대본 문제를 바로 만들어 공연장에서 열어요', '🔔 영어 골든벨 진행 창에는 이제 영어 문제만 (회차·문제 은행·칭호가 섞이지 않아요)'] },
   { id: '1101p', d: '11월 1일', items: ['⚔️ 공방전 이름표에 맡은 직업 과목 레벨만 떠요 (보병·장군 🧮수학 · 궁병·대장장이 🔤영어 · 왕 🏛️사회)', '🏹 궁병 새 스킬 「멀티샷」(R · 15초마다): 부채꼴로 화살이 한꺼번에! 영어력 단계마다 한 발씩 늘어요 (5~9발)'] },
   { id: '1101n', d: '11월 1일', items: ['💬 채팅 말풍선이 이름표 · 칭호에 가려지지 않게 맨 위로 올라가요', '✨ 선생님 머리 위 「🧑‍🏫 선생님」 글자 대신 몸 주변에 금빛 아우라가 자동으로 나와요'] },
@@ -20932,7 +20933,7 @@ function fillLvxAdmin() { // ⭐ 레벨별 필요 경험치 (state/lvx/1..12)
   const ins = [], sum = el2('p', 'hint', ''), upd = () => { let t = 0; ins.forEach((x, i) => { t += Math.max(1, +x.value || 0); x.nextSibling.textContent = `누적 ${t}`; }); { const dm = statMax('eng'); sum.textContent = `최고 Lv${LV_MAX}까지 합계 ${t}점 · 하루 ${dm}점씩(영어 상한)이면 약 ${Math.ceil(t / dm)}일`; } };
   for (let i = 1; i <= LV_MAX; i++) { const c = el2('label', ''); c.style.cssText = 'display:flex;flex-direction:column;font-size:13px;gap:2px'; const inp = document.createElement('input'); inp.type = 'number'; inp.min = '1'; inp.max = '5000'; inp.className = 'tinput'; inp.value = lvNeed(i); inp.oninput = upd; ins.push(inp);
     c.append(el2('b', '', `Lv${i - 1} → Lv${i}${i % 3 === 0 ? ' ⚔️' : ''}`), inp, el2('span', 'hint', '')); grid.append(c); }
-  const save = el2('button', 'btn', '💾 저장'), def = el2('button', 'btn', '↺ 기본값 (합계 2000)'); save.style.background = '#FFD23C'; def.style.background = '#fff';
+  const save = el2('button', 'btn', '💾 저장'), def = el2('button', 'btn', '↺ 기본값 (합계 1000)'); save.style.background = '#FFD23C'; def.style.background = '#fff';
   save.onclick = () => { const u = {}; ins.forEach((x, i) => { u[`lvx/${i + 1}`] = Math.min(5000, Math.max(1, Math.round(+x.value || 1))); }); adminDo(u, '⭐ 능력치 레벨 경험치를 바꿨어요'); };
   def.onclick = () => { ins.forEach((x, i) => { x.value = LV_DEF[i]; }); upd(); };
   const row = el2('div', 'row-center wrap'); row.append(def, save); box.append(grid, sum, row); upd();
@@ -21865,8 +21866,9 @@ const STATS = {
 };
 bag.stat ||= {};
 if (bag.statV !== 2) { bag.stat = {}; bag.statV = 2; saveBag(); } // 1017d 능력치 레벨 새로 시작 (누적 경험치 · 최고 Lv12)
-const LV_MAX = 12, LV_DEF = [30, 50, 70, 90, 110, 130, 160, 190, 230, 270, 310, 360]; // 레벨마다 필요한 경험치 (기본 합계 2000 · 선생님이 관리 화면에서 바꿔요: state/lvx)
-const lvNeed = (i) => { const v = +S.lvx?.[i]; return v >= 1 && v <= 5000 ? Math.round(v) : LV_DEF[i - 1]; }; // i = 1..12
+const LV_MAX = 12, LV_DEF = [15, 25, 35, 45, 55, 65, 80, 95, 115, 135, 155, 180], LV_OLD = [30, 50, 70, 90, 110, 130, 160, 190, 230, 270, 310, 360]; // 레벨마다 필요한 경험치 (1102b 기본 합계 1000 · 예전 2000 · 선생님이 관리 화면에서 바꿔요: state/lvx)
+const lvxOld = () => { const L = S.lvx || {}; return Object.keys(L).length > 0 && LV_OLD.every((x, j) => +L[j + 1] === x); }; // 예전 기본값(2000)을 저장해 둔 반은 새 기본값으로
+const lvNeed = (i) => { if (lvxOld()) return LV_DEF[i - 1]; const v = +S.lvx?.[i]; return v >= 1 && v <= 5000 ? Math.round(v) : LV_DEF[i - 1]; }; // i = 1..12
 const lvAt = (i) => { let t = 0; for (let j = 1; j <= i; j++) t += lvNeed(j); return t; }; // Lv i까지 누적 경험치
 const statExp = (k) => bag.stat?.[k] || 0;
 const statLv = (k) => { const e = statExp(k); let lv = 0; while (lv < LV_MAX && e >= lvAt(lv + 1)) lv++; return lv; };
