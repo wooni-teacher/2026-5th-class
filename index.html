@@ -4024,20 +4024,21 @@ const shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: tr
 const SHADOW = new THREE.CircleGeometry(0.55, 20);
 function makeHair(p, style, col) { // 머리 모양 (모두 기본 도형)
   const o = { solid: false, surf: null };
+  const T = (m) => { m.userData.hairTop = 1; return m; }; // 🎩 1102m 모자를 쓰면 숨기는 윗머리
   if (style === 4) { // 모자
-    box(p, 0.98, 0.3, 0.98, col, 0, 2.2, 0, o);
-    box(p, 0.8, 0.06, 0.42, col, 0, 2.08, 0.62, o);
-    ball(p, 0.1, 0xFFFFFF, 0, 2.38, 0, o);
+    T(box(p, 0.98, 0.3, 0.98, col, 0, 2.2, 0, o));
+    T(box(p, 0.8, 0.06, 0.42, col, 0, 2.08, 0.62, o));
+    T(ball(p, 0.1, 0xFFFFFF, 0, 2.38, 0, o));
     for (const x of [-0.47, 0.47]) box(p, 0.08, 0.3, 0.6, 0x3B2A22, x, 1.9, -0.1, o);
     return;
   }
-  box(p, 0.98, 0.26, 0.98, col, 0, 2.18, 0, o);          // 위
+  T(box(p, 0.98, 0.26, 0.98, col, 0, 2.18, 0, o));       // 위
   box(p, 0.98, 0.62, 0.16, col, 0, 1.88, -0.43, o);      // 뒤
-  box(p, 0.98, 0.14, 0.12, col, 0, 2.03, 0.44, o);       // 앞머리
+  T(box(p, 0.98, 0.14, 0.12, col, 0, 2.03, 0.44, o));    // 앞머리
   for (const x of [-0.47, 0.47]) box(p, 0.08, 0.36, 0.9, col, x, 1.95, 0, o); // 옆
   if (style === 1) { // 뾰족 머리
     for (const [x, z] of [[-0.25, 0.15], [0.2, 0.2], [0, -0.2], [0.3, -0.25], [-0.3, -0.2]]) {
-      box(p, 0.22, 0.22, 0.22, col, x, 2.36, z, { ...o, ry: 0.78 }).rotation.x = 0.78;
+      T(box(p, 0.22, 0.22, 0.22, col, x, 2.36, z, { ...o, ry: 0.78 })).rotation.x = 0.78;
     }
   } else if (style === 2) { // 양갈래
     for (const x of [-0.62, 0.62]) { ball(p, 0.2, 0xFF7AA8, x, 1.98, -0.15, o); box(p, 0.24, 0.5, 0.24, col, x, 1.68, -0.15, o); }
@@ -13707,17 +13708,17 @@ function setTeachLook(a, code) {
   const ring = new THREE.Mesh(TL_RING, tlRingMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); // 금빛 고리
   a.tlHat = null;
   if (hat === 1) a.tlHat = add(a.head, g => { // 학사모
-    box(g, 0.72, 0.26, 0.72, 0x2B2B36, 0, 2.4, 0, o); box(g, 1.2, 0.06, 1.2, 0x2B2B36, 0, 2.55, 0, { solid: false, ry: 0.2 });
-    ball(g, 0.06, GOLD, 0, 2.6, 0, o); box(g, 0.55, 0.03, 0.03, GOLD, 0.3, 2.59, 0, o); cyl(g, 0.025, 0.3, GOLD, 0.58, 2.44, 0, o); ball(g, 0.07, GOLD, 0.58, 2.28, 0, o);
+    box(g, 1.06, 0.34, 1.06, 0x2B2B36, 0, 2.15, 0, o); box(g, 1.36, 0.06, 1.36, 0x2B2B36, 0, 2.35, 0, { solid: false, ry: 0.2 }); /* 🎩 1102m 머리를 감싸게 */
+    ball(g, 0.06, GOLD, 0, 2.4, 0, o); box(g, 0.6, 0.03, 0.03, GOLD, 0.32, 2.39, 0, o); cyl(g, 0.025, 0.32, GOLD, 0.64, 2.23, 0, o); ball(g, 0.07, GOLD, 0.64, 2.06, 0, o);
   });
   else if (hat === 2) a.tlHat = add(a.head, g => { // 밀짚모자
-    cyl(g, 0.8, 0.05, 0xE9C77B, 0, 2.33, 0, o); cyl(g, 0.48, 0.3, 0xE9C77B, 0, 2.5, 0, o); cyl(g, 0.49, 0.09, 0xE2584A, 0, 2.41, 0, o);
-    ball(g, 0.1, 0xFF8FB3, 0.42, 2.44, 0.2, o); ball(g, 0.05, GOLD, 0.45, 2.46, 0.27, o);
+    box(g, 1.04, 0.42, 1.04, 0xE9C77B, 0, 2.19, 0, o); box(g, 0.9, 0.07, 0.9, 0xE9C77B, 0, 2.43, 0, o); cyl(g, 1.0, 0.05, 0xE9C77B, 0, 2.0, 0, o); box(g, 1.08, 0.11, 1.08, 0xE2584A, 0, 2.07, 0, o); /* 🎩 1102m */
+    ball(g, 0.1, 0xFF8FB3, 0.5, 2.12, 0.42, o); ball(g, 0.05, GOLD, 0.54, 2.14, 0.5, o);
   });
   else if (hat === 3) a.tlHat = add(a.head, g => { // 왕관
-    cyl(g, 0.42, 0.22, GOLD, 0, 2.42, 0, o);
-    for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; mesh(TL_CONE, g, 0.09, 0.22, 0.09, GOLD, Math.sin(t) * 0.36, 2.63, Math.cos(t) * 0.36, o); ball(g, 0.04, 0xFFFFFF, Math.sin(t) * 0.36, 2.76, Math.cos(t) * 0.36, o); }
-    ball(g, 0.07, 0xE2584A, 0, 2.42, 0.43, o); ball(g, 0.06, 0x4A9AE8, 0.3, 2.42, 0.3, o); ball(g, 0.06, 0x5FBE5A, -0.3, 2.42, 0.3, o);
+    cyl(g, 0.46, 0.22, GOLD, 0, 2.43, 0, o);
+    for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; mesh(TL_CONE, g, 0.09, 0.22, 0.09, GOLD, Math.sin(t) * 0.4, 2.64, Math.cos(t) * 0.4, o); ball(g, 0.04, 0xFFFFFF, Math.sin(t) * 0.4, 2.77, Math.cos(t) * 0.4, o); }
+    ball(g, 0.07, 0xE2584A, 0, 2.43, 0.47, o); ball(g, 0.06, 0x4A9AE8, 0.33, 2.43, 0.33, o); ball(g, 0.06, 0x5FBE5A, -0.33, 2.43, 0.33, o);
   });
   let cape = null;
   if (item === 1) add(a.head, g => { // 안경
@@ -13734,7 +13735,7 @@ function setTeachLook(a, code) {
     g.position.set(0, 1.24, -0.27);
     box(g, 0.9, 1.0, 0.05, 0xD84A4A, 0, -0.5, 0, o); box(g, 0.92, 0.07, 0.07, GOLD, 0, -0.98, 0, o); box(g, 0.94, 0.08, 0.1, GOLD, 0, 0, 0.02, o);
   });
-  a.tl = { objs, cape, trail: !!trail, tt: 0, last: a.g.position.clone(), sp: 0 };
+  a.tl = { objs, cape, trail: !!trail, tt: 0, last: a.g.position.clone(), sp: 0 }; a.tlCover = hat === 1 || hat === 2; /* 🎩 1102m */
 }
 function updateTeachLooks(dt) {
   if (!joined) return;
@@ -14706,27 +14707,28 @@ function setWear(a, code) {
   if (a.wearKey === key) return;
   if (a.wearObjs) { for (const x of a.wearObjs) x.parent?.remove(x); a.wearObjs = null; } a.wearSpin = null; a.wearFx = 0;
   if (a.tlHat) a.tlHat.visible = !wearDecode(code)[0]; // 🧑‍🏫 옷장 모자를 쓰면 선생님 모자는 잠깐 벗어요
-  a.wearKey = key; if (!code) { if (!a.tcode && a.badge) a.badge.position.y = 2.75; return; }
+  a.wearKey = key; a.wearCover = false; if (!code) { if (!a.tcode && a.badge) a.badge.position.y = 2.75; return; }
   const [h, f, bk] = wearDecode(code), o = { solid: false }, objs = [], GOLD = 0xFFC93C; if (!WEAR.h[h] && h) return; 
   const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
   if (h) { // 옷장 모자 (선생님도 보여요 · 선생님 모자는 위에서 숨겨요)
     if (a.badge) a.badge.position.y = h === 9 ? 3.45 : h === 10 || h === 13 ? 3.2 : 3.02;
     add(a.head, g => {
-      if (h === 1) { mesh(SPH_MID, g, 0.52, 0.34, 0.52, 0x3E6AC8, 0, 2.25, 0, o); box(g, 0.62, 0.05, 0.4, 0x3E6AC8, 0, 2.2, 0.5, o); ball(g, 0.07, 0xFFFFFF, 0, 2.58, 0, o); }
-      else if (h === 2) { cyl(g, 0.78, 0.05, 0xE9C77B, 0, 2.33, 0, o); cyl(g, 0.46, 0.28, 0xE9C77B, 0, 2.48, 0, o); cyl(g, 0.47, 0.08, 0x5FBE5A, 0, 2.39, 0, o); }
-      else if (h === 3) { for (const s of [-1, 1]) mesh(WEAR_CONE, g, 0.16, 0.34, 0.1, 0xFF7AA8, s * 0.2, 2.42, 0.1, { solid: false, rz: s * Math.PI / 2 }); ball(g, 0.09, 0xE2587A, 0, 2.42, 0.1, o); }
-      else if (h === 4) { mesh(SPH_MID, g, 0.52, 0.42, 0.52, 0xE2584A, 0, 2.2, 0, o); cyl(g, 0.53, 0.14, 0xFFFFFF, 0, 2.1, 0, o); ball(g, 0.14, 0xFFFFFF, 0, 2.66, 0, o); }
-      else if (h === 5) { for (let k = 0; k < 8; k++) { const t = k / 8 * Math.PI * 2; ball(g, 0.1, [0xFF8FB3, 0xFFD23C, 0xFFFFFF, 0xB58CF0][k % 4], Math.sin(t) * 0.45, 2.34, Math.cos(t) * 0.45, o); } }
-      else if (h === 6) { cyl(g, 0.62, 0.05, 0x2B2B36, 0, 2.33, 0, o); cyl(g, 0.38, 0.55, 0x2B2B36, 0, 2.6, 0, o); cyl(g, 0.39, 0.1, 0xE2584A, 0, 2.4, 0, o); }
-      else if (h === 7) { for (const s of [-1, 1]) { mesh(SPH_LO, g, 0.1, 0.34, 0.07, 0xFFFFFF, s * 0.2, 2.62, 0, o); mesh(SPH_LO, g, 0.05, 0.24, 0.04, 0xFFB3C7, s * 0.2, 2.62, 0.04, o); } box(g, 0.9, 0.05, 0.08, 0xFFFFFF, 0, 2.32, 0, o); }
-      else if (h === 8) { mesh(WEAR_CONE, g, 0.12, 0.14, 0.12, GOLD, 0.32, 2.3, 0.3, o); ball(g, 0.1, GOLD, 0.32, 2.3, 0.3, { solid: false, emissive: 0.5 }); }
-      else if (h === 14) { box(g, 0.94, 0.13, 0.94, 0xF4F1EA, 0, 1.97, 0, o); for (const [col, t0] of [[0xC8343A, 0], [0x1F4FA0, Math.PI]]) mesh(new THREE.CircleGeometry(1, 18, t0, Math.PI), g, 0.075, 0.075, 1, col, 0, 1.97, 0.476, o); box(g, 0.18, 0.12, 0.06, 0xF4F1EA, -0.32, 1.9, -0.5, { solid: false, rz: 0.5 }); box(g, 0.18, 0.12, 0.06, 0xF4F1EA, -0.2, 1.84, -0.5, { solid: false, rz: -0.4 }); } // 🇰🇷 태극 머리띠 (뒤로 묶은 끈)
-      else if (h >= 11 && h <= 13) { const col = [0x2F7FD8, 0xF27BA8, 0x6B7F96][h - 11]; mesh(SPH_MID, g, 0.5, 0.36, 0.5, col, 0, 2.18, 0, o); box(g, 0.92, 0.12, 0.92, col, 0, 2.12, 0, o); if (h === 13) { mesh(WEAR_CONE, g, 0.08, 0.36, 0.22, 0x55697F, 0, 2.6, -0.05, o); box(g, 0.93, 0.05, 0.2, 0xEAF2F8, 0, 2.08, 0.38, o); } else ball(g, 0.08, 0xFFFFFF, 0.3, 2.32, 0.28, o); } // 🏊 수영모
-      else if (h === 10) { mesh(SPH_MID, g, 0.55, 0.42, 0.55, 0xF08A24, 0, 2.32, 0, o); for (let k = 0; k < 6; k++) { const t = k / 6 * Math.PI * 2; box(g, 0.04, 0.38, 0.04, 0xD9701A, Math.sin(t) * 0.5, 2.32, Math.cos(t) * 0.5, o); } cyl(g, 0.06, 0.2, 0x5A7A2E, 0, 2.78, 0, o); mesh(CONE, g, 0.12, 0.05, 0.08, 0x4FA84A, 0.1, 2.82, 0, { solid: false, rz: -1.2 }); } // 🎃 호박 모자 (시즌 1)
+      const crown = (col, top, w = 1.06, lo = 1.98) => { box(g, w, top - lo, w, col, 0, (top + lo) / 2, 0, o); box(g, w - 0.14, 0.07, w - 0.14, col, 0, top + 0.035, 0, o); }; // 🎩 1102m 머리를 감싸는 모자 몸통 (얼굴 위 이마선부터)
+      if (h === 1) { crown(0x3E6AC8, 2.34); box(g, 0.34, 0.16, 0.02, 0xFFFFFF, 0, 2.18, 0.535, o); box(g, 0.88, 0.06, 0.52, 0x2F57A8, 0, 2.0, 0.78, o); ball(g, 0.07, 0xFFFFFF, 0, 2.42, 0, o); } // 🧢 야구모자
+      else if (h === 2) { crown(0xE9C77B, 2.4, 1.04); box(g, 1.08, 0.11, 1.08, 0x5FBE5A, 0, 2.06, 0, o); cyl(g, 1.0, 0.05, 0xE9C77B, 0, 2.0, 0, o); ball(g, 0.1, 0xFF8FB3, 0.5, 2.1, 0.42, o); } // 👒 밀짚모자 (넓은 챙)
+      else if (h === 3) { for (const s2 of [-1, 1]) mesh(WEAR_CONE, g, 0.16, 0.34, 0.1, 0xFF7AA8, s2 * 0.2, 2.42, 0.2, { solid: false, rz: s2 * Math.PI / 2 }); ball(g, 0.09, 0xE2587A, 0, 2.42, 0.2, o); } // 🎀 리본 (머리 위)
+      else if (h === 4) { crown(0xE2584A, 2.4); for (const y of [2.18, 2.3]) box(g, 1.08, 0.025, 1.08, 0xC8443A, 0, y, 0, o); box(g, 1.11, 0.17, 1.11, 0xFFFFFF, 0, 2.05, 0, o); ball(g, 0.16, 0xFFFFFF, 0, 2.58, 0, o); } // 🧶 털모자 (흰 접단 · 방울)
+      else if (h === 5) { for (let k = 0; k < 10; k++) { const t = k / 10 * Math.PI * 2; ball(g, 0.1, [0xFF8FB3, 0xFFD23C, 0xFFFFFF, 0xB58CF0][k % 4], Math.sin(t) * 0.53, 2.35, Math.cos(t) * 0.53, o); } } // 🌸 꽃관
+      else if (h === 6) { box(g, 1.06, 0.66, 1.06, 0x2B2B36, 0, 2.31, 0, o); box(g, 1.09, 0.12, 1.09, 0xE2584A, 0, 2.08, 0, o); box(g, 1.46, 0.05, 1.46, 0x2B2B36, 0, 2.0, 0, o); box(g, 0.94, 0.06, 0.94, 0x2B2B36, 0, 2.67, 0, o); } // 🎩 신사 모자
+      else if (h === 7) { for (const s2 of [-1, 1]) { mesh(SPH_LO, g, 0.1, 0.34, 0.07, 0xFFFFFF, s2 * 0.22, 2.66, 0, o); mesh(SPH_LO, g, 0.05, 0.24, 0.04, 0xFFB3C7, s2 * 0.22, 2.66, 0.04, o); } box(g, 1.04, 0.06, 0.1, 0xFFFFFF, 0, 2.35, 0, o); for (const s2 of [-1, 1]) box(g, 0.06, 0.32, 0.1, 0xFFFFFF, s2 * 0.52, 2.2, 0, o); } // 🐰 토끼 귀 머리띠
+      else if (h === 8) { mesh(WEAR_CONE, g, 0.12, 0.14, 0.12, GOLD, 0.36, 2.36, 0.4, o); ball(g, 0.1, GOLD, 0.36, 2.36, 0.4, { solid: false, emissive: 0.5 }); } // 🌟 별 머리핀
+      else if (h === 14) { box(g, 1.08, 0.13, 1.08, 0xF4F1EA, 0, 1.99, 0, o); for (const [col, t0] of [[0xC8343A, 0], [0x1F4FA0, Math.PI]]) mesh(new THREE.CircleGeometry(1, 18, t0, Math.PI), g, 0.075, 0.075, 1, col, 0, 1.99, 0.545, o); box(g, 0.18, 0.12, 0.06, 0xF4F1EA, -0.32, 1.92, -0.56, { solid: false, rz: 0.5 }); box(g, 0.18, 0.12, 0.06, 0xF4F1EA, -0.2, 1.86, -0.56, { solid: false, rz: -0.4 }); } // 🇰🇷 태극 머리띠 (뒤로 묶은 끈)
+      else if (h >= 11 && h <= 13) { const col = [0x2F7FD8, 0xF27BA8, 0x6B7F96][h - 11]; crown(col, 2.32, 1.04, 1.95); if (h === 13) { mesh(WEAR_CONE, g, 0.1, 0.38, 0.24, 0x55697F, 0, 2.55, -0.05, o); for (let k = 0; k < 5; k++) mesh(WEAR_CONE, g, 0.05, 0.08, 0.03, 0xFFFFFF, -0.3 + k * 0.15, 1.95, 0.53, { solid: false, rz: Math.PI }); } else ball(g, 0.08, 0xFFFFFF, 0.36, 2.2, 0.53, o); } // 🏊 수영모
+      else if (h === 10) { crown(0xF08A24, 2.38, 1.1); for (const s2 of [-1, 1]) for (const k of [-0.2, 0.2]) { box(g, 0.05, 0.4, 0.02, 0xD9701A, k, 2.18, s2 * 0.555, o); box(g, 0.02, 0.4, 0.05, 0xD9701A, s2 * 0.555, 2.18, k, o); } cyl(g, 0.07, 0.22, 0x5A7A2E, 0, 2.53, 0, o); mesh(CONE, g, 0.14, 0.05, 0.09, 0x4FA84A, 0.12, 2.6, 0, { solid: false, rz: -1.2 }); } // 🎃 호박 모자 (시즌 1)
       else if (h === 9) { // 👑 챔피언 왕관 (⭐ 랭킹 보상): 보석 박힌 금관 + 머리 위에서 도는 별
-        const go = { solid: false, emissive: 0.35 }; cyl(g, 0.44, 0.24, GOLD, 0, 2.38, 0, go); cyl(g, 0.45, 0.06, 0xFFF2A8, 0, 2.27, 0, go);
-        for (let k = 0; k < 6; k++) { const t = k / 6 * Math.PI * 2; mesh(WEAR_CONE, g, 0.1, 0.3, 0.1, GOLD, Math.sin(t) * 0.38, 2.64, Math.cos(t) * 0.38, go); ball(g, 0.06, [0xE2384A, 0x4A9AE8, 0x5FBE5A][k % 3], Math.sin(t) * 0.38, 2.82, Math.cos(t) * 0.38, { solid: false, emissive: 0.6 }); }
-        ball(g, 0.1, 0xE2384A, 0, 2.38, 0.45, { solid: false, emissive: 0.6 });
+        const go = { solid: false, emissive: 0.35 }; cyl(g, 0.46, 0.24, GOLD, 0, 2.44, 0, go); cyl(g, 0.47, 0.06, 0xFFF2A8, 0, 2.34, 0, go);
+        for (let k = 0; k < 6; k++) { const t = k / 6 * Math.PI * 2; mesh(WEAR_CONE, g, 0.1, 0.3, 0.1, GOLD, Math.sin(t) * 0.4, 2.7, Math.cos(t) * 0.4, go); ball(g, 0.06, [0xE2384A, 0x4A9AE8, 0x5FBE5A][k % 3], Math.sin(t) * 0.4, 2.88, Math.cos(t) * 0.4, { solid: false, emissive: 0.6 }); }
+        ball(g, 0.1, 0xE2384A, 0, 2.44, 0.47, { solid: false, emissive: 0.6 });
         const st = new THREE.Group(); st.position.set(0, 3.15, 0); g.add(st); for (const s of [1, -1]) mesh(WEAR_CONE, st, 0.16, 0.2, 0.05, 0xFFE066, 0, s * 0.1, 0, { solid: false, emissive: 0.8, rz: s > 0 ? 0 : Math.PI }); st.userData.spin = 2.4; (a.wearSpin ||= []).push(st);
       }
     });
@@ -14778,7 +14780,7 @@ function setWear(a, code) {
       a.wearFx = 9;
     }
   });
-  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
+  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; a.wearCover = [1, 2, 4, 6, 10, 11, 12, 13].includes(h); /* 🎩 1102m 머리를 감싸는 모자면 윗머리를 숨겨요 */ if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
 }
 function openWardrobe() {
   openLife('👕 옷가게 · 내 옷장', (box) => {
@@ -18252,6 +18254,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102m', d: '11월 3일', items: ['🎩 모자 디자인을 새로 다듬었어요: 야구모자·밀짚모자·털모자·신사 모자·호박 모자·수영모가 머리 속에 파묻히지 않고 머리를 감싸요 (모자를 쓰면 윗머리는 모자 안으로)', '🐰 토끼 귀·🎀 리본·🌸 꽃관·👑 왕관·🌟 별 핀도 머리 위에 또렷하게 올라가요'] },
   { id: '1102l', d: '11월 3일', items: ['🎤 영어 마을에 말하기 부스! 🔊 원어민 발음을 듣고 🎤 따라 말하면, 컴퓨터가 알아들은 단어는 초록 · 놓친 단어는 빨강 · ⭐1~3 (Lesson 7~12 문장·단어 · 크롬에서)', '통과할 때마다 🔤 영어력 +2 · 🐚 +1 (하루 15문장)'] },
   { id: '1102k', d: '11월 3일', items: ['🚂 하늘 기차에 탄 친구들이 기차에서 떨어져 보이던 문제를 고쳤어요 · 모든 화면에서 탄 친구를 칸 자리에 바로 앉혀요'] },
   { id: '1102j', d: '11월 3일', items: ['🚂 하늘 기차 · 🧑‍✈️ 선생님 기관사 모드! 선생님이 기관차를 몰고 하늘을 날면, 👥 모두 태우기로 반 친구들이 뒤 칸에 앉아 함께 날아요 · 선생님이 포털로 가면 기차째 같이 가요'] },
@@ -25721,8 +25724,8 @@ const TT_SILVER = () => new THREE.MeshStandardMaterial({ color: 0xD6DCE4, metaln
 function ttPart(par, geo, mat, x, y, z, rx = 0, ry = 0, rz = 0) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); par.add(m); return m; }
 function ttEosahwa(a, list) { // 🎓 어사화: 검은 사모 + 뒤에서 휘어져 늘어진 꽃가지
   const h = new THREE.Group(); a.head.add(h); list.push(h); const bk = new THREE.MeshStandardMaterial({ color: 0x1A1A20, roughness: 0.6 }), o = { solid: false, surf: null };
-  ttPart(h, new THREE.CylinderGeometry(0.42, 0.46, 0.26, 20), bk, 0, 2.36, 0); ttPart(h, new THREE.CylinderGeometry(0.3, 0.32, 0.26, 18), bk, 0, 2.6, -0.12); // 사모 몸 · 뒤 높은 부분
-  for (const s of [-1, 1]) { const w = ttPart(h, new THREE.CylinderGeometry(0.17, 0.17, 0.025, 16), bk, s * 0.6, 2.52, -0.16, 0, 0, Math.PI / 2); w.scale.set(1, 1, 0.55); } // 사모 뿔(옆 날개)
+  ttPart(h, new THREE.BoxGeometry(1.06, 0.36, 1.06), bk, 0, 2.16, 0); ttPart(h, new THREE.BoxGeometry(0.72, 0.3, 0.56), bk, 0, 2.48, -0.2); // 사모 몸(머리를 감싸게 · 1102m) · 뒤 높은 부분
+  for (const s of [-1, 1]) { const w = ttPart(h, new THREE.CylinderGeometry(0.17, 0.17, 0.025, 16), bk, s * 0.72, 2.42, -0.2, 0, 0, Math.PI / 2); w.scale.set(1, 1, 0.55); } // 사모 뿔(옆 날개)
   const cols = [0xFF7AA8, 0xFFE066, 0xE2384A, 0x7FC8F8, 0xFFFFFF, 0xB58CF0];
   for (const s of [-1, 1]) { const c = new THREE.CatmullRomCurve3([new V3(s * 0.1, 2.72, -0.22), new V3(s * 0.22, 3.12, -0.45), new V3(s * 0.38, 3.05, -0.8), new V3(s * 0.5, 2.55, -0.92), new V3(s * 0.54, 1.9, -0.8)]);
     const tube = new THREE.Mesh(new THREE.TubeGeometry(c, 24, 0.012, 4), new THREE.MeshStandardMaterial({ color: 0x3E8A44 })); h.add(tube);
@@ -25741,8 +25744,8 @@ function ttSash(a, list, silver) { // 🎗️ 금빛(은빛) 어깨띠: 왼쪽 �
 }
 function ttBellCrown(a, list, silver) { // 👑 금종 왕관
   const h = new THREE.Group(); a.head.add(h); list.push(h); const mat = silver ? TT_SILVER() : TT_GOLD();
-  ttPart(h, new THREE.CylinderGeometry(0.5, 0.52, 0.16, 24, 1, true), mat, 0, 2.37, 0).material.side = THREE.DoubleSide;
-  for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; ttPart(h, new THREE.ConeGeometry(0.06, 0.16, 8), mat, Math.sin(t) * 0.5, 2.52, Math.cos(t) * 0.5); }
+  ttPart(h, new THREE.CylinderGeometry(0.52, 0.54, 0.16, 24, 1, true), mat, 0, 2.4, 0).material.side = THREE.DoubleSide;
+  for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; ttPart(h, new THREE.ConeGeometry(0.06, 0.16, 8), mat, Math.sin(t) * 0.52, 2.56, Math.cos(t) * 0.52); }
   const b = egBell(); if (silver) b.traverse(x => { if (x.material) x.material = mat; }); b.scale.setScalar(0.3); b.position.set(0, 2.37, 0); h.add(b); a.ttBellSw = b;
 }
 function ttMiner(a, list, helmet) { // ⛏️ 금빛 안전모 + 등에 금곡괭이
@@ -25773,7 +25776,7 @@ function titleWear(a, f) { // f: 겉모습 종류 (+':n' = 머리 장식 빼기 
   if (k === 'tri') { if (head) ttEosahwa(a, L); ttSash(a, L, false); ttMiner(a, L, false); ttRing(a, L); }
   if (k === 'sum') ttDragon(a, L);
   if (k === 'egm') { const b = egBell(); b.scale.setScalar(0.2); b.position.set(0.5, 1.98, 0.12); b.rotation.z = -0.35; a.head.add(b); L.push(b); }
-  a.ttHead = head && ['gw', 'eg', 'egl', 'mr', 'tri'].includes(k);
+  a.ttHead = head && ['gw', 'eg', 'egl', 'mr', 'tri'].includes(k); a.ttCover = head && ['gw', 'mr', 'tri'].includes(k); /* 🎩 1102m 사모·안전모는 윗머리를 숨겨요 */
   if (a.badge) { if (a.ttHead) { if (a.ttBy == null) a.ttBy = a.badge.position.y; a.badge.position.y = Math.max(a.ttBy, 3.15); } else if (a.ttBy != null) { a.badge.position.y = a.ttBy; a.ttBy = null; } } // 머리 장식 위로 이름표를 올려요
 }
 // ---- ✨ 반짝이는 이름표 ----
@@ -25799,6 +25802,7 @@ function titleTick(dt) {
     if (a.ttWings) { const fl = Math.sin(performance.now() / 120) * 0.5; for (const w of a.ttWings) w.rotation.y = w.userData.s * (0.3 + fl); }
     if (a.ttBellSw) a.ttBellSw.rotation.z = Math.sin(performance.now() / 260) * 0.25;
     if (a.ttDrHead) a.ttDrHead.rotation.y = Math.sin(performance.now() / 900) * 0.5;
+    { const hide = !!((a.wearHatG?.visible && a.wearCover) || (a.tlHat?.visible && a.tlCover) || (a.ttHead && a.ttCover)); if (a.hairHid !== hide) { a.hairHid = hide; a.head?.traverse(m => { if (m.userData.hairTop) m.visible = !hide; }); } } // 🎩 1102m
     if (a.tlAura?.parent && a.g.visible !== false) tlAuraTick(a.tlAura);
     ttFx(a, a.ttOn && (me ? joined : !!data) && a.g.visible !== false, dt);
     if (a.badge) { let top = a.badge.position.y + a.badge.scale.y / 2; // 🏷️ 이름표 위로 차곡차곡 (선생님 표시 · 골든벨 도전 표시가 이름표와 겹치지 않게)
