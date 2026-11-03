@@ -4079,7 +4079,7 @@ function makeAvatar(animalIdx, shirtIdx, hairIdx = 0, hairColorIdx = 0, parent =
     box(head, 0.15, 0.07, 0.03, 0xFF9FA8, x * 1.55, 1.6, 0.455, o);                   // 볼
   }
   box(head, 0.14, 0.04, 0.03, 0xB5563F, 0, 1.57, 0.46, o);                            // 입
-  makeHair(head, hairIdx, hairCol);
+  { const n0 = head.children.length; makeHair(head, hairIdx, hairCol); head.children.slice(n0).forEach(m => { m.userData.hair = 1; }); } // 🎭 1102n 탈을 쓰면 머리카락을 모두 숨겨요
   const book = new THREE.Group();
   box(book, 0.62, 0.44, 0.08, C.red, 0, 0, 0, o);
   box(book, 0.54, 0.38, 0.04, C.white, 0, 0, 0.05, o);
@@ -14682,18 +14682,18 @@ const shellOf = (p) => Math.floor(p / 2);
 // ---------- 👕 옷가게 ----------
 const WEAR = {
   h: [null, { icon: '🧢', name: '야구모자', price: 150 }, { icon: '👒', name: '밀짚모자', price: 200 }, { icon: '🎀', name: '리본', price: 250 }, { icon: '🧶', name: '털모자', price: 300 },
-    { icon: '🌸', name: '꽃관', price: 400 }, { icon: '🎩', name: '신사 모자', price: 700 }, { icon: '🐰', name: '토끼 귀', price: 1000 }, { icon: '🌟', name: '별 머리핀', badge: 25 }, { icon: '👑', name: '챔피언 왕관', star: 1 }, { icon: '🎃', name: '호박 모자', ss: '🍂 시즌 1 · 6단계' }],
+    { icon: '🌸', name: '꽃관', price: 400 }, { icon: '🎩', name: '신사 모자', price: 700 }, { icon: '🐰', name: '토끼 귀', price: 1000 }, { icon: '🌟', name: '별 머리핀', badge: 25 }, { icon: '👑', name: '챔피언 왕관', star: 1 }, { icon: '🎃', name: '호박 탈', ss: '🍂 시즌 1 · 6단계' }],
   f: [null, { icon: '👓', name: '동그란 안경', price: 200 }, { icon: '⭐', name: '볼 스티커', price: 300 }, { icon: '🕶️', name: '선글라스', price: 400 }, { icon: '🥽', name: '물안경', price: 500 }, { icon: '✨', name: '반짝 안경', badge: 50 }, { icon: '🎭', name: '별빛 가면', star: 1 }, { icon: '💖', name: '하트 안경', star: 1 }],
   b: [null, { icon: '🎒', name: '책가방', price: 300 }, { icon: '🎈', name: '풍선', price: 500 }, { icon: '🦸', name: '망토', price: 800 }, { icon: '🐢', name: '거북 등껍질', price: 1200 }, { icon: '🪽', name: '날개', price: 1500 },
     { icon: '🏅', name: '금빛 망토', badge: 75 }, { icon: '🌈', name: '무지개 날개', badge: 100 }, { icon: '🔥', name: '불사조 날개', star: 1 }, { icon: '🌌', name: '은하 오라', star: 1 }, { icon: '🍁', name: '단풍 망토', ss: '🍂 시즌 1 · 9단계' }],
 };
 WEAR.f[8] = { icon: '🎤', name: '무대 헤드셋 마이크', ss: '🍂 시즌 1 · 3단계' }; // 🗓️ 1028n 시즌 보상 옷 (살 수 없어요)
 /* 🏊 1029a 수영 꾸미기: 수영모(모자) · 래쉬가드 + 수영 레깅스(등·옷 칸, 긴소매로 몸을 다 가려요) */
-WEAR.h[11] = { icon: '🏊', name: '파랑 수영모', price: 200 }; WEAR.h[12] = { icon: '🩷', name: '분홍 수영모', price: 200 }; WEAR.h[13] = { icon: '🦈', name: '상어 수영모', price: 600 };
+WEAR.h[11] = { icon: '🏊', name: '파랑 수영모', price: 200 }; WEAR.h[12] = { icon: '🩷', name: '분홍 수영모', price: 200 }; WEAR.h[13] = { icon: '🦈', name: '상어 탈 수영모', price: 600 };
 WEAR.b[11] = { icon: '🌊', name: '파랑 래쉬가드', price: 400, rash: [0x2F7FD8, 0x9FE3FF, 0x1F3F7A] }; WEAR.b[12] = { icon: '🌸', name: '분홍 래쉬가드', price: 400, rash: [0xF27BA8, 0xFFE0EC, 0x7A3A5A] };
 WEAR.b[13] = { icon: '🍋', name: '줄무늬 래쉬가드', price: 600, rash: [0xFFD23C, 0xFFFFFF, 0x2B4A7A], stripe: 1 }; WEAR.b[14] = { icon: '🦈', name: '상어 래쉬가드', price: 900, rash: [0x6B7F96, 0xEAF2F8, 0x2E3A48], fin: 1 }; WEAR.b[15] = { icon: '🐬', name: '돌고래 래쉬가드', price: 1200, rash: [0x3FC1C9, 0xFFFFFF, 0x1E5A7A], stripe: 2 };
 /* 🎭 1029d 꿈끼왕 칭호로 열리는 안중근 꾸미기 (살 수 없어요) */
-WEAR.h[14] = { icon: '🇰🇷', name: '태극 머리띠', kk: 1 }; WEAR.f[9] = { icon: '🥸', name: '안중근 콧수염', kk: 1 }; WEAR.b[16] = { icon: '🧥', name: '안중근 코트', kk: 1, rash: [0x262A33, 0xF4F1EA, 0x262A33], coat: 1 };
+WEAR.h[14] = { icon: '🇰🇷', name: '태극 머리띠', kk: 1 }; WEAR.h[15] = { icon: '🐻', name: '곰돌이 탈', price: 600 }; WEAR.h[16] = { icon: '🐸', name: '개구리 탈', price: 600 }; WEAR.h[17] = { icon: '🦁', name: '사자 탈', price: 900 }; WEAR.h[18] = { icon: '🦖', name: '공룡 탈', price: 1200 }; /* 🎭 1102n 얼굴을 감싸는 탈 */ WEAR.f[9] = { icon: '🥸', name: '안중근 콧수염', kk: 1 }; WEAR.b[16] = { icon: '🧥', name: '안중근 코트', kk: 1, rash: [0x262A33, 0xF4F1EA, 0x262A33], coat: 1 };
 const WEAR_SLOT = { h: '모자', f: '얼굴', b: '등·옷' };
 const wearOwn = (slot, i) => !!bag.own[slot + i] || (!!WEAR[slot][i]?.kk && (isTeacher || kkHas(backend?.uid) || !!tgOf(backend?.uid)?.kkw)) || (isTeacher && !!(WEAR[slot][i]?.star || WEAR[slot][i]?.badge || WEAR[slot][i]?.ss)); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 · 🏅 배지 옷을 모두 입어 봐요
 bag.own ||= {}; bag.wear ||= { h: 0, f: 0, b: 0 }; bag.seen ||= {}; bag.badges ||= {};
@@ -14707,11 +14707,11 @@ function setWear(a, code) {
   if (a.wearKey === key) return;
   if (a.wearObjs) { for (const x of a.wearObjs) x.parent?.remove(x); a.wearObjs = null; } a.wearSpin = null; a.wearFx = 0;
   if (a.tlHat) a.tlHat.visible = !wearDecode(code)[0]; // 🧑‍🏫 옷장 모자를 쓰면 선생님 모자는 잠깐 벗어요
-  a.wearKey = key; a.wearCover = false; if (!code) { if (!a.tcode && a.badge) a.badge.position.y = 2.75; return; }
+  a.wearKey = key; a.wearCover = false; a.wearTal = false; if (!code) { if (!a.tcode && a.badge) a.badge.position.y = 2.75; return; }
   const [h, f, bk] = wearDecode(code), o = { solid: false }, objs = [], GOLD = 0xFFC93C; if (!WEAR.h[h] && h) return; 
   const add = (parent, fn) => { const g = new THREE.Group(); parent.add(g); fn(g); objs.push(g); return g; };
   if (h) { // 옷장 모자 (선생님도 보여요 · 선생님 모자는 위에서 숨겨요)
-    if (a.badge) a.badge.position.y = h === 9 ? 3.45 : h === 10 || h === 13 ? 3.2 : 3.02;
+    if (a.badge) a.badge.position.y = h === 9 ? 3.45 : h === 10 || h === 13 || h >= 15 ? 3.2 : 3.02;
     add(a.head, g => {
       const crown = (col, top, w = 1.06, lo = 1.98) => { box(g, w, top - lo, w, col, 0, (top + lo) / 2, 0, o); box(g, w - 0.14, 0.07, w - 0.14, col, 0, top + 0.035, 0, o); }; // 🎩 1102m 머리를 감싸는 모자 몸통 (얼굴 위 이마선부터)
       if (h === 1) { crown(0x3E6AC8, 2.34); box(g, 0.34, 0.16, 0.02, 0xFFFFFF, 0, 2.18, 0.535, o); box(g, 0.88, 0.06, 0.52, 0x2F57A8, 0, 2.0, 0.78, o); ball(g, 0.07, 0xFFFFFF, 0, 2.42, 0, o); } // 🧢 야구모자
@@ -14723,8 +14723,21 @@ function setWear(a, code) {
       else if (h === 7) { for (const s2 of [-1, 1]) { mesh(SPH_LO, g, 0.1, 0.34, 0.07, 0xFFFFFF, s2 * 0.22, 2.66, 0, o); mesh(SPH_LO, g, 0.05, 0.24, 0.04, 0xFFB3C7, s2 * 0.22, 2.66, 0.04, o); } box(g, 1.04, 0.06, 0.1, 0xFFFFFF, 0, 2.35, 0, o); for (const s2 of [-1, 1]) box(g, 0.06, 0.32, 0.1, 0xFFFFFF, s2 * 0.52, 2.2, 0, o); } // 🐰 토끼 귀 머리띠
       else if (h === 8) { mesh(WEAR_CONE, g, 0.12, 0.14, 0.12, GOLD, 0.36, 2.36, 0.4, o); ball(g, 0.1, GOLD, 0.36, 2.36, 0.4, { solid: false, emissive: 0.5 }); } // 🌟 별 머리핀
       else if (h === 14) { box(g, 1.08, 0.13, 1.08, 0xF4F1EA, 0, 1.99, 0, o); for (const [col, t0] of [[0xC8343A, 0], [0x1F4FA0, Math.PI]]) mesh(new THREE.CircleGeometry(1, 18, t0, Math.PI), g, 0.075, 0.075, 1, col, 0, 1.99, 0.545, o); box(g, 0.18, 0.12, 0.06, 0xF4F1EA, -0.32, 1.92, -0.56, { solid: false, rz: 0.5 }); box(g, 0.18, 0.12, 0.06, 0xF4F1EA, -0.2, 1.86, -0.56, { solid: false, rz: -0.4 }); } // 🇰🇷 태극 머리띠 (뒤로 묶은 끈)
-      else if (h >= 11 && h <= 13) { const col = [0x2F7FD8, 0xF27BA8, 0x6B7F96][h - 11]; crown(col, 2.32, 1.04, 1.95); if (h === 13) { mesh(WEAR_CONE, g, 0.1, 0.38, 0.24, 0x55697F, 0, 2.55, -0.05, o); for (let k = 0; k < 5; k++) mesh(WEAR_CONE, g, 0.05, 0.08, 0.03, 0xFFFFFF, -0.3 + k * 0.15, 1.95, 0.53, { solid: false, rz: Math.PI }); } else ball(g, 0.08, 0xFFFFFF, 0.36, 2.2, 0.53, o); } // 🏊 수영모
-      else if (h === 10) { crown(0xF08A24, 2.38, 1.1); for (const s2 of [-1, 1]) for (const k of [-0.2, 0.2]) { box(g, 0.05, 0.4, 0.02, 0xD9701A, k, 2.18, s2 * 0.555, o); box(g, 0.02, 0.4, 0.05, 0xD9701A, s2 * 0.555, 2.18, k, o); } cyl(g, 0.07, 0.22, 0x5A7A2E, 0, 2.53, 0, o); mesh(CONE, g, 0.14, 0.05, 0.09, 0x4FA84A, 0.12, 2.6, 0, { solid: false, rz: -1.2 }); } // 🎃 호박 모자 (시즌 1)
+      const tal = (col, rim = col) => { // 🎭 1102n 얼굴을 감싸는 탈: 뒤·옆·위를 덮고 앞은 얼굴 창 (x ±0.42 · y 1.42~1.98)
+        box(g, 1.18, 1.24, 0.9, col, 0, 1.81, -0.16, o); box(g, 1.18, 0.44, 0.24, rim, 0, 2.21, 0.41, o); box(g, 1.18, 0.22, 0.24, rim, 0, 1.31, 0.41, o); for (const s2 of [-1, 1]) box(g, 0.17, 0.58, 0.24, rim, s2 * 0.505, 1.7, 0.41, o);
+        box(g, 1.04, 0.08, 0.8, col, 0, 2.47, -0.12, o); };
+      if (h === 10) { tal(0xF08A24, 0xE57A1A); for (const s2 of [-1, 1]) for (const k of [-0.36, 0, 0.36]) box(g, 0.02, 1.1, 0.04, 0xD9701A, s2 * 0.6, 1.82, k - 0.16, o);
+        for (const k of [-0.36, 0, 0.36]) box(g, 0.04, 1.1, 0.02, 0xD9701A, k, 1.82, -0.62, o); for (const k of [-0.3, 0.3]) box(g, 0.04, 0.4, 0.02, 0xD9701A, k, 2.21, 0.535, o);
+        cyl(g, 0.08, 0.26, 0x5A7A2E, 0, 2.62, -0.05, o); mesh(CONE, g, 0.16, 0.05, 0.1, 0x4FA84A, 0.14, 2.68, -0.05, { solid: false, rz: -1.2 }); } // 🎃 호박 탈
+      else if (h === 13) { tal(0x6B7F96, 0x6B7F96); box(g, 1.2, 0.24, 0.26, 0xEAF2F8, 0, 1.31, 0.42, o); // 🦈 상어 탈: 벌린 입 속에 얼굴 · 위아래 이빨 · 등지느러미 · 옆지느러미 · 꼬리
+        for (let k = 0; k < 6; k++) { mesh(WEAR_CONE, g, 0.05, 0.1, 0.03, 0xFFFFFF, -0.33 + k * 0.132, 1.94, 0.54, { solid: false, rz: Math.PI }); mesh(WEAR_CONE, g, 0.05, 0.1, 0.03, 0xFFFFFF, -0.33 + k * 0.132, 1.46, 0.54, o); }
+        for (const s2 of [-1, 1]) { ball(g, 0.07, 0x1E1E24, s2 * 0.42, 2.3, 0.5, o); mesh(WEAR_CONE, g, 0.1, 0.4, 0.26, 0x55697F, s2 * 0.68, 1.55, -0.1, { solid: false, rz: s2 * 1.9 }); }
+        mesh(WEAR_CONE, g, 0.12, 0.44, 0.34, 0x55697F, 0, 2.7, -0.2, o); mesh(WEAR_CONE, g, 0.16, 0.42, 0.06, 0x55697F, 0, 1.9, -0.78, { solid: false, rx: -Math.PI / 2 }); }
+      else if (h >= 11 && h <= 12) { const col = [0x2F7FD8, 0xF27BA8][h - 11]; crown(col, 2.32, 1.04, 1.95); ball(g, 0.08, 0xFFFFFF, 0.36, 2.2, 0.53, o); } // 🏊 수영모
+      else if (h === 15) { tal(0x9A6233, 0xE8C9A0); for (const s2 of [-1, 1]) { ball(g, 0.2, 0x9A6233, s2 * 0.46, 2.55, 0, o); ball(g, 0.11, 0xF2B8B0, s2 * 0.46, 2.55, 0.12, o); } } // 🐻 곰돌이 탈
+      else if (h === 16) { tal(0x5FBE5A, 0x8FD86A); for (const s2 of [-1, 1]) { ball(g, 0.2, 0xFFFFFF, s2 * 0.3, 2.56, 0.18, o); ball(g, 0.1, 0x1E1E24, s2 * 0.3, 2.58, 0.36, o); } box(g, 0.5, 0.05, 0.03, 0xE2584A, 0, 1.36, 0.535, o); } // 🐸 개구리 탈
+      else if (h === 17) { tal(0xF2C230, 0xF2C230); for (let k = 0; k < 14; k++) { const t = k / 14 * Math.PI * 2; box(g, 0.32, 0.32, 0.22, [0xC8661E, 0xE08A2A][k % 2], Math.sin(t) * 0.7, 1.75 + Math.cos(t) * 0.68, 0.32, { solid: false, rz: -t }); } for (const s2 of [-1, 1]) ball(g, 0.12, 0xF2C230, s2 * 0.4, 2.55, 0.2, o); } // 🦁 사자 탈 (갈기)
+      else if (h === 18) { tal(0x4FA84A, 0x6FC85A); for (let k = 0; k < 5; k++) mesh(WEAR_CONE, g, 0.12, 0.26, 0.12, 0xF2C230, 0, 2.6 - k * 0.12, 0.2 - k * 0.2, o); for (let k = 0; k < 6; k++) mesh(WEAR_CONE, g, 0.05, 0.1, 0.03, 0xFFFFFF, -0.33 + k * 0.132, 1.94, 0.54, { solid: false, rz: Math.PI }); for (const s2 of [-1, 1]) ball(g, 0.08, 0xFFE066, s2 * 0.4, 2.3, 0.53, o); } // 🦖 공룡 탈
       else if (h === 9) { // 👑 챔피언 왕관 (⭐ 랭킹 보상): 보석 박힌 금관 + 머리 위에서 도는 별
         const go = { solid: false, emissive: 0.35 }; cyl(g, 0.46, 0.24, GOLD, 0, 2.44, 0, go); cyl(g, 0.47, 0.06, 0xFFF2A8, 0, 2.34, 0, go);
         for (let k = 0; k < 6; k++) { const t = k / 6 * Math.PI * 2; mesh(WEAR_CONE, g, 0.1, 0.3, 0.1, GOLD, Math.sin(t) * 0.4, 2.7, Math.cos(t) * 0.4, go); ball(g, 0.06, [0xE2384A, 0x4A9AE8, 0x5FBE5A][k % 3], Math.sin(t) * 0.4, 2.88, Math.cos(t) * 0.4, { solid: false, emissive: 0.6 }); }
@@ -14780,7 +14793,7 @@ function setWear(a, code) {
       a.wearFx = 9;
     }
   });
-  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; a.wearCover = [1, 2, 4, 6, 10, 11, 12, 13].includes(h); /* 🎩 1102m 머리를 감싸는 모자면 윗머리를 숨겨요 */ if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
+  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; a.wearCover = [1, 2, 4, 6, 11, 12].includes(h); a.wearTal = h === 10 || h === 13 || h >= 15; /* 🎩 1102m 머리를 감싸는 모자면 윗머리를 숨겨요 */ if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
 }
 function openWardrobe() {
   openLife('👕 옷가게 · 내 옷장', (box) => {
@@ -18254,6 +18267,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102n', d: '11월 4일', items: ['🎭 얼굴을 감싸는 탈이 생겼어요! 🎃 호박 탈 · 🦈 상어 탈 수영모(벌린 입 속에 얼굴)가 탈 모양으로 바뀌고, 👕 옷가게에 🐻 곰돌이 탈 · 🐸 개구리 탈 · 🦁 사자 탈 · 🦖 공룡 탈', '🧢 야구모자 · 👒 밀짚모자 · 🧶 털모자 · 🎩 신사 모자는 그대로 모자'] },
   { id: '1102m', d: '11월 3일', items: ['🎩 모자 디자인을 새로 다듬었어요: 야구모자·밀짚모자·털모자·신사 모자·호박 모자·수영모가 머리 속에 파묻히지 않고 머리를 감싸요 (모자를 쓰면 윗머리는 모자 안으로)', '🐰 토끼 귀·🎀 리본·🌸 꽃관·👑 왕관·🌟 별 핀도 머리 위에 또렷하게 올라가요'] },
   { id: '1102l', d: '11월 3일', items: ['🎤 영어 마을에 말하기 부스! 🔊 원어민 발음을 듣고 🎤 따라 말하면, 컴퓨터가 알아들은 단어는 초록 · 놓친 단어는 빨강 · ⭐1~3 (Lesson 7~12 문장·단어 · 크롬에서)', '통과할 때마다 🔤 영어력 +2 · 🐚 +1 (하루 15문장)'] },
   { id: '1102k', d: '11월 3일', items: ['🚂 하늘 기차에 탄 친구들이 기차에서 떨어져 보이던 문제를 고쳤어요 · 모든 화면에서 탄 친구를 칸 자리에 바로 앉혀요'] },
@@ -25802,7 +25816,7 @@ function titleTick(dt) {
     if (a.ttWings) { const fl = Math.sin(performance.now() / 120) * 0.5; for (const w of a.ttWings) w.rotation.y = w.userData.s * (0.3 + fl); }
     if (a.ttBellSw) a.ttBellSw.rotation.z = Math.sin(performance.now() / 260) * 0.25;
     if (a.ttDrHead) a.ttDrHead.rotation.y = Math.sin(performance.now() / 900) * 0.5;
-    { const hide = !!((a.wearHatG?.visible && a.wearCover) || (a.tlHat?.visible && a.tlCover) || (a.ttHead && a.ttCover)); if (a.hairHid !== hide) { a.hairHid = hide; a.head?.traverse(m => { if (m.userData.hairTop) m.visible = !hide; }); } } // 🎩 1102m
+    { const all = !!(a.wearHatG?.visible && a.wearTal), hide = all || !!((a.wearHatG?.visible && a.wearCover) || (a.tlHat?.visible && a.tlCover) || (a.ttHead && a.ttCover)), key = hide ? (all ? 2 : 1) : 0; if (a.hairHid !== key) { a.hairHid = key; a.head?.traverse(m => { if (m.userData.hairTop) m.visible = !hide; else if (m.userData.hair) m.visible = !all; }); } } // 🎩 1102m 모자 · 🎭 1102n 탈
     if (a.tlAura?.parent && a.g.visible !== false) tlAuraTick(a.tlAura);
     ttFx(a, a.ttOn && (me ? joined : !!data) && a.g.visible !== false, dt);
     if (a.badge) { let top = a.badge.position.y + a.badge.scale.y / 2; // 🏷️ 이름표 위로 차곡차곡 (선생님 표시 · 골든벨 도전 표시가 이름표와 겹치지 않게)
