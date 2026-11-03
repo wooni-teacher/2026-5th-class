@@ -15271,7 +15271,7 @@ const PET_OUTFITS = [null,
   { k: 'flower', icon: '🌸', n: '꽃 화관', pr: 70, mon: [3, 4, 5], d: '봄 한정', hat: true },
   { k: 'sun', icon: '🕶️', n: '여름 선글라스', pr: 70, mon: [6, 7, 8], d: '여름 한정' },
   { k: 'gat', icon: '📜', n: '선비 갓', pr: 100, theme: '🏯 역사 마을 과거시험을 한 번 보면', ok: () => (bag.gwDone | 0) > 0, hat: true },
-  { k: 'miner', icon: '⛏️', n: '광부 헬멧', pr: 100, theme: '⛏️ 수학 마을 수레 레이스를 한 번 완주하면', ok: () => !!bag.cartBest, hat: true },
+  { k: 'miner', icon: '⛏️', n: '광부 헬멧', pr: 100, theme: '⛏️ 수학 광산 🚴 레일바이크를 한 번 완주하면', ok: () => !!bag.cartBest || !!bag.mrDone, hat: true },
   { k: 'liberty', icon: '🗽', n: '자유의 여신 왕관', pr: 100, theme: '🗽 영어 마을 보물찾기를 한 번 완주하면', ok: () => !!bag.huntEver || !!bag.hunt?.done, hat: true },
   { k: 'pirate', icon: '🏴‍☠️', n: '해적 모자', pr: 100, theme: '⛵ 배를 한 척 만들면', ok: () => boatCur() >= 0, hat: true },
   { k: 'maple', icon: '🍁', n: '단풍 스카프', ss: '🍂 시즌 1 패스 1단계' }, // 🗓️ 1028n 시즌 보상 (살 수 없어요)
@@ -16059,7 +16059,7 @@ function mrEnd(done) {
   if (!mrail.on) return; mrail.on = false; mrail.wait = false; mrail.last = null; mrail.boost = false; mrail.g?.parent?.remove(mrail.g); mrail.g = null; mrHud().classList.add('hidden');
   if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('⛏️ 광맥')) closeLife();
   if (done) {
-    if (bag.mrDay?.d !== dayNum()) bag.mrDay = { d: dayNum(), n: 0 }; let b = 0; if (mrail.ok >= 4 && bag.mrDay.n < 3) { bag.mrDay.n++; b = giveShellCapped(10); }
+    if (bag.mrDay?.d !== dayNum()) bag.mrDay = { d: dayNum(), n: 0 }; bag.mrDay.r = (bag.mrDay.r | 0) + 1; bag.mrDone = 1; /* 🚴 1102f 완주 횟수 (오늘의 할 일 · 광부 헬멧) */ let b = 0; if (mrail.ok >= 4 && bag.mrDay.n < 3) { bag.mrDay.n++; b = giveShellCapped(10); }
     if (mrail.ok >= 5) hmHit('cart5'); saveBag(); updateHUD(null); burst(player.pos.clone().setY(2), RAINBOW, 50, 6, 3);
     showBanner(`🚴 레일바이크 완주! 광맥 ${mrail.ok}/5`, `${mrail.sh ? `문제 보상 🐚 +${mrail.sh}` : '다음엔 더 많이 맞혀 봐요'}${b ? ` · 완주 보너스 🐚 +${b}` : mrail.ok >= 4 ? ' · 오늘 완주 보너스 3번은 다 받았어요' : ' · 4문제 이상 맞히면 완주 보너스'}`, 6000);
   }
@@ -18177,6 +18177,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102f', d: '11월 3일', items: ['🚴 오늘의 할 일 「수레 레이스 한 판」이 「레일바이크 한 번 완주하기」로 바뀌었어요 (수레 레이스장은 예전에 광산 안 레일바이크로 바뀌었어요) · ⛏️ 광부 헬멧도 레일바이크 완주로 열려요'] },
   { id: '1102e', d: '11월 2일', items: ['📋 선생님 「반 전체 오늘의 할 일」에서 학생마다 미션별 진행(예: 🔤 7/10)과 진행률 %, 미션별 완료 인원·평균이 보여요'] },
   { id: '1102d', d: '11월 2일', items: ['🎨 미술 공방이 넓어져 👗 옷 디자인 공모전장이 됐어요! 양쪽 마네킹에 👍 많은 순서로 친구 옷이 걸리고, 🎨 디자인 책상 · 👗 공모전 게시판이 있어요', '🏁 공모전이 끝나면 🥇 1등 옷이 🏪 옷가게 상품이 돼요'] },
   { id: '1102c', d: '11월 2일', items: ['👕 내가 만든 옷! 👕 옷가게 → 🎨 내 옷 디자인하기에서 옷 앞판을 16×16 칸으로 그려 입어요 (선생님이 ✅ 승인하면 친구들에게도 보여요)', '👗 옷 디자인 공모전: 마음에 드는 친구 옷에 👍 한 표 · 선생님이 고른 옷은 🏪 옷가게 상품(🐚 30)이 되고 디자이너는 🐚 50'] },
@@ -24988,7 +24989,7 @@ const DQ_FUN = [
   { id: 'chest', icon: '💎', t: '뒷산 보물 상자 찾기', hint: '🔭 꼭대기 망원경으로 보면 힌트!', goal: 1, cur: () => bag.mtChest === dayNum() ? 1 : 0 },
   { id: 'don', icon: '🐷', t: '반 기부함이나 캡슐 저금통에 🐚10 넣기', hint: '광장 기부함 · 캡슐뽑기 저금통', goal: 10, cur: () => (DON_DAY - donLeft('fund')) + (DON_DAY - donLeft('caps')) },
   { id: 'pet', icon: '🐾', t: '우리 집 펫 한 번 돌보기', hint: '우리 집에서 펫에게 밥·간식·놀이', goal: 1, cur: () => Object.values(bag.hpet?.pets || {}).some(p => p?.day?.d === dayNum() && Object.keys(p.day).length > 1) ? 1 : 0 },
-  { id: 'cart', icon: '🛒', t: '수레 레이스 한 판 달리기', hint: '수학 마을 수레 레이스장', goal: 1, cur: () => bag.cartDay?.d === dayNum() && (bag.cartDay.n | 0) > 0 ? 1 : 0 },
+  { id: 'cart', icon: '🚴', t: '레일바이크 한 번 완주하기', hint: '수학 광산 마을 → 광산 안 🚴 레일바이크 승강장', goal: 1, cur: () => (bag.mrDay?.d === dayNum() && (bag.mrDay.r | 0) > 0) || (bag.cartDay?.d === dayNum() && (bag.cartDay.n | 0) > 0) ? 1 : 0 }, // 🚴 1102f 수레 레이스(1024b에 없어짐) → 레일바이크
   { id: 'reef', icon: '🤿', t: '바닷속 생물 2마리 관찰 퀴즈 맞히기', hint: '바닷가 선착장 끝 🤿 다이빙 부표', goal: 2, cur: () => bag.reefDay?.d === dayNum() ? Object.keys(bag.reefDay.got || {}).length : 0 }, // 🤿 1031b
   { id: 'esc', icon: '🔐', t: '방탈출 1곳 탈출하기', hint: '광장 북서쪽 🔐 반월 방탈출 카페 (히로와 사라진 타임캡슐)', goal: 1, cur: () => bag.escDay?.d === dayNum() ? Object.keys(bag.escDay.got || {}).length : 0, from: 20759 }, // 🔐 1101c (11월 2일부터)
   { id: 'swim', icon: '🏊', t: '아쿠아센터 수영 경주 한 판', hint: '광장 옆 🏊 아쿠아센터 (예전 체육관)', goal: 1, cur: () => (bag.swimDay?.d === dayNum() && (bag.swimDay.n | 0) > 0) || (bag.swmDay?.d === dayNum() && bag.swmDay.p) ? 1 : 0 },
