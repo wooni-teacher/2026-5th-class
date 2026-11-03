@@ -15829,7 +15829,7 @@ function mqMake(id, lv) { // 같은 문제가 바로 다시 나오지 않게
 // 보상은 광산마다 똑같고 단계마다 달라요 (MQ_LV) · 한 번에 맞혀야 보상 · 같은 단원 하루 12문제 넘으면 절반 · 덜 캔 단원 ×1.5 · 이번 주 광산 도장 2·4·6개 보너스
 // 내 기록은 이 기기 가방에 (bag.mq) · 반 전체가 캔 수는 지금처럼 state/math/{m1~m6}
 const MQ_WB = [[2, 15], [4, 30], [6, 50]];
-const mineOpenSet = () => { const o = S.math?.open; return !!(o && o.d === dayNum() && typeof o.m === 'string'); };
+const mineOpenSet = () => { const o = S.math?.open; return !!(o && (o.k === 1 || o.d === dayNum()) && typeof o.m === 'string'); }; // 📌 1102g k=1이면 날짜가 바뀌어도 그대로
 const mineOpenIds = () => { if (mineOpenSet()) { const m = S.math.open.m; return m === 'all' ? MINES.map(x => x.id) : m.split(',').filter(id => MINE[id]); } return [MINES[((dayNum() % MINES.length) + MINES.length) % MINES.length].id]; };
 const mineOpen = (id) => isTeacher || mineOpenIds().includes(id);
 const mineOpenText = () => mineOpenIds().map(id => `${MINE[id].icon} ${MINE[id].u}단원`).join(' · ') || '없음';
@@ -16111,17 +16111,20 @@ function updateMrail(dt) {
   const info = `${MINE[mrail.id].icon} ${MQ_LV[mrail.lv].n} · ⛏️ ${Math.min(mrail.fi + (mrail.wait ? 1 : 0), 5)}/5 · 정답 ${mrail.ok} · ${'▮'.repeat(Math.max(1, Math.round(mrail.v / 3)))}`; if ($('mrInfo').textContent !== info) $('mrInfo').textContent = info;
 }
 
-function fillMineOpenAdmin() { // 🧑‍🏫 오늘 열 광산
+function fillMineOpenAdmin() { // 🧑‍🏫 열 광산 (📌 1102g 기본은 계속 열어 두기 · 오늘만도 고를 수 있어요)
   const box = $('tpMineOpen'); if (!box) return; box.textContent = '';
-  const ids = mineOpenSet() ? mineOpenIds() : [], auto = !mineOpenSet();
-  box.append(el2('p', 'hint', `오늘 열린 광산: ${mineOpenText()}${auto ? ' (자동 · 날마다 한 단원씩 차례로)' : ''} · 눌러서 열고 닫아요 (오늘 하루만)`));
+  const ids = mineOpenSet() ? mineOpenIds() : [], auto = !mineOpenSet(), keep = auto ? (fillMineOpenAdmin.keep ?? true) : S.math.open.k === 1;
+  const put = (m, msg) => adminDo({ 'math/open': m ? { d: dayNum(), m, ...(keep ? { k: 1 } : {}) } : null }, msg).then(() => setTimeout(fillMineOpenAdmin, 400));
+  box.append(el2('p', 'hint', `열린 광산: ${mineOpenText()}${auto ? ' (자동 · 날마다 한 단원씩 차례로)' : keep ? ' · 📌 선생님이 바꿀 때까지 계속 열려 있어요' : ' · 📅 오늘 하루만'} · 눌러서 열고 닫아요`));
   const row = el2('div', 'row-center wrap', null); row.style.gap = '6px';
   for (const m of MINES) { const on = ids.includes(m.id), b = el2('button', 'btn', `${on ? '🔓' : '🔒'} ${m.icon} ${m.u}단원`); b.style.background = on ? '#FFE066' : '#fff';
-    b.onclick = () => { const next = on ? ids.filter(x => x !== m.id) : [...ids, m.id]; adminDo({ 'math/open': next.length ? { d: dayNum(), m: MINES.map(x => x.id).filter(x => next.includes(x)).join(',') } : null }, next.length ? `⛏️ 오늘 열린 광산: ${next.map(x => MINE[x].u + '단원').join(', ')}` : '⛏️ 자동(날마다 차례로)으로 돌아갔어요'); };
+    b.onclick = () => { const next = on ? ids.filter(x => x !== m.id) : [...ids, m.id]; put(next.length ? MINES.map(x => x.id).filter(x => next.includes(x)).join(',') : null, next.length ? `⛏️ 열린 광산: ${next.map(x => MINE[x].u + '단원').join(', ')}${keep ? ' (계속)' : ' (오늘만)'}` : '⛏️ 자동(날마다 차례로)으로 돌아갔어요'); };
     row.append(b); }
-  const all = el2('button', 'btn', '🔓 모두 열기'); all.style.background = '#D8F5D0'; all.onclick = () => adminDo({ 'math/open': { d: dayNum(), m: 'all' } }, '⛏️ 오늘은 모든 광산이 열려요');
-  const au = el2('button', 'btn', '🔁 자동'); au.style.background = '#fff'; au.onclick = () => adminDo({ 'math/open': null }, '⛏️ 날마다 한 단원씩 차례로 열려요');
-  row.append(all, au); box.append(row);
+  const all = el2('button', 'btn', '🔓 모두 열기'); all.style.background = '#D8F5D0'; all.onclick = () => put('all', `⛏️ 모든 광산이 열려요${keep ? ' (계속)' : ' (오늘만)'}`);
+  const au = el2('button', 'btn', '🔁 자동'); au.style.background = '#fff'; au.onclick = () => put(null, '⛏️ 날마다 한 단원씩 차례로 열려요');
+  const kp = el2('button', 'btn', keep ? '📌 계속 열어 두기 (켜짐)' : '📅 오늘 하루만 (켜짐)'); kp.style.background = keep ? '#E3F0FF' : '#FFF1DE'; kp.title = '누르면 바꿔요';
+  kp.onclick = () => { if (auto) { fillMineOpenAdmin.keep = !keep; fillMineOpenAdmin(); return; } adminDo({ 'math/open': { d: dayNum(), m: S.math.open.m, ...(!keep ? { k: 1 } : {}) } }, !keep ? '📌 이제 날짜가 바뀌어도 계속 열려 있어요' : '📅 오늘 하루만 열려요 (내일은 자동)').then(() => setTimeout(fillMineOpenAdmin, 400)); };
+  row.append(all, au, kp); box.append(row);
 }
 
 
@@ -18177,6 +18180,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102g', d: '11월 3일', items: ['📌 선생님이 연 수학 광산이 날짜가 바뀌어도 계속 열려 있어요 (관리화면에서 📅 오늘 하루만으로도 바꿀 수 있어요)'] },
   { id: '1102f', d: '11월 3일', items: ['🚴 오늘의 할 일 「수레 레이스 한 판」이 「레일바이크 한 번 완주하기」로 바뀌었어요 (수레 레이스장은 예전에 광산 안 레일바이크로 바뀌었어요) · ⛏️ 광부 헬멧도 레일바이크 완주로 열려요'] },
   { id: '1102e', d: '11월 2일', items: ['📋 선생님 「반 전체 오늘의 할 일」에서 학생마다 미션별 진행(예: 🔤 7/10)과 진행률 %, 미션별 완료 인원·평균이 보여요'] },
   { id: '1102d', d: '11월 2일', items: ['🎨 미술 공방이 넓어져 👗 옷 디자인 공모전장이 됐어요! 양쪽 마네킹에 👍 많은 순서로 친구 옷이 걸리고, 🎨 디자인 책상 · 👗 공모전 게시판이 있어요', '🏁 공모전이 끝나면 🥇 1등 옷이 🏪 옷가게 상품이 돼요'] },
