@@ -1051,6 +1051,7 @@
   <button class="btn" id="tbGather">📣 모두 모여</button>
   <button class="btn" id="tbFreeze" aria-pressed="false">✋ 잠깐 멈춤</button>
   <button class="btn" id="tbSpec" aria-pressed="false">👁️ 관전</button>
+  <button class="btn" id="tbStr" style="background:#BFE6FF">🚂 하늘 기차</button>
 </div>
 <div id="kickOverlay" class="hidden" role="alertdialog" aria-live="assertive"><div class="kick-card"><p style="font-size:56px;margin:0">💤</p><h2 style="margin:6px 0">접속이 끝났어요</h2><p id="kickText">한동안 움직이지 않아서 선생님이 접속을 끝냈어요.<br>모은 재료와 저장한 것은 그대로 있어요.</p><button class="btn" id="kickBack" style="background:var(--leaf);color:#fff;font-size:20px;padding:12px 22px">🔄 다시 들어가기</button></div></div>
 <button class="btn sticker hidden" id="upChip">🗳️ 업데이트 투표 중! 골라 주세요</button>
@@ -2196,7 +2197,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {} }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, str: null, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2259,6 +2260,7 @@ function normalize(v) {
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
     kb: v.kb && typeof v.kb === 'object' ? { open: v.kb.open === true, n: v.kb.n | 0, title: String(v.kb.title || '').slice(0, 30), cur: v.kb.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.kb.ph) ? v.kb.ph : 'wait', lim: Math.min(120, Math.max(0, v.kb.lim | 0)), qt: +v.kb.qt || 0, qs: Object.values(toObj(v.kb.qs)).slice(0, 30).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), ...(/^\d{1,4}-\d{1,4}$/.test(String(q?.y || '')) ? { y: q.y } : {}) })), rev: Object.fromEntries(Object.entries(toObj(v.kb.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.kb.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.kb.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.kb.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])) } : null, // 🎭 1102a 꿈끼 골든벨
+    str: v.str && typeof v.str === 'object' && v.str.on && typeof v.str.u === 'string' && ANON_ID.test(v.str.u) ? { on: 1, u: v.str.u, at: +v.str.at || 0, s: Object.fromEntries(Object.entries(plainObj(v.str.s)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99)).slice(0, 100)) } : null, // 🚂 1102j
     cloth: Object.fromEntries(Object.entries(plainObj(v.cloth)).filter(([u, x]) => ANON_ID.test(u) && x && /^[0-9a-f]{256}$/.test(x.d || '')).slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), d: x.d, at: +x.at || 0, ...(x.ok === 1 ? { ok: 1 } : {}) }])), // 👕 1102c
     clothv: Object.fromEntries(Object.entries(plainObj(v.clothv)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string' && ANON_ID.test(t)).slice(0, 80)),
     clothshop: Object.fromEntries(Object.entries(plainObj(v.clothshop)).filter(([k, x]) => ANON_ID.test(k) && x && /^[0-9a-f]{256}$/.test(x.d || '')).slice(0, 30).map(([k, x]) => [k, { n: String(x.n || '').slice(0, 12), d: x.d, at: +x.at || 0 }])),
@@ -4430,7 +4432,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on || nvW?.on) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on || nvW?.on || strRiding()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -4447,7 +4449,7 @@ function updatePlayer(dt) {
   keepInWorld(p, x0, z0); // 기존 마을 + (열렸으면) 숲속 캠프
 
   jumpBuffer -= dt;
-  const flying = player.avatar.rideK === 'sky' && !isFrozen() && !sgFrozen(); // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
+  const flying = (player.avatar.rideK === 'sky' || player.avatar.rideK === 'strn') && !isFrozen() && !sgFrozen(); /* 🚂 1102j 기관차도 날아요 */ // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
   if (flying) { const up = keys[' '] || fly.up ? 1 : 0, dn = keys.shift || keys.c || fly.dn ? 1 : 0; player.vy = (up - dn) * FLY_VY; jumpBuffer = 0; }
   else { if (jumpBuffer > 0 && player.onGround && !sea.on && !sail.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
   let ny = p.y + player.vy * dt; if (flying && ny > FLY_MAX) ny = FLY_MAX;
@@ -10715,7 +10717,7 @@ const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r]))
 const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; // 👑 공성전 왕만 (사지 않아요)
 const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || !!bag.skyOwn || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🥚 1102i 알에서 부화하면 계속 // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
-const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, RIDE_ROYAL, RIDE_SKY].map(r => [r.k, r]));
+const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, RIDE_ROYAL, RIDE_SKY].map(r => [r.k, r])); RIDE_BY.strn = { k: 'strn', icon: '🚂', name: '하늘 기차', mul: 1.6 }; /* 🚂 1102j 기관사(선생님) */
 const rideOpen = (k) => k === 'sky' ? skyHave() : !!S.rides?.[k];
 // 🎨 탈것 꾸미기: 색·장식은 🐚로 한 번 열면 모든 탈것에 쓸 수 있어요 (⭐표는 주간 랭킹 보상으로만) · 친구 화면엔 players/{uid}/q = 색×10 + 장식
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
@@ -10834,6 +10836,7 @@ const rideIndoor = (x, z) => (x > 600 && x < 700) || (x > 740 && x < 1000) || (x
 const sgInSG = (p) => !!p && p.x > SG.x0 - 5 && p.x < SG.x1 + 5 && p.z > SG.z0 - 4;
 function rideBlockMe() { // 지금 내가 탈 수 없는 까닭 (없으면 '')
   const p = player.pos;
+  if (strRiding()) return '🚂 하늘 기차에 타는 중이에요';
   if (sgInSG(p) || trRegion()) return '⚔️ 공성전·체험장에서는 탈 수 없어요 (👑 왕만 말을 타요)';
   if (rideIndoor(p.x, p.z)) return '🏫 건물 안·경기장에서는 내려서 걸어요';
   if (hideOn() && (hideIn(backend?.uid) || isSeeker(backend?.uid))) return '🙈 숨바꼭질 중에는 탈 수 없어요';
@@ -10846,6 +10849,7 @@ function rideBlockMe() { // 지금 내가 탈 수 없는 까닭 (없으면 '')
 const myRideV = () => { const k = bag.ride; return k && rideOpen(k) && !rideBlockMe() && !boardW.on ? (k === 'sky' ? RIDE_SKY_V : rideV(RIDE_BY[k], RIDE_K.indexOf(k))) : 0; };
 function rideWant(a, uid, pos, v) { // 이 친구가 지금 탈 것
   if (a.propP || !pos) return '';
+  if (strOn() && uid === S.str.u) return 'strn'; /* 🚂 1102j 기관사 */
   if (S.siege?.on && sgInSG(pos)) return sgIsKing(uid) && !sgHurt(uid) ? 'royal' : '';
   if (uid === backend?.uid && trRegion()) return trw.role === 'king' ? 'royal' : '';
   if ((v | 0) === RIDE_SKY_V) return uid === backend?.uid ? (skyHave() ? 'sky' : '') : 'sky'; // 🐲 친구 화면에도 날아요
@@ -10859,7 +10863,7 @@ function updateRides() {
   const b = $('rideBtn'), k = player.avatar.rideK, hide = !joined || sgInSG(player.pos) || trRegion();
   b.classList.toggle('hidden', hide); b.classList.toggle('on', !!bag.ride && rideOpen(bag.ride));
   const ic = bag.ride && rideOpen(bag.ride) ? RIDE_BY[bag.ride].icon : '🚲'; if (b.textContent !== ic) b.textContent = ic;
-  { const f = $('flyBar'), on = joined && k === 'sky'; if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
+  { const f = $('flyBar'), on = joined && (k === 'sky' || k === 'strn'); if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
   if (k && k !== 'royal' && k !== rideW.lastK) playSfx('pick');
   rideW.lastK = k;
 }
@@ -11001,6 +11005,14 @@ function rideBuild(a, k) {
     tails.push(B(g, 0.4, 0.4, 1.3, c, 0, 1.35, -1.1, { rx: -0.25 }));
     for (const [x, f] of [[-0.32, 0], [0.32, Math.PI]]) leg(g, x, 1.35, -0.05, 0.32, 1.35, c, f, 0x3E8A34);
     seat = 2.05; pose = 'straddle'; arms = -0.9; sh = 2.2;
+  } else if (k === 'strn') { /* 🚂 1102j 하늘 기차 기관차 (선생님이 운전석에) */
+    B(g, 1.6, 0.3, 3.4, 0x22252E, 0, 0.62, 0.55); Y(g, 0.62, 2.0, 0x2E3F6E, 0, 1.25, 1.35, { rx: Math.PI / 2 }); Y(g, 0.66, 0.12, 0xF2C230, 0, 1.25, 2.35, { rx: Math.PI / 2, emissive: 0.4 }); B(g, 0.36, 0.36, 0.1, 0xFFF3B0, 0, 1.3, 2.42, { emissive: 0.9 });
+    Y(g, 0.2, 0.8, 0x22252E, 0, 2.15, 1.9); Y(g, 0.28, 0.12, 0xF2C230, 0, 2.55, 1.9, { emissive: 0.4 });
+    B(g, 1.6, 0.12, 1.4, 0x8A5A34, 0, 0.82, -0.25); for (const sx of [-0.78, 0.78]) B(g, 0.08, 0.6, 1.4, 0xC8343A, sx, 1.15, -0.25); B(g, 1.6, 0.6, 0.08, 0xC8343A, 0, 1.15, -0.95);
+    for (const [sx, sz] of [[-0.74, -0.9], [0.74, -0.9], [-0.74, 0.4], [0.74, 0.4]]) B(g, 0.07, 1.3, 0.07, 0xF2C230, sx, 1.75, sz, { emissive: 0.3 }); B(g, 1.8, 0.1, 1.6, 0x22252E, 0, 2.42, -0.25);
+    for (const sx of [-0.82, 0.82]) for (const sz of [-0.5, 0.6, 1.7]) Y(g, 0.3, 0.12, 0x9AF0FF, sx, 0.48, sz, { rz: Math.PI / 2, emissive: 0.8 });
+    for (const sd of [-1, 1]) { const q = new THREE.Group(); q.position.set(sd * 0.8, 1.3, 0.6); g.add(q); for (let i = 0; i < 3; i++) B(q, 0.7, 0.06, 1.0 - i * 0.2, [0xE6F6FF, 0xBFE6FF, 0x9AD4FF][i], sd * (0.4 + i * 0.6), -i * 0.04, -i * 0.1); B(q, 2.0, 0.08, 0.1, 0xF2C230, sd * 1.0, 0.03, 0.48, { emissive: 0.3 }); wings.push([q, sd]); }
+    seat = 1.0; pose = 'sit'; arms = -1.0; hover = 0.9; sh = 2.2;
   } else if (k === 'dragon' || k === 'sky') { // 🐲 sky = 하늘을 나는 용 (하늘색 · 금빛 뿔 · 큰 날개)
     const sky = k === 'sky', c = sky ? 0x4AA8E8 : 0x7A4BC2, bl = sky ? 0xFFFFFF : 0xF2D27A;
     B(g, 0.7, 0.6, 1.5, c, 0, 1.05, 0); B(g, 0.5, 0.3, 1.3, bl, 0, 0.82, 0);
@@ -11044,7 +11056,7 @@ function poseRide(a, moving, dt) { // 탈것 위 자세 + 탈것 움직임 (anim
   for (const t of R0.tails) t.rotation.y = Math.sin(ph * 0.6) * 0.25;
   if (R0.flag) R0.flag.rotation.y = Math.sin(a.idle * 6) * 0.25 * (0.4 + mv);
   if (R0.balloon) R0.balloon.position.x = Math.sin(a.idle * 1.7) * 0.12;
-  skyTrailTick(a, R0, mv, dt); // 💫 1102i 하늘 용 꼬리 효과
+  skyTrailTick(a, R0, mv, dt); strFx(a, R0, dt); // 💫 1102i 하늘 용 꼬리 효과 · 🚂 1102j 연기
   if (R0.spin) { R0.spin.rotation.z += dt * 1.8; R0.spin.material.color.setHSL((time * 0.12) % 1, 1, 0.62); } // 💫 오로라 고리: 돌며 색이 바뀌어요
   if (R0.gold && !LOW_GFX && a.g.visible && (R0.goldT = (R0.goldT || 0) - dt) < 0) { R0.goldT = 0.5; const gp = a.g.position; burst(new V3(gp.x + (Math.random() - 0.5) * 1.4, gp.y - a.rideLift + 0.4 + Math.random() * 0.6, gp.z + (Math.random() - 0.5) * 1.4), [0xFFE066, 0xFFFFFF], 2, 0.6, 0.5, 0.6, 0); }
   if ((R0.acc === 5 || R0.acc === 7 || R0.acc === 8 || R0.acc === 9) && !LOW_GFX && a.g.visible && (R0.fxT = (R0.fxT || 0) - dt) < 0) { // ⭐ 별 반짝이 · 🌈 무지개 꼬리 · 💫 오로라
@@ -12182,6 +12194,7 @@ function initControlUI() {
   $('tpRestAuto').onchange = () => adminDo({ 'control/ra': +$('tpRestAuto').value }, +$('tpRestAuto').value ? `⏰ ${$('tpRestAuto').value}분마다 자동으로 쉬어요` : '⏰ 자동 쉬기를 껐어요');
   $('tpRestLen').onchange = () => adminDo({ 'control/rl': +$('tpRestLen').value }, '⏰ 자동 쉬기 길이를 바꿨어요');
   for (const id of ['tbGather', 'tpGather']) $(id).onclick = teacherGather;
+  $('tbStr').onclick = () => openStrAdmin(); // 🚂 1102j
   $('tpCamp').onclick = () => adminDo({ 'control/camp': Date.now(), 'areas/forest': true }, '🔥 모두 숲속 캠프 모닥불로 불렀어요 (캠프 열림)');
   for (const id of ['tbFreeze', 'tpFreeze']) $(id).onclick = () => teacherFreeze(!freezeOn());
   $('tpLite').onclick = () => { if (isTeacher) adminDo({ 'control/lite': S.control?.lite ? 0 : 1 }, S.control?.lite ? '✨ 학생 기기가 각자 고른 화질로 돌아가요' : '🪶 학생 기기 화질을 모두 가볍게 맞췄어요 (교실 태블릿에 좋아요)'); };
@@ -18239,6 +18252,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102j', d: '11월 3일', items: ['🚂 하늘 기차 · 🧑‍✈️ 선생님 기관사 모드! 선생님이 기관차를 몰고 하늘을 날면, 👥 모두 태우기로 반 친구들이 뒤 칸에 앉아 함께 날아요 · 선생님이 포털로 가면 기차째 같이 가요'] },
   { id: '1102i', d: '11월 3일', items: ['🥚 시즌 패스 8단계를 채우면 하늘 용 알! 🚲 탈것 가게에서 서로 다른 날 3번 품으면 🐲 하늘을 나는 용이 태어나 계속 탈 수 있어요', '🎨 하늘 용 꾸미기: 몸 색 10가지 · 날개 4가지 · 안장·뿔 왕관·목도리 · 꼬리 효과(무지개·별가루·불꽃·벚꽃) · 친구 화면에도 보여요'] },
   { id: '1102h', d: '11월 3일', items: ['🦎 히로친구 칭호를 더 잘 찾아요: 다른 기기·계정에서 탈출한 방도 명단 이름으로 세고, 기록이 빠진 방은 다시 올려서 친구 화면에도 보여요 · 네 방을 다 모으면 알림이 떠요'] },
   { id: '1102g', d: '11월 3일', items: ['📌 선생님이 연 수학 광산이 날짜가 바뀌어도 계속 열려 있어요 (관리화면에서 📅 오늘 하루만으로도 바꿀 수 있어요)'] },
@@ -27245,6 +27259,98 @@ function clothWardrobeBox(box) { // 👕 옷가게 맨 위: 내가 만든 옷 ·
     const b = el2('button', 'btn lp-btn', own ? (on ? '벗기' : '입기') : '사기'); b.disabled = !own && (bag.shell || 0) < CLOTH_PRICE; b.onclick = () => { if (!own) { if ((bag.shell || 0) < CLOTH_PRICE) return; bag.shell -= CLOTH_PRICE; bag.own['cs:' + k] = true; bag.cf = 's:' + k; saveBag(); playSfx('coin'); toast(`👕 ${it.n || '친구'}의 옷을 샀어요! 바로 입었어요`, 'success'); refillLife(); return; } if (k === me || isTeacher) bag.own['cs:' + k] = true; wear('s:' + k); }; card.append(b); grid.append(card); }
   if (grid.children.length) box.append(grid); else box.append(el2('p', 'hint', '아직 만든 옷이 없어요. 🎨 내 옷을 디자인해 봐요!'));
 }
+// ================= 🚂 1102j 하늘 기차 · 🧑‍✈️ 선생님 기관사 모드 =================
+// 선생님이 기관차를 몰고 하늘을 날아요(하늘 용처럼 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기) → 👥 모두 태우기 하면 학생들이 뒤 칸 자리에 앉아 따라와요
+// 선생님이 🌀 포털로 다른 마을에 가면 기차도 학생들도 같이 가요 · 🛬 모두 내리기 하면 그 자리 땅에 내려요
+// · state/str {on, u 기관사 기기, at, s {학생 기기: 자리 번호}} (선생님만) · 칸마다 4자리 · 칸은 선생님이 지나간 길을 따라와요 (각 기기가 따로 계산)
+const STR = { first: 3.4, step: 3.7, per: 4 };
+const strW = { hist: [], g: null, cars: [], left: false, sKey: '', was: false, told: '', bar: null, chip: null, fxT: 0 };
+const strOn = () => !!S.str?.on && !!S.str.u;
+const strDriver = () => strOn() && S.str.u === backend?.uid;
+const strSeat = () => { if (!strOn() || strW.left) return undefined; const v = S.str.s?.[backend?.uid]; return Number.isInteger(v) ? v : undefined; };
+const strRiding = () => joined && strSeat() !== undefined && !strDriver();
+function strHead() { // 기관차 바닥 위치 · 방향
+  if (!strOn()) return null; if (strDriver()) return { x: player.pos.x, y: player.pos.y, z: player.pos.z, h: player.heading };
+  const r = remotes.get(S.str.u); if (!r?.a || !r.pos) return null; return { x: r.a.g.position.x, y: r.pos.y, z: r.a.g.position.z, h: r.a.g.rotation.y };
+}
+function strAt(d) { // 기관차에서 길을 따라 d만큼 뒤
+  const H = strW.hist, n = H.length; if (!n) return null; let left = d;
+  for (let i = n - 1; i > 0; i--) { const a = H[i], b = H[i - 1], L = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z); if (L >= left) { const t = left / (L || 1); return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t }; } left -= L; }
+  const o = H[0], h = strW.h0 ?? 0; return { x: o.x - Math.sin(h) * left, y: o.y, z: o.z - Math.cos(h) * left };
+}
+function strCarPose(i) { const d = STR.first + i * STR.step, c = strAt(d), f = strAt(d - 0.9), b = strAt(d + 0.9); if (!c || !f || !b) return null; return { x: c.x, y: c.y, z: c.z, h: Math.atan2(f.x - b.x, f.z - b.z) }; }
+function strCarModel() {
+  const g = new THREE.Group(), o = { solid: false }, gold = { solid: false, emissive: 0.4 };
+  box(g, 2.3, 0.3, 3.0, 0x3E5FA8, 0, 0.9, 0, o); for (const sx of [-1.12, 1.12]) box(g, 0.1, 0.55, 3.0, 0x4A78D0, sx, 1.3, 0, o); for (const sz of [-1.45, 1.45]) box(g, 2.3, 0.55, 0.1, 0x4A78D0, 0, 1.3, sz, o);
+  for (const sx of [-1.12, 1.12]) box(g, 0.16, 0.08, 3.04, 0xF2C230, sx, 1.6, 0, gold); for (const sz of [-1.45, 1.45]) box(g, 2.34, 0.08, 0.16, 0xF2C230, 0, 1.6, sz, gold); for (const sz of [-0.6, 0.6]) box(g, 1.9, 0.18, 0.5, 0xC8343A, 0, 1.18, sz, o);
+  for (const sx of [-1.1, 1.1]) for (const sz of [-1.0, 1.0]) cyl(g, 0.22, 0.12, 0x5FC8F0, sx, 0.62, sz, { solid: false, emissive: 0.5, rz: Math.PI / 2 });
+  for (const sd of [-1, 1]) { const w = new THREE.Group(); w.position.set(sd * 1.2, 1.2, 0); g.add(w); box(w, 1.4, 0.06, 0.8, 0xE6F6FF, sd * 0.7, 0, 0, o); box(w, 1.4, 0.07, 0.12, 0xF2C230, sd * 0.7, 0.02, 0.35, gold); g.userData.wings = (g.userData.wings || []).concat([[w, sd]]); }
+  return g;
+}
+function strSync() { // 칸 수 · 보이기
+  const on = strOn(); if (!on) { if (strW.g) strW.g.visible = false; strW.hist = []; return; }
+  if (!strW.g) { strW.g = new THREE.Group(); strW.g.name = 'SkyTrain'; scene.add(strW.g); }
+  strW.g.visible = true; const n = Math.max(1, Math.ceil((Math.max(-1, ...Object.values(S.str.s || {})) + 1) / STR.per));
+  while (strW.cars.length < n) { const c = strCarModel(); strW.g.add(c); strW.cars.push(c); } while (strW.cars.length > n) strW.g.remove(strW.cars.pop());
+}
+function strTick(dt) {
+  if (!joined) return; strSync(); if (!strOn()) { strLeave(); strUi(); return; }
+  const hd = strHead(); if (hd) { const H = strW.hist, last = H[H.length - 1], far = last && Math.hypot(hd.x - last.x, hd.z - last.z) > 30;
+    if (!last || far) { strW.hist = [{ x: hd.x, y: hd.y, z: hd.z }]; strW.h0 = hd.h; } else if (Math.hypot(hd.x - last.x, hd.y - last.y, hd.z - last.z) > 0.25) { H.push({ x: hd.x, y: hd.y, z: hd.z }); if (H.length > 500) H.splice(0, H.length - 500); } }
+  const t = performance.now() / 1000; strW.cars.forEach((c, i) => { const P = strCarPose(i); if (!P) { c.visible = false; return; } c.visible = true; c.position.set(P.x, P.y + Math.sin(t * 2 + i) * 0.06, P.z); c.rotation.y = P.h; for (const [w, sd] of c.userData.wings || []) w.rotation.z = sd * (0.2 + Math.sin(t * 5 + i) * 0.25); });
+  // 🎟️ 새로 태워지면 알려요 · 자리가 바뀌면 다시 타요
+  const sk = JSON.stringify(S.str.s || {}) + S.str.at; if (sk !== strW.sKey) { strW.sKey = sk; strW.left = false; }
+  if (strRiding() && strW.told !== sk) { strW.told = sk; if (!strW.was) { playSfx('fanfare'); showBanner('🚂 하늘 기차에 탔어요!', '🧑‍✈️ 선생님 기관사가 데려가요 · 자리에 앉아 구경해요', 4500); closeModals(); } }
+  strUi();
+}
+function strFollow() { // 학생: 내 자리에 앉아 따라가요 (updatePlayer 뒤)
+  const i = strSeat(); if (!strRiding()) { strLeave(); return; }
+  const car = Math.floor(i / STR.per), sl = i % STR.per, P = strCarPose(car); if (!P) return;
+  const lx = sl % 2 ? 0.5 : -0.5, lz = sl < 2 ? 0.6 : -0.6, c = Math.cos(P.h), s2 = Math.sin(P.h), wx = P.x + lx * c + lz * s2, wz = P.z - lx * s2 + lz * c, wy = P.y + 1.05;
+  if (bag.ride) { strW.rideWas = bag.ride; bag.ride = ''; }
+  player.pos.set(wx, wy, wz); player.vy = 0; player.heading = P.h; const a = player.avatar; if (a) { a.g.position.set(wx, wy, wz); a.g.rotation.y = P.h; if (!isSeated(a)) playAct(a, 'sit'); }
+  strW.was = true;
+}
+function strLeave() { // 기차에서 내리면 그 자리 땅으로
+  if (!strW.was) return; strW.was = false; const p = player.pos; p.y = groundAt(p) + 0.05; player.vy = 0; if (player.avatar && isSeated(player.avatar)) playAct(player.avatar, null); toast('🛬 하늘 기차에서 내렸어요', 'info');
+}
+function strUi() {
+  if (!strW.chip) { const c = document.createElement('div'); c.id = 'strChip'; c.className = 'sticker hidden'; c.style.cssText = 'position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:30;display:flex;gap:8px;align-items:center;padding:6px 10px;border-radius:14px;background:#EAF4FF;font-weight:700'; const t = document.createElement('span'); const b = document.createElement('button'); b.className = 'btn'; b.textContent = '🚪 내리기'; b.style.cssText = 'background:#fff;font-size:14px;padding:4px 10px'; b.onclick = () => { strW.left = true; strLeave(); }; c.append(t, b); document.body.append(c); strW.chip = c; strW.chipT = t; }
+  if (!strW.bar) { const c = document.createElement('div'); c.id = 'strBar'; c.className = 'sticker hidden'; c.style.cssText = 'position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:30;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:6px 8px;border-radius:14px;background:#FFF6E6'; const mk = (t, bg, fn) => { const b = document.createElement('button'); b.className = 'btn'; b.textContent = t; b.style.cssText = `background:${bg};font-size:14px;padding:6px 10px`; b.onclick = fn; c.append(b); return b; };
+    strW.barT = document.createElement('b'); strW.barT.style.cssText = 'align-self:center;font-size:14px'; c.append(strW.barT); mk('👥 모두 태우기', '#FFD23C', () => strBoard(false)); mk('🧲 가까운 친구만', '#fff', () => strBoard(true)); mk('🛬 모두 내리기', '#CDEFC2', strUnboard); mk('🌀 포털', '#E3F0FF', () => openPortal()); mk('⏹ 기차 끝', '#fff', strEnd); document.body.append(c); strW.bar = c; }
+  const riding = strRiding(), drv = strDriver(); strW.chip.classList.toggle('hidden', !riding); if (riding) { const n = strSeat(); strW.chipT.textContent = `🚂 하늘 기차 ${Math.floor(n / STR.per) + 1}번 칸에 타는 중`; }
+  strW.bar.classList.toggle('hidden', !drv); if (drv) { const n = Object.keys(S.str.s || {}).length, t = `🧑‍✈️ 기관사 · 🎟️ ${n}명 탑승`; if (strW.barT.textContent !== t) strW.barT.textContent = t; }
+}
+async function strStart() {
+  if (!isTeacher) return; if (bag.ride) { bag.ride = ''; saveBag(); }
+  const r = await backend.adminUpdate({ str: { on: 1, u: backend.uid, at: Date.now(), s: {} } }); if (!r?.ok) { toast('⚠️ 시작하지 못했어요 (database.rules.json의 str을 먼저 게시해요)', 'warn'); return; }
+  closeModals(); playSfx('fanfare'); showBanner('🚂 하늘 기차 출발 준비!', '🧑‍✈️ 기관사가 되었어요 · 스페이스·⬆️로 날아올라요 · 👥 모두 태우기로 학생들을 태워요', 5000);
+}
+function strBoard(near) {
+  if (!strDriver()) return; const s = { ...(S.str.s || {}) }; let k = Math.max(-1, ...Object.values(s)) + 1, add = 0; const p = player.pos;
+  for (const [u, r] of remotes) { if (!r.target || r.target.t || s[u] != null) continue; if (near && Math.hypot(r.pos.x - p.x, r.pos.z - p.z) > 30) continue; if (k > 99) break; s[u] = k++; add++; }
+  if (!add) { toast(near ? '🧲 30걸음 안에 태울 친구가 없어요' : '👥 더 태울 친구가 없어요', 'info'); return; }
+  adminDo({ 'str/s': s, 'str/at': Date.now() }, `🎟️ ${add}명을 태웠어요! (모두 ${Object.keys(s).length}명)`);
+}
+function strUnboard() { if (!strDriver()) return; adminDo({ 'str/s': null, 'str/at': Date.now() }, '🛬 모두 내렸어요'); }
+async function strEnd() { if (!isTeacher) return; if (await adminDo({ str: null }, '⏹ 하늘 기차를 마쳤어요')) { strW.hist = []; } }
+function openStrAdmin() {
+  if (!isTeacher) return;
+  openLife('🚂 하늘 기차 · 기관사 모드', (box) => {
+    box.textContent = ''; const on = strOn(), mine = strDriver();
+    box.append(el2('p', 'hint', '선생님이 기관차를 몰고 하늘을 날아요 (스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · WASD 이동). 👥 모두 태우기를 누르면 접속한 학생들이 뒤 칸 자리에 앉아 따라와요 (어디에 있든). 🌀 포털로 다른 마을에 가면 기차째 같이 가요. 🛬 모두 내리기 하면 그 자리 땅에 내려요. 학생도 🚪 내리기로 내릴 수 있어요.'));
+    const r = el2('div', 'row-center wrap'), B = (t, bg, fn) => { const b = el2('button', 'btn', t); b.style.background = bg; b.onclick = () => { fn(); setTimeout(refillLife, 400); }; r.append(b); };
+    if (!on) B('🧑‍✈️ 기관사 되기 (기차 출발)', '#FFD23C', strStart);
+    else if (!mine) { box.append(el2('p', 'err', '다른 선생님 기기가 기관사예요')); B('🧑‍✈️ 내가 기관사 하기', '#FFD23C', strStart); }
+    if (on) { B('👥 모두 태우기', '#FFE066', () => strBoard(false)); B('🧲 가까운 친구만 (30걸음)', '#fff', () => strBoard(true)); B('🛬 모두 내리기', '#CDEFC2', strUnboard); B('⏹ 기차 끝', '#fff', strEnd); box.append(el2('p', 'hint', `🎟️ 탄 학생 ${Object.keys(S.str.s || {}).length}명`)); }
+    box.append(r);
+  });
+}
+function strFx(a, R0, dt) { // 🚂 굴뚝 연기 · 바퀴 빛
+  if (a.rideK !== 'strn' || LOW_GFX || !a.g.visible || (R0.smT = (R0.smT || 0) - dt) > 0) return; R0.smT = 0.18;
+  const gp = a.g.position, h = a.g.rotation.y; burst(new V3(gp.x + Math.sin(h) * 1.25, gp.y + 1.5, gp.z + Math.cos(h) * 1.25), [0xFFFFFF, 0xE6F0FF], 2, 0.4, 1.2, 1.2, 0.5);
+}
+setInterval(() => { try { if (!joined) return; strSync(); } catch (e) { } }, 1000);
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
 // state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
 function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
@@ -27616,7 +27722,7 @@ function loop() {
   const dt = Math.min(clock.getDelta(), 0.05);
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
-  if (joined) { updatePlayer(dt); updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
+  if (joined) { updatePlayer(dt); try { strTick(dt); strFollow(); } catch (e) { console.warn('str', e); } updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
   updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); try { clothTick(dt); clothHallTick(); } catch (e) { console.warn('cloth', e); } mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt); mtFunTick(dt);
   if (joined) updateHanok(dt);
