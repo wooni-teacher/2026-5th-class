@@ -1682,7 +1682,7 @@
 
     <h3>🏪 가게와 반 기부</h3>
     <p class="hint">팔면 반 동전은 값만큼, 학생 조개돈은 절반만 늘어요. 같은 물건을 많이 팔면 값이 내려가요(다음 날 회복). 하루 가게 예산은 학생 한 명이 하루에 팔아서 벌 수 있는 조개돈 한도예요.</p>
-    <div class="row-center wrap"><label style="font-size:16px">하루 가게 예산 <select id="tpCap" class="tinput" style="width:auto"><option value="100">🐚 100</option><option value="200">🐚 200 (기본)</option><option value="300">🐚 300</option><option value="500">🐚 500</option><option value="0">한도 없음</option></select></label></div>
+    <div class="row-center wrap"><label style="font-size:16px">하루 가게 예산 <select id="tpCap" class="tinput" style="width:auto"><option value="100">🐚 100</option><option value="200">🐚 200</option><option value="300">🐚 300</option><option value="500">🐚 500</option><option value="700">🐚 700</option><option value="1000">🐚 1000 (기본)</option><option value="0">한도 없음</option></select></label></div>
     <p class="hint" id="tpFundNow"></p>
     <h3>📊 오늘 학생 재화 현황</h3>
     <p class="hint">오늘(밤 12시부터) 학생마다 번 조개돈과 보탠 반 동전이에요. 학생 기기가 15초쯤마다 알려 줘요. 🎮 놀이·판매 = 하루 가게 예산 안에서 번 것 · 🎁 보상 = 미션·보물섬·매일 보상처럼 예산 밖에서 받은 것.</p>
@@ -14673,8 +14673,8 @@ function initCtfUI() {
    · 🐷 반 기부: 모두의 조개돈을 모아 바닷가에 관람차 → 무지개 분수 → 전망탑 (state/fund {p 몇 번째, n 모인 조개돈}, 누가 냈는지는 없어요)
    · 🏅 도감 배지: 내가 잡아 본 생물이 25·50·75·100%가 되면 배지와 배지 전용 꾸미기 (이 기기에만)
    ===================================================================== */
-const ECON_CAPS = [0, 100, 200, 300, 500];
-const capNow = () => S.econ?.cap ?? 200;
+const ECON_CAPS = [0, 100, 200, 300, 500, 700, 1000]; // 🐚 1102o 700 · 1000 추가
+const capNow = () => S.econ?.cap ?? 1000; // 🐚 1102o 기본 1000 (예전 200)
 function earnToday() { if (bag.earn?.day !== todayKey()) bag.earn = { day: todayKey(), n: 0 }; return bag.earn.n; }
 function soldToday(key) { if (bag.sold?.day !== todayKey()) bag.sold = { day: todayKey() }; return bag.sold[key] || 0; }
 const unitPrice = (base, cnt) => Math.max(1, Math.round(base * Math.max(0.5, 1 - 0.1 * cnt)));
@@ -18267,6 +18267,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102o', d: '11월 4일', items: ['🐚 하루에 모을 수 있는 조개가 1000까지 늘었어요! 갖고 싶은 물건을 더 빨리 살 수 있어요'] },
   { id: '1102n', d: '11월 4일', items: ['🎭 얼굴을 감싸는 탈이 생겼어요! 🎃 호박 탈 · 🦈 상어 탈 수영모(벌린 입 속에 얼굴)가 탈 모양으로 바뀌고, 👕 옷가게에 🐻 곰돌이 탈 · 🐸 개구리 탈 · 🦁 사자 탈 · 🦖 공룡 탈', '🧢 야구모자 · 👒 밀짚모자 · 🧶 털모자 · 🎩 신사 모자는 그대로 모자'] },
   { id: '1102m', d: '11월 3일', items: ['🎩 모자 디자인을 새로 다듬었어요: 야구모자·밀짚모자·털모자·신사 모자·호박 모자·수영모가 머리 속에 파묻히지 않고 머리를 감싸요 (모자를 쓰면 윗머리는 모자 안으로)', '🐰 토끼 귀·🎀 리본·🌸 꽃관·👑 왕관·🌟 별 핀도 머리 위에 또렷하게 올라가요'] },
   { id: '1102l', d: '11월 3일', items: ['🎤 영어 마을에 말하기 부스! 🔊 원어민 발음을 듣고 🎤 따라 말하면, 컴퓨터가 알아들은 단어는 초록 · 놓친 단어는 빨강 · ⭐1~3 (Lesson 7~12 문장·단어 · 크롬에서)', '통과할 때마다 🔤 영어력 +2 · 🐚 +1 (하루 15문장)'] },
