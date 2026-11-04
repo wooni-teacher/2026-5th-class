@@ -18271,6 +18271,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102v', d: '11월 4일', items: ['🎤 말하기·대화 부스 발음 판정이 더 너그러워졌어요: 비슷한 소리(a/the · s 빠짐 · 한두 글자 차이)도 맞음 · 60%면 통과', '🎤 마이크 권한을 처음 한 번만 물어보고, 막혔을 때는 태블릿에서 푸는 방법을 단계별로 보여 줘요'] },
   { id: '1102u', d: '11월 4일', items: ['🗣️ 짝 대화 무대가 영어 마을 동쪽 문 너머 「대화 부스」로 옮겨 갔어요! 방음 부스 8개에 짝과 둘이 들어가 🅰·🅱 자리에서 대화해요 (대화 중이면 🔴 ON AIR)', '🧭 미로 공원(Level 2·3)은 없어지고, 길 찾기 미로는 야구장 거리 Level 1로 해요'] },
   { id: '1102t', d: '11월 4일', items: ['🗣️ 짝 대화 무대가 8쌍으로 늘었어요 · 🎤 말하기 부스·🎧 듣기쓰기 부스·대화 무대 앞 나무를 치웠어요'] },
   { id: '1102s', d: '11월 4일', items: ['🗣️ 영어 마을 짝 대화 무대! 짝과 🅰·🅱 자리에 서서 단원 대화를 고르고, 자기 차례에 🎤 말하면 말풍선으로 주고받아요 (Lesson 7~12 대화 두 개씩 · 크롬)', '끝까지 주고받으면 🔤 영어력 +5 · 🐚 +5 (하루 5번) · 🔁 역할 바꿔 다시'] },
@@ -19213,22 +19214,48 @@ const spkW = { lv: 7, mode: 's', list: [], i: 0, res: null, busy: false, rec: nu
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 const SPK_CONT = [[/\bit's\b/g, 'it is'], [/\bwhat's\b/g, 'what is'], [/\bhe's\b/g, 'he is'], [/\bshe's\b/g, 'she is'], [/\bthey're\b/g, 'they are'], [/\blet's\b/g, 'let us'], [/\bthat's\b/g, 'that is'], [/\bi'm\b/g, 'i am'], [/\bdon't\b/g, 'do not'], [/\bcan't\b/g, 'cannot'], [/\bthere's\b/g, 'there is'], [/\byou're\b/g, 'you are'], [/\bt-shirt\b/g, 't shirt'], [/\bok\b/g, 'okay']];
 function spkNorm(t) { let s = String(t || '').toLowerCase().replace(/[’`]/g, "'"); for (const [re, v] of SPK_CONT) s = s.replace(re, v); return s.replace(/[^a-z0-9' ]+/g, ' ').replace(/'/g, '').split(/\s+/).filter(Boolean); }
-function spkMatch(target, heard) { // 단어 맞추기 (LCS) → 정답 단어마다 맞음/놓침
+function spkLev(a, b) { const m = a.length, n = b.length; if (Math.abs(m - n) > 2) return 9; let p = [...Array(n + 1).keys()]; for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[n]; }
+const SPK_SAME = [['a', 'the'], ['an', 'a'], ['these', 'this'], ['those', 'these'], ['he', 'she'], ['is', 'was'], ['are', 'were'], ['to', 'two'], ['too', 'to'], ['for', 'four'], ['right', 'write'], ['see', 'sea'], ['there', 'their'], ['im', 'i am'], ['were', 'where'], ['ok', 'okay']];
+function spkSim(a, b) { // 🎤 1102v 너그러운 비교: 같거나 · 끝 s/ed만 다르거나 · 비슷한 소리 짝 · 한두 글자 차이
+  if (a === b) return true; const st = (w) => w.replace(/(es|s|ed|d)$/, ''); if (a.length > 2 && b.length > 2 && st(a) === st(b)) return true;
+  if (SPK_SAME.some(([x, y]) => (a === x && b === y) || (a === y && b === x))) return true; const L = Math.max(a.length, b.length); return L >= 3 && spkLev(a, b) <= (L >= 7 ? 2 : 1);
+}
+function spkMatch(target, heard) { // 단어 맞추기 (LCS) → 정답 단어마다 맞음/놓침 · 1102v 비슷하면 맞음
   const T = spkNorm(target), H = spkNorm(heard), n = T.length, m = H.length, D = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
-  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) D[i][j] = T[i] === H[j] ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
-  const ok = new Array(n).fill(false); let i = 0, j = 0; while (i < n && j < m) { if (T[i] === H[j]) { ok[i] = true; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else j++; }
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) D[i][j] = spkSim(T[i], H[j]) ? D[i + 1][j + 1] + 1 : Math.max(D[i + 1][j], D[i][j + 1]);
+  const ok = new Array(n).fill(false); let i = 0, j = 0; while (i < n && j < m) { if (spkSim(T[i], H[j])) { ok[i] = true; i++; j++; } else if (D[i + 1][j] >= D[i][j + 1]) i++; else j++; }
   return { T, ok, sc: n ? ok.filter(Boolean).length / n : 0 };
 }
-const spkStars = (sc) => sc >= 0.95 ? 3 : sc >= 0.75 ? 2 : sc >= 0.5 ? 1 : 0;
+const spkStars = (sc) => sc >= 0.9 ? 3 : sc >= 0.6 ? 2 : sc >= 0.35 ? 1 : 0; // 🎤 1102v 통과(⭐⭐) 75% → 60%
 function spkPool(lv, mode) { return mode === 'w' ? (EV_WORDS[lv] || []).map(([en, ko, emo]) => [en, `${emo} ${ko}`]) : (EV_SENTS[lv] || []).filter(([en]) => !/\d/.test(en)); }
+// 🎤 1102v 마이크 권한: 처음 한 번 getUserMedia로 사이트 권한을 받아 두면 크롬이 매번 묻지 않아요 · 막혔으면 단계별 안내
+const micW = { ok: false, el: null };
+function micHelp(kind) {
+  const tips = { denied: ['🎤 마이크가 막혀 있어요', '① 주소창 왼쪽 🔒(또는 ⓘ)을 눌러요', '② 「권한」 또는 「사이트 설정」 → 「마이크」 → 「허용」', '③ 화면을 새로고침해요', '그래도 안 되면: 태블릿 「설정」 → 「애플리케이션」 → 「Chrome」 → 「권한」 → 「마이크」 → 「앱 사용 중에만 허용」'],
+    webview: ['📱 앱 안에서 열려 있어요', '카카오톡·네이버·밴드 같은 앱 안의 화면에서는 마이크를 쓸 수 없어요', '오른쪽 위 ⋮(점 세 개) → 「다른 브라우저로 열기」 → 「Chrome」', '또는 Chrome을 직접 열고 주소를 입력해요'],
+    service: ['🗣️ 음성 인식을 쓸 수 없어요', 'Chrome(크롬)에서 열었는지 확인해요 (삼성 인터넷은 안 돼요)', 'Play 스토어에서 「Google」 앱과 「Chrome」을 업데이트해요', '태블릿 「설정」 → 「일반」 → 「언어 및 입력」 → 「음성 입력」이 Google로 되어 있는지 봐요'],
+    nomic: ['🎤 마이크를 찾지 못했어요', '다른 앱(카메라·녹음 등)이 마이크를 쓰고 있으면 닫아요', '이어폰 마이크를 뺐다 다시 꽂아 봐요', '화면을 새로고침해요'] }[kind] || ['🎤 마이크 문제'];
+  micW.el?.remove(); const d = document.createElement('div'); d.className = 'sticker'; d.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#FFFCF5;border-radius:18px;padding:16px 18px;max-width:min(92vw,420px);box-shadow:0 8px 30px rgba(0,0,0,.25);text-align:left;line-height:1.6';
+  d.append(Object.assign(document.createElement('b'), { textContent: tips[0], style: 'font-size:19px;display:block;margin-bottom:6px' })); for (const t of tips.slice(1)) d.append(Object.assign(document.createElement('div'), { textContent: t, style: 'font-size:15px;margin:3px 0' }));
+  const r = document.createElement('div'); r.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-top:10px'; const a = document.createElement('button'), c = document.createElement('button'); a.className = c.className = 'btn'; a.textContent = '🎤 마이크 다시 허용해 보기'; a.style.background = '#FFD23C'; c.textContent = '닫기'; c.style.background = '#fff';
+  a.onclick = async () => { d.remove(); micW.ok = false; if (await micReady()) toast('🎤 마이크 준비 완료! 다시 🎤를 눌러 말해요', 'success'); }; c.onclick = () => d.remove(); r.append(a, c); d.append(r); document.body.append(d); micW.el = d;
+}
+async function micReady() { // true면 바로 말해도 돼요
+  if (micW.ok) return true;
+  if (/; wv\)|KAKAOTALK|NAVER\(|Line\/|Instagram|FBAN|FBAV|BAND\//i.test(navigator.userAgent)) { micHelp('webview'); return false; }
+  try { const p = await navigator.permissions?.query({ name: 'microphone' }); if (p?.state === 'granted') { micW.ok = true; return true; } if (p?.state === 'denied') { micHelp('denied'); return false; } } catch (e) { }
+  try { const st = await navigator.mediaDevices.getUserMedia({ audio: true }); st.getTracks().forEach(t => t.stop()); micW.ok = true; return true; } catch (e) { micHelp(e?.name === 'NotAllowedError' || e?.name === 'SecurityError' ? 'denied' : 'nomic'); return false; }
+}
+function micErr(e) { const k = e?.error; if (k === 'not-allowed') { micW.ok = false; micHelp('denied'); return true; } if (k === 'service-not-allowed') { micHelp('service'); return true; } if (k === 'audio-capture') { micHelp('nomic'); return true; } return false; }
 function spkListen() {
   if (!SpeechRec) { toast('🎤 이 브라우저는 음성 인식이 안 돼요 (크롬에서 열어요)', 'warn'); return; }
   if (spkW.busy) { try { spkW.rec?.stop(); } catch (e) { } return; }
   const target = spkW.list[spkW.i]?.[0]; if (!target) return; try { speechSynthesis.cancel(); } catch (e) { }
+  if (!micW.ok) { micReady().then(ok => { if (ok) spkListen(); }); return; } // 🎤 1102v
   const r = new SpeechRec(); r.lang = 'en-US'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false; spkW.rec = r; spkW.busy = true; spkW.got = false; refillLife();
   r.onresult = (e) => { spkW.got = true; const alts = [...(e.results[0] || [])].map(a => a.transcript); let best = null; for (const h of alts) { const M = spkMatch(target, h); if (!best || M.sc > best.sc) best = { ...M, heard: h }; }
     spkW.res = best; const st = spkStars(best.sc); playSfx(st >= 2 ? 'right' : 'wrong'); if (st >= 2 && !spkW.list[spkW.i].done) { spkW.list[spkW.i].done = 1; spkW.ok++; spkReward(); } };
-  r.onerror = (e) => { const m = { 'not-allowed': '🎤 마이크를 허용해 주세요 (주소창 왼쪽 자물쇠 → 마이크 허용)', 'service-not-allowed': '🎤 마이크를 허용해 주세요', 'no-speech': '🤫 소리가 안 들렸어요. 🎤를 누르고 또박또박 말해요', 'audio-capture': '🎤 마이크를 찾지 못했어요', network: '📡 인터넷이 연결돼야 음성 인식이 돼요' }[e.error]; if (m) toast(m, 'warn'); };
+  r.onerror = (e) => { if (micErr(e)) return; const m = { 'no-speech': '🤫 소리가 안 들렸어요. 🎤를 누르고 또박또박 말해요', 'audio-capture': '🎤 마이크를 찾지 못했어요', network: '📡 인터넷이 연결돼야 음성 인식이 돼요' }[e.error]; if (m) toast(m, 'warn'); };
   r.onend = () => { spkW.busy = false; if (!spkW.got && !spkW.res) { } refillLife(); };
   try { r.start(); } catch (e) { spkW.busy = false; toast('🎤 다시 눌러 주세요', 'warn'); refillLife(); }
 }
@@ -19359,10 +19386,11 @@ function tkListen(line) {
   if (!SpeechRec) { toast('🎤 크롬에서 열어야 음성 인식이 돼요', 'warn'); return; }
   if (tkW.busy) { try { tkW.rec?.stop(); } catch (e) { } return; }
   try { speechSynthesis.cancel(); } catch (e) { }
+  if (!micW.ok) { micReady().then(ok => { if (ok) tkListen(line); }); return; } // 🎤 1102v
   const r = new SpeechRec(); r.lang = 'en-US'; r.interimResults = false; r.maxAlternatives = 5; tkW.rec = r; tkW.busy = true; tkRefresh();
   r.onresult = async (e) => { const alts = [...(e.results[0] || [])].map(a => a.transcript); let best = null; for (const h of alts) { const M = spkMatch(line, h); if (!best || M.sc > best.sc) best = { ...M, heard: h }; } tkW.res = best;
-    if (spkStars(best.sc) >= 2) { playSfx('right'); const [pid] = tkMine(), v = S.evtk[pid]; const said = best.sc >= 0.95 ? line : best.heard; await backend.evtkSet(pid, { [`t/${v.i | 0}`]: said.slice(0, 80), i: (v.i | 0) + 1 }); tkW.fails = 0; tkW.res = null; } else { playSfx('wrong'); tkW.fails++; } tkRefresh(); };
-  r.onerror = (e) => { const m = { 'not-allowed': '🎤 마이크를 허용해 주세요', 'no-speech': '🤫 소리가 안 들렸어요. 다시 또박또박!', network: '📡 인터넷이 연결돼야 해요' }[e.error]; if (m) toast(m, 'warn'); };
+    if (spkStars(best.sc) >= 2) { playSfx('right'); const [pid] = tkMine(), v = S.evtk[pid]; const said = best.sc >= 0.6 ? line : best.heard; await backend.evtkSet(pid, { [`t/${v.i | 0}`]: said.slice(0, 80), i: (v.i | 0) + 1 }); tkW.fails = 0; tkW.res = null; } else { playSfx('wrong'); tkW.fails++; } tkRefresh(); };
+  r.onerror = (e) => { if (micErr(e)) return; const m = { 'no-speech': '🤫 소리가 안 들렸어요. 다시 또박또박!', network: '📡 인터넷이 연결돼야 해요' }[e.error]; if (m) toast(m, 'warn'); };
   r.onend = () => { tkW.busy = false; tkRefresh(); };
   try { r.start(); } catch (e) { tkW.busy = false; tkRefresh(); }
 }
