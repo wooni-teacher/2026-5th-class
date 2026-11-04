@@ -5695,13 +5695,12 @@ function buildMissionWorld() {
   box(g, 4.4, 2.6, 0.25, 0xFFF3DC, 0, 2.9, 0, { solid: false }); // 1028q: 판자는 머리 높이라 아래로 지나가려다 막혔어요 → 기둥만 부딪혀요
   for (const [w, h, x, y] of [[4.7, 0.18, 0, 4.25], [4.7, 0.18, 0, 1.55], [0.18, 2.8, -2.3, 2.9], [0.18, 2.8, 2.3, 2.9]]) box(g, w, h, 0.32, 0x8A5A34, x, y, 0, { solid: false }); // 테두리
   mesh(GABLE, g, 1.0, 0.7, 5.3, 0xE2584A, 0, 4.34, 0, { solid: false, ry: Math.PI / 2 }); // 작은 지붕
-  [[-1.4, 2.4, 0xFFE066, 0.08], [-0.2, 2.2, 0xB9DCFF, -0.06], [1.1, 2.45, 0xFFB3C7, 0.1], [1.6, 1.95, 0xC8F0B4, -0.04]].forEach(([x, y, c, r]) => {
-    box(g, 0.9, 0.7, 0.03, c, x, y, -0.15, { solid: false, rz: r }); ball(g, 0.06, C.red, x, y + 0.3, -0.18, { solid: false }); // 붙인 쪽지와 압정
-  });
-  signPlane(g, ['🎯 미션 게시판'], 4.2, 1.1, 0, 3.6, -0.14, { font: 70, pad: 6, fg: '#3B2F2A', stroke: false });
+  { const c = document.createElement('canvas'); c.width = 880; c.height = 440; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; // 📅 1102q 미션 게시판 → 학급 달력 게시판 (이번 주 7일)
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 2.1), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); m.position.set(0, 2.62, -0.14); m.rotation.y = Math.PI; g.add(m); missionBoard.calTex = t; missionBoard.calKey = ''; }
+  signPlane(g, ['📅 학급 달력'], 4.2, 0.62, 0, 3.86, -0.14, { font: 70, pad: 6, fg: '#3B2F2A', stroke: false });
   missionBoard.label = makeLabel(g, [''], 1.6, 0, 5.4, 0);
   g.updateMatrixWorld(true);
-  addInteract({ pos: g.localToWorld(new V3(0, 1, -1.4)), r: 3.2, text: () => ['게시판 보기 🎯', '공동 미션·투표'], run: openMissionHub });
+  addInteract({ pos: g.localToWorld(new V3(0, 1, -1.4)), r: 3.2, text: () => ['📅 학급 달력 보기', '이번 달 행사 일정 (🎯 공동 미션은 위쪽 🎯 버튼)'], run: () => openCal() });
   registerSolids(g, 'static');
 
   // 보상 자리 (잠겨 있으면 빈 자리와 자물쇠 표지)
@@ -5788,8 +5787,8 @@ function renderMission() {
   }
   const lines = [];
   if (S.notice) lines.push(CFG.NOTICES[S.notice.i]); // 공지는 맨 위
-  if (!list.length) lines.push('🎯 미션 게시판', '선생님이 미션을 준비하고 있어요');
-  else { lines.push(`🎯 공동 미션 ${list.length}개`); for (const m of list.slice(0, 3)) lines.push(`${m.title} ${m.count}/${m.goal}`); }
+  { const L = typeof calEvsOn === 'function' && stateLoaded ? calEvsOn(dayNum()) : []; lines.push(L.length ? `📅 오늘: ${L.slice(0, 2).map(e => `${e.ic} ${e.t}`).join(' · ')}` : '📅 학급 달력'); } // 📅 1102q
+  if (list.length) lines.push(`🎯 공동 미션 ${list.length}개 (위쪽 🎯)`);
   if (S.rvote && S.rvote.open) lines.push(`🗳️ "${S.rvote.title}" 보상 투표 중 (${rvTotal()}표)`);
   const key = lines.join('|');
   if (key !== missionKey) { missionKey = key; missionBoard.label.userData.set(lines); }
@@ -18269,6 +18268,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102q', d: '11월 4일', items: ['📅 광장의 미션 게시판이 학급 달력 게시판으로 바뀌었어요! 오늘부터 7일 동안의 행사가 보이고, E를 누르면 달력이 열려요 (🎯 공동 미션은 위쪽 🎯 버튼에서)'] },
   { id: '1102p', d: '11월 4일', items: ['📅 학급 달력! 위쪽 📅 버튼을 누르면 이번 달 마을 행사(골든벨 · 공성전 · 해전 …)와 앞으로 7일 일정을 볼 수 있어요 · 들어오면 오늘 일정을 알려 줘요', '🧑‍🏫 선생님은 달력에서 일정을 정해요: 한 번 · 매주 반복(요일 여러 개) · 평일 매일 · 시간·메모'] },
   { id: '1102o', d: '11월 4일', items: ['🐚 하루에 모을 수 있는 조개가 1000까지 늘었어요! 갖고 싶은 물건을 더 빨리 살 수 있어요'] },
   { id: '1102n', d: '11월 4일', items: ['🎭 얼굴을 감싸는 탈이 생겼어요! 🎃 호박 탈 · 🦈 상어 탈 수영모(벌린 입 속에 얼굴)가 탈 모양으로 바뀌고, 👕 옷가게에 🐻 곰돌이 탈 · 🐸 개구리 탈 · 🦁 사자 탈 · 🦖 공룡 탈', '🧢 야구모자 · 👒 밀짚모자 · 🧶 털모자 · 🎩 신사 모자는 그대로 모자'] },
@@ -27524,7 +27524,18 @@ function calAdmin(box) { // 🧑‍🏫 일정 만들기·고치기·지우기
   }
   const L = Object.entries(S.cal?.ev || {}); if (L.length) { box.append(el2('h3', 'lp-sec', `📋 정한 일정 ${L.length}개`)); for (const [id, e] of L.sort((a, b) => (a[1].r === 'o') - (b[1].r === 'o') || String(a[1].d).localeCompare(String(b[1].d)))) { const r = el2('div', ''); r.style.cssText = 'display:flex;gap:6px;align-items:center;justify-content:space-between;background:#FAF6EF;border-radius:10px;padding:4px 8px;margin:3px 0;font-size:14px;text-align:left'; r.append(el2('span', '', `${e.ic || '📌'} ${e.t} · ${calRtxt(e)}${e.tm ? ` · ⏰${e.tm}` : ''}`)); const b = el2('button', 'btn', '✏️'); b.style.cssText = 'font-size:12px;padding:2px 8px;background:#fff'; b.onclick = () => { calW.edit = { ...e, id }; refillLife(); }; r.append(b); box.append(r); } }
 }
+function calBoardDraw() { // 📅 1102q 광장 달력 게시판: 오늘부터 7일
+  const t = missionBoard.calTex; if (!t || !stateLoaded) return; const today = dayNum(), D = [...Array(7)].map((_, i) => [today + i, calEvsOn(today + i)]), k = JSON.stringify(D.map(([d, L]) => [d, L.map(e => e.ic + e.t + (e.tm || ''))]));
+  if (k === missionBoard.calKey) return false; missionBoard.calKey = k; const c = t.image.getContext('2d'), W = 880, H = 440, cw = W / 7;
+  c.fillStyle = '#FFF8E8'; c.fillRect(0, 0, W, H); c.textAlign = 'center';
+  D.forEach(([dn, L], i) => { const x = i * cw, wd = calWd(dn), td = dn === today; c.fillStyle = td ? '#FFE9A8' : i % 2 ? '#FFFDF6' : '#FFF8E8'; c.fillRect(x + 3, 3, cw - 6, H - 6); if (td) { c.strokeStyle = '#E2584A'; c.lineWidth = 6; c.strokeRect(x + 5, 5, cw - 10, H - 10); }
+    c.fillStyle = wd === 0 ? '#D33' : wd === 6 ? '#3366CC' : '#3B2F2A'; c.font = '800 30px Pretendard, sans-serif'; c.fillText(td ? '오늘' : CAL_WD[wd], x + cw / 2, 42); c.font = '700 24px Pretendard, sans-serif'; c.fillText(calStr(dn).slice(5).replace('-', '/'), x + cw / 2, 74);
+    L.slice(0, 3).forEach((e, j) => { const y = 130 + j * 104; c.font = '48px sans-serif'; c.fillText(e.ic, x + cw / 2, y); c.fillStyle = '#3B2F2A'; c.font = '700 21px Pretendard, sans-serif'; const tt = e.t.length > 6 ? e.t.slice(0, 6) + '…' : e.t; c.fillText(tt, x + cw / 2, y + 32); if (e.tm) { c.font = '600 18px Pretendard, sans-serif'; c.fillStyle = '#8A5A34'; c.fillText(e.tm, x + cw / 2, y + 54); } });
+    if (!L.length) { c.fillStyle = '#C8BBA8'; c.font = '600 22px Pretendard, sans-serif'; c.fillText('·', x + cw / 2, 200); } });
+  t.needsUpdate = true; return true;
+}
 function calTick() { // 들어오면 오늘 일정을 한 번 알려 줘요
+  try { if (calBoardDraw()) renderMission(); } catch (e) { }
   if (!joined || !stateLoaded || calW.toldDay === dayNum()) return; calW.toldDay = dayNum(); const L = calEvsOn(dayNum()); if (!L.length) return;
   setTimeout(() => toast(`📅 오늘 일정: ${L.map(e => `${e.ic} ${e.t}${e.tm ? ` ${e.tm}` : ''}`).join(' · ')}`, 'info'), 4000);
 }
