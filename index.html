@@ -118,7 +118,7 @@
     border: 1.5px solid var(--line-2); background: #E2E2E2; opacity: .45; transition: opacity .3s, background .3s;
   }
   .sicon.on { opacity: 1; }
-  #helpBtn, #teacherBtn, #actBtn, #bagBtn, #statBtn { width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 22px; }
+  #calBtn, #helpBtn, #teacherBtn, #actBtn, #bagBtn, #statBtn { width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 22px; }
 
   /* 알림 */
   #toast {
@@ -861,7 +861,7 @@
     #mat { font-size: 19px; min-width: 90px; }
     #prog { width: 84px; } #progText { font-size: 16px; }
     .sicon { width: 28px; height: 28px; font-size: 14px; }
-    #helpBtn, #teacherBtn, #actBtn, #bagBtn, #statBtn { width: 32px; height: 32px; font-size: 18px; }
+    #calBtn, #helpBtn, #teacherBtn, #actBtn, #bagBtn, #statBtn { width: 32px; height: 32px; font-size: 18px; }
     #missionDock { top: calc(64px + var(--safe-top)); } #missionBar { width: 170px; font-size: 14px; }
     #toast { top: calc(70px + var(--safe-top)); font-size: 18px; }
   }
@@ -978,6 +978,7 @@
   <div id="icons"></div>
   <div id="coinChip" title="반 동전">🪙 0</div>
   <div id="shellChip" class="chip2" title="내 조개돈 (나만 보여요)">🐚 0</div>
+  <button id="calBtn" class="btn" aria-label="학급 달력" title="학급 달력">📅</button>
   <button id="helpBtn" class="btn" aria-label="도움말">?</button>
   <button id="statBtn" class="btn" aria-label="내 능력치" title="내 능력치">📊</button>
   <button id="bagBtn" class="btn" aria-label="내 가방 열기" title="내 가방">🎒</button>
@@ -2197,7 +2198,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, str: null, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {} }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2260,6 +2261,7 @@ function normalize(v) {
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
     kb: v.kb && typeof v.kb === 'object' ? { open: v.kb.open === true, n: v.kb.n | 0, title: String(v.kb.title || '').slice(0, 30), cur: v.kb.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.kb.ph) ? v.kb.ph : 'wait', lim: Math.min(120, Math.max(0, v.kb.lim | 0)), qt: +v.kb.qt || 0, qs: Object.values(toObj(v.kb.qs)).slice(0, 30).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), ...(/^\d{1,4}-\d{1,4}$/.test(String(q?.y || '')) ? { y: q.y } : {}) })), rev: Object.fromEntries(Object.entries(toObj(v.kb.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.kb.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.kb.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.kb.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])) } : null, // 🎭 1102a 꿈끼 골든벨
+    cal: { ev: Object.fromEntries(Object.entries(plainObj(plainObj(v.cal).ev)).filter(([k, e]) => /^[a-z0-9]{1,20}$/.test(k) && e && typeof e.t === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d || '') && ['o', 'w', 'd'].includes(e.r)).slice(0, 60).map(([k, e]) => [k, { t: e.t.slice(0, 30), ic: String(e.ic || '📌').slice(0, 4), r: e.r, d: e.d, ...(typeof e.wd === 'string' && /^[0-6](,[0-6]){0,6}$/.test(e.wd) ? { wd: e.wd } : {}), ...(/^\d{4}-\d{2}-\d{2}$/.test(e.u || '') ? { u: e.u } : {}), ...(/^\d{2}:\d{2}$/.test(e.tm || '') ? { tm: e.tm } : {}), ...(typeof e.m === 'string' ? { m: e.m.slice(0, 40) } : {}) }])) }, // 📅 1102p
     str: v.str && typeof v.str === 'object' && v.str.on && typeof v.str.u === 'string' && ANON_ID.test(v.str.u) ? { on: 1, u: v.str.u, at: +v.str.at || 0, s: Object.fromEntries(Object.entries(plainObj(v.str.s)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99)).slice(0, 100)) } : null, // 🚂 1102j
     cloth: Object.fromEntries(Object.entries(plainObj(v.cloth)).filter(([u, x]) => ANON_ID.test(u) && x && /^[0-9a-f]{256}$/.test(x.d || '')).slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), d: x.d, at: +x.at || 0, ...(x.ok === 1 ? { ok: 1 } : {}) }])), // 👕 1102c
     clothv: Object.fromEntries(Object.entries(plainObj(v.clothv)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string' && ANON_ID.test(t)).slice(0, 80)),
@@ -5186,7 +5188,7 @@ function initUI() {
   $('helpBtn').onclick = () => $('tip').classList.toggle('hidden');
   $('actBtn').onclick = () => { if (joined) openMissionHub(); };
   $('tipOk').onclick = () => $('tip').classList.add('hidden');
-  $('statBtn').onclick = openStats;
+  $('statBtn').onclick = openStats; $('calBtn').onclick = () => openCal(); // 📅 1102p
   $('studyClose').onclick = () => { $('studyPanel').classList.add('hidden'); if (isSeated(player.avatar)) playAct(player.avatar, null); };
   $('tipUpd').onclick = () => { $('tip').classList.add('hidden'); openUpdates(); };
 
@@ -18267,6 +18269,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102p', d: '11월 4일', items: ['📅 학급 달력! 위쪽 📅 버튼을 누르면 이번 달 마을 행사(골든벨 · 공성전 · 해전 …)와 앞으로 7일 일정을 볼 수 있어요 · 들어오면 오늘 일정을 알려 줘요', '🧑‍🏫 선생님은 달력에서 일정을 정해요: 한 번 · 매주 반복(요일 여러 개) · 평일 매일 · 시간·메모'] },
   { id: '1102o', d: '11월 4일', items: ['🐚 하루에 모을 수 있는 조개가 1000까지 늘었어요! 갖고 싶은 물건을 더 빨리 살 수 있어요'] },
   { id: '1102n', d: '11월 4일', items: ['🎭 얼굴을 감싸는 탈이 생겼어요! 🎃 호박 탈 · 🦈 상어 탈 수영모(벌린 입 속에 얼굴)가 탈 모양으로 바뀌고, 👕 옷가게에 🐻 곰돌이 탈 · 🐸 개구리 탈 · 🦁 사자 탈 · 🦖 공룡 탈', '🧢 야구모자 · 👒 밀짚모자 · 🧶 털모자 · 🎩 신사 모자는 그대로 모자'] },
   { id: '1102m', d: '11월 3일', items: ['🎩 모자 디자인을 새로 다듬었어요: 야구모자·밀짚모자·털모자·신사 모자·호박 모자·수영모가 머리 속에 파묻히지 않고 머리를 감싸요 (모자를 쓰면 윗머리는 모자 안으로)', '🐰 토끼 귀·🎀 리본·🌸 꽃관·👑 왕관·🌟 별 핀도 머리 위에 또렷하게 올라가요'] },
@@ -27445,6 +27448,87 @@ function strFx(a, R0, dt) { // 🚂 굴뚝 연기 · 바퀴 빛
   const gp = a.g.position, h = a.g.rotation.y; burst(new V3(gp.x + Math.sin(h) * 1.25, gp.y + 1.5, gp.z + Math.cos(h) * 1.25), [0xFFFFFF, 0xE6F0FF], 2, 0.4, 1.2, 1.2, 0.5);
 }
 setInterval(() => { try { if (!joined) return; strSync(); } catch (e) { } }, 1000);
+// ================= 📅 1102p 학급 달력 (마을 행사 일정 · 선생님이 정해요 · 반복) =================
+// 위쪽 📅 버튼 → 달력(월) · 날짜를 누르면 그날 일정 · 이번 주 일정 · 꿈끼 발표회 D-day·시즌은 저절로
+// · state/cal/ev/{id} {t 제목, ic 아이콘, r 'o' 한 번 | 'w' 매주 | 'd' 평일 매일, d 'YYYY-MM-DD' (한 번: 그날 · 반복: 시작일), wd '1,3' 요일(매주), u 끝날(선택), tm 'HH:MM'(선택), m 메모} (선생님만)
+const CAL_PRE = [['🔔', '영어 골든벨'], ['⚔️', '성 공방전'], ['⚓', '삼국 해전'], ['🎭', '꿈끼 골든벨'], ['📝', '수업 마무리 퀴즈'], ['🚂', '하늘 기차 견학'], ['👗', '옷 디자인 공모전'], ['🕵️', '정보 탐정단'], ['🏃', '수학 달리기'], ['📜', '과거시험'], ['🎉', '마을 축제'], ['🏫', '학급회의']];
+const CAL_WD = ['일', '월', '화', '수', '목', '금', '토'];
+const calW = { y: 0, m: 0, sel: '', edit: null, toldDay: 0 };
+const calStr = (dn) => new Date(dn * 864e5).toISOString().slice(0, 10);
+const calDn = (s) => Math.round(Date.parse(s + 'T00:00:00Z') / 864e5);
+const calWd = (dn) => new Date(dn * 864e5).getUTCDay();
+function calEvsOn(dn) { // 그날 일정 [{ic, t, tm, m, id, auto}]
+  const ds = calStr(dn), wd = calWd(dn), out = [];
+  for (const [id, e] of Object.entries(S.cal?.ev || {})) { if (!e?.t || !e.d) continue; const st = calDn(e.d), en = e.u ? calDn(e.u) : Infinity;
+    if (e.r === 'o' ? e.d === ds : dn >= st && dn <= en && (e.r === 'd' ? wd >= 1 && wd <= 5 : String(e.wd || '').split(',').includes(String(wd)))) out.push({ id, ic: e.ic || '📌', t: e.t, tm: e.tm || '', m: e.m || '', r: e.r }); }
+  try { const dd = stgCfg?.().dd; if (dd && dd === ds) out.push({ ic: '🎤', t: '꿈끼 발표회 D-day!', auto: 1 }); } catch (e) { }
+  try { for (const Z of SSNS) { if (Z.from === dn) out.push({ ic: Z.icon, t: `${Z.n} 시작`, auto: 1 }); if (Z.to === dn && !Z.finale) out.push({ ic: Z.icon, t: `${Z.n} 마지막 날`, auto: 1 }); } } catch (e) { }
+  return out.sort((a, b) => (a.tm || '99') < (b.tm || '99') ? -1 : 1);
+}
+const calRtxt = (e) => e.r === 'o' ? `한 번 · ${e.d}` : e.r === 'd' ? `평일 매일 · ${e.d}부터${e.u ? ` ${e.u}까지` : ''}` : `매주 ${String(e.wd || '').split(',').filter(Boolean).map(x => CAL_WD[+x]).join('·')} · ${e.d}부터${e.u ? ` ${e.u}까지` : ''}`;
+function openCal() {
+  const today = dayNum(); if (!calW.y) { const t = new Date(today * 864e5); calW.y = t.getUTCFullYear(); calW.m = t.getUTCMonth(); calW.sel = calStr(today); }
+  openLife('📅 학급 달력', (box) => {
+    box.textContent = '';
+    // 이번 주
+    { const wk = []; for (let i = 0; i < 7; i++) { const dn = today + i, L = calEvsOn(dn); if (L.length) wk.push([dn, L]); }
+      const c = el2('div', ''); c.style.cssText = 'background:#FFF6E6;border-radius:12px;padding:8px 12px;text-align:left;margin-bottom:6px'; c.append(el2('b', '', '🗓️ 앞으로 7일'));
+      if (!wk.length) c.append(el2('div', 'hint', '정해진 행사가 없어요'));
+      for (const [dn, L] of wk) c.append(el2('div', '', `${dn === today ? '👉 오늘' : `${calStr(dn).slice(5).replace('-', '/')}(${CAL_WD[calWd(dn)]})`} · ${L.map(e => `${e.ic} ${e.t}${e.tm ? ` ${e.tm}` : ''}`).join(' · ')}`));
+      box.append(c); }
+    // 달 머리
+    const hd = el2('div', 'row-center'), pv = el2('button', 'btn', '◀'), nx = el2('button', 'btn', '▶'), tb = el2('button', 'btn', '오늘'); pv.style.background = nx.style.background = tb.style.background = '#fff';
+    pv.onclick = () => { calW.m--; if (calW.m < 0) { calW.m = 11; calW.y--; } refillLife(); }; nx.onclick = () => { calW.m++; if (calW.m > 11) { calW.m = 0; calW.y++; } refillLife(); }; tb.onclick = () => { calW.y = 0; openCal(); };
+    hd.append(pv, el2('b', 'lp-big', `${calW.y}년 ${calW.m + 1}월`), nx, tb); box.append(hd);
+    // 달력 칸
+    const grid = el2('div', ''); grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:4px 0';
+    CAL_WD.forEach((w, i) => grid.append(Object.assign(el2('div', '', w), { style: `text-align:center;font-weight:800;font-size:13px;color:${i === 0 ? '#D33' : i === 6 ? '#3366CC' : '#555'}` })));
+    const first = Math.round(Date.UTC(calW.y, calW.m, 1) / 864e5), days = new Date(Date.UTC(calW.y, calW.m + 1, 0)).getUTCDate(), lead = calWd(first);
+    for (let i = 0; i < lead; i++) grid.append(el2('div', ''));
+    for (let k = 0; k < days; k++) { const dn = first + k, ds = calStr(dn), L = calEvsOn(dn), c = el2('button', ''), wd = calWd(dn);
+      c.style.cssText = `min-height:54px;border-radius:10px;border:2px solid ${ds === calW.sel ? '#E2584A' : dn === today ? '#F2C230' : '#EEE4D4'};background:${dn === today ? '#FFF6D8' : '#fff'};padding:2px;display:flex;flex-direction:column;align-items:center;cursor:pointer;font-family:inherit`;
+      c.append(Object.assign(el2('span', '', String(k + 1)), { style: `font-size:13px;font-weight:700;color:${wd === 0 ? '#D33' : wd === 6 ? '#3366CC' : '#333'}` }), Object.assign(el2('span', '', L.map(e => e.ic).slice(0, 3).join('') + (L.length > 3 ? '…' : '')), { style: 'font-size:15px;line-height:1.1' }));
+      c.onclick = () => { calW.sel = ds; refillLife(); }; grid.append(c); }
+    box.append(grid);
+    // 고른 날
+    { const dn = calDn(calW.sel), L = calEvsOn(dn), c = el2('div', ''); c.style.cssText = 'background:#EEF6FF;border-radius:12px;padding:8px 12px;text-align:left';
+      c.append(el2('b', '', `📌 ${calW.sel.slice(5).replace('-', '/')}(${CAL_WD[calWd(dn)]}) 일정`)); if (!L.length) c.append(el2('div', 'hint', '일정이 없어요'));
+      for (const e of L) { const r = el2('div', ''); r.style.cssText = 'display:flex;gap:6px;align-items:center;margin:3px 0'; r.append(el2('span', '', `${e.ic} ${e.t}${e.tm ? ` · ⏰ ${e.tm}` : ''}${e.m ? ` · ${e.m}` : ''}${e.auto ? ' (자동)' : ''}`));
+        if (isTeacher && e.id) { const b = el2('button', 'btn', '✏️'); b.style.cssText = 'font-size:12px;padding:2px 8px;background:#fff'; b.onclick = () => { calW.edit = { ...S.cal.ev[e.id], id: e.id }; refillLife(); }; r.append(b); }
+        c.append(r); }
+      if (isTeacher) { const b = el2('button', 'btn', '➕ 이날 일정 넣기'); b.style.cssText = 'font-size:13px;background:#FFD23C;margin-top:4px'; b.onclick = () => { calW.edit = { t: '', ic: '📌', r: 'o', d: calW.sel, wd: String(calWd(dn)), tm: '', m: '' }; refillLife(); }; c.append(b); }
+      box.append(c); }
+    if (isTeacher) calAdmin(box);
+  });
+}
+function calAdmin(box) { // 🧑‍🏫 일정 만들기·고치기·지우기
+  box.append(el2('h3', 'lp-sec', '🧑‍🏫 일정 정하기'));
+  const E = calW.edit;
+  if (!E) { const b = el2('button', 'btn', '➕ 새 일정 (한 번 · 매주 · 평일 매일)'); b.style.background = '#FFD23C'; b.onclick = () => { calW.edit = { t: '', ic: '📌', r: 'w', d: calStr(dayNum()), wd: String(calWd(dayNum())), tm: '', m: '' }; refillLife(); }; const r = el2('div', 'row-center'); r.append(b); box.append(r); }
+  else {
+    const f = el2('div', ''); f.style.cssText = 'background:#fff;border:2px solid #E9D3B6;border-radius:12px;padding:8px 10px;text-align:left';
+    f.append(el2('div', 'hint', '빠르게 고르기'));
+    { const r = el2('div', 'row-center wrap'); for (const [ic, t] of CAL_PRE) { const b = el2('button', 'btn', `${ic} ${t}`); b.style.cssText = `font-size:12px;padding:3px 8px;background:${E.t === t ? '#FFD23C' : '#F7F2EA'}`; b.onclick = () => { E.ic = ic; E.t = t; refillLife(); }; r.append(b); } f.append(r); }
+    const inp = (lab, key, type, ph, max) => { const l = el2('label', ''); l.style.cssText = 'display:flex;gap:6px;align-items:center;margin:4px 0;font-size:14px'; l.append(el2('span', '', lab)); const i = document.createElement('input'); i.type = type; i.className = 'tinput'; i.style.cssText = 'flex:1;min-width:0'; if (max) i.maxLength = max; if (ph) i.placeholder = ph; i.value = E[key] || ''; i.oninput = () => { E[key] = i.value; }; i.onkeydown = (e) => e.stopPropagation(); l.append(i); f.append(l); return i; };
+    inp('아이콘', 'ic', 'text', '📌', 4); inp('제목', 't', 'text', '예: 영어 골든벨', 30);
+    { const r = el2('div', 'row-center wrap'); for (const [k, lab] of [['o', '한 번'], ['w', '매주 반복'], ['d', '평일 매일']]) { const b = el2('button', 'btn', lab); b.style.cssText = `font-size:13px;background:${E.r === k ? '#CDEFC2' : '#fff'}`; b.onclick = () => { E.r = k; refillLife(); }; r.append(b); } f.append(r); }
+    if (E.r === 'w') { const r = el2('div', 'row-center wrap'), on = new Set(String(E.wd || '').split(',').filter(Boolean)); CAL_WD.forEach((w, i) => { const b = el2('button', 'btn', w); b.style.cssText = `font-size:13px;padding:4px 10px;background:${on.has(String(i)) ? '#FFD23C' : '#fff'}`; b.onclick = () => { if (on.has(String(i))) on.delete(String(i)); else on.add(String(i)); E.wd = [...on].sort().join(','); refillLife(); }; r.append(b); }); f.append(el2('div', 'hint', '반복할 요일 (여러 개 골라도 돼요)'), r); }
+    inp(E.r === 'o' ? '날짜' : '시작일', 'd', 'date'); if (E.r !== 'o') inp('끝날(비우면 계속)', 'u', 'date'); inp('시간(선택)', 'tm', 'time'); inp('메모(선택)', 'm', 'text', '예: 2교시 · 영어 마을 골든벨 홀', 40);
+    const r = el2('div', 'row-center wrap'), sv = el2('button', 'btn', '💾 저장'), cc = el2('button', 'btn', '취소'); sv.style.background = '#FFD23C'; cc.style.background = '#fff';
+    sv.onclick = async () => { const t = String(E.t || '').trim().slice(0, 30); if (!t) { toast('제목을 적어요', 'warn'); return; } if (!/^\d{4}-\d{2}-\d{2}$/.test(E.d || '')) { toast('날짜를 골라요', 'warn'); return; } if (E.r === 'w' && !E.wd) { toast('반복할 요일을 골라요', 'warn'); return; }
+      const id = E.id || ('e' + Date.now().toString(36)), o = { t, ic: String(E.ic || '📌').slice(0, 4) || '📌', r: E.r, d: E.d, ...(E.r === 'w' ? { wd: E.wd } : {}), ...(E.r !== 'o' && /^\d{4}-\d{2}-\d{2}$/.test(E.u || '') ? { u: E.u } : {}), ...(/^\d{2}:\d{2}$/.test(E.tm || '') ? { tm: E.tm } : {}), ...(String(E.m || '').trim() ? { m: String(E.m).trim().slice(0, 40) } : {}) };
+      if (await adminDo({ [`cal/ev/${id}`]: o }, `📅 「${t}」 일정을 저장했어요 (${calRtxt(o)})`)) { calW.edit = null; setTimeout(refillLife, 300); } };
+    cc.onclick = () => { calW.edit = null; refillLife(); }; r.append(sv, cc);
+    if (E.id) { const del = el2('button', 'btn', '🗑️ 지우기'); del.style.background = '#fff'; del.onclick = () => adminDo({ [`cal/ev/${E.id}`]: null }, '🗑️ 일정을 지웠어요').then(() => { calW.edit = null; setTimeout(refillLife, 300); }); r.append(del); }
+    f.append(r); box.append(f);
+  }
+  const L = Object.entries(S.cal?.ev || {}); if (L.length) { box.append(el2('h3', 'lp-sec', `📋 정한 일정 ${L.length}개`)); for (const [id, e] of L.sort((a, b) => (a[1].r === 'o') - (b[1].r === 'o') || String(a[1].d).localeCompare(String(b[1].d)))) { const r = el2('div', ''); r.style.cssText = 'display:flex;gap:6px;align-items:center;justify-content:space-between;background:#FAF6EF;border-radius:10px;padding:4px 8px;margin:3px 0;font-size:14px;text-align:left'; r.append(el2('span', '', `${e.ic || '📌'} ${e.t} · ${calRtxt(e)}${e.tm ? ` · ⏰${e.tm}` : ''}`)); const b = el2('button', 'btn', '✏️'); b.style.cssText = 'font-size:12px;padding:2px 8px;background:#fff'; b.onclick = () => { calW.edit = { ...e, id }; refillLife(); }; r.append(b); box.append(r); } }
+}
+function calTick() { // 들어오면 오늘 일정을 한 번 알려 줘요
+  if (!joined || !stateLoaded || calW.toldDay === dayNum()) return; calW.toldDay = dayNum(); const L = calEvsOn(dayNum()); if (!L.length) return;
+  setTimeout(() => toast(`📅 오늘 일정: ${L.map(e => `${e.ic} ${e.t}${e.tm ? ` ${e.tm}` : ''}`).join(' · ')}`, 'info'), 4000);
+}
+setInterval(() => { try { calTick(); } catch (e) { } }, 5000);
 // ================= 🏷️ 마을 이름 투표 (1022c · 예전 "우리 집 마을") =================
 // state/vname { ph: collect 후보 받기 / vote 투표 / done, name, c{기기: 후보 이름}, v{기기: 후보를 낸 기기}, at } · 정해진 이름은 입구 아치·표지에 보여요
 function vnameTally() { const V = S.vname || {}, n = {}; for (const k of Object.keys(V.c || {})) n[k] = 0; for (const t of Object.values(V.v || {})) if (t in n) n[t]++; return Object.entries(n).sort((a, b) => b[1] - a[1] || String(V.c[a[0]]).localeCompare(String(V.c[b[0]]), 'ko')); }
