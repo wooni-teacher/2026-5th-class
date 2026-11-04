@@ -18271,6 +18271,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102w', d: '11월 4일', items: ['🔢 말하기·대화 부스: "seven hundred won"을 말했는데 7001 · 700 won · 701로 적혀도 맞음으로 처리해요 (숫자를 영어 낱말로 바꿔 비교)'] },
   { id: '1102v', d: '11월 4일', items: ['🎤 말하기·대화 부스 발음 판정이 더 너그러워졌어요: 비슷한 소리(a/the · s 빠짐 · 한두 글자 차이)도 맞음 · 60%면 통과', '🎤 마이크 권한을 처음 한 번만 물어보고, 막혔을 때는 태블릿에서 푸는 방법을 단계별로 보여 줘요'] },
   { id: '1102u', d: '11월 4일', items: ['🗣️ 짝 대화 무대가 영어 마을 동쪽 문 너머 「대화 부스」로 옮겨 갔어요! 방음 부스 8개에 짝과 둘이 들어가 🅰·🅱 자리에서 대화해요 (대화 중이면 🔴 ON AIR)', '🧭 미로 공원(Level 2·3)은 없어지고, 길 찾기 미로는 야구장 거리 Level 1로 해요'] },
   { id: '1102t', d: '11월 4일', items: ['🗣️ 짝 대화 무대가 8쌍으로 늘었어요 · 🎤 말하기 부스·🎧 듣기쓰기 부스·대화 무대 앞 나무를 치웠어요'] },
@@ -19213,9 +19214,12 @@ const SPK = { x: 1729, z: -9.5, per: 5, day: 15 };
 const spkW = { lv: 7, mode: 's', list: [], i: 0, res: null, busy: false, rec: null, ok: 0, it: null };
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 const SPK_CONT = [[/\bit's\b/g, 'it is'], [/\bwhat's\b/g, 'what is'], [/\bhe's\b/g, 'he is'], [/\bshe's\b/g, 'she is'], [/\bthey're\b/g, 'they are'], [/\blet's\b/g, 'let us'], [/\bthat's\b/g, 'that is'], [/\bi'm\b/g, 'i am'], [/\bdon't\b/g, 'do not'], [/\bcan't\b/g, 'cannot'], [/\bthere's\b/g, 'there is'], [/\byou're\b/g, 'you are'], [/\bt-shirt\b/g, 't shirt'], [/\bok\b/g, 'okay']];
-function spkNorm(t) { let s = String(t || '').toLowerCase().replace(/[’`]/g, "'"); for (const [re, v] of SPK_CONT) s = s.replace(re, v); return s.replace(/[^a-z0-9' ]+/g, ' ').replace(/'/g, '').split(/\s+/).filter(Boolean); }
+const SPK_N1 = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' '), SPK_N10 = ',,twenty,thirty,forty,fifty,sixty,seventy,eighty,ninety'.split(',');
+function spkNumW(n) { /* 🔢 1102w 숫자 → 영어 낱말 (700 → seven hundred) */ n = Math.floor(n); if (n < 20) return SPK_N1[n]; if (n < 100) return SPK_N10[Math.floor(n / 10)] + (n % 10 ? ' ' + SPK_N1[n % 10] : ''); if (n < 1000) return SPK_N1[Math.floor(n / 100)] + ' hundred' + (n % 100 ? ' ' + spkNumW(n % 100) : ''); if (n < 1e6) return spkNumW(Math.floor(n / 1000)) + ' thousand' + (n % 1000 ? ' ' + spkNumW(n % 1000) : ''); return String(n); }
+function spkNumTok(w) { /* 🔢 1102w 인식기가 'won'을 '1'로 붙여 쓴 경우(7001, 100001) → 숫자 + won */ if (!/^\d+$/.test(w) || w.length > 7) return w; const m = /^(\d*00)1$/.exec(w); if (m && +m[1] >= 100) return spkNumW(+m[1]) + ' won'; return spkNumW(+w); }
+function spkNorm(t) { let s = String(t || '').toLowerCase().replace(/[’`]/g, "'"); for (const [re, v] of SPK_CONT) s = s.replace(re, v); s = s.replace(/(\d),(?=\d{3})/g, '$1').replace(/\$\s*(\d+)/g, '$1 dollars').replace(/₩\s*(\d+)/g, '$1 won').replace(/(\d+)\s*원/g, '$1 won'); return s.replace(/[^a-z0-9' ]+/g, ' ').replace(/'/g, '').split(/\s+/).filter(Boolean).map(spkNumTok).join(' ').split(' ').filter(Boolean); }
 function spkLev(a, b) { const m = a.length, n = b.length; if (Math.abs(m - n) > 2) return 9; let p = [...Array(n + 1).keys()]; for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[n]; }
-const SPK_SAME = [['a', 'the'], ['an', 'a'], ['these', 'this'], ['those', 'these'], ['he', 'she'], ['is', 'was'], ['are', 'were'], ['to', 'two'], ['too', 'to'], ['for', 'four'], ['right', 'write'], ['see', 'sea'], ['there', 'their'], ['im', 'i am'], ['were', 'where'], ['ok', 'okay']];
+const SPK_SAME = [['won', 'one'], ['won', 'want'], ['a', 'the'], ['an', 'a'], ['these', 'this'], ['those', 'these'], ['he', 'she'], ['is', 'was'], ['are', 'were'], ['to', 'two'], ['too', 'to'], ['for', 'four'], ['right', 'write'], ['see', 'sea'], ['there', 'their'], ['im', 'i am'], ['were', 'where'], ['ok', 'okay']];
 function spkSim(a, b) { // 🎤 1102v 너그러운 비교: 같거나 · 끝 s/ed만 다르거나 · 비슷한 소리 짝 · 한두 글자 차이
   if (a === b) return true; const st = (w) => w.replace(/(es|s|ed|d)$/, ''); if (a.length > 2 && b.length > 2 && st(a) === st(b)) return true;
   if (SPK_SAME.some(([x, y]) => (a === x && b === y) || (a === y && b === x))) return true; const L = Math.max(a.length, b.length); return L >= 3 && spkLev(a, b) <= (L >= 7 ? 2 : 1);
