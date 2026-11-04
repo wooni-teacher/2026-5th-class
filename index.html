@@ -2262,7 +2262,7 @@ function normalize(v) {
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
     kb: v.kb && typeof v.kb === 'object' ? { open: v.kb.open === true, n: v.kb.n | 0, title: String(v.kb.title || '').slice(0, 30), cur: v.kb.cur | 0, ph: ['wait', 'q', 'rev', 'end'].includes(v.kb.ph) ? v.kb.ph : 'wait', lim: Math.min(120, Math.max(0, v.kb.lim | 0)), qt: +v.kb.qt || 0, qs: Object.values(toObj(v.kb.qs)).slice(0, 30).map(q => ({ q: String(q?.q || '').slice(0, 400), t: ['ox', 'mc', 'sa'].includes(q?.t) ? q.t : 'sa', o: Object.values(toObj(q?.o)).slice(0, 6).map(x => String(x).slice(0, 80)), ...(/^\d{1,4}-\d{1,4}$/.test(String(q?.y || '')) ? { y: q.y } : {}) })), rev: Object.fromEntries(Object.entries(toObj(v.kb.rev)).map(([k, x]) => [k, String(x).slice(0, 100)])), p: Object.fromEntries(Object.entries(plainObj(v.kb.p)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])), out: Object.fromEntries(Object.entries(plainObj(v.kb.out)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99))), win: Object.fromEntries(Object.entries(plainObj(v.kb.win)).filter(([u]) => ANON_ID.test(u)).map(([u, x]) => [u, String(x || '친구').slice(0, 12)])) } : null, // 🎭 1102a 꿈끼 골든벨
     cal: { ev: Object.fromEntries(Object.entries(plainObj(plainObj(v.cal).ev)).filter(([k, e]) => /^[a-z0-9]{1,20}$/.test(k) && e && typeof e.t === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d || '') && ['o', 'w', 'd'].includes(e.r)).slice(0, 60).map(([k, e]) => [k, { t: e.t.slice(0, 30), ic: String(e.ic || '📌').slice(0, 4), r: e.r, d: e.d, ...(typeof e.wd === 'string' && /^[0-6](,[0-6]){0,6}$/.test(e.wd) ? { wd: e.wd } : {}), ...(/^\d{4}-\d{2}-\d{2}$/.test(e.u || '') ? { u: e.u } : {}), ...(/^\d{2}:\d{2}$/.test(e.tm || '') ? { tm: e.tm } : {}), ...(typeof e.m === 'string' ? { m: e.m.slice(0, 40) } : {}) }])) }, // 📅 1102p
-    evtk: Object.fromEntries(Object.entries(plainObj(v.evtk)).filter(([p, w]) => /^p[0-5]$/.test(p) && w && typeof w === 'object').map(([p, w]) => [p, { ...(ANON_ID.test(w.a || '') ? { a: w.a, an: String(w.an || '').slice(0, 12) } : {}), ...(ANON_ID.test(w.b || '') ? { b: w.b, bn: String(w.bn || '').slice(0, 12) } : {}), ...(isInt(w.lv, 7, 12) ? { lv: w.lv, sc: isInt(w.sc, 0, 9) ? w.sc : 0, i: isInt(w.i, 0, 20) ? w.i : 0, at: +w.at || 0, t: Object.fromEntries(Object.entries(toObj(w.t)).filter(([k, x]) => /^\d{1,2}$/.test(k) && typeof x === 'string').map(([k, x]) => [k, x.slice(0, 80)])) } : {}) }])), // 🗣️ 1102s
+    evtk: Object.fromEntries(Object.entries(plainObj(v.evtk)).filter(([p, w]) => /^p[0-7]$/.test(p) && w && typeof w === 'object').map(([p, w]) => [p, { ...(ANON_ID.test(w.a || '') ? { a: w.a, an: String(w.an || '').slice(0, 12) } : {}), ...(ANON_ID.test(w.b || '') ? { b: w.b, bn: String(w.bn || '').slice(0, 12) } : {}), ...(isInt(w.lv, 7, 12) ? { lv: w.lv, sc: isInt(w.sc, 0, 9) ? w.sc : 0, i: isInt(w.i, 0, 20) ? w.i : 0, at: +w.at || 0, t: Object.fromEntries(Object.entries(toObj(w.t)).filter(([k, x]) => /^\d{1,2}$/.test(k) && typeof x === 'string').map(([k, x]) => [k, x.slice(0, 80)])) } : {}) }])), // 🗣️ 1102s
     str: v.str && typeof v.str === 'object' && v.str.on && typeof v.str.u === 'string' && ANON_ID.test(v.str.u) ? { on: 1, u: v.str.u, at: +v.str.at || 0, s: Object.fromEntries(Object.entries(plainObj(v.str.s)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99)).slice(0, 100)) } : null, // 🚂 1102j
     cloth: Object.fromEntries(Object.entries(plainObj(v.cloth)).filter(([u, x]) => ANON_ID.test(u) && x && /^[0-9a-f]{256}$/.test(x.d || '')).slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), d: x.d, at: +x.at || 0, ...(x.ok === 1 ? { ok: 1 } : {}) }])), // 👕 1102c
     clothv: Object.fromEntries(Object.entries(plainObj(v.clothv)).filter(([u, t]) => ANON_ID.test(u) && typeof t === 'string' && ANON_ID.test(t)).slice(0, 80)),
@@ -18271,6 +18271,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102t', d: '11월 4일', items: ['🗣️ 짝 대화 무대가 8쌍으로 늘었어요 · 🎤 말하기 부스·🎧 듣기쓰기 부스·대화 무대 앞 나무를 치웠어요'] },
   { id: '1102s', d: '11월 4일', items: ['🗣️ 영어 마을 짝 대화 무대! 짝과 🅰·🅱 자리에 서서 단원 대화를 고르고, 자기 차례에 🎤 말하면 말풍선으로 주고받아요 (Lesson 7~12 대화 두 개씩 · 크롬)', '끝까지 주고받으면 🔤 영어력 +5 · 🐚 +5 (하루 5번) · 🔁 역할 바꿔 다시'] },
   { id: '1102r', d: '11월 4일', items: ['🎧 영어 마을 말하기 부스 옆에 「듣기·쓰기 부스」! 🎧 단어 받아쓰기 · 🎧 문장 받아쓰기 · ✏️ 빈칸 채우기를 자동으로 채점해요 (틀린 글자는 빨갛게 · 두 번까지)', '맞힐 때마다 🔤 영어력 +3 · 🐚 +1 (하루 15문제)'] },
   { id: '1102q', d: '11월 4일', items: ['📅 광장의 미션 게시판이 학급 달력 게시판으로 바뀌었어요! 오늘부터 7일 동안의 행사가 보이고, E를 누르면 달력이 열려요 (🎯 공동 미션은 위쪽 🎯 버튼에서)'] },
@@ -19330,9 +19331,9 @@ function lwBuild(g) { // 🎧 부스 (말하기 부스 오른쪽)
 }
 // ---------- 🗣️ 1102s 영어 마을 짝 대화 무대 (음성 롤플레이) ----------
 // 무대에 짝 자리 6쌍(🅰·🅱) · 둘이 서면 🅰가 단원 대화를 골라요 → 자기 차례에 🎤 말하면 음성 인식(크롬)으로 확인 → 말풍선이 두 사람 화면에 → 짝 차례
-// · state/evtk/p0~p5 {a, an, b, bn, lv, sc, i 지금 줄, at 시작, t {줄: 알아들은 말}} (두 학생이 써요 · 선생님은 모두 비우기) · 목소리는 저장하지 않아요
+// · state/evtk/p0~p7 {a, an, b, bn, lv, sc, i 지금 줄, at 시작, t {줄: 알아들은 말}} (두 학생이 써요 · 선생님은 모두 비우기) · 목소리는 저장하지 않아요
 // · 보상: 대화를 끝까지 하면 하루 5번까지 🔤 영어력 +5 · 🐚 +5 (bag.tkDay)
-const TK = { x0: 1752, step: 6, z: -10.5, n: 6, day: 5 };
+const TK = { x0: 1752, step: 4.8, z: -10.5, n: 8, day: 5 }; // 1102t 8쌍 (15명 반)
 const TK_SCRIPTS = {
   7: [['What did you do during the vacation?', 'I went to Dokdo.', 'How was it?', 'It was great.'], ['What did you do last weekend?', 'I rode in a boat.', 'Did you have fun?', 'Yes, it was fun.']],
   8: [['What does he look like?', 'He has short curly hair.', 'Is he wearing glasses?', 'Yes, he is.'], ['What does she look like?', 'She has long straight hair.', 'What is she wearing?', 'She is wearing a red skirt.']],
@@ -19444,7 +19445,7 @@ function buildEnglishVillage() {
   { const bx = EV.cx - 10, bz = 9.5; // 🏁 클리어 게시판 (큰길 북쪽 · 레슨 길 사이)
     for (const sx of [-2.4, 2.4]) box(g, 0.25, 3.2, 0.25, C.wood, bx + sx, 1.6, bz); box(g, 5.4, 2.4, 0.2, 0xFFF3DC, bx, 2.2, bz, o); box(g, 5.8, 0.3, 0.4, 0x7A4A2A, bx, 3.5, bz, o);
     makeLabel(g, ['🏁 영어 마을 클리어 게시판'], 1.1, bx, 4.6, bz); ev.clearAt = [bx, bz]; }
-  for (const [x, z] of [[1700, -12], [1700, 12], [1732, -10], [1768, -10], [1732, 10], [1806, -12], [1806, 12], [1696, -40], [1696, 40], [1804, 42], [1730, 42], [1768, 42]]) makeTree(x, z, g);
+  for (const [x, z] of [[1700, -12], [1700, 12], [1732, 10], /* 🌳 1102t 부스·대화 무대 앞 나무 (1732,-10) (1768,-10) 치움 */ [1806, -12], [1806, 12], [1696, -40], [1696, 40], [1804, 42], [1730, 42], [1768, 42]]) makeTree(x, z, g);
   for (let x = EV.x0 + 8; x < EV.x1 - 4; x += 16) for (const s of [-1, 1]) { cyl(g, 0.09, 3.4, 0x3B3F46, x, 1.7, s * 4.4, o); ball(g, 0.3, 0xFFF3C4, x, 3.5, s * 4.4, { solid: false, emissive: 0.5 }); } // 가로등
   // 구역 공통: 간판 + 별 깃발
   for (const Z of EV_Z) {
