@@ -18344,6 +18344,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1103j', d: '11월 5일', items: ['🤖 컴퓨터 병사·인물 병사가 산성 개울에 끼지 않아요! 다리(동서남북)로 건너고, 오래 막히면 스스로 빠져나와요'] },
   { id: '1103i', d: '11월 5일', items: ['⚔️ 고용한 역사 인물이 「인물 병사」로 전장에 나가 함께 싸워요! (체력 20 · 피해 +1 · 금빛 고리와 망토 · 쓰러져도 우리 성에서 다시 나와요)'] },
   { id: '1103g', d: '11월 5일', items: ['🏛️ 공방전 「역사 인물 고용」! 나라 창고에서 사회 학습지 인물(주몽·광개토대왕·근초고왕·계백·진흥왕·김춘추·대조영·왕건…)을 전반·후반 1명씩 고용해요 (학습지 문제 + 🪵10 ⛓️10 🍚10)', '🧱 성벽 강화가 석성까지 잘 올라가요 (성문이 부서져 있어도) · 자원 값이 올랐어요 (갑옷·무기 갈기·목책·포탑·투석기·강철 무기·성벽)', '🎭 직업은 왕 1명 · 나머지는 2명까지 고를 수 있어요'] },
   { id: '1103f', d: '11월 5일', items: ['🏹 대장장이 Q가 「자동 포탑」으로 바뀌었어요! 우리 성 둘레에 세우면(🪵3 ⛓️3) 90초 동안 7걸음 안의 상대를 저절로 쏴요 · 상대는 가까이 가서 E로 부술 수 있어요 (+3점)'] },
@@ -23648,7 +23649,20 @@ const sgBotBlocked = (x, z, t = 0) => !inSiege(x, z) || sgInMoat(x, z) || sgw.co
 const sgToLocal = (t, x, z) => { const c = castleAt(t), dx = x - c.x, dz = z - c.z; return [Math.cos(c.a) * dx - Math.sin(c.a) * dz, Math.sin(c.a) * dx + Math.cos(c.a) * dz]; };
 const sgHalf = (t) => sgAnsi() && t === 1 ? ANSI_HALF : 6; // 🏯 1029j 안시성은 더 커요
 const sgInCastle = (x, z) => { for (let t = 1; t <= (S.siege?.n || 0); t++) { const [lx, lz] = sgToLocal(t, x, z), h = sgHalf(t) + 0.4; if (Math.abs(lx) < h && Math.abs(lz) < h) return t; } return 0; };
+function sgFortWay(b, tx, tz) { /* 🏯 1103j 산성 개울(반지름 10.2~12.2)은 다리 4개(동서남북)로만 건너요 → 다리 안쪽 끝 · 바깥쪽 끝을 차례로 */
+  const { cx, cz } = SG, dB = Math.hypot(b.x - cx, b.z - cz), dT = Math.hypot(tx - cx, tz - cz), zone = (d) => d < 10.3 ? 0 : d > 12.1 ? 2 : 1, zb = zone(dB), zt = zone(dT);
+  if (zb === 2 && zt === 2) { /* 둘 다 밖: 가는 길이 산성 개울을 지나면 둘레(반지름 14.5)를 따라 돌아가요 */
+    const vx = tx - b.x, vz = tz - b.z, L2 = vx * vx + vz * vz || 1, u = Math.max(0, Math.min(1, ((cx - b.x) * vx + (cz - b.z) * vz) / L2)), dd = Math.hypot(b.x + vx * u - cx, b.z + vz * u - cz);
+    if (dd > 13) return null; const aB = Math.atan2(b.z - cz, b.x - cx), aT = Math.atan2(tz - cz, tx - cx), df = Math.atan2(Math.sin(aT - aB), Math.cos(aT - aB)), st = Math.hypot(b.x - cx, b.z - cz) < 13.6 ? 0 : Math.sign(df || 1) * Math.min(0.6, Math.abs(df)); return [cx + Math.cos(aB + st) * 14.6, cz + Math.sin(aB + st) * 14.6]; } /* 개울 가까이면 먼저 바깥으로 한 걸음 */
+  if (zb === zt && zb !== 1) return null; if (zb === 1 && zt === 1) return null;
+  const angB = Math.atan2(b.z - cz, b.x - cx), angT = Math.atan2(tz - cz, tx - cx), pick = (a) => Math.round(a / (Math.PI / 2)) * (Math.PI / 2);
+  const A = zb === 1 ? pick(angB) : pick(zb === 0 ? angT : angB), P = (r) => [cx + Math.cos(A) * r, cz + Math.sin(A) * r], pIn = P(9.2), pOut = P(13.3);
+  const lane = dB * Math.abs(Math.sin(angB - A)) < 1.1 && Math.cos(angB - A) > 0; /* 다리 줄 위에 있나 (옆으로 1.1걸음 안) */
+  if (zb === 1) return zt === 0 ? pIn : pOut; /* 다리 위: 가는 쪽 끝으로 */
+  if (zb === 0) return lane && dB > 8.4 ? pOut : pIn; /* 산성 안 → 다리 안쪽 끝 → 건너기 */
+  return lane && dB < 14.2 ? pIn : pOut; } /* 밖 → 다리 바깥쪽 끝 → 건너기 */
 function sgBotWay(b) { // 성벽은 성문으로 · 해자는 🛶 나룻배로 건너요 (1022f)
+  { const fw = sgFortWay(b, b.tx, b.tz); if (fw) return fw; }
   const kb = sgNearCastle(b.x, b.z), kt = sgNearCastle(b.tx, b.tz); if (!kb && !kt) return [b.tx, b.tz];
   const k = kb || kt, zb = kb === k ? sgZone(k, b.x, b.z) : 0, zt = kt === k ? sgZone(k, b.tx, b.tz) : 0;
   if (zb === zt) return [b.tx, b.tz];
@@ -23667,7 +23681,8 @@ function sgBotMove(b, dt) {
   const dx = wx - b.x, dz = wz - b.z, d = Math.hypot(dx, dz); if (d < 0.6) return false;
   const spd = 5.2 * (sgPB(b.id, 'horn') || sgPB(b.id, 'roar') ? 1.2 : 1) * (b.dash > 0 ? 4 : 1) * (sgOwns(b.t, 'ferry') ? 1.15 : 1) * dt, ux = dx / d, uz = dz / d;
   const stuckIn = sgBotBlocked(b.x, b.z, b.t); /* 이미 덤불·바위 속이면 일단 빠져나와요 */
-  for (const a of [0, 0.6, -0.6, 1.2, -1.2, 1.8, -1.8, 2.4, -2.4]) { const c = Math.cos(a), s2 = Math.sin(a), vx = ux * c - uz * s2, vz = ux * s2 + uz * c, nx = b.x + vx * spd, nz = b.z + vz * spd; if (stuckIn ? !sgInMoat(nx, nz) : !sgBotBlocked(nx, nz, b.t)) { b.x = nx; b.z = nz; b.h = Math.atan2(vx, vz); return true; } }
+  const sd0 = b.side || (Math.random() < 0.5 ? 1 : -1); /* 🧭 1103j 돌아가는 쪽을 기억해요 (왼쪽·오른쪽을 번갈아 고르다 제자리에 멈추지 않게) */
+  for (const a of [0, 0.6, 1.2, 1.8, 2.4, -0.6, -1.2, -1.8, -2.4].map(q => q * sd0)) { const c = Math.cos(a), s2 = Math.sin(a), vx = ux * c - uz * s2, vz = ux * s2 + uz * c, nx = b.x + vx * spd, nz = b.z + vz * spd; if (stuckIn ? !sgInMoat(nx, nz) : !sgBotBlocked(nx, nz, b.t)) { b.x = nx; b.z = nz; b.h = Math.atan2(vx, vz); if (a) { b.side = Math.sign(a); b.sideT = 2.5; } else if ((b.sideT = (b.sideT || 0) - dt) <= 0) b.side = 0; return true; } }
   { const sd = Math.random() < 0.5 ? 1 : -1; b.det = 1.6; b.dx2 = b.x - uz * sd * 9 - ux * 3; b.dz2 = b.z + ux * sd * 9 - uz * 3; } return false; // 막혔어요 → 잠깐 옆으로 돌아가요
 }
 function sgBotShoot(b, tx, tz, kind, ref) {
@@ -23731,7 +23746,10 @@ function sgBotsHost(dt) {
     b.think -= dt; b.cool -= dt; b.dash = Math.max(0, (b.dash || 0) - dt); if (b.think <= 0) { b.think = 0.8 + Math.random() * 0.5; sgBotThink(b); }
     if ((b.role === 'sol' || b.role === 'gen' || b.role === 'pow' || b.role === 'smith') && b.aim) { const e = b.aim, cur = e[2] === 'b' ? sgb.sim[e[3]] : e[3] === backend.uid ? player.pos : remotes.get(e[3])?.pos; if (cur && !(e[2] === 'b' && cur.down)) { const d = Math.hypot(cur.x - b.x, cur.z - b.z) || 1; b.tx = cur.x - (cur.x - b.x) / d * 1.3; b.tz = cur.z - (cur.z - b.z) / d * 1.3;
       if (b.role === 'sol' && d > 4.5 && d < 9 && !b.dash && backend.now() > (b.dashCd || 0)) { b.dash = 0.35; b.dashCd = backend.now() + SG_DASH_CD; const ux = (cur.x - b.x) / d, uz = (cur.z - b.z) / d; b.s = { t: backend.now(), x: +b.x.toFixed(2), z: +b.z.toFixed(2), dx: +ux.toFixed(3), dz: +uz.toFixed(3), m: 3 }; playAct(sgb.av[b.id], 'dash'); sgMeleeFx(b.x, b.z, ux, uz, 3); } } }
-    sgBotMove(b, dt);
+    { const ox = b.x, oz = b.z; sgBotMove(b, dt); /* 🧭 1103j 오래 막혀 있으면 빠져나와요: 6초 → 옆으로 크게 돌기 · 15초 → 우리 성으로 */
+      const far = Math.hypot(b.tx - b.x, b.tz - b.z) > 2.5, moved = Math.hypot(b.x - ox, b.z - oz) > 0.02 * dt * 60; b.stuck = far && !moved && !b.ferry ? (b.stuck || 0) + dt : Math.max(0, (b.stuck || 0) - dt * 2);
+      if (b.stuck > 15) { const [x, z] = castleLocal(b.t, (Math.random() - 0.5) * 3, -1.2); Object.assign(b, { x, z, stuck: 0, det: 0, think: 0, ferry: null }); }
+      else if (b.stuck > 6 && !(b.det > 0)) { const a = Math.random() * Math.PI * 2; b.det = 2.5; b.dx2 = b.x + Math.cos(a) * 10; b.dz2 = b.z + Math.sin(a) * 10; b.stuck = 3; } }
     if (b.cool <= 0) {
       if (b.aim && (b.role === 'sol' || b.role === 'gen' || b.role === 'pow' || b.role === 'smith')) { const e = b.aim, cur = e[2] === 'b' ? sgb.sim[e[3]] : e[3] === backend.uid ? player.pos : remotes.get(e[3])?.pos; if (cur && !(e[2] === 'b' && cur.down) && Math.hypot(cur.x - b.x, cur.z - b.z) < 2.6) { sgBotMelee(b, cur, e[2], e[3]); b.cool = 1.2 + Math.random() * 0.5; } }
       else if (b.goal === 'gate' && b.role !== 'arch' && b.gateT && Math.hypot(b.x - b.tx, b.z - b.tz) < 1.6) { const c = sgw.castles[b.gateT]; if (c && !c.open) { const m = sgGateAt(c, b.x, b.z); sgBotMelee(b, m, 'g', b.gateT); b.cool = 1.5; } }
