@@ -1469,6 +1469,7 @@
       <label class="sr-only" for="tpSgBots">컴퓨터 병사</label><select id="tpSgBots" class="tinput" style="width:auto" title="나라마다 컴퓨터(🤖) 병사 수"><option value="0" selected>🤖 없음</option><option value="1">🤖 나라마다 1</option><option value="2">🤖 나라마다 2</option><option value="3">🤖 나라마다 3</option><option value="4">🤖 나라마다 4</option></select>
     </div>
     <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpSgMe"> 🧑‍🏫 선생님도 한 나라로 참여하기 (학생·🤖와 함께 싸워요)</label>
+    <div class="row-center" style="gap:6px;margin:0 0 6px"><label for="tpSgTLv" class="hint" style="margin:0">🧑‍🏫 공방전에서 선생님 능력치</label><select id="tpSgTLv" class="tinput" style="width:auto"><option value="-1">내 실제 능력치</option><option value="0">모두 Lv0 (가장 약하게)</option><option value="3">모두 Lv3</option><option value="6">모두 Lv6</option><option value="9">모두 Lv9</option><option value="12">모두 Lv12 (가장 세게)</option></select></div>
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
     <div id="tpSgList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStat" style="background:#fff" title="능력치(영어·수학·사회 + 독서×2)가 나라마다 비슷하게">💪 능력치로 고르게</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
@@ -2455,6 +2456,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     // ⚔️ 성 공방전 2 (연습 모드: 이 브라우저에서만)
     async sgJoin(t) { if (!st.siege) return { ok: false }; st.siege.team ||= {}; if (!st.siege.team.me) st.siege.team.me = t; emit(); return { ok: true }; },
     async sgRole(k) { if (!st.siege) return { ok: false }; (st.siege.role ||= {}).me = k; emit(); return { ok: true }; },
+    async sgHeroSet(t, sl, k) { const s = st.siege; if (!s?.on) return { ok: false }; const o = ((s.hero ||= {})[t] ||= {}); if (o[sl]) return { ok: false }; o[sl] = k; emit(); return { ok: true }; },
     async sgTurSet(v) { const s = st.siege; if (!s?.on) return { ok: false }; s.tur ||= {}; if (v === null) delete s.tur.me; else s.tur.me = JSON.parse(JSON.stringify(v)); emit(); return { ok: true }; }, async sgTurHit(u, d) { const T = st.siege?.tur?.[u]; if (!T) return { ok: false }; T.hp = Math.max(0, (T.hp || 0) - d); const hp = T.hp; if (!hp) delete st.siege.tur[u]; emit(); return { ok: true, hp }; },
     async sgTrapSet(k, v) { const s = st.siege; if (!s?.on) return { ok: false }; ((s.trap ||= {}).me ||= {})[k] = v; emit(); return { ok: true }; }, async sgTrapDel(u, k) { const s = st.siege; if (s?.trap?.[u]) { delete s.trap[u][k]; emit(); } return { ok: true }; },
     async sgPBuffSet(u, k, until) { const s = st.siege; if (!s?.on) return { ok: false }; ((s.pbuff ||= {})[u] ||= {})[k] = until; emit(); return { ok: true }; },
@@ -2475,7 +2477,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async sgArmSet(u, lv, hp) { const s2 = st.siege; if (!s2?.on) return { ok: false }; (s2.arm ||= {})[u] = lv; (s2.php ||= {})[u] = hp; emit(); return { ok: true }; },
     async sgSpend(t, cost) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; if (Object.entries(cost).some(([k, v]) => (r[k] || 0) < v)) return { ok: false }; for (const [k, v] of Object.entries(cost)) r[k] -= v; emit(); return { ok: true }; },
     async sgGain(t, give, pts) { const s = st.siege; if (!s?.on) return { ok: false }; const r = (s.res ||= {})[t] ||= {}; for (const [k, v] of Object.entries(give)) r[k] = (r[k] || 0) + v; (s.score ||= {})[t] = (s.score[t] || 0) + pts; emit(); return { ok: true }; },
-    async sgLevel(t, lv, hp) { const s = st.siege; if (!s?.on) return { ok: false }; (s.lv ||= {})[t] = lv; (s.hp ||= {})[t] = hp; emit(); return { ok: true }; },
+    async sgLevel(t, lv, hp) { const s = st.siege; if (!s?.on) return { ok: false }; (s.lv ||= {})[t] = lv; s.hp ||= {}; if (s.hp[t] > 0 && hp > s.hp[t]) s.hp[t] = hp; emit(); return { ok: true }; },
     async sgBuff(t, k, until) { const s = st.siege; if (!s?.on) return { ok: false }; ((s.buff ||= {})[t] ||= {})[k] = until; emit(); return { ok: true }; },
     async sgSkillBuff(t, k, until, uids) { const s = st.siege; if (!s?.on) return { ok: false }; ((s.buff ||= {})[t] ||= {})[k] = until; s.pbuff ||= {}; for (const u of uids) (s.pbuff[u] ||= {})[k] = until; emit(); return { ok: true }; },
     async sgBar(id, o) { const s = st.siege; if (!s?.on) return { ok: false }; (s.bar ||= {})[id] = { ...o }; emit(); return { ok: true }; },
@@ -2888,6 +2890,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     // ⚔️ 성 공방전 2 — 규칙이 나라·자원 범위를 확인해요
     async sgJoin(t) { try { await D.set(R(`state/siege/team/${uid}`), t); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgRole(k) { try { await D.set(R(`state/siege/role/${uid}`), k); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgHeroSet(t, sl, k) { try { const r = await D.runTransaction(R(`state/siege/hero/${t}/${sl}`), c => c ? undefined : k); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
     async sgTurSet(v) { try { await D.set(R(`state/siege/tur/${uid}`), v); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgTurHit(u, d) { try { let hp = 0; const r = await D.runTransaction(R(`state/siege/tur/${u}`), c => { if (!c || !(c.hp > 0)) return undefined; hp = Math.max(0, c.hp - d); return hp ? { ...c, hp } : null; }); return r.committed ? { ok: true, hp } : { ok: false }; } catch (e) { return { ok: false }; } },
     async sgTrapSet(k, v) { try { await D.set(R(`state/siege/trap/${uid}/${k}`), v); return { ok: true }; } catch (e) { return { ok: false }; } },
@@ -2923,7 +2926,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async sgArmSet(u, lv, hp) { try { await D.update(R('state/siege'), { [`arm/${u}`]: lv, [`php/${u}`]: hp }); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgSpend(t, cost) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { if (!c || Object.entries(cost).some(([k, v]) => (c[k] || 0) < v)) return undefined; const n = { ...c }; for (const [k, v] of Object.entries(cost)) n[k] -= v; return n; }); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
     async sgGain(t, give, pts) { try { const r = await D.runTransaction(R(`state/siege/res/${t}`), c => { const n = { ...(c || {}) }; for (const [k, v] of Object.entries(give)) n[k] = (n[k] || 0) + v; return n; }); await D.runTransaction(R(`state/siege/score/${t}`), c => (c || 0) + pts); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
-    async sgLevel(t, lv, hp) { try { await D.update(R('state/siege'), { [`lv/${t}`]: lv, [`hp/${t}`]: hp }); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgLevel(t, lv, hp) { try { await D.set(R(`state/siege/lv/${t}`), lv); } catch (e) { return { ok: false }; } try { await D.runTransaction(R(`state/siege/hp/${t}`), c => (typeof c === 'number' && c > 0 && hp > c && hp <= c + 25) ? hp : undefined); } catch (e) { } return { ok: true }; }, /* 🧱 1103g 단계와 성문 체력을 따로 (성문이 부서져 있으면 단계만) */
     async sgBuff(t, k, until) { try { await D.set(R(`state/siege/buff/${t}/${k}`), until); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgSkillBuff(t, k, until, uids) { try { const up = { [`buff/${t}/${k}`]: until }; for (const u of uids) up[`pbuff/${u}/${k}`] = until; await D.update(R('state/siege'), up); return { ok: true }; } catch (e) { return { ok: false }; } },
     async sgBar(id, o) { try { await D.set(R(`state/siege/bar/${id}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
@@ -9959,7 +9962,7 @@ function openLife(title, fill) {
   if (!isTeacher && joined) { const r = (bag.rec ||= {}), k = String(title).replace(/[0-9]+/g, '#').slice(0, 24); r.lp ||= {}; if (r.lp[k] != null || Object.keys(r.lp).length < 80) { r.lp[k] = (r.lp[k] | 0) + 1; r.lpD ||= {}; r.lpD[k] = dayNum(); } } // 📖 1028n 성장 기록장용: 어떤 활동 창을 몇 번 열었는지 (이 기기)
   life.returnFocus = document.activeElement;
   closeModals(); rollDay();
-  $('lpTitle').textContent = title; life.fill = fill;
+  $('lpTitle').textContent = title; life.fill = fill; delete $('lpBody').dataset.hk;
   $('lifePanel').classList.remove('hidden');
   fill($('lpBody')); $('lpTitle').focus();
 }
@@ -18341,6 +18344,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1103g', d: '11월 5일', items: ['🏛️ 공방전 「역사 인물 고용」! 나라 창고에서 사회 학습지 인물(주몽·광개토대왕·근초고왕·계백·진흥왕·김춘추·대조영·왕건…)을 전반·후반 1명씩 고용해요 (학습지 문제 + 🪵10 ⛓️10 🍚10)', '🧱 성벽 강화가 석성까지 잘 올라가요 (성문이 부서져 있어도) · 자원 값이 올랐어요 (갑옷·무기 갈기·목책·포탑·투석기·강철 무기·성벽)', '🎭 직업은 왕 1명 · 나머지는 2명까지 고를 수 있어요'] },
   { id: '1103f', d: '11월 5일', items: ['🏹 대장장이 Q가 「자동 포탑」으로 바뀌었어요! 우리 성 둘레에 세우면(🪵3 ⛓️3) 90초 동안 7걸음 안의 상대를 저절로 쏴요 · 상대는 가까이 가서 E로 부술 수 있어요 (+3점)'] },
   { id: '1103e', d: '11월 5일', items: ['🐟 물고기 탈것 4종이 생겼어요! 🐡 복어 · 🐬 돌고래 · 🦈 상어 · 🐋 고래 (탈것 가게에서 반 동전으로 열어요 · 공중을 헤엄쳐요)', '🐾 동료 펫을 3마리까지 데리고 다녀요! (펫 센터 · ⭐ 맨 앞 펫이 배틀에 먼저 나가요)', '🍎 내 땅 과일나무에서 과일을 따요! 나무마다 하루 한 번 · 계절마다 과일이 바뀌어요 (봄 🍒 앵두 · 여름 🍑 복숭아 · 가을 🍎 사과 · 겨울 🍊 귤) · 네 계절 과일을 모두 따면 🐚50'] },
   { id: '1103d', d: '11월 5일', items: ['🪨 산성 투석기로 쏠 성을 직접 골라요 (가장 가까운 성 → 고르기)', '📖 공방전 안내 항목이 저절로 닫히던 문제를 고쳤어요'] },
@@ -22322,7 +22326,7 @@ const lvxOld = () => { const L = S.lvx || {}; return Object.keys(L).length > 0 &
 const lvNeed = (i) => { if (lvxOld()) return LV_DEF[i - 1]; const v = +S.lvx?.[i]; return v >= 1 && v <= 5000 ? Math.round(v) : LV_DEF[i - 1]; }; // i = 1..12
 const lvAt = (i) => { let t = 0; for (let j = 1; j <= i; j++) t += lvNeed(j); return t; }; // Lv i까지 누적 경험치
 const statExp = (k) => bag.stat?.[k] || 0;
-const statLv = (k) => { const e = statExp(k); let lv = 0; while (lv < LV_MAX && e >= lvAt(lv + 1)) lv++; return lv; };
+const statLv = (k) => { if (isTeacher && (bag.tSgLv ?? -1) >= 0 && S.siege?.on && S.siege.team?.[backend?.uid]) return Math.min(LV_MAX, bag.tSgLv | 0); /* 🧑‍🏫 1103g 공방전에 참여한 선생님 능력치 */ const e = statExp(k); let lv = 0; while (lv < LV_MAX && e >= lvAt(lv + 1)) lv++; return lv; };
 const statTier = (k) => Math.floor(statLv(k) / 3);
 const STAT_DAY_MAX = 100; // 📅 능력치마다 하루에 오를 수 있는 기본 최대 (선생님 요청 · 랭킹 점수도 같이)
 const statMax = (k) => { const v = S.scap?.[k]; return Number.isInteger(v) && v >= 10 && v <= 100 ? v : STAT_DAY_MAX; }; // 📅 1020a: 선생님이 과목마다 정해요 (state/scap/{eng,math,soc,read})
@@ -22407,10 +22411,10 @@ const SIEGE_SETS = {
 };
 const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 독서력은 모든 직업을 함께 강하게 해요 (1022f: 의원·책사 → 장군·궁병)
   king: { icon: '👑', name: '왕', hp: 15, st: 'soc', tag: '우리 나라의 왕 · ❤️ 15 · 나라마다 1명', can: ['📣 왕의 함성(Q · 35초마다): 둘레 12걸음 우리 편 모두 피해 +1 · 발이 빨라져요', '🏰 우리 성문이 서 있으면 성 안에서는 맞지 않아요 · 🚩 거점을 2배로 빨리 차지해요', '⚠️ 쓰러지면 상대 나라 +30점 · 30초 동안 못 일어나요', '🗡️ 왕의 검(F) · 피해 2 · 🏛️ 사회력이 오를수록 함성이 길어져요'] },
-  gen: { icon: '🎖️', name: '장군', hp: 12, st: 'math', tag: '🌀 큰 칼로 둘레를 휩쓸어요 · ❤️ 12 · 나라마다 1명', can: ['🗡️ 큰 칼 베기(F) · 피해 3 · 성문도 베어요', '🌀 회오리 베기(Q · 12초마다): 내 둘레 4걸음 상대 모두 피해', '🧮 수학력이 오를수록 더 세져요'] },
+  gen: { icon: '🎖️', name: '장군', hp: 12, st: 'math', tag: '🌀 큰 칼로 둘레를 휩쓸어요 · ❤️ 12 · 나라마다 2명까지', can: ['🗡️ 큰 칼 베기(F) · 피해 3 · 성문도 베어요', '🌀 회오리 베기(Q · 12초마다): 내 둘레 4걸음 상대 모두 피해', '🧮 수학력이 오를수록 더 세져요'] },
   sol: { icon: '⚔️', name: '보병', hp: 9, st: 'math', tag: '🗡️ 검으로 앞에서 싸워요 · ❤️ 9', can: ['🗡️ 가까이 가서 베기(F) · 피해 4 · 성문도 베어요', '⚡ 돌격(Q): 앞으로 확 달려가며 부딪힌 상대 +1 · 10초마다', '🧮 수학력이 오를수록 더 세져요 · 창고: ⛓️ 강철 검'] },
   arch: { icon: '🏹', name: '궁병', hp: 6, st: 'eng', tag: '🏹 멀리서 활을 쏴요 · ❤️ 6', can: ['🏹 활(F 꾹 누르기 → 놓기): 오래 당길수록 멀리·세게 · 가득 당기면 피해 3', '💨 구르기(Q · 8초마다): 휙 피하면서 1.5초 동안 안 맞아요', '🏹 멀티샷(R · 15초마다): 부채꼴로 화살 5발 (영어력 단계마다 +1발 · 최대 9발)', '🔤 영어력이 오를수록 화살이 세져요'] },
-  smith: { icon: '⚒️', name: '대장장이', hp: 7, st: 'eng', tag: '🔨 망치로 싸우고 우리 편을 강하게 · ❤️ 7', can: ['🔨 망치 치기(F) · 피해 2 · 성문 3 · 맞은 상대는 1.5초 어질어질(느려져요)', '🏹 자동 포탑(Q · 🪵3 ⛓️3): 우리 성 둘레에 세우면 90초 동안 가까운 상대를 저절로 쏴요 (2초마다 피해 1 · 1개까지) · 대장장이가 쓰러지면 멈춰요', '⚔️ 무기 갈아 주기 (⛓️2): 친구가 60초 동안 피해 +1 · 🛡️ 갑옷 (가죽 ⛓️2 → 철 ⛓️5 · 체력 +2씩)', '🔧 우리 성문 앞 E: 수리 · 🧱 성벽 강화 · 🪵 목책 · 🏅 도와줄 때마다 우리 나라 +1점', '🪨 산성을 차지하면 산성 투석기를 쏠 수 있어요 (🪵4 ⛓️3 · 상대 성문 -10)'] },
+  smith: { icon: '⚒️', name: '대장장이', hp: 7, st: 'eng', tag: '🔨 망치로 싸우고 우리 편을 강하게 · ❤️ 7', can: ['🔨 망치 치기(F) · 피해 2 · 성문 3 · 맞은 상대는 1.5초 어질어질(느려져요)', '🏹 자동 포탑(Q · 🪵6 ⛓️6): 우리 성 둘레에 세우면 90초 동안 가까운 상대를 저절로 쏴요 (2초마다 피해 1 · 1개까지) · 대장장이가 쓰러지면 멈춰요', '⚔️ 무기 갈아 주기 (⛓️3): 친구가 60초 동안 피해 +1 · 🛡️ 갑옷 (가죽 ⛓️4 → 철 ⛓️8 · 체력 +2씩)', '🔧 우리 성문 앞 E: 수리 · 🧱 성벽 강화 · 🪵 목책 · 🏅 도와줄 때마다 우리 나라 +1점', '🪨 산성을 차지하면 산성 투석기를 쏠 수 있어요 (🪵8 ⛓️6 · 상대 성문 -10)', '🧱 성벽 강화: 목책 → 토성 (🪵20 ⛓️5) → 석성 (🪵30 ⛓️15) · 단계마다 성문 체력 +25'] },
   pow: { icon: '⛓️', name: '포로', hp: 4, st: null, off: true, tag: '함락된 나라에서 끌려온 포로 · ❤️ 4', can: ['👊 주먹(F) · 피해 1 · 스킬은 없어요'] },
   med: { icon: '🌿', name: '의원', hp: 5, st: 'read', off: true, tag: '(체험장 전용)', can: [] }, // 체험장 이름표용 (공방전에서는 없어요)
   sch: { icon: '📜', name: '책사', hp: 5, st: 'soc', off: true, tag: '(체험장 전용)', can: [] },
@@ -22426,10 +22430,35 @@ const SG_GRADE = { blade: [0x9A6B3E, 0xD8DEE6, 0x8FCBFF, 0xF2D25C], head: [0x7A5
 const sgPowerOf = (u, tg) => { if (tg?.me) return statTier('math') + statTier('eng') + statTier('soc') + 2 * statTier('read'); const sp = String(tg?.sp || remotes.get(u)?.target?.sp || ''); if (!/^[0-9]{4}$/.test(sp)) return null; return +sp[0] + +sp[1] + +sp[2] + 2 * +sp[3]; }; // ⚖️ 팀 나누기용 (📚 독서는 모든 직업에 들어가서 2배)
 const SG_GEN = { pd: 3, rng: 3.3, cd: 0.9, gate: 2 }, SG_WHIRL = { r: 4.2, cd: 12000 }, SG_POW = { pd: 1, rng: 2.4, cd: 1.0, gate: 1 };
 const SG_ROAR = { r: 12, cd: 35000 }, SG_DODGE = { cd: 8000, dur: 1500 }, SG_DRAW = { min: 0.3, full: 1.1 }; // 📣 함성 · 💨 구르기 · 🏹 당기기(초)
-const SG_ARM = [null, { name: '가죽 갑옷', icon: '🟫', cost: 2 }, { name: '철 갑옷', icon: '⬜', cost: 5 }];
-const SG_WAVE = { r: 6, cd: 10000 }, SG_SHARP = { cost: 2, dur: 60000 }, SG_STUN = 1500, SG_HELP_R = 4; // 🌿 치유의 물결 · ⚔️ 무기 갈기 · 🔨 어질어질 · 도와주기 거리
+const SG_ARM = [null, { name: '가죽 갑옷', icon: '🟫', cost: 4 }, { name: '철 갑옷', icon: '⬜', cost: 8 }];
+const SG_WAVE = { r: 6, cd: 10000 }, SG_SHARP = { cost: 3, dur: 60000 }, SG_STUN = 1500, SG_HELP_R = 4; // 🌿 치유의 물결 · ⚔️ 무기 갈기 · 🔨 어질어질 · 도와주기 거리
 const sgArm = (u) => S.siege?.arm?.[u] || 0;
-const sgMaxHp = (u) => (SG_ROLES[sgRoleOf(u)]?.hp || 6) + sgArm(u) * 2;
+/* 🏛️ 1103g 역사 인물 고용: 사회 학습지에 나온 인물 · 나라마다 전반 1명(a) · 후반 1명(b) · 학습지 문제 맞히기 + 🪵10 ⛓️10 🍚10
+   state/siege/hero/{나라}/{a|b} = 인물 키 · 효과는 경기 끝까지 */
+const SG_HERO = {
+  jumong: { n: '주몽', icon: '🏹', nat: ['고구려'], sh: 's2-1', kw: ['주몽', '동명성왕'], d: '궁병 화살 피해 +1 (활 잘 쏘는 주몽)' },
+  gwang: { n: '광개토대왕', icon: '🐎', nat: ['고구려'], sh: 's2-1', kw: ['광개토'], d: '거점을 1.5배 빨리 차지해요 (넓은 영토)' },
+  jangsu: { n: '장수왕', icon: '🏯', nat: ['고구려'], sh: 's2-1', kw: ['장수왕'], d: '우리 성문 체력 +10' },
+  onjo: { n: '온조', icon: '🌾', nat: ['백제'], sh: 's2-1', kw: ['온조'], d: '곡창 효과 2배 (4초 만에 일어나요 · 군량 2배)' },
+  geun: { n: '근초고왕', icon: '⛵', nat: ['백제'], sh: 's2-1', kw: ['근초고왕'], d: '보급과 거점 자원 1.5배 (활발한 교류)' },
+  gyebaek: { n: '계백', icon: '🛡️', nat: ['백제'], sh: 's2-3', kw: ['계백'], d: '우리 편 모두 체력 +2 (황산벌 결사대)' },
+  hyeok: { n: '박혁거세', icon: '🥚', nat: ['신라', '통일 신라'], sh: 's2-1', kw: ['박혁거세'], d: '쓰러져도 더 빨리 일어나요 (40% 빨리)' },
+  jinheung: { n: '진흥왕', icon: '🎖️', nat: ['신라', '통일 신라'], sh: 's2-1', kw: ['진흥왕'], d: '상대 성문 피해 +1 (한강 유역 차지)' },
+  chunchu: { n: '김춘추', icon: '🤝', nat: ['신라', '통일 신라'], sh: 's2-3', kw: ['김춘추'], d: '봉수대·나루터 효과 2배 (나·당 동맹 외교)' },
+  dae: { n: '대조영', icon: '🐎', nat: ['발해'], sh: 's2-4', kw: ['대조영'], d: '우리 편 체력 +1 · 포로가 된 친구도 체력 9' },
+  haedong: { n: '해동성국', icon: '🌊', nat: ['발해'], sh: 's2-4', kw: ['해동성국'], d: '발해 전성기: 보급과 거점 자원 1.3배', era: 1 },
+  gungye: { n: '궁예', icon: '👁️', nat: ['후고구려'], sh: 's3-1', kw: ['궁예'], d: '왕의 함성 범위·시간 2배' },
+  wanggeon: { n: '왕건', icon: '👑', nat: ['후고구려'], sh: 's3-1', kw: ['왕건'], d: '성 함락 속도 2배 (후삼국 통일)' },
+  gyeon: { n: '견훤', icon: '🌾', nat: ['후백제'], sh: 's3-1', kw: ['견훤'], d: '곡창·철광산 자원 2배' },
+  hojok: { n: '호족', icon: '🏯', nat: ['후백제'], sh: 's3-1', kw: ['호족'], d: '지방 세력: 우리 성문 체력 +5 · 수리 +2', era: 1 },
+  gaya1: { n: '가야 철기 장인', icon: '⚒️', nat: ['가야'], sh: 's2-1', kw: ['가야', '철'], d: '철광산 철 2배 (풍부한 철)', era: 1 },
+  gaya2: { n: '가야 연맹', icon: '🤝', nat: ['가야'], sh: 's2-1', kw: ['가야', '연맹'], d: '우리 편 체력 +1 · 보급 1.3배', era: 1 },
+};
+const SG_HERO_COST = { w: 10, i: 10, f: 10 };
+const sgHero = (t, k) => !!t && Object.values(S.siege?.hero?.[t] || {}).includes(k);
+const sgHeroB = (k) => sgHero(sgMine(), k) ? 1 : 0;
+const sgHeroesFor = (t) => { const N = sgSet()?.nat?.[t - 1]; if (!N || sgSet().scen && t === 2) return []; return Object.entries(SG_HERO).filter(([, H]) => H.nat.includes(N.name)).map(([k]) => k); };
+const sgMaxHp = (u) => { const t = sgTeamOf(u), role = sgRoleOf(u); return (role === 'pow' && sgHero(t, 'dae') ? 9 : (SG_ROLES[role]?.hp || 6)) + sgArm(u) * 2 + (sgHero(t, 'gyebaek') ? 2 : 0) + (sgHero(t, 'dae') ? 1 : 0) + (sgHero(t, 'gaya2') ? 1 : 0); };
 const sgCurHp = (u) => { const v = S.siege?.php?.[u]; return v == null ? sgMaxHp(u) : Math.max(0, Math.min(v, sgMaxHp(u))); };
 
 // ⚔️ 전쟁터는 역사 마을 밖의 따로 된 큰 땅이에요 (예전 92×92 → 약 166×166). 예전 자리 좌표를 SGK배로 넓혀서 옮겨요
@@ -22457,6 +22486,7 @@ const SG_COVER = [
 const SG_SITE = Object.fromEntries(SG_SITES.map(s => [s.k, s]));
 const SG_ZONE = 5.5, SG_HURT = 12000, SG_HURT_FAST = 7000, SG_SAFE = 3000, SG_DOWN = 45000, /* 🚩 1103b 부서진 성문 다시 서기 25 → 45초 */ SG_CAT_CD = 20000, SG_FINAL = 60000;
 const SG_LV_HP = (max, lv) => max + (lv - 1) * 25;
+const SG_WALL_COST = { 1: { w: 20, i: 5 }, 2: { w: 30, i: 15 } }; /* 🧱 1103g 성벽 강화 비용 (목책 → 토성 → 석성) */
 const RES_ICON = { w: '🪵', i: '⛓️', f: '🍚' }, RES_NAME = { w: '목재', i: '철', f: '군량' };
 const inSiege = (x, z) => !!S.siege && x >= SG.x0 + 0.8 && x <= SG.x1 - 0.8 && z >= SG.z0 + 0.8 && z <= SG.z1 - 0.8 && !sgInStream(x, z) && (sgFerry.on || !sgInMoat(x, z)); // 🌊 해자는 나룻배로만
 const sgInStream = (x, z) => { const d = Math.hypot(x - SG.cx, z - SG.cz); if (d < 10.2 || d > 12.2) return false; const a = Math.abs(Math.atan2(z - SG.cz, x - SG.cx)) % (Math.PI / 2); return !(a < 0.2 || a > Math.PI / 2 - 0.2); }; // 산성 둘레 개울 (다리 4개만 건너요)
@@ -22472,7 +22502,7 @@ const sgTeamSize = (t) => Object.values(S.siege?.team || {}).filter(v => v === t
 const SG_RK = ['king', 'gen', 'sol', 'arch', 'smith'], SG_RK_MANY = ['sol', 'arch', 'smith']; // 빈 자리를 채우는 순서 · 👑 왕·🎖️ 장군은 1명씩
 const sgRoleCapAll = (t) => Math.max(1, Math.ceil((sgTeamSize(t) - 2) / 3)); // 다섯 역할이 다 찬 뒤에 보병·궁병·대장장이에 들어갈 수 있는 사람 수
 const sgRoleEmpty = (t, but) => SG_RK.filter(k => sgRoleCount(t, k, but) === 0); // 아직 아무도 없는 역할
-const sgRoleCap = (t, k, but) => k === 'pow' || SG_ROLES[k]?.off ? 0 : (k === 'king' || k === 'gen') ? 1 : sgRoleEmpty(t, but).some(k2 => k2 !== k) ? 1 : sgRoleCapAll(t); // 👑 왕 1 · 다섯 역할에 1명씩 먼저 채우고, 다 차면 6명째부터 나머지 역할에 고르게
+const sgRoleCap = (t, k, but) => k === 'pow' || SG_ROLES[k]?.off ? 0 : k === 'king' ? 1 : Math.max(2, Math.ceil((sgTeamSize(t) - 1) / 4)); /* 🎭 1103g 왕 1명 · 나머지 직업은 2명까지 (나라 사람이 9명보다 많으면 고르게 늘어요) */ // 👑 왕 1 · 다섯 역할에 1명씩 먼저 채우고, 다 차면 6명째부터 나머지 역할에 고르게
 const sgRoleCount = (t, k, but) => Object.entries(S.siege?.role || {}).filter(([u]) => u !== but && sgTeamOf(u) === t && sgRoleOf(u) === k).length;
 const sgKingMarks = () => { if (!S.siege?.on) return []; const out = []; for (const u of Object.keys(S.siege.role || {})) if (sgIsKing(u) && !sgHurt(u)) { const p = sgPosOf(u); if (p) out.push(['👑', p.x, p.z]); } return out; }; // 지도에 왕 위치
 const sgIsKing = (u) => !!S.siege?.role?.[u] && sgRoleOf(u) === 'king';
@@ -22488,7 +22518,7 @@ const sgFallen = (t) => !!S.siege?.fall?.[t]; // 🏳️ 함락된 나라
 const sgAlive = () => { const out = []; for (let t = 1; t <= (S.siege?.n || 0); t++) if (!sgFallen(t)) out.push(t); return out; };
 const sgFinal = () => !!S.siege?.on && S.siege.end - backend.now() < SG_FINAL && backend.now() < S.siege.end;
 const sgOwns = (t, k) => (S.siege?.own?.[k] || 0) === t;
-const sgHurtDur = (u) => (sgIsKing(u) ? SG_KING_DOWN : sgOwns(sgTeamOf(u), 'farm') ? SG_HURT_FAST : SG_HURT) + (sgTeamOf(u) && S.siege?.hp?.[sgTeamOf(u)] === 0 && !sgFallen(sgTeamOf(u)) ? 6000 : 0); /* 🚩 1103b 우리 성문이 부서져 있으면 6초 더 늦게 일어나요 */ // 👑 왕은 30초
+const sgHurtDur = (u) => (sgIsKing(u) ? SG_KING_DOWN : sgOwns(sgTeamOf(u), 'farm') ? (sgHero(sgTeamOf(u), 'onjo') ? 4000 : SG_HURT_FAST) : SG_HURT) * (sgHero(sgTeamOf(u), 'hyeok') ? 0.6 : 1) + (sgTeamOf(u) && S.siege?.hp?.[sgTeamOf(u)] === 0 && !sgFallen(sgTeamOf(u)) ? 6000 : 0); /* 🚩 1103b 우리 성문이 부서져 있으면 6초 더 늦게 일어나요 */ // 👑 왕은 30초
 const sgHurt = (u) => { const t = S.siege?.hurt?.[u]; return !!t && backend.now() - t < sgHurtDur(u) + 20000; }; // 쓰러진 기록이 있으면 누워 있어요 (그 친구 기기가 성으로 보내면서 지워요 · 기기가 꺼져 있으면 20초 더 기다려요)
 const sgSafe = (u) => backend.now() - (S.siege?.safe?.[u] || 0) < SG_SAFE || sgPB(u, 'dodge'); // 💨 궁병 구르기 중에도 안 맞아요
 const sgBuff = (t, k) => (S.siege?.buff?.[t]?.[k] || 0) > backend.now();
@@ -22499,10 +22529,10 @@ const SG_SWORD = { pd: 3, rng: 2.9, cd: 0.7 }, SG_FAN = { pd: 1, rng: 14, cd: 1.
 const sgSwordDmg = () => SG_SWORD.pd + 1 + sgPow('math') + (sgBuff(sgMine(), 'steel') ? 1 : 0);
 const sgRes = (t) => S.siege?.res?.[t] || {};
 const sgLv = (t) => S.siege?.lv?.[t] || 1;
-const sgMax = (t) => SG_LV_HP(S.siege?.max || 30, sgLv(t));
+const sgMax = (t) => SG_LV_HP(S.siege?.max || 30, sgLv(t)) + (sgHero(t, 'jangsu') ? 10 : 0) + (sgHero(t, 'hojok') ? 5 : 0); /* 🏛️ 장수왕 · 호족 */
 const sgHp = (t) => S.siege?.hp?.[t] ?? sgMax(t);
 const sgSpeedMul = () => sgSpeedMul0() * (sgAnsi() && ansiPh() === 3 && S.siege?.on && sgMine() === 2 && siegeRegion() ? 0.8 : 1); // ❄️ 1029i 안시성 겨울: 당나라는 느려져요
-const sgSpeedMul0 = () => (trw.horn > performance.now() ? 1.4 : 1) * ((S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? 0.15 : 0) + (sgPB(backend.uid, 'horn') ? 0.2 : 0) + (sgPB(backend.uid, 'roar') ? 0.15 : 0) : 1) * (S.siege?.on && sgPB(backend.uid, 'stun') ? 0.5 : 1) * (sgw.draw ? 0.6 : 1); // 📣 함성 · 🏹 활을 당기는 동안은 천천히 // 🎯 체험장 나팔도 빨라져요 · 🔨 어질어질하면 절반
+const sgSpeedMul0 = () => (trw.horn > performance.now() ? 1.4 : 1) * ((S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? (sgHero(sgMine(), 'chunchu') ? 0.3 : 0.15) : 0) + (sgPB(backend.uid, 'horn') ? 0.2 : 0) + (sgPB(backend.uid, 'roar') ? 0.15 : 0) : 1) * (S.siege?.on && sgPB(backend.uid, 'stun') ? 0.5 : 1) * (sgw.draw ? 0.6 : 1); // 📣 함성 · 🏹 활을 당기는 동안은 천천히 // 🎯 체험장 나팔도 빨라져요 · 🔨 어질어질하면 절반
 const sgFrozen = () => !!S.siege && siegeRegion() && sgMine() && sgHurt(backend.uid);
 const sgw = { cover: [], field: null, castles: {}, key: '', lastR: '', ended: '', cool: 0, balls: [], boxes: [], sites: {}, bars: {}, barKey: '', shots: {}, fxSeen: {}, assign: {}, tick: 0, slow: 0, hud: '', listKey: '', busy: {}, spots: [], hurtT: 0, hurtPos: null, wasHurt: false, catObjs: {}, roleAsked: '', finalTold: '' };
 const sgFerry = { on: false, t: 0, x0: 0, z0: 0, x1: 0, z1: 0, boat: null }; // 🛶 해자 건너기 (1022f)
@@ -22878,7 +22908,7 @@ function sgDrawRelease() {
   if (held < SG_DRAW.min) { toast('🏹 시위를 더 오래 당겨요! (꾹 누르고 있다가 놓아요)', 'info'); renderSgBar(true); return; }
   const W = WEAPONS.bow, p = player.pos, full = k >= 1, aim = sgAimPoint(null, 6 + 24 * k), { dx, dz, v, a } = sgAimShot(W, aim);
   player.heading = Math.atan2(dx, dz); playAct(player.avatar, 'cheer'); playSfx('jump');
-  sgw.cool = 0.5; const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6, pd = (full ? 3 : 2) + sgPow('eng') + (sgBuff(sgMine(), 'steel') ? 1 : 0);
+  sgw.cool = 0.5; const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6, pd = (full ? 3 : 2) + sgPow('eng') + (sgBuff(sgMine(), 'steel') ? 1 : 0) + sgHeroB('jumong');
   sgLaunch(sx, sz, dx, dz, v, a, true, sgMine(), W.dmg * (full ? 2 : 1) * (sgBuff(sgMine(), 'steel') ? 2 : 1), pd, sgPow('eng'), sgGradeOf(backend.uid, 'arch'));
   backend.sgShot({ x: +sx.toFixed(2), z: +sz.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: +v.toFixed(2), a: +a.toFixed(3) });
   if (full) burst(new V3(sx, 1.7, sz), [0xFFE066, 0xFFFFFF], 12, 2, 1); renderSgBar(true);
@@ -22892,7 +22922,7 @@ function sgMulti() {
   if (!sgCan()) { if (sgBreak()) toast('🗺️ 지금은 작전 시간이에요. 후반전에 써요', 'info'); return; }
   if (sgMultiLeft()) { toast(`⏳ 멀티샷은 ${sgMultiLeft()}초 뒤에 다시 쓸 수 있어요`, 'info'); return; }
   sgw.mCd = performance.now() + SG_MULTI.cd; sgw.draw = 0;
-  const W = WEAPONS.bow, p = player.pos, f = sgAimDir(), n = sgMultiN(statTier('eng')), steel = sgBuff(sgMine(), 'steel'), pd = 1 + sgPow('eng') + (steel ? 1 : 0), gr = sgGradeOf(backend.uid, 'arch');
+  const W = WEAPONS.bow, p = player.pos, f = sgAimDir(), n = sgMultiN(statTier('eng')), steel = sgBuff(sgMine(), 'steel'), pd = 1 + sgPow('eng') + (steel ? 1 : 0) + sgHeroB('jumong'), gr = sgGradeOf(backend.uid, 'arch');
   const c = sgAimShot(W, { x: p.x + f.x * SG_MULTI.rng, y: 1.2, z: p.z + f.z * SG_MULTI.rng });
   player.heading = Math.atan2(c.dx, c.dz); playAct(player.avatar, 'cheer'); playSfx('cast');
   sgMultiFan(p.x, p.z, c.dx, c.dz, n).forEach(([dx, dz], i) => setTimeout(() => { if (!sgCan()) return; const sx = p.x + dx * 0.6, sz = p.z + dz * 0.6; sgLaunch(sx, sz, dx, dz, c.v, c.a, true, sgMine(), W.dmg * (steel ? 2 : 1), pd, sgPow('eng'), gr); }, i * 35));
@@ -22930,7 +22960,7 @@ async function sgTrapHit(u, k, tt, d) {
    · 우리 성 둘레(성 가운데에서 18걸음 안)에만 · 🪵3 ⛓️3 · 1명 1개 (다시 세우면 옮겨져요) · 90초 · 쿨타임 20초
    · 세운 대장장이 기기가 2초마다 7걸음 안 가장 가까운 상대를 쏴요 (피해 1 · 우리 성문이 부서졌으면 4초마다) · 대장장이가 쓰러져 있으면 멈춰요
    · 상대는 가까이에서 E로 때려 부숴요 (체력 8 · 한 번에 2 · 부수면 그 나라 +3점) */
-const SG_TUR = { cost: { w: 3, i: 3 }, life: 90000, cd: 20000, rng: 7, fire: 2000, fireSlow: 4000, hp: 8, near: 18, hit: 2, pts: 3 };
+const SG_TUR = { cost: { w: 6, i: 6 }, life: 90000, cd: 20000, rng: 7, fire: 2000, fireSlow: 4000, hp: 8, near: 18, hit: 2, pts: 3 };
 async function sgTurret() {
   if (!sgCan()) { if (sgBreak()) toast('🗺️ 지금은 작전 시간이에요. 후반전에 써요', 'info'); return; }
   if (sgQLeft()) { toast(`⏳ ${sgQLeft()}초 뒤에 다시 세울 수 있어요`, 'info'); return; }
@@ -22996,9 +23026,9 @@ function sgQ() { // Q: 직업마다 다른 스킬
     backend.sgPBuffSet(backend.uid, 'dodge', backend.now() + SG_DODGE.dur); backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: 0, a: 0, m: 8 }); sgMeleeFx(p.x, p.z, dx, dz, 8);
     const h = player.heading; dashStart(dx, dz, null, () => sgCan()); player.heading = h; pDash.dur = 0.28; toast('💨 휙! 1.5초 동안 안 맞아요', 'success');
   } else { // 📣 왕의 함성: 둘레 12걸음 우리 편 피해 +1 · 빨라져요
-    const dur = 15 + 3 * sgPow('soc'), uids = [backend.uid]; sgw.qCd = performance.now() + SG_ROAR.cd;
-    for (const [u, rr] of remotes) if (sgTeamOf(u) === me && !sgHurt(u) && Math.hypot(rr.pos.x - p.x, rr.pos.z - p.z) <= SG_ROAR.r) uids.push(u);
-    for (const [id, b] of Object.entries(sgb.list)) { const a = sgb.av[id]?.g.position || b; if (b.t === me && !b.down && Math.hypot(a.x - p.x, a.z - p.z) <= SG_ROAR.r) uids.push(id); }
+    const gy = sgHero(me, 'gungye') ? 2 : 1, dur = Math.min(60, (15 + 3 * sgPow('soc')) * gy), RR = SG_ROAR.r * gy, uids = [backend.uid]; sgw.qCd = performance.now() + SG_ROAR.cd; /* 🏛️ 궁예: 범위·시간 2배 */
+    for (const [u, rr] of remotes) if (sgTeamOf(u) === me && !sgHurt(u) && Math.hypot(rr.pos.x - p.x, rr.pos.z - p.z) <= RR) uids.push(u);
+    for (const [id, b] of Object.entries(sgb.list)) { const a = sgb.av[id]?.g.position || b; if (b.t === me && !b.down && Math.hypot(a.x - p.x, a.z - p.z) <= RR) uids.push(id); }
     backend.sgSkillBuff(me, 'roar', backend.now() + dur * 1000, uids); playAct(player.avatar, 'cheer'); playSfx('fanfare');
     backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: 0, dz: 1, v: 0, a: 0, m: 7 }); sgMeleeFx(p.x, p.z, 0, 1, 7, sgGradeOf(backend.uid, 'king')); sgStpAdd('r', 3 * sgPow('soc'));
     toast(`📣 왕의 함성! 우리 편 ${uids.length}명이 ${dur}초 동안 피해 +1 · 빨라져요`, 'success');
@@ -23263,7 +23293,7 @@ async function sgHitPlayer(uid, dmg, tt, o = {}) { // 맞은 친구 체력을 �
 }
 async function sgHitGate(k, dmg, quiet) {
   const c = sgw.castles[k]; if (!c || c.open) return;
-  const r = await backend.sgHit(k, Math.min(12, dmg), sgMine());
+  const r = await backend.sgHit(k, Math.min(12, dmg + sgHeroB('jinheung')), sgMine()); /* 🏛️ 진흥왕 */
   if (!r.ok) return;
   if (r.left === 0) { toast(`💥 ${sgSet().nat[k - 1].name} 성문을 부쉈어요! 우리 나라 +15점 · 자원을 빼앗았어요`, 'success'); sgLoot(k); }
   else if (!quiet) toast(`🎯 명중! ${sgSet().nat[k - 1].name} 성문 ${r.left}/${sgMax(k)}`, 'success');
@@ -23275,9 +23305,9 @@ const sgFixLeft = () => Math.max(0, Math.ceil(((sgw.fixCd || 0) - performance.no
 async function sgRepair(t) {
   if (sgFixLeft()) { toast(`🔨 망치를 고쳐 잡는 중이에요… ${sgFixLeft()}초 뒤에 다시 고칠 수 있어요`, 'info'); return; }
   if (sgw.busy.fix) return; sgw.busy.fix = true; setTimeout(() => { sgw.busy.fix = false; }, 1200);
-  const r = await backend.sgFix(t, Math.min(12, 4 + 2 * sgPow('eng')), sgMax(t)); if (r.ok) { sgHelpPt(); sgStpAdd('f', Math.min(12, 4 + 2 * sgPow('eng')) - 4); sgw.fixCd = performance.now() + SG_FIX_CD; burst(new V3(...castleLocal(t, 0, 6.2).flatMap((v, i) => i ? [1.6, v] : [v])), [0xC9A65E, 0xFFFFFF], 16, 3, 1); playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
+  const r = await backend.sgFix(t, Math.min(14, 4 + 2 * sgPow('eng') + (sgHero(t, 'hojok') ? 2 : 0)), sgMax(t)); /* 🏛️ 호족 수리 +2 */ if (r.ok) { sgHelpPt(); sgStpAdd('f', Math.min(12, 4 + 2 * sgPow('eng')) - 4); sgw.fixCd = performance.now() + SG_FIX_CD; burst(new V3(...castleLocal(t, 0, 6.2).flatMap((v, i) => i ? [1.6, v] : [v])), [0xC9A65E, 0xFFFFFF], 16, 3, 1); playAct(player.avatar, 'mine'); playSfx('build'); toast(`🔨 성문을 고쳤어요! ${r.hp}/${sgMax(t)}`, 'success'); }
 }
-const SG_CAT = { cost: { w: 4, i: 3 }, gate: 10 }; // 🪨 1023b: 산성 투석기 = ⚒️ 대장장이 전용 공성 무기 (쏠 때마다 나라 자원 · 성문 -10)
+const SG_CAT = { cost: { w: 8, i: 6 }, gate: 10 }; /* 1103g 비용 올림 */ // 🪨 1023b: 산성 투석기 = ⚒️ 대장장이 전용 공성 무기 (쏠 때마다 나라 자원 · 성문 -10)
 function sgCatText(key, owner) {
   if (key !== 'fort' || !S.siege?.on || !sgStarted() || sgWinner() || !sgMine() || owner !== sgMine()) return null;
   if (sgMyRole() !== 'smith') return ['🪨 산성 투석기', '⚒️ 우리 나라 대장장이만 쏠 수 있어요'];
@@ -23362,13 +23392,13 @@ async function sgSkill(k) { // 📜 책사 스킬 (사회력으로 더 세져요
 }
 async function sgPlaceBar() {
   const me = sgMine(), p = player.pos; if (!S.siege?.on || !me || sgMyRole() !== 'smith' || sgHurt(backend.uid)) return;
-  if ((sgRes(me).w || 0) < 4) { toast('🪵 목재가 4개 필요해요 (나루터를 차지하거나 창고에서 문제를 풀어요)', 'warn'); return; }
+  if ((sgRes(me).w || 0) < 6) { toast('🪵 목재가 6개 필요해요 (나루터를 차지하거나 창고에서 문제를 풀어요)', 'warn'); return; }
   const nearSomething = Object.values(sgw.castles).some(c => Math.hypot(c.g.position.x - p.x, c.g.position.z - p.z) < 8.5) || SG_SITES.some(s => Math.hypot(s.x - p.x, s.z - p.z) < SG_ZONE + 0.5) || sgInStream(p.x, p.z) || Math.hypot(p.x - SG.cx, p.z - SG.cz) < 12.5;
   if (nearSomething) { toast('🪵 성·거점·산성 가까이에는 목책을 세울 수 없어요', 'info'); return; }
   let slot = -1; for (let i = 0; i < 4; i++) if (!(S.siege.bar?.[`${me}_${i}`]?.hp > 0)) { slot = i; break; }
   if (slot < 0) { toast('🪵 목책은 나라마다 4개까지예요. 부서지면 다시 세울 수 있어요', 'info'); return; }
   const f = sgAimDir(), x = +(p.x + f.x * 1.6).toFixed(2), z = +(p.z + f.z * 1.6).toFixed(2), r = +Math.atan2(f.x, f.z).toFixed(2);
-  const res = await backend.sgSpend(me, { w: 4 }); if (!res.ok) return;
+  const res = await backend.sgSpend(me, { w: 6 }); if (!res.ok) return;
   const ok = await backend.sgBar(`${me}_${slot}`, { x, z, r, hp: 6 });
   if (ok.ok) { playAct(player.avatar, 'mine'); playSfx('build'); toast('🪵 목책을 세웠어요! 상대가 지나가지 못해요', 'success'); }
 }
@@ -23400,7 +23430,9 @@ const SG_GUIDE = [
   ['⏱️', '진행 순서', ['⚔️ <b>전반전</b> → 🗺️ <b>작전 시간 1분</b> → ⚔️ <b>후반전</b>', '작전 시간에는 싸울 수 없어요. 모두 성으로 돌아가요. 나라 친구들과 작전을 짜고, 직업을 바꿀 수 있어요.', '직업은 시작 전 · 시작하고 25초 안 · 작전 시간에만 바꿀 수 있어요. 안 고르면 빈 자리로 정해져요.']],
   ['🎭', '직업과 스킬', null],
   ['🚩', '거점(점령지) 효과', ['거점 동그라미 안에 <b>우리 편만</b> 서 있으면 깃발이 올라가요. 상대가 같이 있으면 멈춰요. 👑 왕은 2명 몫이에요.', '차지한 거점은 <b>3초마다</b> 점수와 자원을 줘요.', '🏯 <b>산성</b>(가운데): +2점 · ⚒️ 대장장이가 산성 투석기로 <b>원하는 상대 성문</b>을 골라 쏠 수 있어요 (성문 -10)', '⛏️ <b>철광산 ①②</b>: +1점 · ⛓️ 철 +2', '🌾 <b>곡창</b>: +1점 · 🍚 군량 +2 · 쓰러져도 빨리 일어나요 (12초 → 7초)', '⛵ <b>나루터</b>: +1점 · 🪵 목재 +2 · 우리 편 모두 발이 빨라져요', '🔥 <b>봉수대</b>: +1점 · 다른 거점을 1.3배 빨리 차지해요']],
-  ['🪵', '자원은 어디에 써요?', ['자원은 나라가 함께 써요. 거점과 나라 창고 문제로 모아요.', '⛓️ <b>철</b>: ⚔️ 무기 갈기(2) · 🛡️ 갑옷(가죽 2 → 철 5) · ⛓️ 강철 무기(10, 60초 피해 +1 · 성문 2배) · 🪨 산성 투석기(3)', '🪵 <b>목재</b>: 🪵 목책(4) · 🧱 성벽 강화(12) · 🪨 산성 투석기(4)', '🍚 <b>군량</b>: 지금은 점수만 줘요']],
+  ['🏛️', '역사 인물 고용', null, 'hero'],
+  ['🪵', '자원은 어디에 써요?', ['자원은 나라가 함께 써요. 거점과 나라 창고 문제로 모아요.', '⛓️ <b>철</b>: ⚔️ 무기 갈기(3) · 🛡️ 갑옷(가죽 4 → 철 8) · ⛓️ 강철 무기(15, 60초 피해 +1 · 성문 2배) · 🏹 포탑(6) · 🪨 산성 투석기(6) · 🧱 성벽 강화(5 → 15)', '🪵 <b>목재</b>: 🪵 목책(6) · 🏹 포탑(6) · 🪨 산성 투석기(8) · 🧱 성벽 강화: 목책 → 토성(20) → 석성(30)', '🍚 <b>군량</b>: 🏛️ 역사 인물 고용(10)', '🏛️ 인물 고용은 🪵10 ⛓️10 🍚10이 들어요.']],
+
   ['🏳️', '성 함락과 포로', ['① 상대 <b>성문을 부숴요</b> (체력이 0이 되면 +15점 · 45초 뒤에 다시 서요)', '② 성 한가운데 <b>🚩 깃발 자리</b>에 들어가요', '③ 깃발 자리에 <b>지키는 친구보다 우리 편이 더 많으면</b> 차지가 올라가요. 100%가 되면 함락! (+50점)', '👑 <b>왕을 쓰러뜨리면</b> 30초 동안 그 성을 지키는 힘이 절반이 돼요. 왕을 먼저 잡고 쳐들어가요!', '🏰 성문이 서 있을 때 성 안의 왕은 맞지 않아요. 성문이 부서지면 왕도 맞아요.', '⛓️ 함락된 나라 친구들은 이긴 나라의 <b>포로</b>가 돼서 그 나라 편으로 싸워요 (❤️ 4 · 주먹만)', '🛡️ 지키는 법: 대장장이가 성문을 고치고, 모두 깃발 자리로 모여요. 성문이 부서진 나라는 6초 늦게 일어나요.']],
   ['🤕', '쓰러지면?', ['체력이 0이 되면 🤕 쓰러져요. 12초 뒤에 우리 성에서 다시 일어나요 (🌾 곡창이 있으면 7초 · 👑 왕은 30초).', '다시 일어난 뒤 3초 동안은 맞지 않아요.', '🏹 상대 대장장이의 자동 포탑은 7걸음 안에 들어오면 저절로 쏴요. 가까이 가서 E를 눌러 부수면 우리 나라 +3점!']],
   ['💪', '공부의 힘', ['내 능력치가 높을수록 세져요: 🧮 수학 → 장군·보병 · 🔤 영어 → 궁병·대장장이 · 🏛️ 사회 → 왕', '📚 독서력은 모든 직업을 함께 세게 해 줘요.', '능력치가 오르면 무기 모양이 바뀌어요: 나무 → 철 → 강철 → 황금', '전쟁이 끝나면 「공부의 힘 결과」에서 내가 능력치로 더한 힘을 볼 수 있어요.']],
@@ -23414,10 +23446,45 @@ function openSgGuide(open) {
       const d = document.createElement('details'); d.style.cssText = 'background:#FFF8E8;border:2px solid #EADBC4;border-radius:14px;margin:6px 0;padding:6px 10px;text-align:left'; if (sgw.guideOpen.has(i)) d.open = true; d.ontoggle = () => { if (d.open) sgw.guideOpen.add(i); else sgw.guideOpen.delete(i); };
       const sm = document.createElement('summary'); sm.style.cssText = 'font-weight:800;font-size:17px;cursor:pointer;padding:4px 0'; sm.textContent = `${ic} ${title}`; d.append(sm);
       const ul = document.createElement('div'); ul.style.cssText = 'line-height:1.65;font-size:15px;padding:4px 2px 6px';
-      const L = lines || Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `<b>${R.icon} ${R.name}</b> · ${R.tag}<br>${R.can.map(c => '· ' + c).join('<br>')}`);
+      const L = lines || (SG_GUIDE[i][3] === 'hero' ? ['🏛️ 나라 창고에서 「인물 고용」을 눌러요. ⚔️ 전반전에 1명, 후반전에 1명!', `📜 그 인물이 나오는 사회 학습지 문제를 맞히고 🪵${SG_HERO_COST.w} ⛓️${SG_HERO_COST.i} 🍚${SG_HERO_COST.f}을 내면 고용돼요 (틀리면 30초 뒤 다시)`, '효과는 경기 끝까지 이어져요. 고용하면 모든 나라에 알림이 떠요.', ...Object.values(SG_HERO).map(H => `${H.icon} <b>${H.n}</b> (${H.nat.join('·')}) · ${H.d}`)] : null) || Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `<b>${R.icon} ${R.name}</b> · ${R.tag}<br>${R.can.map(c => '· ' + c).join('<br>')}`);
       for (const ln of L) { const p = document.createElement('div'); p.style.margin = '3px 0'; p.innerHTML = ln; ul.append(p); }
       d.append(ul); box.append(d); });
   }); }
+/* 🏛️ 1103g 인물 고용 창 */
+const sgHeroSlot = () => { const s = S.siege; if (!s) return 'a'; const mid = s.half ? s.half.b : (s.at + s.end) / 2; return backend.now() < mid ? 'a' : 'b'; };
+function sgHeroQ(k) { const H = SG_HERO[k], all = histBank()._all || [], inSh = all.filter(it => it.id.startsWith(H.sh + ':')); const hit = inSh.filter(it => H.kw.some(w => (it.q + ' ' + it.ctx + ' ' + it.a).includes(w))); const L = hit.length ? hit : inSh; return L.length ? L[Math.floor(Math.random() * L.length)] : null; }
+function openSgHero() {
+  const me = sgMine(); if (!S.siege?.on || !me) return;
+  openLife('🏛️ 역사 인물 고용', (box) => {
+    const H0 = S.siege.hero?.[me] || {}, slot = sgHeroSlot(), cur = sgw.heroQ, res0 = sgRes(me), hk = JSON.stringify([H0, slot, cur?.it?.id, cur?.k, Math.max(0, Math.ceil(((sgw.heroLock || 0) - Date.now()) / 1000)), Object.entries(SG_HERO_COST).every(([q, v]) => (res0[q] || 0) >= v), !!sgWinner()]); if (box.dataset.hk === hk && box.firstChild) return; box.dataset.hk = hk; /* 바뀐 게 없으면 다시 그리지 않아요 (누르는 중에 버튼이 사라지지 않게) */
+    box.textContent = '';
+    box.append(el2('p', 'hint', `나라마다 ⚔️ 전반전에 1명 · 후반전에 1명을 고용해요. 사회 학습지 문제를 맞히고 ${Object.entries(SG_HERO_COST).map(([q, v]) => RES_ICON[q] + v).join(' ')}을 내요. 효과는 경기 끝까지!`));
+    box.append(el2('p', 'lp-big', `전반 ${H0.a ? `${SG_HERO[H0.a]?.icon} ${SG_HERO[H0.a]?.n} ✅` : slot === 'a' ? '⏳ 고용할 수 있어요' : '❌ 지나감'} · 후반 ${H0.b ? `${SG_HERO[H0.b]?.icon} ${SG_HERO[H0.b]?.n} ✅` : slot === 'b' ? '⏳ 고용할 수 있어요' : '🔒 후반전에'}`));
+    const ks = sgHeroesFor(me); if (!ks.length) { box.append(el2('p', 'vempty', '이 나라에는 고용할 수 있는 학습지 인물이 없어요 (선사 시대 부족 · 당나라)')); return; }
+    if (cur && ks.includes(cur.k)) { const H = SG_HERO[cur.k], it = cur.it, card = el2('div', 'hq-card');
+      card.append(el2('div', 'hq-sub', `${H.icon} ${H.n} 고용 문제 · 📘 ${it.sub}`)); if (it.ctx && it.ctx !== it.sub) card.append(el2('div', 'hq-ctx', it.ctx)); card.append(el2('div', 'hq-q', it.q)); box.append(card);
+      const grid = el2('div', 'hq-opts'); for (const c of cur.ch) { const b = el2('button', 'btn', c); b.onclick = () => sgHeroAnswer(c); grid.append(b); } box.append(grid);
+      const bk = el2('button', 'btn', '← 다른 인물 고르기'); bk.style.cssText = 'background:#fff;font-size:14px;margin-top:6px'; bk.onclick = () => { sgw.heroQ = null; refillLife(); }; box.append(bk); return; }
+    const wait = Math.ceil(((sgw.heroLock || 0) - Date.now()) / 1000); if (wait > 0) box.append(el2('p', 'hint', `❌ 틀렸어요 · ${wait}초 뒤에 다시 도전해요`));
+    const can = !H0[slot], res = sgRes(me), enough = Object.entries(SG_HERO_COST).every(([q, v]) => (res[q] || 0) >= v);
+    if (can && !enough) box.append(el2('p', 'hint', `자원이 모자라요 (지금 🪵${res.w || 0} ⛓️${res.i || 0} 🍚${res.f || 0})`));
+    for (const k of ks) { const H = SG_HERO[k], used = Object.values(H0).includes(k), row = el2('div', 'ride-row' + (used ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn');
+      tx.append(el2('b', '', `${H.n}${used ? ' ✅ 고용함' : ''}`), el2('span', 'hint', `${H.d}${H.era ? ' · (나라·시대 카드)' : ''}`));
+      b.textContent = used ? '함께 싸워요' : '📜 문제 풀고 고용'; b.disabled = used || !can || !enough || wait > 0 || sgWinner();
+      if (!b.disabled) b.style.background = '#FFE066'; b.onclick = () => { const it = sgHeroQ(k); if (!it) { toast('📘 이 인물의 학습지 문제를 못 찾았어요 (선생님이 사회 학습지를 불러와요)', 'warn'); return; } sgw.heroQ = { k, it, ch: histChoices(it) }; refillLife(); };
+      row.append(el2('span', 'ride-ic', H.icon), tx, b); box.append(row); }
+  }); }
+async function sgHeroAnswer(c) {
+  const Q = sgw.heroQ, me = sgMine(); if (!Q || !me) return; const ok = Q.it.alts.some(a => hNorm(a) === hNorm(c));
+  if (!ok) { sgw.heroQ = null; sgw.heroLock = Date.now() + 30000; playSfx('wrong'); toast(`❌ 아쉬워요! 정답은 「${Q.it.a}」 · 30초 뒤에 다시 도전해요`, 'warn'); refillLife(); return; }
+  const slot = sgHeroSlot(); if (S.siege.hero?.[me]?.[slot]) { sgw.heroQ = null; toast('이미 이번 판 인물을 고용했어요', 'info'); refillLife(); return; }
+  const sp = await backend.sgSpend(me, SG_HERO_COST); if (!sp.ok) { toast('⚠️ 자원이 모자라요', 'warn'); return; }
+  const r = await backend.sgHeroSet(me, slot, Q.k); sgw.heroQ = null;
+  if (!r?.ok) { backend.sgGain(me, SG_HERO_COST, 0); toast('⚠️ 방금 친구가 먼저 고용했어요 (자원은 돌려받았어요)', 'warn'); refillLife(); return; }
+  playSfx('fanfare'); refillLife(); }
+function sgHeroTick() { /* 다른 나라도 알 수 있게 알림 */ const s = S.siege; if (!s?.on) { sgw.heroSeen = null; return; } sgw.heroSeen ||= JSON.parse(JSON.stringify(s.hero || {}));
+  for (const [t, o] of Object.entries(s.hero || {})) for (const [sl, k] of Object.entries(o || {})) { if (sgw.heroSeen[t]?.[sl] === k) continue; (sgw.heroSeen[t] ||= {})[sl] = k; const H = SG_HERO[k], N = sgSet().nat[t - 1]; if (!H || !N) continue;
+    if (siegeRegion()) { showBanner(`🏛️ ${N.icon} ${N.name}이(가) ${H.icon} ${H.n}을(를) 고용했어요!`, H.d, 4000); const ca = castleAt(+t); if (ca) burst(new V3(ca.x, 5, ca.z), [N.col, 0xFFE066, 0xFFFFFF], 50, 6, 3); } } }
 function openSgStore() {
   const me = sgMine(), N = sgSet().nat[me - 1]; if (!N) return;
   const keys = histPool(sgSet().eras).length >= 4 ? sgSet().eras : HIST_ERAS.map(E => E.k);
@@ -23425,13 +23492,14 @@ function openSgStore() {
     head: (box) => {
       const res = sgRes(me), role = sgMyRole(), R = SG_ROLES[role];
       box.append(el2('p', 'lp-big', `🪵 ${res.w || 0} · ⛓️ ${res.i || 0} · 🍚 ${res.f || 0}`));
-      const row = el2('div', 'row-center wrap'); const rb = el2('button', 'btn', `${R.icon} ${R.name} · 역할 바꾸기`); rb.style.background = '#fff'; rb.onclick = openSgRole; row.append(rb); box.append(row);
+      const row = el2('div', 'row-center wrap'); const rb = el2('button', 'btn', `${R.icon} ${R.name} · 역할 바꾸기`); rb.style.background = '#fff'; rb.onclick = openSgRole; row.append(rb);
+      if (sgHeroesFor(me).length) { const H0 = S.siege.hero?.[me] || {}, hb = el2('button', 'btn', `🏛️ 인물 고용 ${[H0.a, H0.b].map(k => k ? SG_HERO[k]?.icon : '·').join('')}`); hb.style.background = '#FFE9A8'; hb.onclick = () => { sgw.heroQ = null; openSgHero(); }; row.append(hb); } box.append(row);
       const acts = el2('div', 'row-center wrap'); acts.style.marginTop = '6px';
       const act = (label, need, ok, fn) => { const b = el2('button', 'btn', label); const enough = Object.entries(need).every(([k2, v]) => (res[k2] || 0) >= v); b.disabled = !ok || !enough; b.onclick = fn; acts.append(b); };
-      if (role === 'smith') act(`🧱 성벽 강화 (🪵12) · ${['목책', '토성', '석성'][sgLv(me) - 1]} → ${['토성', '석성', '최고'][sgLv(me) - 1]}`, { w: 12 }, sgLv(me) < 3, async () => { const r = await backend.sgSpend(me, { w: 12 }); if (r.ok) { await backend.sgLevel(me, sgLv(me) + 1, Math.min(SG_LV_HP(S.siege.max, sgLv(me) + 1), sgHp(me) + 25)); playSfx('build'); } refillLife(); });
-      if (['sol', 'gen', 'arch'].includes(role)) act('⛓️ 강철 무기 (⛓️10 · 60초 피해 +1 · 성문 2배)', { i: 10 }, !sgBuff(me, 'steel'), async () => { const r = await backend.sgSpend(me, { i: 10 }); if (r.ok) await backend.sgBuff(me, 'steel', backend.now() + 60000); refillLife(); });
+      if (role === 'smith') { const lv = sgLv(me), wc = SG_WALL_COST[lv] || {}; act(lv >= 3 ? '🏰 석성 완성! (최고 단계)' : `🧱 성벽 강화 (${Object.entries(wc).map(([q, v]) => RES_ICON[q] + v).join(' ')}) · ${['목책', '토성', '석성'][lv - 1]} → ${['토성', '석성'][lv - 1]} (성문 체력 +25)`, wc, lv < 3, async () => { /* 🧱 1103g 단계를 먼저 올리고 자원을 써요 (성문이 부서져 있어도 올라가요) */ const l0 = sgLv(me); if (l0 >= 3) return; const r = await backend.sgLevel(me, l0 + 1, Math.min(sgMax(me) + 25, sgHp(me) + 25)); if (!r.ok) { toast('⚠️ 성벽을 강화하지 못했어요. 잠시 뒤 다시 눌러요', 'warn'); return; } await backend.sgSpend(me, wc); playSfx('build'); toast(`🧱 ${['', '토성', '석성'][l0]}으로 강화했어요!${l0 + 1 >= 3 ? ' 🏰 성벽 최고 단계 완성!' : ''}`, 'success'); refillLife(); }); }
+      if (['sol', 'gen', 'arch'].includes(role)) act('⛓️ 강철 무기 (⛓️15 · 60초 피해 +1 · 성문 2배)', { i: 15 }, !sgBuff(me, 'steel'), async () => { const r = await backend.sgSpend(me, { i: 15 }); if (r.ok) await backend.sgBuff(me, 'steel', backend.now() + 60000); refillLife(); });
       if (role === 'sch') acts.append(el2('p', 'hint', `📜 책사 스킬(📯 나팔 🍚8 · 🛡️ 방패진 🍚6 · 🔥 화공 ⛓️6🍚6)은 아래 띠의 버튼으로 써요. 사회력 Lv${statLv('soc')} → 스킬 +${statTier('soc')}단계`));
-      if (role === 'smith') acts.append(el2('p', 'hint', `🪨 산성을 차지하면 산성 투석기를 쏠 수 있어요 (🪵4 ⛓️3 · 성문 -10 · 20초마다)`));
+      if (role === 'smith') acts.append(el2('p', 'hint', `🪨 산성을 차지하면 산성 투석기를 쏠 수 있어요 (🪵8 ⛓️6 · 성문 -10 · 20초마다)`));
       if (role === 'smith') acts.append(el2('p', 'hint', `⚒️ 친구 곁 E: 갑옷 · 우리 성문 앞 E: 수리(+${Math.min(12, 4 + 2 * sgPow('eng'))}) · 아래 띠: 🪵 목책 · 🛡️ 내 갑옷`));
       if (role === 'med') acts.append(el2('p', 'hint', `🌿 의원은 우리 친구 곁에서 E로 치료해요 (❤️ +${sgHealAmt()} · 독서력 Lv${statLv('read')})`));
       box.append(acts);
@@ -23440,7 +23508,7 @@ function openSgStore() {
     },
     onRight: async (first) => {
       if (!S.siege?.on || sgWinner()) return;
-      const k = (sgMyRole() === 'sch' ? 2 : 1) * (sgLagging() === me ? 1.5 : 1), give = { w: Math.round(3 * k), i: Math.round(2 * k), f: Math.round(2 * k) };
+      const k = (sgMyRole() === 'sch' ? 2 : 1) * (sgLagging() === me ? 1.5 : 1) * (sgHero(me, 'geun') ? 1.5 : sgHero(me, 'haedong') || sgHero(me, 'gaya2') ? 1.3 : 1), give = { w: Math.round(3 * k), i: Math.round(2 * k), f: Math.round(2 * k) };
       const r = await backend.sgGain(me, give, 1);
       toast(r.ok ? `📦 보급 도착! 🪵+${give.w} ⛓️+${give.i} 🍚+${give.f} · 나라 +1점` : '⚠️ 보급을 받지 못했어요', r.ok ? 'success' : 'warn');
     } });
@@ -23514,6 +23582,7 @@ function updateSiege(dt) {
   sgAuraAll(s);
   try { sgTrapTick(); } catch (e) { console.warn('trap', e); }
   try { sgTurTick(); } catch (e) { console.warn('tur', e); }
+  try { sgHeroTick(); } catch (e) { console.warn('hero', e); }
   if (!s || !joined) return;
   { const st = S.siege?.pbuff?.[backend.uid]?.stun || 0; if (st && st !== sgw.stunSeen && st > backend.now()) { sgw.stunSeen = st; toast('🔨 망치에 맞아 어질어질! 잠깐 느려져요', 'warn'); }
     if (sgPB(backend.uid, 'stun') && Math.random() < 0.3) burst(player.pos.clone().setY(2.6), [0xFFE066, 0xFFFFFF], 3, 1, 0.5, 0.4, 0);
@@ -23825,7 +23894,7 @@ function sgTickHost() {
   }
   if (boss && s.on && sgStarted() && backend.now() > s.at + 25000) { // 🎭 25초 안에 역할을 안 고른 친구는 빈 자리로 (왕 자리가 비었으면 왕부터)
     const up = {}, pend = {}; const cntOf = (t, k) => sgRoleCount(t, k) + (pend[t + k] || 0);
-    for (const [u, t] of Object.entries(s.team || {})) { if (s.role?.[u]) continue; const k = SG_RK.find(k2 => cntOf(t, k2) === 0) || SG_RK_MANY.reduce((a, k2) => cntOf(t, k2) < cntOf(t, a) ? k2 : a, 'sol'); up[`siege/role/${u}`] = k; pend[t + k] = (pend[t + k] || 0) + 1; }
+    for (const [u, t] of Object.entries(s.team || {})) { if (s.role?.[u]) continue; const k = SG_RK.find(k2 => cntOf(t, k2) === 0) || ['gen', ...SG_RK_MANY].reduce((a, k2) => cntOf(t, k2) < cntOf(t, a) ? k2 : a, 'sol'); up[`siege/role/${u}`] = k; pend[t + k] = (pend[t + k] || 0) + 1; }
     if (Object.keys(up).length) backend.adminUpdate(up);
   }
   const w = sgWinner();
@@ -23846,7 +23915,7 @@ function sgTickHost() {
     const ts = Object.keys(cnt).map(Number), own = s.own?.[st.k] || 0, cap = { t: s.cap?.[st.k]?.t || own, p: s.cap?.[st.k]?.p ?? (own ? 100 : 0) };
     let { t: ct, p } = cap, nOwn = own;
     if (ts.length === 1) {
-      const t = ts[0], rate = 12 * Math.min(3, cnt[t]) * (t === lag ? 1.5 : 1) * (sgOwns(t, 'beacon') ? 1.3 : 1) * (horn[t] ? 2 : 1);
+      const t = ts[0], rate = 12 * Math.min(3, cnt[t]) * (t === lag ? 1.5 : 1) * (sgOwns(t, 'beacon') ? (sgHero(t, 'chunchu') ? 1.6 : 1.3) : 1) * (sgHero(t, 'gwang') ? 1.5 : 1) * (horn[t] ? 2 : 1);
       if (ct && ct !== t) { p -= rate; if (p <= 0) { p = 0; ct = t; if (own && own !== t) nOwn = 0; } }
       else { ct = t; p = Math.min(100, p + rate); if (p >= 100) nOwn = t; }
     } else if (!ts.length) { if (own && ct === own) p = Math.min(100, p + 5); else if (p > 0) { p = Math.max(0, p - 4); if (!p) ct = own; } }
@@ -23861,7 +23930,7 @@ function sgTickHost() {
     const ts = Object.keys(cnt).map(Number); let ct = cc?.t || 0, p = cc?.p || 0;
     /* 🚩 1103b 공격하는 사람이 지키는 사람보다 많으면 차지가 올라가요 · 👑 왕이 쓰러져 있으면 지키는 힘이 절반 */
     const defW = def * (sgKingDownOf(t) ? 0.5 : 1), a2 = ts.length === 1 ? ts[0] : 0, net = a2 ? cnt[a2] - defW : 0;
-    if (a2 && net > 0) { if (ct && ct !== a2) { p -= 15; if (p <= 0) { p = 0; ct = a2; } } else { ct = a2; p = Math.min(100, p + 10 * Math.min(3, net)); } }
+    if (a2 && net > 0) { if (ct && ct !== a2) { p -= 15; if (p <= 0) { p = 0; ct = a2; } } else { ct = a2; p = Math.min(100, p + 10 * Math.min(3, net) * (sgHero(a2, 'wanggeon') ? 2 : 1)); } }
     else if (!ts.length || net < 0) p = Math.max(0, p - 5);
     if (p >= 100 && ct) { // 🏳️ 함락: 그 나라 친구들은 차지한 나라의 ⛓️ 포로가 돼요
       upd[`siege/fall/${t}`] = ct; upd[`siege/cc/${t}`] = null; upd[`siege/score/${ct}`] = (s.score?.[ct] || 0) + 50;
@@ -23882,7 +23951,8 @@ function sgTickHost() {
   const inc = {}, mul = sgFinal() ? 2 : 1;
   for (let t = 1; t <= s.n; t++) { if (sgFallen(t)) continue;
     let pts = 0; const g = { w: 0, i: 0, f: 0 };
-    for (const st of SG_SITES) if (sgOwns(t, st.k)) { pts += st.pts; if (st.res) g[st.res] += 2; }
+    for (const st of SG_SITES) if (sgOwns(t, st.k)) { pts += st.pts; if (st.res) g[st.res] += 2 * ((st.res === 'f' && (sgHero(t, 'onjo') || sgHero(t, 'gyeon'))) || (st.res === 'i' && (sgHero(t, 'gyeon') || sgHero(t, 'gaya1'))) || (st.res === 'w' && sgHero(t, 'chunchu')) ? 2 : 1); }
+    { const hm = sgHero(t, 'geun') ? 1.5 : sgHero(t, 'haedong') ? 1.3 : 1; if (hm > 1) for (const k of ['w', 'i', 'f']) g[k] = Math.round(g[k] * hm); } /* 🏛️ 근초고왕 · 해동성국 */
     if (sgw.slow2 = !sgw.slow2) { g.w += 1; g.i += 1; g.f += 1; } // 성에서 조금씩 (6초마다)
     if (pts) inc[`score/${t}`] = pts * mul;
     for (const k of ['w', 'i', 'f']) if (g[k]) inc[`res/${t}/${k}`] = g[k];
@@ -23921,7 +23991,7 @@ function renderSgHud(force) {
   const key = [s.r, JSON.stringify(s.hp || {}), JSON.stringify(s.lv || {}), JSON.stringify(s.score || {}), JSON.stringify(s.own || {}), JSON.stringify(res), w, left, wait > 0 ? wait : 0, t, sgMyRole(), JSON.stringify(s.fall || {}), JSON.stringify(s.cc || {}), sgPhase()].join('|');
   if (!force && key === sgw.hud) return; sgw.hud = key;
   const rows = [];
-  for (let k = 1; k <= s.n; k++) { const N = set.nat[k - 1], hp = sgHp(k), owned = SG_SITES.filter(st => sgOwns(k, st.k)).map(st => st.icon).join(''); rows.push(sgFallen(k) ? `<span class="sg-nat" style="--c:#999;opacity:.6"><b>${N.icon} ${N.name}</b> 🏳️ 함락</span>` : `<span class="sg-nat${k === t ? ' me' : ''}" style="--c:#${new THREE.Color(N.col).getHexString()}"><b>${N.icon} ${N.name}</b> ${s.score?.[k] || 0}점 ${owned}<i style="width:${Math.round(hp / sgMax(k) * 100)}%"></i></span>`); }
+  for (let k = 1; k <= s.n; k++) { const N = set.nat[k - 1], hp = sgHp(k), owned = SG_SITES.filter(st => sgOwns(k, st.k)).map(st => st.icon).join('') + Object.values(s.hero?.[k] || {}).map(h => SG_HERO[h]?.icon || '').join(''); rows.push(sgFallen(k) ? `<span class="sg-nat" style="--c:#999;opacity:.6"><b>${N.icon} ${N.name}</b> 🏳️ 함락</span>` : `<span class="sg-nat${k === t ? ' me' : ''}" style="--c:#${new THREE.Color(N.col).getHexString()}"><b>${N.icon} ${N.name}</b> ${s.score?.[k] || 0}점 ${owned}<i style="width:${Math.round(hp / sgMax(k) * 100)}%"></i></span>`); }
   $('sgNats').innerHTML = rows.join('');
   $('sgInfo').textContent = w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : (() => { const fm = (ms) => { const q = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(q / 60)}:${String(q % 60).padStart(2, '0')}`; }, h = s.half, ph = sgPhase(), now = backend.now(); const cc = Object.entries(s.cc || {}).find(([, v]) => v?.p), ccTxt = cc ? ` · 🚩 ${set.nat[+cc[0] - 1]?.name} 성 함락 중 ${cc[1].p}%` : '';
     if (ph === 'first') return `⚔️ 전반전 ${fm(h.a - now)}${ccTxt}`; if (ph === 'break') return `🗺️ 작전 시간 ${fm(h.b - now)} · 역할을 바꿀 수 있어요`; if (ph === 'second') return `⚔️ 후반전 ${fm(s.end - now)}${sgFinal() ? ' · 결전! 점수 2배' : ''}${ccTxt}`;
@@ -24010,6 +24080,7 @@ function initSiegeUI() {
   $('kickBack').onclick = () => location.reload();
   $('upChip').onclick = openVotePanel;
   setInterval(() => { if (isTeacher && !$('teacherPanel').classList.contains('hidden')) fillWhoAdmin(); }, 5000);
+  $('tpSgTLv').value = String(bag.tSgLv ?? -1); $('tpSgTLv').onchange = () => { bag.tSgLv = +$('tpSgTLv').value; saveBag(); toast(bag.tSgLv < 0 ? '🧑‍🏫 공방전에서 선생님 실제 능력치를 써요' : `🧑‍🏫 공방전에서 선생님 능력치를 모두 Lv${bag.tSgLv}로 해요`, 'success'); };
   $('tpSgMe').onchange = () => { sgw.meJoin = $('tpSgMe').checked; if (!sgw.meJoin && !S.siege?.on) delete sgw.assign[backend.uid]; fillSiegeAdmin(true); };
   $('tpSgWatch').onclick = () => { if (!S.siege) { toast('진행 중인 전쟁이 없어요. 왼쪽 👁️ 관전 버튼으로 마을을 볼 수 있어요', 'info'); return; } specStart(); };
   $('tbSpec').onclick = () => spec.on ? specStop() : specStart(); $('specBtn').onclick = specStart;
