@@ -18278,6 +18278,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1103b', d: '11월 5일', items: ['🚩 성 함락이 쉬워졌어요! 성문을 부순 뒤 깃발 자리에 지키는 친구보다 많이 들어가면 차지가 올라가요', '👑 성문이 부서지면 성 안의 왕도 맞아요 · 왕이 쓰러져 있는 동안은 그 성을 지키는 힘이 절반!', '🧱 부서진 성문은 45초 뒤에 다시 서요 · 성문이 부서진 나라는 6초 늦게 일어나요'] },
   { id: '1103a', d: '11월 5일', items: ['🪤 공방전 대장장이 새 스킬 「덫 놓기」(Q · 10초마다)! 발밑에 덫을 2개까지 놓아요 (60초) · 밟은 상대는 피해 2 + 3초 느려져요 · 상대 눈엔 흐릿하게 보여요'] },
   { id: '1102z', d: '11월 5일', items: ['⚔️ 공방전·해전·훈련장에서 Q를 누르면 스킬만 나가요 (이모티콘 창이 같이 열리던 문제 고침 · 이모티콘은 😊 버튼으로)'] },
   { id: '1102y', d: '11월 4일', items: ['📖 끝말잇기에 국어사전 검사가 생겼어요! 표준국어대사전에 있는 낱말(2~6글자)만 낼 수 있어요'] },
@@ -22381,7 +22382,7 @@ const SG_COVER = [
   ['wood', -20, -68, 5], ['wood', 20, 68, 5], ['rock', 64, -60, 3], ['rock', -64, 60, 3], ['rock', 64, 60, 3], ['rock', -64, -60, 3],
 ];
 const SG_SITE = Object.fromEntries(SG_SITES.map(s => [s.k, s]));
-const SG_ZONE = 5.5, SG_HURT = 12000, SG_HURT_FAST = 7000, SG_SAFE = 3000, SG_DOWN = 25000, SG_CAT_CD = 20000, SG_FINAL = 60000;
+const SG_ZONE = 5.5, SG_HURT = 12000, SG_HURT_FAST = 7000, SG_SAFE = 3000, SG_DOWN = 45000, /* 🚩 1103b 부서진 성문 다시 서기 25 → 45초 */ SG_CAT_CD = 20000, SG_FINAL = 60000;
 const SG_LV_HP = (max, lv) => max + (lv - 1) * 25;
 const RES_ICON = { w: '🪵', i: '⛓️', f: '🍚' }, RES_NAME = { w: '목재', i: '철', f: '군량' };
 const inSiege = (x, z) => !!S.siege && x >= SG.x0 + 0.8 && x <= SG.x1 - 0.8 && z >= SG.z0 + 0.8 && z <= SG.z1 - 0.8 && !sgInStream(x, z) && (sgFerry.on || !sgInMoat(x, z)); // 🌊 해자는 나룻배로만
@@ -22403,7 +22404,8 @@ const sgRoleCount = (t, k, but) => Object.entries(S.siege?.role || {}).filter(([
 const sgKingMarks = () => { if (!S.siege?.on) return []; const out = []; for (const u of Object.keys(S.siege.role || {})) if (sgIsKing(u) && !sgHurt(u)) { const p = sgPosOf(u); if (p) out.push(['👑', p.x, p.z]); } return out; }; // 지도에 왕 위치
 const sgIsKing = (u) => !!S.siege?.role?.[u] && sgRoleOf(u) === 'king';
 const sgPosOf = (u) => u === backend?.uid ? player.pos : remotes.get(u)?.pos;
-const sgKingSafe = (u) => { if (!sgIsKing(u)) return false; const p = sgPosOf(u); return !!p && sgInCastle(p.x, p.z) === sgTeamOf(u); }; // 🏰 성 안의 왕은 맞지 않아요
+const sgKingSafe = (u) => { if (!sgIsKing(u)) return false; const p = sgPosOf(u), t = sgTeamOf(u); return !!p && sgInCastle(p.x, p.z) === t && sgHp(t) > 0; }; /* 🚩 1103b 성문이 부서지면 성 안의 왕도 맞아요 */
+const sgKingDownOf = (t) => Object.entries(S.siege?.role || {}).some(([u, r]) => r === 'king' && S.siege?.team?.[u] === t && sgHurt(u)); /* 👑 그 나라 왕이 쓰러져 있나 */ // 🏰 성 안의 왕은 맞지 않아요
 const sgLeft = () => S.siege ? Math.max(0, Math.ceil((S.siege.end - backend.now()) / 1000)) : 0;
 const sgStarted = () => !!S.siege && backend.now() >= S.siege.at;
 const sgBreak = () => { const h = S.siege?.half; return !!h && backend.now() >= h.a && backend.now() < h.b; }; // 🗺️ 작전 시간 (전반전과 후반전 사이)
@@ -22413,7 +22415,7 @@ const sgFallen = (t) => !!S.siege?.fall?.[t]; // 🏳️ 함락된 나라
 const sgAlive = () => { const out = []; for (let t = 1; t <= (S.siege?.n || 0); t++) if (!sgFallen(t)) out.push(t); return out; };
 const sgFinal = () => !!S.siege?.on && S.siege.end - backend.now() < SG_FINAL && backend.now() < S.siege.end;
 const sgOwns = (t, k) => (S.siege?.own?.[k] || 0) === t;
-const sgHurtDur = (u) => sgIsKing(u) ? SG_KING_DOWN : sgOwns(sgTeamOf(u), 'farm') ? SG_HURT_FAST : SG_HURT; // 👑 왕은 30초
+const sgHurtDur = (u) => (sgIsKing(u) ? SG_KING_DOWN : sgOwns(sgTeamOf(u), 'farm') ? SG_HURT_FAST : SG_HURT) + (sgTeamOf(u) && S.siege?.hp?.[sgTeamOf(u)] === 0 && !sgFallen(sgTeamOf(u)) ? 6000 : 0); /* 🚩 1103b 우리 성문이 부서져 있으면 6초 더 늦게 일어나요 */ // 👑 왕은 30초
 const sgHurt = (u) => { const t = S.siege?.hurt?.[u]; return !!t && backend.now() - t < sgHurtDur(u) + 20000; }; // 쓰러진 기록이 있으면 누워 있어요 (그 친구 기기가 성으로 보내면서 지워요 · 기기가 꺼져 있으면 20초 더 기다려요)
 const sgSafe = (u) => backend.now() - (S.siege?.safe?.[u] || 0) < SG_SAFE || sgPB(u, 'dodge'); // 💨 궁병 구르기 중에도 안 맞아요
 const sgBuff = (t, k) => (S.siege?.buff?.[t]?.[k] || 0) > backend.now();
@@ -23626,7 +23628,7 @@ function openAnsiBrief() {
     const goal = el2('div', ''); goal.style.cssText = `background:${me === 1 ? '#FFE3DC' : '#FFF3C8'};border-radius:14px;padding:10px 12px;margin:8px 0;text-align:left`;
     goal.append(el2('b', '', me === 1 ? '🏯 너는 고구려! 안시성을 지켜요' : me === 2 ? '🐉 너는 당나라! 안시성을 함락해요' : '👀 지켜보기'));
     (ANSI_GOAL[me] || []).forEach((t, i) => goal.append(el2('div', '', `${i + 1}단계: ${t}`)));
-    goal.append(el2('div', 'hint', me === 1 ? '🏆 이기는 법: 끝날 때까지 성을 지키거나, 당나라 진영을 함락해요' : me === 2 ? '🏆 이기는 법: 고구려 성문을 부수고 성 한가운데 깃발 자리를 차지해요 (지키는 편이 없을 때)' : ''));
+    goal.append(el2('div', 'hint', me === 1 ? '🏆 이기는 법: 끝날 때까지 성을 지키거나, 당나라 진영을 함락해요' : me === 2 ? '🏆 이기는 법: 고구려 성문을 부수고 성 한가운데 깃발 자리를 차지해요 (지키는 친구보다 많이 들어가면)' : ''));
     box.append(goal, el2('p', 'hint', '실제 역사와 다르게 끝날 수도 있어요. 끝나면 "실제 역사는?" 카드가 나와요!'));
     const b = el2('button', 'btn', '⚔️ 알겠어요!'); b.style.background = '#FFD23C'; b.onclick = () => { closeLife(); if (!sgHasRole(backend.uid) && sgRoleOk()) openSgRole(); }; const r = el2('div', 'row-center'); r.append(b); box.append(r);
   });
@@ -23705,13 +23707,15 @@ function sgTickHost() {
     if (ct !== (s.cap?.[st.k]?.t || 0) || p !== (s.cap?.[st.k]?.p ?? -1)) upd[`siege/cap/${st.k}`] = { t: ct, p };
     if (nOwn !== own) upd[`siege/own/${st.k}`] = nOwn;
   }
-  // 🚩 성 함락: 성문이 부서진 성 한가운데 깃발 자리에 상대가 들어가 있으면 (지키는 편이 없을 때) 차지해요
+  // 🚩 성 함락: 성문이 부서진 성 한가운데 깃발 자리에 상대가 지키는 편보다 많으면 차지해요 (1103b · 왕이 쓰러지면 지키는 힘 절반)
   for (let t = 1; t <= s.n; t++) { if (sgFallen(t)) continue; const cc = s.cc?.[t];
     if (sgHp(t) > 0) { if (cc) upd[`siege/cc/${t}`] = null; continue; }
     const ca = castleAt(t), cnt = {}; let def = 0; for (const [tt, x, z] of people) if (Math.hypot(x - ca.x, z - ca.z) < SG_THRONE + 0.4) { if (tt === t) def++; else cnt[tt] = (cnt[tt] || 0) + 1; }
     const ts = Object.keys(cnt).map(Number); let ct = cc?.t || 0, p = cc?.p || 0;
-    if (!def && ts.length === 1) { const a2 = ts[0]; if (ct && ct !== a2) { p -= 15; if (p <= 0) { p = 0; ct = a2; } } else { ct = a2; p = Math.min(100, p + 10 * Math.min(3, cnt[a2])); } }
-    else if (!ts.length) p = Math.max(0, p - 5);
+    /* 🚩 1103b 공격하는 사람이 지키는 사람보다 많으면 차지가 올라가요 · 👑 왕이 쓰러져 있으면 지키는 힘이 절반 */
+    const defW = def * (sgKingDownOf(t) ? 0.5 : 1), a2 = ts.length === 1 ? ts[0] : 0, net = a2 ? cnt[a2] - defW : 0;
+    if (a2 && net > 0) { if (ct && ct !== a2) { p -= 15; if (p <= 0) { p = 0; ct = a2; } } else { ct = a2; p = Math.min(100, p + 10 * Math.min(3, net)); } }
+    else if (!ts.length || net < 0) p = Math.max(0, p - 5);
     if (p >= 100 && ct) { // 🏳️ 함락: 그 나라 친구들은 차지한 나라의 ⛓️ 포로가 돼요
       upd[`siege/fall/${t}`] = ct; upd[`siege/cc/${t}`] = null; upd[`siege/score/${ct}`] = (s.score?.[ct] || 0) + 50;
       for (const [u, tt] of Object.entries(s.team || {})) if (tt === t) { upd[`siege/team/${u}`] = ct; upd[`siege/role/${u}`] = 'pow'; upd[`siege/hurt/${u}`] = null; upd[`siege/php/${u}`] = null; }
