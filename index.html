@@ -4387,10 +4387,11 @@ function initEmotes() {
     if (life.fishing) endFishing();
     playAct(player.avatar, b.dataset.k); toggle(false); btn.focus();
   });
+  const qIsSkill = () => { try { return !!((S.siege && siegeRegion()) || nvW?.on || (trRegion() && ['sol', 'arch', 'gen'].includes(trw.role))); } catch (er) { return false; } };
   addEventListener('keydown', e => {
     if (!joined || e.repeat || e.target instanceof HTMLInputElement) return;
     const open = [...document.querySelectorAll('.modal')].some(m => !m.classList.contains('hidden'));
-    if (e.key.toLowerCase() === 'q' && !open && !placing.active) { e.preventDefault(); toggle(); }
+    if (e.key.toLowerCase() === 'q' && !open && !placing.active && !qIsSkill()) { e.preventDefault(); toggle(); } /* 🎯 1102z 공방전·해전·훈련장에서는 Q = 스킬 (이모티콘 X) */
     else if (e.key === 'Escape' && !bar.classList.contains('hidden')) toggle(false);
   });
 }
@@ -18274,6 +18275,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1102z', d: '11월 5일', items: ['⚔️ 공방전·해전·훈련장에서 Q를 누르면 스킬만 나가요 (이모티콘 창이 같이 열리던 문제 고침 · 이모티콘은 😊 버튼으로)'] },
   { id: '1102y', d: '11월 4일', items: ['📖 끝말잇기에 국어사전 검사가 생겼어요! 표준국어대사전에 있는 낱말(2~6글자)만 낼 수 있어요'] },
   { id: '1102x', d: '11월 4일', items: ['🔤 반월쉼터 보드게임 방이 「끝말잇기 방」으로 바뀌었어요! 탁자 4개에 앉아 친구들과 끝말잇기 (두음법칙 OK · 30초 안에 못 이으면 마지막 사람 승리 🏆) · 할리갈리·부루마블은 빠졌어요', '🎒 가방이 30칸으로 커졌어요 (곤충·물고기)'] },
   { id: '1102w', d: '11월 4일', items: ['🔢 말하기·대화 부스: "seven hundred won"을 말했는데 7001 · 700 won · 701로 적혀도 맞음으로 처리해요 (숫자를 영어 낱말로 바꿔 비교)'] },
