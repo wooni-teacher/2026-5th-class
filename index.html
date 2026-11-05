@@ -8607,7 +8607,7 @@ function buildPlotItem(t, parent, tint = 0xFFE8C8) {
     box(g, 0.34, 0.26, 0.34, 0xFFE9A0, 0, 1.1, 0, { solid: false, emissive: 0.9 }); box(g, 0.5, 1.3, 0.5, 0xB8B2A8, 0, 0.65, 0).visible = false;
   } else if (t === 12) { // 과일나무 (작은)
     mesh(TAPER, g, 0.2, 1.4, 0.2, 0x7A5436, 0, 0.7, 0); mesh(SPH_MID, g, 0.85, 0.75, 0.85, 0x5DB85F, 0, 1.8, 0, f);
-    for (let k = 0; k < 5; k++) ball(g, 0.12, 0xE63C32, Math.cos(k * 1.26) * 0.7, 1.7 + (k % 2) * 0.3, Math.sin(k * 1.26) * 0.7, o);
+    if (!parent.userData.lot) for (let k = 0; k < 5; k++) ball(g, 0.12, 0xE63C32, Math.cos(k * 1.26) * 0.7, 1.7 + (k % 2) * 0.3, Math.sin(k * 1.26) * 0.7, o); /* 🍎 1103e 땅 위 나무 열매는 계절 과일(fruitTick)로 따로 그려요 */
   } else if (t === 13) { // 돌담
     box(g, 2, 0.8, 0.5, 0xA39D94, 0, 0.4, -0.75).visible = false;
     for (let k = 0; k < 5; k++) for (let r = 0; r < 2; r++) mesh(SPH_LO, g, 0.28, 0.2, 0.24, [0xB8B2A8, 0xA39D94, 0xC8C2B8][(k + r) % 3], -0.8 + k * 0.4 + r * 0.2, 0.18 + r * 0.34, -0.75, { solid: false, flat: true });
@@ -8771,6 +8771,37 @@ function buildHomeVillage() {
   }, run: () => openHouse() });
 }
 
+/* 🍎 1103e 내 땅 과일나무 수확 · 계절마다 다른 과일 (3~5월 🍒 앵두 · 6~8월 🍑 복숭아 · 9~11월 🍎 사과 · 12~2월 🍊 귤)
+   나무마다 하루 한 번 따요: 🍎 과일 재료 +2 · 그날 처음 3번은 🐚+3 · 네 계절 과일을 모두 따면 🐚50 (한 번) · bag.fth {d, k {땅/칸}, n} · bag.frc {과일: 딴 횟수} */
+const FRUITS = { cherry: { icon: '🍒', name: '앵두', col: 0xD8283A, r: 0.09, m: [3, 4, 5] }, peach: { icon: '🍑', name: '복숭아', col: 0xFFA48A, r: 0.15, m: [6, 7, 8] }, apple: { icon: '🍎', name: '사과', col: 0xE63C32, r: 0.14, m: [9, 10, 11] }, tang: { icon: '🍊', name: '귤', col: 0xF59A1E, r: 0.13, m: [12, 1, 2] } };
+const fruitNow = () => { const mo = new Date(backend?.now ? backend.now() : Date.now()).getMonth() + 1, k = Object.keys(FRUITS).find(q => FRUITS[q].m.includes(mo)) || 'apple'; return { k, ...FRUITS[k] }; };
+const ftw = { m: new Map(), it: null, tgt: null };
+function fruitGroup(F) { const g = new THREE.Group(), o = { solid: false }; g.userData.f = F.k;
+  for (let k = 0; k < 6; k++) { const x = Math.cos(k * 1.05) * 0.72, y = 1.62 + (k % 2) * 0.32, z = Math.sin(k * 1.05) * 0.72;
+    if (F.k === 'cherry') { for (const dx of [-0.07, 0.07]) ball(g, F.r, F.col, x + dx, y, z, o); box(g, 0.02, 0.14, 0.02, 0x5A8A3A, x, y + 0.12, z, o); }
+    else { ball(g, F.r, F.col, x, y, z, o); box(g, F.k === 'tang' ? 0.08 : 0.03, 0.04, F.k === 'tang' ? 0.06 : 0.03, 0x4E8B3A, x, y + F.r + 0.01, z, o); } }
+  return g; }
+function fruitTick() {
+  const F = fruitNow(), d = dayNum(), seen = new Set(); let best = null, bd = 2.4;
+  for (const [id, v] of Object.entries(lotView)) { if (!v.near || !v.g) continue; const pl = S.plots?.[id]; if (!pl) continue; const mine = pl.o === backend?.uid;
+    for (const [cell, it] of Object.entries(pl.items || {})) { if ((it?.t | 0) !== 12) continue; const pos = lotCellCenter(id, cell); if (!pos) continue; const key = `${id}/${cell}`; seen.add(key);
+      const got = mine && bag.fth?.d === d && !!bag.fth.k?.[key]; let g = ftw.m.get(key);
+      if (!g || g.userData.f !== F.k) { if (g) scene.remove(g); g = fruitGroup(F); g.position.set(pos.x, 0.06, pos.z); scene.add(g); ftw.m.set(key, g); }
+      g.visible = !got;
+      if (mine && !got && joined) { const dd = Math.hypot(player.pos.x - pos.x, player.pos.z - pos.z); if (dd < bd) { bd = dd; best = { key, pos }; } } } }
+  for (const [k, g] of ftw.m) if (!seen.has(k)) { scene.remove(g); ftw.m.delete(k); }
+  ftw.tgt = best;
+  ftw.it ||= addInteract({ pos: new V3(0, -99, 0), r: 2.4, text: () => { if (!ftw.tgt) return null; const F2 = fruitNow(); return [`${F2.icon} ${F2.name} 따기`, `🍎 과일 +2 · 나무마다 하루 한 번 · 🧺 사계절 과일 ${Object.keys(FRUITS).filter(q => bag.frc?.[q]).length}/4`]; }, run: fruitHarvest });
+  ftw.it.pos.set(best ? best.pos.x : 0, best ? 1 : -99, best ? best.pos.z : 0); }
+function fruitHarvest() {
+  const T = ftw.tgt; if (!T || !joined) return; const F = fruitNow(), d = dayNum();
+  if (bag.fth?.d !== d) bag.fth = { d, k: {}, n: 0 }; if (bag.fth.k[T.key]) return; bag.fth.k[T.key] = 1; bag.fth.n++;
+  bag.m ||= {}; bag.m.fruit = (bag.m.fruit || 0) + 2; bag.frc ||= {}; const first = !bag.frc[F.k]; bag.frc[F.k] = (bag.frc[F.k] || 0) + 1;
+  let sh = 0; if (bag.fth.n <= 3) { sh = 3; giveShellCapped(3); }
+  const all = Object.keys(FRUITS).every(q => bag.frc[q]); let bonus = '';
+  if (all && !bag.frAll) { bag.frAll = 1; giveShellCapped(50); bonus = ' · 🧺 사계절 과일을 모두 땄어요! 🐚 +50'; playSfx('fanfare'); }
+  saveBag(); playSfx('pick'); burst(new V3(T.pos.x, 1.9, T.pos.z), [F.col, 0x7FD36A, 0xFFFFFF], 18, 3, 1.5);
+  toast(`${F.icon} ${F.name}을(를) 땄어요! 🍎 과일 +2${sh ? ' · 🐚 +3' : ''}${first ? ` · 🧺 사계절 과일 ${Object.keys(FRUITS).filter(q => bag.frc[q]).length}/4` : ''}${bonus}`, 'success'); }
 function renderLot(id, first) {
   const pl = S.plots[id], v = lotView[id] || (lotView[id] = { g: null, key: '', near: false });
   const key = pl ? JSON.stringify([pl.o === backend?.uid, pl.a, pl.c, pl.h || null, pl.items]) : '';
@@ -8780,7 +8811,7 @@ function renderLot(id, first) {
   v.key = key; v.cells = pl ? { ...pl.items } : {};
   if (!pl) return;
   const [cx, cz] = lotCenter(id), g = new THREE.Group(), o = { solid: false }, mine = pl.o === backend?.uid;
-  scene.add(g);
+  g.userData.lot = 1; scene.add(g);
   box(g, 12, 0.06, 12, mine ? 0xEAF7D8 : 0xE3F2CF, cx, 0.03, cz, o);
   for (const [w, d, x, z] of [[12.3, 0.2, cx, cz - 6], [12.3, 0.2, cx, cz + 6], [0.2, 12.3, cx - 6, cz], [0.2, 12.3, cx + 6, cz]]) box(g, w, 0.22, d, 0xC9B79C, x, 0.11, z, o);
   // 주인 깃발 (옷 색) — 이름은 없어요
@@ -8820,6 +8851,7 @@ let lotT = 0;
 function updateLots(dt) {
   lotT -= dt; if (lotT > 0) return; lotT = 0.15;
   for (const [id, v] of Object.entries(lotView)) if (v.g) { v.near = lotNear(id); v.g.visible = v.near; }
+  try { fruitTick(); } catch (e) { console.warn('fruit', e); } /* 🍎 1103e */
   if (!LOW_GFX) for (const [id, v] of Object.entries(lotView)) { const t = v.near && S.plots[id]?.h?.t; if (t && Math.random() < 0.3) { const [cx, cz] = lotCenter(id); burst(new V3(cx + 5.2 + (Math.random() - 0.5), 2 + Math.random() * 0.8, cz - 5.2 + (Math.random() - 0.5)), [0xFFE066, 0xFFFFFF, 0xFFB3E6], 2, 0.6, 0.7, 0.8, 0); } } // 🏆 칭호 기념 조각 반짝이
   // 땅 사기 미리보기와 버튼
   const p = player.pos, id = joined && inField(p.x, p.z) ? lotIdAt(p.x, p.z) : '';
@@ -10725,9 +10757,14 @@ const RIDES = [
   { k: 'tandem', icon: '🚲', name: '2인용 자전거', price: 12000, mul: 1.3, v: 15, duo: { seats: [[0, -0.78]], pseat: 1.0, ppose: 'pedal' }, desc: '👫 친구 1명이 뒷자리에 타요 · 빠르기 +30%' },
   { k: 'wagon', icon: '🐴', name: '마차', price: 24000, mul: 1.35, v: 16, duo: { seats: [[-0.36, -1.05], [0.36, -1.05], [-0.36, -1.75], [0.36, -1.75]], pseat: 0.82, ppose: 'sit' }, desc: '👫 친구 4명까지 마차에 타요 · 빠르기 +35%' },
   { k: 'train', icon: '🚂', name: '꼬마 기차', price: 36000, mul: 1.3, v: 17, duo: { seats: [[0, -1.55], [0, -2.25], [0, -3.25], [0, -3.95], [0, -4.95]], pseat: 0.66, ppose: 'sit' }, desc: '👫 친구 5명까지 칸에 타요 · 칙칙폭폭 · 빠르기 +30%' },
+  // 🐟 1103e 물고기 탈것: 공중을 헤엄쳐요 (v 18~21)
+  { k: 'puffer', icon: '🐡', name: '복어', price: 9000, mul: 1.2, v: 18, desc: '빵빵하게 부푼 복어 · 둥실둥실 · 빠르기 +20%' },
+  { k: 'dolph', icon: '🐬', name: '돌고래', price: 16000, mul: 1.4, v: 19, desc: '끼익끼익! 꼬리를 흔들며 헤엄쳐요 · 빠르기 +40%' },
+  { k: 'shark', icon: '🦈', name: '상어', price: 23000, mul: 1.45, v: 20, desc: '뾰족 지느러미 · 쩍 벌린 입 · 빠르기 +45%' },
+  { k: 'whale', icon: '🐋', name: '고래', price: 38000, mul: 1.5, v: 21, desc: '아주 큰 고래 · 등에서 물을 뿜어요 · 빠르기 +50%' },
 ];
 const rideV = (R0, i) => R0.v || i + 1; // 탈것 번호 (players/{uid}/v)
-const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r]));
+const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries(RIDES.filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
 const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; // 👑 공성전 왕만 (사지 않아요)
 const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || !!bag.skyOwn || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🥚 1102i 알에서 부화하면 계속 // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
@@ -10737,8 +10774,8 @@ const rideOpen = (k) => k === 'sky' ? skyHave() : !!S.rides?.[k];
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
 const RIDE_ACC = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '깃발' }, { icon: '🎈', n: '풍선' }, { icon: '🌸', n: '꽃 화환' }, { icon: '🔔', n: '방울' }, { icon: '⭐', n: '별 반짝이', star: 1 }, { icon: '👑', n: '왕관', star: 1 }, { icon: '🌈', n: '무지개 꼬리', star: 1 }, { icon: '💎', n: '보석 장식', gem: 2 }, { icon: '💫', n: '오로라 고리', star: 1 }];
 const RIDE_COLOR_PRICE = 40, RIDE_ACC_PRICE = 80;
-const RIDE_MAIN = { skate: 0xE2584A, kick: 0x4A9AE8, turtle: 0x4E8B3A, bike: 0x2FA36B, pony: 0x9A6233, scoot: 0xF29BB8, car: 0xE2584A, cloud: 0xFFFFFF, dino: 0x5BAF4A, dragon: 0x7A4BC2 };
-const RIDE_ANCHOR = { skate: [0.15, 0.22, -0.55], kick: [0.36, 1.38, 0.52], turtle: [0.2, 0.8, -0.55], bike: [0.15, 0.95, -0.6], pony: [0.18, 1.35, -0.65], scoot: [0.2, 0.8, -0.65], car: [0.35, 0.95, -0.7], cloud: [0.3, 0.55, -0.55], dino: [0.25, 2.1, -0.85], dragon: [0.22, 1.4, -0.85] };
+const RIDE_MAIN = { skate: 0xE2584A, kick: 0x4A9AE8, turtle: 0x4E8B3A, bike: 0x2FA36B, pony: 0x9A6233, scoot: 0xF29BB8, car: 0xE2584A, cloud: 0xFFFFFF, dino: 0x5BAF4A, dragon: 0x7A4BC2, puffer: 0xF5C83C, dolph: 0x6EA8D8, shark: 0x7E8A96, whale: 0x3E6EB8 };
+const RIDE_ANCHOR = { skate: [0.15, 0.22, -0.55], kick: [0.36, 1.38, 0.52], turtle: [0.2, 0.8, -0.55], bike: [0.15, 0.95, -0.6], pony: [0.18, 1.35, -0.65], scoot: [0.2, 0.8, -0.65], car: [0.35, 0.95, -0.7], cloud: [0.3, 0.55, -0.55], dino: [0.25, 2.1, -0.85], dragon: [0.22, 1.4, -0.85], puffer: [0.3, 1.5, -0.55], dolph: [0.22, 1.3, -0.8], shark: [0.22, 1.35, -0.85], whale: [0.3, 2.1, -1.0] };
 const rideItemHave = (kind, i) => i === 0 || !!bag.rdh?.[kind + i] || (kind === 'c' ? RIDE_COLORS[i]?.star : RIDE_ACC[i]?.star) && (isTeacher || !!bag.rx?.[kind + i]); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 꾸미기를 모두 써요
 const rideDecoOf = (k) => { const d = bag.rdeco?.[k] || [0, 0]; return [rideItemHave('c', d[0]) ? d[0] : 0, rideItemHave('a', d[1]) ? d[1] : 0]; };
 const myRideQ = () => { const k = bag.ride; if (!k || !RIDE_MAIN[k]) return 0; const [c, a] = rideDecoOf(k); return c * 10 + a; };
@@ -10868,7 +10905,7 @@ function rideWant(a, uid, pos, v) { // 이 친구가 지금 탈 것
   if (uid === backend?.uid && trRegion()) return trw.role === 'king' ? 'royal' : '';
   if ((v | 0) === RIDE_SKY_V) return uid === backend?.uid ? (skyHave() ? 'sky' : '') : 'sky'; // 🐲 친구 화면에도 날아요
   { const D = duoSeatOf(uid); if (D) return 'pass_' + D.k; } // 👫 친구 탈것 뒷자리
-  const R0 = DUO_BY_V[v | 0] || ((v | 0) >= 1 && (v | 0) <= 10 ? RIDES[(v | 0) - 1] : null), k = R0?.k; return k && rideOpen(k) ? k : ''; // 11 하늘 용 · 12 배 · 13 수레는 여기서 안 읽어요
+  const R0 = RIDE_BY_VN[v | 0] || ((v | 0) >= 1 && (v | 0) <= 10 ? RIDES[(v | 0) - 1] : null), k = R0?.k; return k && rideOpen(k) ? k : ''; // 11 하늘 용 · 12 배 · 13 수레는 여기서 안 읽어요
 }
 function updateRides() {
   if (!backend) return;
@@ -11027,6 +11064,28 @@ function rideBuild(a, k) {
     for (const sx of [-0.82, 0.82]) for (const sz of [-0.5, 0.6, 1.7]) Y(g, 0.3, 0.12, 0x9AF0FF, sx, 0.48, sz, { rz: Math.PI / 2, emissive: 0.8 });
     for (const sd of [-1, 1]) { const q = new THREE.Group(); q.position.set(sd * 0.8, 1.3, 0.6); g.add(q); for (let i = 0; i < 3; i++) B(q, 0.7, 0.06, 1.0 - i * 0.2, [0xE6F6FF, 0xBFE6FF, 0x9AD4FF][i], sd * (0.4 + i * 0.6), -i * 0.04, -i * 0.1); B(q, 2.0, 0.08, 0.1, 0xF2C230, sd * 1.0, 0.03, 0.48, { emissive: 0.3 }); wings.push([q, sd]); }
     seat = 1.0; pose = 'sit'; arms = -1.0; hover = 0.9; sh = 2.2;
+  } else if (k === 'puffer') { /* 🐡 1103e 복어: 둥근 몸 · 가시 · 작은 지느러미 */
+    const c = 0xF5C83C, q = new THREE.Group(); q.position.y = 0.95; g.add(q);
+    O(q, 0.72, c, 0, 0, 0); O(q, 0.6, 0xFFF3C8, 0, -0.2, 0.12);
+    for (let i = 0; i < 18; i++) { const a = i * 2.39996, yy = 1 - (i + 0.5) / 9; if (yy < -0.6) continue; const r = Math.sqrt(1 - yy * yy); const sp = mesh(CONE, q, 0.09, 0.26, 0.09, 0xC89A2A, Math.cos(a) * r * 0.74, yy * 0.74, Math.sin(a) * r * 0.74, o); sp.quaternion.setFromUnitVectors(new V3(0, 1, 0), new V3(Math.cos(a) * r, yy, Math.sin(a) * r).normalize()); }
+    for (const x of [-0.26, 0.26]) { O(q, 0.13, 0xFFFFFF, x, 0.18, 0.6); O(q, 0.07, 0x1E1E24, x * 1.05, 0.18, 0.7); }
+    O(q, 0.08, 0xE07A5A, 0, -0.08, 0.72);
+    for (const sd of [-1, 1]) { const f = new THREE.Group(); f.position.set(sd * 0.7, 0, 0.05); q.add(f); B(f, 0.3, 0.06, 0.22, 0xF08A24, sd * 0.12, 0, 0); wings.push([f, sd]); }
+    { const t = new THREE.Group(); t.position.set(0, 0, -0.72); q.add(t); B(t, 0.06, 0.45, 0.3, 0xF08A24, 0, 0, -0.12); tails.push(t); }
+    seat = 1.62; pose = 'straddle'; arms = -0.7; hover = 0.35; sh = 1.6;
+  } else if (k === 'dolph' || k === 'shark' || k === 'whale') { /* 🐬🦈🐋 1103e 길쭉한 몸 · 등지느러미 · 꼬리 */
+    const W = { dolph: [0.62, 0.62, 2.1, 0x6EA8D8, 0xEAF2F8], shark: [0.7, 0.7, 2.4, 0x7E8A96, 0xF2F2F0], whale: [1.25, 1.1, 3.4, 0x3E6EB8, 0xDCE8F2] }[k], [w, h, L, c, bl] = W, y0 = k === 'whale' ? 1.1 : 0.85;
+    const q = new THREE.Group(); q.position.y = y0; g.add(q);
+    B(q, w, h, L * 0.62, c, 0, 0, 0.05); B(q, w * 0.82, h * 0.82, L * 0.22, c, 0, -0.02, L * 0.38); B(q, w * 0.6, h * 0.62, L * 0.2, c, 0, 0, -L * 0.38);
+    B(q, w * 0.8, h * 0.35, L * 0.75, bl, 0, -h * 0.36, 0.1); /* 배 */
+    if (k === 'dolph') { B(q, w * 0.34, h * 0.26, 0.42, c, 0, -h * 0.12, L * 0.55); }
+    if (k === 'shark') { B(q, w * 0.7, 0.05, 0.3, 0x3B3B46, 0, -h * 0.2, L * 0.47); for (let i = 0; i < 5; i++) mesh(CONE, q, 0.05, 0.1, 0.05, 0xFFFFFF, -w * 0.28 + i * w * 0.14, -h * 0.13, L * 0.52, { solid: false, rx: Math.PI }); for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) B(q, 0.02, h * 0.4, 0.04, 0x5A646E, sd * w * 0.5, 0.02, L * 0.22 - i * 0.1); }
+    if (k === 'whale') { for (let i = 0; i < 5; i++) B(q, w * 0.7, 0.03, L * 0.5, 0xBFD4E8, 0, -h * 0.52, 0.2 - i * 0.0); O(q, 0.12, 0x9AD4FF, 0, h * 0.5 + 0.35, 0.65); O(q, 0.09, 0xBFE6FF, 0.14, h * 0.5 + 0.55, 0.62); O(q, 0.09, 0xBFE6FF, -0.12, h * 0.5 + 0.5, 0.7); }
+    for (const x of [-1, 1]) { O(q, k === 'whale' ? 0.09 : 0.07, 0xFFFFFF, x * w * 0.5, h * 0.12, L * 0.36); O(q, k === 'whale' ? 0.05 : 0.04, 0x1E1E24, x * w * 0.53, h * 0.12, L * 0.38); }
+    if (k !== 'whale') { const df = mesh(CONE, q, 0.16, k === 'shark' ? 0.75 : 0.5, 0.4, c, 0, h * 0.5 + (k === 'shark' ? 0.3 : 0.2), -L * 0.08, { solid: false, rx: -0.35 }); df.userData.solid = false; } else B(q, 0.1, 0.2, 0.35, c, 0, h * 0.55, -L * 0.25);
+    for (const sd of [-1, 1]) { const f = new THREE.Group(); f.position.set(sd * w * 0.5, -h * 0.25, L * 0.18); q.add(f); B(f, k === 'whale' ? 0.9 : 0.5, 0.06, k === 'whale' ? 0.45 : 0.3, c, sd * (k === 'whale' ? 0.45 : 0.25), 0, 0, { rz: -sd * 0.3 }); wings.push([f, sd]); }
+    { const t = new THREE.Group(); t.position.set(0, 0, -L * 0.48); q.add(t); B(t, w * 0.4, h * 0.4, L * 0.18, c, 0, 0, -L * 0.08); if (k === 'shark') { B(t, 0.08, 0.9, 0.3, c, 0, 0.25, -L * 0.2, { rx: 0.5 }); B(t, 0.08, 0.5, 0.25, c, 0, -0.2, -L * 0.18, { rx: -0.5 }); } else B(t, k === 'whale' ? 1.7 : 1.0, 0.07, 0.4, c, 0, 0, -L * 0.2); tails.push(t); }
+    seat = y0 + h * 0.5 + 0.08; pose = 'straddle'; arms = -0.8; hover = 0.35; sh = k === 'whale' ? 2.6 : 2.0;
   } else if (k === 'dragon' || k === 'sky') { // 🐲 sky = 하늘을 나는 용 (하늘색 · 금빛 뿔 · 큰 날개)
     const sky = k === 'sky', c = sky ? 0x4AA8E8 : 0x7A4BC2, bl = sky ? 0xFFFFFF : 0xF2D27A;
     B(g, 0.7, 0.6, 1.5, c, 0, 1.05, 0); B(g, 0.5, 0.3, 1.3, bl, 0, 0.82, 0);
@@ -15558,7 +15617,7 @@ function openHomePet() {
     const care = el2('div', 'row-center wrap'); for (const [ck, C2] of Object.entries(HPET_CARE)) { const left = C2.max - (day[ck] | 0), b = el2('button', 'btn', `${C2.icon} ${C2.n}${C2.sh ? ` 🐚${C2.sh}` : ''} (${left})`); b.disabled = left <= 0; b.style.background = left > 0 ? '#FFF3C4' : '#fff'; b.onclick = () => hpetCare(ck); care.append(b); } box.append(care);
     const row = el2('div', 'row-center wrap');
     if (lv >= 1) { const nb = el2('button', 'btn', '🏷️ 이름 짓기'); nb.style.background = '#fff'; nb.onclick = () => { const inp = el2('input', 'tinput'); inp.maxLength = 6; inp.value = p.n || ''; inp.placeholder = '6글자까지'; const ok = el2('button', 'btn', '저장'); ok.onclick = () => { const v = cleanNick(inp.value).slice(0, 6); if (nickBad(v)) { toast('🙅 고운 이름으로 지어 줘요', 'warn'); return; } p.n = v; saveBag(); hpetSync(); refillLife(); }; nb.replaceWith(inp, ok); inp.focus(); }; row.append(nb); }
-    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; if (bag.hpet.walk && bag.pbuddy) { bag.pbuddy = ''; toast('🐾 동료 펫은 펫 센터에서 쉬어요 (한 번에 한 마리만)', 'info'); } saveBag(); hpetSync(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요! (산책하는 동안 집은 비어요)` : `🏠 ${H.icon} 이제 집 안에서 기다려요 · 밖에서는 따라오지 않아요`, 'info'); refillLife(); }; row.append(wb); }
+    { const wb = el2('button', 'btn', bag.hpet.walk ? '🏠 산책 그만' : '🚶 같이 산책하기'); wb.style.background = bag.hpet.walk ? '#fff' : '#CDEFC2'; wb.onclick = () => { bag.hpet.walk = !bag.hpet.walk; saveBag(); hpetSync(); toast(bag.hpet.walk ? `🚶 ${H.icon} 밖에 나가면 따라와요! (산책하는 동안 집은 비어요)` : `🏠 ${H.icon} 이제 집 안에서 기다려요 · 밖에서는 따라오지 않아요`, 'info'); refillLife(); }; row.append(wb); }
     if (lv >= 5) { const tb = el2('button', 'btn', '🐾 재주 부리기'); tb.style.background = '#fff'; tb.onclick = hpetTrick; row.append(tb); }
     box.append(row);
     { const ac = el2('div', 'row-center wrap'); ac.append(el2('span', 'hint', '꾸미기:')); HPET_ACC.forEach((A, i) => { const b = el2('button', 'btn', `${A.icon} ${A.n}${lv < A.lv ? ` 🔒Lv${A.lv}` : ''}`); b.disabled = lv < A.lv; b.style.background = (p.acc | 0) === i ? '#FFE066' : '#fff'; b.onclick = () => { p.acc = i; saveBag(); hpetSync(); refillLife(); }; ac.append(b); }); box.append(ac); }
@@ -18279,6 +18338,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1103e', d: '11월 5일', items: ['🐟 물고기 탈것 4종이 생겼어요! 🐡 복어 · 🐬 돌고래 · 🦈 상어 · 🐋 고래 (탈것 가게에서 반 동전으로 열어요 · 공중을 헤엄쳐요)', '🐾 동료 펫을 3마리까지 데리고 다녀요! (펫 센터 · ⭐ 맨 앞 펫이 배틀에 먼저 나가요)', '🍎 내 땅 과일나무에서 과일을 따요! 나무마다 하루 한 번 · 계절마다 과일이 바뀌어요 (봄 🍒 앵두 · 여름 🍑 복숭아 · 가을 🍎 사과 · 겨울 🍊 귤) · 네 계절 과일을 모두 따면 🐚50'] },
   { id: '1103d', d: '11월 5일', items: ['🪨 산성 투석기로 쏠 성을 직접 골라요 (가장 가까운 성 → 고르기)', '📖 공방전 안내 항목이 저절로 닫히던 문제를 고쳤어요'] },
   { id: '1103c', d: '11월 5일', items: ['📖 공방전 아래 띠에 「📖 안내」 버튼이 생겼어요! 이기는 법 · 직업과 스킬 · 거점 효과 · 자원 · 성 함락과 포로 · 조작법을 눌러서 볼 수 있어요'] },
   { id: '1103b', d: '11월 5일', items: ['🚩 성 함락이 쉬워졌어요! 성문을 부순 뒤 깃발 자리에 지키는 친구보다 많이 들어가면 차지가 올라가요', '👑 성문이 부서지면 성 안의 왕도 맞아요 · 왕이 쓰러져 있는 동안은 그 성을 지키는 힘이 절반!', '🧱 부서진 성문은 45초 뒤에 다시 서요 · 성문이 부서진 나라는 6초 늦게 일어나요'] },
@@ -21066,16 +21126,21 @@ function fillSandAdmin() {
 // ================= 🐾 동료 펫 (1024e · 체육관 배틀 펫 데리고 다니기) =================
 // 펫 센터에서 팀 펫 한 마리를 「동료」로 정하면 내 옆을 둥실둥실 따라다녀요 (친구 화면에도 · players/{uid}/bd = '종류:Lv')
 // · 집 펫 산책과는 한 번에 하나만 · 🚴 레일바이크 뒷자리에 같이 타고 정답마다 경험치 · 🌾 들판을 걸으면 가끔 야생 펫이 도전해요 · 🐉 레이드는 동료가 먼저 나가요
-bag.pbuddy ||= '';
-const buddyId = () => (bag.pbuddy && bag.pets[bag.pbuddy] && PET[bag.pbuddy]) ? bag.pbuddy : '';
-const buddyCode = () => { const id = buddyId(); return id && joined ? `${id}:${bag.pets[id].lv}` : ''; };
+bag.pbuddy ||= ''; /* 🐾 1103e 여러 마리: bag.pbuds = [최대 3] · 맨 앞(bag.pbuddy)이 배틀·레일바이크에 먼저 나가요 · players/{uid}/bd = '종류:Lv,종류:Lv,…' */
+const BUD_MAX = 3;
+if (!Array.isArray(bag.pbuds)) bag.pbuds = bag.pbuddy ? [bag.pbuddy] : [];
+const buddyIds = () => (Array.isArray(bag.pbuds) ? bag.pbuds : bag.pbuddy ? [bag.pbuddy] : []).filter(id => bag.pets?.[id] && PET[id]).slice(0, BUD_MAX);
+const buddyId = () => buddyIds()[0] || '';
+const buddyCode = () => joined ? buddyIds().map(id => `${id}:${bag.pets[id].lv}`).join(',') : '';
 const bdw = { follow: new Map(), tex: {}, wild: null, walk: 0, lastP: null, t: 0 };
 function buddySet(id) {
-  if (bag.pbuddy === id) { bag.pbuddy = ''; saveBag(); toast('🐾 동료 펫이 펫 센터에서 쉬어요', 'info'); return; }
-  bag.pbuddy = id; let extra = '';
-  if (bag.hpet?.walk && hpCur()) { bag.hpet.walk = false; hpetSync?.(); extra = ' (집 펫은 집에서 기다려요 · 한 번에 한 마리만)'; }
-  saveBag(); playSfx('fanfare'); toast(`🐾 ${CRITTER[id].icon} ${CRITTER[id].name}이(가) 같이 다녀요!${extra}`, 'success');
+  const L = buddyIds();
+  if (L.includes(id)) { bag.pbuds = L.filter(x => x !== id); bag.pbuddy = bag.pbuds[0] || ''; saveBag(); toast(`🐾 ${CRITTER[id].name}이(가) 펫 센터에서 쉬어요`, 'info'); return; }
+  if (L.length >= BUD_MAX) { toast(`🐾 동료 펫은 ${BUD_MAX}마리까지 데리고 다녀요. 먼저 한 마리를 쉬게 해요`, 'warn'); return; }
+  bag.pbuds = [...L, id]; bag.pbuddy = bag.pbuds[0];
+  saveBag(); playSfx('fanfare'); toast(`🐾 ${CRITTER[id].icon} ${CRITTER[id].name}이(가) 같이 다녀요! (${bag.pbuds.length}/${BUD_MAX}마리)`, 'success');
 }
+function buddyFirst(id) { const L = buddyIds(); if (!L.includes(id)) return; bag.pbuds = [id, ...L.filter(x => x !== id)]; bag.pbuddy = id; saveBag(); toast(`⭐ ${CRITTER[id].name}이(가) 맨 앞 동료예요 (배틀·레일바이크에 먼저 나가요)`, 'success'); }
 function buddyTex(id) { if (!bdw.tex[id]) { const t = new THREE.TextureLoader().load(petArt(id)); t.colorSpace = THREE.SRGBColorSpace; bdw.tex[id] = t; } return bdw.tex[id]; }
 function buddyModel(id, lv) {
   const g = new THREE.Group(), o = { solid: false }, col = new THREE.Color(PT[petType(id)].c).getHex();
@@ -21095,15 +21160,16 @@ function updateBuddy(dt) {
   const want = new Map(), me = buddyCode();
   if (me && !homeRegion()) want.set('me', [player.avatar?.g, me, true]);
   for (const [u, r] of remotes) { const c = r.target?.bd; if (typeof c === 'string' && r.a?.g?.visible !== false && !inHomeRoom(r.pos.x, r.pos.z)) want.set(u, [r.a.g, c, false]); }
+  for (const [u, w] of [...want]) { const cs = String(w[1]).split(',').slice(0, BUD_MAX); want.delete(u); cs.forEach((c, i) => { if (c) want.set(i ? `${u}#${i}` : u, [w[0], c, w[2], i]); }); } /* 🐾 1103e 여러 마리 */
   for (const [u, f] of bdw.follow) { const w = want.get(u); if (!w || w[1] !== f.code) { scene.remove(f.g); bdw.follow.delete(u); } }
-  for (const [u, [ag, code, mine]] of want) {
+  for (const [u, [ag, code, mine, slot = 0]] of want) {
     if (!ag) continue; const [id, lv] = code.split(':'); if (!PET[id]) continue; let f = bdw.follow.get(u);
-    if (!f) { f = { g: buddyModel(id, +lv || 5), code, t: Math.random() * 6 }; f.g.position.copy(ag.position); scene.add(f.g); bdw.follow.set(u, f); }
+    if (!f) { f = { g: buddyModel(id, +lv || 5), code, t: Math.random() * 6 }; if (slot) { const lb = f.g.children.at(-1); if (lb) lb.position.y += slot * 0.42; } f.g.position.copy(ag.position); scene.add(f.g); bdw.follow.set(u, f); } /* 이름표가 겹치지 않게 */
     f.t += dt; const sp = f.g.userData.sp;
-    if (mine && mrail.on && mrail.g) { // 🚴 레일바이크 뒷자리
+    if (mine && !slot && mrail.on && mrail.g) { // 🚴 레일바이크 뒷자리
       mrail.g.updateMatrixWorld(true); const p = mrail.g.localToWorld(new V3(0, 0.75, -0.95)); f.g.position.copy(p); f.g.rotation.y = ag.rotation.y; sp.position.y = 0.2 + Math.sin(f.t * 6) * 0.04; f.g.userData.ring.visible = false; buddyAnim(sp, f.t, true); continue; }
     f.g.userData.ring.visible = true;
-    const back = new V3(Math.sin(ag.rotation.y - 2.3) * 1.5, 0, Math.cos(ag.rotation.y - 2.3) * 1.5).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
+    const [sa, sd] = [[-2.3, 1.5], [Math.PI, 2.1], [-2.85, 2.9]][slot] || [-2.3, 1.5], back = new V3(Math.sin(ag.rotation.y + sa) * sd, 0, Math.cos(ag.rotation.y + sa) * sd).add(ag.position), dx = back.x - f.g.position.x, dz = back.z - f.g.position.z, dd = Math.hypot(dx, dz);
     if (dd > 14) f.g.position.copy(back); const mv = dd > 0.35; if (mv) { const s = Math.min(dd * 3, 10); f.g.position.x += dx / dd * s * dt; f.g.position.z += dz / dd * s * dt; }
     f.g.position.y += (ag.position.y - f.g.position.y) * Math.min(1, dt * 8);
     { const want = mv ? Math.atan2(dx, dz) : ag.rotation.y; let d = want - f.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); f.g.rotation.y += d * Math.min(1, dt * 6); } // 가는 쪽을 봐요
@@ -21193,15 +21259,15 @@ function openPetCenter(tab = 'team') {
     box.append(tabs);
     if (tab === 'team') {
       const have = petHave();
-      box.append(el2('p', 'hint', `팀은 ${PB_TEAM}마리까지 (위에서부터 차례로 나가요). 배틀에서 이기면 경험치가 많이 쌓여요. 🏅 내 배지 ${bag.pbadge}/${PG_N} · 🐾 데리고 다니기: 한 마리가 옆에서 따라다녀요 (🚴 레일바이크 뒷자리 · 🌾 들판 야생 펫 도전 · 🐉 레이드 첫 번째)`));
+      box.append(el2('p', 'hint', `팀은 ${PB_TEAM}마리까지 (위에서부터 차례로 나가요). 배틀에서 이기면 경험치가 많이 쌓여요. 🏅 내 배지 ${bag.pbadge}/${PG_N} · 🐾 데리고 다니기: ${BUD_MAX}마리까지 따라다녀요 (⭐ 맨 앞 펫이 🚴 레일바이크 뒷자리 · 🌾 들판 야생 펫 도전 · 🐉 레이드에 먼저 나가요)`));
       if (!have.length) box.append(el2('p', 'vempty', '아직 펫이 없어요. ➕ 펫 데려오기에서 잡은 생물을 펫으로 데려와요!'));
       const order = [...bag.pteam.filter(id => bag.pets[id]), ...have.filter(id => !bag.pteam.includes(id))];
       for (const id of order) petRow(box, id, (r) => {
         const inT = bag.pteam.includes(id), b = el2('button', 'btn', inT ? `⭐ 팀 ${bag.pteam.indexOf(id) + 1}번` : '팀에 넣기'); if (inT) b.style.background = '#FFE066';
         b.onclick = () => { if (inT) bag.pteam = bag.pteam.filter(x => x !== id); else if (bag.pteam.length < PB_TEAM) bag.pteam.push(id); else return toast(`팀은 ${PB_TEAM}마리까지예요. 먼저 한 마리를 빼요`, 'warn'); saveBag(); refillLife(); };
         const up = el2('button', 'btn', '⬆️'); up.title = '앞으로'; up.disabled = !inT || bag.pteam.indexOf(id) === 0; up.onclick = () => { const i = bag.pteam.indexOf(id); [bag.pteam[i - 1], bag.pteam[i]] = [bag.pteam[i], bag.pteam[i - 1]]; saveBag(); refillLife(); };
-        const bb = el2('button', 'btn', bag.pbuddy === id ? '🐾 함께 다니는 중' : '🐾 데리고 다니기'); bb.style.background = bag.pbuddy === id ? '#CDEFC2' : '#fff'; bb.onclick = () => { buddySet(id); refillLife(); }; // 1024e 동료 펫
-        r.append(up, b, bb);
+        const isB = buddyIds().includes(id), bb = el2('button', 'btn', isB ? `🐾 함께 다니는 중${buddyId() === id ? ' ⭐' : ''}` : '🐾 데리고 다니기'); bb.style.background = isB ? '#CDEFC2' : '#fff'; bb.onclick = () => { buddySet(id); refillLife(); }; // 1024e 동료 펫 · 1103e 3마리까지
+        r.append(up, b, bb); if (isB && buddyId() !== id) { const fb = el2('button', 'btn', '⭐ 맨 앞'); fb.title = '배틀·레일바이크에 먼저 나가요'; fb.style.background = '#fff'; fb.onclick = () => { buddyFirst(id); refillLife(); }; r.append(fb); }
       });
     } else if (tab === 'adopt') {
       box.append(el2('p', 'hint', isTeacher ? '🧑‍🏫 선생님은 모든 펫을 바로 데려올 수 있어요.' : '가방에 있는 생물 1마리를 펫으로 데려와요 (한 종류에 한 마리). 곤충 채집·낚시·역사 마을에서 잡아요.'));
