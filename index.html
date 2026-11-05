@@ -18344,6 +18344,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1103h', d: '11월 5일', items: ['🏛️ 고용한 역사 인물이 우리 성 문 앞에 나타나요! (금빛 고리 · 이름표 · 망토)'] },
   { id: '1103g', d: '11월 5일', items: ['🏛️ 공방전 「역사 인물 고용」! 나라 창고에서 사회 학습지 인물(주몽·광개토대왕·근초고왕·계백·진흥왕·김춘추·대조영·왕건…)을 전반·후반 1명씩 고용해요 (학습지 문제 + 🪵10 ⛓️10 🍚10)', '🧱 성벽 강화가 석성까지 잘 올라가요 (성문이 부서져 있어도) · 자원 값이 올랐어요 (갑옷·무기 갈기·목책·포탑·투석기·강철 무기·성벽)', '🎭 직업은 왕 1명 · 나머지는 2명까지 고를 수 있어요'] },
   { id: '1103f', d: '11월 5일', items: ['🏹 대장장이 Q가 「자동 포탑」으로 바뀌었어요! 우리 성 둘레에 세우면(🪵3 ⛓️3) 90초 동안 7걸음 안의 상대를 저절로 쏴요 · 상대는 가까이 가서 E로 부술 수 있어요 (+3점)'] },
   { id: '1103e', d: '11월 5일', items: ['🐟 물고기 탈것 4종이 생겼어요! 🐡 복어 · 🐬 돌고래 · 🦈 상어 · 🐋 고래 (탈것 가게에서 반 동전으로 열어요 · 공중을 헤엄쳐요)', '🐾 동료 펫을 3마리까지 데리고 다녀요! (펫 센터 · ⭐ 맨 앞 펫이 배틀에 먼저 나가요)', '🍎 내 땅 과일나무에서 과일을 따요! 나무마다 하루 한 번 · 계절마다 과일이 바뀌어요 (봄 🍒 앵두 · 여름 🍑 복숭아 · 가을 🍎 사과 · 겨울 🍊 귤) · 네 계절 과일을 모두 따면 🐚50'] },
@@ -23480,9 +23481,19 @@ async function sgHeroAnswer(c) {
   const slot = sgHeroSlot(); if (S.siege.hero?.[me]?.[slot]) { sgw.heroQ = null; toast('이미 이번 판 인물을 고용했어요', 'info'); refillLife(); return; }
   const sp = await backend.sgSpend(me, SG_HERO_COST); if (!sp.ok) { toast('⚠️ 자원이 모자라요', 'warn'); return; }
   const r = await backend.sgHeroSet(me, slot, Q.k); sgw.heroQ = null;
-  if (!r?.ok) { backend.sgGain(me, SG_HERO_COST, 0); toast('⚠️ 방금 친구가 먼저 고용했어요 (자원은 돌려받았어요)', 'warn'); refillLife(); return; }
+  if (!r?.ok) { backend.sgGain(me, SG_HERO_COST, 0); toast(S.siege.hero?.[me]?.[slot] ? '⚠️ 방금 친구가 먼저 고용했어요 (자원은 돌려받았어요)' : '⚠️ 고용을 저장하지 못했어요 · 선생님이 database.rules.json을 게시해야 해요 (자원은 돌려받았어요)', 'warn'); refillLife(); return; }
   playSfx('fanfare'); refillLife(); }
-function sgHeroTick() { /* 다른 나라도 알 수 있게 알림 */ const s = S.siege; if (!s?.on) { sgw.heroSeen = null; return; } sgw.heroSeen ||= JSON.parse(JSON.stringify(s.hero || {}));
+function sgHeroAvTick(s) { /* 🏛️ 1103h 고용한 인물이 우리 성 앞에 나타나요 (모든 기기 · 이름표 · 금빛 고리) */
+  sgw.heroAv ||= new Map(); const want = new Set(), on = !!(s?.on && siegeRegion()), now = performance.now(), dt = Math.min(0.1, (now - (sgw.heroT || now)) / 1000); sgw.heroT = now;
+  if (on) for (const [t, o] of Object.entries(s.hero || {})) for (const [sl, k] of Object.entries(o || {})) { const H = SG_HERO[k], c = castleAt(+t); if (!H || !c || sgFallen(+t)) continue; const key = `${t}/${sl}/${k}`; want.add(key);
+    let A = sgw.heroAv.get(key); if (!A) { const a = makeAvatar(0, +t - 1, sl === 'a' ? 2 : 3, 1, scene), [x, z] = castleLocal(+t, sl === 'a' ? -2.2 : 2.2, 4.6); a.g.position.set(x, 0.12, z); a.g.rotation.y = c.a; a.g.scale.setScalar(1.3); a.badge.userData.set([`${H.icon} ${H.n}`]);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.07, 6, 28), new THREE.MeshBasicMaterial({ color: 0xFFD23C, transparent: true, opacity: 0.85 })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.08; a.g.add(ring);
+      const cape = box(a.g, 0.75, 1.0, 0.06, sgSet().nat[+t - 1]?.col ?? 0xB3262E, 0, 1.15, -0.32, { solid: false }); cape.rotation.x = 0.12;
+      makeLabel(a.g, [H.d.split(' (')[0]], 0.32, 0, 3.15, 0, { stroke: false });
+      burst(new V3(x, 2, z), [0xFFD23C, 0xFFFFFF], 40, 4, 2.5); A = { a, ring, t0: now }; sgw.heroAv.set(key, A); }
+    A.ring.rotation.z += dt * 1.5; try { animateAvatar(A.a, 0, dt, true); } catch (e) { } if (Math.random() < dt * 0.15) playAct(A.a, 'cheer'); }
+  for (const [key, A] of sgw.heroAv) if (!want.has(key)) { scene.remove(A.a.g); sgw.heroAv.delete(key); } }
+function sgHeroTick() { /* 다른 나라도 알 수 있게 알림 */ const s = S.siege; sgHeroAvTick(s); if (!s?.on) { sgw.heroSeen = null; return; } sgw.heroSeen ||= JSON.parse(JSON.stringify(s.hero || {}));
   for (const [t, o] of Object.entries(s.hero || {})) for (const [sl, k] of Object.entries(o || {})) { if (sgw.heroSeen[t]?.[sl] === k) continue; (sgw.heroSeen[t] ||= {})[sl] = k; const H = SG_HERO[k], N = sgSet().nat[t - 1]; if (!H || !N) continue;
     if (siegeRegion()) { showBanner(`🏛️ ${N.icon} ${N.name}이(가) ${H.icon} ${H.n}을(를) 고용했어요!`, H.d, 4000); const ca = castleAt(+t); if (ca) burst(new V3(ca.x, 5, ca.z), [N.col, 0xFFE066, 0xFFFFFF], 50, 6, 3); } } }
 function openSgStore() {
