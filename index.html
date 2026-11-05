@@ -18344,7 +18344,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
-  { id: '1103h', d: '11월 5일', items: ['🏛️ 고용한 역사 인물이 우리 성 문 앞에 나타나요! (금빛 고리 · 이름표 · 망토)'] },
+  { id: '1103i', d: '11월 5일', items: ['⚔️ 고용한 역사 인물이 「인물 병사」로 전장에 나가 함께 싸워요! (체력 20 · 피해 +1 · 금빛 고리와 망토 · 쓰러져도 우리 성에서 다시 나와요)'] },
   { id: '1103g', d: '11월 5일', items: ['🏛️ 공방전 「역사 인물 고용」! 나라 창고에서 사회 학습지 인물(주몽·광개토대왕·근초고왕·계백·진흥왕·김춘추·대조영·왕건…)을 전반·후반 1명씩 고용해요 (학습지 문제 + 🪵10 ⛓️10 🍚10)', '🧱 성벽 강화가 석성까지 잘 올라가요 (성문이 부서져 있어도) · 자원 값이 올랐어요 (갑옷·무기 갈기·목책·포탑·투석기·강철 무기·성벽)', '🎭 직업은 왕 1명 · 나머지는 2명까지 고를 수 있어요'] },
   { id: '1103f', d: '11월 5일', items: ['🏹 대장장이 Q가 「자동 포탑」으로 바뀌었어요! 우리 성 둘레에 세우면(🪵3 ⛓️3) 90초 동안 7걸음 안의 상대를 저절로 쏴요 · 상대는 가까이 가서 E로 부술 수 있어요 (+3점)'] },
   { id: '1103e', d: '11월 5일', items: ['🐟 물고기 탈것 4종이 생겼어요! 🐡 복어 · 🐬 돌고래 · 🦈 상어 · 🐋 고래 (탈것 가게에서 반 동전으로 열어요 · 공중을 헤엄쳐요)', '🐾 동료 펫을 3마리까지 데리고 다녀요! (펫 센터 · ⭐ 맨 앞 펫이 배틀에 먼저 나가요)', '🍎 내 땅 과일나무에서 과일을 따요! 나무마다 하루 한 번 · 계절마다 과일이 바뀌어요 (봄 🍒 앵두 · 여름 🍑 복숭아 · 가을 🍎 사과 · 겨울 🍊 귤) · 네 계절 과일을 모두 따면 🐚50'] },
@@ -22456,6 +22456,8 @@ const SG_HERO = {
   gaya2: { n: '가야 연맹', icon: '🤝', nat: ['가야'], sh: 's2-1', kw: ['가야', '연맹'], d: '우리 편 체력 +1 · 보급 1.3배', era: 1 },
 };
 const SG_HERO_COST = { w: 10, i: 10, f: 10 };
+{ const RR = { jumong: 'arch', haedong: 'arch', gaya1: 'smith', onjo: 'sol', gyebaek: 'sol', hyeok: 'sol', chunchu: 'sol', gyeon: 'sol', hojok: 'sol', gaya2: 'sol' }; for (const [k, H] of Object.entries(SG_HERO)) H.r = RR[k] || 'gen'; } /* ⚔️ 1103i 인물 병사로 나가 싸울 때 무기 */
+const SG_HERO_HP = 20; /* 인물 병사 체력 (보통 🤖의 2~3배) */
 const sgHero = (t, k) => !!t && Object.values(S.siege?.hero?.[t] || {}).includes(k);
 const sgHeroB = (k) => sgHero(sgMine(), k) ? 1 : 0;
 const sgHeroesFor = (t) => { const N = sgSet()?.nat?.[t - 1]; if (!N || sgSet().scen && t === 2) return []; return Object.entries(SG_HERO).filter(([, H]) => H.nat.includes(N.name)).map(([k]) => k); };
@@ -23483,7 +23485,7 @@ async function sgHeroAnswer(c) {
   const r = await backend.sgHeroSet(me, slot, Q.k); sgw.heroQ = null;
   if (!r?.ok) { backend.sgGain(me, SG_HERO_COST, 0); toast(S.siege.hero?.[me]?.[slot] ? '⚠️ 방금 친구가 먼저 고용했어요 (자원은 돌려받았어요)' : '⚠️ 고용을 저장하지 못했어요 · 선생님이 database.rules.json을 게시해야 해요 (자원은 돌려받았어요)', 'warn'); refillLife(); return; }
   playSfx('fanfare'); refillLife(); }
-function sgHeroAvTick(s) { /* 🏛️ 1103h 고용한 인물이 우리 성 앞에 나타나요 (모든 기기 · 이름표 · 금빛 고리) */
+function sgHeroAvTick(s) { /* 🏛️ 1103i 인물은 이제 ⚔️ 인물 병사(sgb 🤖)로 나가 싸워요 · 성 앞 서 있는 모습은 쓰지 않아요 */ s = null;
   sgw.heroAv ||= new Map(); const want = new Set(), on = !!(s?.on && siegeRegion()), now = performance.now(), dt = Math.min(0.1, (now - (sgw.heroT || now)) / 1000); sgw.heroT = now;
   if (on) for (const [t, o] of Object.entries(s.hero || {})) for (const [sl, k] of Object.entries(o || {})) { const H = SG_HERO[k], c = castleAt(+t); if (!H || !c || sgFallen(+t)) continue; const key = `${t}/${sl}/${k}`; want.add(key);
     let A = sgw.heroAv.get(key); if (!A) { const a = makeAvatar(0, +t - 1, sl === 'a' ? 2 : 3, 1, scene), [x, z] = castleLocal(+t, sl === 'a' ? -2.2 : 2.2, 4.6); a.g.position.set(x, 0.12, z); a.g.rotation.y = c.a; a.g.scale.setScalar(1.3); a.badge.userData.set([`${H.icon} ${H.n}`]);
@@ -23621,7 +23623,7 @@ function updateSiege(dt) {
 const sgb = { list: {}, av: {}, sim: {}, r: '', pushT: 0, dmgSeen: {}, shotSeen: {} };
 const sgBotHost = () => isTeacher || backend?.mode !== 'firebase';
 const SGB_ROLE = (i) => ['sol', 'arch', 'smith', 'gen'][i % 4]; // 🤖 보병 · 궁병 · 대장장이 · 장군
-const sgBotName = (b) => `🤖 ${SG_ROLES[b.role === 'eng' ? 'smith' : b.role]?.name || '보병'}`;
+const sgBotName = (b) => b.hero && SG_HERO[b.hero] ? `${SG_HERO[b.hero].icon} ${SG_HERO[b.hero].n}` : `🤖 ${SG_ROLES[b.role === 'eng' ? 'smith' : b.role]?.name || '보병'}`;
 function sgBotsRemote(v) { if (sgBotHost()) return; sgb.list = v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).filter(([k]) => /^b\d+$/.test(k))) : {}; }
 function sgBotDmgRemote(v) { // 선생님 기기: 학생이 맞힌 기록을 체력에 반영해요
   if (!sgBotHost() || !v) return;
@@ -23677,7 +23679,7 @@ function sgBotShoot(b, tx, tz, kind, ref) {
   setTimeout(() => {
     if (!S.siege?.on || !hit) return;
     if (kind === 'g') { if (sgHp(ref) > 0) backend.sgHit(ref, (b.role === 'sol' ? 2 : 1) * W.dmg, b.t); return; }
-    const dmg = W.pd + (b.role === 'sol' ? 1 : 0);
+    const dmg = W.pd + (b.role === 'sol' ? 1 : 0) + (b.hero ? 1 : 0);
     if (kind === 'b') { const e = sgb.sim[ref]; if (e && !e.down) sgBotHurt(e, dmg); return; }
     if (sgHurt(ref) || sgSafe(ref) || sgKingSafe(ref)) return; const tt = sgTeamOf(ref); const dd = sgPB(ref, 'shield') ? Math.max(1, dmg - 1) : dmg;
     backend.sgDamage(ref, dd, sgMaxHp(ref)).then(r => { if (r.ok && r.hp <= 0 && (r.was > 0 || !sgHurt(ref))) { backend.sgHurtSet(ref); if (sgIsKing(ref) && r.was > 0) sgKingDown(ref, b.t); } if (ref === backend.uid && r.ok) toast(r.hp > 0 ? `🤖 컴퓨터 병사에게 맞았어요! ❤️ ${r.hp}/${sgMaxHp(ref)}` : '🤖 컴퓨터 병사에게 쓰러졌어요!', 'warn'); });
@@ -23694,7 +23696,7 @@ function sgBotMelee(b, cur, kind, ref) { // 🗡️ 병사 🤖 베기 (75% 맞�
   const ham = b.role === 'smith', m = ham ? 4 : 1;
   b.s = { t: backend.now(), x: +b.x.toFixed(2), z: +b.z.toFixed(2), dx: +ux.toFixed(3), dz: +uz.toFixed(3), m }; playAct(sgb.av[b.id], 'slash'); sgMeleeFx(b.x, b.z, ux, uz, m);
   if (kind === 'g') { if (sgHp(ref) > 0) backend.sgHit(ref, ham ? SG_HAMMER.gate : 2, b.t); return; }
-  if (Math.random() > 0.75) return; const dmg = ham ? SG_HAMMER.pd : SG_SWORD.pd + 1;
+  if (Math.random() > (b.hero ? 0.85 : 0.75)) return; const dmg = (ham ? SG_HAMMER.pd : SG_SWORD.pd + 1) + (b.hero ? 1 : 0);
   if (kind === 'b') { const e = sgb.sim[ref]; if (e && !e.down) sgBotHurt(e, dmg); return; }
   if (sgHurt(ref) || sgSafe(ref) || sgKingSafe(ref)) return; const dd = sgPB(ref, 'shield') ? Math.max(1, dmg - 1) : dmg;
   backend.sgDamage(ref, dd, sgMaxHp(ref)).then(r => { if (r.ok && r.hp <= 0 && (r.was > 0 || !sgHurt(ref))) { backend.sgHurtSet(ref); if (sgIsKing(ref) && r.was > 0) sgKingDown(ref, b.t); } if (ref === backend.uid && r.ok) toast(r.hp > 0 ? `🤖 컴퓨터 병사의 검에 맞았어요! ❤️ ${r.hp}/${sgMaxHp(ref)}` : '🤖 컴퓨터 병사에게 쓰러졌어요!', 'warn'); });
@@ -23715,8 +23717,12 @@ function sgBotThink(b) { // 1초마다 할 일 고르기
   let best = 0, bd = 1e9; for (let t = 1; t <= s.n; t++) { if (t === b.t || sgHp(t) <= 0 || sgFallen(t)) continue; const k = castleAt(t), d = Math.hypot(k.x - b.x, k.z - b.z); if (d < bd) { bd = d; best = t; } }
   if (best) { const [lx, lz] = sgToLocal(best, b.x, b.z), d = SG_DIRS[sgSideOf(lx, lz)], off = (b.id.charCodeAt(2) % 3 - 1) * 1.1, r = b.role === 'arch' ? SG_MOAT[1] + 1.6 : 6.9, [gx, gz] = castleLocal(best, d[0] * r - d[1] * off, d[1] * r + d[0] * off); b.tx = gx; b.tz = gz; b.goal = 'gate'; b.gateT = best; }
 }
+function sgHeroBots() { /* ⚔️ 1103i 고용한 인물이 인물 병사로 나와요: b{나라}8 (전반) · b{나라}9 (후반) · 체력 20 · 피해 +1 */
+  const s = S.siege; for (const [t, o] of Object.entries(s.hero || {})) for (const [sl, k] of Object.entries(o || {})) { const H = SG_HERO[k], tt = +t, id = `b${tt}${sl === 'a' ? 8 : 9}`; if (!H || sgFallen(tt) || sgb.sim[id]) continue;
+    const [x, z] = castleLocal(tt, sl === 'a' ? -1.6 : 1.6, 1.5); sgb.sim[id] = { id, t: tt, role: H.r, hero: k, x, z, hp: SG_HERO_HP, mx: SG_HERO_HP, down: 0, cool: 1, think: 0, tx: x, tz: z, aim: null, s: null, fixT: 0 }; } }
 function sgBotsHost(dt) {
   const s = S.siege; if (!s?.on || !sgStarted() || sgWinner()) return;
+  sgHeroBots();
   const brk = sgBreak(); if (brk && sgb.breakR !== s.r) { sgb.breakR = s.r; for (const b of Object.values(sgb.sim)) { const [x, z] = castleLocal(b.t, (Math.random() - 0.5) * 4, -1.2); Object.assign(b, { x, z, hp: b.mx, down: 0, ferry: null, aim: null, think: 0 }); } } // 🗺️ 작전 시간: 🤖도 성으로
   for (const b of Object.values(sgb.sim)) {
     if (sgFallen(b.t)) { delete sgb.sim[b.id]; continue; } // 🏳️ 함락된 나라 🤖는 사라져요
@@ -23736,7 +23742,7 @@ function sgBotsHost(dt) {
   }
   if (performance.now() - sgb.pushT > 400) { // 모두에게 위치 알려 주기
     sgb.pushT = performance.now();
-    const out = {}; for (const b of Object.values(sgb.sim)) out[b.id] = { x: +b.x.toFixed(2), z: +b.z.toFixed(2), h: +(b.h || 0).toFixed(2), t: b.t, role: b.role, hp: b.hp, mx: b.mx, down: b.down ? 1 : 0, ...(b.s ? { s: b.s } : {}) };
+    const out = {}; for (const b of Object.values(sgb.sim)) out[b.id] = { x: +b.x.toFixed(2), z: +b.z.toFixed(2), h: +(b.h || 0).toFixed(2), t: b.t, role: b.role, hp: b.hp, mx: b.mx, down: b.down ? 1 : 0, ...(b.hero ? { hero: b.hero } : {}), ...(b.s ? { s: b.s } : {}) };
     sgb.list = out; if (backend.mode === 'firebase') backend.sgBotsPush(out);
   }
 }
@@ -23752,7 +23758,9 @@ function updateSgBots(dt) {
   const vis = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10);
   for (const [id, b] of Object.entries(sgb.list)) {
     let a = sgb.av[id];
-    if (!a) { a = makeAvatar(0, b.t - 1, b.role === 'smith' || b.role === 'eng' ? 4 : 1, 1, scene); a.badge.userData.set([sgBotName(b)]); a.g.position.set(b.x, 0.12, b.z); sgb.av[id] = a; }
+    if (!a) { a = makeAvatar(0, b.t - 1, b.hero ? 2 : b.role === 'smith' || b.role === 'eng' ? 4 : 1, 1, scene); a.badge.userData.set([sgBotName(b)]); a.g.position.set(b.x, 0.12, b.z); sgb.av[id] = a;
+      if (b.hero) { a.g.scale.setScalar(1.25); const ring = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.07, 6, 28), new THREE.MeshBasicMaterial({ color: 0xFFD23C, transparent: true, opacity: 0.85 })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.08; a.g.add(ring); a.heroRing = ring; const cape = box(a.rig, 0.75, 1.0, 0.06, sgSet().nat[b.t - 1]?.col ?? 0xB3262E, 0, 1.1, -0.32, { solid: false }); cape.rotation.x = 0.12; burst(new V3(b.x, 2, b.z), [0xFFD23C, 0xFFFFFF], 40, 4, 2.5); } } /* 🏛️ 인물 병사: 크게 · 금빛 고리 · 망토 */
+    if (a.heroRing) a.heroRing.rotation.z += dt * 1.5;
     a.g.visible = vis; if (!vis) continue;
     const host = sgBotHost(), sim = host ? sgb.sim[id] : null, tx = sim ? sim.x : b.x, tz = sim ? sim.z : b.z, down = sim ? !!sim.down : !!b.down;
     const px = a.g.position.x, pz = a.g.position.z; a.g.position.x += (tx - px) * Math.min(1, dt * (host ? 30 : 6)); a.g.position.z += (tz - pz) * Math.min(1, dt * (host ? 30 : 6));
