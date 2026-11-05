@@ -18279,6 +18279,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1103d', d: '11월 5일', items: ['🪨 산성 투석기로 쏠 성을 직접 골라요 (가장 가까운 성 → 고르기)', '📖 공방전 안내 항목이 저절로 닫히던 문제를 고쳤어요'] },
   { id: '1103c', d: '11월 5일', items: ['📖 공방전 아래 띠에 「📖 안내」 버튼이 생겼어요! 이기는 법 · 직업과 스킬 · 거점 효과 · 자원 · 성 함락과 포로 · 조작법을 눌러서 볼 수 있어요'] },
   { id: '1103b', d: '11월 5일', items: ['🚩 성 함락이 쉬워졌어요! 성문을 부순 뒤 깃발 자리에 지키는 친구보다 많이 들어가면 차지가 올라가요', '👑 성문이 부서지면 성 안의 왕도 맞아요 · 왕이 쓰러져 있는 동안은 그 성을 지키는 힘이 절반!', '🧱 부서진 성문은 45초 뒤에 다시 서요 · 성문이 부서진 나라는 6초 늦게 일어나요'] },
   { id: '1103a', d: '11월 5일', items: ['🪤 공방전 대장장이 새 스킬 「덫 놓기」(Q · 10초마다)! 발밑에 덫을 2개까지 놓아요 (60초) · 밟은 상대는 피해 2 + 3초 느려져요 · 상대 눈엔 흐릿하게 보여요'] },
@@ -23166,16 +23167,20 @@ function sgCatText(key, owner) {
   if (key !== 'fort' || !S.siege?.on || !sgStarted() || sgWinner() || !sgMine() || owner !== sgMine()) return null;
   if (sgMyRole() !== 'smith') return ['🪨 산성 투석기', '⚒️ 우리 나라 대장장이만 쏠 수 있어요'];
   const left = Math.ceil((SG_CAT_CD - (backend.now() - (S.siege.cat?.[key] || 0))) / 1000), need = Object.entries(SG_CAT.cost).map(([k, v]) => RES_ICON[k] + v).join(' ');
-  return left > 0 ? ['투석기 장전 중 ⏳', `${left}초 뒤에 쏠 수 있어요`] : ['투석기 쏘기 🪨', `가장 가까운 상대 성문 -${SG_CAT.gate} · ${need}`];
+  return left > 0 ? ['투석기 장전 중 ⏳', `${left}초 뒤에 쏠 수 있어요`] : ['투석기 쏘기 🪨', `쏠 성을 골라요 · 성문 -${SG_CAT.gate} · ${need}`];
 }
-async function sgFireCat(key) {
+async function sgFireCat(key, pick) {
   const me = sgMine(); if (!S.siege?.on || !me || key !== 'fort' || !sgOwns(me, 'fort') || sgBreak()) return;
   if (sgMyRole() !== 'smith') { toast('⚒️ 산성 투석기는 대장장이만 쏠 수 있어요', 'info'); return; }
   if (sgHurt(backend.uid)) return;
   if (Object.entries(SG_CAT.cost).some(([k, v]) => (sgRes(me)[k] || 0) < v)) { toast(`🪨 투석기 돌을 만들려면 ${Object.entries(SG_CAT.cost).map(([k, v]) => RES_ICON[k] + v).join(' ')} 이 필요해요 (창고 문제 · 거점)`, 'warn'); return; }
-  const from = sgw.catObjs.fort.g.position;
-  let best = 0, bd = Infinity; for (const c of Object.values(sgw.castles)) { if (c.t === me || sgFallen(c.t)) continue; const m = sgGateAt(c, from.x, from.z), d = from.distanceTo(m) + (c.open ? 50 : 0); if (d < bd) { bd = d; best = c.t; } }
-  if (!best) return;
+  const cands = Object.values(sgw.castles).filter(c => c.t !== me && !sgFallen(c.t)); if (!cands.length) return;
+  let best = pick || 0;
+  if (!best) { /* 🎯 1103d 쏠 성을 골라요 (상대가 한 나라면 바로) */ const ok = cands.filter(c => !c.open);
+    if (ok.length === 1 && cands.length === 1) best = ok[0].t;
+    else { openLife('🪨 산성 투석기 · 어느 성을 쏠까요?', (box) => { const old = box.querySelector('[data-cat]'); if (old) { old.querySelectorAll('button').forEach(b => { const t = +b.dataset.t, c = sgw.castles[t] || cands.find(q => q.t === t), N = sgSet().nat[t - 1], hp = sgHp(t), dn = !c || c.open || hp <= 0 || sgFallen(t); b.textContent = dn ? `${N.icon} ${N.name} · 💥 성문 부서짐` : `${N.icon} ${N.name} · 🛡️ 성문 ${hp}/${sgMax(t)}`; b.disabled = dn; }); return; } /* 다시 그릴 때 버튼은 그대로 (누르는 중에 사라지지 않게) */ box.textContent = ''; box.append(el2('p', 'hint', `고른 성의 성문 -${SG_CAT.gate} · ${Object.entries(SG_CAT.cost).map(([k, v]) => RES_ICON[k] + v).join(' ')} · 쏜 뒤 ${SG_CAT_CD / 1000}초 장전`)); const row = el2('div', 'row-center wrap'); row.dataset.cat = '1';
+      for (const c of cands) { const N = sgSet().nat[c.t - 1], hp = sgHp(c.t), b = el2('button', 'btn', c.open || hp <= 0 ? `${N.icon} ${N.name} · 💥 성문 부서짐` : `${N.icon} ${N.name} · 🛡️ 성문 ${hp}/${sgMax(c.t)}`); b.style.cssText = `background:#${new THREE.Color(N.col).lerp(new THREE.Color(0xFFFFFF), 0.6).getHexString()};font-size:17px;margin:4px`; b.disabled = c.open || hp <= 0; b.dataset.t = c.t; b.onclick = () => { closeLife(); sgFireCat(key, c.t); }; row.append(b); }
+      box.append(row); }); return; } }
   const r = await backend.sgCat(key); if (!r.ok) { toast('⏳ 투석기를 장전하는 중이에요', 'info'); return; }
   const sp = await backend.sgSpend(me, SG_CAT.cost); if (!sp.ok) { toast('⚠️ 자원이 모자라요', 'warn'); return; }
   const v = { k: 'cat', from: key, to: best, d: SG_CAT.gate }; backend.sgFx(v); sgPlayFx(v, true); playAct(player.avatar, 'mine'); sgHelpPt();
@@ -23279,7 +23284,7 @@ const SG_GUIDE = [
   ['🏆', '어떻게 이겨요?', ['끝날 때 <b>나라 점수가 가장 높은 나라</b>가 이겨요. 다른 나라 성을 모두 함락해도 바로 이겨요.', '<b>점수 얻는 법</b>', '🚩 거점 차지: 3초마다 +1점 (🏯 산성은 +2점)', '💥 상대 성문 부수기: <b>+15점</b>', '👑 상대 왕 쓰러뜨리기: <b>+30점</b>', '🏳️ 상대 성 함락: <b>+50점</b>', '📜 나라 창고에서 문제 맞히기: +1점 (자원도 받아요)', '⚒️ 친구 도와주기(갑옷·무기 갈기·수리): +1점', '👑 끝났을 때 왕이 가장 적게 쓰러진 나라: +20점', '🔥 마지막 1분 「결전」은 거점 점수 2배! · 꼴찌 나라는 거점을 1.5배 빨리 차지해요']],
   ['⏱️', '진행 순서', ['⚔️ <b>전반전</b> → 🗺️ <b>작전 시간 1분</b> → ⚔️ <b>후반전</b>', '작전 시간에는 싸울 수 없어요. 모두 성으로 돌아가요. 나라 친구들과 작전을 짜고, 직업을 바꿀 수 있어요.', '직업은 시작 전 · 시작하고 25초 안 · 작전 시간에만 바꿀 수 있어요. 안 고르면 빈 자리로 정해져요.']],
   ['🎭', '직업과 스킬', null],
-  ['🚩', '거점(점령지) 효과', ['거점 동그라미 안에 <b>우리 편만</b> 서 있으면 깃발이 올라가요. 상대가 같이 있으면 멈춰요. 👑 왕은 2명 몫이에요.', '차지한 거점은 <b>3초마다</b> 점수와 자원을 줘요.', '🏯 <b>산성</b>(가운데): +2점 · ⚒️ 대장장이가 산성 투석기를 쏠 수 있어요 (상대 성문 -10)', '⛏️ <b>철광산 ①②</b>: +1점 · ⛓️ 철 +2', '🌾 <b>곡창</b>: +1점 · 🍚 군량 +2 · 쓰러져도 빨리 일어나요 (12초 → 7초)', '⛵ <b>나루터</b>: +1점 · 🪵 목재 +2 · 우리 편 모두 발이 빨라져요', '🔥 <b>봉수대</b>: +1점 · 다른 거점을 1.3배 빨리 차지해요']],
+  ['🚩', '거점(점령지) 효과', ['거점 동그라미 안에 <b>우리 편만</b> 서 있으면 깃발이 올라가요. 상대가 같이 있으면 멈춰요. 👑 왕은 2명 몫이에요.', '차지한 거점은 <b>3초마다</b> 점수와 자원을 줘요.', '🏯 <b>산성</b>(가운데): +2점 · ⚒️ 대장장이가 산성 투석기로 <b>원하는 상대 성문</b>을 골라 쏠 수 있어요 (성문 -10)', '⛏️ <b>철광산 ①②</b>: +1점 · ⛓️ 철 +2', '🌾 <b>곡창</b>: +1점 · 🍚 군량 +2 · 쓰러져도 빨리 일어나요 (12초 → 7초)', '⛵ <b>나루터</b>: +1점 · 🪵 목재 +2 · 우리 편 모두 발이 빨라져요', '🔥 <b>봉수대</b>: +1점 · 다른 거점을 1.3배 빨리 차지해요']],
   ['🪵', '자원은 어디에 써요?', ['자원은 나라가 함께 써요. 거점과 나라 창고 문제로 모아요.', '⛓️ <b>철</b>: ⚔️ 무기 갈기(2) · 🛡️ 갑옷(가죽 2 → 철 5) · ⛓️ 강철 무기(10, 60초 피해 +1 · 성문 2배) · 🪨 산성 투석기(3)', '🪵 <b>목재</b>: 🪵 목책(4) · 🧱 성벽 강화(12) · 🪨 산성 투석기(4)', '🍚 <b>군량</b>: 지금은 점수만 줘요']],
   ['🏳️', '성 함락과 포로', ['① 상대 <b>성문을 부숴요</b> (체력이 0이 되면 +15점 · 45초 뒤에 다시 서요)', '② 성 한가운데 <b>🚩 깃발 자리</b>에 들어가요', '③ 깃발 자리에 <b>지키는 친구보다 우리 편이 더 많으면</b> 차지가 올라가요. 100%가 되면 함락! (+50점)', '👑 <b>왕을 쓰러뜨리면</b> 30초 동안 그 성을 지키는 힘이 절반이 돼요. 왕을 먼저 잡고 쳐들어가요!', '🏰 성문이 서 있을 때 성 안의 왕은 맞지 않아요. 성문이 부서지면 왕도 맞아요.', '⛓️ 함락된 나라 친구들은 이긴 나라의 <b>포로</b>가 돼서 그 나라 편으로 싸워요 (❤️ 4 · 주먹만)', '🛡️ 지키는 법: 대장장이가 성문을 고치고, 모두 깃발 자리로 모여요. 성문이 부서진 나라는 6초 늦게 일어나요.']],
   ['🤕', '쓰러지면?', ['체력이 0이 되면 🤕 쓰러져요. 12초 뒤에 우리 성에서 다시 일어나요 (🌾 곡창이 있으면 7초 · 👑 왕은 30초).', '다시 일어난 뒤 3초 동안은 맞지 않아요.', '🪤 대장장이 덫을 밟으면 피해 2 + 3초 느려져요. 상대 덫은 흐릿하게 보이니 잘 살펴요!']],
@@ -23287,10 +23292,11 @@ const SG_GUIDE = [
   ['🎮', '조작법', ['<b>F</b> 공격 (궁병은 꾹 눌렀다 놓기) · <b>Q</b> 직업 스킬 · <b>R</b> 궁병 멀티샷 · <b>E</b> 친구 돕기·성문 고치기·나라 창고', '태블릿은 아래 띠의 버튼을 눌러요. 😊 이모티콘은 오른쪽 아래 버튼으로 써요.', '🎭 역할 버튼: 내 직업 보기·바꾸기 · 📖 안내: 이 창']],
 ];
 function openSgGuide(open) {
+  sgw.guideOpen = new Set(open != null ? [open] : []); /* 📖 1103d 다시 그려져도 펼친 항목은 그대로 */
   openLife('📖 성 공방전 안내', (box) => {
     box.textContent = ''; box.append(el2('p', 'hint', '궁금한 것을 눌러 보세요 👇'));
     SG_GUIDE.forEach(([ic, title, lines], i) => {
-      const d = document.createElement('details'); d.style.cssText = 'background:#FFF8E8;border:2px solid #EADBC4;border-radius:14px;margin:6px 0;padding:6px 10px;text-align:left'; if (open === i) d.open = true;
+      const d = document.createElement('details'); d.style.cssText = 'background:#FFF8E8;border:2px solid #EADBC4;border-radius:14px;margin:6px 0;padding:6px 10px;text-align:left'; if (sgw.guideOpen.has(i)) d.open = true; d.ontoggle = () => { if (d.open) sgw.guideOpen.add(i); else sgw.guideOpen.delete(i); };
       const sm = document.createElement('summary'); sm.style.cssText = 'font-weight:800;font-size:17px;cursor:pointer;padding:4px 0'; sm.textContent = `${ic} ${title}`; d.append(sm);
       const ul = document.createElement('div'); ul.style.cssText = 'line-height:1.65;font-size:15px;padding:4px 2px 6px';
       const L = lines || Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `<b>${R.icon} ${R.name}</b> · ${R.tag}<br>${R.can.map(c => '· ' + c).join('<br>')}`);
