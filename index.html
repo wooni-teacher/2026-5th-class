@@ -1001,6 +1001,17 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
 .atl-grid .btn{white-space:pre-line;font-size:14px;padding:8px 2px;background:#fff;border:2px solid #C8A060}.atl-grid .btn.on{background:#E2584A;color:#fff}
 .atl-shake{animation:atlShake .5s}
 @keyframes atlShake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+
+/* 🏆 1104d 3판 시리즈 점수판 */
+#sgSerOv{position:fixed;inset:0;z-index:9400;display:flex;align-items:center;justify-content:center;background:rgba(20,12,4,.55);padding:12px}
+#sgSerOv.hidden{display:none}
+#sgSerOv .ss-card{background:#FFF8E8;border:4px solid #E0B040;border-radius:20px;padding:16px 18px;max-width:min(96vw,720px);max-height:90vh;overflow:auto;text-align:center;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+#sgSerOv .ss-card.fin{background:radial-gradient(circle at 50% 0,#FFF3C0,#FFF8E8 60%);animation:afIn .8s ease}
+#sgSerOv h2{margin:0 0 4px;font-size:clamp(22px,4vw,32px);color:#8A5A10}
+#sgSerOv table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}
+#sgSerOv th{background:#F2D88A;padding:6px;border-radius:6px}#sgSerOv td{padding:6px;border-bottom:1px solid #EADBC4}
+#sgSerOv td small{color:#3E8E4A;font-weight:800}#sgSerOv td.pt{font-size:22px;font-weight:900;color:#C8402E}
+#sgSerOv tr.top td{background:#FFF0B8}#sgSerOv .btn{background:#FFE066;color:#4A2A10}
 </style>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
@@ -1550,6 +1561,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
     <div id="tpSgList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStat" style="background:#fff" title="능력치(영어·수학·사회 + 독서×2)가 나라마다 비슷하게">💪 능력치로 고르게</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
+    <div class="sg-ser-box" style="margin-top:8px;padding:8px;border:2px dashed #E0C080;border-radius:12px;background:#FFF8E8"><label class="row-center" style="gap:6px;font-weight:800;cursor:pointer"><input type="checkbox" id="tpSgSer"> 🏆 3판 시리즈 (승점제 · 판마다 1등 3점 · 2등 2점 · 3등 1점 · 같으면 점수 총합)</label><p class="hint" id="tpSgSerNow" style="margin:4px 0"></p><div class="row-center wrap"><button class="btn" id="tpSgSerNext" type="button" style="background:#FFD23C">⚔️ 다음 판 시작</button><button class="btn" id="tpSgSerBoard" type="button" style="background:#fff">📊 시리즈 점수판</button><button class="btn" id="tpSgSerEnd" type="button" style="background:#fff">🗑️ 시리즈 끝내기</button></div></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgGo" style="background:#fff">🏃 전쟁터 가기</button><button class="btn" id="tpSgWatch" style="background:#fff">👁️ 하늘에서 관전</button><button class="btn danger" id="tpSgEnd">🏁 끝내고 역사 마을로</button></div>
     <h3>⛰️ 뒷산 (캠핑 모임 · 썰매)</h3>
     <p class="hint" id="tpMtnNow"></p>
@@ -2280,7 +2292,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0 }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2346,6 +2358,7 @@ function normalize(v) {
     cal: { ev: Object.fromEntries(Object.entries(plainObj(plainObj(v.cal).ev)).filter(([k, e]) => /^[a-z0-9]{1,20}$/.test(k) && e && typeof e.t === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.d || '') && ['o', 'w', 'd'].includes(e.r)).slice(0, 60).map(([k, e]) => [k, { t: e.t.slice(0, 30), ic: String(e.ic || '📌').slice(0, 4), r: e.r, d: e.d, ...(typeof e.wd === 'string' && /^[0-6](,[0-6]){0,6}$/.test(e.wd) ? { wd: e.wd } : {}), ...(/^\d{4}-\d{2}-\d{2}$/.test(e.u || '') ? { u: e.u } : {}), ...(/^\d{2}:\d{2}$/.test(e.tm || '') ? { tm: e.tm } : {}), ...(typeof e.m === 'string' ? { m: e.m.slice(0, 40) } : {}) }])) }, // 📅 1102p
     atlg: Object.fromEntries(Object.entries(plainObj(v.atlg)).filter(([g, x]) => /^g[1-4]$/.test(g) && x && typeof x === 'object').map(([g, x]) => { const sl = (c) => c && typeof c === 'object' && typeof c.u === 'string' ? { u: c.u, n: String(c.n || '').slice(0, 12), t: +c.t || 0, ok: c.ok ? 1 : 0 } : null; return [g, { st: x.st | 0, sg: Math.max(1, Math.min(9, x.sg | 0 || 1)), at: +x.at || 0, it: +x.it || 0, fin: +x.fin || 0, hint: Object.fromEntries(Object.keys(plainObj(x.hint)).filter(h => /^h[0-9a-z]{1,3}$/.test(h)).map(h => [h, 1])), lock: x.lock && +x.lock.u ? { u: +x.lock.u, k: x.lock.k === 'siren' ? 'siren' : 'crash' } : null, cyc: { a: sl(plainObj(x.cyc).a), b: sl(plainObj(x.cyc).b) }, mem: Object.fromEntries(Object.entries(plainObj(x.mem)).slice(0, 20).map(([u, n]) => [u, String(n).slice(0, 12)])) }]; })), /* 🔱 1104a */
     atlr: Object.fromEntries(Object.entries(plainObj(v.atlr)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').slice(0, 80).map(([u, x]) => [u, { g: Math.max(1, Math.min(4, x.g | 0 || 1)), b: Math.max(0, Math.min(8, x.b | 0)), n: String(x.n || '').slice(0, 12), at: +x.at || 0 }])),
+    sgser: v.sgser && typeof v.sgser === 'object' && v.sgser.on ? { on: 1, set: String(v.sgser.set || 'three'), n: Math.max(2, Math.min(4, v.sgser.n | 0 || 2)), team: Object.fromEntries(Object.entries(plainObj(v.sgser.team)).map(([u, t]) => [u, t | 0]).filter(([, t]) => t >= 1 && t <= 4)), R: Object.fromEntries(['r1', 'r2', 'r3'].filter(k => plainObj(v.sgser.R)[k]).map(k => { const x = plainObj(v.sgser.R)[k]; return [k, { sid: String(x.sid || ''), w: x.w | 0, sc: Object.fromEntries(Object.entries(plainObj(x.sc)).map(([t, q]) => [t, +q || 0])), pt: Object.fromEntries(Object.entries(plainObj(x.pt)).map(([t, q]) => [t, +q || 0])), f: Object.fromEntries(Object.entries(plainObj(x.f)).map(([t, q]) => [t, q ? 1 : 0])) }]; })), fin: v.sgser.fin ? 1 : 0 } : null, /* 🏆 1104d 3판 시리즈 */
     atlx: +v.atlx || 0,
     wc: Object.fromEntries(Object.entries(plainObj(v.wc)).filter(([t, x]) => /^t[0-3]$/.test(t) && x && typeof x === 'object').map(([t, x]) => { const keep = (o, n) => Object.fromEntries(Object.entries(toObj(o)).filter(([k, y]) => /^i\d{1,3}$/.test(k) && typeof y === 'string').map(([k, y]) => [k, y.slice(0, n)])); return [t, { w: keep(x.w, 8), u: keep(x.u, 64), n: keep(x.n, 12), at: +x.at || 0 }]; })), /* 🔤 1102x */
     evtk: Object.fromEntries(Object.entries(plainObj(v.evtk)).filter(([p, w]) => /^p[0-7]$/.test(p) && w && typeof w === 'object').map(([p, w]) => [p, { ...(ANON_ID.test(w.a || '') ? { a: w.a, an: String(w.an || '').slice(0, 12) } : {}), ...(ANON_ID.test(w.b || '') ? { b: w.b, bn: String(w.bn || '').slice(0, 12) } : {}), ...(isInt(w.lv, 7, 12) ? { lv: w.lv, sc: isInt(w.sc, 0, 9) ? w.sc : 0, i: isInt(w.i, 0, 20) ? w.i : 0, at: +w.at || 0, t: Object.fromEntries(Object.entries(toObj(w.t)).filter(([k, x]) => /^\d{1,2}$/.test(k) && typeof x === 'string').map(([k, x]) => [k, x.slice(0, 80)])) } : {}) }])), // 🗣️ 1102s
@@ -18432,6 +18445,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1104d', d: '11월 6일', items: ['🏆 성 공방전 3판 시리즈(승점제)! 판마다 1등 3점 · 2등 2점 · 3등 1점 · 세 판 승점 합계로 최종 우승 (같으면 점수 총합) · 판이 끝날 때마다 시리즈 점수판이 떠요'] },
   { id: '1104c', d: '11월 6일', items: ['👥 아틀란티스 2~4모둠 방에서 친구가 안 보이던 문제를 고쳤어요 (방 위치를 옮겼어요 · 진행 기록은 그대로)'] },
   { id: '1104b', d: '11월 6일', items: ['🔍 아틀란티스 문제지를 크게 볼 수 있어요! 그림을 누르면 ➕➖ 확대 · 두 번 톡 · 손가락 두 개로 벌리기 · 방 안 벽에 붙은 문제지도 가까이 가서 E', '🖼️ 문제지 그림을 더 선명하게 바꿨어요'] },
   { id: '1104a', d: '11월 6일', items: ['🔱 심해 방탈출 「아틀란티스를 찾아서」! 🤿 바닷속 산호초 북쪽 「아틀란티스의 입구」에서 모둠 문(1~4)으로 들어가요', '🚀 모둠원이 다 들어오면 탈출 시작 → 이야기 애니메이션 → 동굴 벽의 말부터 떠오르는 날까지 8관문 (관문마다 깊어지는 바닷속 · 통과할 때마다 🐚25 · 💡 힌트 🐚-50)'] },
@@ -23522,7 +23536,7 @@ function openSgRole() {
 /* 📖 1103c 공방전 안내: 궁금한 것을 눌러서 펼쳐 보기 */
 const SG_GUIDE = [
   ['🏆', '어떻게 이겨요?', ['끝날 때 <b>나라 점수가 가장 높은 나라</b>가 이겨요. 다른 나라 성을 모두 함락해도 바로 이겨요.', '<b>점수 얻는 법</b>', '🚩 거점 차지: 3초마다 +1점 (🏯 산성은 +2점)', '💥 상대 성문 부수기: <b>+15점</b>', '👑 상대 왕 쓰러뜨리기: <b>+30점</b>', '🏳️ 상대 성 함락: <b>+50점</b>', '📜 나라 창고에서 문제 맞히기: +1점 (자원도 받아요)', '⚒️ 친구 도와주기(갑옷·무기 갈기·수리): +1점', '👑 끝났을 때 왕이 가장 적게 쓰러진 나라: +20점', '🔥 마지막 1분 「결전」은 거점 점수 2배! · 꼴찌 나라는 거점을 1.5배 빨리 차지해요']],
-  ['⏱️', '진행 순서', ['⚔️ <b>전반전</b> → 🗺️ <b>작전 시간 1분</b> → ⚔️ <b>후반전</b>', '작전 시간에는 싸울 수 없어요. 모두 성으로 돌아가요. 나라 친구들과 작전을 짜고, 직업을 바꿀 수 있어요.', '직업은 시작 전 · 시작하고 25초 안 · 작전 시간에만 바꿀 수 있어요. 안 고르면 빈 자리로 정해져요.']],
+  ['⏱️', '진행 순서', ['⚔️ <b>전반전</b> → 🗺️ <b>작전 시간 1분</b> → ⚔️ <b>후반전</b>', '작전 시간에는 싸울 수 없어요. 모두 성으로 돌아가요. 나라 친구들과 작전을 짜고, 직업을 바꿀 수 있어요.', '직업은 시작 전 · 시작하고 25초 안 · 작전 시간에만 바꿀 수 있어요. 안 고르면 빈 자리로 정해져요.', '🏆 <b>3판 시리즈</b>일 때: 판마다 1등 승점 3 · 2등 2 · 3등 1 → 세 판 승점 합계로 최종 우승 (같으면 점수 총합) · 나라는 세 판 내내 그대로예요']],
   ['🎭', '직업과 스킬', null],
   ['🚩', '거점(점령지) 효과', ['거점 동그라미 안에 <b>우리 편만</b> 서 있으면 깃발이 올라가요. 상대가 같이 있으면 멈춰요. 👑 왕은 2명 몫이에요.', '차지한 거점은 <b>3초마다</b> 점수와 자원을 줘요.', '🏯 <b>산성</b>(가운데): +2점 · ⚒️ 대장장이가 산성 투석기로 <b>원하는 상대 성문</b>을 골라 쏠 수 있어요 (성문 -10)', '⛏️ <b>철광산 ①②</b>: +1점 · ⛓️ 철 +2', '🌾 <b>곡창</b>: +1점 · 🍚 군량 +2 · 쓰러져도 빨리 일어나요 (12초 → 7초)', '⛵ <b>나루터</b>: +1점 · 🪵 목재 +2 · 우리 편 모두 발이 빨라져요', '🔥 <b>봉수대</b>: +1점 · 다른 거점을 1.3배 빨리 차지해요']],
   ['🏛️', '역사 인물 고용', null, 'hero'],
@@ -23620,6 +23634,7 @@ function openSgStore() {
 }
 // ---------- 매 화면 ----------
 function updateSiege(dt) {
+  try { sgSerTick(); } catch (e) { console.warn('sgser', e); }
   if (!sgw.field) return;
   const near = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10 && camera.position.z > SG.z0 - 10);
   const s = S.siege, show = near && !!s, set = sgSet();
@@ -24121,10 +24136,10 @@ function renderSgHud(force) {
   const rows = [];
   for (let k = 1; k <= s.n; k++) { const N = set.nat[k - 1], hp = sgHp(k), owned = SG_SITES.filter(st => sgOwns(k, st.k)).map(st => st.icon).join('') + Object.values(s.hero?.[k] || {}).map(h => SG_HERO[h]?.icon || '').join(''); rows.push(sgFallen(k) ? `<span class="sg-nat" style="--c:#999;opacity:.6"><b>${N.icon} ${N.name}</b> 🏳️ 함락</span>` : `<span class="sg-nat${k === t ? ' me' : ''}" style="--c:#${new THREE.Color(N.col).getHexString()}"><b>${N.icon} ${N.name}</b> ${s.score?.[k] || 0}점 ${owned}<i style="width:${Math.round(hp / sgMax(k) * 100)}%"></i></span>`); }
   $('sgNats').innerHTML = rows.join('');
-  $('sgInfo').textContent = w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : (() => { const fm = (ms) => { const q = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(q / 60)}:${String(q % 60).padStart(2, '0')}`; }, h = s.half, ph = sgPhase(), now = backend.now(); const cc = Object.entries(s.cc || {}).find(([, v]) => v?.p), ccTxt = cc ? ` · 🚩 ${set.nat[+cc[0] - 1]?.name} 성 함락 중 ${cc[1].p}%` : '';
+  $('sgInfo').textContent = (sgSer() ? `🏆 ${Math.min(3, sgSerRounds().length + (s.on ? 1 : 0))}판 · ` : '') + (w ? (w === 9 ? '🤝 비겼어요! 모두 멋지게 싸웠어요' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`) : wait > 0 ? `⏳ ${wait}초 뒤 시작!` : (() => { const fm = (ms) => { const q = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(q / 60)}:${String(q % 60).padStart(2, '0')}`; }, h = s.half, ph = sgPhase(), now = backend.now(); const cc = Object.entries(s.cc || {}).find(([, v]) => v?.p), ccTxt = cc ? ` · 🚩 ${set.nat[+cc[0] - 1]?.name} 성 함락 중 ${cc[1].p}%` : '';
     if (ph === 'first') return `⚔️ 전반전 ${fm(h.a - now)}${ccTxt}`; if (ph === 'break') return `🗺️ 작전 시간 ${fm(h.b - now)} · 역할을 바꿀 수 있어요`; if (ph === 'second') return `⚔️ 후반전 ${fm(s.end - now)}${sgFinal() ? ' · 결전! 점수 2배' : ''}${ccTxt}`;
     if (sgAnsi()) return `${ansiHud()} · ⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${ccTxt}`;
-    return `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${sgFinal() ? ' · ⚔️ 결전! 점수 2배' : ` · ${set.name}`}${ccTxt}`; })();
+    return `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${sgFinal() ? ' · ⚔️ 결전! 점수 2배' : ` · ${set.name}`}${ccTxt}`; })());
   $('sgMine').textContent = t ? `🪵 ${res.w || 0} · ⛓️ ${res.i || 0} · 🍚 ${res.f || 0}${sgLagging() === t ? ' · 💪 약소국 단결 (차지·보급 1.5배)' : ''}` : '👀 선생님은 옆줄에서 지켜봐요';
   if (w && sgw.ended !== s.r) { sgw.ended = s.r; sgStpFlush(true); if (siegeRegion() && (sgMine() || isTeacher)) { setTimeout(() => { if (S.siege?.r === s.r) (sgAnsi() ? openAnsiEnd() : openSgStudy()); }, 4500); setTimeout(() => { if (life.fill === sgStudyFill) refillLife(); }, 9000); } showBanner(w === 9 ? '🤝 비겼어요!' : `🏆 ${set.nat[w - 1].icon} ${set.nat[w - 1].name} 승리!`, '서로 수고했다고 인사해요 👏 (나라 점수만 남고, 끝내면 지워져요)', 6000); burst(player.pos.clone().setY(3), RAINBOW, 60, 6, 3); }
 }
@@ -24146,7 +24161,7 @@ function fillSiegeAdmin(force) {
   const s = S.siege, setKey = s ? s.set : $('tpSgSet').value, set = SIEGE_SETS[setKey] || SIEGE_SETS.three, n = s ? s.n : set.nat.length;
   const roles = s ? Object.entries(SG_ROLES).filter(([k, R]) => !R.off || k === 'pow').map(([k, R]) => `${R.icon}${Object.keys(s.role || {}).filter(u => sgRoleOf(u) === k).length}`).join(' ') : '';
   $('tpSgNow').textContent = s ? (s.on ? `⚔️ 전쟁 중 · ${set.name} · ${set.nat.slice(0, n).map((N, i) => `${N.icon}${N.name} ${s.score?.[i + 1] || 0}점`).join(' · ')} · 남은 시간 ${Math.floor(sgLeft() / 60)}분 ${sgLeft() % 60}초 · 역할 ${roles}` : `🏁 끝 · ${s.win === 9 ? '비김' : `${set.nat[(s.win || 1) - 1]?.name} 승리`}`) : `지금 접속한 학생 ${sgStudents().length}명${backend.mode === 'firebase' ? '' : ' · 연습 모드라 다른 기기와 함께 할 수 없어요'}`;
-  $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on;
+  $('tpSgEnd').disabled = !s; $('tpSgStart').disabled = !!s?.on; try { sgSerAdminFill(); } catch (e) { }
   const list = sgStudents(), key = [setKey, n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?') + (lvOfU(u, tg)?.v ?? '')).join(','), s ? JSON.stringify(s.team || {}) : JSON.stringify(sgw.assign)].join('|');
   if (!force && key === sgw.listKey) return; sgw.listKey = key;
   const box = $('tpSgList'); box.textContent = '';
@@ -24173,9 +24188,46 @@ function sgBeam(u) {
   m.position.y = 7; a.g.add(m); setTimeout(() => { a.g.remove(m); m.geometry.dispose(); }, 6000);
   toast('📍 그 학생 위에 노란 빛기둥이 6초 동안 보여요', 'info');
 }
+/* 🏆 1104d 성 공방전 3판 시리즈 (승점제): state/sgser {on, set, n, team (1판 나라 그대로), R {r1~r3: {sid 판 번호, sc {t1: 점수}, pt {t1: 승점}, f 함락, w}}, fin}
+   · 판이 끝나면 선생님 기기가 기록 · 1등 3 · 2등 2 · 3등 1 · 4등 0 (점수가 같으면 같은 승점) · 3판 뒤 승점 합계 → 같으면 점수 총합 */
+const SG_SER_PT = [3, 2, 1, 0];
+const sgSer = () => S.sgser?.on ? S.sgser : null;
+const sgSerRounds = (z = sgSer()) => z ? ['r1', 'r2', 'r3'].filter(k => z.R?.[k]).map(k => z.R[k]) : [];
+function sgSerTotals(z = sgSer()) { const n = z?.n || 2, T = {}; for (let t = 1; t <= n; t++) T[t] = { pt: 0, sc: 0 }; for (const R of sgSerRounds(z)) for (let t = 1; t <= n; t++) { T[t].pt += R.pt?.['t' + t] || 0; T[t].sc += R.sc?.['t' + t] || 0; } return T; }
+function sgSerRank(z = sgSer()) { const T = sgSerTotals(z); return Object.keys(T).map(Number).sort((a, b) => T[b].pt - T[a].pt || T[b].sc - T[a].sc); }
+function sgSerTick() { /* 판이 끝나면 선생님 기기가 기록 · 모두에게 점수판 */
+  const z = sgSer(), s = S.siege; if (!z) return;
+  if ((isTeacher || backend.mode !== 'firebase') && s && !s.on && s.win && s.set === z.set && !sgSerRounds(z).some(R => R.sid === s.r) && sgSerRounds(z).length < 3 && sgw.serRec !== s.r) {
+    sgw.serRec = s.r; const n = z.n, sc = {}, f = {}; for (let t = 1; t <= n; t++) { sc['t' + t] = s.score?.[t] || 0; f['t' + t] = sgFallen(t) ? 1 : 0; }
+    const key = (t) => (f['t' + t] ? -1e6 : 0) + sc['t' + t], order = Array.from({ length: n }, (_, i) => i + 1).sort((a, b) => key(b) - key(a)), pt = {};
+    order.forEach((t, i) => { const same = order.findIndex(q => key(q) === key(t)); pt['t' + t] = SG_SER_PT[same] ?? 0; });
+    const k = 'r' + (sgSerRounds(z).length + 1), done = k === 'r3';
+    backend.adminUpdate({ [`sgser/R/${k}`]: { sid: s.r, sc, pt, f, w: s.win | 0 }, ...(done ? { 'sgser/fin': 1 } : {}) }); }
+  const cnt = sgSerRounds(z).length; if (sgw.serSeen == null) { sgw.serSeen = cnt; return; }
+  if (cnt > sgw.serSeen) { sgw.serSeen = cnt; if (siegeRegion() || isTeacher) setTimeout(() => sgSerShow(true), z.fin ? 9000 : 11000); } }
+function sgSerShow(auto) {
+  const z = sgSer(); if (!z) { toast('진행 중인 3판 시리즈가 없어요', 'info'); return; }
+  const set = SIEGE_SETS[z.set] || SIEGE_SETS.three, n = z.n, RS = sgSerRounds(z), T = sgSerTotals(z), rank = sgSerRank(z), fin = z.fin && RS.length >= 3;
+  let el = document.getElementById('sgSerOv'); if (!el) { el = document.createElement('div'); el.id = 'sgSerOv'; document.body.append(el); }
+  const nat = (t) => set.nat[t - 1]; const W = fin ? nat(rank[0]) : null;
+  el.innerHTML = `<div class="ss-card${fin ? ' fin' : ''}"><h2>${fin ? `🏆 최종 우승 · ${W.icon} ${W.name}!` : `🏆 3판 시리즈 · ${RS.length}판 끝`}</h2><p class="hint">${fin ? '세 판 승점 합계로 정했어요 · 모두 정말 멋지게 싸웠어요 👏' : `판마다 1등 3점 · 2등 2점 · 3등 1점 · ${3 - RS.length}판 남았어요`}</p>
+    <table><tr><th>나라</th>${[0, 1, 2].map(i => `<th>${i + 1}판</th>`).join('')}<th>승점</th><th>점수 합</th></tr>
+    ${rank.map((t, i) => `<tr class="${i === 0 ? 'top' : ''}"><td><b style="color:#${new THREE.Color(nat(t).col).getHexString()}">${['🥇', '🥈', '🥉', '4️⃣'][i]} ${nat(t).icon} ${nat(t).name}</b></td>${[0, 1, 2].map(j => { const R = RS[j]; return R ? `<td>${R.f?.['t' + t] ? '🏳️ ' : ''}${R.sc?.['t' + t] || 0}점<br><small>+${R.pt?.['t' + t] || 0}</small></td>` : '<td>—</td>'; }).join('')}<td class="pt">${T[t].pt}</td><td>${T[t].sc}</td></tr>`).join('')}</table>
+    <button class="btn" type="button">닫기</button></div>`;
+  el.classList.remove('hidden'); el.querySelector('button').onclick = () => el.classList.add('hidden');
+  if (fin && auto) { playSfx('fanfare'); burst(player.pos.clone().setY(3), RAINBOW, 90, 7, 3.5); showBanner(`🏆 최종 우승 · ${W.icon} ${W.name}!`, '3판 시리즈 승점 합계 1등', 6000); }
+  const tok = (sgw.serTok = (sgw.serTok || 0) + 1); if (auto && !fin) setTimeout(() => { if (sgw.serTok === tok) el.classList.add('hidden'); }, 20000); }
+function sgSerAdminFill() { const el = $('tpSgSerNow'); if (!el) return; const z = sgSer(), s = S.siege;
+  $('tpSgSer').checked = !!z || !!sgw.serWant; $('tpSgSer').disabled = !!z;
+  if (!z) { el.textContent = sgw.serWant ? '✅ 다음 ⚔️ 시작부터 1판으로 기록해요 (나라는 1판 그대로 3판까지)' : '체크하고 ⚔️ 시작하면 1판부터 기록해요'; $('tpSgSerNext').disabled = true; $('tpSgSerEnd').disabled = true; $('tpSgSerBoard').disabled = true; return; }
+  const set = SIEGE_SETS[z.set], RS = sgSerRounds(z), T = sgSerTotals(z), rank = sgSerRank(z);
+  el.textContent = `${set?.name || ''} · ${z.fin ? '🏁 3판 끝 · ' : `${RS.length}판 끝 · ${s?.on ? `${RS.length + 1}판 진행 중` : `다음은 ${RS.length + 1}판`} · `}승점 ${rank.map(t => `${set.nat[t - 1].icon}${set.nat[t - 1].name} ${T[t].pt}`).join(' · ')}`;
+  $('tpSgSerNext').disabled = !!s?.on || z.fin; $('tpSgSerEnd').disabled = false; $('tpSgSerBoard').disabled = false; }
 async function startSiege() {
   if (!isTeacher && backend.mode === 'firebase') return;
   if (S.ctf?.on) { toast('🚩 깃발뺏기를 먼저 끝내 주세요', 'warn'); return; }
+  const ser = sgSer(); if (ser?.fin) { toast('🏆 3판 시리즈가 끝났어요. 「🗑️ 시리즈 끝내기」를 누르고 새로 시작해요', 'info'); return; }
+  if (ser) { $('tpSgSet').value = ser.set; sgw.assign = { ...ser.team }; } /* 🏆 시리즈: 시대 · 나라는 1판 그대로 */
   const setKey = $('tpSgSet').value, set = SIEGE_SETS[setKey], n = set.nat.length, min = +$('tpSgMin').value, max = +$('tpSgHp').value, bots = +($('tpSgBots')?.value || 0);
   const list = sgStudents(); if (!list.length && !bots) { toast('접속한 학생이 없어요 (🤖 컴퓨터 병사만으로도 시작할 수 있어요)', 'warn'); return; }
   if (setKey === 'ansi') ansiBalance(list, true); else sgBalance(n, list);
@@ -24183,9 +24235,11 @@ async function startSiege() {
   if (!(await confirmAction({ title: `⚔️ 성 공방전을 시작할까요? (${set.name})`, body: setKey === 'ansi' ? `${counts}${bots ? ` (+ 나라마다 🤖 ${bots})` : ''}\n📜 브리핑 25초 → ⚔️ 포위 4분 → ⛰️ 토산 4분 → ❄️ 겨울 3분 · 성문 체력 ${max}.\n🏆 당나라가 안시성을 함락하면 당 승리, 끝까지 지키면 고구려 승리. 고구려는 인원을 적게(약 40%) 나눠요 (옆 칸에서 바꿀 수 있어요).` : `${counts}${bots ? ` (+ 나라마다 🤖 ${bots})` : ''}\n${min}분 (전반 ${(min - 1) / 2}분 · 🗺️ 작전 1분 · 후반 ${(min - 1) / 2}분) · 성문 체력 ${max}.\n🏆 성을 모두 함락하면 바로 승리, 아니면 끝날 때 점수가 높은 나라가 승리해요. 시작하면 모두 ⚔️ 전쟁터(따로 된 큰 땅)의 우리 성으로 옮기고, 각자 역할을 골라요.\n하던 놀이는 닫혀요.`, okText: '시작' }))) return;
   const team = Object.fromEntries(list.map(([u]) => [u, sgw.assign[u]])), now = backend.now(), hp = {}, score = {}, lv = {}, res = {};
   for (let t = 1; t <= n; t++) { hp[t] = max; score[t] = 0; lv[t] = 1; res[t] = { w: 6, i: 4, f: 4 }; }
+  if (setKey === 'ansi' && (ser || sgw.serWant)) { toast('🏆 3판 시리즈는 안시성이 아닌 시대로 해요', 'warn'); return; }
   if (setKey === 'ansi') { const at = now + ANSI.brief; await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at, end: at + ANSI.ph[0] + ANSI.ph[1] + ANSI.ph[2], max, team, hp, score, lv, res: { 1: { w: 8, i: 4, f: 6 }, 2: { w: 10, i: 4, f: 4 } }, ...(bots ? { bots } : {}) } }, '🏯 안시성 전투를 시작해요! (브리핑 25초 + 11분)'); if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400); return; } // 🏯 1029i
   const halfMs = (min - 1) / 2 * 60000, at = now + 6000, ha = at + halfMs, hb = ha + 60000; // ⚔️ 전반전 · 🗺️ 작전 1분 · ⚔️ 후반전
-  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at, end: hb + halfMs, half: { a: ha, b: hb }, max, team, hp, score, lv, res, ...(bots ? { bots } : {}) } }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분)`);
+  const serNew = !ser && sgw.serWant, rnd = ser ? sgSerRounds(ser).length + 1 : serNew ? 1 : 0; sgw.serWant = false;
+  await adminDo({ siege: { on: 1, r: Date.now().toString(36), set: setKey, n, at, end: hb + halfMs, half: { a: ha, b: hb }, max, team, hp, score, lv, res, ...(bots ? { bots } : {}) }, ...(serNew ? { sgser: { on: 1, set: setKey, n, team, R: {}, fin: 0 } } : {}) }, `⚔️ 성 공방전을 시작해요! (${set.name} · ${min}분${rnd ? ` · 🏆 시리즈 ${rnd}판` : ''})`);
   if (isTeacher && !siegeRegion()) setTimeout(sgSpawn, 400);
 }
 function initSiegeUI() {
@@ -24202,6 +24256,8 @@ function initSiegeUI() {
   $('tpSgStat').onclick = () => { if (S.siege?.on) { toast('💪 능력치로 나누기는 ⚔️ 시작하기 전에 써요 (전쟁 중에는 학생 옆 칸에서 바꿔요)', 'info'); return; } const set = SIEGE_SETS[$('tpSgSet').value], list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } if ($('tpSgSet').value === 'ansi') ansiBalance(list); else sgBalanceStat(set.nat.length, list); fillSiegeAdmin(true); toast(`💪 능력치가 나라마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); };
   $('tpSgAuto').onclick = () => { sgw.assign = {}; const set = SIEGE_SETS[$('tpSgSet').value]; if ($('tpSgSet').value === 'ansi') ansiBalance(sgStudents()); else sgBalance(set.nat.length, sgStudents()); fillSiegeAdmin(true); toast('⚖️ 나라를 고르게 나눴어요. 바꾸고 싶은 학생은 옆에서 골라요', 'info'); };
   $('tpSgStart').onclick = startSiege;
+  $('tpSgSer').onchange = () => { sgw.serWant = $('tpSgSer').checked; sgSerAdminFill(); }; $('tpSgSerNext').onclick = startSiege; $('tpSgSerBoard').onclick = () => sgSerShow(false);
+  $('tpSgSerEnd').onclick = async () => { if (!(await confirmAction({ title: '🗑️ 3판 시리즈를 끝낼까요?', body: '시리즈 기록(판별 점수·승점)을 지워요. 지금 공방전은 그대로예요.', okText: '시리즈 끝내기' }))) return; sgw.serWant = false; adminDo({ sgser: null }, '🗑️ 3판 시리즈를 끝냈어요'); };
   $('tpSgEnd').onclick = async () => { if (!(await confirmAction({ title: '🏁 성 공방전을 끝낼까요?', body: '전쟁터에 있는 친구들이 우리 마을 광장으로 돌아가고, 나라 점수는 지워져요.', okText: '끝내기' }))) return; adminDo({ siege: null }, '🏁 성 공방전을 끝냈어요'); };
   $('tpWhoMin').onchange = () => { fillWhoAdmin.key = ''; fillWhoAdmin(); };
   $('tpWhoKick').onclick = async () => { const lim = +$('tpWhoMin').value, us = [...remotes.entries()].filter(([u, r]) => !r.target?.t && idleMin(u, r) >= lim).map(([u]) => u); if (!us.length) return; if (!(await confirmAction({ title: `💤 ${us.length}명의 접속을 끝낼까요?`, body: `${lim}분 넘게 아무것도 누르지 않은 친구들이에요. 화면에 '다시 들어가기' 버튼이 떠요.`, okText: '모두 내보내기' }))) return; kickUids(us); };
