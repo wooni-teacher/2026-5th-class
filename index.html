@@ -971,9 +971,13 @@
 .ai-skip{position:absolute;right:18px;bottom:18px;background:rgba(255,255,255,.92)!important;color:#06263A!important;z-index:2}
 #atlHud{position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);background:rgba(4,30,46,.88);color:#EAF6FF;border:2px solid #C8A060;border-radius:14px;padding:6px 10px;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.35)}
 #atlHud b{color:#F2C94C}#atlHud .btn{padding:6px 10px;font-size:14px;background:#FFF1C8;color:#06263A}
-#atlView{position:fixed;inset:0;z-index:9600;background:rgba(2,12,20,.92);overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:14px}
-#atlView img{width:min(100%,820px);height:auto;border-radius:6px;cursor:zoom-in}#atlView.big img{width:200%;max-width:none;cursor:zoom-out}
-#atlView .btn{position:fixed;top:12px;right:12px;background:#fff;color:#06263A}
+#atlView{position:fixed;inset:0;z-index:9600;background:rgba(2,12,20,.94);display:flex;flex-direction:column}
+#atlView.hidden{display:none}
+#atlView .av-wrap{flex:1;overflow:auto;touch-action:pan-x pan-y;padding:10px;text-align:center}
+#atlView img{width:100%;max-width:none;height:auto;border-radius:6px;user-select:none;-webkit-user-select:none}
+#atlView .av-bar{display:flex;gap:6px;justify-content:center;align-items:center;padding:8px;background:rgba(4,30,46,.95);flex-wrap:wrap}
+#atlView .av-bar .btn{background:#FFF1C8;color:#06263A;font-size:18px;min-width:52px}#atlView .av-x{background:#fff!important}
+#atlView .av-pct{color:#F2C94C;font-weight:800;min-width:56px;text-align:center}
 #atlFin{position:fixed;inset:0;z-index:9550;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(circle,#2A6A8E 0%,#06263A 70%);padding:16px;animation:afIn 1.2s ease}
 #atlFin img{max-height:70vh;max-width:92vw;border-radius:8px;box-shadow:0 0 60px rgba(242,201,76,.6)}
 #atlFin p{color:#F2C94C;font-size:22px;font-weight:800;margin:0}#atlFin .btn{background:#FFE066;color:#06263A}
@@ -987,6 +991,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
 .atl-top{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
 .atl-chip{background:#0B3A54;color:#7FE3E0;border-radius:8px;padding:3px 10px;font-weight:800}
 .atl-pics{display:flex;flex-direction:column;gap:8px;margin:6px 0}
+.atl-pic{position:relative;cursor:zoom-in}.atl-zoom{position:absolute;right:8px;top:8px;background:rgba(4,30,46,.85);color:#F2C94C;font-weight:800;border-radius:8px;padding:4px 10px;font-size:14px;pointer-events:none}
 .atl-pics img,.atl-prev img{width:100%;border-radius:6px;border:2px solid #C8A060;cursor:zoom-in}
 .atl-prev{margin-top:8px}.atl-prev summary{font-weight:800;cursor:pointer;padding:6px}.atl-prev img{margin:4px 0}
 .atl-inp{display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0;padding:10px;border:2px dashed #C8A060;border-radius:12px;background:#FFF8E8}
@@ -14445,7 +14450,7 @@ const TP_LAYOUT = {
   class: [/수업 도구/, /수업 마무리/, /꿈나무 무대/, /🗓️ 시즌/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['🔤 한글 마을', [/한글 마을/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
-  play: [/성 공방전/, /삼국 해전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
+  play: [/심해 방탈출/, /성 공방전/, /삼국 해전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
   setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
 function initTpTabs() {
@@ -18427,6 +18432,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1104b', d: '11월 6일', items: ['🔍 아틀란티스 문제지를 크게 볼 수 있어요! 그림을 누르면 ➕➖ 확대 · 두 번 톡 · 손가락 두 개로 벌리기 · 방 안 벽에 붙은 문제지도 가까이 가서 E', '🖼️ 문제지 그림을 더 선명하게 바꿨어요'] },
   { id: '1104a', d: '11월 6일', items: ['🔱 심해 방탈출 「아틀란티스를 찾아서」! 🤿 바닷속 산호초 북쪽 「아틀란티스의 입구」에서 모둠 문(1~4)으로 들어가요', '🚀 모둠원이 다 들어오면 탈출 시작 → 이야기 애니메이션 → 동굴 벽의 말부터 떠오르는 날까지 8관문 (관문마다 깊어지는 바닷속 · 통과할 때마다 🐚25 · 💡 힌트 🐚-50)'] },
   { id: '1103j', d: '11월 5일', items: ['🤖 컴퓨터 병사·인물 병사가 산성 개울에 끼지 않아요! 다리(동서남북)로 건너고, 오래 막히면 스스로 빠져나와요'] },
   { id: '1103i', d: '11월 5일', items: ['⚔️ 고용한 역사 인물이 「인물 병사」로 전장에 나가 함께 싸워요! (체력 20 · 피해 +1 · 금빛 고리와 망토 · 쓰러져도 우리 성에서 다시 나와요)'] },
@@ -27134,7 +27140,7 @@ const atlLocked = (n) => { const L = atlG(n)?.lock; return L && L.u > backend.no
 const atlPg = (p) => `atl/${p}.jpg`;
 const atlTexC = {};
 function atlTex(p) { if (atlTexC[p]) return atlTexC[p]; const t = new THREE.TextureLoader().load(atlPg(p)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return (atlTexC[p] = t); }
-function atlPlane(g, p, w, h, x, y, z, ry = 0, glow = false) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: atlTex(p), side: THREE.DoubleSide, fog: !glow })); m.position.set(x, y, z); m.rotation.y = ry; g.add(m); return m; }
+function atlPlane(g, p, w, h, x, y, z, ry = 0, glow = false) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: atlTex(p), side: THREE.DoubleSide, fog: !glow })); m.position.set(x, y, z); m.rotation.y = ry; m.userData.atlPage = p; g.add(m); (atlW.planes ||= []).push(m); return m; } /* 🔍 1104b 가까이 가서 E → 크게 보기 */
 
 /* ---------- 입구 (바닷속 산호초 북쪽) ---------- */
 function atlGateBuild() {
@@ -27289,7 +27295,7 @@ function atlOpen() {
     if (s2 !== s) { box.append(el2('p', 'lp-big', s2 >= 9 ? '🏆 탈출!' : `🔓 통과! 제${s2}관문으로`)); setTimeout(() => atlOpen(), 500); return; }
     const T = ATL_ST[s], top = el2('div', 'atl-top'); top.append(el2('span', 'atl-chip', `DEPTH -${T.dep} m`), el2('b', '', `${k}모둠 · 통과 ${s - 1}/8`)); box.append(top);
     box.append(el2('p', 'hint', `🧭 ${T.tip} · 그림을 누르면 크게 봐요`));
-    const pics = el2('div', 'atl-pics'); for (const p of T.pages) { const im = document.createElement('img'); im.src = atlPg(p); im.alt = `${T.n} 문제지`; im.loading = 'lazy'; im.onclick = () => atlView(p); pics.append(im); } box.append(pics);
+    const pics = el2('div', 'atl-pics'); for (const p of T.pages) { const im = document.createElement('img'); im.src = atlPg(p); im.alt = `${T.n} 문제지`; im.loading = 'lazy'; im.onclick = () => atlView(p); const fr = el2('div', 'atl-pic'); fr.append(im, el2('span', 'atl-zoom', '🔍 눌러서 크게')); fr.onclick = () => atlView(p); pics.append(fr); } box.append(pics);
     for (const [hk, hp, ht] of T.hint || []) { const got = !!G2?.hint?.[hk], hb = el2('button', 'btn', got ? `💡 ${ht} 다시 보기` : `💡 ${ht} 보기 (🐚 -${ATL_HINT} · 누른 사람)`); hb.style.cssText = `background:${got ? '#FFF1C8' : '#FFE066'};margin:4px`; hb.onclick = () => atlHint(k, hk, hp, ht); box.append(hb); }
     if (s === 7) { const C = G2?.cyc || {}; box.append(el2('p', 'hint', `🚪 뒷문 탐사: 앞의 넷 ${C.a ? `${C.a.n} ${C.a.ok ? '✅ 돌아옴' : '⏳ 나가 있음'}` : '— 아직'} · 뒤의 넷 ${C.b ? `${C.b.n} ${C.b.ok ? '✅ 돌아옴' : '⏳ 나가 있음'}` : '— 아직'} (북쪽 벽 가운데 뒷문으로 나가요)`)); }
     if (lk) { box.append(el2('p', 'lp-big', lk.k === 'siren' ? `🎵 세이렌의 노래에 홀렸어요… ${Math.ceil((lk.u - backend.now()) / 1000)}초 뒤에 정신이 돌아와요` : `💥 창고가 무너졌어요! ${Math.ceil((lk.u - backend.now()) / 1000)}초 뒤에 다시 도전해요`)); }
@@ -27320,10 +27326,22 @@ async function atlHint(k, hk, hp, ht) {
     const r = await backend.atlgTx('g' + k, (c) => c ? { ...c, hint: { ...(c.hint || {}), [hk]: 1 } } : undefined); if (!r?.ok) { toast('⚠️ 힌트를 열지 못했어요', 'warn'); return; }
     if (!isTeacher) { earnShell(-ATL_HINT, 'x'); renderCoinChip(); } toast(`💡 힌트를 열었어요 · 🐚 -${ATL_HINT}`, 'info'); }
   atlView(hp); }
-function atlView(p) { /* 그림 크게 보기 (누르면 2배 · 한 번 더 누르면 닫기) */
+function atlView(p) { /* 🔍 1104b 크게 보기: ➕➖ 확대 · 두 번 톡 = 2배 · 손가락 두 개로 벌리기 · 끌어서 움직이기 */
   let v = document.getElementById('atlView'); if (!v) { v = document.createElement('div'); v.id = 'atlView'; document.body.append(v); }
-  v.innerHTML = `<img src="${atlPg(p)}" alt="문제지 크게"><button class="btn" type="button">✕ 닫기</button>`; v.classList.remove('hidden', 'big');
-  v.querySelector('img').onclick = () => v.classList.toggle('big'); v.querySelector('button').onclick = () => v.classList.add('hidden'); }
+  v.innerHTML = `<div class="av-wrap"><img src="${atlPg(p)}" alt="문제지 크게" draggable="false"></div><div class="av-bar"><button class="btn" data-z="-1" type="button">➖</button><span class="av-pct">100%</span><button class="btn" data-z="1" type="button">➕</button><button class="btn" data-z="0" type="button">↔️ 맞춤</button><button class="btn av-x" type="button">✕ 닫기</button></div>`; v.classList.remove('hidden');
+  const wrap = v.querySelector('.av-wrap'), img = v.querySelector('img'), pct = v.querySelector('.av-pct'); let z = 1;
+  const setZ = (nz, cx, cy) => { const r = wrap.getBoundingClientRect(), ox = cx ?? r.width / 2, oy = cy ?? r.height / 2, fx = (wrap.scrollLeft + ox) / (img.offsetWidth || 1), fy = (wrap.scrollTop + oy) / (img.offsetHeight || 1); z = Math.max(1, Math.min(4, nz)); img.style.width = `${z * 100}%`; pct.textContent = `${Math.round(z * 100)}%`; requestAnimationFrame(() => { wrap.scrollLeft = fx * img.offsetWidth - ox; wrap.scrollTop = fy * img.offsetHeight - oy; }); };
+  v.querySelectorAll('[data-z]').forEach(b => b.onclick = () => { const d = +b.dataset.z; setZ(d ? z * (d > 0 ? 1.5 : 1 / 1.5) : 1); });
+  v.querySelector('.av-x').onclick = () => v.classList.add('hidden');
+  let lastTap = 0; img.addEventListener('click', (e) => { const t = performance.now(); if (t - lastTap < 350) { const r = wrap.getBoundingClientRect(); setZ(z > 1.2 ? 1 : 2.2, e.clientX - r.left, e.clientY - r.top); } lastTap = t; });
+  wrap.addEventListener('wheel', (e) => { if (!e.ctrlKey && Math.abs(e.deltaY) < 40) return; e.preventDefault(); const r = wrap.getBoundingClientRect(); setZ(z * (e.deltaY < 0 ? 1.2 : 1 / 1.2), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  const pts = new Map(); let pinch = null, drag = null;
+  wrap.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, [e.clientX, e.clientY]); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), z }; drag = null; } else drag = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop }; });
+  wrap.addEventListener('pointermove', (e) => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && pts.size === 2) { const [a, b] = [...pts.values()], r = wrap.getBoundingClientRect(); setZ(pinch.z * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); }
+    else if (drag && e.pointerType === 'mouse' && e.buttons) { wrap.scrollLeft = drag.sl - (e.clientX - drag.x); wrap.scrollTop = drag.st - (e.clientY - drag.y); } });
+  const up = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) drag = null; }; wrap.addEventListener('pointerup', up); wrap.addEventListener('pointercancel', up);
+}
 
 /* ---------- 🏆 탈출 ---------- */
 function atlFinale(k, again) {
@@ -27384,6 +27402,10 @@ function atlTick(dt) {
   /* 🎵 홀림 */
   { const lk = atlLocked(k); document.body.classList.toggle('atl-siren', !!lk && lk.k === 'siren'); }
   if (Math.floor(time * 2) !== atlW.refT) { atlW.refT = Math.floor(time * 2); const lp = document.getElementById('lifePanel'); if (lp && !lp.classList.contains('hidden') && ($('lpTitle')?.textContent || '').startsWith('🔱 제')) refillLife(); }
+  /* 🔍 벽·석판에 붙은 문제지: 가까이 가서 E → 크게 보기 */
+  { let best = null, bd = 3.6; const wp = new V3(); for (const m of atlW.planes || []) { let vis = true; for (let o2 = m; o2; o2 = o2.parent) if (!o2.visible) { vis = false; break; } if (!vis) continue; m.getWorldPosition(wp); const d = Math.hypot(wp.x - player.pos.x, wp.z - player.pos.z); if (d < bd) { bd = d; best = { p: m.userData.atlPage, x: wp.x, z: wp.z }; } }
+    atlW.pageNear = best; atlW.pageIt ||= addInteract({ pos: new V3(0, -99, 0), r: 3.6, text: () => atlW.pageNear && atlRoomN() ? ['🔍 문제지 크게 보기', '확대 ➕ · 두 번 톡 · 손가락으로 벌리기'] : null, run: () => atlW.pageNear && atlView(atlW.pageNear.p) });
+    atlW.pageIt.pos.set(best ? best.x : 0, best ? 1 : -99, best ? best.z : 0); }
   /* 👁️ 7관문 · 뒷문 */
   atlCyc(k, Rm, G, s, now);
 }
