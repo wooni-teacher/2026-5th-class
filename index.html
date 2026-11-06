@@ -18432,6 +18432,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1104c', d: '11월 6일', items: ['👥 아틀란티스 2~4모둠 방에서 친구가 안 보이던 문제를 고쳤어요 (방 위치를 옮겼어요 · 진행 기록은 그대로)'] },
   { id: '1104b', d: '11월 6일', items: ['🔍 아틀란티스 문제지를 크게 볼 수 있어요! 그림을 누르면 ➕➖ 확대 · 두 번 톡 · 손가락 두 개로 벌리기 · 방 안 벽에 붙은 문제지도 가까이 가서 E', '🖼️ 문제지 그림을 더 선명하게 바꿨어요'] },
   { id: '1104a', d: '11월 6일', items: ['🔱 심해 방탈출 「아틀란티스를 찾아서」! 🤿 바닷속 산호초 북쪽 「아틀란티스의 입구」에서 모둠 문(1~4)으로 들어가요', '🚀 모둠원이 다 들어오면 탈출 시작 → 이야기 애니메이션 → 동굴 벽의 말부터 떠오르는 날까지 8관문 (관문마다 깊어지는 바닷속 · 통과할 때마다 🐚25 · 💡 힌트 🐚-50)'] },
   { id: '1103j', d: '11월 5일', items: ['🤖 컴퓨터 병사·인물 병사가 산성 개울에 끼지 않아요! 다리(동서남북)로 건너고, 오래 막히면 스스로 빠져나와요'] },
@@ -27115,7 +27116,7 @@ function nvBotView(dt) { // 모든 기기: 컴퓨터 배 그릴 자리
    · 관문마다 바닷속 장면이 바뀌고 깊이가 내려가요 (-12m → -1000m) · 통과할 때마다 방 안 모둠원 모두 🐚25 · 💡 힌트(5관문 · 8관문 힌트1·2)는 누른 사람 🐚-50
    · 저장: state/atlg/g1~g4 {st 0 대기 · 2 진행, sg 지금 관문 1~8 (9 = 탈출), at 시작, it 이야기 시작, fin, hint {h5, h8a, h8b}, lock {u 까지, k}, cyc {a, b: {u, n, t, ok}}, mem {기기: 이름}}
      state/atlr/{기기} {g, b 깬 관문 수, n, at} 몇 관문까지 깼는지 자동 저장 · state/atlx 선생님이 「모두 나오게」 누른 시각 */
-const ATL = { n: 4, x0: 3340, step: 100, cz: 0, w: 44, d: 40 };
+const ATL = { n: 4, x0: 3340, w: 44, d: 40 }, ATL_CZ = [-255, -85, 85, 255]; /* 👥 1104c 모둠 방은 x 3340에 세로로 (위치 규칙 x ≤ 3400 안: 전에는 2~4모둠 방이 x 3440~3640이라 위치가 저장되지 않아 서로 안 보였어요) */
 const ATL_ST = [null,
   { n: '동굴 벽의 말', dep: 12, pages: ['p01', 'p02'], kind: 'digits', len: 4, h: '3aidkh', tip: '벽의 문장 30줄을 색깔(표식)별로 세어 위에서부터 차례대로' },
   { n: '고대어 탐사', dep: 40, pages: ['p03', 'p04', 'p05'], kind: 'letters', len: 5, h: '3jxfr2', tip: '그림 아래 고대 문자와 영어 낱말을 비교해 다섯 글자를 풀어요' },
@@ -27129,7 +27130,7 @@ const ATL_ST = [null,
 const ATL_GRID = [['🐚', '조개'], ['🪨', '돌'], ['🪢', '밧줄'], ['🪶', '깃털'], ['🗡️', '칼'], ['🛢️', '물통'], ['🕸️', '그물'], ['🦴', '뼈'], ['🗺️', '지도'], ['🏺', '항아리'], ['🐟', '물고기'], ['🏮', '등불'], ['🧭', '나침반'], ['⏳', '모래시계'], ['🪸', '산호'], ['🗝️', '열쇠']];
 const ATL_CYC = ['4392', '4039'], ATL_CYC_MS = 90000, ATL_INTRO_MS = 38000, ATL_RW = 25, ATL_HINT = 50;
 const atlH = (s) => { let x = 2166136261; for (const c of s) x = Math.imul(x ^ c.codePointAt(0), 16777619) >>> 0; return x.toString(36); };
-for (let k = 1; k <= ATL.n; k++) ROOMS['atl' + k] = { name: `아틀란티스 탐사 · ${k}모둠`, icon: '🔱', cx: ATL.x0 + (k - 1) * ATL.step, cz: ATL.cz, w: ATL.w, d: ATL.d, wall: 0x0B3A5A, floor: 0xD8C8A0, site: null };
+for (let k = 1; k <= ATL.n; k++) ROOMS['atl' + k] = { name: `아틀란티스 탐사 · ${k}모둠`, icon: '🔱', cx: ATL.x0, cz: ATL_CZ[k - 1], w: ATL.w, d: ATL.d, wall: 0x0B3A5A, floor: 0xD8C8A0, site: null };
 const atlW = { rooms: {}, gate: null, its: [], hud: null, envKey: '', lamp: null, enterAt: 0, lastSg: {}, introG: '', cycIn: false, fin: '', seenX: 0 };
 const atlRoomN = () => { const r = joined ? roomNow() : ''; return /^atl[1-4]$/.test(r) ? +r[3] : 0; };
 const atlG = (n) => S.atlg?.['g' + n] || null;
@@ -27372,7 +27373,7 @@ function atlTick(dt) {
   /* 선생님이 「모두 나오게」 */
   if (!atlW.seenX) atlW.seenX = S.atlx || 1;
   if (k && S.atlx && S.atlx > atlW.seenX) { atlW.seenX = S.atlx; if (S.atlx > atlW.enterAt - 1000 && !isTeacher) { toast('🧑‍🏫 선생님이 탐사를 마쳤어요. 입구로 돌아가요', 'info'); document.getElementById('atlIntro')?.remove(); exitRoom('atl' + k); return; } }
-  for (const Rm of Object.values(atlW.rooms)) Rm.g.visible = Rm.k === k || (Math.abs(camera.position.x - Rm.cx) < 60 && camera.position.z < 60);
+  for (const Rm of Object.values(atlW.rooms)) Rm.g.visible = Rm.k === k || Math.hypot(camera.position.x - Rm.cx, camera.position.z - Rm.cz) < 70;
   const envK = k ? `atl${atlSg(k)}` : ''; if (envK !== atlW.envKey) { atlW.envKey = envK; applyEnv(true); }
   if (!atlW.lamp) { atlW.lamp = new THREE.PointLight(0xCFF4FF, 0, 20, 1.6); scene.add(atlW.lamp); }
   atlW.lamp.intensity = k ? 0.6 + Math.min(1, (ATL_ST[Math.min(8, atlSg(k))].dep) / 600) * 1.6 : 0; if (k) atlW.lamp.position.set(player.pos.x, 3.2, player.pos.z);
