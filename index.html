@@ -523,7 +523,7 @@
   body.touch #vnameChip { bottom: calc(208px + var(--safe-bottom)); }
   body.in-play #vnameChip, body.in-pb #vnameChip, body.in-siege #vnameChip { display: none !important; }
   #talkChip { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); bottom: calc(122px + var(--safe-bottom)); padding: 5px 12px; font-size: 15px; font-weight: 700; z-index: 3; pointer-events: none; max-width: 46vw; } /* 1021c: 화면 위 가운데(배드민턴 콕 자리)에서 왼쪽 아래로 */
-  body.touch #talkChip { bottom: calc(170px + var(--safe-bottom)); }
+  body.touch #talkChip { bottom: calc(222px + var(--safe-bottom)); } /* 1105b 조이스틱 「🕹️ 움직이기」 글자와 안 겹치게 */
   body.in-play #talkChip, body.in-pb #talkChip, body.in-siege #talkChip, body.in-ctf #talkChip, body.in-hide #talkChip { display: none !important; }
   #chatBtn { position: fixed; right: calc(134px + env(safe-area-inset-right, 0px)); bottom: calc(102px + var(--safe-bottom)); width: 42px; height: 42px; padding: 0; border-radius: 50%; font-size: 20px; background: #fff; }
   body.touch #chatBtn { bottom: calc(222px + var(--safe-bottom)); }
@@ -18452,6 +18452,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105b', d: '11월 6일', items: ['↩️ 점프맵에 「처음으로」 버튼 (도전 중인 코스 출발점으로 · 아니면 입구로)', '📱 태블릿: 점프맵 물약 버튼을 화면 위 가운데로 옮겼어요 (오른쪽 버튼과 안 겹치게) · 📣 우리 반 발표 표시도 조이스틱 글자 위로'] },
   { id: '1105a', d: '11월 6일', items: ['🏁 점프맵이 생겼어요! 마을 체육관 뒤쪽 🏁 입구 → 쉬움 · 보통 · 어려움 3코스 · 떨어지면 체크포인트로 · 완주 시간 우리 반 최고 기록판 · 코스마다 하루 첫 완주 🐚 5/10/20', '🧪 간식·물약은 이제 🛒 사서 🎒 가방에 넣어 두고, 필요할 때 「마시기」 (가게·가방에서 · 점프맵에서는 오른쪽 버튼이나 숫자 1·2·3)', '🍬 보통·어려움 코스에는 물약이 꼭 필요한 구간이 있어요 · 한 번 도전에 보통 2번 · 어려움 3번까지 · 점프맵 안에서는 8초만 효과'] },
   { id: '1104e', d: '11월 6일', items: ['🧱 공방전: 닫힌 성문·성벽 너머로는 칼·회오리·돌격·포탑이 닿지 않아요 (성문을 먼저 부숴야 안으로!) · 화살도 성문을 못 지나가요', '📈 하루 능력치 상한이 올랐어요 (기본 100 → 200 · 선생님이 500까지 정할 수 있어요)'] },
   { id: '1104d', d: '11월 6일', items: ['🏆 성 공방전 3판 시리즈(승점제)! 판마다 1등 3점 · 2등 2점 · 3등 1점 · 세 판 승점 합계로 최종 우승 (같으면 점수 총합) · 판이 끝날 때마다 시리즈 점수판이 떠요'] },
@@ -27572,14 +27573,20 @@ const jmpOn = (b) => b && player.onGround && Math.abs(player.pos.y - b.max.y) < 
 function jmpUI(show) {
   if (!jmpW.hud) {
     const h = document.createElement('div'); h.id = 'jmpHud'; h.className = 'sticker'; h.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(84px + var(--safe-top));padding:8px 16px;text-align:center;font-weight:800;font-size:17px;z-index:3;display:none'; document.body.append(h); jmpW.hud = h;
-    const b = document.createElement('div'); b.id = 'jmpPot'; b.style.cssText = 'position:fixed;right:calc(20px + env(safe-area-inset-right, 0px));bottom:calc(150px + var(--safe-bottom));display:none;flex-direction:column;gap:8px;z-index:3'; document.body.append(b); jmpW.bar = b;
+    const b = document.createElement('div'); b.id = 'jmpPot'; b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(132px + var(--safe-top));display:none;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:6px;z-index:3;max-width:94vw'; /* 1105b 오른쪽 버튼들과 겹쳐서 위 가운데로 */ document.body.append(b); jmpW.bar = b;
   }
   jmpW.hud.style.display = show ? '' : 'none'; jmpW.bar.style.display = show ? 'flex' : 'none';
 }
 function jmpBarFill() {
   const key = JMP_POTS.map(k => `${k}${bag.pot?.[k] | 0}`).join('') + (jmpW.run ? jmpW.run.c + jmpW.run.pot : '');
   if (jmpW.bar.dataset.k === key) return; jmpW.bar.dataset.k = key; jmpW.bar.textContent = '';
-  JMP_POTS.forEach((k, i) => { const B = BUFFS.find(x => x.k === k), b = el2('button', 'btn', `${B.icon} ${bag.pot?.[k] | 0} (${i + 1})`); b.style.cssText = 'font-size:16px;padding:8px 10px;background:#F3E9FF'; b.title = B.n; b.disabled = !(bag.pot?.[k] > 0); b.onclick = (e) => { e.preventDefault(); potDrink(k); }; jmpW.bar.append(b); });
+  { const h = el2('button', 'btn', '↩️ 처음으로'); h.style.cssText = 'font-size:15px;padding:7px 10px;background:#FFE9A8'; h.onclick = (e) => { e.preventDefault(); jmpHome(); }; jmpW.bar.append(h); }
+  JMP_POTS.forEach((k, i) => { const B = BUFFS.find(x => x.k === k), b = el2('button', 'btn', `${B.icon} ${bag.pot?.[k] | 0}${matchMedia('(pointer: fine)').matches ? ` (${i + 1})` : ''}`); b.style.cssText = 'font-size:15px;padding:7px 10px;background:#F3E9FF'; b.title = B.n; b.disabled = !(bag.pot?.[k] > 0); b.onclick = (e) => { e.preventDefault(); potDrink(k); }; jmpW.bar.append(b); });
+}
+function jmpHome() { /* ↩️ 1105b 처음 위치로: 도전 중이면 그 코스 출발 발판 · 아니면 방 입구 */
+  const r = jmpW.run, b = r && jmpW.boxes[r.c]?.s, R = ROOMS.jmp; jmpW.run = null; jmpW.until = {};
+  if (b) player.pos.set((b.min.x + b.max.x) / 2, b.max.y + 0.05, (b.min.z + b.max.z) / 2); else player.pos.set(R.cx, 0.12, R.cz + R.d / 2 - 3.2);
+  player.vy = 0; player.heading = Math.PI; camYaw = 0; playSfx('pick'); toast(b ? `↩️ ${JMP_C[r.c].icon} ${JMP_C[r.c].n} 코스 출발점으로 왔어요 (물약 횟수도 다시 채워져요)` : '↩️ 점프맵 입구로 왔어요', 'info');
 }
 function jmpTick(dt) {
   if (!jmpW.gate && joined) jmpGateBuild();
