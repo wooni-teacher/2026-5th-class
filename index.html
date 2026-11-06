@@ -1586,7 +1586,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div id="tpPgym"></div>
 
     <h3>📅 하루 능력치 상한</h3>
-    <p class="hint">과목마다 하루에 오를 수 있는 최대 점수예요 (10~100, 기본 100). 주간 랭킹 점수도 같이 막혀요. 바꾸면 바로 모두에게 적용돼요. 📚 독서 축제 기간(10월 30일까지)에는 독서력만 상한이 없어요.</p>
+    <p class="hint">과목마다 하루에 오를 수 있는 최대 점수예요 (10~500, 기본 200 · 능력치 만렙은 과목마다 누적 1000점이라 200이면 5일, 250이면 4일). 주간 랭킹 점수도 같이 막혀요. 바꾸면 바로 모두에게 적용돼요. 📚 독서 축제 기간(10월 30일까지)에는 독서력만 상한이 없어요.</p>
     <div id="tpScap"></div>
 
     <h3>⭐ 능력치 레벨 경험치</h3>
@@ -2384,7 +2384,7 @@ function normalize(v) {
     sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read'].filter(k => isInt(x[k], 0, 1000000)).map(k => [k, x[k]]))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
-    chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 100)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 500)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -18445,6 +18445,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1104e', d: '11월 6일', items: ['🧱 공방전: 닫힌 성문·성벽 너머로는 칼·회오리·돌격·포탑이 닿지 않아요 (성문을 먼저 부숴야 안으로!) · 화살도 성문을 못 지나가요', '📈 하루 능력치 상한이 올랐어요 (기본 100 → 200 · 선생님이 500까지 정할 수 있어요)'] },
   { id: '1104d', d: '11월 6일', items: ['🏆 성 공방전 3판 시리즈(승점제)! 판마다 1등 3점 · 2등 2점 · 3등 1점 · 세 판 승점 합계로 최종 우승 (같으면 점수 총합) · 판이 끝날 때마다 시리즈 점수판이 떠요'] },
   { id: '1104c', d: '11월 6일', items: ['👥 아틀란티스 2~4모둠 방에서 친구가 안 보이던 문제를 고쳤어요 (방 위치를 옮겼어요 · 진행 기록은 그대로)'] },
   { id: '1104b', d: '11월 6일', items: ['🔍 아틀란티스 문제지를 크게 볼 수 있어요! 그림을 누르면 ➕➖ 확대 · 두 번 톡 · 손가락 두 개로 벌리기 · 방 안 벽에 붙은 문제지도 가까이 가서 E', '🖼️ 문제지 그림을 더 선명하게 바꿨어요'] },
@@ -21481,9 +21482,9 @@ function fillScapAdmin() { // 📅 하루 능력치 상한 (state/scap)
   const box = $('tpScap'); if (!box) return; const key = JSON.stringify(S.scap || {}); if (box.dataset.key === key && box.childElementCount) return; box.dataset.key = key; box.textContent = '';
   const row = el2('div', 'row-center wrap'), sels = {};
   for (const k of ['eng', 'math', 'soc', 'read']) { const lab = el2('label', ''); lab.style.cssText = 'font-size:16px;display:flex;gap:6px;align-items:center'; const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto';
-    for (let v = 10; v <= 100; v += 10) { const op = document.createElement('option'); op.value = v; op.textContent = `${v}점${v === 100 ? ' (기본)' : ''}`; sel.append(op); } sel.value = String(statMax(k)); sels[k] = sel;
+    for (const v of [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 400, 500]) { const op = document.createElement('option'); op.value = v; op.textContent = `${v}점${v === 200 ? ' (기본)' : ''}${v === 200 ? ' · 5일에 만렙' : v === 100 ? ' · 10일' : v === 250 ? ' · 4일' : v === 300 ? ' · 4일' : v === 500 ? ' · 2일' : ''}`; sel.append(op); } sel.value = String(statMax(k)); sels[k] = sel;
     lab.append(`${STATS[k].icon} ${STATS[k].name}`, sel); row.append(lab); }
-  const all = document.createElement('select'); all.className = 'tinput'; all.style.width = 'auto'; all.innerHTML = '<option value="">한꺼번에…</option>' + [30, 40, 50, 60, 70, 80, 100].map(v => `<option value="${v}">모두 ${v}점</option>`).join('');
+  const all = document.createElement('select'); all.className = 'tinput'; all.style.width = 'auto'; all.innerHTML = '<option value="">한꺼번에…</option>' + [50, 100, 150, 200, 250, 300, 500].map(v => `<option value="${v}">모두 ${v}점</option>`).join('');
   all.onchange = () => { if (all.value) for (const k in sels) sels[k].value = all.value; };
   const save = el2('button', 'btn', '💾 저장'); save.style.background = '#FFD23C';
   save.onclick = () => { const u = {}; for (const k in sels) u[`scap/${k}`] = +sels[k].value; adminDo(u, `📅 하루 능력치 상한: ${Object.keys(sels).map(k => `${STATS[k].icon}${sels[k].value}`).join(' · ')}`); };
@@ -22435,8 +22436,8 @@ const lvAt = (i) => { let t = 0; for (let j = 1; j <= i; j++) t += lvNeed(j); re
 const statExp = (k) => bag.stat?.[k] || 0;
 const statLv = (k) => { if (isTeacher && (bag.tSgLv ?? -1) >= 0 && S.siege?.on && S.siege.team?.[backend?.uid]) return Math.min(LV_MAX, bag.tSgLv | 0); /* 🧑‍🏫 1103g 공방전에 참여한 선생님 능력치 */ const e = statExp(k); let lv = 0; while (lv < LV_MAX && e >= lvAt(lv + 1)) lv++; return lv; };
 const statTier = (k) => Math.floor(statLv(k) / 3);
-const STAT_DAY_MAX = 100; // 📅 능력치마다 하루에 오를 수 있는 기본 최대 (선생님 요청 · 랭킹 점수도 같이)
-const statMax = (k) => { const v = S.scap?.[k]; return Number.isInteger(v) && v >= 10 && v <= 100 ? v : STAT_DAY_MAX; }; // 📅 1020a: 선생님이 과목마다 정해요 (state/scap/{eng,math,soc,read})
+const STAT_DAY_MAX = 200; /* 1104e 100 → 200 (만렙 1000점까지 5일) */ // 📅 능력치마다 하루에 오를 수 있는 기본 최대 (선생님 요청 · 랭킹 점수도 같이)
+const statMax = (k) => { const v = S.scap?.[k]; return Number.isInteger(v) && v >= 10 && v <= 500 ? v : STAT_DAY_MAX; }; // 📅 1020a: 선생님이 과목마다 정해요 (state/scap/{eng,math,soc,read})
 const READ_FEST_FIRST = Date.UTC(2026, 9, 17) / 86400000, READ_FEST_LAST = Date.UTC(2026, 9, 30) / 86400000; // 📚 독서 축제 10/17~10/30 (KST) — 독서력 하루 상한 없음
 const readFestOn = () => dayNum() >= READ_FEST_FIRST && dayNum() <= READ_FEST_LAST;
 const statCap = (k) => (k === 'read' && readFestOn() ? Infinity : statMax(k));
@@ -22774,6 +22775,11 @@ const sgSideOf = (lx, lz) => Math.abs(lx) > Math.abs(lz) ? (lx > 0 ? 1 : 3) : (l
 const SGG_V = new V3();
 function sgGateAt(c, x, z) { let best = c.hits[0], bd = Infinity; for (const h of c.hits) { h.getCenter(SGG_V); const d = Math.hypot(SGG_V.x - x, SGG_V.z - z); if (d < bd) { bd = d; best = h; } } return best.getCenter(new V3()); }
 const sgGateHitP = (c, P) => c.hits.some(h => h.containsPoint(P));
+function sgLineBlocked(x1, z1, x2, z2) { /* 🧱 1104e 닫힌 성문·성벽 너머는 못 때려요 (양쪽 끝 0.45걸음은 빼고 0.3걸음마다 살펴요) */
+  const d = Math.hypot(x2 - x1, z2 - z1); if (d < 0.9) return false; const n = Math.ceil(d / 0.3), P = new V3();
+  for (let i = 1; i < n; i++) { const f = i / n; if (f * d < 0.45 || (1 - f) * d < 0.45) continue; P.set(x1 + (x2 - x1) * f, 1.2, z1 + (z2 - z1) * f);
+    if ((sgw.boxes || []).some(bx => bx.containsPoint(P))) return true; for (const c of Object.values(sgw.castles || {})) if (!c.open && sgHp(c.t) > 0 && sgGateHitP(c, P)) return true; }
+  return false; }
 function sgRowboat(parent, col = 0x9C6A3E) { // 🛶 작은 나룻배
   const g = new THREE.Group(), o = { solid: false, surf: null }; parent.add(g);
   mesh(SPH_LO, g, 0.75, 0.32, 1.5, col, 0, 0.12, 0, o); box(g, 1.15, 0.06, 2.3, 0x7A5436, 0, 0.3, 0, o);
@@ -23095,7 +23101,7 @@ function sgTurTick() {
     if (T.f?.s && T.f.s !== m.fs) { m.fs = T.f.s; const from = new V3(T.x, 2.3, T.z), to = new V3(T.f.a, 1.2, T.f.b); m.g.userData.head.rotation.y = Math.atan2(to.x - from.x, to.z - from.z); const ar = box(scene, 0.06, 0.06, 0.6, 0xD8DEE6, from.x, from.y, from.z, { solid: false }); ar.lookAt(to); sgw.turArrows.push({ m: ar, from, to, t: 0 }); playSfx('pick'); }
     if (u === backend.uid && !sgHurt(backend.uid) && !sgWinner() && !sgBreak() && performance.now() >= (sgw.turNext || 0)) { /* 내 포탑: 쏘기 */
       sgw.turNext = performance.now() + (sgHp(tt) > 0 ? SG_TUR.fire : SG_TUR.fireSlow); let best = null, bd = SG_TUR.rng;
-      for (const [u2, r] of remotes) { const t2 = sgTeamOf(u2); if (!t2 || t2 === tt || sgHurt(u2) || sgSafe(u2)) continue; const d = Math.hypot(r.pos.x - T.x, r.pos.z - T.z); if (d < bd) { bd = d; best = { u: u2, t: t2, x: r.pos.x, z: r.pos.z }; } }
+      for (const [u2, r] of remotes) { const t2 = sgTeamOf(u2); if (!t2 || t2 === tt || sgHurt(u2) || sgSafe(u2) || sgLineBlocked(T.x, T.z, r.pos.x, r.pos.z)) continue; const d = Math.hypot(r.pos.x - T.x, r.pos.z - T.z); if (d < bd) { bd = d; best = { u: u2, t: t2, x: r.pos.x, z: r.pos.z }; } }
       for (const [id, b] of Object.entries(sgb.list || {})) { if (b.t === tt || b.down) continue; const a = sgb.av?.[id]?.g.position || b, d = Math.hypot(a.x - T.x, a.z - T.z); if (d < bd) { bd = d; best = { bot: id, x: a.x, z: a.z }; } }
       if (best) { backend.sgTurSet({ ...T, f: { a: +best.x.toFixed(2), b: +best.z.toFixed(2), s: now } }); if (best.bot) sgHitBot(best.bot, 1, 0); else sgHitPlayer(best.u, 1, best.t); } }
     if (u === backend.uid && now - T.t > SG_TUR.life - 500 && !sgw.turGone) { sgw.turGone = T.t; backend.sgTurSet(null); }
@@ -23123,8 +23129,8 @@ function sgQ() { // Q: 직업마다 다른 스킬
     sgw.qCd = performance.now() + SG_WHIRL.cd; playAct(player.avatar, 'slash'); sgMeleeFx(p.x, p.z, 0, 1, 6, sgGradeOf(backend.uid, 'gen')); backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: 0, dz: 1, v: 0, a: 0, m: 6 });
     const dmg = SG_GEN.pd + sgPow('math'); let n = 0;
     setTimeout(() => { if (!sgCan()) return;
-      for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - p.x, r.pos.z - p.z) <= SG_WHIRL.r) { n++; sgHitPlayer(u, dmg, t, { pw: sgPow('math') }); } }
-      for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - p.x, a.z - p.z) <= SG_WHIRL.r) { n++; sgHitBot(id, dmg, sgPow('math')); } }
+      for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - p.x, r.pos.z - p.z) <= SG_WHIRL.r && !sgLineBlocked(p.x, p.z, r.pos.x, r.pos.z)) { n++; sgHitPlayer(u, dmg, t, { pw: sgPow('math') }); } }
+      for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - p.x, a.z - p.z) <= SG_WHIRL.r && !sgLineBlocked(p.x, p.z, a.x, a.z)) { n++; sgHitBot(id, dmg, sgPow('math')); } }
       for (const c of Object.values(sgw.castles)) { if (c.t === me || c.open) continue; const m = sgGateAt(c, p.x, p.z); if (Math.hypot(m.x - p.x, m.z - p.z) <= SG_WHIRL.r + 1) { n++; sgHitGate(c.t, SG_GEN.gate, true); } }
       toast(n ? `🌀 회오리 베기! ${n}곳을 휩쓸었어요 (피해 ${dmg})` : '🌀 회오리 베기! 둘레에 상대가 없었어요', n ? 'success' : 'info'); }, 180);
   } else if (role === 'arch') { // 💨 구르기: 움직이는 쪽(가만히 있으면 뒤로) 휙 · 1.5초 동안 안 맞아요
@@ -23180,7 +23186,7 @@ function sgOrbShot() { // 🌬️ 책사: 부채를 휘둘러 ✨ 구슬 (보는
 }
 function sgMeleeTarget(rng, cone, gates) {
   const p = player.pos, f = sgAimDir(), me = sgMine(); let best = null;
-  const consider = (x, z, kind, ref, extra = 0) => { const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d > rng + extra) return; const ang = d < 0.4 ? 0 : Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (ang > cone) return; const sc = d + ang * 1.5 + (kind === 'p' || kind === 'r' ? 0 : 1.2); if (!best || sc < best.sc) best = { x, z, kind, ref, sc }; };
+  const consider = (x, z, kind, ref, extra = 0) => { const dx = x - p.x, dz = z - p.z, d = Math.hypot(dx, dz); if (d > rng + extra) return; if ((kind === 'p' || kind === 'r') && sgLineBlocked(p.x, p.z, x, z)) return; const ang = d < 0.4 ? 0 : Math.acos(Math.max(-1, Math.min(1, (dx * f.x + dz * f.z) / d))); if (ang > cone) return; const sc = d + ang * 1.5 + (kind === 'p' || kind === 'r' ? 0 : 1.2); if (!best || sc < best.sc) best = { x, z, kind, ref, sc }; };
   for (const [u, r] of remotes) { const t = sgTeamOf(u); if (t && t !== me && !sgHurt(u) && !sgSafe(u)) consider(r.pos.x, r.pos.z, 'p', u); }
   for (const [id, b] of Object.entries(sgb.list)) if (b.t !== me && !b.down) { const a = sgb.av[id]?.g.position || b; consider(a.x, a.z, 'r', id); }
   if (gates) { for (const c of Object.values(sgw.castles)) if (c.t !== me && !c.open) for (const h of c.hits) { const m = h.getCenter(new V3()); consider(m.x, m.z, 'g', c.t, 1.8); }
@@ -23225,8 +23231,8 @@ function sgDash() {
   backend.sgShot({ x: +p.x.toFixed(2), z: +p.z.toFixed(2), dx: +f.x.toFixed(3), dz: +f.z.toFixed(3), v: 0, a: 0, m: 3 }); sgMeleeFx(p.x, p.z, f.x, f.z, 3, sgGradeOf(backend.uid, 'sol'));
   dashStart(f.x, f.z, (x, z, hit) => { // 부딪힌 상대마다 한 번씩
     const me = sgMine(), dmg = sgSwordDmg() + 1;
-    for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || hit.has(u) || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - x, r.pos.z - z) < 1.7) { hit.add(u); sgHitPlayer(u, dmg, t, { pw: sgPow('math') }); burst(new V3(r.pos.x, 1.3, r.pos.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
-    for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down || hit.has(id)) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - x, a.z - z) < 1.7) { hit.add(id); sgHitBot(id, dmg, sgPow('math')); burst(new V3(a.x, 1.3, a.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
+    for (const [u, r] of remotes) { const t = sgTeamOf(u); if (!t || t === me || hit.has(u) || sgHurt(u) || sgSafe(u)) continue; if (Math.hypot(r.pos.x - x, r.pos.z - z) < 1.7 && !sgLineBlocked(x, z, r.pos.x, r.pos.z)) { hit.add(u); sgHitPlayer(u, dmg, t, { pw: sgPow('math') }); burst(new V3(r.pos.x, 1.3, r.pos.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
+    for (const [id, b] of Object.entries(sgb.list)) { if (b.t === me || b.down || hit.has(id)) continue; const a = sgb.av[id]?.g.position || b; if (Math.hypot(a.x - x, a.z - z) < 1.7 && !sgLineBlocked(x, z, a.x, a.z)) { hit.add(id); sgHitBot(id, dmg, sgPow('math')); burst(new V3(a.x, 1.3, a.z), [0xFFFFFF, 0xFFE066], 18, 3, 1.5); } }
   }, () => sgCan());
   renderSgBar(true);
 }
@@ -23669,7 +23675,7 @@ function updateSiege(dt) {
   for (const b of sgw.balls) for (let st = 0; st < steps && !b.dead; st++) {
     b.t += h; b.vy -= 9.8 * h; b.x += b.vx * h; b.y += b.vy * h; b.z += b.vz * h;
     const P = new V3(b.x, b.y, b.z);
-    if (s) for (let k = 1; k <= s.n; k++) { const c = sgw.castles[k]; if (!c || c.open || k === b.team) continue; if (sgGateHitP(c, P)) { b.dead = true; burst(P, [0x8A6A44, 0xFFFFFF, c.N.col], 22, 4, 2); if (b.mine) { if (Math.hypot(b.fx - P.x, b.fz - P.z) < 5) toast('🤏 성문에 너무 가까워요! 5걸음 밖에서 쏴야 해요', 'info'); else sgHitGate(k, b.dmg); } break; } }
+    if (s) for (let k = 1; k <= s.n; k++) { const c = sgw.castles[k]; if (!c || c.open) continue; if (sgGateHitP(c, P)) { b.dead = true; burst(P, [0x8A6A44, 0xFFFFFF, c.N.col], 22, 4, 2); if (k === b.team) break; /* 🧱 1104e 우리 성문도 화살이 못 지나가요 (부서지지는 않아요) */ if (b.mine) { if (Math.hypot(b.fx - P.x, b.fz - P.z) < 5) toast('🤏 성문에 너무 가까워요! 5걸음 밖에서 쏴야 해요', 'info'); else sgHitGate(k, b.dmg); } break; } }
     if (b.dead) break;
     for (const [k, bar] of Object.entries(sgw.bars)) if (bar.box.containsPoint(P)) { b.dead = true; burst(P, [0x8A6A44, 0xC9A65E], 16, 3, 1); if (b.mine && bar.t !== b.team) backend.sgBarHit(k); break; }
     if (b.dead) break;
@@ -23817,6 +23823,7 @@ function sgBotMelee(b, cur, kind, ref) { // 🗡️ 병사 🤖 베기 (75% 맞�
   const ham = b.role === 'smith', m = ham ? 4 : 1;
   b.s = { t: backend.now(), x: +b.x.toFixed(2), z: +b.z.toFixed(2), dx: +ux.toFixed(3), dz: +uz.toFixed(3), m }; playAct(sgb.av[b.id], 'slash'); sgMeleeFx(b.x, b.z, ux, uz, m);
   if (kind === 'g') { if (sgHp(ref) > 0) backend.sgHit(ref, ham ? SG_HAMMER.gate : 2, b.t); return; }
+  if (sgLineBlocked(b.x, b.z, cur.x, cur.z)) return; /* 🧱 성문·성벽 너머는 못 베요 */
   if (Math.random() > (b.hero ? 0.85 : 0.75)) return; const dmg = (ham ? SG_HAMMER.pd : SG_SWORD.pd + 1) + (b.hero ? 1 : 0);
   if (kind === 'b') { const e = sgb.sim[ref]; if (e && !e.down) sgBotHurt(e, dmg); return; }
   if (sgHurt(ref) || sgSafe(ref) || sgKingSafe(ref)) return; const dd = sgPB(ref, 'shield') ? Math.max(1, dmg - 1) : dmg;
