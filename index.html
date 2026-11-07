@@ -1052,6 +1052,8 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <details id="linkBox" style="margin:6px 0 4px;font-size:16px"><summary style="cursor:pointer">🔗 다른 기기에서 받은 연결 코드가 있어요</summary>
       <input id="linkIn" class="tinput" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="숫자 6자리" style="font-size:22px;text-align:center;letter-spacing:4px;margin-top:6px">
       <p class="note">태블릿 🎒 가방 → "다른 기기로 옮기기"에서 받은 숫자를 넣고 들어가면, 태블릿 계정(집·가방) 그대로 이어져요.</p></details>
+    <div id="gateBox" class="hidden"><div class="field">🔐 반 비밀번호 (이 기기에서 처음 한 번만)</div><input id="gateIn" class="tinput" type="password" maxlength="20" autocomplete="off" placeholder="선생님이 알려 준 비밀번호" style="font-size:20px;text-align:center"></div>
+    <div id="secBox" class="hidden"><div class="field">🔒 내 비밀 숫자 4자리</div><input id="secIn" class="tinput" type="password" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="● ● ● ●" style="font-size:22px;text-align:center;letter-spacing:6px"></div>
     <button class="btn" id="joinBtn">마을로 들어가기</button>
     <p class="err" id="joinErr"></p>
     <button id="practiceBtn" class="hidden">혼자 연습하기</button>
@@ -1597,6 +1599,13 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv12). 능력치는 하루 상한(위에서 정해요)까지 오르니, 기본 합계 1000점이에요 (하루 상한까지 매일 꾸준히 하면 약 2~3주). Lv3·6·9·12마다 성 공방전 역할이 강해져요.</p>
     <div id="tpLvx"></div>
 
+    <h3>🔐 개인정보 보호 · 반 비밀번호</h3>
+    <p class="hint" id="tpGateNow">반 비밀번호를 켜면, 반 코드를 알아도 비밀번호가 없는 사람은 마을에 들어오거나 자료를 읽을 수 없어요 (서버 규칙이 막아요). 학생 기기는 처음 한 번만 적으면 돼요.</p>
+    <div class="row-center wrap"><input id="tpGatePw" class="tinput" type="password" maxlength="20" placeholder="새 반 비밀번호 (4글자 이상)" style="width:auto"><button class="btn" id="tpGateOn" type="button" style="background:#FFD23C">🔐 켜기 · 바꾸기</button><button class="btn" id="tpGateOff" type="button" style="background:#fff">끄기</button></div>
+    <p class="hint">⚠️ 켜거나 바꾸면 지금 접속한 학생은 새로고침하고 반 비밀번호를 적어 다시 들어와야 해요. 수업 시작 전에 켜 주세요.</p>
+    <div class="row-center wrap"><button class="btn" id="tpSecPins" type="button" style="background:#fff">🔑 학생 비밀 숫자 보기 (잊어버린 학생 도와주기)</button></div>
+    <div id="tpSecList" class="hint" style="white-space:pre-line"></div>
+
     <h3>💬 채팅</h3>
     <p class="hint">학생들이 머리 위 말풍선으로 짧게(30자) 이야기해요. 나쁜 말은 막고, 대화는 저장하지 않아요 (한 사람당 마지막 한 줄만 1분 동안 있다가 저절로 지워져요). 수업 중에는 꺼 두세요.</p>
     <div id="tpChat"></div>
@@ -2008,7 +2017,7 @@ const CFG = {
   MAP_LIMIT: 58.5,
   // 🔢 선생님 확인 숫자 (4~8자리): 선생님으로 들어가거나 바꿀 때 물어봐요. 자리 수에 맞춰 칸이 생겨요
   //    (페이지 코드 안에 있어서 진짜 보안은 아니에요. 선생님 권한은 Firebase 기기 등록과 규칙이 지켜요)
-  TEACHER_PIN: '126758',
+  TEACHER_PIN_H: '062ee32f4d0fb0ac05b3eb5cb0e48598c82e589281d70cbc1aa418c8dcf6297f', TEACHER_PIN_LEN: 6, /* 🔐 1105k 선생님 확인 숫자는 원문 대신 해시만 (sha256('sv-pin|숫자')) */
   SITES: [
     { id: 'Library',    name: '펫 체육관', icon: '🐾', cost: 5, color: 0x568CEB, pos: [-40, 0],  front: [1, 0] },
     { id: 'Playground', name: '아쿠아센터', icon: '🏊', cost: 5, color: 0x3F7FD0, pos: [40, 0],   front: [-1, 0] },
@@ -2732,7 +2741,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (st.decor[key]) return { ok: false };
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
-    presence() {}, leave() {}, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
+    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
     async attrClaim(k) { const c = (st.attr ||= {})[k]; if (c && c.u !== 'me' && Date.now() - c.t < ATTR_STALE) return { ok: false }; st.attr[k] = { u: 'me', t: Date.now() }; emit(); return { ok: true }; },
@@ -2750,7 +2759,10 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
 
 // 함께하기 모드 (Firebase Realtime Database)
 // 판정은 데이터베이스 보안 규칙이 서버에서 합니다 (database.rules.json 참고).
-async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', teacher = false, link = '' } = {}) {
+async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', teacher = false, link = '', gatePw = '', secret = '' } = {}) {
+  const svErr = (c) => Object.assign(new Error(c), { code: 'sv/' + c }); /* 🔐 1105k 반 비밀번호 · 내 비밀 숫자 */
+  const shaH = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
+  const secPw = async (k, code) => `bw2-${(await shaH(`sec|${k}|${code}`)).slice(0, 26)}`;
   const V = '10.12.2';
   const [{ initializeApp }, A, D] = await Promise.all([
     import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
@@ -2782,6 +2794,12 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       if (!(typeof k === 'string' && /^[0-9a-f]{64}$/.test(k))) { k = await h(`sv1|${room}|${n0}`); acct.newMap = true; } else acct.viaMap = true;
       acct.nick = n0; acct.mapRef = mapRef; acct.key = k;
       const email = `n${k.slice(0, 30)}@banwol-village.app`, pw = `bw-${k.slice(30, 54)}`;
+      if (user.email !== email) { /* 🔒 1105k 비밀 숫자로 지킨 계정이면 비밀 숫자가 있어야 들어가요 */
+        let sec = false; try { sec = (await D.get(D.ref(D.getDatabase(app), `${DB_ROOT}/rooms/${room}/asec/${k.slice(0, 30)}`))).val() === true; } catch (e) { }
+        if (sec) { if (!/^\d{4}$/.test(secret)) throw svErr('need-secret'); const pw2 = await secPw(k, secret);
+          try { user = (await A.signInWithEmailAndPassword(auth, email, pw2)).user; } catch (e) { if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(e?.code || '')) throw svErr('bad-secret'); throw e; }
+          Object.assign(acct, { mode: 'nick', switched: true, sec: true }); const P0 = pinsGet(); P0[nickKey(n0)] = { e: email, p: pw2, u: user.uid }; pinsSet(P0); break; }
+      }
       if (user.email !== email) {
         if (user.isAnonymous) {
           try { user = (await A.linkWithCredential(user, A.EmailAuthProvider.credential(email, pw))).user; acct.mode = 'nick'; }
@@ -2794,13 +2812,23 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       } else acct.mode = 'nick';
       if (acct.mode === 'nick' && acct.newMap) try { await D.set(acct.mapRef, acct.key); } catch (e) { /* 다른 기기가 먼저 정했으면 그대로 */ }
       break;
-    } catch (e) { console.warn('nick account', e); if (tryN < 2 && /too-many|network|internal|timeout/.test(e?.code || '')) { await new Promise(r => setTimeout(r, 1500 * (tryN + 1) + Math.random() * 1500)); continue; }
+    } catch (e) { if (/^sv\//.test(e?.code || '')) throw e; console.warn('nick account', e); if (tryN < 2 && /too-many|network|internal|timeout/.test(e?.code || '')) { await new Promise(r => setTimeout(r, 1500 * (tryN + 1) + Math.random() * 1500)); continue; }
       acct.mode = 'anon'; acct.err = e?.code || 'x'; if (!auth.currentUser) user = (await A.signInAnonymously(auth)).user; else user = auth.currentUser; break; }
   }
   const uid = user.uid;
   const db = D.getDatabase(app);
   const base = `${DB_ROOT}/rooms/${room}`;
   const R = (p) => D.ref(db, `${base}/${p}`);
+  if (acct.mode === 'nick' && !acct.key && nick && !teacher) try { /* 🔒 1105k 연결 코드·저장된 비밀번호로 들어온 기기도 계정 키를 알아 둬요 (비밀 숫자 만들기용) */
+    const n0 = cleanNick(nick), k2 = await shaH(`sv2|${room}|${nickKey(n0)}`); let k = (await D.get(D.ref(db, `${DB_ROOT}/rooms/${room}/acct/${k2}`))).val(); if (!(typeof k === 'string' && /^[0-9a-f]{64}$/.test(k))) k = await shaH(`sv1|${room}|${n0}`);
+    if (user.email === `n${k.slice(0, 30)}@banwol-village.app`) { acct.key = k; acct.nick ||= n0; } } catch (e) { }
+  if (acct.mode === 'nick' && acct.key && !acct.sec) try { acct.sec = (await D.get(D.ref(db, `${DB_ROOT}/rooms/${room}/asec/${acct.key.slice(0, 30)}`))).val() === true; } catch (e) { }
+  { /* 🔐 1105k 반 비밀번호: 선생님이 켰으면 이 계정(uid)을 한 번 등록해야 반 자료를 읽고 쓸 수 있어요 (서버 규칙이 확인) */
+    let on = false; try { on = (await D.get(D.ref(db, `${DB_ROOT}/gates/${room}`))).val() === true; } catch (e) { }
+    let isT = false; if (on && teacher) try { isT = (await D.get(D.ref(db, `${DB_ROOT}/teachers/${uid}`))).val() === true; } catch (e) { }
+    if (on && !isT) { let mem = false; try { mem = (await D.get(R(`mem/${uid}`))).exists(); } catch (e) { }
+      if (!mem) { const saved = store.get(`sv-gate:${room}`) || '', hh = gatePw ? await shaH(`gate|${room}|${gatePw}`) : saved; if (!hh) throw svErr('need-gate');
+        try { await D.set(R(`mem/${uid}`), hh); store.set(`sv-gate:${room}`, hh); } catch (e) { store.set(`sv-gate:${room}`, ''); throw svErr(gatePw ? 'bad-gate' : 'need-gate'); } } } }
   let offset = 0, clockOk = false;
   D.onValue(D.ref(db, '.info/serverTimeOffset'), s => { offset = s.val() || 0; clockOk = true; }); // 🕒 서버 시각을 받기 전에는 기기 시계가 틀릴 수 있어요
   const now = () => Date.now() + offset;
@@ -3264,10 +3292,21 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async hmGot(k, nm) { try { await D.set(R(`state/hm/got/${k}/${uid}`), nm); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🕵️ 히든 미션 찾음 (선생님이 봐요)
     async vnameSet(kind, val) { try { await D.set(R(`state/vname/${kind}/${uid}`), val); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏷️ 마을 이름 후보·투표 // 📜 과거시험 답 (문제가 열려 있을 때만)
     async earnClear() { try { await D.set(R('earn'), null); return { ok: true }; } catch (e) { return { ok: false }; } },
+    secInfo() { return { nick: acct.mode === 'nick' ? (acct.nick || '') : '', sec: !!acct.sec, ok: acct.mode === 'nick' && !!acct.key }; }, /* 🔒 1105k 내 비밀 숫자 */
+    async secSet(code) { const u = auth.currentUser; if (!u || acct.mode !== 'nick' || !acct.key || !/^\d{4}$/.test(code)) return { ok: false, err: '닉네임 계정이 아니에요' };
+      const ek = acct.key.slice(0, 30), email = `n${ek}@banwol-village.app`; if (u.email !== email) return { ok: false, err: '계정이 달라요. 다시 들어와서 해요' };
+      const pw2 = await secPw(acct.key, code), P = pinsGet(), nk = nickKey(acct.nick || myNick), old = P[nk]?.u === u.uid && P[nk].p ? P[nk].p : `bw-${acct.key.slice(30, 54)}`;
+      try { await D.update(D.ref(db, DB_ROOT), { [`rooms/${room}/asec/${ek}`]: true, [`secrets/${room}/pins/${ek}`]: { n: String(acct.nick || myNick).slice(0, 12), p: code, at: Date.now() } }); } catch (e) { return { ok: false, err: 'database.rules.json을 다시 게시해 주세요' }; }
+      try { try { await A.updatePassword(u, pw2); } catch (e) { if (!/requires-recent-login/.test(e?.code || '')) throw e; await A.reauthenticateWithCredential(u, A.EmailAuthProvider.credential(email, old)); await A.updatePassword(u, pw2); } }
+      catch (e) { try { await D.set(D.ref(db, `${DB_ROOT}/rooms/${room}/asec/${ek}`), null); } catch (e2) { } return { ok: false, err: e?.code || 'x' }; }
+      P[nk] = { e: email, p: pw2, u: u.uid }; pinsSet(P); acct.sec = true; acct.pinned = true; return { ok: true }; },
+    async gateGet() { try { return (await D.get(D.ref(db, `${DB_ROOT}/gates/${room}`))).val() === true; } catch (e) { return null; } }, /* 🔐 1105k 반 비밀번호 (선생님) */
+    async gateSet(pw) { try { await D.update(D.ref(db, DB_ROOT), pw ? { [`secrets/${room}/join`]: await shaH(`gate|${room}|${pw}`), [`gates/${room}`]: true } : { [`gates/${room}`]: null, [`secrets/${room}/join`]: null }); return { ok: true }; } catch (e) { return { ok: false, err: e?.code || 'x' }; } },
+    async secPins() { try { return { ok: true, v: (await D.get(D.ref(db, `${DB_ROOT}/secrets/${room}/pins`))).val() || {} }; } catch (e) { return { ok: false }; } },
     async linkMake() { // 🔗 이 기기 계정(UID)을 다른 기기로 옮길 연결 코드 (20분)
       const u = auth.currentUser; if (!u) return { ok: false }; const P = pinsGet(), nk = nickKey(acct.nick || myNick); let e, p;
       if (P[nk]?.u === u.uid) { e = P[nk].e; p = P[nk].p; }
-      else if (acct.key && u.email === `n${acct.key.slice(0, 30)}@banwol-village.app`) { e = u.email; p = `bw-${acct.key.slice(30, 54)}`; }
+      else if (acct.key && u.email === `n${acct.key.slice(0, 30)}@banwol-village.app`) { if (acct.sec) return { ok: false, err: 'sec' }; e = u.email; p = `bw-${acct.key.slice(30, 54)}`; } /* 🔒 비밀 숫자 계정은 이 기기에 저장된 비밀번호로만 */
       else if (u.isAnonymous) { e = `u${u.uid.toLowerCase()}@banwol-village.app`; p = 'bp-' + [...crypto.getRandomValues(new Uint8Array(15))].map(b => b.toString(36).padStart(2, '0')).join('').slice(0, 24);
         try { await A.linkWithCredential(u, A.EmailAuthProvider.credential(e, p)); } catch (err) { return { ok: false, err: err?.code || 'x' }; } acct.mode = 'nick'; }
       else return { ok: false, err: 'unknown' };
@@ -3341,9 +3380,9 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
 }
 
 // 화면 코드가 부르는 단 하나의 입구
-async function openVillageData({ practice, room, onWarning, nick, teacher, link }) {
+async function openVillageData({ practice, room, onWarning, nick, teacher, link, gatePw, secret }) {
   if (practice || !HAS_FIREBASE) return createLocalBackend(createBrowserStorage(), { onWarning });
-  return createFirebaseBackend(room, { onWarning, nick, teacher, link });
+  return createFirebaseBackend(room, { onWarning, nick, teacher, link, gatePw, secret });
 }
 
 /* =====================================================================
@@ -5365,12 +5404,16 @@ async function join(practice, asTeacher = false) {
     $('joinBtn').textContent = '연결하는 중…';
     try {
       const linkCode = (($('linkIn')?.value || '').match(/\d/g) || []).join(''); if ($('linkIn')) $('linkIn').value = ''; // 🔗 1029k
-      backend = await openVillageData({ practice: false, room, onWarning: (m) => toast(m, 'warn'), nick: myNick, teacher: asTeacher, link: linkCode.length === 6 && !asTeacher ? linkCode : '' });
+      const gatePw = ($('gateIn')?.value || '').trim(), secret = (($('secIn')?.value || '').match(/\d/g) || []).join(''); /* 🔐 1105k */
+      backend = await openVillageData({ practice: false, room, onWarning: (m) => toast(m, 'warn'), nick: myNick, teacher: asTeacher, link: linkCode.length === 6 && !asTeacher ? linkCode : '', gatePw, secret });
+      if ($('gateIn')) $('gateIn').value = ''; if ($('secIn')) $('secIn').value = ''; $('gateBox')?.classList.add('hidden'); $('secBox')?.classList.add('hidden');
       if (!asTeacher && (await bagCloudStart()) === 'reload') return; // 🎒 다른 기기에서 쓰던 가방으로 바꿔 다시 불러와요
     } catch (e) {
       console.error(e);
       $('joinBtn').disabled = false;
       $('joinBtn').textContent = '마을로 들어가기';
+      const sv = { 'sv/need-gate': ['gateBox', '🔐 우리 반은 비밀번호가 있어요. 선생님이 알려 준 반 비밀번호를 적고 다시 눌러요'], 'sv/bad-gate': ['gateBox', '🔐 반 비밀번호가 달라요. 다시 적어 봐요'], 'sv/need-secret': ['secBox', '🔒 이 닉네임은 비밀 숫자로 지켜져 있어요. 내 비밀 숫자 4자리를 적어요'], 'sv/bad-secret': ['secBox', '🔒 비밀 숫자가 달라요. 잊어버렸으면 선생님께 물어봐요'] }[e?.code]; /* 🔐 1105k */
+      if (sv) { $(sv[0]).classList.remove('hidden'); err.textContent = sv[1]; setTimeout(() => $(sv[0] === 'gateBox' ? 'gateIn' : 'secIn')?.focus(), 50); return; }
       err.textContent = e && e.code === 'auth/operation-not-allowed'
         ? 'Firebase에서 익명 로그인이 꺼져 있어요. 선생님께 알려 주세요.'
         : '마을에 연결하지 못했어요. 인터넷과 Firebase 설정을 확인해 주세요.';
@@ -5395,9 +5438,10 @@ async function join(practice, asTeacher = false) {
   joined = true; joinedAt = backend.now(); lastInputAt = Date.now();
   backend.subscribe(applyState, onPlayers, (e) => {
     console.error(e);
-    toast('데이터를 읽을 수 없어요. 데이터베이스 규칙을 확인해 주세요.', 'warn');
+    toast(/permission/i.test(e?.code || e?.message || '') ? '🔐 반 비밀번호가 새로 생겼을 수 있어요. 새로고침하고 반 비밀번호를 적어 다시 들어와요' : '데이터를 읽을 수 없어요. 데이터베이스 규칙을 확인해 주세요.', 'warn');
   });
   if (backend.loadNote) setTimeout(() => toast(backend.loadNote, backend.loadNote.startsWith('⚠️') ? 'warn' : 'info'), 600);
+  setTimeout(() => { try { if (isTeacher) gateNowFill(); else openSecSetup(); } catch (e) { } }, 3500); /* 🔐 1105k */
 
   $('join').classList.add('hidden');
   $('hud').classList.remove('hidden');
@@ -6057,6 +6101,7 @@ function kickMe() {
   $('kickOverlay').classList.remove('hidden'); playSfx('oops');
 }
 function fillTeacherPanel() {
+  try { gateNowFill(); } catch (e) { } /* 🔐 1105k */
   fillFestAdmin(); fillWhoAdmin(); fillNickAdmin(); fillIdeaAdmin(); fillPlotAdmin(); fillHvAdmin(); fillHistAdmin(); fillSiegeAdmin(); fillMathAdmin(); fillThxAdmin(); fillRoomAdmin(); fillHideAdmin(); fillMeetAdmin(); fillCtfAdmin(); fillEconAdmin(); try { fillPgymAdmin(); fillChatAdmin(); } catch (e) { console.warn(e); }
   $('tpForm').classList.toggle('hidden', !isTeacher); $('tpTabs')?.classList.toggle('hidden', !isTeacher);
   $('tpSetup').classList.toggle('hidden', isTeacher);
@@ -12902,7 +12947,8 @@ function askPin(next) {
   $('pinMsg').textContent = ''; renderPin();
   $('pinPanel').classList.remove('hidden'); $('pinPad').querySelector('button')?.focus();
 }
-const pinLen = () => String(CFG.TEACHER_PIN).length;
+const pinLen = () => CFG.TEACHER_PIN_LEN || 6;
+const svSha = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
 function renderPin() {
   const box = $('pinDots'); while (box.children.length < pinLen()) box.append(document.createElement('span')); // 자리 수만큼 칸
   $('pinHint').textContent = `선생님 확인 숫자 ${pinLen()}자리를 눌러 주세요`;
@@ -12910,14 +12956,14 @@ function renderPin() {
   $('pinDots').setAttribute('aria-label', `${pin.val.length}자리 입력`);
 }
 function closePin() { $('pinPanel').classList.add('hidden'); pin.val = ''; if (pin.back && document.contains(pin.back)) pin.back.focus(); }
-function pinKey(k) {
+async function pinKey(k) {
   const left = Math.ceil((pin.lockUntil - Date.now()) / 1000);
   if (left > 0) { $('pinMsg').textContent = `⏳ ${left}초 뒤에 다시 눌러 주세요`; return; }
   if (k === 'del') { pin.val = pin.val.slice(0, -1); renderPin(); return; }
   if (pin.val.length >= pinLen()) return;
   pin.val += k; renderPin();
   if (pin.val.length < pinLen()) return;
-  if (pin.val === String(CFG.TEACHER_PIN)) {
+  if (await svSha('sv-pin|' + pin.val) === CFG.TEACHER_PIN_H) {
     pin.ok = true; pin.wrong = 0; const next = pin.next; pin.next = null; closePin(); next?.();
   } else {
     pin.wrong++; pin.val = ''; renderPin(); playSfx('wrong');
@@ -14486,7 +14532,7 @@ const TP_LAYOUT = {
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /자료실/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['🔤 한글 마을', [/한글 마을/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/심해 방탈출/, /성 공방전/, /삼국 해전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
-  setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
+  setup: [/개인정보/, /채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
 function initTpTabs() {
   const form = $('tpForm'); if (!form || $('tpTabs')) return;
@@ -18468,6 +18514,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105k', d: '11월 7일', items: ['🔒 내 비밀 숫자 4자리를 만들어요! 닉네임만 알면 남이 내 계정에 들어오던 걸 막아요 (이 기기에서는 묻지 않고, 다른 기기에서 들어올 때만 필요해요)', '🔐 선생님이 반 비밀번호를 켜면, 반 코드만으로는 마을에 들어올 수 없어요'] },
   { id: '1105j', d: '11월 7일', items: ['📚 메인 마을 광장 동쪽에 「우리 반 자료실」이 생겼어요! 선생님이 올린 수업 자료 링크를 E로 열어 봐요 (과목별로 골라 보기)'] },
   { id: '1105i', d: '11월 7일', items: ['🔤 끝말잇기가 차례대로 해요! 탁자에 앉은 친구들 닉네임으로 순서가 떠요 (✏️ 지금 차례 · ⏱️ 남은 초)', '⏰ 내 차례에 30초 안에 못 이으면 ❌ 탈락 · 끝까지 남은 사람 🏆 승리 · ❌ 없는 낱말로 지우면 그 친구가 다시 해요'] },
   { id: '1105h', d: '11월 7일', items: ['📜 과거시험 기본 문제가 단원별로 생겼어요 (선사·고대 · 고려 · 조선 · 새 사회 학습지 내용)'] },
@@ -29491,7 +29538,21 @@ buildStarGame();
 initStarHud();
 initMemGame();
 initDropGame();
-initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); }); $('tpAtlOut')?.addEventListener('click', async () => { if (await confirmAction({ title: '🚪 모두 나오게 할까요?', body: '아틀란티스 탐사 중인 학생들이 모두 입구로 돌아가요. 관문 기록은 저장돼 있어요.', okText: '모두 나오기' })) adminDo({ atlx: Date.now() }, '🚪 모두 입구로 돌아가요'); }); $('tpKvPoem')?.addEventListener('click', () => { closeModals(); kvPoem(); }); $('tpKvGo')?.addEventListener('click', () => { closeModals(); travelTo('kv', true); }); $('tpKvDet')?.addEventListener('click', () => { closeModals(); kvDetOpen(); }); // 🔤 1101i
+initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
+$('tpGateOn')?.addEventListener('click', async () => { const pw = $('tpGatePw').value.trim(); if (pw.length < 4) { toast('🔐 반 비밀번호는 4글자 이상으로 적어요', 'warn'); return; } if (!(await confirmAction({ title: '🔐 반 비밀번호 켜기', body: '지금 접속한 학생들은 새로고침하고 이 비밀번호를 적어야 다시 들어올 수 있어요. 켤까요?', okText: '켜기' }))) return; const r = await backend.gateSet(pw); toast(r.ok ? '🔐 반 비밀번호를 켰어요. 학생들에게 알려 주세요' : '⚠️ 켜지 못했어요. database.rules.json을 먼저 게시해 주세요', r.ok ? 'success' : 'warn'); if (r.ok) $('tpGatePw').value = ''; gateNowFill(); }); /* 🔐 1105k */
+$('tpGateOff')?.addEventListener('click', async () => { if (!(await confirmAction({ title: '반 비밀번호 끄기', body: '반 코드만 알면 누구나 다시 들어올 수 있어요. 끌까요?', okText: '끄기' }))) return; const r = await backend.gateSet(''); toast(r.ok ? '반 비밀번호를 껐어요' : '⚠️ 끄지 못했어요', r.ok ? 'info' : 'warn'); gateNowFill(); });
+$('tpSecPins')?.addEventListener('click', async () => { const r = await backend.secPins(); if (!r.ok) { $('tpSecList').textContent = '⚠️ 읽지 못했어요 (database.rules.json을 게시했는지 확인)'; return; } const L = Object.values(r.v).filter(x => x && x.n).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); $('tpSecList').textContent = L.length ? L.map(x => `${x.n} · ${x.p}`).join('\n') + '\n(학생에게만 조용히 알려 주세요)' : '아직 비밀 숫자를 만든 학생이 없어요'; });
+async function gateNowFill() { if (!isTeacher || !backend?.gateGet) return; const on = await backend.gateGet(); const el = $('tpGateNow'); if (el) el.textContent = on == null ? '반 비밀번호 상태를 읽지 못했어요 (규칙 게시 확인)' : on ? '🔐 지금 반 비밀번호가 켜져 있어요. 비밀번호가 없는 사람은 들어올 수 없어요.' : '🔓 지금은 반 비밀번호가 꺼져 있어요. 반 코드만 알면 누구나 들어올 수 있어요.'; }
+function openSecSetup() { /* 🔒 1105k 내 비밀 숫자 만들기: 닉네임만 알면 남이 내 계정에 들어오는 걸 막아요 */
+  const I = backend?.secInfo?.(); if (!I?.ok || I.sec || isTeacher) return;
+  openLife('🔒 내 비밀 숫자 만들기', (box) => { box.textContent = '';
+    box.append(el2('p', 'lp-big', `「${I.nick}」 계정을 지켜요`), el2('p', 'hint', '지금은 닉네임만 알면 다른 친구도 내 계정(집·가방)에 들어올 수 있어요. 비밀 숫자 4자리를 만들면, 다른 기기에서 들어올 때 이 숫자가 있어야 해요. 이 기기에서는 묻지 않아요.'));
+    const mk = (ph) => { const t = el2('input', 'tinput'); t.type = 'password'; t.maxLength = 4; t.inputMode = 'numeric'; t.placeholder = ph; t.style.cssText = 'font-size:24px;text-align:center;letter-spacing:8px;width:8em;margin:4px auto;display:block'; return t; };
+    const a = mk('숫자4개'), b2 = mk('한번더'), msg = el2('p', 'err', ''), go = el2('button', 'btn', '🔒 만들기'); go.style.background = '#FFD23C';
+    go.onclick = async () => { const x = a.value.replace(/\D/g, ''), y = b2.value.replace(/\D/g, ''); if (x.length !== 4) { msg.textContent = '숫자 4자리로 적어요'; return; } if (x !== y) { msg.textContent = '두 번 적은 숫자가 달라요'; return; } if (/^(\d)\1{3}$|^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(x)) { msg.textContent = '너무 쉬운 숫자예요 (1111, 1234 같은 건 안 돼요)'; return; }
+      go.disabled = true; msg.textContent = '만드는 중…'; const r = await backend.secSet(x); go.disabled = false; if (!r.ok) { msg.textContent = `⚠️ 만들지 못했어요 (${r.err || '다시 해 봐요'})`; return; }
+      playSfx('fanfare'); toast('🔒 비밀 숫자를 만들었어요! 다른 기기에서 들어올 때 필요해요. 잊어버리면 선생님께 물어봐요', 'success'); closeLife(); };
+    const r = el2('div', 'row-center'); r.append(go); box.append(a, b2, msg, r, el2('p', 'hint', '💡 친구에게 알려 주지 않아요. 잊어버리면 선생님이 찾아 줄 수 있어요.')); setTimeout(() => a.focus(), 60); }); } $('tpAtlOut')?.addEventListener('click', async () => { if (await confirmAction({ title: '🚪 모두 나오게 할까요?', body: '아틀란티스 탐사 중인 학생들이 모두 입구로 돌아가요. 관문 기록은 저장돼 있어요.', okText: '모두 나오기' })) adminDo({ atlx: Date.now() }, '🚪 모두 입구로 돌아가요'); }); $('tpKvPoem')?.addEventListener('click', () => { closeModals(); kvPoem(); }); $('tpKvGo')?.addEventListener('click', () => { closeModals(); travelTo('kv', true); }); $('tpKvDet')?.addEventListener('click', () => { closeModals(); kvDetOpen(); }); // 🔤 1101i
 makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); buildHistMuseum(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
