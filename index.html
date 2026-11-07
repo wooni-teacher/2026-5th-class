@@ -1537,6 +1537,10 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div class="tl-row"><span class="tl-lab">소품</span><div id="tlItems" class="tl-opts"></div></div>
     <div class="tl-row"><span class="tl-lab">발자국</span><div id="tlTrail" class="tl-opts"></div></div>
 
+    <h3>📚 우리 반 자료실</h3>
+    <p class="hint">광장 동쪽 📚 게시판이에요. 수업 자료 링크(구글 드라이브·문서·유튜브·패들렛 등)와 작은 그림을 올리면 학생들이 E로 열어 봐요.</p>
+    <div class="row-center wrap"><button class="btn" id="tpLib" type="button" style="background:#BFE3F7">📚 자료실 열기 · 자료 올리기</button></div>
+
     <h3>🖌️ 함께 그리는 벽화</h3>
     <div class="row-center wrap"><button class="btn danger" id="tpMuralReset">🖌️ 벽화 처음부터</button></div>
 
@@ -2292,7 +2296,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {} }; }
+function emptyState() { return { chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {} }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2360,6 +2364,7 @@ function normalize(v) {
     atlr: Object.fromEntries(Object.entries(plainObj(v.atlr)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').slice(0, 80).map(([u, x]) => [u, { g: Math.max(1, Math.min(4, x.g | 0 || 1)), b: Math.max(0, Math.min(8, x.b | 0)), n: String(x.n || '').slice(0, 12), at: +x.at || 0 }])),
     sgser: v.sgser && typeof v.sgser === 'object' && v.sgser.on ? { on: 1, set: String(v.sgser.set || 'three'), n: Math.max(2, Math.min(4, v.sgser.n | 0 || 2)), team: Object.fromEntries(Object.entries(plainObj(v.sgser.team)).map(([u, t]) => [u, t | 0]).filter(([, t]) => t >= 1 && t <= 4)), R: Object.fromEntries(['r1', 'r2', 'r3'].filter(k => plainObj(v.sgser.R)[k]).map(k => { const x = plainObj(v.sgser.R)[k]; return [k, { sid: String(x.sid || ''), w: x.w | 0, sc: Object.fromEntries(Object.entries(plainObj(x.sc)).map(([t, q]) => [t, +q || 0])), pt: Object.fromEntries(Object.entries(plainObj(x.pt)).map(([t, q]) => [t, +q || 0])), f: Object.fromEntries(Object.entries(plainObj(x.f)).map(([t, q]) => [t, q ? 1 : 0])) }]; })), fin: v.sgser.fin ? 1 : 0 } : null, /* 🏆 1104d 3판 시리즈 */
     atlx: +v.atlx || 0,
+    lib: Object.fromEntries(Object.entries(plainObj(v.lib)).filter(([k, x]) => /^m\d{1,15}$/.test(k) && x && typeof x === 'object' && /^https?:\/\//.test(String(x.u || ''))).slice(0, 80).map(([k, x]) => [k, { t: String(x.t || '').slice(0, 40), u: String(x.u).slice(0, 500), d: String(x.d || '').slice(0, 200), s: LIB_SUB[x.s] ? x.s : 'etc', at: +x.at || 0, pin: x.pin ? 1 : 0, ...(typeof x.img === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x.img) && x.img.length <= 90000 ? { img: x.img } : {}) }])), /* 📚 1105j */
     jmp: Object.fromEntries(Object.entries(plainObj(v.jmp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), at: +x.at || 0, ...Object.fromEntries(['e', 'm', 'h'].filter(k => +x[k] >= 3000 && +x[k] <= 3600000).map(k => [k, +x[k]])) }])), /* 🏁 1105a */
     wc: Object.fromEntries(Object.entries(plainObj(v.wc)).filter(([t, x]) => /^t[0-3]$/.test(t) && x && typeof x === 'object').map(([t, x]) => { const keep = (o, n) => Object.fromEntries(Object.entries(toObj(o)).filter(([k, y]) => /^i\d{1,3}$/.test(k) && typeof y === 'string').map(([k, y]) => [k, y.slice(0, n)])); const p = Object.fromEntries(Object.entries(toObj(x.p)).filter(([u, y]) => u.length <= 64 && y && typeof y === 'object').slice(0, 12).map(([u, y]) => [u, { n: String(y.n || '친구').slice(0, 12), j: +y.j || 0, o: y.o ? 1 : 0 }])); return [t, { w: keep(x.w, 8), u: keep(x.u, 64), n: keep(x.n, 12), at: +x.at || 0, p, tn: typeof x.tn === 'string' ? x.tn.slice(0, 64) : '', end: x.end && typeof x.end === 'object' ? { u: String(x.end.u || '').slice(0, 64), n: String(x.end.n || '').slice(0, 12), at: +x.end.at || 0 } : null }]; })), /* 🔤 1102x · 👥 1105i 차례 */
     evtk: Object.fromEntries(Object.entries(plainObj(v.evtk)).filter(([p, w]) => /^p[0-7]$/.test(p) && w && typeof w === 'object').map(([p, w]) => [p, { ...(ANON_ID.test(w.a || '') ? { a: w.a, an: String(w.an || '').slice(0, 12) } : {}), ...(ANON_ID.test(w.b || '') ? { b: w.b, bn: String(w.bn || '').slice(0, 12) } : {}), ...(isInt(w.lv, 7, 12) ? { lv: w.lv, sc: isInt(w.sc, 0, 9) ? w.sc : 0, i: isInt(w.i, 0, 20) ? w.i : 0, at: +w.at || 0, t: Object.fromEntries(Object.entries(toObj(w.t)).filter(([k, x]) => /^\d{1,2}$/.test(k) && typeof x === 'string').map(([k, x]) => [k, x.slice(0, 80)])) } : {}) }])), // 🗣️ 1102s
@@ -14479,7 +14484,7 @@ const TP_TABS = [['class', '🧑‍🏫 수업'], ['mission', '🎯 미션·투�
 const TP_LAYOUT = {
   class: [/수업 도구/, /수업 마무리/, /꿈나무 무대/, /🗓️ 시즌/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
-  village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['🔤 한글 마을', [/한글 마을/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
+  village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /자료실/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['🔤 한글 마을', [/한글 마을/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
   play: [/심해 방탈출/, /성 공방전/, /삼국 해전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
   setup: [/채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
@@ -18463,6 +18468,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105j', d: '11월 7일', items: ['📚 메인 마을 광장 동쪽에 「우리 반 자료실」이 생겼어요! 선생님이 올린 수업 자료 링크를 E로 열어 봐요 (과목별로 골라 보기)'] },
   { id: '1105i', d: '11월 7일', items: ['🔤 끝말잇기가 차례대로 해요! 탁자에 앉은 친구들 닉네임으로 순서가 떠요 (✏️ 지금 차례 · ⏱️ 남은 초)', '⏰ 내 차례에 30초 안에 못 이으면 ❌ 탈락 · 끝까지 남은 사람 🏆 승리 · ❌ 없는 낱말로 지우면 그 친구가 다시 해요'] },
   { id: '1105h', d: '11월 7일', items: ['📜 과거시험 기본 문제가 단원별로 생겼어요 (선사·고대 · 고려 · 조선 · 새 사회 학습지 내용)'] },
   { id: '1105g', d: '11월 7일', items: ['📘 사회 학습지 빈칸을 절반 정도로 줄였어요 (핵심 낱말 위주) · 역사 마을 문제도 같이 바뀌어요'] },
@@ -27896,6 +27902,70 @@ function potDrink(k) {
 }
 addEventListener('keydown', e => { if (!jmpW.in || e.repeat || e.target instanceof HTMLInputElement) return; const i = '123'.indexOf(e.key); if (i >= 0 && ![...document.querySelectorAll('.modal')].some(m => !m.classList.contains('hidden'))) potDrink(JMP_POTS[i]); });
 
+// ================= 📚 1105j 우리 반 자료실 (메인 마을 광장 동쪽 · 선생님이 링크 + 작은 그림을 올려요) =================
+/* state/lib/{m숫자} {t 제목, u 링크(http/https), d 설명, s 과목, img 작은 그림(data:image/jpeg · 9만 자까지), at, pin 1} · 쓰기는 선생님만 (adminUpdate) */
+const LIB_POS = [15, -6], LIB_SUB = { kor: '📖 국어', math: '➗ 수학', soc: '🏯 사회', sci: '🔬 과학', eng: '🔤 영어', etc: '📎 기타' }, LIB_MAX = 60;
+const libW = { board: null, f: 'all', seen: null, draft: { t: '', u: '', d: '', s: 'kor', img: '', pin: 0 }, edit: '' };
+const libItems = () => Object.entries(S.lib || {}).map(([k, x]) => ({ k, ...x })).sort((a, b) => (b.pin | 0) - (a.pin | 0) || (b.at || 0) - (a.at || 0));
+const libHost = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
+const libIcon = (u) => /youtu/.test(u) ? '▶️' : /docs\.google|drive\.google/.test(u) ? '📄' : /padlet/.test(u) ? '🧱' : /canva/.test(u) ? '🎨' : '🔗';
+function buildLibBoard() {
+  const [x, z] = LIB_POS, g = frame(x, z, -1, 0.4), o = { solid: false };
+  for (const sx of [-1.9, 1.9]) box(g, 0.35, 3.4, 0.35, 0x7A4A2A, sx, 1.7, 0);
+  box(g, 4.4, 2.6, 0.25, 0xEAF4FF, 0, 2.9, 0, o);
+  for (const [w, h, bx, by] of [[4.7, 0.18, 0, 4.25], [4.7, 0.18, 0, 1.55], [0.18, 2.8, -2.3, 2.9], [0.18, 2.8, 2.3, 2.9]]) box(g, w, h, 0.32, 0x5C8FD6, bx, by, 0, o);
+  mesh(GABLE, g, 1.0, 0.7, 5.3, 0x5C8FD6, 0, 4.34, 0, { solid: false, ry: Math.PI / 2 });
+  [0xE2584A, 0xF2C230, 0x5FBE5A, 0x3E8FE8, 0x8A4FC8, 0xFF8A3D].forEach((c, i) => box(g, 0.28, 0.55 + (i % 3) * 0.08, 0.4, c, -1.0 + i * 0.36, 4.75, 0, o)); /* 지붕 위 책 */
+  signPlane(g, ['📚 우리 반 자료실'], 4.2, 0.9, 0, 3.75, -0.14, { font: 70, pad: 6, fg: '#23406E', stroke: false });
+  libW.board = makeLabel(g, [''], 1.1, 0, 5.6, 0);
+  for (const [px, c] of [[-1.3, 0xFFFFFF], [0, 0xFFF6C8], [1.3, 0xDDF3FF]]) { box(g, 1.0, 0.8, 0.03, c, px, 2.6, -0.15, o); box(g, 0.6, 0.06, 0.02, 0x23406E, px, 2.75, -0.17, o); box(g, 0.45, 0.06, 0.02, 0x23406E, px, 2.55, -0.17, o); }
+  registerSolids(g, 'lib'); batchStatic(g);
+  addInteract({ pos: g.localToWorld(new V3(0, 1, -1.4)), r: 3.2, text: () => ['📚 우리 반 자료실', `수업 자료 ${libItems().length}개 · 링크를 열어 봐요`], run: openLib });
+}
+function libTick() {
+  const L = libItems(), key = L.map(x => x.k + (x.at || 0)).join(',');
+  if (libW.board && libW.boardK !== key) { libW.boardK = key; libW.board.userData.set([L.length ? `📚 새 자료: ${L.slice().sort((a, b) => (b.at || 0) - (a.at || 0))[0].t}` : '📚 자료 준비 중']); }
+  if (!stateLoaded) return; const newest = Math.max(0, ...L.map(x => x.at || 0));
+  if (libW.seen == null) { libW.seen = Math.max(newest, bag.libSeen || 0); return; }
+  if (newest > libW.seen) { const it = L.find(x => x.at === newest); libW.seen = newest; if (!isTeacher && it && newest > (bag.libSeen || 0)) toast(`📚 자료실에 새 자료: ${it.t} (광장 동쪽 📚 게시판)`, 'info'); }
+  if (!$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '📚 우리 반 자료실' && libW.panelK !== key) { libW.panelK = key; refillLife(); }
+}
+async function libPickImg(file) { /* 📷 작은 그림으로 줄여요 (긴 쪽 480px · JPEG) */
+  const url = URL.createObjectURL(file); try { const im = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    for (const [mx, q] of [[480, 0.72], [400, 0.6], [320, 0.55], [240, 0.5]]) { const s = Math.min(1, mx / Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s); const c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height); c.drawImage(im, 0, 0, cv.width, cv.height); const d = cv.toDataURL('image/jpeg', q); if (d.length <= 90000) return d; }
+    return ''; } catch (e) { return ''; } finally { URL.revokeObjectURL(url); } }
+function openLib() {
+  bag.libSeen = Math.max(bag.libSeen || 0, ...libItems().map(x => x.at || 0)); saveBag();
+  openLife('📚 우리 반 자료실', (box) => {
+    box.textContent = ''; const L = libItems(), subs = ['all', ...Object.keys(LIB_SUB).filter(s => L.some(x => x.s === s))];
+    if (isTeacher) { const D = libW.draft, f = el2('div', ''); f.style.cssText = 'background:#EEF5FF;border-radius:14px;padding:10px;margin-bottom:8px;text-align:left';
+      f.append(el2('b', '', libW.edit ? '✏️ 자료 고치기' : '➕ 새 자료 올리기 (선생님)'));
+      const inp = (ph, key, max) => { const t = el2('input', 'tinput'); t.placeholder = ph; t.maxLength = max; t.value = D[key] || ''; t.style.cssText = 'width:100%;margin:4px 0;font-size:16px'; t.oninput = () => { D[key] = t.value; }; return t; };
+      f.append(inp('제목 (예: 3단원 발표 자료)', 't', 40), inp('링크 https://… (구글 드라이브·문서·유튜브·패들렛 등)', 'u', 500), inp('설명 (선택)', 'd', 200));
+      const r = el2('div', 'row-center wrap'); const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; for (const [k, n] of Object.entries(LIB_SUB)) { const op = document.createElement('option'); op.value = k; op.textContent = n; op.selected = D.s === k; sel.append(op); } sel.onchange = () => { D.s = sel.value; };
+      const pin = el2('label', ''); pin.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!D.pin; cb.onchange = () => { D.pin = cb.checked ? 1 : 0; }; pin.append(cb, ' 📌 맨 위에 고정');
+      const fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none'; const ib = el2('button', 'btn', D.img ? '📷 그림 바꾸기' : '📷 그림 넣기 (선택)'); ib.style.cssText = 'background:#fff;font-size:14px'; ib.onclick = () => fi.click();
+      fi.onchange = async () => { const fl = fi.files?.[0]; if (!fl) return; const d = await libPickImg(fl); if (!d) { toast('📷 그림을 줄이지 못했어요. 다른 그림을 골라요', 'warn'); return; } D.img = d; refillLife(); };
+      r.append(sel, pin, ib, fi); if (D.img) { const im = el2('img', ''); im.src = D.img; im.style.cssText = 'height:48px;border-radius:8px'; const x = el2('button', 'btn', '✖'); x.style.cssText = 'background:#fff;font-size:12px;padding:2px 8px'; x.onclick = () => { D.img = ''; refillLife(); }; r.append(im, x); } f.append(r);
+      const go = el2('button', 'btn', libW.edit ? '💾 고친 내용 저장' : '📤 자료실에 올리기'); go.style.background = '#FFD23C';
+      go.onclick = async () => { const t = D.t.trim(), u = D.u.trim(); if (!t) { toast('제목을 적어요', 'warn'); return; } if (!/^https?:\/\/\S+$/.test(u)) { toast('🔗 https:// 로 시작하는 링크를 넣어요', 'warn'); return; } if (!libW.edit && L.length >= LIB_MAX) { toast(`자료는 ${LIB_MAX}개까지예요. 오래된 자료를 지워요`, 'warn'); return; }
+        const k = libW.edit || 'm' + backend.now(), it = { t: t.slice(0, 40), u: u.slice(0, 500), d: D.d.trim().slice(0, 200), s: D.s, at: libW.edit ? (S.lib?.[k]?.at || backend.now()) : backend.now(), pin: D.pin ? 1 : 0 }; if (D.img) it.img = D.img;
+        const ok = await adminDo({ [`lib/${k}`]: it }, libW.edit ? '💾 자료를 고쳤어요' : '📤 자료실에 올렸어요'); if (ok !== false) { libW.draft = { t: '', u: '', d: '', s: D.s, img: '', pin: 0 }; libW.edit = ''; setTimeout(refillLife, 300); } };
+      const rr = el2('div', 'row-center'); rr.append(go); if (libW.edit) { const c2 = el2('button', 'btn', '취소'); c2.style.background = '#fff'; c2.onclick = () => { libW.edit = ''; libW.draft = { t: '', u: '', d: '', s: 'kor', img: '', pin: 0 }; refillLife(); }; rr.append(c2); } f.append(rr);
+      f.append(el2('p', 'hint', '💡 파일은 구글 드라이브에 올리고 「링크가 있는 모든 사용자」로 공유한 뒤 그 링크를 넣어요. 그림은 작게 줄여서 저장돼요.')); box.append(f); }
+    if (subs.length > 2) { const fr = el2('div', 'row-center wrap'); for (const s of subs) { const b = el2('button', 'btn', s === 'all' ? '전체' : LIB_SUB[s]); b.style.cssText = `font-size:14px;padding:5px 10px;background:${libW.f === s ? '#FFD23C' : '#fff'}`; b.onclick = () => { libW.f = s; refillLife(); }; fr.append(b); } box.append(fr); }
+    const show = L.filter(x => libW.f === 'all' || x.s === libW.f);
+    if (!show.length) box.append(el2('div', 'vempty', isTeacher ? '아직 자료가 없어요. 위에서 첫 자료를 올려요!' : '아직 올라온 자료가 없어요'));
+    for (const x of show) { const c = el2('div', ''); c.style.cssText = 'display:flex;gap:10px;align-items:center;background:#fff;border:2px solid #DCE8F7;border-radius:14px;padding:8px;margin:6px 0;text-align:left';
+      const th = x.img ? Object.assign(el2('img', ''), { src: x.img }) : el2('div', '', libIcon(x.u)); th.style.cssText = x.img ? 'width:84px;height:64px;object-fit:cover;border-radius:10px;flex:none' : 'width:64px;height:64px;display:grid;place-items:center;font-size:34px;background:#EEF5FF;border-radius:10px;flex:none';
+      const tx = el2('div', ''); tx.style.cssText = 'flex:1;min-width:0'; tx.append(el2('div', '', `${x.pin ? '📌 ' : ''}${x.t}`), el2('div', 'hint', `${LIB_SUB[x.s] || '📎 기타'} · ${new Date(x.at || 0).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} · ${libHost(x.u)}`)); tx.firstChild.style.cssText = 'font-weight:800;font-size:17px';
+      if (x.d) { const d = el2('div', '', x.d); d.style.cssText = 'font-size:14px;color:#555;white-space:pre-line'; tx.append(d); }
+      const bs = el2('div', ''); bs.style.cssText = 'display:flex;flex-direction:column;gap:4px;flex:none'; const op = el2('button', 'btn', '🔗 열기'); op.style.cssText = 'background:#FFD23C;font-size:15px'; op.onclick = () => { const w = window.open(x.u, '_blank', 'noopener'); if (!w) toast('🔗 새 창이 막혔어요. 링크를 길게 눌러 열어요', 'warn'); playSfx('pick'); }; bs.append(op);
+      if (isTeacher) { const e = el2('button', 'btn', '✏️'); e.style.cssText = 'background:#fff;font-size:13px'; e.onclick = () => { libW.edit = x.k; libW.draft = { t: x.t || '', u: x.u || '', d: x.d || '', s: x.s || 'etc', img: x.img || '', pin: x.pin | 0 }; refillLife(); box.scrollTop = 0; };
+        const del = el2('button', 'btn', '🗑️'); del.style.cssText = 'background:#fff;font-size:13px'; del.onclick = async () => { if (!(await confirmAction({ title: '🗑️ 자료 지우기', body: `「${x.t}」을(를) 자료실에서 지울까요?`, okText: '지우기' }))) return; await adminDo({ [`lib/${x.k}`]: null }, '🗑️ 자료를 지웠어요'); setTimeout(refillLife, 300); }; bs.append(e, del); }
+      c.append(th, tx, bs); box.append(c); }
+  });
+}
 // ================= 🔐 1101a 과목별 방탈출 (🎲 반월쉼터에서 들어가요) =================
 // 방 4개(ROOMS esm·ese·ess·esc): 🧮 수학 비밀 금고 · 🔤 영어 마법 도서관 · 🏛️ 사회 역사 수장고 · 🔬 과학 실험실
 // 순서: ① 방 곳곳 단서 상자 3개(🔴🟡🔵)에서 문제 → 맞히면 숫자(영어는 알파벳) ② 자물쇠 상자에 색 순서대로 비밀번호 → 🗝️ 열쇠
@@ -29416,11 +29486,12 @@ buildBeach(); buildSand(); buildShopStreet(); buildVilDecor('hv'); buildEgHall()
 buildPretty();
 buildMountain();
 buildQuizBoard();
+buildLibBoard(); /* 📚 1105j */
 buildStarGame();
 initStarHud();
 initMemGame();
 initDropGame();
-initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpAtlOut')?.addEventListener('click', async () => { if (await confirmAction({ title: '🚪 모두 나오게 할까요?', body: '아틀란티스 탐사 중인 학생들이 모두 입구로 돌아가요. 관문 기록은 저장돼 있어요.', okText: '모두 나오기' })) adminDo({ atlx: Date.now() }, '🚪 모두 입구로 돌아가요'); }); $('tpKvPoem')?.addEventListener('click', () => { closeModals(); kvPoem(); }); $('tpKvGo')?.addEventListener('click', () => { closeModals(); travelTo('kv', true); }); $('tpKvDet')?.addEventListener('click', () => { closeModals(); kvDetOpen(); }); // 🔤 1101i
+initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); }); $('tpAtlOut')?.addEventListener('click', async () => { if (await confirmAction({ title: '🚪 모두 나오게 할까요?', body: '아틀란티스 탐사 중인 학생들이 모두 입구로 돌아가요. 관문 기록은 저장돼 있어요.', okText: '모두 나오기' })) adminDo({ atlx: Date.now() }, '🚪 모두 입구로 돌아가요'); }); $('tpKvPoem')?.addEventListener('click', () => { closeModals(); kvPoem(); }); $('tpKvGo')?.addEventListener('click', () => { closeModals(); travelTo('kv', true); }); $('tpKvDet')?.addEventListener('click', () => { closeModals(); kvDetOpen(); }); // 🔤 1101i
 makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); buildHistMuseum(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
 $('tpSeason').onchange = (e) => { envView.season = e.target.value; applyEnv(true); };
@@ -29467,6 +29538,7 @@ function loop() {
   try { reefTick(dt); } catch (e) { console.warn('reef', e); } // 🤿 1031b
   try { atlTick(dt); } catch (e) { console.warn('atl', e); } /* 🔱 1104a */
   try { jmpTick(dt); } catch (e) { console.warn('jmp', e); } /* 🏁 1105a */
+  try { libTick(); } catch (e) { console.warn('lib', e); } /* 📚 1105j */
 
   world.crates.forEach((c, k) => {
     const vis = crateVisible(c.i);
