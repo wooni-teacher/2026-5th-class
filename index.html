@@ -2727,7 +2727,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (st.decor[key]) return { ok: false };
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
-    presence() {}, leave() {}, async kickPlayers() { return { ok: true }; },
+    presence() {}, leave() {}, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
     async attrClaim(k) { const c = (st.attr ||= {})[k]; if (c && c.u !== 'me' && Date.now() - c.t < ATTR_STALE) return { ok: false }; st.attr[k] = { u: 'me', t: Date.now() }; emit(); return { ok: true }; },
@@ -2804,7 +2804,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
   await D.onDisconnect(me).remove();
   // 연결이 끊긴 동안에는 저장하지 않고 이유를 알려요 (버튼이 "보내는 중"에서 멈추거나 엉뚱한 이유가 뜨지 않게)
   let online = false, offlineWarnAt = 0;
-  D.onValue(D.ref(db, '.info/connected'), s => { online = s.val() === true; });
+  D.onValue(D.ref(db, '.info/connected'), s => { online = s.val() === true; if (online) { D.onDisconnect(me).remove().catch(() => {}); presResend(); } }); /* 👻 1105c 다시 연결될 때마다 '끊기면 지우기'를 새로 걸어요 (한 번 끊기면 풀려서, 나중에 창을 닫아도 캐릭터가 남았어요) */
   const needOnline = (fn) => async (...args) => {
     if (online) return fn(...args);
     if (Date.now() - offlineWarnAt > 1500) {
@@ -3285,7 +3285,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       try { await D.set(R(`state/decor/${key}`), { t, r }); return { ok: true }; }
       catch (e) { return { ok: false }; }
     },
-    presence(data) { if (online) D.set(me, data).catch(() => {}); },
+    presence(data) { if (!online) return; D.set(me, data).catch(e => { if (data.hb != null && /permission/i.test(e?.code || e?.message || '')) { presNoHb = true; presResend(); } }); }, /* 규칙을 아직 안 올렸으면 hb 없이 다시 보내요 */
+    async dropPres(uids) { try { await Promise.all(uids.map(u => D.remove(R(`players/${u}`)))); return { ok: true }; } catch (e) { return { ok: false }; } },
     leave() { D.remove(me).catch(() => {}); D.onDisconnect(me).cancel().catch(() => {}); },
     async upVote(k) { try { await D.set(R(`state/upvote/v/${uid}`), k); return { ok: true }; } catch (e) { return { ok: false }; } },
     async attrClaim(k) { // 🎠 놀이기구 자리 (한 자리에 한 명 · 1분 지나면 빈 자리로)
@@ -4738,6 +4739,7 @@ function remoteSample(r, out) { // 지금 보여 줄 위치·방향
 }
 const remoteTmp = new V3();
 function updateRemotes(dt) {
+  presSweep();
   const k = 1 - Math.exp(-dt * 5); // 0.5초마다 오는 위치를 부드럽게 따라가요
   for (const r of remotes.values()) {
     const t = r.target;
@@ -4755,7 +4757,7 @@ function updateRemotes(dt) {
     if ((t.mo | 0) !== r.lastMo) { const first = r.lastMo === undefined; r.lastMo = t.mo | 0; const M = MOTS[r.lastMo % 32]; if (M && !first) playMot(r.a, M.k); } // 💃 친구의 사는 몸짓 (처음 보일 때는 안 해요)
     animateAvatar(r.a, Math.min(1, speed / SPEED), dt, grounded, backend.now() < (t.b || 0));
     if (r.a.rideK) r.a.g.position.y = r.pos.y + r.a.rideLift;
-    { const myRoom = player.pos.x > 740 ? roomAt(player.pos.x, player.pos.z) : '', theirs = r.pos.x > 740 ? roomAt(r.pos.x, r.pos.z) : ''; r.a.g.visible = myRoom ? theirs === myRoom : !theirs; } // 집 안: 같은 집에 있는 친구만 보여요
+    { const myRoom = player.pos.x > 740 ? roomAt(player.pos.x, player.pos.z) : '', theirs = r.pos.x > 740 ? roomAt(r.pos.x, r.pos.z) : ''; r.a.g.visible = (myRoom ? theirs === myRoom : !theirs) && !presGhost(r); } // 집 안: 같은 집에 있는 친구만 보여요
   }
 }
 const PRESENCE_INTERVAL = 0.5; // 초
@@ -4763,7 +4765,12 @@ function myRoleLv() { if (isTeacher || !S.siege?.on || !sgMine()) return null; c
 function lvOfU(u, tg) { if (!S.siege?.on) return null; const st = SG_ROLES[sgRoleOf(u)]?.st; if (!st) return null; if (u === backend?.uid || tg?.me) { const v = myRoleLv(); return v == null ? null : { st, v }; } const T = tg || remotes.get(u)?.target; if (T?.t) return null; const v = T?.sl; return Number.isInteger(v) ? { st, v } : null; }
 function warLvTag(u, data) { const L = lvOfU(u, data); return L ? ` ${STATS[L.st].icon}Lv${L.v}` : ''; } // ⚔️ 공방전 중 이름표: 맡은 직업 과목 레벨 (보병·장군 수학 · 궁병·대장장이 영어 · 왕 사회)
 function sgMySp() { return ['math', 'eng', 'soc', 'read'].map(k => Math.min(9, statTier(k))).join(''); } // 💪 1027o 수학·영어·사회·독서 단계 (0~4)
-let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0;
+let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0, presNoHb = false;
+function presResend() { lastSent = ''; lastSentAt = 0; } /* 👻 1105c 다시 연결되면 바로 내 자리 다시 올리기 */
+const PRES_GHOST_MIN = 3; /* 👻 1105c 3분 넘게 신호가 없으면 남은 캐릭터(유령)로 보고 숨겨요 · 선생님 기기가 지워요 */
+const presGhost = (r) => { const hb = r?.target?.hb; return Number.isFinite(hb) && backend?.now && ((Math.floor(backend.now() / 60000) % 1000000) - hb + 1000000) % 1000000 >= PRES_GHOST_MIN; };
+let presSweepAt = 0;
+function presSweep() { if (!isTeacher || !backend?.dropPres || performance.now() - presSweepAt < 30000) return; presSweepAt = performance.now(); const us = [...remotes.entries()].filter(([, r]) => presGhost(r)).map(([u]) => u); if (us.length) backend.dropPres(us); }
 for (const ev of ['keydown', 'pointerdown', 'touchstart', 'wheel']) addEventListener(ev, () => { lastInputAt = Date.now(); }, { capture: true, passive: true }); // 💤 잠수 판단: 마지막으로 누른 때
 function sendPresence(time) {
   if (!joined || kicked || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
@@ -4780,6 +4787,7 @@ function sendPresence(time) {
   { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); { const cf = clothMyCode(); if (cf) d.cf = cf; } /* 👕 1102c 입은 앞판 */ { const rl = myRoleLv(); if (rl != null) d.sl = rl; } { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   if (jc.out && jcState() === 'run') d.o = 1; // 🌀 회전 막대에서 탈락
   if (isTeacher) d.t = tlCode(); // 선생님 모습 (등록된 선생님 기기만 서버가 받아 줘요)
+  if (backend?.mode === 'firebase' && !presNoHb) d.hb = Math.floor(backend.now() / 60000) % 1000000; /* 👻 1105c 1분마다 '아직 있어요' 신호 */
   if (backend?.mode === 'firebase') d.l = Math.floor((lastInputAt + (backend.now() - Date.now())) / 60000); // 💤 마지막으로 누른 시각(분) · 1분에 한 번만 바뀌어요
   const key = JSON.stringify(d);
   if (key === lastSent) return;
@@ -18452,6 +18460,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105c', d: '11월 7일', items: ['👻 접속을 끝냈는데 캐릭터가 남아 있던 문제를 고쳤어요 (인터넷이 한 번 끊겼다 이어진 뒤에는 \'나가면 지우기\'가 풀려 있었어요) · 3분 넘게 신호가 없는 캐릭터는 숨기고 선생님 기기가 지워요'] },
   { id: '1105b', d: '11월 6일', items: ['↩️ 점프맵에 「처음으로」 버튼 (도전 중인 코스 출발점으로 · 아니면 입구로)', '📱 태블릿: 점프맵 물약 버튼을 화면 위 가운데로 옮겼어요 (오른쪽 버튼과 안 겹치게) · 📣 우리 반 발표 표시도 조이스틱 글자 위로'] },
   { id: '1105a', d: '11월 6일', items: ['🏁 점프맵이 생겼어요! 마을 체육관 뒤쪽 🏁 입구 → 쉬움 · 보통 · 어려움 3코스 · 떨어지면 체크포인트로 · 완주 시간 우리 반 최고 기록판 · 코스마다 하루 첫 완주 🐚 5/10/20', '🧪 간식·물약은 이제 🛒 사서 🎒 가방에 넣어 두고, 필요할 때 「마시기」 (가게·가방에서 · 점프맵에서는 오른쪽 버튼이나 숫자 1·2·3)', '🍬 보통·어려움 코스에는 물약이 꼭 필요한 구간이 있어요 · 한 번 도전에 보통 2번 · 어려움 3번까지 · 점프맵 안에서는 8초만 효과'] },
   { id: '1104e', d: '11월 6일', items: ['🧱 공방전: 닫힌 성문·성벽 너머로는 칼·회오리·돌격·포탑이 닿지 않아요 (성문을 먼저 부숴야 안으로!) · 화살도 성문을 못 지나가요', '📈 하루 능력치 상한이 올랐어요 (기본 100 → 200 · 선생님이 500까지 정할 수 있어요)'] },
