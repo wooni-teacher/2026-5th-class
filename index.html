@@ -1051,7 +1051,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div class="choices" id="shirts"></div>
     <details id="linkBox" style="margin:6px 0 4px;font-size:16px"><summary style="cursor:pointer">🔗 다른 기기에서 받은 연결 코드가 있어요</summary>
       <input id="linkIn" class="tinput" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="숫자 6자리" style="font-size:22px;text-align:center;letter-spacing:4px;margin-top:6px">
-      <p class="note">태블릿 🎒 가방 → "다른 기기로 옮기기"에서 받은 숫자를 넣고 들어가면, 태블릿 계정(집·가방) 그대로 이어져요.</p></details>
+      <p class="note">태블릿 🎒 가방 → "다른 기기로 옮기기"에서 받은 숫자를 넣고, 위 닉네임을 태블릿과 똑같이 적고 들어가면 태블릿 계정(집·가방) 그대로 이어져요.</p></details>
     <div id="gateBox" class="hidden"><div class="field">🔐 반 비밀번호 (이 기기에서 처음 한 번만)</div><input id="gateIn" class="tinput" type="password" maxlength="20" autocomplete="off" placeholder="선생님이 알려 준 비밀번호" style="font-size:20px;text-align:center"></div>
     <div id="secBox" class="hidden"><div class="field">🔒 내 비밀 숫자 4자리</div><input id="secIn" class="tinput" type="password" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="● ● ● ●" style="font-size:22px;text-align:center;letter-spacing:6px"></div>
     <button class="btn" id="joinBtn">마을로 들어가기</button>
@@ -2762,6 +2762,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
 // 판정은 데이터베이스 보안 규칙이 서버에서 합니다 (database.rules.json 참고).
 async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', teacher = false, link = '', gatePw = '', secret = '' } = {}) {
   const svErr = (c) => Object.assign(new Error(c), { code: 'sv/' + c }); /* 🔐 1105k 반 비밀번호 · 내 비밀 숫자 */
+  const linkKey = async (code, nk) => (await shaH(`link|${room}|${nickKey(nk)}|${code}`)).slice(0, 40); /* 🔒 1105q */
   const shaH = async (t) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(b => b.toString(16).padStart(2, '0')).join('');
   const secPw = async (k, code) => `bw2-${(await shaH(`sec|${k}|${code}`)).slice(0, 26)}`;
   const V = '10.12.2';
@@ -2778,7 +2779,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
   // 🔗 1029k 기기 연결: 다른 기기에서 받은 연결 코드 → 그 기기 계정(UID 그대로)으로 로그인 · 한 번 연결한 기기는 이 닉네임으로 늘 그 계정
   const pinsGet = () => { try { return JSON.parse(store.get(`sv-pins:${room}`) || '{}') || {}; } catch (e) { return {}; } }, pinsSet = (o) => { try { store.set(`sv-pins:${room}`, JSON.stringify(o)); } catch (e) { } };
   const uid0 = user.uid; let pinned = false;
-  if (link && !teacher) { const lref = D.ref(D.getDatabase(app), `${DB_ROOT}/links/${link}`);
+  if (link && !teacher && !nickKey(nick)) acct.linkErr = 'nonick';
+  else if (link && !teacher) { const lref = D.ref(D.getDatabase(app), `${DB_ROOT}/links/${await linkKey(link, nick)}`); /* 🔒 1105q 코드 + 닉네임이 맞아야 찾아요 */
     try { const L = (await D.get(lref)).val();
       if (L?.e && L?.p && Date.now() - (+L.at || 0) < 20 * 60000) { user = (await A.signInWithEmailAndPassword(auth, L.e, L.p)).user; pinned = true; Object.assign(acct, { mode: 'nick', pinned: true, linked: true, switched: user.uid !== uid0, nick: cleanNick(L.n || nick) });
         const P = pinsGet(), rec = { e: L.e, p: L.p, u: user.uid }; P[nickKey(L.n || nick)] = rec; if (nick) P[nickKey(nick)] = rec; pinsSet(P); if (L.n) store.set('sv-nick', cleanNick(L.n)); try { await D.remove(lref); } catch (e) { } }
@@ -3313,9 +3315,9 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       else return { ok: false, err: 'unknown' };
       P[nk] = { e, p, u: u.uid }; pinsSet(P); acct.pinned = true;
       for (let tries = 0; tries < 5; tries++) { const code = String(100000 + Math.floor(Math.random() * 900000));
-        try { await D.set(D.ref(db, `${DB_ROOT}/links/${code}`), { e, p, u: u.uid, n: cleanNick(acct.nick || myNick).slice(0, 8), at: Date.now() }); return { ok: true, code }; } catch (err) { if (tries === 4) return { ok: false, err: err?.code || 'x' }; } }
+        try { await D.set(D.ref(db, `${DB_ROOT}/links/${await linkKey(code, acct.nick || myNick)}`), { e, p, u: u.uid, n: cleanNick(acct.nick || myNick).slice(0, 8), at: Date.now() }); return { ok: true, code, nick: cleanNick(acct.nick || myNick) }; } catch (err) { if (tries === 4) return { ok: false, err: err?.code || 'x' }; } }
     },
-    async linkDel(code) { try { await D.remove(D.ref(db, `${DB_ROOT}/links/${code}`)); } catch (e) { } },
+    async linkSweep() { try { const v = (await D.get(D.ref(db, `${DB_ROOT}/links`))).val() || {}, up = {}; for (const [k, x] of Object.entries(v)) if (!(+x?.at > Date.now() - 20 * 60000)) up[k] = null; if (Object.keys(up).length) await D.update(D.ref(db, `${DB_ROOT}/links`), up); return { ok: true, n: Object.keys(up).length }; } catch (e) { return { ok: false }; } }, /* 🧹 1105q 20분 지난 연결 코드 지우기 (선생님 기기) */
     async acctPurge(u, statePaths) { // 👤 1029h 중복 계정 정리 (선생님): 기록 · 가방 · 땅·집 · 접속 정보 (가방은 규칙을 새로 게시해야 지워져요)
       const up = { [`earn/${u}`]: null, [`players/${u}`]: null }; for (const p of statePaths) up[`state/${p}`] = null;
       try { await D.update(D.ref(db, base), { ...up, [`bags/${u}`]: null }); return { ok: true, bag: true }; } catch (e) { try { await D.update(D.ref(db, base), up); return { ok: true, bag: false }; } catch (e2) { return { ok: false }; } } },
@@ -9497,7 +9499,7 @@ const bagW = { up: 0, timer: null };
 async function bagCloudStart() {
   const A = backend?.acct; if (!A || !backend.bagGet) return '';
   if (A.err === 'auth/operation-not-allowed') setTimeout(() => toast('👤 닉네임 계정을 쓰려면 선생님이 Firebase에서 "이메일/비밀번호" 로그인을 켜 주세요 (지금은 이 기기에만 저장돼요)', 'warn'), 1500);
-  if (A.linkErr) setTimeout(() => toast('🔗 연결 코드를 찾지 못했어요 (20분이 지났거나 숫자가 틀렸어요). 태블릿에서 새 코드를 받아요', 'warn'), 1500);
+  if (A.linkErr) setTimeout(() => toast(A.linkErr === 'nonick' ? '🔗 연결 코드를 쓰려면 닉네임도 적어야 해요 (태블릿과 같은 닉네임)' : '🔗 연결 코드를 찾지 못했어요 (20분이 지났거나, 숫자나 닉네임이 달라요). 태블릿과 같은 닉네임인지 보고, 안 되면 새 코드를 받아요', 'warn'), 1500);
   if (A.linked) setTimeout(() => toast('🔗 다른 기기 계정으로 연결됐어요! 집·가방이 그대로 이어져요', 'success'), 1800);
   if (A.err && A.err !== 'auth/operation-not-allowed') setTimeout(() => toast(`👤 계정 연결에 실패했어요 (${A.err}) · 지금은 이 기기에만 저장돼요. 잠시 뒤 새로고침해서 다시 들어와요`, 'warn'), 1500);
   if (A.mode !== 'nick') return '';
@@ -9525,7 +9527,7 @@ async function openLinkMake() { // 🔗 1029k 이 기기 계정을 다른 기기
   openLife('📱➡️💻 다른 기기로 옮기기', (box) => {
     box.textContent = ''; box.append(el2('p', 'hint', '옮겨 갈 기기(노트북)의 첫 화면에서'), el2('p', 'lp-big', '"🔗 다른 기기에서 받은 연결 코드가 있어요"'), el2('p', 'hint', '를 누르고 아래 숫자를 넣은 뒤 마을로 들어가요.'));
     const c = el2('div', '', r.code); c.style.cssText = 'font-size:52px;font-weight:900;letter-spacing:10px;text-align:center;background:#FFF3C8;border-radius:16px;padding:12px;margin:8px 0;user-select:all'; box.append(c);
-    box.append(el2('p', 'hint', '⏰ 20분 동안 한 번만 쓸 수 있어요 · 닉네임이 달라도 이 기기 계정(집·가방) 그대로 이어져요 · 다른 친구에게 알려 주지 마세요!'));
+    box.append(el2('p', 'hint', `👤 옮겨 갈 기기에서도 닉네임을 「${r.nick || cleanNick(myNick)}」(으)로 똑같이 적어야 해요`), el2('p', 'hint', '⏰ 20분 동안 한 번만 쓸 수 있어요 · 이 기기 계정(집·가방) 그대로 이어져요 · 다른 친구에게 알려 주지 마세요!'));
   });
 }
 async function bagSaveNow() { // 💾 다른 기기로 옮기기 전에
@@ -18519,6 +18521,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105q', d: '11월 8일', items: ['🔗 다른 기기로 옮기기: 연결 코드에 닉네임까지 맞아야 이어져요 (옮겨 갈 기기에서 같은 닉네임을 적어요)', '🧹 20분이 지난 연결 코드는 서버가 읽지 못하게 막고, 선생님 기기가 자동으로 지워요'] },
   { id: '1105p', d: '11월 8일', items: ['🔒 내 비밀 숫자(4자리)를 꼭 만들어야 마을에서 놀 수 있어요 · 닉네임만 알고 남이 내 계정에 들어오는 걸 막아요', '🧑‍🏫 선생님 화면: 비밀 숫자를 아직 안 만든 학생과 만든 시각을 보여 줘요'] },
   { id: '1105o', d: '11월 8일', items: ['🧩 친구 펫 대전 · 챔피언스리그: 두 사람에게 같은 문제가 나와요! 둘 다 맞혀야 배틀이 시작돼요 (틀리면 다음 문제)', '📖 펫 체육관마다 「펫 육성법」 알림판이 생겼어요 (레벨업 · 경험치 · 속성 상성 · 배지)', '🔧 Lv30이 넘은 펫도 친구 대전 신청이 되도록 고쳤어요'] },
   { id: '1105n', d: '11월 8일', items: ['🏆 펫 체육관 관장들이 새 모습으로! 우리 마을 👩‍🏫 선생님 · 수학 마을 🧮 수학자 · 역사 마을 ⚔️ 장군 · 영어 마을 🗽 외국인 선생님 · 한글 마을 👑 세종대왕'] },
@@ -21730,7 +21733,7 @@ function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이�
   }
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.qz && performance.now() - pb.qz.at > 90000) pbQzCancel('⏱️ 친구가 오래 답하지 않아서 대전이 취소됐어요', true); /* 🧩 1105o */
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && !pb.qz && pb.busy && pb.turnDone !== pb.B.turn && performance.now() - pb.waitAt > 45000) { pb.B.over = pb.me; $('pbLog').textContent = '⏱️ 친구가 오래 고르지 않아서 이겼어요'; pbEnd(); }
-  if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000) up[`pb/m/${k}`] = null; for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
+  if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); backend.linkSweep?.(); /* 🧹 1105q */ const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000) up[`pb/m/${k}`] = null; for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
 }
 
 
