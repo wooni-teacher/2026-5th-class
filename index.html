@@ -18091,6 +18091,7 @@ function buildInteriors() {
     // ⚔️ 친구 대전 게시판 (문 옆)
     const vx = cx + 6.5, vz = cz + d / 2 - 0.6; box(g, 2.4, 1.5, 0.12, 0x8A5A34, vx, 1.4, vz); signPlane(g, ['⚔️ 친구 대전', '신청 · 받기'], 2.2, 1.2, vx, 1.45, vz - 0.08, { font: 44, pad: 6, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false }).rotation.y = Math.PI;
     addInteract({ pos: new V3(vx, 1, vz - 1.3), r: 2.4, text: () => roomNow() === 'lib' ? ['친구와 대전 ⚔️', '신청 올리기 · 받기'] : null, run: openPvp });
+    pgGuideBoard(g, cx - 6.5, vz, 'lib'); /* 📖 1105o 펫 육성법 알림판 */
     // 📒 독서 구석 (왼쪽): 독서 나무 · 기록장 책상 · 많이 읽은 책
     const cols = [0xE2584A, 0x4A9AE8, 0x5FBE5A, 0xFFD23C, 0x9A5AD8, 0xFF9E5E];
     box(g, 0.6, 2.6, 4, 0x8A5A34, cx - w / 2 + 0.5, 1.3, cz - 6); for (const y of [0.5, 1.25, 2.0]) for (let b = 0; b < 8; b++) box(g, 0.4, 0.55, 0.32, cols[(b + y * 2) % 6 | 0], cx - w / 2 + 0.75, y + 0.3, cz - 7.6 + b * 0.42, o);
@@ -18517,6 +18518,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105o', d: '11월 8일', items: ['🧩 친구 펫 대전 · 챔피언스리그: 두 사람에게 같은 문제가 나와요! 둘 다 맞혀야 배틀이 시작돼요 (틀리면 다음 문제)', '📖 펫 체육관마다 「펫 육성법」 알림판이 생겼어요 (레벨업 · 경험치 · 속성 상성 · 배지)', '🔧 Lv30이 넘은 펫도 친구 대전 신청이 되도록 고쳤어요'] },
   { id: '1105n', d: '11월 8일', items: ['🏆 펫 체육관 관장들이 새 모습으로! 우리 마을 👩‍🏫 선생님 · 수학 마을 🧮 수학자 · 역사 마을 ⚔️ 장군 · 영어 마을 🗽 외국인 선생님 · 한글 마을 👑 세종대왕'] },
   { id: '1105m', d: '11월 8일', items: ['🏟️ 한글 마을에 5단계 펫 체육관이 생겼어요! ⚡ 번개 관장 (Lv31~35) · 배지 5개에 도전!', '⬆️ 펫 만렙이 30 → 40으로 올랐어요', '🏆 반월몬스터즈 챔피언스리그! 🌀 포털 → 경기장 · 선생님이 시즌을 열면 경기장 안 친구 대전이 리그 기록이 돼요 (이기면 3점 · 져도 1점) · 시즌 1등은 👑 챔피언'] },
   { id: '1105l', d: '11월 8일', items: ['🎯 역할 체험장이 지금 직업에 맞게 바뀌었어요: 👑 왕(함성) 체험대 · ⚒️ 대장장이 ③(망치 어질어질 · 자동 포탑) 체험대가 생겼어요', '🏹 궁병 체험에 멀티샷(R)도 연습해요 · 포털 안내도 「왕·장군·보병·궁병·대장장이」로'] },
@@ -20860,6 +20862,7 @@ function pbRender() {
   const box = $('pbMoves'); box.textContent = '';
   $('pbQuit').classList.toggle('hidden', B.over >= 0);
   if (B.over >= 0) { const b = el2('button', 'btn pb-close', '닫기'); b.onclick = pbClose; box.append(b); return; }
+  if (pb.mode === 'pvp' && pb.qz) { pbQzRender(box); return; } /* 🧩 1105o */
   mm.mv.forEach((k, i) => { const M = PMOVE[k], t = PT[M.t], b = el2('button', 'btn pb-mv'); b.style.setProperty('--tc', t.c);
     const ef = M.pw ? petEff(M.t, petType(fm.id)) : 1;
     b.append(el2('b', '', `${t.i} ${M.n}`), el2('small', '', M.pw ? `위력 ${M.pw}${M.acc < 100 ? ` · 명중 ${M.acc}` : ''}${M.pri ? ' · 먼저' : ''}${ef > 1 ? ' · 효과 굉장 ✨' : ef < 1 ? ' · 효과 별로' : ''}` : M.d || ''));
@@ -21102,11 +21105,12 @@ function pbClose() {
   if (pb.mode === 'raid' && pb.B && pb.B.over < 0) { const B = pb.B, d = Math.max(0, B.raidHp0 - B.s[1].mons[0].hp); if (d > 0 && S.raid?.r === B.raidR) backend.raidHit(d, raidName()).then(r => r.ok && toast(`🐉 보스에게 ${d} 피해를 줬어요`, 'success')); } // 중간에 나가도 준 피해는 남아요
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.mid) backend.pbChoose(pb.mid, pb.B.turn, -1); // 🏳️ 그만하기 = 지기
   if (pb.mode === 'npc') pgRelease(); // ⏳ 관장 자리를 다음 친구에게
-  $('pbPanel').classList.add('hidden'); pb.B = null; pb.mode = ''; pb.mid = ''; pb3Stop(); document.body.classList.remove('in-pb'); renderer.toneMappingExposure = 1.02;
+  $('pbPanel').classList.add('hidden'); pb.B = null; pb.mode = ''; pb.mid = ''; pb.qz = null; pb3Stop(); document.body.classList.remove('in-pb'); renderer.toneMappingExposure = 1.02;
 }
 function pbSync() { // ⚔️ 친구 대전: 둘 다 고르면 계산 · 내 신청을 누가 받으면 시작
   if (!backend || !joined) return; const me = backend.uid, ms = S.pb?.m || {};
   if (!pb.B && pb.openAt) { for (const [mid, m] of Object.entries(ms)) if (m?.a === me && (m.at || 0) >= pb.openAt - 5000 && !m.c) { pb.openAt = 0; backend.pbOpen(null); pbStartPvp(mid, m); break; } }
+  if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.qz) { pbQzSync(ms[pb.mid]); return; } /* 🧩 1105o 시작 문제 */
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0) {
     const m = ms[pb.mid]; if (!m) { toast('⚔️ 대전이 끝났어요', 'info'); pb.B.over = pb.me; pbEnd(); return; }
     const c = m.c?.[pb.B.turn]; if (!c || pb.turnDone === pb.B.turn) return;
@@ -21119,7 +21123,35 @@ function pbSync() { // ⚔️ 친구 대전: 둘 다 고르면 계산 · 내 신
 function pbStartPvp(mid, m) {
   const me = backend.uid, i = m.a === me ? 0 : 1;
   const B = { s: [pbSide(Object.values(m.ta || {}), m.na || '친구'), pbSide(Object.values(m.tb || {}), m.nb || '친구')], over: -1, turn: 0 };
-  pb.mid = mid; pb.foeUid = i ? m.a : m.b; pb.league = !!S.pbl?.on && roomNow() === 'pml'; pbOpenBattle(B, 'pvp', i); if (pb.league) toast('🏆 챔피언스리그 경기예요! 이기면 3점 · 져도 1점', 'info');
+  pb.mid = mid; pb.foeUid = i ? m.a : m.b; pb.league = !!S.pbl?.on && roomNow() === 'pml'; pb.qz = { r: 0, s: m.s | 0, Q: null, qr: -1, pick: -1, doneR: -1, at: performance.now() }; pbOpenBattle(B, 'pvp', i); $('pbLog').textContent = '🧩 둘 다 같은 문제를 풀어요! 둘 다 맞혀야 배틀이 시작돼요'; if (pb.league) toast('🏆 챔피언스리그 경기예요! 이기면 3점 · 져도 1점', 'info');
+}
+// ---------- 🧩 1105o 친구 대전 시작 문제: 두 사람에게 똑같은 문제 (대전 씨앗으로 섞어요) · 둘 다 맞혀야 배틀이 시작돼요 ----------
+function pbCommonQ(seed) {
+  const rnd = Math.random, rng = pbRng(seed); let Q = null; Math.random = rng;
+  try { Q = swimQ(['eng', 'math', 'soc'][Math.floor(rng() * 3)]); } catch (e) { Q = null; } finally { Math.random = rnd; }
+  if (Q && Array.isArray(Q.o) && Q.o.length >= 2 && Number.isInteger(Q.ans)) return Q;
+  const a = 2 + Math.floor(rng() * 8), b = 2 + Math.floor(rng() * 8), v = a * b, o = [v, v + a, v - b, v + 1].map(String), k = Math.floor(rng() * 4); [o[0], o[k]] = [o[k], o[0]];
+  return { q: `${a} × ${b} = ?`, o, ans: k, subj: 'math' };
+}
+function pbQzRender(box) {
+  const z = pb.qz; if (z.qr !== z.r) { z.qr = z.r; z.Q = pbCommonQ((z.s ^ ((z.r + 1) * 104729)) | 0); z.pick = -1; z.at = performance.now(); }
+  const card = wrapQBox(box, z.Q, z.r, z.pick, z.pick < 0 ? (j) => pbQzPick(j) : null, z.pick >= 0 ? { [z.r]: z.Q.ans } : null); card.style.gridColumn = '1 / -1'; card.style.maxHeight = '44vh'; card.style.overflowY = 'auto';
+  if (z.pick >= 0) box.append(Object.assign(el2('p', 'hint', z.pick === z.Q.ans ? '⭕ 정답! 친구가 답하기를 기다려요…' : `❌ 아쉬워요. 정답은 ${z.Q.ans + 1}번 · 친구 답을 기다려요…`), { style: 'grid-column:1/-1;text-align:center;margin:4px 0' }));
+}
+function pbQzPick(j) {
+  const z = pb.qz; if (!z || z.pick >= 0) return; z.pick = j; const ok = j === z.Q.ans; playSfx(ok ? 'right' : 'wrong'); if (ok && z.Q.subj) addStat(z.Q.subj, 2); z.at = performance.now(); pbRender();
+  backend.pbChoose(pb.mid, 'q' + z.r, ok ? 1 : 0).then(r => { if (!r.ok) toast('⚠️ 답을 보내지 못했어요', 'warn'); });
+}
+function pbQzCancel(msg, tell) {
+  if (!pb.B || pb.B.over >= 0) return; if (tell && pb.mid) backend.pbChoose(pb.mid, 0, -1); pb.qz = null; pb.B.over = 9; $('pbLog').textContent = msg; pbRender();
+  if (pb.mid && backend.uid === pb.mid.split('_')[0]) { const mid = pb.mid; setTimeout(() => backend.pbDel(mid), 8000); }
+}
+function pbQzSync(m) {
+  const z = pb.qz; if (!m) { pbQzCancel('⚔️ 대전이 취소됐어요', false); return; }
+  const c0 = m.c?.[0]; if (c0 && (c0[m.a] < 0 || c0[m.b] < 0)) { pbQzCancel('🏳️ 친구가 그만해서 대전이 취소됐어요', false); return; }
+  const c = m.c?.['q' + z.r]; if (!c || c[m.a] == null || c[m.b] == null || z.doneR === z.r) return; z.doneR = z.r;
+  if (c[m.a] === 1 && c[m.b] === 1) { $('pbLog').textContent = '🎉 둘 다 정답! 배틀 시작!'; playSfx('fanfare'); setTimeout(() => { if (pb.qz !== z || !pb.B) return; pb.qz = null; pb.waitAt = performance.now(); $('pbLog').textContent = `⚔️ ${pb.B.s[1 - pb.me].name}와(과) 대전 시작!`; pbRender(); }, 1200); }
+  else { const mine = c[pb.me ? m.b : m.a] === 1, foe = c[pb.me ? m.a : m.b] === 1; $('pbLog').textContent = `${mine ? '⭕ 나' : '❌ 나'} · ${foe ? '⭕ 친구' : '❌ 친구'} — 둘 다 맞혀야 배틀이 시작돼요. 다음 문제!`; setTimeout(() => { if (pb.qz !== z || !pb.B) return; z.r++; pbRender(); }, 2400); }
 }
 // ================= 🐉 펫 보스 레이드 (1023e · 반 협동) =================
 // 선생님이 보스를 열면(state/raid) 우리 반이 함께 보스 체력을 깎아요 · 한 사람은 하루 3번 도전 · 한 번에 8턴까지
@@ -21580,6 +21612,27 @@ function pgLeaderFig(par, x, y0, z, n) {
     signPlane(bg, [{ teacher: '🍎', math: '📐', general: '⚔️', english: '🌎' }[k]], 1.2, 1.2, 0, 2.2, 0.08, { font: 120, pad: 4, fg: '#FFFFFF', bg: { teacher: '#FFD23C', math: '#2F5A3A', general: '#5A2A20', english: '#3A6FB0' }[k], stroke: false }); }
   return g;
 }
+function pgGuideBoard(g, x, z, room, ry = 0) { /* 📖 1105o 펫 육성법 알림판 (E로 열어요) */
+  const b = new THREE.Group(); b.position.set(x, 0, z); b.rotation.y = ry; g.add(b); const o = { solid: false };
+  box(b, 0.12, 2.1, 0.12, 0x5A3A22, -1.15, 1.05, 0, o); box(b, 0.12, 2.1, 0.12, 0x5A3A22, 1.15, 1.05, 0, o); box(b, 2.5, 1.6, 0.1, 0x8A5A34, 0, 1.55, 0, o);
+  const sp = signPlane(b, ['📖 펫 육성법', '레벨업 · 배틀 방법', 'E로 읽어요'], 2.3, 1.4, 0, 1.55, ry ? 0.07 : -0.07, { font: 40, pad: 6, fg: '#3B2F2A', bg: '#FFF6D8', stroke: false }); sp.rotation.y = ry ? 0 : Math.PI;
+  addInteract({ pos: new V3(x + (ry ? 1.3 : 0), 1, z + (ry ? 0 : -1.3)), r: 2.4, text: () => roomNow() === room ? ['펫 육성법 📖', '레벨업 · 배틀 방법'] : null, run: () => openPetGuide() });
+}
+function openPetGuide() {
+  openLife('📖 펫 육성법', (box) => {
+    box.textContent = ''; const sec = (t) => box.append(el2('h3', 'lp-sec', t)), li = (arr) => { const u = el2('ul', ''); u.style.cssText = 'margin:4px 0 8px;padding-left:20px;line-height:1.6'; for (const t of arr) u.append(el2('li', '', t)); box.append(u); };
+    sec('🐾 1. 펫 데려오기');
+    li(['🦋 곤충 채집 · 🎣 낚시 · 🌊 바다 탐험으로 생물을 잡아요', '🩺 펫 센터 → 데려오기로 내 펫을 만들어요 (Lv' + PB_START + '부터 시작)', '팀은 ' + PB_TEAM + '마리까지 · 한 마리는 「동료」로 정하면 나를 따라다녀요']);
+    sec('⬆️ 2. 경험치 얻는 법');
+    li(['⚔️ 펫 배틀이 끝나면 팀 펫 모두가 경험치를 받아요: 이기면 상대 레벨 합 × 4, 져도 × 2', '🏆 체육관 관장은 배지를 딴 뒤에도 다시 도전할 수 있어요', '👫 친구 대전 · 챔피언스리그: 🧩 두 사람에게 같은 문제가 나와요. 둘 다 맞혀야 배틀이 시작돼요!', '🐉 보스 레이드 (하루 ' + RAID_DAY + '번): 준 피해만큼 경험치 · 보스를 쓰러뜨리면 +' + RAID_XP + ' 더', '🌾 동료 펫과 들판을 걸으면 야생 펫이 나타나요 (하루 6번) · 이기면 동료 +8 더', '🚴 수학 광산 레일바이크: 문제를 맞힐 때마다 동료 펫 +3']);
+    sec('📈 3. 레벨');
+    li(['다음 레벨까지 필요한 경험치 = 지금 레벨 × 12 (Lv20 → 21은 240)', '최고 레벨은 Lv' + PB_MAXLV + ' · Lv10이 되면 속성 기술을 하나 배워요', '💿 기술머신: 능력치(📊)가 오르면 새 기술이 열려요 · 기술은 4개까지']);
+    sec('🔥 4. 속성 상성 (2배로 세요)');
+    li(Object.entries(PSTRONG).map(([a, bs]) => `${PT[a].i} ${PT[a].n} → ${bs.map(t => PT[t].i + ' ' + PT[t].n).join(', ')}`).concat(['반대로 맞으면 ½배 · 같은 속성 기술은 1.2배']));
+    sec('🏅 5. 배지 모으기');
+    li(['우리 마을 → 수학 마을 → 역사 마을 → 영어 마을 → 한글 마을 순서로 관장 ' + PG_N + '명에게 도전해요', '관장은 점점 세져요. 상성이 좋은 펫으로 팀을 짜요!']);
+  });
+}
 const PG_SPOT = { 2: [1193.5, 35, Math.PI], 3: [553, -8], 4: [1732, -32], 5: [2922, 192] }; /* 5: 🔤 한글 마을 북쪽 (1105m) */ // 건물 가운데 (문은 +z 쪽 · 세 번째 값은 돌림: 1024b 수학 마을 체육관은 문이 북쪽 큰길을 봐요)
 const pgw = { labels: {}, key: '' };
 function buildPetGyms() {
@@ -21601,6 +21654,7 @@ function buildPetGyms() {
     pgw.labels['in' + n] = makeLabel(g, [''], 0.8, cx, 5.0, lz); pgw.labels['st' + n] = makeLabel(g, [''], 0.6, cx, 6.0, lz);
     const hx = cx + w / 2 - 1.2; box(g, 1.1, 1.0, 3, 0xFFFFFF, hx, 0.5, cz + 2); box(g, 1.14, 0.18, 3.04, 0xFF8FB3, hx, 1.0, cz + 2, o); makeLabel(g, ['🩺 펫 센터'], 0.6, hx, 2.4, cz + 2);
     addInteract({ pos: new V3(hx - 1.3, 1, cz + 2), r: 2.4, text: () => roomNow() === 'pg' + n ? ['펫 센터 🩺', '팀 · 데려오기'] : null, run: () => openPetCenter() });
+    pgGuideBoard(g, cx - w / 2 + 0.3, cz + 2, 'pg' + n, Math.PI / 2); /* 📖 1105o */
     addInteract({ pos: new V3(cx, 1, lz + 1.8), r: 2.8, text: () => roomNow() === 'pg' + n ? [`관장에게 도전 🏆`, `${n}단계 · 🏅 내 배지 ${bag.pbadge}/${PG_N}`] : null, run: () => openLeaders('pg' + n) });
   }
   registerSolids(g, 'rooms');
@@ -21646,7 +21700,7 @@ function openPvp() {
   if (!joined) return;
   openLife('⚔️ 친구와 펫 대전', (box) => {
     box.textContent = ''; const me = backend.uid, team = petSnap(), now = backend.now(), os = Object.entries(S.pb?.o || {}).filter(([u, o]) => o && now - (o.at || 0) < 180000);
-    box.append(el2('p', 'hint', `대전 신청을 올리면 친구가 받아서 1:1로 싸워요 (서로 30초 안에 골라요). 이기면 🐚 +15 · 져도 +5 (하루 5번).${backend.mode !== 'firebase' ? ' 🔌 혼자 연습 모드에서는 친구가 없어요.' : ''}`));
+    box.append(el2('p', 'hint', `대전 신청을 올리면 친구가 받아서 1:1로 싸워요. 🧩 먼저 두 사람에게 같은 문제가 나오고, 둘 다 맞혀야 배틀이 시작돼요 (서로 30초 안에 골라요). 이기면 🐚 +15 · 져도 +5 (하루 5번).${backend.mode !== 'firebase' ? ' 🔌 혼자 연습 모드에서는 친구가 없어요.' : ''}`));
     if (!team.length) { box.append(el2('p', 'vempty', '🩺 펫 센터에서 팀을 먼저 정해요')); return; }
     box.append(el2('p', '', `내 팀: ${team.map(x => `${CRITTER[x.i].icon}${CRITTER[x.i].name} Lv${x.l}`).join(' · ')}`));
     const mine = os.find(([u]) => u === me);
@@ -21672,7 +21726,8 @@ function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이�
       if (queued && roomNow() !== room && !pb.B) backend.pgQueueSet(n, false); } // 체육관을 나가면 줄에서 빠져요
     for (let n = 1; n <= PG_N; n++) { const lb = pgw.labels['st' + n]; if (!lb) continue; const b = pgBusy(n), q = pgQueue(n); lb.userData.set([b ? `⚔️ 배틀 중: ${nickOf(b.u, remotes.get(b.u)?.target) || b.nm || '친구'}` : '✅ 지금 도전할 수 있어요', `🙋 기다리는 친구 ${q.length}명`]); }
   }
-  if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.busy && pb.turnDone !== pb.B.turn && performance.now() - pb.waitAt > 45000) { pb.B.over = pb.me; $('pbLog').textContent = '⏱️ 친구가 오래 고르지 않아서 이겼어요'; pbEnd(); }
+  if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.qz && performance.now() - pb.qz.at > 90000) pbQzCancel('⏱️ 친구가 오래 답하지 않아서 대전이 취소됐어요', true); /* 🧩 1105o */
+  if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && !pb.qz && pb.busy && pb.turnDone !== pb.B.turn && performance.now() - pb.waitAt > 45000) { pb.B.over = pb.me; $('pbLog').textContent = '⏱️ 친구가 오래 고르지 않아서 이겼어요'; pbEnd(); }
   if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000) up[`pb/m/${k}`] = null; for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
 }
 
