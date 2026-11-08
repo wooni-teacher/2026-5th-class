@@ -12362,7 +12362,8 @@ function updateRest(dt) {
   const ti = Math.floor(performance.now() / 15000) % REST_TIPS.length; if (ti !== rw.tipI) { rw.tipI = ti; $('restEmo').textContent = REST_TIPS[ti][0]; $('restTip').textContent = REST_TIPS[ti][1]; }
 }
 const isResting = () => rw.shown;
-const isFrozen = () => !!(joined && !isTeacher && ((S.control?.freeze && backend && backend.now() - S.control.freeze < FREEZE_MAX) || rw.shown)); // 😌 쉬는 시간에도 멈춰요
+const secNag = { on: false, fail: 0 }; /* 🔒 1105p 비밀 숫자를 만들 때까지 멈춤 */
+const isFrozen = () => !!(joined && !isTeacher && ((S.control?.freeze && backend && backend.now() - S.control.freeze < FREEZE_MAX) || rw.shown || secNag.on)); // 😌 쉬는 시간에도 멈춰요
 let frozenShown = false;
 function syncControl(prev, first) {
   const g = S.control?.gather || 0, pg = prev.control?.gather || 0;
@@ -18518,6 +18519,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105p', d: '11월 8일', items: ['🔒 내 비밀 숫자(4자리)를 꼭 만들어야 마을에서 놀 수 있어요 · 닉네임만 알고 남이 내 계정에 들어오는 걸 막아요', '🧑‍🏫 선생님 화면: 비밀 숫자를 아직 안 만든 학생과 만든 시각을 보여 줘요'] },
   { id: '1105o', d: '11월 8일', items: ['🧩 친구 펫 대전 · 챔피언스리그: 두 사람에게 같은 문제가 나와요! 둘 다 맞혀야 배틀이 시작돼요 (틀리면 다음 문제)', '📖 펫 체육관마다 「펫 육성법」 알림판이 생겼어요 (레벨업 · 경험치 · 속성 상성 · 배지)', '🔧 Lv30이 넘은 펫도 친구 대전 신청이 되도록 고쳤어요'] },
   { id: '1105n', d: '11월 8일', items: ['🏆 펫 체육관 관장들이 새 모습으로! 우리 마을 👩‍🏫 선생님 · 수학 마을 🧮 수학자 · 역사 마을 ⚔️ 장군 · 영어 마을 🗽 외국인 선생님 · 한글 마을 👑 세종대왕'] },
   { id: '1105m', d: '11월 8일', items: ['🏟️ 한글 마을에 5단계 펫 체육관이 생겼어요! ⚡ 번개 관장 (Lv31~35) · 배지 5개에 도전!', '⬆️ 펫 만렙이 30 → 40으로 올랐어요', '🏆 반월몬스터즈 챔피언스리그! 🌀 포털 → 경기장 · 선생님이 시즌을 열면 경기장 안 친구 대전이 리그 기록이 돼요 (이기면 3점 · 져도 1점) · 시즌 1등은 👑 챔피언'] },
@@ -29749,17 +29751,21 @@ initDropGame();
 initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
 $('tpGateOn')?.addEventListener('click', async () => { const pw = $('tpGatePw').value.trim(); if (pw.length < 4) { toast('🔐 반 비밀번호는 4글자 이상으로 적어요', 'warn'); return; } if (!(await confirmAction({ title: '🔐 반 비밀번호 켜기', body: '지금 접속한 학생들은 새로고침하고 이 비밀번호를 적어야 다시 들어올 수 있어요. 켤까요?', okText: '켜기' }))) return; const r = await backend.gateSet(pw); toast(r.ok ? '🔐 반 비밀번호를 켰어요. 학생들에게 알려 주세요' : '⚠️ 켜지 못했어요. database.rules.json을 먼저 게시해 주세요', r.ok ? 'success' : 'warn'); if (r.ok) $('tpGatePw').value = ''; gateNowFill(); }); /* 🔐 1105k */
 $('tpGateOff')?.addEventListener('click', async () => { if (!(await confirmAction({ title: '반 비밀번호 끄기', body: '반 코드만 알면 누구나 다시 들어올 수 있어요. 끌까요?', okText: '끄기' }))) return; const r = await backend.gateSet(''); toast(r.ok ? '반 비밀번호를 껐어요' : '⚠️ 끄지 못했어요', r.ok ? 'info' : 'warn'); gateNowFill(); });
-$('tpSecPins')?.addEventListener('click', async () => { const r = await backend.secPins(); if (!r.ok) { $('tpSecList').textContent = '⚠️ 읽지 못했어요 (database.rules.json을 게시했는지 확인)'; return; } const L = Object.values(r.v).filter(x => x && x.n).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); $('tpSecList').textContent = L.length ? L.map(x => `${x.n} · ${x.p}`).join('\n') + '\n(학생에게만 조용히 알려 주세요)' : '아직 비밀 숫자를 만든 학생이 없어요'; });
+$('tpSecPins')?.addEventListener('click', async () => { const r = await backend.secPins(); if (!r.ok) { $('tpSecList').textContent = '⚠️ 읽지 못했어요 (database.rules.json을 게시했는지 확인)'; return; } const L = Object.values(r.v).filter(x => x && x.n).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); const done = new Set(L.map(x => nickKey(x.n))), cand = new Map(); const add = (n) => { const c = cleanNick(n); if (c && c !== '친구' && !done.has(nickKey(c))) cand.set(nickKey(c), c); };
+  rosterNames().forEach(add); for (const [, r2] of remotes) add(r2.target?.n); { const E = await backend.earnGet?.(); for (const x of Object.values(E || {})) add(x?.n); } /* 🔒 1105p 아직 안 만든 학생 (명단 · 지금 접속 · 오늘 재화 기록에서 찾아요) */
+  const fmt = (x) => { const d = new Date(+x.at || 0); return `${x.n} · ${x.p}${x.at ? ` (${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')})` : ''}`; };
+  $('tpSecList').textContent = (L.length ? `✅ 만든 학생 ${L.length}명\n` + L.map(fmt).join('\n') + '\n(학생에게만 조용히 알려 주세요 · 만든 시각이 이상하면 다른 사람이 먼저 만들었을 수 있어요)' : '아직 비밀 숫자를 만든 학생이 없어요') + (cand.size ? `\n\n⏳ 아직 안 만든 학생 ${cand.size}명\n${[...cand.values()].sort((a, b) => a.localeCompare(b, 'ko')).join(' · ')}\n(다음에 들어오면 만들기 창이 떠서 만들어야 놀 수 있어요)` : '\n\n✅ 찾은 학생은 모두 만들었어요'); });
 async function gateNowFill() { if (!isTeacher || !backend?.gateGet) return; const on = await backend.gateGet(); const el = $('tpGateNow'); if (el) el.textContent = on == null ? '반 비밀번호 상태를 읽지 못했어요 (규칙 게시 확인)' : on ? '🔐 지금 반 비밀번호가 켜져 있어요. 비밀번호가 없는 사람은 들어올 수 없어요.' : '🔓 지금은 반 비밀번호가 꺼져 있어요. 반 코드만 알면 누구나 들어올 수 있어요.'; }
+setInterval(() => { try { if (!secNag.on || !joined || isTeacher) return; const lp = $('lifePanel'); if (lp.classList.contains('hidden') || $('lpTitle').textContent !== '🔒 내 비밀 숫자 만들기') openSecSetup(); } catch (e) { } }, 1500); /* 🔒 1105p 닫아도 다시 열려요 */
 function openSecSetup() { /* 🔒 1105k 내 비밀 숫자 만들기: 닉네임만 알면 남이 내 계정에 들어오는 걸 막아요 */
-  const I = backend?.secInfo?.(); if (!I?.ok || I.sec || isTeacher) return;
+  const I = backend?.secInfo?.(); if (!I?.ok || I.sec || isTeacher) { secNag.on = false; return; } if (secNag.fail < 2) secNag.on = true; /* 1105p 꼭 만들어야 놀 수 있어요 */
   openLife('🔒 내 비밀 숫자 만들기', (box) => { box.textContent = '';
-    box.append(el2('p', 'lp-big', `「${I.nick}」 계정을 지켜요`), el2('p', 'hint', '지금은 닉네임만 알면 다른 친구도 내 계정(집·가방)에 들어올 수 있어요. 비밀 숫자 4자리를 만들면, 다른 기기에서 들어올 때 이 숫자가 있어야 해요. 이 기기에서는 묻지 않아요.'));
+    box.append(el2('p', 'lp-big', `「${I.nick}」 계정을 지켜요`), el2('p', 'hint', '지금은 닉네임만 알면 다른 친구도 내 계정(집·가방)에 들어올 수 있어요. 비밀 숫자 4자리를 만들어야 마을에서 놀 수 있어요. 다른 기기에서 들어올 때 이 숫자가 있어야 하고, 이 기기에서는 묻지 않아요.'));
     const mk = (ph) => { const t = el2('input', 'tinput'); t.type = 'password'; t.maxLength = 4; t.inputMode = 'numeric'; t.placeholder = ph; t.style.cssText = 'font-size:24px;text-align:center;letter-spacing:8px;width:8em;margin:4px auto;display:block'; return t; };
     const a = mk('숫자4개'), b2 = mk('한번더'), msg = el2('p', 'err', ''), go = el2('button', 'btn', '🔒 만들기'); go.style.background = '#FFD23C';
     go.onclick = async () => { const x = a.value.replace(/\D/g, ''), y = b2.value.replace(/\D/g, ''); if (x.length !== 4) { msg.textContent = '숫자 4자리로 적어요'; return; } if (x !== y) { msg.textContent = '두 번 적은 숫자가 달라요'; return; } if (/^(\d)\1{3}$|^(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)$/.test(x)) { msg.textContent = '너무 쉬운 숫자예요 (1111, 1234 같은 건 안 돼요)'; return; }
-      go.disabled = true; msg.textContent = '만드는 중…'; const r = await backend.secSet(x); go.disabled = false; if (!r.ok) { msg.textContent = `⚠️ 만들지 못했어요 (${r.err || '다시 해 봐요'})`; return; }
-      playSfx('fanfare'); toast('🔒 비밀 숫자를 만들었어요! 다른 기기에서 들어올 때 필요해요. 잊어버리면 선생님께 물어봐요', 'success'); closeLife(); };
+      go.disabled = true; msg.textContent = '만드는 중…'; const r = await backend.secSet(x); go.disabled = false; if (!r.ok) { secNag.fail++; if (secNag.fail >= 2) secNag.on = false; msg.textContent = `⚠️ 만들지 못했어요 (${r.err || '다시 해 봐요'})${secNag.fail >= 2 ? ' · 선생님께 말씀드려요. 오늘은 그냥 놀아도 돼요' : ''}`; return; }
+      secNag.on = false; playSfx('fanfare'); toast('🔒 비밀 숫자를 만들었어요! 다른 기기에서 들어올 때 필요해요. 잊어버리면 선생님께 물어봐요', 'success'); closeLife(); };
     const r = el2('div', 'row-center'); r.append(go); box.append(a, b2, msg, r, el2('p', 'hint', '💡 친구에게 알려 주지 않아요. 잊어버리면 선생님이 찾아 줄 수 있어요.')); setTimeout(() => a.focus(), 60); }); } $('tpAtlOut')?.addEventListener('click', async () => { if (await confirmAction({ title: '🚪 모두 나오게 할까요?', body: '아틀란티스 탐사 중인 학생들이 모두 입구로 돌아가요. 관문 기록은 저장돼 있어요.', okText: '모두 나오기' })) adminDo({ atlx: Date.now() }, '🚪 모두 입구로 돌아가요'); }); $('tpKvPoem')?.addEventListener('click', () => { closeModals(); kvPoem(); }); $('tpKvGo')?.addEventListener('click', () => { closeModals(); travelTo('kv', true); }); $('tpKvDet')?.addEventListener('click', () => { closeModals(); kvDetOpen(); }); // 🔤 1101i
 makeBugThumbs(); buildLife(); buildHanok(); initLifeUI(); initEmotes(); initControlUI(); initMapUI(); initGuide(); initSound(); initQuizUI(); initRoleUI(); initPin(); initUidCopy(); initKiteUI(); initHvAdmin(); initMuralUI(); buildMuralGallery(); buildMathVillage(); initMineUI(); initThxUI(); buildInteriors(); buildGreenhouse(); registerSolids(gh.group, 'rooms'); setupDoors(); initGarden2(); initArtUI(); initGymUI(); initRoomAdmin(); initHideUI(); initBBUI(); initBmUI(); initTpTabs(); buildEnglishVillage(); initEvUI(); buildPortal(); buildPetGyms(); buildHistMuseum(); renderTeachLookUI(); buildClassroom(); initMeetUI(); buildArena(); initCtfUI(); buildHistRoad(); initHistAdmin(); buildSiegeField(); initSiegeUI(); buildTrainCamp(); initTrainUI(); buildFundWorld(); initEconUI(); initHomeUI();
 buildEnv(); applyEnv(true);
