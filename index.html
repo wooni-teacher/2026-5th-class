@@ -18077,8 +18077,8 @@ function buildInteriors() {
     signPlane(g, ['⚔️ 펫 배틀 경기장'], 4.4, 0.7, ax, 2.6, cz - d / 2 + 0.25, { font: 48, pad: 4, fg: '#3B2F2A', bg: '#FFE066', stroke: false });
     // 🏆 관장 (안쪽 가운데 단 위)
     const lx = ax, lz = cz - d / 2 + 1.8; box(g, 4.4, 0.5, 2.2, 0xE8C547, lx, 0.25, lz, { emissive: 0.2 });
-    box(g, 0.7, 0.9, 0.42, 0xE2584A, lx, 1.0, lz); box(g, 0.62, 0.62, 0.62, 0xF2D2B0, lx, 1.78, lz); box(g, 0.66, 0.2, 0.66, 0x3B2F2A, lx, 2.12, lz); for (const x of [-0.14, 0.14]) box(g, 0.08, 0.08, 0.02, 0x1E1E24, lx + x, 1.82, lz + 0.32, o); box(g, 0.9, 0.1, 0.1, 0xFFD23C, lx, 1.42, lz + 0.22, o);
-    pgw.labels.in1 = makeLabel(g, ['🏆 관장 도전'], 0.7, lx, 2.9, lz); pgw.labels.st1 = makeLabel(g, [''], 0.6, lx, 4.0, lz);
+    pgLeaderFig(g, lx, 0.5, lz, 1); /* 🏆 1105n 우리 마을 선생님 관장 */
+    pgw.labels.in1 = makeLabel(g, ['🏆 관장 도전'], 0.7, lx, 5.0, lz); pgw.labels.st1 = makeLabel(g, [''], 0.6, lx, 6.0, lz);
     addInteract({ pos: new V3(lx, 1, lz + 1.8), r: 2.8, text: () => roomNow() === 'lib' ? ['관장에게 도전 🏆', `🏅 내 배지 ${bag.pbadge}/${PG_N}`] : null, run: () => openLeaders('lib') });
     // 💿 기술머신 (오른쪽 안)
     const tx2 = cx + w / 2 - 1.4, tz2 = cz - 5.5; box(g, 1.3, 2.2, 1.0, 0x4A78C8, tx2, 1.1, tz2); box(g, 0.05, 0.8, 0.7, 0x9AF0FF, tx2 - 0.68, 1.5, tz2, { emissive: 0.8, solid: false }); cyl(g, 0.26, 0.05, 0xC9CED6, tx2 - 0.66, 0.9, tz2, { solid: false, rz: Math.PI / 2 });
@@ -18517,6 +18517,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105n', d: '11월 8일', items: ['🏆 펫 체육관 관장들이 새 모습으로! 우리 마을 👩‍🏫 선생님 · 수학 마을 🧮 수학자 · 역사 마을 ⚔️ 장군 · 영어 마을 🗽 외국인 선생님 · 한글 마을 👑 세종대왕'] },
   { id: '1105m', d: '11월 8일', items: ['🏟️ 한글 마을에 5단계 펫 체육관이 생겼어요! ⚡ 번개 관장 (Lv31~35) · 배지 5개에 도전!', '⬆️ 펫 만렙이 30 → 40으로 올랐어요', '🏆 반월몬스터즈 챔피언스리그! 🌀 포털 → 경기장 · 선생님이 시즌을 열면 경기장 안 친구 대전이 리그 기록이 돼요 (이기면 3점 · 져도 1점) · 시즌 1등은 👑 챔피언'] },
   { id: '1105l', d: '11월 8일', items: ['🎯 역할 체험장이 지금 직업에 맞게 바뀌었어요: 👑 왕(함성) 체험대 · ⚒️ 대장장이 ③(망치 어질어질 · 자동 포탑) 체험대가 생겼어요', '🏹 궁병 체험에 멀티샷(R)도 연습해요 · 포털 안내도 「왕·장군·보병·궁병·대장장이」로'] },
   { id: '1105k', d: '11월 7일', items: ['🔒 내 비밀 숫자 4자리를 만들어요! 닉네임만 알면 남이 내 계정에 들어오던 걸 막아요 (이 기기에서는 묻지 않고, 다른 기기에서 들어올 때만 필요해요)', '🔐 선생님이 반 비밀번호를 켜면, 반 코드만으로는 마을에 들어올 수 없어요'] },
@@ -21533,6 +21534,52 @@ function openLeaders(here = roomNow()) {
   });
 }
 // ---------- 🏟️ 마을 체육관 (2·3·4단계): 바깥 건물 + 안쪽 방 ----------
+/* 🏆 1105n 관장 모습: 1 우리 마을 선생님 · 2 수학자 · 3 장군 · 4 영어 마을 외국인 선생님 · 5 세종대왕 (크고 단단한 몸 · 뒤에 관장 무대 배경) */
+const PG_LOOK = { 1: 'teacher', 2: 'math', 3: 'general', 4: 'english', 5: 'sejong' };
+function pgLeaderFig(par, x, y0, z, n) {
+  const k = PG_LOOK[n] || 'teacher', g = new THREE.Group(); g.position.set(x, y0, z); par.add(g); const o = { solid: false }, S = 1.45;
+  const f = new THREE.Group(); f.scale.setScalar(S); g.add(f); const b = (w, h, d, c, px, py, pz, e = {}) => box(f, w, h, d, c, px, py, pz, { solid: false, ...e });
+  const skin = k === 'english' ? 0xF8DECB : 0xF0CDA6;
+  const C2 = { teacher: [0x2E3F66, 0x5A5F6A, 0x1E1E24], math: [0xF4F4F0, 0x4A4A55, 0x3B2F2A], general: [0x8E2B24, 0x3A2A22, 0x2A1E18], english: [0x3A6FB0, 0x2E3550, 0x6A4A2A], sejong: [0xC8232C, 0xC8232C, 0x1E1E24] }[k]; /* 옷 · 바지 · 신발 */
+  /* 다리 · 신발 */ if (k !== 'sejong') { for (const s of [-1, 1]) { b(0.3, 0.75, 0.32, C2[1], s * 0.18, 0.42, 0); b(0.34, 0.14, 0.44, C2[2], s * 0.18, 0.07, 0.05); } }
+  else { b(0.95, 1.3, 0.62, 0xC8232C, 0, 0.65, 0); b(0.98, 0.1, 0.66, 0xE8B23A, 0, 0.08, 0); }
+  /* 몸통 (넓은 어깨) */ b(1.0, 0.95, 0.55, C2[0], 0, 1.27, 0); b(1.16, 0.26, 0.6, C2[0], 0, 1.66, 0);
+  /* 목 · 머리 */ b(0.26, 0.14, 0.26, skin, 0, 1.84, 0, { emissive: 0.35 }); b(0.66, 0.64, 0.6, skin, 0, 2.2, 0, { emissive: 0.35 });
+  /* 눈 · 굵은 눈썹 · 입 */ for (const s of [-1, 1]) { b(0.1, 0.1, 0.02, k === 'english' ? 0x3A78C8 : 0x1E1E24, s * 0.15, 2.24, 0.31); b(0.2, 0.06, 0.03, k === 'math' || k === 'english' ? 0xC9B48A : 0x2A1E18, s * 0.15, 2.37, 0.31); } b(0.2, 0.04, 0.02, 0x8A3A2A, 0, 2.04, 0.31);
+  const arm = (s, rx, rz = 0, col = C2[0], len = 0.8) => { const a = new THREE.Group(); a.position.set(s * 0.68, 1.68, 0); a.rotation.set(rx, 0, rz); f.add(a); box(a, 0.28, len, 0.3, col, 0, -len / 2, 0, o); box(a, 0.24, 0.2, 0.26, skin, 0, -len - 0.08, 0, { solid: false, emissive: 0.35 }); return a; };
+  if (k === 'teacher') { /* 👩‍🏫 우리 마을 선생님: 남색 정장 · 빨간 넥타이 · 안경 · 지휘봉 · 호루라기 */
+    b(0.3, 0.7, 0.02, 0xFFFFFF, 0, 1.4, 0.28); b(0.1, 0.55, 0.03, 0xD8403A, 0, 1.36, 0.3); b(0.72, 0.18, 0.66, 0x2A2A30, 0, 2.55, -0.02); b(0.72, 0.3, 0.12, 0x2A2A30, 0, 2.4, -0.3);
+    for (const s of [-1, 1]) b(0.2, 0.15, 0.02, 0x1E1E24, s * 0.15, 2.24, 0.33, { emissive: 0 }); b(0.12, 0.03, 0.02, 0x1E1E24, 0, 2.26, 0.33);
+    arm(-1, 0, 0.12); const a = arm(1, -1.25, -0.1); cyl(a, 0.025, 1.4, 0x8A5A34, 0, -1.0, 0.65, { solid: false, rx: Math.PI / 2 }); ball(a, 0.06, 0xE2584A, 0, -1.0, 1.35, o);
+    b(0.12, 0.08, 0.06, C.gold, 0.1, 1.55, 0.31, { emissive: 0.3 }); }
+  if (k === 'math') { /* 🧮 수학자: 흰 실험복 · 부스스한 흰 머리 · 동그란 안경 · 콧수염 · 커다란 컴퍼스 */
+    b(1.02, 0.6, 0.57, 0xF4F4F0, 0, 0.62, 0); b(0.2, 0.9, 0.02, 0x4A78C8, 0, 1.3, 0.29);
+    for (const [px, py, r] of [[-0.38, 2.42, 0.2], [0.38, 2.42, 0.2], [-0.42, 2.2, 0.18], [0.42, 2.2, 0.18], [0, 2.55, 0.18], [-0.22, 2.55, 0.16], [0.22, 2.55, 0.16]]) ball(f, r, 0xEDEDED, px, py, -0.05, o);
+    for (const s of [-1, 1]) cyl(f, 0.12, 0.03, 0x2A2A30, s * 0.15, 2.24, 0.32, { solid: false, rx: Math.PI / 2 }); b(0.32, 0.07, 0.04, 0xEDEDED, 0, 2.1, 0.32);
+    arm(-1, -0.4, 0.3, 0xF4F4F0); const a = arm(1, -0.9, -0.15, 0xF4F4F0); const cp = new THREE.Group(); cp.position.set(0, -1.0, 0.25); a.add(cp); for (const s of [-1, 1]) { const l = box(cp, 0.06, 1.1, 0.06, 0xB8B8C0, s * 0.2, -0.5, 0, o); l.rotation.z = s * 0.35; } ball(cp, 0.08, C.gold, 0, 0.05, 0, o);
+    signPlane(f, ['π = 3.14', 'a² + b² = c²'], 0.9, 0.5, -0.95, 1.2, 0.2, { font: 40, pad: 4, fg: '#FFFFFF', bg: '#2F5A3A', stroke: false }); }
+  if (k === 'general') { /* ⚔️ 장군: 붉은 갑옷 · 금빛 미늘 · 투구와 붉은 술 · 망토 · 큰 칼 */
+    for (let r = 0; r < 4; r++) b(1.04, 0.06, 0.58, C.gold, 0, 1.0 + r * 0.2, 0, { emissive: 0.15 }); b(1.3, 0.2, 0.7, 0x5A2A20, 0, 1.75, 0); for (const s of [-1, 1]) b(0.42, 0.24, 0.66, C.gold, s * 0.62, 1.72, 0, { emissive: 0.15 });
+    b(1.1, 1.6, 0.08, 0xB0262A, 0, 1.0, -0.36); b(0.74, 0.3, 0.66, 0x3A3A40, 0, 2.6, 0); mesh(CONE, f, 0.5, 0.45, 0.5, 0x3A3A40, 0, 2.95, 0, o); cyl(f, 0.03, 0.25, C.gold, 0, 3.25, 0, o); ball(f, 0.14, 0xE2584A, 0, 3.4, 0, o);
+    b(0.8, 0.3, 0.1, 0x3A3A40, 0, 2.3, -0.32); b(0.3, 0.16, 0.04, 0x1E1E24, 0, 1.98, 0.31); for (const s of [-1, 1]) b(0.1, 0.2, 0.04, 0x1E1E24, s * 0.14, 2.03, 0.31);
+    const a1 = arm(-1, -0.7, 0.35, 0x8E2B24), a2 = arm(1, -0.7, -0.35, 0x8E2B24); const sw = new THREE.Group(); sw.position.set(0, 0.62, 0.62); f.add(sw); box(sw, 0.1, 1.3, 0.04, 0xD8D8E0, 0, -0.1, 0, o); box(sw, 0.44, 0.08, 0.1, C.gold, 0, 0.58, 0, o); box(sw, 0.09, 0.32, 0.09, 0x5A3A22, 0, 0.78, 0, o); }
+  if (k === 'english') { /* 🗽 외국인 선생님: 금발 곱슬머리 · 파란 눈 · 청재킷 · 지구본 · 영어책 */
+    b(0.3, 0.75, 0.02, 0xFFFFFF, 0, 1.36, 0.28); for (const [px, py, pz] of [[-0.3, 2.5, 0], [0, 2.56, 0], [0.3, 2.5, 0], [-0.36, 2.3, -0.1], [0.36, 2.3, -0.1], [-0.15, 2.58, -0.2], [0.15, 2.58, -0.2], [0, 2.4, -0.32]]) ball(f, 0.17, 0xF2C94C, px, py, pz, o);
+    const a1 = arm(-1, -1.0, 0.1, 0x3A6FB0); cyl(a1, 0.28, 0.02, 0x3A78C8, 0, -0.95, 0.32, o); ball(a1, 0.26, 0x4AA8E8, 0, -0.95, 0.32, o); for (const [px, pz] of [[0.1, 0.5], [-0.12, 0.45]]) ball(a1, 0.09, 0x5FBE5A, px, -0.9, pz, o);
+    const a2 = arm(1, -0.55, -0.2, 0x3A6FB0); signPlane(a2, ['ABC'], 0.5, 0.36, 0, -0.95, 0.25, { font: 60, pad: 4, fg: '#FFFFFF', bg: '#C8232C', stroke: false });
+    signPlane(f, ['Hello!'], 0.5, 0.2, 0.25, 1.5, 0.29, { font: 44, pad: 2, fg: '#3A6FB0', bg: '#FFFFFF', stroke: false }); }
+  if (k === 'sejong') { /* 👑 세종대왕: 붉은 곤룡포 · 가슴의 금빛 보 · 옥대 · 익선관 · 수염 · 『훈민정음』 */
+    cyl(f, 0.2, 0.03, C.gold, 0, 1.35, 0.29, { solid: false, rx: Math.PI / 2, emissive: 0.35 }); b(1.04, 0.12, 0.6, 0x2A2A30, 0, 0.98, 0); for (const s of [-0.3, 0, 0.3]) b(0.12, 0.1, 0.03, C.gold, s, 0.98, 0.31, { emissive: 0.3 });
+    b(0.7, 0.32, 0.64, 0x1E1E24, 0, 2.62, 0); b(0.5, 0.2, 0.4, 0x1E1E24, 0, 2.86, -0.08); for (const s of [-1, 1]) { const wg = b(0.3, 0.26, 0.04, 0x1E1E24, s * 0.22, 2.9, -0.32); wg.rotation.z = s * 0.4; }
+    b(0.42, 0.26, 0.06, 0x1E1E24, 0, 1.94, 0.3); b(0.36, 0.06, 0.04, 0x1E1E24, 0, 2.1, 0.32);
+    const a1 = arm(-1, -0.8, 0.2, 0xC8232C), a2 = arm(1, -0.8, -0.2, 0xC8232C); const bk = new THREE.Group(); bk.position.set(0.32, 0.95, 0.5); bk.rotation.y = -0.25; f.add(bk); box(bk, 0.42, 0.56, 0.08, 0x2E4A7A, 0, 0, 0, o); signPlane(bk, ['훈민', '정음'], 0.34, 0.46, 0, 0, 0.06, { font: 60, pad: 2, fg: '#3B2F2A', bg: '#E8DDC0', stroke: false }); }
+  /* 뒤 무대 배경 */
+  const bg = new THREE.Group(); bg.position.set(0, 0, -1.3); g.add(bg);
+  if (k === 'sejong') { box(bg, 4.2, 3.4, 0.12, 0x2E6E9E, 0, 1.9, 0, o); ball(bg, 0.42, 0xE2584A, -1.2, 2.9, 0.1, { solid: false, emissive: 0.4 }); ball(bg, 0.36, 0xFFFFFF, 1.2, 2.9, 0.1, { solid: false, emissive: 0.4 }); for (const [px, h] of [[-1.6, 1.0], [-0.8, 1.4], [0, 1.8], [0.8, 1.4], [1.6, 1.0]]) { const m = mesh(CONE, bg, 0.9, h, 0.2, 0x3E8E5A, px, 0.6 + h / 2, 0.08, o); } } /* 일월오봉도 */
+  else { const col = { teacher: 0xFFD23C, math: 0x2F5A3A, general: 0x5A2A20, english: 0x3A6FB0 }[k]; box(bg, 3.6, 3.2, 0.12, col, 0, 1.8, 0, o); box(bg, 3.8, 0.18, 0.16, C.gold, 0, 3.45, 0, { solid: false, emissive: 0.2 });
+    signPlane(bg, [{ teacher: '🍎', math: '📐', general: '⚔️', english: '🌎' }[k]], 1.2, 1.2, 0, 2.2, 0.08, { font: 120, pad: 4, fg: '#FFFFFF', bg: { teacher: '#FFD23C', math: '#2F5A3A', general: '#5A2A20', english: '#3A6FB0' }[k], stroke: false }); }
+  return g;
+}
 const PG_SPOT = { 2: [1193.5, 35, Math.PI], 3: [553, -8], 4: [1732, -32], 5: [2922, 192] }; /* 5: 🔤 한글 마을 북쪽 (1105m) */ // 건물 가운데 (문은 +z 쪽 · 세 번째 값은 돌림: 1024b 수학 마을 체육관은 문이 북쪽 큰길을 봐요)
 const pgw = { labels: {}, key: '' };
 function buildPetGyms() {
@@ -21550,8 +21597,8 @@ function buildPetGyms() {
   for (const n of [2, 3, 4, 5]) { const r = ROOMS['pg' + n], { cx, cz, w, d } = r; roomShell(g, r);
     box(g, 13, 0.04, 8.5, 0x8FCB72, cx, 0.12, cz - 1, o); for (const [bw, bd, x, z] of [[13, 0.12, cx, cz - 5.25], [13, 0.12, cx, cz + 3.25], [0.12, 8.5, cx - 6.5, cz - 1], [0.12, 8.5, cx + 6.5, cz - 1], [0.12, 8.5, cx, cz - 1]]) box(g, bw, 0.05, bd, 0xFFFFFF, x, 0.15, z, o);
     const lz = cz - d / 2 + 1.8; box(g, 4.4, 0.5, 2.2, 0xE8C547, cx, 0.25, lz, { emissive: 0.2 });
-    box(g, 0.7, 0.9, 0.42, 0x4A78C8, cx, 1.0, lz); box(g, 0.62, 0.62, 0.62, 0xF2D2B0, cx, 1.78, lz); box(g, 0.66, 0.2, 0.66, 0x3B2F2A, cx, 2.12, lz); for (const x of [-0.14, 0.14]) box(g, 0.08, 0.08, 0.02, 0x1E1E24, cx + x, 1.82, lz + 0.32, o);
-    pgw.labels['in' + n] = makeLabel(g, [''], 0.8, cx, 3.1, lz); pgw.labels['st' + n] = makeLabel(g, [''], 0.6, cx, 4.2, lz);
+    pgLeaderFig(g, cx, 0.5, lz, n); /* 🏆 1105n 수학자 · 장군 · 외국인 선생님 · 세종대왕 */
+    pgw.labels['in' + n] = makeLabel(g, [''], 0.8, cx, 5.0, lz); pgw.labels['st' + n] = makeLabel(g, [''], 0.6, cx, 6.0, lz);
     const hx = cx + w / 2 - 1.2; box(g, 1.1, 1.0, 3, 0xFFFFFF, hx, 0.5, cz + 2); box(g, 1.14, 0.18, 3.04, 0xFF8FB3, hx, 1.0, cz + 2, o); makeLabel(g, ['🩺 펫 센터'], 0.6, hx, 2.4, cz + 2);
     addInteract({ pos: new V3(hx - 1.3, 1, cz + 2), r: 2.4, text: () => roomNow() === 'pg' + n ? ['펫 센터 🩺', '팀 · 데려오기'] : null, run: () => openPetCenter() });
     addInteract({ pos: new V3(cx, 1, lz + 1.8), r: 2.8, text: () => roomNow() === 'pg' + n ? [`관장에게 도전 🏆`, `${n}단계 · 🏅 내 배지 ${bag.pbadge}/${PG_N}`] : null, run: () => openLeaders('pg' + n) });
