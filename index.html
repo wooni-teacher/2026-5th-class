@@ -1605,6 +1605,12 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <p class="hint">⚠️ 켜거나 바꾸면 지금 접속한 학생은 새로고침하고 반 비밀번호를 적어 다시 들어와야 해요. 수업 시작 전에 켜 주세요.</p>
     <div class="row-center wrap"><button class="btn" id="tpSecPins" type="button" style="background:#fff">🔑 학생 비밀 숫자 보기 (잊어버린 학생 도와주기)</button></div>
     <div id="tpSecList" class="hint" style="white-space:pre-line"></div>
+    <h3>🔁 개인정보 · 실명 → 닉네임 바꾸기</h3>
+    <p class="hint">한 줄에 하나씩 <b>실명 = 새 닉네임</b>으로 적어요. 계정(집·가방·펫·비밀 숫자)과 칭찬·조개·칭호·기록이 새 닉네임으로 옮겨지고, 서버에서 실명이 지워져요. 실명 ↔ 닉네임 표는 이 선생님 기기에만 남아요. 학생은 다음부터 새 닉네임 + 비밀 숫자로 들어와요.</p>
+    <textarea id="tpNmMap" class="tinput" rows="6" style="width:100%;font-size:16px" placeholder="김가나 = 반짝별&#10;이다라 = 푸른고래"></textarea>
+    <label class="hint" style="display:block;margin:4px 0"><input type="checkbox" id="tpNmText" checked> 학생이 쓴 글 속의 실명(3글자 이상)도 닉네임으로 바꾸기</label>
+    <div class="row-center wrap"><button class="btn" id="tpNmFill" type="button" style="background:#fff">📝 명단에서 실명 채우기</button><button class="btn" id="tpNmPrev" type="button" style="background:#fff">🔎 미리 보기</button><button class="btn" id="tpNmGo" type="button" style="background:#FFD23C" disabled>🔁 바꾸기</button><button class="btn" id="tpNmBook" type="button" style="background:#fff">📒 닉네임 ↔ 실명 표 (이 기기)</button></div>
+    <div id="tpNmOut" class="hint" style="white-space:pre-line"></div>
 
     <h3>💬 채팅</h3>
     <p class="hint">학생들이 머리 위 말풍선으로 짧게(30자) 이야기해요. 나쁜 말은 막고, 대화는 저장하지 않아요 (한 사람당 마지막 한 줄만 1분 동안 있다가 저절로 지워져요). 수업 중에는 꺼 두세요.</p>
@@ -2742,7 +2748,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (st.decor[key]) return { ok: false };
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
-    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
+    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async nmPrep() { return { ok: false }; }, async rawGet() { return null; }, async rawUpdate() { return { ok: false }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
     async attrClaim(k) { const c = (st.attr ||= {})[k]; if (c && c.u !== 'me' && Date.now() - c.t < ATTR_STALE) return { ok: false }; st.attr[k] = { u: 'me', t: Date.now() }; emit(); return { ok: true }; },
@@ -2779,6 +2785,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
   // 🔗 1029k 기기 연결: 다른 기기에서 받은 연결 코드 → 그 기기 계정(UID 그대로)으로 로그인 · 한 번 연결한 기기는 이 닉네임으로 늘 그 계정
   const pinsGet = () => { try { return JSON.parse(store.get(`sv-pins:${room}`) || '{}') || {}; } catch (e) { return {}; } }, pinsSet = (o) => { try { store.set(`sv-pins:${room}`, JSON.stringify(o)); } catch (e) { } };
   const uid0 = user.uid; let pinned = false;
+  if (nick && !teacher) { let mv = false; try { mv = (await D.get(D.ref(D.getDatabase(app), `${DB_ROOT}/rooms/${room}/nmv/${await shaH(`sv2|${room}|${nickKey(cleanNick(nick))}`)}`))).val() === true; } catch (e) { } if (mv) { const P = pinsGet(); delete P[nickKey(nick)]; pinsSet(P); throw svErr('moved'); } } /* 🔁 1105r 선생님이 닉네임을 바꾼 예전 이름 */
   if (link && !teacher && !nickKey(nick)) acct.linkErr = 'nonick';
   else if (link && !teacher) { const lref = D.ref(D.getDatabase(app), `${DB_ROOT}/links/${await linkKey(link, nick)}`); /* 🔒 1105q 코드 + 닉네임이 맞아야 찾아요 */
     try { const L = (await D.get(lref)).val();
@@ -3305,6 +3312,12 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       P[nk] = { e: email, p: pw2, u: u.uid }; pinsSet(P); acct.sec = true; acct.pinned = true; return { ok: true }; },
     async gateGet() { try { return (await D.get(D.ref(db, `${DB_ROOT}/gates/${room}`))).val() === true; } catch (e) { return null; } }, /* 🔐 1105k 반 비밀번호 (선생님) */
     async gateSet(pw) { try { await D.update(D.ref(db, DB_ROOT), pw ? { [`secrets/${room}/join`]: await shaH(`gate|${room}|${pw}`), [`gates/${room}`]: true } : { [`gates/${room}`]: null, [`secrets/${room}/join`]: null }); return { ok: true }; } catch (e) { return { ok: false, err: e?.code || 'x' }; } },
+    async nmPrep(r, n) { /* 🔁 1105r 실명 → 닉네임: 예전 이름의 계정 키 · 새 닉네임 자리가 비었는지 */
+      try { const k2r = await shaH(`sv2|${room}|${nickKey(r)}`), k2n = await shaH(`sv2|${room}|${nickKey(n)}`); let k = (await D.get(D.ref(db, `${DB_ROOT}/rooms/${room}/acct/${k2r}`))).val(), mapped = typeof k === 'string' && /^[0-9a-f]{64}$/.test(k); if (!mapped) k = await shaH(`sv1|${room}|${cleanNick(r)}`);
+        const cur = (await D.get(D.ref(db, `${DB_ROOT}/rooms/${room}/acct/${k2n}`))).val(), sec = (await D.get(D.ref(db, `${DB_ROOT}/rooms/${room}/asec/${k.slice(0, 30)}`))).val() === true;
+        return { ok: true, k, k2r, k2n, mapped, sec, taken: !!cur && cur !== k, same: cur === k }; } catch (e) { return { ok: false, err: e?.code || 'x' }; } },
+    async rawGet(p) { try { return (await D.get(D.ref(db, `${DB_ROOT}/${p}`))).val(); } catch (e) { return null; } },
+    async rawUpdate(up) { try { await D.update(D.ref(db, DB_ROOT), up); return { ok: true }; } catch (e) { return { ok: false, err: e?.code || 'x' }; } },
     async secPins() { try { return { ok: true, v: (await D.get(D.ref(db, `${DB_ROOT}/secrets/${room}/pins`))).val() || {} }; } catch (e) { return { ok: false }; } },
     async linkMake() { // 🔗 이 기기 계정(UID)을 다른 기기로 옮길 연결 코드 (20분)
       const u = auth.currentUser; if (!u) return { ok: false }; const P = pinsGet(), nk = nickKey(acct.nick || myNick); let e, p;
@@ -5415,7 +5428,8 @@ async function join(practice, asTeacher = false) {
       console.error(e);
       $('joinBtn').disabled = false;
       $('joinBtn').textContent = '마을로 들어가기';
-      const sv = { 'sv/need-gate': ['gateBox', '🔐 우리 반은 비밀번호가 있어요. 선생님이 알려 준 반 비밀번호를 적고 다시 눌러요'], 'sv/bad-gate': ['gateBox', '🔐 반 비밀번호가 달라요. 다시 적어 봐요'], 'sv/need-secret': ['secBox', '🔒 이 닉네임은 비밀 숫자로 지켜져 있어요. 내 비밀 숫자 4자리를 적어요'], 'sv/bad-secret': ['secBox', '🔒 비밀 숫자가 달라요. 잊어버렸으면 선생님께 물어봐요'] }[e?.code]; /* 🔐 1105k */
+      const sv = { 'sv/need-gate': ['gateBox', '🔐 우리 반은 비밀번호가 있어요. 선생님이 알려 준 반 비밀번호를 적고 다시 눌러요'], 'sv/bad-gate': ['gateBox', '🔐 반 비밀번호가 달라요. 다시 적어 봐요'], 'sv/need-secret': ['secBox', '🔒 이 닉네임은 비밀 숫자로 지켜져 있어요. 내 비밀 숫자 4자리를 적어요'], 'sv/bad-secret': ['secBox', '🔒 비밀 숫자가 달라요. 잊어버렸으면 선생님께 물어봐요'] }[e?.code];
+      if (e?.code === 'sv/moved') { err.textContent = '🔁 선생님이 닉네임을 바꿔 주셨어요. 선생님께 받은 새 닉네임으로 들어와요 (비밀 숫자는 그대로예요)'; $('nickIn').value = ''; store.set('sv-nick', ''); setTimeout(() => $('nickIn')?.focus(), 50); return; } /* 🔁 1105r */ /* 🔐 1105k */
       if (sv) { $(sv[0]).classList.remove('hidden'); err.textContent = sv[1]; setTimeout(() => $(sv[0] === 'gateBox' ? 'gateIn' : 'secIn')?.focus(), 50); return; }
       err.textContent = e && e.code === 'auth/operation-not-allowed'
         ? 'Firebase에서 익명 로그인이 꺼져 있어요. 선생님께 알려 주세요.'
@@ -18521,6 +18535,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105r', d: '11월 8일', items: ['🔁 선생님이 실명 닉네임을 새 닉네임으로 바꿀 수 있어요 · 집·가방·펫·비밀 숫자·칭찬·칭호 기록은 그대로 이어져요', '🔒 닉네임이 바뀐 학생은 선생님께 받은 새 닉네임 + 내 비밀 숫자로 들어와요'] },
   { id: '1105q', d: '11월 8일', items: ['🔗 다른 기기로 옮기기: 연결 코드에 닉네임까지 맞아야 이어져요 (옮겨 갈 기기에서 같은 닉네임을 적어요)', '🧹 20분이 지난 연결 코드는 서버가 읽지 못하게 막고, 선생님 기기가 자동으로 지워요'] },
   { id: '1105p', d: '11월 8일', items: ['🔒 내 비밀 숫자(4자리)를 꼭 만들어야 마을에서 놀 수 있어요 · 닉네임만 알고 남이 내 계정에 들어오는 걸 막아요', '🧑‍🏫 선생님 화면: 비밀 숫자를 아직 안 만든 학생과 만든 시각을 보여 줘요'] },
   { id: '1105o', d: '11월 8일', items: ['🧩 친구 펫 대전 · 챔피언스리그: 두 사람에게 같은 문제가 나와요! 둘 다 맞혀야 배틀이 시작돼요 (틀리면 다음 문제)', '📖 펫 체육관마다 「펫 육성법」 알림판이 생겼어요 (레벨업 · 경험치 · 속성 상성 · 배지)', '🔧 Lv30이 넘은 펫도 친구 대전 신청이 되도록 고쳤어요'] },
@@ -29754,6 +29769,53 @@ initDropGame();
 initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
 $('tpGateOn')?.addEventListener('click', async () => { const pw = $('tpGatePw').value.trim(); if (pw.length < 4) { toast('🔐 반 비밀번호는 4글자 이상으로 적어요', 'warn'); return; } if (!(await confirmAction({ title: '🔐 반 비밀번호 켜기', body: '지금 접속한 학생들은 새로고침하고 이 비밀번호를 적어야 다시 들어올 수 있어요. 켤까요?', okText: '켜기' }))) return; const r = await backend.gateSet(pw); toast(r.ok ? '🔐 반 비밀번호를 켰어요. 학생들에게 알려 주세요' : '⚠️ 켜지 못했어요. database.rules.json을 먼저 게시해 주세요', r.ok ? 'success' : 'warn'); if (r.ok) $('tpGatePw').value = ''; gateNowFill(); }); /* 🔐 1105k */
 $('tpGateOff')?.addEventListener('click', async () => { if (!(await confirmAction({ title: '반 비밀번호 끄기', body: '반 코드만 알면 누구나 다시 들어올 수 있어요. 끌까요?', okText: '끄기' }))) return; const r = await backend.gateSet(''); toast(r.ok ? '반 비밀번호를 껐어요' : '⚠️ 끄지 못했어요', r.ok ? 'info' : 'warn'); gateNowFill(); });
+/* 🔁 1105r 실명 → 닉네임 바꾸기 (선생님 기기에서 서버 자료를 훑어 실명을 닉네임으로) */
+const nmBookGet = () => { try { return JSON.parse(store.get(`sv-realmap:${currentRoom}`) || '{}') || {}; } catch (e) { return {}; } };
+const nmW = { plan: null };
+function nmParse(txt) { const pairs = [], errs = [], seenR = new Set(), seenN = new Set();
+  for (const line of String(txt || '').split(/\n+/)) { if (!line.trim()) continue; const m = line.split(/=|→|->|:/); if (m.length < 2) { errs.push(`"${line.trim()}" → '실명 = 닉네임'으로 적어요`); continue; }
+    const r = cleanNick(m[0]), n = cleanNick(m.slice(1).join('')); if (!r || !n) { if (r && !n) errs.push(`${r}: 새 닉네임이 비었어요`); continue; }
+    if (nickKey(r) === nickKey(n)) { errs.push(`${r}: 실명과 닉네임이 같아요`); continue; } if (n.length < 2) { errs.push(`${r}: 닉네임은 2글자 이상`); continue; }
+    if (seenR.has(nickKey(r))) { errs.push(`${r}: 두 번 적었어요`); continue; } if (seenN.has(nickKey(n))) { errs.push(`${n}: 같은 닉네임을 두 명에게 줬어요`); continue; } seenR.add(nickKey(r)); seenN.add(nickKey(n)); pairs.push([r, n]); }
+  for (const [r, n] of pairs) if (seenR.has(nickKey(n))) errs.push(`${n}: 다른 학생의 실명과 같아요`);
+  return { pairs, errs }; }
+function nmWalk(v, path, map, textRe, out) { /* 열쇠·값이 실명과 똑같으면 바꾸고, 글 속 실명(3글자 이상)은 고를 때만 */
+  if (v && typeof v === 'object') { for (const [k, x] of Object.entries(v)) { const nk = map.get(k); if (nk) { out.mv.push([`${path}/${k}`, `${path}/${nk}`, nmDeep(x, map, textRe)]); continue; } nmWalk(x, `${path}/${k}`, map, textRe, out); } return; }
+  if (typeof v !== 'string') return; const nv = map.get(v); if (nv) { out.set.push([path, nv]); return; }
+  if (textRe && textRe.test(v)) { textRe.lastIndex = 0; out.txt.push([path, v.replace(textRe, (m0) => map.get(m0) || m0)]); } if (textRe) textRe.lastIndex = 0; }
+function nmDeep(v, map, textRe) { if (v && typeof v === 'object') { const o = Array.isArray(v) ? [] : {}; for (const [k, x] of Object.entries(v)) o[map.get(k) || k] = nmDeep(x, map, textRe); return o; } if (typeof v !== 'string') return v; if (map.has(v)) return map.get(v); return textRe ? v.replace(textRe, (m0) => map.get(m0) || m0) : v; }
+async function nmPlan() {
+  const out = $('tpNmOut'); out.textContent = '🔎 살펴보는 중…'; $('tpNmGo').disabled = true; nmW.plan = null;
+  if (backend?.mode !== 'firebase') { out.textContent = '⚠️ 반 마을(Firebase)에 선생님으로 들어와야 쓸 수 있어요'; return; }
+  const { pairs, errs } = nmParse($('tpNmMap').value); if (!pairs.length) { out.textContent = errs.length ? errs.join('\n') : '실명 = 닉네임을 한 줄 이상 적어요'; return; }
+  const map = new Map(pairs), long = pairs.map(([r]) => r).filter(r => r.length >= 3).sort((a, b) => b.length - a.length).map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const textRe = $('tpNmText').checked && long.length ? new RegExp(long.join('|'), 'g') : null, lines = [], prep = [];
+  for (const [r, n] of pairs) { const P = await backend.nmPrep(r, n); if (!P.ok) { out.textContent = `⚠️ 계정을 살피지 못했어요 (${P.err}) · database.rules.json을 게시했는지 확인`; return; }
+    if (P.taken) errs.push(`${n}: 이미 다른 계정이 쓰는 닉네임이에요`); prep.push([r, n, P]); lines.push(`${r} → ${n}${P.sec ? ' 🔒' : ''}${P.same ? ' (이미 연결됨)' : ''}`); }
+  const room = currentRoom, roots = [[`rooms/${room}/state`, await backend.rawGet(`rooms/${room}/state`)], [`rooms/${room}/earn`, await backend.rawGet(`rooms/${room}/earn`)], [`secrets/${room}/pins`, await backend.rawGet(`secrets/${room}/pins`)]];
+  const w = { mv: [], set: [], txt: [] }; for (const [p, v] of roots) if (v) nmWalk(v, p, map, textRe, w);
+  const ros = String(S.roster || ''), ros2 = ros.split(/([,\n]+)/).map(x => { const c = cleanNick(x); return c && map.has(c) ? x.replace(c, map.get(c)) : x; }).join('');
+  w.set = w.set.filter(([p]) => p !== `rooms/${room}/state/roster`); w.txt = w.txt.filter(([p]) => p !== `rooms/${room}/state/roster`); if (ros2 !== ros) w.set.push([`rooms/${room}/state/roster`, ros2]);
+  nmW.plan = { pairs, prep, w }; const short = (p) => p.replace(`rooms/${room}/`, '').replace(`secrets/${room}/`, '🔑');
+  out.textContent = [`👤 ${pairs.length}명 (🔒 = 비밀 숫자 있음)`, lines.join(' · '), '', `🗂️ 이름으로 된 칸 옮기기 ${w.mv.length}곳 · 이름 값 바꾸기 ${w.set.length}곳 · 글 속 이름 ${w.txt.length}곳`,
+    ...w.mv.slice(0, 12).map(([a, b]) => `  ${short(a)} → ${b.split('/').pop()}`), ...w.txt.slice(0, 8).map(([p, t]) => `  ✏️ ${short(p)}: ${t.slice(0, 40)}`), errs.length ? '\n⚠️ 먼저 고쳐요\n' + errs.join('\n') : '\n✅ 바꿀 수 있어요. 수업이 없을 때(학생들이 나가 있을 때) 눌러 주세요.'].join('\n');
+  $('tpNmGo').disabled = !!errs.length;
+}
+async function nmGo() {
+  const P = nmW.plan; if (!P || !(await confirmAction({ title: '🔁 실명을 닉네임으로 바꿀까요?', body: `${P.pairs.length}명의 계정과 기록을 새 닉네임으로 옮겨요. 학생들은 다음부터 새 닉네임으로 들어와야 해요. 되돌리기 어려워요.`, okText: '바꾸기' }))) return;
+  const out = $('tpNmOut'); $('tpNmGo').disabled = true; out.textContent = '🔁 바꾸는 중…'; const room = currentRoom, fails = []; let okN = 0;
+  const book = nmBookGet(); for (const [r, n] of P.pairs) book[nickKey(n)] = { n, r }; store.set(`sv-realmap:${room}`, JSON.stringify(book)); /* 이 기기에만 */
+  for (const [r, n, X] of P.prep) { const up = {}; if (!X.same) up[`rooms/${room}/acct/${X.k2n}`] = X.k; up[`rooms/${room}/nmv/${X.k2r}`] = true; const q = await backend.rawUpdate(up); if (q.ok) okN++; else fails.push(`👤 ${r}: ${q.err}`); }
+  const ups = [...P.w.mv.map(([a, b, v]) => [a, { [a]: null, [b]: v }]), ...P.w.set.map(([p, v]) => [p, { [p]: v }]), ...P.w.txt.map(([p, v]) => [p, { [p]: v }])]; let dn = 0;
+  for (const [p, up] of ups) { const q = await backend.rawUpdate(up); if (q.ok) dn++; else fails.push(`🗂️ ${p.split('/').slice(2).join('/')}: ${q.err}`); }
+  nmW.plan = null; out.textContent = `✅ 계정 ${okN}/${P.prep.length}명 · 기록 ${dn}/${ups.length}곳 바꿨어요${fails.length ? `\n⚠️ 못 바꾼 곳 ${fails.length}\n${fails.slice(0, 15).join('\n')}` : ''}\n📒 실명 ↔ 닉네임 표는 이 기기에만 저장했어요. 학생들에게 새 닉네임을 알려 주세요 (비밀 숫자는 그대로예요).`;
+  $('tpNmMap').value = ''; toast('🔁 실명을 닉네임으로 바꿨어요', 'success');
+}
+$('tpNmFill')?.addEventListener('click', () => { const ta = $('tpNmMap'), have = new Set(nmParse(ta.value).pairs.map(([r]) => nickKey(r))), add = rosterNames().filter(r => !have.has(nickKey(r))).map(r => `${r} = `); ta.value = [ta.value.trim(), ...add].filter(Boolean).join('\n'); if (!add.length) toast('명단에 더 넣을 이름이 없어요', 'info'); });
+$('tpNmPrev')?.addEventListener('click', () => { nmPlan().catch(e => { $('tpNmOut').textContent = '⚠️ ' + (e?.message || e); }); });
+$('tpNmGo')?.addEventListener('click', () => { nmGo().catch(e => { $('tpNmOut').textContent = '⚠️ ' + (e?.message || e); }); });
+$('tpNmMap')?.addEventListener('input', () => { $('tpNmGo').disabled = true; nmW.plan = null; });
+$('tpNmBook')?.addEventListener('click', () => { const B = Object.values(nmBookGet()).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); $('tpNmOut').textContent = B.length ? `📒 이 기기에만 있는 표 (${B.length}명)\n` + B.map(x => `${x.n} = ${x.r}`).join('\n') : '📒 아직 바꾼 학생이 없어요 (이 기기 기준)'; });
 $('tpSecPins')?.addEventListener('click', async () => { const r = await backend.secPins(); if (!r.ok) { $('tpSecList').textContent = '⚠️ 읽지 못했어요 (database.rules.json을 게시했는지 확인)'; return; } const L = Object.values(r.v).filter(x => x && x.n).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); const done = new Set(L.map(x => nickKey(x.n))), cand = new Map(); const add = (n) => { const c = cleanNick(n); if (c && c !== '친구' && !done.has(nickKey(c))) cand.set(nickKey(c), c); };
   rosterNames().forEach(add); for (const [, r2] of remotes) add(r2.target?.n); { const E = await backend.earnGet?.(); for (const x of Object.values(E || {})) add(x?.n); } /* 🔒 1105p 아직 안 만든 학생 (명단 · 지금 접속 · 오늘 재화 기록에서 찾아요) */
   const fmt = (x) => { const d = new Date(+x.at || 0); return `${x.n} · ${x.p}${x.at ? ` (${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')})` : ''}`; };
