@@ -11942,6 +11942,8 @@ function updateBeach() {
    먼 산과 바깥 들판은 마을이 허공에 떠 보이지 않게 둘러싼 배경이에요.
    ===================================================================== */
 const MT = { x0: -57, x1: 57, z0: -128, z1: -61, gate: [-33, -27], peak: [8, -106], top: 15.5, pond: [30, -74, 4.6] };
+const PML_GATE = [8 + 0.857 * 2.5, -106 - 0.514 * 2.5, Math.atan2(-0.857, 0.514)]; /* ⛰️ 1105s 꼭대기 전망대 안쪽 끝 (오솔길 반대편) · [x, z, 문 앞(가운데 쪽)을 보는 방향] */
+const pmlGateFires = [];
 const MTG = { x0: -100, z0: -160.5, nx: 180, nz: 100 }; // 산 높이 격자 (1m 간격) — 보이는 땅과 걷는 높이가 똑같아요
 const MT_TRAIL = [[-30, -59], [-30, -70], [-19, -79], [-11, -89], [-5, -98], [3, -103], [8, -106]]; // 꼭대기 가는 길
 const MT_TRAIL2 = [[-30, -67], [-12, -68.5], [8, -69.5], [24, -71]];                                  // 계곡 가는 길
@@ -12155,7 +12157,15 @@ function buildMountain() {
   { const x = tx - 1.8, z = tz + 2.2; box(g, 2, 0.15, 0.55, 0xB07C50, x, ty + 0.75, z, { ry: 0.5 }); }
   signPlane(g, ['🚩 뒷산 꼭대기'], 2.6, 0.7, tx + 3, ty + 1.9, tz + 3.9, { font: 46, pad: 4, fg: '#3B2F2A', bg: '#FFF4D6' }).rotation.y = Math.PI - 0.6;
   box(g, 0.15, 1.9, 0.15, C.wood, tx + 3.05, ty + 0.95, tz + 3.95, o);
-  makeLabel(g, ['⛰️ 뒷산', '오솔길 따라 꼭대기까지'], 1.3, -30, 6.5, -64);
+  makeLabel(g, ['⛰️ 뒷산', '오솔길 따라 꼭대기까지 · 🏆 경기장'], 1.3, -30, 6.5, -64);
+  { const [gx, gz, hh] = PML_GATE, gy = ty + 0.25, q = new THREE.Group(); q.position.set(gx, gy, gz); q.rotation.y = hh; q.scale.setScalar(1.35); g.add(q); /* ⛰️ 1105s 뒷산 꼭대기 🏆 반월몬스터즈 경기장 문 (E로 들어가요) */
+    for (const s of [-1, 1]) { box(q, 1.1, 0.4, 1.1, 0x6E6A60, s * 1.9, 0.2, 0); cyl(q, 0.42, 5.2, 0xB4AEA2, s * 1.9, 2.8, 0); box(q, 1.1, 0.35, 1.1, 0x6E6A60, s * 1.9, 5.5, 0, o);
+      const f = new THREE.Group(); f.name = 'pmlFire'; f.position.set(s * 1.9, 5.7, 0); q.add(f); mesh(CONE, f, 0.36, 1.1, 0.36, 0xFF7A1A, 0, 0.55, 0, { solid: false, emissive: 0.9 }); mesh(CONE, f, 0.2, 0.7, 0.2, 0xFFD23C, 0, 0.4, 0, { solid: false, emissive: 1 }); pmlGateFires.push(f);
+      box(q, 0.06, 2.6, 1.0, s < 0 ? 0xC0392B : 0x2E5AAC, s * 1.9, 3.2, 0.5, o); }
+    box(q, 4.9, 0.7, 0.9, 0x8E8A80, 0, 5.2, 0, o); { const pm = box(q, 3.2, 3.8, 0.08, 0x7B5CD6, 0, 2.3, 0, { solid: false, emissive: 0.8 }); pm.userData.keep = true; pm.material = pm.material.clone(); pm.material.transparent = true; pm.material.opacity = 0.6; box(q, 3.4, 0.14, 0.14, 0xE6B84A, 0, 4.25, 0.05, { solid: false, emissive: 0.4 }); }
+    signPlane(q, ['🏆 반월몬스터즈 경기장'], 4.4, 0.75, 0, 6.2, 0.5, { font: 56, pad: 4, fg: '#FFE08A', bg: '#2A2238', stroke: false }).rotation.y = 0;
+    makeLabel(g, ['🏆 반월몬스터즈 경기장', '챔피언을 가리는 산꼭대기'], 1.1, gx, gy + 10.4, gz);
+    addInteract({ pos: new V3(gx + Math.sin(hh) * 1.4, gy + 0.3, gz + Math.cos(hh) * 1.4), r: 2.6, dy: 2.4, text: () => ['🏆 경기장 들어가기', S.pbl?.on ? `🟢 ${S.pbl.s || '챔피언스리그'} 진행 중` : '반월몬스터즈 챔피언스리그'], run: () => enterRoom('pml') }); }
   // 상호작용: 망원경 · 야호
   addInteract({ pos: mtn.scope, r: 2.4, dy: 2, text: () => ['경치 보기 🔭', '망원경'], run: lookScope });
   addInteract({ pos: new V3(tx, ty + 0.3, tz), r: 3.2, dy: 2.4, text: () => ['야호 외치기 📣', '산꼭대기'], run: () => { if (!onCooldown('yaho', 2)) { playAct(player.avatar, 'yaho'); setTimeout(() => toast('📣 야호~! … 야호~ … 야호…', 'success'), 500); } } });
@@ -18239,7 +18249,7 @@ async function exitRoom(id) {
   let x, z, h;
   if (id === 'reef') { x = BEACH.pierX1 - 2.6; z = BEACH.pierZ; h = -Math.PI / 2; } // 🤿 선착장 끝으로
   else if (/^atl[1-4]$/.test(id)) { x = ROOMS.reef.cx - 7.5 + (+id[3] - 1) * 5; z = ROOMS.reef.cz - 17.5; h = 0; document.getElementById('atlIntro')?.remove(); document.getElementById('atlFin')?.remove(); document.body.classList.remove('atl-siren'); } /* 🔱 1104a 아틀란티스 입구 앞으로 */
-  else if (id === 'pml') { x = PORTAL.x; z = PORTAL.z + 4; h = 0; } /* 🏆 1105m 경기장 → 광장 포털 앞 */
+  else if (id === 'pml') { const [gx, gz, hh] = PML_GATE; x = gx + Math.sin(hh) * 2.4; z = gz + Math.cos(hh) * 2.4; h = hh; } /* ⛰️ 1105s 경기장 → 뒷산 꼭대기 문 앞 */
   else if (id === 'jmp') { x = JMP_GATE[0]; z = JMP_GATE[1] + 3; h = 0; } /* 🏁 1105a 점프맵 입구 앞 */
   else if (id === 'gym' && !S.built.Playground) { x = GYM_DOOR[0] - 4; z = GYM_DOOR[1]; h = -Math.PI / 2; }
   else if (id === 'sd') { const sp = HV_SITE.seodang.pos; x = sp[0]; z = sp[1] + 7; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); }
@@ -18535,6 +18545,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105s', d: '11월 8일', items: ['⛰️ 반월몬스터즈 경기장이 뒷산 꼭대기로! 오솔길 따라 올라가 🏆 돌문으로 들어가요 (포털로도 갈 수 있어요)', '🔥 경기장이 구름 위 산꼭대기로 바뀌었어요: 돌기둥 불꽃 · 큰 깃발 · 👑 챔피언의 자리 · 둘레 설산'] },
   { id: '1105r', d: '11월 8일', items: ['🔁 선생님이 실명 닉네임을 새 닉네임으로 바꿀 수 있어요 · 집·가방·펫·비밀 숫자·칭찬·칭호 기록은 그대로 이어져요', '🔒 닉네임이 바뀐 학생은 선생님께 받은 새 닉네임 + 내 비밀 숫자로 들어와요'] },
   { id: '1105q', d: '11월 8일', items: ['🔗 다른 기기로 옮기기: 연결 코드에 닉네임까지 맞아야 이어져요 (옮겨 갈 기기에서 같은 닉네임을 적어요)', '🧹 20분이 지난 연결 코드는 서버가 읽지 못하게 막고, 선생님 기기가 자동으로 지워요'] },
   { id: '1105p', d: '11월 8일', items: ['🔒 내 비밀 숫자(4자리)를 꼭 만들어야 마을에서 놀 수 있어요 · 닉네임만 알고 남이 내 계정에 들어오는 걸 막아요', '🧑‍🏫 선생님 화면: 비밀 숫자를 아직 안 만든 학생과 만든 시각을 보여 줘요'] },
@@ -28188,19 +28199,42 @@ function openLib() {
 /* 🌀 포털 → 🏆 반월몬스터즈 경기장. 선생님이 리그(시즌)를 열면, 경기장 안에서 한 친구 펫 대전이 리그 기록이 돼요 (이기면 3점 · 져도 1점)
    하루 리그 8경기 · 같은 친구와는 하루 2경기까지 · 시즌이 끝나면 1등이 👑 챔피언 · state/pbl {on, s 시즌 이름, at, p {uid: {n, w, l, pt, b 배지, at}}, champ {n, pt, s, at}} */
 const PBL_DAY = 8, PBL_FOE = 2;
-ROOMS.pml = { name: '반월몬스터즈 경기장', icon: '🏆', cx: 1580, cz: 150, w: 36, d: 30, wall: 0xE6EEFF, floor: 0x86C95E, site: null };
+ROOMS.pml = { name: '반월몬스터즈 경기장', icon: '🏆', cx: 1580, cz: 150, w: 36, d: 30, wall: 0x8E8A80, floor: 0x9A968C, site: null };
 const plw = { g: null, board: null, key: '', champSeen: null };
 const pblRows = () => Object.entries(S.pbl?.p || {}).map(([u, x]) => ({ u, ...x })).sort((a, b) => (b.pt | 0) - (a.pt | 0) || (b.w | 0) - (a.w | 0) || (a.l | 0) - (b.l | 0));
+function pmlShell(g, R) { /* ⛰️ 1105s 구름 위 산꼭대기: 돌 바닥 · 난간(부딪혀요) · 불 기둥 · 깃발 · 챔피언 단상 · 둘레 설산 · 구름 */
+  const { cx, cz, w, d } = R, o = { solid: false }; plw.fires = [];
+  box(g, w, 0.2, d, R.floor, cx, 0, cz, { emissive: 0.2 }); for (let i = -3; i <= 3; i++) { box(g, w, 0.02, 0.06, 0x7E7A70, cx, 0.11, cz + i * 4.2, o); box(g, 0.06, 0.02, d, 0x7E7A70, cx + i * 5, 0.11, cz, o); }
+  mesh(CONE, g, w * 0.78, 34, d * 0.78, 0x6E665A, cx, -17.2, cz, { solid: false, rx: Math.PI, flat: true }); /* 바위 절벽 (아래로) */
+  const wall = (W, D, x, z) => { box(g, W, 1.1, D, R.wall, x, 0.55, z); box(g, W + 0.12, 0.16, D + 0.12, 0x6E6A60, x, 1.18, z, o); box(g, W, 3, D, R.wall, x, 1.5, z).visible = false; };
+  wall(w + 0.6, 0.5, cx, cz - d / 2); for (const s of [-1, 1]) wall(0.5, d, cx + s * w / 2, cz); for (const s of [-1, 1]) wall(w / 2 - 1.6, 0.5, cx + s * (w / 4 + 0.8), cz + d / 2);
+  const fire = (x, y, z, sc = 1) => { box(g, 0.9 * sc, 0.5 * sc, 0.9 * sc, 0x3B3630, x, y + 0.25 * sc, z, o); const f = new THREE.Group(); f.name = 'pmlFire'; f.position.set(x, y + 0.5 * sc, z); g.add(f);
+    mesh(CONE, f, 0.42 * sc, 1.2 * sc, 0.42 * sc, 0xFF7A1A, 0, 0.6 * sc, 0, { solid: false, emissive: 0.9 }); mesh(CONE, f, 0.24 * sc, 0.8 * sc, 0.24 * sc, 0xFFD23C, 0, 0.45 * sc, 0, { solid: false, emissive: 1 }); plw.fires.push(f); };
+  for (const [x, z] of [[-17, -14], [-17, -4], [-17, 6], [17, -14], [17, -4], [17, 6], [-6, 14.2], [6, 14.2]]) { /* 돌기둥 + 불 */
+    const px = cx + x, pz = cz + z; box(g, 1.3, 0.5, 1.3, 0x6E6A60, px, 0.35, pz); cyl(g, 0.48, 6.2, 0xB4AEA2, px, 3.2, pz); box(g, 1.3, 0.4, 1.3, 0x6E6A60, px, 6.4, pz, o); fire(px, 6.6, pz); }
+  for (const [x, c] of [[-17, 0xC0392B], [17, 0x2E5AAC]]) for (const z of [-9, 1]) { box(g, 0.08, 4.2, 2.4, c, cx + x * 0.97, 3.6, cz + z, o); box(g, 0.1, 0.5, 2.4, 0xE6B84A, cx + x * 0.97, 5.6, cz + z, o); signPlane(g, ['🏆'], 1.4, 1.4, cx + x * 0.965, 3.8, cz + z, { font: 90, pad: 0, bg: null, stroke: false }).rotation.y = x < 0 ? Math.PI / 2 : -Math.PI / 2; } /* 큰 깃발 */
+  { const bz = cz - d / 2 + 2.4; for (let k = 0; k < 3; k++) box(g, 9 - k * 2, 0.35, 2.6 - k * 0.6, [0xA8A296, 0x989286, 0x8A8478][k], cx, 0.3 + k * 0.35, bz - k * 0.3); /* 챔피언 단상 */
+    const t = new THREE.Group(); t.position.set(cx, 1.15, bz - 0.7); g.add(t); box(t, 1.6, 0.4, 1.2, 0xE6B84A, 0, 0.4, 0, { solid: false, emissive: 0.25 }); box(t, 1.6, 2.0, 0.25, 0xE6B84A, 0, 1.4, -0.5, { solid: false, emissive: 0.25 }); box(t, 1.2, 1.5, 0.05, 0xA3262A, 0, 1.4, -0.36, o);
+    for (const s of [-1, 1]) box(t, 0.2, 0.9, 1.1, 0xE6B84A, s * 0.75, 0.75, 0, { solid: false, emissive: 0.25 }); mesh(SPH_LO, t, 0.35, 0.35, 0.35, 0xFFE08A, 0, 2.65, -0.5, { solid: false, emissive: 0.6 });
+    makeLabel(g, ['👑 챔피언의 자리'], 0.7, cx, 4.6, bz - 0.7); for (const s of [-1, 1]) fire(cx + s * 5, 0.4, bz + 0.3, 1.3); }
+  { const sx = cx, sz = cz + d / 2 + 0.2; for (const s of [-1, 1]) { cyl(g, 0.6, 7.5, 0xB4AEA2, sx + s * 2.2, 3.75, sz, o); fire(sx + s * 2.2, 7.5, sz, 1.1); } box(g, 5.6, 0.9, 0.9, 0x8E8A80, sx, 7.4, sz, o); /* 입구 돌문 */
+    signPlane(g, ['⛰️ 챔피언의 산'], 4.2, 0.8, sx, 7.4, sz - 0.5, { font: 60, pad: 4, fg: '#FFE08A', bg: '#2A2238', stroke: false }).rotation.y = Math.PI; }
+  for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2 + 0.2, r = 62 + (k % 3) * 14, hgt = 34 + ((k * 37) % 5) * 7, x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r, y0 = -26; /* 둘레 설산 */
+    mesh(CONE, g, 16 + (k % 4) * 3, hgt, 16 + (k % 4) * 3, [0x6F7F99, 0x7C8AA3, 0x66748C][k % 3], x, y0 + hgt / 2, z, { solid: false, flat: true });
+    mesh(CONE, g, (16 + (k % 4) * 3) * 0.34, hgt * 0.34, (16 + (k % 4) * 3) * 0.34, 0xF4F7FB, x, y0 + hgt - hgt * 0.17 + 0.05, z, { solid: false, flat: true }); }
+  for (let k = 0; k < 22; k++) { const a = k / 22 * Math.PI * 2, r = 26 + (k % 4) * 6, x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r, y = -2.5 + (k % 3) * 1.4; /* 구름 바다 */
+    for (let j = 0; j < 3; j++) mesh(SPH_LO, g, 4 + j, 1.4 + (j % 2) * 0.5, 3 + j * 0.7, 0xFBFCFF, x + (j - 1) * 3, y, z + (j - 1) * 1.2, { solid: false, emissive: 0.35 }); }
+}
 function buildMonArena() {
   const R = ROOMS.pml, { cx, cz, w, d } = R, g = new THREE.Group(); g.name = 'Arena'; scene.add(g); const o = { solid: false };
-  roomShell(g, R);
+  pmlShell(g, R); /* ⛰️ 1105s 산꼭대기 경기장 (돌 바닥 · 낮은 난간 · 불기둥 · 구름 · 둘레 설산) */
   box(g, 22, 0.05, 14, 0x6DB84E, cx, 0.1, cz, o); for (const [bw, bd, x, z] of [[22, 0.14, cx, cz - 7], [22, 0.14, cx, cz + 7], [0.14, 14, cx - 11, cz], [0.14, 14, cx + 11, cz], [0.14, 14, cx, cz]]) box(g, bw, 0.06, bd, 0xFFFFFF, x, 0.14, z, o);
   cyl(g, 3, 0.06, 0xFFFFFF, cx, 0.13, cz, o); cyl(g, 2.8, 0.07, 0x6DB84E, cx, 0.14, cz, o);
   { const ball = new THREE.Group(); ball.position.set(cx, 0.9, cz); g.add(ball); mesh(SPH_LO, ball, 0.8, 0.4, 0.8, 0xE2584A, 0, 0.2, 0, o); mesh(SPH_LO, ball, 0.8, 0.4, 0.8, 0xFFFFFF, 0, -0.2, 0, o); box(ball, 1.62, 0.12, 1.62, 0x2B2B2B, 0, 0, 0, o); cyl(ball, 0.32, 0.1, 0xFFFFFF, 0, 0, 0.8, { solid: false, rx: Math.PI / 2 }); plw.ball = ball; } /* 🔴⚪ 반월볼 */
   for (const s of [-1, 1]) { box(g, 3, 0.5, 2, s < 0 ? 0x4A78C8 : 0xE2584A, cx + s * 9, 0.25, cz); makeLabel(g, [s < 0 ? '🔵 트레이너 자리' : '🔴 트레이너 자리'], 0.6, cx + s * 9, 2.2, cz); }
-  for (const s of [-1, 1]) for (let r = 0; r < 3; r++) { const z = cz + s * (9 + r * 1.3); box(g, 30, 0.5 + r * 0.6, 1.3, [0xDCE6F5, 0xC8D6EE, 0xB4C6E6][r], cx, (0.5 + r * 0.6) / 2, z); for (let i = 0; i < 14; i++) box(g, 0.8, 0.35, 0.6, [0xE2584A, 0xF2C230, 0x4A78C8, 0x5FBE5A][(i + r) % 4], cx - 13 + i * 2, 0.5 + r * 0.6 + 0.18, z, o); }
+  for (const s of [-1, 1]) for (let r = 0; r < 3; r++) { const z = cz + s * (9 + r * 1.3); box(g, 30, 0.5 + r * 0.6, 1.3, [0xB8B2A6, 0xA8A296, 0x989286][r], cx, (0.5 + r * 0.6) / 2, z); for (let i = 0; i < 14; i++) box(g, 0.8, 0.35, 0.6, [0xE2584A, 0xF2C230, 0x4A78C8, 0x5FBE5A][(i + r) % 4], cx - 13 + i * 2, 0.5 + r * 0.6 + 0.18, z, o); }
   for (const [x, c] of [[-14, 0xE2584A], [-7, 0xF2C230], [7, 0x4A78C8], [14, 0x5FBE5A]]) { cyl(g, 0.08, 5, 0xEEEEEE, cx + x, 2.5, cz - d / 2 + 1, o); box(g, 1.6, 1.0, 0.05, c, cx + x + 0.85, 4.4, cz - d / 2 + 1, o); }
-  signPlane(g, ['🏆 반월몬스터즈 챔피언스리그'], 14, 1.6, cx, 6.2, cz - d / 2 + 0.3, { font: 80, pad: 8, fg: '#FFFFFF', bg: '#23406E', stroke: false });
+  signPlane(g, ['🏆 반월몬스터즈 챔피언스리그'], 14, 1.6, cx, 8.6, cz - d / 2 + 0.3, { font: 80, pad: 8, fg: '#FFE08A', bg: '#2A2238', stroke: false });
   plw.board = makeLabel(g, [''], 1.1, cx, 4.6, cz - d / 2 + 2);
   { const tx = cx - 14, tz = cz - d / 2 + 3.5; box(g, 1.4, 1.2, 1.4, 0xF4EEDC, tx, 0.6, tz); cyl(g, 0.35, 0.8, C.gold, tx, 1.6, tz, { solid: false, emissive: 0.3 }); mesh(SPH_LO, g, 0.8, 0.6, 0.8, C.gold, tx, 2.3, tz, { solid: false, emissive: 0.35 }); for (const s of [-1, 1]) box(g, 0.12, 0.45, 0.12, C.gold, tx + s * 0.45, 2.35, tz, { solid: false, emissive: 0.3 }); makeLabel(g, ['🏆 챔피언 트로피'], 0.6, tx, 3.4, tz); }
   { const kx = cx + 14, kz = cz - d / 2 + 3.5; box(g, 3, 1.1, 1.2, 0xFFFFFF, kx, 0.55, kz); box(g, 3.04, 0.15, 1.24, 0x4A78C8, kx, 1.1, kz, o); makeLabel(g, ['📋 리그 접수처', 'E · 순위표 · 규칙'], 0.7, kx, 2.4, kz);
@@ -28210,7 +28244,8 @@ function buildMonArena() {
   registerSolids(g, 'pml'); plw.g = g; plw.key = '';
 }
 function arenaTick(dt) {
-  if (plw.ball && roomNow() === 'pml') plw.ball.rotation.y += dt * 0.8;
+  { const t = performance.now() / 1000; pmlGateFires.forEach((f, i) => { const k = 1 + Math.sin(t * 9 + i * 2.3) * 0.12; f.scale.set(1 / Math.sqrt(k), k, 1 / Math.sqrt(k)); }); }
+  if (plw.ball && roomNow() === 'pml') { plw.ball.rotation.y += dt * 0.8; const t = performance.now() / 1000; (plw.fires || []).forEach((f, i) => { const k = 1 + Math.sin(t * 9 + i * 1.7) * 0.12 + Math.sin(t * 13 + i) * 0.06; f.scale.set(1 / Math.sqrt(k), k, 1 / Math.sqrt(k)); }); } /* 🔥 1105s */
   const rows = pblRows(), key = JSON.stringify([S.pbl?.on, S.pbl?.s, S.pbl?.champ?.at, rows.slice(0, 5).map(r => [r.n, r.pt, r.w, r.l])]);
   if (plw.board && key !== plw.key) { plw.key = key; const ch = S.pbl?.champ;
     plw.board.userData.set([S.pbl?.on ? `🟢 ${S.pbl.s || '챔피언스리그'} 진행 중` : ch ? `👑 ${ch.s || '지난 시즌'} 챔피언: ${ch.n}` : '리그 준비 중', ...(rows.length ? rows.slice(0, 5).map((r, i) => `${['🥇', '🥈', '🥉', '4', '5'][i]} ${r.n} ${r.pt | 0}점 (${r.w | 0}승 ${r.l | 0}패)`) : ['아직 경기가 없어요'])]); }
