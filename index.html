@@ -1645,7 +1645,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div class="row-center wrap"><button class="btn" id="tpAtl" type="button" style="background:#BFE3F7">🔱 모둠 진행 보기 · 관리</button><button class="btn" id="tpAtlOut" type="button" style="background:#FFD23C">🚪 모두 나오게 하기</button></div>
     <h3>🙈 변신 숨바꼭질 (마을을 골라요)</h3>
     <p class="hint">마을을 고르고 참가자를 모은 뒤 시작하면, 참가자가 모두 그 마을로 옮겨지고 술래를 뽑아요. 숨기 40초 → 찾기 3분. 숨는 사람은 그 마을에 어울리는 물건으로 변신하고, 그 마을 울타리 안에서만 숨어요.</p>
-    <div class="row-center wrap"><label style="font-size:16px">🗺️ 숨바꼭질 마을 <select id="tpHideV" class="tinput" style="width:auto"><option value="main">🏫 메인 마을</option><option value="hv">🏯 역사 마을</option><option value="ev">🗽 영어 마을</option><option value="math">⛏️ 수학 마을</option><option value="field">🏡 들판 마을 (예전 우리 집 마을)</option></select></label></div>
+    <div class="row-center wrap"><label style="font-size:16px">🗺️ 숨바꼭질 마을 <select id="tpHideV" class="tinput" style="width:auto"><option value="main">🏫 메인 마을</option><option value="hv">🏯 역사 마을</option><option value="ev">🗽 영어 마을</option><option value="math">⛏️ 수학 마을</option><option value="kv">🔤 한글 마을</option><option value="field">🏡 들판 마을 (예전 우리 집 마을)</option></select></label></div>
     <p class="hint" id="tpHideNow"></p>
     <div class="row-center wrap"><button class="btn" id="tpHideOpen" style="background:#fff">🙋 참가자 모으기</button><button class="btn" id="tpHideMe" style="background:#fff">🧑‍🏫 선생님도 참가</button><div id="tpHidePick" class="row-center wrap" style="width:100%"></div><label class="sr-only" for="tpHideSk">술래 수</label><select id="tpHideSk" class="tinput" style="width:auto"><option value="1" selected>술래 1명</option><option value="2">술래 2명</option><option value="3">술래 3명</option></select><button class="btn" id="tpHideStart" style="background:var(--leaf);color:#fff">▶️ 시작 (술래 뽑기)</button><button class="btn" id="tpHideStop" style="background:#fff">⏹️ 그만</button></div>
 
@@ -7732,7 +7732,7 @@ function canStand(x, z) {
   if (boardW.on) return true; // 👫 친구 배에 탔어요 (자리는 선장 배가 정해요)
   if (sea.on || sail.on) return inWater(x, z); // 🚤⛵ 배를 타면 바다 위만 (섬·모래사장에는 못 올라가요)
   if (inKV(x, z)) return true; // 🔤 1101i 한글 마을
-  if (typeof nvInWalk === 'function' && nvInWalk(x, z)) return true; // ⚓ 1031g 해전 바다 (배 위 · 부두)
+  /* 🗑️ 1105v 해전 바다 걷기 없음 */
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inMineCave(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
   if (!forestOpen()) return false;
@@ -11895,7 +11895,7 @@ function openShipyard() {
 function openBoatShop(tab = 'parts') {
   openLife('⛵ 배 가게', (box) => {
     box.textContent = ''; const b = boatBag(), tabs = el2('div', 'row-center wrap');
-    for (const [k, n] of [['parts', '🪵 배 재료'], ['deco', '🎨 배 색·깃발'], ['war', '⚔️ 해전 강화']]) { const t = el2('button', 'btn', n); t.style.background = tab === k ? '#FFE066' : '#fff'; t.onclick = () => openBoatShop(k); tabs.append(t); }
+    for (const [k, n] of [['parts', '🪵 배 재료'], ['deco', '🎨 배 색·깃발']]) { const t = el2('button', 'btn', n); t.style.background = tab === k ? '#FFE066' : '#fff'; t.onclick = () => openBoatShop(k); tabs.append(t); }
     box.append(tabs, el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`));
     const buy = (pr, fn) => { if ((bag.shell || 0) < pr) { toast(`🐚 조개돈이 ${pr - (bag.shell || 0)} 모자라요`, 'warn'); return; } bag.shell -= pr; fn(); saveBag(); updateHUD(null); playSfx('coin'); refillLife(); };
     if (tab === 'war') { // ⚔️ 1031g 삼국 해전에서 내 배를 강하게 (한 번 사면 계속)
@@ -12184,8 +12184,8 @@ function buildMountain() {
    ===================================================================== */
 const MT_CAMP_MS = 10 * 60000;
 const mtf = { built: false, campG: null, fire: null, sun: null, beam: null, lab: null, labKey: '', sky: false, seenCamp: null, sledG: null, gates: [], chest: null, chestDay: -1, tick: 0 };
-const mtCamp = () => { const c = S.mtev?.camp; return c && backend && backend.now() < c.e && backend.now() >= c.s - 5000 ? c : null; };
-const sledOpen = () => seasonNow() === 'wi' || S.mtev?.sled === 1;
+const mtCamp = () => null; /* 🗑️ 1105v 뒷산 캠핑 모임 · 썰매장 없앴어요 (예전 코드는 남겨 둬도 열리지 않아요) */
+const sledOpen = () => false;
 const SLED_PATH = [[3, -103], [-5, -98], [-11, -89], [-19, -79], [-30, -70], [-30, -63]];
 const SLED_L = (() => { let L = 0; const c = [0]; for (let i = 1; i < SLED_PATH.length; i++) { L += Math.hypot(SLED_PATH[i][0] - SLED_PATH[i - 1][0], SLED_PATH[i][1] - SLED_PATH[i - 1][1]); c.push(L); } SLED_PATH.cum = c; return L; })();
 function sledAt(s) { const c = SLED_PATH.cum; s = clamp(s, 0, SLED_L); let i = 1; while (i < c.length - 1 && c[i] < s) i++; const [ax, az] = SLED_PATH[i - 1], [bx, bz] = SLED_PATH[i], L = c[i] - c[i - 1], t = (s - c[i - 1]) / L, tx = (bx - ax) / L, tz = (bz - az) / L; return { x: ax + (bx - ax) * t, z: az + (bz - az) * t, tx, tz, rx: -tz, rz: tx }; }
@@ -12212,12 +12212,12 @@ function buildMtnFun() {
   addInteract({ pos: new V3(tx + 9, ty + 0.3, tz - 1), r: 3.5, dy: 2.2, text: () => mtCamp() ? ['📸 기념사진 찍기', `지금 꼭대기 ${mtCampCount()}명`] : null, run: () => { if (onCooldown('mtphoto', 4)) return; playAct(player.avatar, 'cheer'); playSfx('fanfare'); burst(player.pos.clone().setY(ty + 2.5), RAINBOW, 40, 4, 2); showBanner('📸 찰칵!', `⛺ 뒷산 꼭대기 캠핑 모임 · 지금 ${mtCampCount()}명이 함께해요`, 4000); } });
   // 🛷 썰매장: 출발 표지판 + 깃발 (썰매 철에만)
   const sg = new THREE.Group(); sg.name = 'MtSled'; sg.visible = false; scene.add(sg); mtf.sledG = sg;
-  const sg0 = new THREE.Group(); sg0.name = 'MtSledSign'; scene.add(sg0); // 출발 표지판·썰매는 늘 보여요 (겨울이 아니면 "겨울에 열려요")
+  const sg0 = new THREE.Group(); sg0.name = 'MtSledSign'; sg0.visible = false; scene.add(sg0); /* 🗑️ 1105v 썰매 출발대 숨김 */
   { const P = sledAt(0.5), y = terrainH(P.x, P.z); box(sg0, 0.15, 2, 0.15, 0x8A5A34, P.x - P.rx * 2.4, y + 1, P.z - P.rz * 2.4, o); makeLabel(sg0, ['🛷 썰매 출발'], 0.9, P.x - P.rx * 2.4, y + 2.6, P.z - P.rz * 2.4);
     const sl = new THREE.Group(); sl.position.set(P.x + P.rx * 1.6, y + 0.1, P.z + P.rz * 1.6); sl.rotation.y = Math.atan2(P.tx, P.tz); sg0.add(sl); sledModel(sl); }
   mtf.gates = SLED_GATES.map((G, i) => { const P = sledAt(G.s), x = P.x + P.rx * G.off, z = P.z + P.rz * G.off, y = terrainH(x, z), fg = new THREE.Group(); fg.position.set(x, y, z); sg.add(fg);
     cyl(fg, 0.05, 1.6, 0xFFFFFF, 0, 0.8, 0, o); box(fg, 0.04, 0.5, 0.7, i % 2 ? 0x3B82C4 : 0xE2584A, 0, 1.35, 0.35, o); const ring = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.2, 24), new THREE.MeshBasicMaterial({ color: 0xFFE066, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; fg.add(ring); return { g: fg, ring }; });
-  { const P = sledAt(0.5), y = terrainH(P.x, P.z); addInteract({ pos: new V3(P.x, y + 0.3, P.z), r: 3, dy: 2, text: () => sled.on ? null : !sledOpen() ? ['🛷 썰매장', '❄️ 겨울(12~2월)에 열려요'] : ['🛷 썰매 타기', `깃발 8개 · 내 최고 ${bag.sledBest ? (bag.sledBest / 1000).toFixed(1) + '초' : '-'}`], run: () => sledOpen() ? sledStart() : toast('🛷 썰매장은 눈이 오는 겨울(12~2월)에 열려요! (선생님이 미리 열어 줄 수도 있어요)', 'info') }); }
+  { const P = sledAt(0.5), y = terrainH(P.x, P.z); addInteract({ pos: new V3(P.x, y + 0.3, P.z), r: 3, dy: 2, text: () => sled.on ? null : !sledOpen() ? null : ['🛷 썰매 타기', `깃발 8개 · 내 최고 ${bag.sledBest ? (bag.sledBest / 1000).toFixed(1) + '초' : '-'}`], run: () => sledOpen() ? sledStart() : toast('🛷 썰매장은 눈이 오는 겨울(12~2월)에 열려요! (선생님이 미리 열어 줄 수도 있어요)', 'info') }); }
   mtf.board = makeLabel(scene, [''], 1.7, -38, 3.6, -60.5); // 🪧 입구 알림판
   // 💎 보물 상자
   const cg = new THREE.Group(); cg.name = 'MtChest'; scene.add(cg); mtf.chest = cg;
@@ -12299,7 +12299,7 @@ function mtFunTick(dt) {
   if (camp && mtf.seenCamp !== camp.s && stateLoaded) { const first = mtf.seenCamp === null; mtf.seenCamp = camp.s; if (!first || backend.now() - camp.s < 60000) { playSfx('fanfare'); showBanner(`⛺ 뒷산 꼭대기 캠핑 모임! (${camp.k === 'dawn' ? '🌄 해돋이' : '🌅 노을'})`, '북쪽 울타리 틈 → 오솔길을 따라 꼭대기로 올라와요 · 주황 빛기둥이 꼭대기예요 · 도착하면 도장 + 🐚20', 7000); } }
   if (!camp && mtf.seenCamp === null && stateLoaded) mtf.seenCamp = S.mtev?.camp?.s || 0;
   if (camp && joined && !isTeacher && bag.campGot !== camp.s && Math.hypot(p.x - tx, p.z - tz) < 14 && p.y > ty - 1.5) { bag.campGot = camp.s; bag.campN = (bag.campN | 0) + 1; earnShell(20, 'm'); saveBag(); updateHUD(null); playAct(player.avatar, 'cheer'); burst(p.clone().setY(p.y + 2.4), RAINBOW, 50, 5, 3); showBanner('⛺ 캠핑 모임 도장 쾅!', `🐚 +20 · 지금까지 캠핑 모임 ${bag.campN}번 참여 · 🔥 모닥불 가에 앉아 친구들과 노을을 봐요`, 6000); }
-  { const L = [camp ? `⛺ 지금 꼭대기에서 캠핑 모임 중!` : '⛰️ 뒷산 놀거리', bag.mtChest === dayNum() ? '💎 오늘 보물 찾기 완료 ✅' : '💎 오늘의 보물 상자가 숨어 있어요 (🔭 꼭대기 망원경 힌트)', sledOpen() ? '🛷 꼭대기에서 썰매 타기 열림!' : '🛷 썰매는 겨울에 열려요'], k = L.join('|'); if (mtf.boardKey !== k) { mtf.boardKey = k; mtf.board.userData.set(L); } }
+  { const L = [camp ? `⛺ 지금 꼭대기에서 캠핑 모임 중!` : '⛰️ 뒷산 놀거리', bag.mtChest === dayNum() ? '💎 오늘 보물 찾기 완료 ✅' : '💎 오늘의 보물 상자가 숨어 있어요 (🔭 꼭대기 망원경 힌트)', '🏆 꼭대기에 반월몬스터즈 경기장'], k = L.join('|'); if (mtf.boardKey !== k) { mtf.boardKey = k; mtf.board.userData.set(L); } }
   if ($('tpMtnNow') && !$('teacherPanel').classList.contains('hidden')) { const t = camp ? `⛺ ${camp.k === 'dawn' ? '해돋이' : '노을'} 캠핑 모임 중 · 남은 ${Math.ceil((camp.e - backend.now()) / 60000)}분 · 꼭대기 ${mtCampCount()}명` : '⛺ 캠핑 모임 닫힘'; const s2 = `${t} · 🛷 썰매장 ${sledOpen() ? '열림' : '닫힘'}${seasonNow() === 'wi' ? ' (겨울)' : S.mtev?.sled === 1 ? ' (선생님이 열었어요)' : ' (12~2월에 저절로 열려요)'}`; if ($('tpMtnNow').textContent !== s2) $('tpMtnNow').textContent = s2; $('tpSled').textContent = S.mtev?.sled === 1 ? '🛷 썰매장 닫기 (겨울에는 그대로 열려요)' : '🛷 썰매장 지금 열기'; }
 }
 function mtAdminInit() {
@@ -14563,7 +14563,7 @@ const TP_LAYOUT = {
   class: [/수업 도구/, /수업 마무리/, /문제 범위/, /꿈나무 무대/, /🗓️ 시즌/, /쉬는 시간/, /이모티콘/, /발표 칭찬/, /학급회의/, /의견함/, /감사 게시판/, /건의함/],
   mission: [/공동 미션 \(/, /히든 미션/],
   village: [['🏫 메인 마을', [/가게와 반 기부/, /재화 현황/, /자료실/, /벽화/]], ['🏯 역사 마을', [/역사 마을/, /과거시험장/]], ['🗽 영어 마을', [/영어 골든벨/]], ['🔤 한글 마을', [/한글 마을/]], ['⛏️ 수학 마을', [/수학 광산/, /수학 달리기장/]], ['🏡 이름 미정 마을 (예전 우리 집 마을 · 이름은 투표로 정해요)', [/마을 이름 투표/, /우리 집 마을/]]],
-  play: [/심해 방탈출/, /성 공방전/, /삼국 해전/, /뒷산 \(캠핑/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
+  play: [/심해 방탈출/, /성 공방전/, /숨바꼭질/, /건물 안 활동/, /펫 체육관/, /모래성/, /행사/],
   setup: [/개인정보/, /채팅/, /닉네임/, /접속한 친구/, /능력치 상한/, /레벨 경험치/, /규칙 점검/, /상태 파일/, /초기화/, /계절·시간/],
 };
 function initTpTabs() {
@@ -18572,6 +18572,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105v', d: '11월 8일', items: ['🙈 변신 숨바꼭질을 🔤 한글 마을에서도! 장독대·장승·볏가리·솟대·초가 헛간·돌담 같은 숨을 곳이 많아졌어요', '🗑️ 삼국 해전 · 뒷산 캠핑 모임 · 썰매장은 없어졌어요'] },
   { id: '1105u', d: '11월 8일', items: ['📚 선생님이 정한 진도(배운 단원)에서만 문제가 나와요: 펫 배틀 · 수영 경주 · 두더지 · 보물섬'] },
   { id: '1105t', d: '11월 8일', items: ['🧩 펫 체육관: 기술을 고르면 문제가 나와요! 맞히면 데미지 ×1.5, 틀리면 빗나가요', '⚡ 친구 대전: 턴마다 두 사람에게 같은 문제! 틀리면 빗나가고, 더 빨리 맞힌 사람이 ×1.5 (늦게 맞히면 ×1.2)', '👀 친구 대전 관전: 경기장 📺 관전 화면 · 대전 게시판 · 리그 접수처에서 지금 하는 대전을 실시간으로 봐요'] },
   { id: '1105s', d: '11월 8일', items: ['⛰️ 반월몬스터즈 경기장이 뒷산 꼭대기로! 오솔길 따라 올라가 🏆 돌문으로 들어가요 (포털로도 갈 수 있어요)', '🔥 경기장이 구름 위 산꼭대기로 바뀌었어요: 돌기둥 불꽃 · 큰 깃발 · 👑 챔피언의 자리 · 둘레 설산'] },
@@ -20476,33 +20477,40 @@ const HIDE_VIL = {
   hv: { n: '🏯 역사 마을', at: () => [HV.x0 + 6, 0], in: (x, z) => inHV(x, z), props: [5, 8, 10, 14, 15, 16, 17, 36, 37, 38, 39] }, // 🏮 돌 등불 · 🏺 장독대 · 🐦 솟대 · 🪵 장작 · 🥁 큰북 · 🪨 맷돌 · 🏮 청사초롱
   ev: { n: '🗽 영어 마을', at: () => [EV.bus[0] + 3, 0], in: (x, z) => inEV(x, z), props: [2, 3, 18, 19, 20, 21, 11, 40, 41, 42, 43] }, // 🪑 벤치 · 💡 가로등 · 📮 우체통 · ☎️ 전화 부스 · 🚒 소화전 · 📰 가판대 · 🗑️ 휴지통
   math: { n: '⛏️ 수학 마을', at: () => [MV.station[0] + 4, MV.station[1] + 1], in: (x, z) => inMath(x, z), props: [22, 23, 24, 25, 26, 32, 33, 34, 35] }, // 🛒 광석 수레 · 💎 수정 바위 · 🛢️ 나무 통 · 🔦 광산 등불 · ⛰️ 바위 · ⛏️ 곡괭이 걸이 · 🪵 갱도 버팀목 · 🚧 안내판 · 🪨 광석 더미 (1024a)
-  field: { n: '🏡 들판 마을', at: () => [0, 68], in: (x, z) => inField(x, z), props: [1, 9, 7, 27, 28, 29, 30, 31] }, // 🌳 나무 · 🍊 과일나무 · 🧺 바구니 · 🌾 건초 · 🧑‍🌾 허수아비 · 🌻 해바라기 · 🪣 우물 · 🥕 채소 상자
+  field: { n: '🏡 들판 마을', at: () => [0, 68], in: (x, z) => inField(x, z), props: [1, 9, 7, 27, 28, 29, 30, 31] },
+  kv: { n: '🔤 한글 마을', at: () => [KV.cx, KV.z1 - 9], in: (x, z) => inKV(x, z), props: [1, 5, 8, 10, 14, 16, 17, 36, 37, 38, 39] }, /* 🙈 1105v 🌳 나무 · 🏮 돌 등불 · 🏺 장독대 · 🐦 솟대 · 🪵 장작 · 🪨 맷돌 · 🏮 청사초롱 · 🗿 장승 · 🌾 볏가리 · 🪵 지게 · 🏺 항아리 */ // 🌳 나무 · 🍊 과일나무 · 🧺 바구니 · 🌾 건초 · 🧑‍🌾 허수아비 · 🌻 해바라기 · 🪣 우물 · 🥕 채소 상자
 };
 // 🙈 1024k 역사 마을 · 영어 마을 꾸밈 — 숨바꼭질 변신 물건과 같은 모양을 곳곳에 (숨기 좋게) + 몸을 숨길 수 있는 담·울타리
 const VIL_DECOR = {
   hv: { at: [HV.x0, HV.x1, HV.z0, HV.z1], ok: (x, z) => inHV(x, z) && Math.abs(x - 520) > 3.8 && Math.abs(z) > 3.8, n: 38 },
   ev: { at: [EV.x0, EV.x1, EV.z0, EV.z1], ok: (x, z) => inEV(x, z) && Math.abs(z) > 5.2 && Math.abs(z) < 44, n: 40 },
+  kv: { get at() { return [KV.x0, KV.x1, KV.z0, KV.z1]; }, ok: (x, z) => inKV(x, z) && Math.abs(x - KV.cx) > 6.5 && Math.abs(z - KV.cz) > 5.5 && Math.hypot(x - KV.cx, z - KV.cz) > 17 && z < KV.z1 - 14, n: 130, walls: 40, groves: 26, seed: 2901 }, /* 🙈 1105v 한글 마을: 넓은 들판에 숨을 곳 (길·광장·입구는 비워요) */
 };
 const vdw = { g: {} };
 function buildVilDecor(k) {
   const V = VIL_DECOR[k], [x0, x1, z0, z1] = V.at, g = new THREE.Group(); g.name = 'VilDecor_' + k; scene.add(g); vdw.g[k] = g; const o = { solid: false };
-  let sd = k === 'hv' ? 1590 : 1776; const r = () => (sd = (sd * 9301 + 49297) % 233280) / 233280, placed = [];
+  let sd = V.seed || (k === 'hv' ? 1590 : 1776); const r = () => (sd = (sd * 9301 + 49297) % 233280) / 233280, placed = [];
   const near = (x, z, rad) => { for (const c of colliders) { const b = c.box; if (x > b.min.x - rad && x < b.max.x + rad && z > b.min.z - rad && z < b.max.z + rad && b.max.y > 0.3) return true; }
     for (const it of interactables) { const p = it.pos; if (p && p.y > -50 && Math.abs(p.x - x) < 3.4 + rad && Math.abs(p.z - z) < 3.4 + rad) return true; }
     return placed.some(([px, pz, pr]) => Math.hypot(px - x, pz - z) < pr + rad + 1.0); };
   const spot = (rad) => { for (let t = 0; t < 300; t++) { const x = x0 + 2 + r() * (x1 - x0 - 4), z = z0 + 2 + r() * (z1 - z0 - 4); if (V.ok(x, z) && V.ok(x + rad, z + rad) && V.ok(x - rad, z - rad) && !near(x, z, rad)) { placed.push([x, z, rad]); return [x, z]; } } return null; };
   // 담·울타리 (몸을 숨길 수 있어요 · 부딪혀요)
-  for (let i = 0; i < 9; i++) { const p = spot(2.2); if (!p) break; const q = new THREE.Group(); q.position.set(p[0], 0, p[1]); q.rotation.y = r() < 0.5 ? 0 : Math.PI / 2; g.add(q);
-    if (k === 'hv') { if (i % 3 === 2) { cyl(q, 1.0, 1.3, 0xD9B85A, 0, 0.65, 0, { surf: 'straw' }); mesh(CONE, q, 1.05, 0.7, 1.05, 0xC9A64A, 0, 1.6, 0, { solid: false, surf: 'straw' }); } // 짚더미
+  for (let i = 0; i < (V.walls || 9); i++) { const p = spot(2.2); if (!p) break; const q = new THREE.Group(); q.position.set(p[0], 0, p[1]); q.rotation.y = r() < 0.5 ? 0 : Math.PI / 2; g.add(q);
+    if (k === 'kv' && i % 4 === 3) { box(q, 2.6, 2.0, 2.0, 0xF4EEDC, 0, 1.0, 0); box(q, 2.7, 0.2, 2.1, 0x7A5234, 0, 2.05, 0, o); mesh(GABLE, q, 3.2, 0.9, 2.6, 0xD9B85A, 0, 2.55, 0, { solid: false, surf: 'straw' }); box(q, 0.8, 1.3, 0.05, 0x6E4A2C, 0, 0.65, 1.02, o); } /* 🛖 1105v 작은 초가 헛간 */
+    else if (k === 'hv' || k === 'kv') { if (i % 3 === 2) { cyl(q, 1.0, 1.3, 0xD9B85A, 0, 0.65, 0, { surf: 'straw' }); mesh(CONE, q, 1.05, 0.7, 1.05, 0xC9A64A, 0, 1.6, 0, { solid: false, surf: 'straw' }); } // 짚더미
       else { box(q, 3.4, 1.25, 0.6, 0x9A9286, 0, 0.62, 0); for (let s2 = -1.4; s2 <= 1.4; s2 += 0.7) mesh(SPH_LO, q, 0.36, 0.28, 0.34, [0x8E8678, 0xA59D90, 0x7E776C][Math.abs(Math.round(s2 * 10)) % 3], s2, 0.95, 0.12, { solid: false, flat: true }); mesh(GABLE, q, 3.7, 0.35, 0.9, 0x4A4A52, 0, 1.25, 0, { solid: false, ry: Math.PI / 2 }); } } // 돌담 (기와 얹음)
     else { if (i % 3 === 2) { for (const [dx, dy, s2] of [[0, 0, 1], [0.95, 0, 0.9], [0.45, 0.95, 0.85]]) { box(q, s2, s2, s2, 0xC08A54, dx - 0.4, dy + s2 / 2, 0); box(q, s2 + 0.02, 0.12, s2 + 0.02, 0xE8D29A, dx - 0.4, dy + s2 * 0.55, 0, o); } } // 📦 배달 상자 더미
       else { box(q, 3.2, 1.3, 0.9, C.hedge || 0x3E8A44, 0, 0.65, 0); for (let s2 = -1.2; s2 <= 1.2; s2 += 0.8) ball(q, 0.12, [0xFF7AA8, 0xFFFFFF, 0xFFD23C][Math.abs(Math.round(s2 * 5)) % 3], s2, 1.32, 0.3, o); } } } // 🌳 생울타리 (꽃)
+  for (let i = 0; i < (V.groves || 0); i++) { const p = spot(3.6); if (!p) break; const [gx, gz] = p; /* 🌲 1105v 숲 덤불 · 🎋 대나무 숲 (몸을 숨길 수 있어요) */
+    if (i % 3 === 2) { for (let j = 0; j < 22; j++) { const a = r() * Math.PI * 2, d = r() * 2.6, h = 3.2 + r() * 2.2; cyl(g, 0.09, h, [0x5FA046, 0x4E8E3C, 0x6AAE50][j % 3], gx + Math.cos(a) * d, h / 2, gz + Math.sin(a) * d, o); if (j % 2) mesh(SPH_LO, g, 0.5, 0.35, 0.5, 0x6AB850, gx + Math.cos(a) * d, h - 0.2, gz + Math.sin(a) * d, o); } box(g, 4.4, 2.2, 4.4, 0x4E8E3C, gx, 1.1, gz).visible = false; }
+    else { for (let j = 0; j < 5; j++) { const a = j / 5 * Math.PI * 2 + r(), d = 1.2 + r() * 1.4, x = gx + Math.cos(a) * d, z = gz + Math.sin(a) * d, h = 3 + r() * 2; cyl(g, 0.22, h * 0.45, 0x7A5234, x, h * 0.22, z); mesh(CONE, g, 1.3, h * 0.75, 1.3, [0x3E7E3A, 0x4E8E44, 0x2F6E34][j % 3], x, h * 0.45 + h * 0.37, z, { solid: false, flat: true }); }
+      for (let j = 0; j < 6; j++) { const a = r() * Math.PI * 2, d = 0.6 + r() * 2.4; mesh(SPH_LO, g, 0.9 + r() * 0.5, 0.75 + r() * 0.3, 0.9 + r() * 0.5, [0x5A9A48, 0x4E8E3C, 0x6AA850][j % 3], gx + Math.cos(a) * d, 0.55, gz + Math.sin(a) * d, { solid: false, flat: true }); } } }
   // 변신 물건과 같은 모양 (몸은 막지 않아요)
   const ps = HIDE_VIL[k].props;
   for (let i = 0; i < V.n; i++) { const p = spot(1.0); if (!p) break; const pm = propModel(ps[i % ps.length]); pm.position.set(p[0], 0, p[1]); pm.rotation.y = r() * Math.PI * 2; g.add(pm); }
   registerSolids(g, 'static'); batchStatic(g); g.visible = false;
 }
-function updateVilDecor() { const x = player.pos.x, c = joined ? x : camera.position.x; if (vdw.g.hv) vdw.g.hv.visible = c > 400 && c < 640; if (vdw.g.ev) vdw.g.ev.visible = c > 1600 && c < 1900; }
+function updateVilDecor() { const x = player.pos.x, c = joined ? x : camera.position.x; if (vdw.g.hv) vdw.g.hv.visible = c > 400 && c < 640; if (vdw.g.ev) vdw.g.ev.visible = c > 1600 && c < 1900; if (vdw.g.kv) vdw.g.kv.visible = c > 2780 && c < 3020; }
 const hideVil = () => HIDE_VIL[S.hide?.v] || HIDE_VIL.main;
 const hideVilName = (k) => k === 'field' ? `🏡 ${vnameOf()}` : (HIDE_VIL[k] || HIDE_VIL.main).n;
 const hidePick = new Set(); // 🧑‍🏫 술래로 정한 참가자
@@ -26668,7 +26676,7 @@ setInterval(() => { try { scrTick(); } catch (e) { console.warn('scr', e); } }, 
 //         state/ssp/{uid}/{시즌} = 단계 (칭호를 친구들도 보게) · 접속 정보 sx = 발자국 꾸미기
 const SSNS = [
   { id: 's1', icon: '🍂', n: '시즌 1 · 가을 수확제', sub: '🎭 꿈끼 발표회를 준비해요 · 오늘의 할 일로 ⭐를 모아요', from: Date.UTC(2026, 10, 2) / 864e5, to: Date.UTC(2026, 10, 29) / 864e5, col: '#F08A24', bg: '#FFF1E0' },
-  { id: 's2', icon: '❄️', n: '시즌 2 · 겨울 마을', sub: '눈 내린 마을 · 🛷 썰매 · ⛺ 캠핑 모임', from: Date.UTC(2026, 10, 30) / 864e5, to: Date.UTC(2026, 11, 27) / 864e5, col: '#4A9AE8', bg: '#EAF4FF' },
+  { id: 's2', icon: '❄️', n: '시즌 2 · 겨울 마을', sub: '눈 내린 마을', from: Date.UTC(2026, 10, 30) / 864e5, to: Date.UTC(2026, 11, 27) / 864e5, col: '#4A9AE8', bg: '#EAF4FF' },
   { id: 'fin', icon: '🎓', n: '5학년 마무리 축제', sub: '시상식 · 명예의 전당 · 나의 성장 기록장', from: Date.UTC(2026, 11, 28) / 864e5, to: Date.UTC(2026, 11, 30) / 864e5, col: '#B58CF0', bg: '#F4EEFF', finale: true },
 ];
 const SSN_STARS = [3, 6, 10, 15, 20, 26, 32, 40, 48, 56]; // 단계마다 필요한 누적 ⭐
@@ -29115,6 +29123,7 @@ function kvBuild() {
   }
   kvDecor(g); /* 🏮 1105d */
   registerSolids(g, 'kv');
+  try { buildVilDecor('kv'); } catch (e) { console.warn('kv decor', e); } /* 🙈 1105v 숨바꼭질 숨을 곳 */
   kvW.it = addInteract({ pos: new V3(0, -99, 0), r: 3.2, text: () => kvW.act?.[0] || null, run: () => kvW.act?.[1]?.() });
 }
 function kvBoardTick() { // 걸린 시 3편을 게시판에 (👍 많은 순)
@@ -29350,7 +29359,7 @@ setInterval(() => { try { if (!joined) return; strSync(); } catch (e) { } }, 100
 // ================= 📅 1102p 학급 달력 (마을 행사 일정 · 선생님이 정해요 · 반복) =================
 // 위쪽 📅 버튼 → 달력(월) · 날짜를 누르면 그날 일정 · 이번 주 일정 · 꿈끼 발표회 D-day·시즌은 저절로
 // · state/cal/ev/{id} {t 제목, ic 아이콘, r 'o' 한 번 | 'w' 매주 | 'd' 평일 매일, d 'YYYY-MM-DD' (한 번: 그날 · 반복: 시작일), wd '1,3' 요일(매주), u 끝날(선택), tm 'HH:MM'(선택), m 메모} (선생님만)
-const CAL_PRE = [['🔔', '영어 골든벨'], ['⚔️', '성 공방전'], ['⚓', '삼국 해전'], ['🎭', '꿈끼 골든벨'], ['📝', '수업 마무리 퀴즈'], ['🚂', '하늘 기차 견학'], ['👗', '옷 디자인 공모전'], ['🕵️', '정보 탐정단'], ['🏃', '수학 달리기'], ['📜', '과거시험'], ['🎉', '마을 축제'], ['🏫', '학급회의']];
+const CAL_PRE = [['🔔', '영어 골든벨'], ['⚔️', '성 공방전'], ['🎭', '꿈끼 골든벨'], ['📝', '수업 마무리 퀴즈'], ['🚂', '하늘 기차 견학'], ['👗', '옷 디자인 공모전'], ['🕵️', '정보 탐정단'], ['🏃', '수학 달리기'], ['📜', '과거시험'], ['🎉', '마을 축제'], ['🏫', '학급회의']];
 const CAL_WD = ['일', '월', '화', '수', '목', '금', '토'];
 const calW = { y: 0, m: 0, sel: '', edit: null, toldDay: 0 };
 const calStr = (dn) => new Date(dn * 864e5).toISOString().slice(0, 10);
@@ -29983,7 +29992,7 @@ function loop() {
   if (joined) { updateMath(dt); updateBlocks(dt); updateRooms(dt); updateEv(dt); updatePortal(dt); updateTrain(dt); updateHide(dt); updatePb(); updateRides(dt); updateAttr(dt); updateRank(dt); updateFest(dt); updateMathExtras(dt); updatePlaces(dt); updatePest(dt); }
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
-  if (joined) { try { nvTick(dt); } catch (e) { console.warn('nv', e); } } // ⚓ 1031g 삼국 해전
+  /* 🗑️ 1105v 삼국 해전 없앴어요 (nvTick 멈춤) */
   if (joined) { try { stgTick(dt); } catch (e) { console.warn('stg', e); } } // 🎤 1101d
   if (joined) { try { kvTick(); } catch (e) { console.warn('kv', e); } } // 🔤 1101i
   if (joined) { try { kvPoemRwTick(); } catch (e) { console.warn('kpoem', e); } } // ✍️ 1101l
@@ -30000,7 +30009,7 @@ function loop() {
   if (!joined) renderPreview(dt);
   updatePretty(dt);
   updateEnv(dt);
-  if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); nvRemotes(); try { strTick(0); strFollow(); strRemotes(); } catch (e) { } } // 🚂 1102k 친구 위치를 받은 뒤 다시 맞춰요
+  if (joined) { updateRemotes(dt); attrRemotes(); boardRemotes(dt); try { strTick(0); strFollow(); strRemotes(); } catch (e) { } } // 🚂 1102k 친구 위치를 받은 뒤 다시 맞춰요
   updateTeachLooks(dt);
   poolTick(dt); // 🏊 1028o (아바타 위치를 다 정한 뒤)
   try { reefTick(dt); } catch (e) { console.warn('reef', e); } // 🤿 1031b
