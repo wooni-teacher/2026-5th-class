@@ -18545,6 +18545,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105t', d: '11월 8일', items: ['🧩 펫 체육관: 기술을 고르면 문제가 나와요! 맞히면 데미지 ×1.5, 틀리면 빗나가요', '⚡ 친구 대전: 턴마다 두 사람에게 같은 문제! 틀리면 빗나가고, 더 빨리 맞힌 사람이 ×1.5 (늦게 맞히면 ×1.2)', '👀 친구 대전 관전: 경기장 📺 관전 화면 · 대전 게시판 · 리그 접수처에서 지금 하는 대전을 실시간으로 봐요'] },
   { id: '1105s', d: '11월 8일', items: ['⛰️ 반월몬스터즈 경기장이 뒷산 꼭대기로! 오솔길 따라 올라가 🏆 돌문으로 들어가요 (포털로도 갈 수 있어요)', '🔥 경기장이 구름 위 산꼭대기로 바뀌었어요: 돌기둥 불꽃 · 큰 깃발 · 👑 챔피언의 자리 · 둘레 설산'] },
   { id: '1105r', d: '11월 8일', items: ['🔁 선생님이 실명 닉네임을 새 닉네임으로 바꿀 수 있어요 · 집·가방·펫·비밀 숫자·칭찬·칭호 기록은 그대로 이어져요', '🔒 닉네임이 바뀐 학생은 선생님께 받은 새 닉네임 + 내 비밀 숫자로 들어와요'] },
   { id: '1105q', d: '11월 8일', items: ['🔗 다른 기기로 옮기기: 연결 코드에 닉네임까지 맞아야 이어져요 (옮겨 갈 기기에서 같은 닉네임을 적어요)', '🧹 20분이 지난 연결 코드는 서버가 읽지 못하게 막고, 선생님 기기가 자동으로 지워요'] },
@@ -20755,7 +20756,7 @@ const pbRng = (seed) => { let a = seed | 0; return () => { a = a + 0x6D2B79F5 | 
 function pbSide(snap, name) { return { name, cur: 0, mons: snap.filter(x => x && PET[x.i]).map(x => { const s = petStats(x.i, x.l); return { id: x.i, lv: x.l, mv: (Array.isArray(x.m) ? x.m : Object.values(x.m || {})).filter(k => PMOVE[k]).slice(0, 4), hp: s.hp, max: s.hp, atk: s.atk, def: s.def, spd: s.spd, sa: 0, sd: 0 }; }) }; }
 const pbMon = (side) => side.mons[side.cur];
 const pbStage = (s) => s >= 0 ? 1 + 0.5 * s : 1 / (1 - 0.5 * s);
-function pbStep(B, ch, rng) { // ch = [A가 고른 기술 번호, B가 고른 기술 번호] → 일어난 일 목록
+function pbStep(B, ch, rng, mod) { // ch = [A가 고른 기술 번호, B가 고른 기술 번호] → 일어난 일 목록 · 🧩 1105t mod = [A 배수, B 배수] (0 = 문제를 틀려 빗나감)
   const ev = [], ord = [0, 1];
   const mvOf = (i) => { const m = pbMon(B.s[i]); return PMOVE[m.mv[ch[i]]] ? m.mv[ch[i]] : 'tackle'; };
   const pri = (i) => PMOVE[mvOf(i)].pri || 0, sp = (i) => pbMon(B.s[i]).spd;
@@ -20765,15 +20766,16 @@ function pbStep(B, ch, rng) { // ch = [A가 고른 기술 번호, B가 고른 �
     const me = pbMon(B.s[i]), fo = pbMon(B.s[1 - i]), k = mvOf(i), M = PMOVE[k], who = `${me.nm || CRITTER[me.id].name}`;
     if (!me || me.hp <= 0) continue;
     ev.push({ s: i, k: 'use', t: `${who}의 ${M.n}!`, mt: M.t, mv: k });
+    if (mod && mod[i] === 0) { ev.push({ s: i, k: 'miss', t: '❌ 문제를 틀려서 빗나갔어요!' }); continue; }
     if (M.acc && rng() * 100 >= M.acc) { ev.push({ s: i, k: 'miss', t: '빗나갔어요!' }); continue; }
     if (M.fx === 'heal') { const h = Math.min(me.max - me.hp, Math.round(me.max * 0.4)); me.hp += h; ev.push({ s: i, k: 'heal', t: `체력을 ${h} 회복했어요`, hp: [B.s[0].mons.map(m => m.hp), B.s[1].mons.map(m => m.hp)] }); continue; }
     if (M.fx === 'atkUp') { me.sa = Math.min(2, me.sa + 1); ev.push({ s: i, k: 'buff', t: '공격이 올라갔어요!' }); continue; }
     if (M.fx === 'defUp') { me.sd = Math.min(2, me.sd + 1); ev.push({ s: i, k: 'buff', t: '방어가 올라갔어요!' }); continue; }
     if (M.fx === 'defDown') { fo.sd = Math.max(-2, fo.sd - 1); ev.push({ s: 1 - i, k: 'debuff', t: `${fo.nm || CRITTER[fo.id].name}의 방어가 내려갔어요!` }); continue; }
     const eff = petEff(M.t, petType(fo.id)), stab = M.t === petType(me.id) ? 1.2 : 1, crit = rng() < 1 / 16 ? 1.5 : 1;
-    const dmg = Math.max(1, Math.round(M.pw * (me.atk * pbStage(me.sa)) / (fo.def * pbStage(fo.sd) + 8) * 0.55 * eff * stab * crit * (0.85 + rng() * 0.15)));
+    const qm = mod && mod[i] > 0 ? mod[i] : 1, dmg = Math.max(1, Math.round(M.pw * (me.atk * pbStage(me.sa)) / (fo.def * pbStage(fo.sd) + 8) * 0.55 * eff * stab * crit * (0.85 + rng() * 0.15) * qm));
     fo.hp = Math.max(0, fo.hp - dmg);
-    ev.push({ s: 1 - i, k: 'hit', d: dmg, eff, crit: crit > 1, t: `${crit > 1 ? '급소에 맞았어요! ' : ''}${eff > 1 ? '효과가 굉장했어요! ' : eff < 1 ? '효과가 별로였어요… ' : ''}${dmg} 피해`, hp: [B.s[0].mons.map(m => m.hp), B.s[1].mons.map(m => m.hp)] });
+    ev.push({ s: 1 - i, k: 'hit', d: dmg, eff, crit: crit > 1, t: `${qm > 1 ? `⭕ 정답 보너스 ×${qm}! ` : ''}${crit > 1 ? '급소에 맞았어요! ' : ''}${eff > 1 ? '효과가 굉장했어요! ' : eff < 1 ? '효과가 별로였어요… ' : ''}${dmg} 피해`, hp: [B.s[0].mons.map(m => m.hp), B.s[1].mons.map(m => m.hp)] });
     if (fo.hp <= 0) {
       ev.push({ s: 1 - i, k: 'faint', t: `${fo.nm || CRITTER[fo.id].name}이(가) 쓰러졌어요!` });
       const sd = B.s[1 - i], nx = sd.mons.findIndex(m => m.hp > 0);
@@ -20880,7 +20882,7 @@ function petImg(id, cls = 'pet-art') { const im = document.createElement('img');
 function pbCard(el, m, side) { // 🪪 이름표: 같은 펫이면 체력 막대만 부드럽게 줄어요
   if (!m) { el.textContent = ''; el.dataset.id = ''; return; }
   const c = CRITTER[m.id], t = PT[petType(m.id)];
-  if (el.dataset.id !== m.id) { el.dataset.id = m.id; el.textContent = '';
+  if (el.dataset.id !== m.id + ':' + m.lv) { el.dataset.id = m.id + ':' + m.lv; el.textContent = ''; /* 1105t 레벨이 달라도 새로 그려요 */
     const top = el2('div', 'pb-name'); top.append(el2('b', '', m.nm || c.name), el2('span', 'pb-type', `${t.i} ${t.n}`), el2('span', 'pb-lv', `Lv${m.lv}`)); el.append(top);
     const bar = el2('div', 'pb-hp'), tr = el2('div', 'pb-hptr'); tr.append(el2('b', 'pb-ghost'), el2('i', '')); bar.append(el2('span', 'pb-hpl', 'HP'), tr); el.append(bar, el2('div', 'pb-hpt', ''), el2('div', 'pb-dots', '')); }
   const r = Math.max(0, m.hp / m.max), fill = el.querySelector('.pb-hp i'), gh = el.querySelector('.pb-ghost'); fill.style.width = `${r * 100}%`; gh.style.width = `${r * 100}%`; /* 줄어든 만큼 잠깐 빨갛게 남았다가 따라와요 */ fill.style.background = r > 0.5 ? 'linear-gradient(#7EE07A,#3FAF4A)' : r > 0.2 ? 'linear-gradient(#FFE066,#E8B400)' : 'linear-gradient(#FF8A7A,#E2584A)';
@@ -20891,9 +20893,11 @@ function pbRender() {
   const B = pb.B; if (!B) return; const me = pb.me, mm = pbMon(B.s[me]), fm = pbMon(B.s[1 - me]);
   pbCard($('pbMeCard'), mm, B.s[me]); pbCard($('pbFoeCard'), fm, B.s[1 - me]); if (pb3.on) { pb3SetMon(0, mm); pb3SetMon(1, fm); }
   const box = $('pbMoves'); box.textContent = '';
-  $('pbQuit').classList.toggle('hidden', B.over >= 0);
+  $('pbQuit').classList.toggle('hidden', B.over >= 0 || pb.mode === 'spec');
   if (B.over >= 0) { const b = el2('button', 'btn pb-close', '닫기'); b.onclick = pbClose; box.append(b); return; }
   if (pb.mode === 'pvp' && pb.qz) { pbQzRender(box); return; } /* 🧩 1105o */
+  if (pb.mode === 'spec') { const sp = el2('p', 'hint', `👀 관전 중 · ${B.s[0].name} vs ${B.s[1].name}${pb.specQ ? ' · 🧩 ' + pb.specQ : ''}`); sp.style.cssText = 'grid-column:1/-1;text-align:center;margin:4px 0'; const b = el2('button', 'btn pb-close', '관전 끝내기'); b.onclick = pbClose; box.append(sp, b); return; } /* 👀 1105t */
+  if (pb.tq && (pb.mode === 'npc' || pb.mode === 'pvp')) { pbTqRender(box); return; } /* 🧩 1105t */
   mm.mv.forEach((k, i) => { const M = PMOVE[k], t = PT[M.t], b = el2('button', 'btn pb-mv'); b.style.setProperty('--tc', t.c);
     const ef = M.pw ? petEff(M.t, petType(fm.id)) : 1;
     b.append(el2('b', '', `${t.i} ${M.n}`), el2('small', '', M.pw ? `위력 ${M.pw}${M.acc < 100 ? ` · 명중 ${M.acc}` : ''}${M.pri ? ' · 먼저' : ''}${ef > 1 ? ' · 효과 굉장 ✨' : ef < 1 ? ' · 효과 별로' : ''}` : M.d || ''));
@@ -21099,20 +21103,22 @@ function pbAnim(ev, done) { // 한 줄씩 · 3D 기술 효과 → 맞기 → 쓰
   };
   next();
 }
-function pbRun(ch, seed) { // 계산은 한 번에 · 화면은 처음 값에서 한 줄씩 따라가요
+function pbRun(ch, seed, mod) { // 계산은 한 번에 · 화면은 처음 값에서 한 줄씩 따라가요
   const B = pb.B, snap = B.s.map(s => s.mons.map(m => m.hp)), curs = B.s.map(s => s.cur);
-  const ev = pbStep(B, ch, pbRng(seed)), fin = B.s.map(s => s.mons.map(m => m.hp)), fcur = B.s.map(s => s.cur), over = B.over;
+  const ev = pbStep(B, ch, pbRng(seed), mod), fin = B.s.map(s => s.mons.map(m => m.hp)), fcur = B.s.map(s => s.cur), over = B.over;
   B.s.forEach((s, i) => { s.mons.forEach((m, j) => { m.hp = snap[i][j]; }); s.cur = curs[i]; }); B.over = -1;
   pb.busy = true; pbRender();
   pbAnim(ev, () => { B.s.forEach((s, i) => { s.mons.forEach((m, j) => { m.hp = fin[i][j]; }); s.cur = fcur[i]; }); B.over = over; pb.busy = false; if (over < 0 && pb.mode === 'raid' && B.turn >= RAID_TURNS) { B.over = 9; pbRender(); pbEnd(); return; } pbRender(); if (over >= 0) pbEnd(); }); // 🐉 레이드는 8턴까지
 }
 function pbChoose(i) {
   if (pb.busy || !pb.B || pb.B.over >= 0) return;
-  if (pb.mode === 'npc' || pb.mode === 'raid' || pb.mode === 'wild') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); pbRun([i, ai], seed); return; }
+  if (pb.mode === 'npc' || pb.mode === 'pvp') { pbTqOpen(i); return; } /* 🧩 1105t 체육관 · 친구 대전: 턴마다 문제 */
+  if (pb.mode === 'raid' || pb.mode === 'wild') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); pbRun([i, ai], seed); return; }
   if (pb.mode === 'pvp') { pb.busy = true; pbRender(); $('pbLog').textContent = '⏳ 친구가 고르기를 기다려요…'; pb.waitAt = performance.now(); backend.pbChoose(pb.mid, pb.B.turn, i).then(r => { if (!r.ok) { pb.busy = false; pbRender(); toast('⚠️ 기술을 보내지 못했어요', 'warn'); } }); }
 }
 function pbEnd() {
   if (pb.mode === 'raid') { raidEnd(); return; }
+  if (pb.mode === 'spec') { const B = pb.B; $('pbLog').textContent = B.over === 0 || B.over === 1 ? `🏆 ${B.s[B.over].name} 승리!` : '⚔️ 대전이 끝났어요'; pbRender(); return; } /* 👀 1105t 관전은 보상 없음 */
   const B = pb.B, won = B.over === pb.me, foe = B.s[1 - pb.me], mine = B.s[pb.me];
   const fl = foe.mons.reduce((t, m) => t + m.lv, 0), gain = Math.round(fl * (won ? 4 : 2)), ups = [];
   for (const m of mine.mons) { const u = petGainXp(m.id, gain); if (u) ups.push(u); }
@@ -21134,13 +21140,14 @@ function pbEnd() {
 }
 function pbClose() {
   if (pb.mode === 'raid' && pb.B && pb.B.over < 0) { const B = pb.B, d = Math.max(0, B.raidHp0 - B.s[1].mons[0].hp); if (d > 0 && S.raid?.r === B.raidR) backend.raidHit(d, raidName()).then(r => r.ok && toast(`🐉 보스에게 ${d} 피해를 줬어요`, 'success')); } // 중간에 나가도 준 피해는 남아요
-  if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.mid) backend.pbChoose(pb.mid, pb.B.turn, -1); // 🏳️ 그만하기 = 지기
+  if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.mid && pb.turnSent !== pb.B.turn) backend.pbChoose(pb.mid, pb.B.turn, -1); // 🏳️ 그만하기 = 지기 (이번 턴을 이미 보냈으면 다음 턴에 지기 표시는 못 해요)
   if (pb.mode === 'npc') pgRelease(); // ⏳ 관장 자리를 다음 친구에게
-  $('pbPanel').classList.add('hidden'); pb.B = null; pb.mode = ''; pb.mid = ''; pb.qz = null; pb3Stop(); document.body.classList.remove('in-pb'); renderer.toneMappingExposure = 1.02;
+  $('pbPanel').classList.add('hidden'); pb.B = null; pb.mode = ''; pb.mid = ''; pb.qz = null; pb.tq = null; pb.specQ = ''; pb3Stop(); document.body.classList.remove('in-pb'); renderer.toneMappingExposure = 1.02;
 }
 function pbSync() { // ⚔️ 친구 대전: 둘 다 고르면 계산 · 내 신청을 누가 받으면 시작
   if (!backend || !joined) return; const me = backend.uid, ms = S.pb?.m || {};
   if (!pb.B && pb.openAt) { for (const [mid, m] of Object.entries(ms)) if (m?.a === me && (m.at || 0) >= pb.openAt - 5000 && !m.c) { pb.openAt = 0; backend.pbOpen(null); pbStartPvp(mid, m); break; } }
+  if (pb.mode === 'spec' && pb.B) { pbSpecSync(ms[pb.mid]); return; } /* 👀 1105t */
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.qz) { pbQzSync(ms[pb.mid]); return; } /* 🧩 1105o 시작 문제 */
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0) {
     const m = ms[pb.mid]; if (!m) { toast('⚔️ 대전이 끝났어요', 'info'); pb.B.over = pb.me; pbEnd(); return; }
@@ -21148,8 +21155,61 @@ function pbSync() { // ⚔️ 친구 대전: 둘 다 고르면 계산 · 내 신
     const ka = c[m.a], kb = c[m.b]; if (ka == null || kb == null) return;
     pb.turnDone = pb.B.turn;
     if (ka < 0 || kb < 0) { const loser = ka < 0 ? 0 : 1; pb.B.over = 1 - loser; $('pbLog').textContent = loser === pb.me ? '🏳️ 그만했어요' : '🏳️ 친구가 그만했어요'; pbEnd(); return; }
-    pbRun([ka, kb], (m.s | 0) + pb.B.turn * 7919);
+    const T = pbTqMods(ka, kb); pb.tq = null; pbRun(T.ch, (m.s | 0) + pb.B.turn * 7919, T.mod); if (T.msg) toast(T.msg, 'info');
   }
+}
+/* 🧩 1105t 턴마다 문제: 기술을 고르면 문제가 나와요
+   · 펫 체육관(관장): 맞히면 데미지 ×1.5, 틀리면 빗나가요
+   · 친구 대전: 두 사람에게 같은 문제 · 틀리면 빗나가요 · 둘 다 맞히면 더 빨리 맞힌 사람 ×1.5, 늦은 사람 ×1.2 · 혼자만 맞히면 ×1.5
+   · 친구 대전 기록 c/{턴}/{uid} = 기술(0~3) + 10 × 정답(0·1) + 100 × 걸린 시간(0.1초, 최대 300) · 10보다 작으면 예전 방식(문제 없음) */
+const PB_TQ_SEC = 20;
+const pbTqDec = (v) => v < 10 ? { k: v, ok: true, t: 0, old: true } : { k: v % 10, ok: Math.floor(v / 10) % 10 === 1, t: Math.floor(v / 100) };
+function pbTqMods(va, vb) {
+  const a = pbTqDec(va), b = pbTqDec(vb), ch = [a.k, b.k]; if (a.old || b.old) return { ch, mod: null, msg: '' };
+  const mod = [a.ok ? 1.5 : 0, b.ok ? 1.5 : 0]; if (a.ok && b.ok) { if (a.t < b.t) mod[1] = 1.2; else if (b.t < a.t) mod[0] = 1.2; else { mod[0] = mod[1] = 1.3; } }
+  const nm = (i) => pb.B?.s[i]?.name || '친구', tx = (x) => x.ok ? `⭕ ${(x.t / 10).toFixed(1)}초` : '❌';
+  return { ch, mod, msg: `🧩 ${nm(0)} ${tx(a)} · ${nm(1)} ${tx(b)}` };
+}
+function pbTqOpen(k) {
+  const B = pb.B; if (!B || B.over >= 0 || pb.busy || pb.tq) return;
+  const seed = pb.mode === 'pvp' ? ((S.pb?.m?.[pb.mid]?.s | 0) ^ ((B.turn + 1) * 2654435761)) | 0 : (Math.random() * 1e9) | 0;
+  pb.tq = { k, Q: pbCommonQ(seed), pick: -1, at: performance.now() }; $('pbLog').textContent = pb.mode === 'pvp' ? '🧩 빨리 맞히면 더 세게! 틀리면 빗나가요' : '🧩 맞히면 더 세게 (×1.5)! 틀리면 빗나가요'; pbRender();
+}
+function pbTqRender(box) {
+  const z = pb.tq, left = Math.max(0, PB_TQ_SEC - Math.floor((performance.now() - z.at) / 1000));
+  const card = wrapQBox(box, z.Q, 0, z.pick, z.pick < 0 ? (j) => pbTqPick(j) : null, z.pick >= 0 ? { 0: z.Q.ans } : null); card.style.gridColumn = '1 / -1'; card.style.maxHeight = '44vh'; card.style.overflowY = 'auto';
+  const info = el2('p', 'hint', z.pick < 0 ? `⏱️ ${left}초 · ${PMOVE[pbMon(pb.B.s[pb.me]).mv[z.k]]?.n || '기술'} 준비!` : z.pick === z.Q.ans ? '⭕ 정답!' : `❌ 정답은 ${z.Q.ans + 1}번`); info.style.cssText = 'grid-column:1/-1;text-align:center;margin:4px 0'; info.dataset.tq = '1'; box.append(info);
+  if (z.pick < 0) { const back = el2('button', 'btn', '↩️ 기술 다시 고르기'); back.style.cssText = 'grid-column:1/-1;background:#fff'; back.onclick = () => { if (pb.tq === z && z.pick < 0) { pb.tq = null; pbRender(); } }; if (pb.mode === 'npc') box.append(back); }
+}
+function pbTqPick(j) {
+  const z = pb.tq; if (!z || z.pick >= 0 || !pb.B) return; z.pick = j; const ok = j === z.Q.ans, t = Math.min(300, Math.round((performance.now() - z.at) / 100)); playSfx(ok ? 'right' : 'wrong'); if (ok && z.Q.subj) addStat(z.Q.subj, 1); pbRender();
+  if (pb.mode === 'npc') { const B = pb.B, seed = pb.seed + B.turn * 7919, ai = pbAi(B, 1, pbRng(seed ^ 0x5bd1)); setTimeout(() => { if (pb.tq !== z || !pb.B) return; pb.tq = null; pbRun([z.k, ai], seed, [ok ? 1.5 : 0, 1]); }, 650); return; }
+  if (pb.mode === 'pvp') { pb.busy = true; pb.turnSent = pb.B.turn; pb.waitAt = performance.now(); $('pbLog').textContent = (ok ? '⭕ 정답!' : '❌ 틀렸어요…') + ' ⏳ 친구를 기다려요'; const v = z.k + (ok ? 10 : 0) + 100 * Math.max(1, t);
+    backend.pbChoose(pb.mid, pb.B.turn, v).then(r => { if (!r.ok) { pb.busy = false; pb.turnSent = -1; pb.tq = null; pbRender(); toast('⚠️ 답을 보내지 못했어요 (규칙을 새로 게시했는지 선생님께 여쭤봐요)', 'warn'); } }); }
+}
+function pbTqTick() { const z = pb.tq; if (!z || z.pick >= 0 || !pb.B) return; const el = document.querySelector('#pbMoves [data-tq]'), left = PB_TQ_SEC - (performance.now() - z.at) / 1000;
+  if (left <= 0) { pbTqPick(9); toast('⏱️ 시간이 지나서 빗나가요', 'warn'); return; } if (el && el.textContent.startsWith('⏱️')) el.textContent = el.textContent.replace(/^⏱️ \d+초/, `⏱️ ${Math.ceil(left)}초`); }
+/* 👀 1105t 친구 대전 관전: 대전 기록(팀 · 씨앗 · 턴마다 고른 것)을 똑같이 다시 계산해서 보여 줘요 (두 사람 화면과 같은 결과) */
+function pbSpecList() { const ms = S.pb?.m || {}, now = backend.now(); return Object.entries(ms).filter(([, m]) => m && m.a && m.b && now - (m.at || 0) < 40 * 60000); }
+function openPbSpec() {
+  openLife('👀 펫 대전 관전', (box) => { box.textContent = ''; const L = pbSpecList();
+    box.append(el2('p', 'hint', '지금 하고 있는 친구 대전을 실시간으로 볼 수 있어요. 관전은 보상이 없고, 대전에 영향을 주지 않아요.'));
+    if (!L.length) { box.append(el2('div', 'vempty', '지금 하는 대전이 없어요')); return; }
+    for (const [mid, m] of L) { const r = el2('div', 'pet-row'), n = Object.keys(m.c || {}).filter(k => /^\d+$/.test(k)).length;
+      r.append(el2('span', '', `⚔️ ${m.na || '친구'} vs ${m.nb || '친구'} · ${n ? `${n}턴째` : '🧩 시작 문제'}`)); const b = el2('button', 'btn', '👀 보기'); b.style.background = '#FFD23C'; b.onclick = () => { closeLife(); pbSpecStart(mid); }; r.append(b); box.append(r); } });
+}
+function pbSpecStart(mid) {
+  const m = S.pb?.m?.[mid]; if (!m) return toast('대전이 끝났어요', 'info'); if (pb.B) return toast('지금 하는 배틀을 먼저 끝내요', 'warn');
+  const B = { s: [pbSide(Object.values(m.ta || {}), m.na || '친구'), pbSide(Object.values(m.tb || {}), m.nb || '친구')], over: -1, turn: 0 };
+  for (;;) { const c = m.c?.[B.turn], ka = c?.[m.a], kb = c?.[m.b]; if (ka == null || kb == null || ka < 0 || kb < 0 || B.over >= 0) break; const T = pbTqMods(ka, kb); pbStep(B, T.ch, pbRng((m.s | 0) + B.turn * 7919), T.mod); } /* 지난 턴은 빨리 따라잡아요 */
+  pb.mid = mid; pb.specQ = ''; pbOpenBattle(B, 'spec', 0); $('pbLog').textContent = `👀 ${B.s[0].name} vs ${B.s[1].name} 관전 시작!${B.turn ? ` (${B.turn}턴째)` : ''}`; pbSpecSync(m);
+}
+function pbSpecSync(m) {
+  const B = pb.B; if (!B || pb.mode !== 'spec') return; if (!m) { if (B.over < 0) { B.over = 9; $('pbLog').textContent = '⚔️ 대전이 끝났어요'; pbRender(); } return; }
+  const q = !Object.keys(m.c || {}).some(k => /^\d+$/.test(k)) ? '시작 문제 푸는 중' : ''; if (q !== pb.specQ && !pb.busy) { pb.specQ = q; pbRender(); }
+  if (pb.busy || B.over >= 0) return; const c = m.c?.[B.turn], ka = c?.[m.a], kb = c?.[m.b]; if (ka == null || kb == null) return;
+  if (ka < 0 || kb < 0) { B.over = ka < 0 ? 1 : 0; $('pbLog').textContent = `🏳️ ${B.s[ka < 0 ? 0 : 1].name}이(가) 그만했어요 · ${B.s[B.over].name} 승리`; pbRender(); return; }
+  const T = pbTqMods(ka, kb); if (T.msg) toast(T.msg, 'info'); pbRun(T.ch, (m.s | 0) + B.turn * 7919, T.mod);
 }
 function pbStartPvp(mid, m) {
   const me = backend.uid, i = m.a === me ? 0 : 1;
@@ -21731,7 +21791,8 @@ function openPvp() {
   if (!joined) return;
   openLife('⚔️ 친구와 펫 대전', (box) => {
     box.textContent = ''; const me = backend.uid, team = petSnap(), now = backend.now(), os = Object.entries(S.pb?.o || {}).filter(([u, o]) => o && now - (o.at || 0) < 180000);
-    box.append(el2('p', 'hint', `대전 신청을 올리면 친구가 받아서 1:1로 싸워요. 🧩 먼저 두 사람에게 같은 문제가 나오고, 둘 다 맞혀야 배틀이 시작돼요 (서로 30초 안에 골라요). 이기면 🐚 +15 · 져도 +5 (하루 5번).${backend.mode !== 'firebase' ? ' 🔌 혼자 연습 모드에서는 친구가 없어요.' : ''}`));
+    { const sl = pbSpecList().length, sb = el2('button', 'btn', `👀 대전 관전하기${sl ? ` (${sl})` : ''}`); sb.style.background = '#fff'; sb.onclick = openPbSpec; box.append(el2('div', 'row-center', null)); box.lastChild.append(sb); } /* 👀 1105t */
+    box.append(el2('p', 'hint', `대전 신청을 올리면 친구가 받아서 1:1로 싸워요. 🧩 먼저 두 사람에게 같은 문제가 나오고, 둘 다 맞혀야 배틀이 시작돼요. 🧩 턴마다 같은 문제가 나와요: 틀리면 빗나가고, 더 빨리 맞힌 사람이 더 세게 쳐요 (서로 30초 안에 골라요). 이기면 🐚 +15 · 져도 +5 (하루 5번).${backend.mode !== 'firebase' ? ' 🔌 혼자 연습 모드에서는 친구가 없어요.' : ''}`));
     if (!team.length) { box.append(el2('p', 'vempty', '🩺 펫 센터에서 팀을 먼저 정해요')); return; }
     box.append(el2('p', '', `내 팀: ${team.map(x => `${CRITTER[x.i].icon}${CRITTER[x.i].name} Lv${x.l}`).join(' · ')}`));
     const mine = os.find(([u]) => u === me);
@@ -21758,6 +21819,7 @@ function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이�
     for (let n = 1; n <= PG_N; n++) { const lb = pgw.labels['st' + n]; if (!lb) continue; const b = pgBusy(n), q = pgQueue(n); lb.userData.set([b ? `⚔️ 배틀 중: ${nickOf(b.u, remotes.get(b.u)?.target) || b.nm || '친구'}` : '✅ 지금 도전할 수 있어요', `🙋 기다리는 친구 ${q.length}명`]); }
   }
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.qz && performance.now() - pb.qz.at > 90000) pbQzCancel('⏱️ 친구가 오래 답하지 않아서 대전이 취소됐어요', true); /* 🧩 1105o */
+  pbTqTick(); /* 🧩 1105t */
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && !pb.qz && pb.busy && pb.turnDone !== pb.B.turn && performance.now() - pb.waitAt > 45000) { pb.B.over = pb.me; $('pbLog').textContent = '⏱️ 친구가 오래 고르지 않아서 이겼어요'; pbEnd(); }
   if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); backend.linkSweep?.(); /* 🧹 1105q */ const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000) up[`pb/m/${k}`] = null; for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
 }
@@ -28241,6 +28303,8 @@ function buildMonArena() {
     addInteract({ pos: new V3(kx, 1, kz + 1.4), r: 2.6, text: () => roomNow() === 'pml' ? ['📋 리그 접수처', S.pbl?.on ? `🟢 ${S.pbl.s || '시즌'} 진행 중` : '리그가 아직 안 열렸어요'] : null, run: openLeague }); }
   { const vx = cx, vz = cz + 4.2; addInteract({ pos: new V3(vx, 1, vz), r: 3, text: () => roomNow() === 'pml' ? ['⚔️ 리그 대전 신청', S.pbl?.on ? '여기서 한 대전은 리그 기록이 돼요' : '(리그가 열리면 기록돼요)'] : null, run: openPvp }); makeLabel(g, ['⚔️ 대전 신청 · E'], 0.7, vx, 2.0, vz); }
   { const hx = cx + w / 2 - 1.2; box(g, 1.1, 1.0, 3, 0xFFFFFF, hx, 0.5, cz + 2); box(g, 1.14, 0.18, 3.04, 0xFF8FB3, hx, 1.0, cz + 2, o); makeLabel(g, ['🩺 펫 센터'], 0.6, hx, 2.4, cz + 2); addInteract({ pos: new V3(hx - 1.3, 1, cz + 2), r: 2.4, text: () => roomNow() === 'pml' ? ['펫 센터 🩺', '팀 · 데려오기'] : null, run: () => openPetCenter() }); }
+  { const sx = cx - 9, sz = cz + 13.2; box(g, 4.2, 2.4, 0.2, 0x1E2230, sx, 2.6, sz, o); signPlane(g, ['📺 관전 화면', 'E · 지금 하는 대전 보기'], 3.9, 2.1, sx, 2.6, sz - 0.12, { font: 54, pad: 6, fg: '#FFE08A', bg: '#1E2230', stroke: false }); for (const s of [-1, 1]) box(g, 0.15, 1.4, 0.15, 0x3B3630, sx + s * 1.8, 0.7, sz, o);
+    addInteract({ pos: new V3(sx, 1, sz - 1.4), r: 2.6, text: () => roomNow() === 'pml' ? ['👀 관전 화면', `지금 대전 ${pbSpecList().length}개`] : null, run: openPbSpec }); } /* 👀 1105t */
   registerSolids(g, 'pml'); plw.g = g; plw.key = '';
 }
 function arenaTick(dt) {
@@ -28263,6 +28327,7 @@ function openLeague() {
     box.textContent = ''; const L = S.pbl || {}, rows = pblRows(), meR = rows.findIndex(r => r.u === backend.uid);
     box.append(el2('p', 'lp-big', L.on ? `🟢 ${L.s || '챔피언스리그'} 진행 중` : '⏸️ 리그가 열리지 않았어요'), el2('p', 'hint', `📜 규칙: 이 경기장 안에서 ⚔️ 리그 대전 신청으로 친구와 펫 대전을 하면 리그 기록이 돼요 · 이기면 3점, 져도 1점 · 하루 ${PBL_DAY}경기 · 같은 친구와는 하루 ${PBL_FOE}경기까지 · 시즌이 끝나면 1등이 👑 챔피언!`));
     if (L.champ?.n) box.append(el2('p', '', `👑 지난 챔피언: ${L.champ.n} (${L.champ.s || ''} · ${L.champ.pt}점)`));
+    { const sl = pbSpecList().length, sb = el2('button', 'btn', `👀 지금 하는 대전 관전${sl ? ` (${sl})` : ''}`); sb.style.background = '#FFD23C'; sb.onclick = openPbSpec; box.append(el2('div', 'row-center', null)); box.lastChild.append(sb); } /* 👀 1105t */
     if (meR >= 0) box.append(el2('p', '', `🙋 내 기록: ${meR + 1}위 · ${rows[meR].pt | 0}점 · ${rows[meR].w | 0}승 ${rows[meR].l | 0}패`));
     box.append(el2('h3', 'lp-sec', '📊 순위표'));
     if (!rows.length) box.append(el2('div', 'vempty', '아직 경기가 없어요'));
