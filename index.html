@@ -1612,7 +1612,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <p class="hint">한 줄에 하나씩 <b>실명 = 새 닉네임</b>으로 적어요. 계정(집·가방·펫·비밀 숫자)과 칭찬·조개·칭호·기록이 새 닉네임으로 옮겨지고, 서버에서 실명이 지워져요. 실명 ↔ 닉네임 표는 이 선생님 기기에만 남아요. 학생은 다음부터 새 닉네임 + 비밀 숫자로 들어와요.</p>
     <textarea id="tpNmMap" class="tinput" rows="6" style="width:100%;font-size:16px" placeholder="김가나 = 반짝별&#10;이다라 = 푸른고래"></textarea>
     <label class="hint" style="display:block;margin:4px 0"><input type="checkbox" id="tpNmText" checked> 학생이 쓴 글 속의 실명(3글자 이상)도 닉네임으로 바꾸기</label>
-    <div class="row-center wrap"><button class="btn" id="tpNmFill" type="button" style="background:#fff">📝 명단에서 실명 채우기</button><button class="btn" id="tpNmPrev" type="button" style="background:#fff">🔎 미리 보기</button><button class="btn" id="tpNmGo" type="button" style="background:#FFD23C" disabled>🔁 바꾸기</button><button class="btn" id="tpNmBook" type="button" style="background:#fff">📒 닉네임 ↔ 실명 표 (이 기기)</button></div>
+    <div class="row-center wrap"><button class="btn" id="tpNmFill" type="button" style="background:#fff">📝 명단에서 실명 채우기</button><button class="btn" id="tpNmPrev" type="button" style="background:#fff">🔎 미리 보기</button><button class="btn" id="tpNmGo" type="button" style="background:#FFD23C" disabled>🔁 바꾸기</button><button class="btn" id="tpNmBook" type="button" style="background:#fff">📒 닉네임 ↔ 실명 표 (이 기기)</button><button class="btn" id="tpBagFix" type="button" style="background:#FFE0E0">🩺 가방 점검 · 되살리기</button></div>
     <div id="tpNmOut" class="hint" style="white-space:pre-line"></div>
 
     <h3>💬 채팅</h3>
@@ -18572,6 +18572,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105w', d: '11월 9일', items: ['🩺 선생님: 닉네임을 바꾼 뒤 가방이 비어 버린 학생의 예전 가방(조개·능력치·펫·물건)과 땅을 되살릴 수 있어요', '🔁 닉네임 바꾸기 미리 보기에서 계정을 못 찾으면 먼저 알려 줘요'] },
   { id: '1105v', d: '11월 8일', items: ['🙈 변신 숨바꼭질을 🔤 한글 마을에서도! 장독대·장승·볏가리·솟대·초가 헛간·돌담 같은 숨을 곳이 많아졌어요', '🗑️ 삼국 해전 · 뒷산 캠핑 모임 · 썰매장은 없어졌어요'] },
   { id: '1105u', d: '11월 8일', items: ['📚 선생님이 정한 진도(배운 단원)에서만 문제가 나와요: 펫 배틀 · 수영 경주 · 두더지 · 보물섬'] },
   { id: '1105t', d: '11월 8일', items: ['🧩 펫 체육관: 기술을 고르면 문제가 나와요! 맞히면 데미지 ×1.5, 틀리면 빗나가요', '⚡ 친구 대전: 턴마다 두 사람에게 같은 문제! 틀리면 빗나가고, 더 빨리 맞힌 사람이 ×1.5 (늦게 맞히면 ×1.2)', '👀 친구 대전 관전: 경기장 📺 관전 화면 · 대전 게시판 · 리그 접수처에서 지금 하는 대전을 실시간으로 봐요'] },
@@ -29928,7 +29929,7 @@ async function nmPlan() {
   const map = new Map(pairs), long = pairs.map(([r]) => r).filter(r => r.length >= 3).sort((a, b) => b.length - a.length).map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const textRe = $('tpNmText').checked && long.length ? new RegExp(long.join('|'), 'g') : null, lines = [], prep = [];
   for (const [r, n] of pairs) { const P = await backend.nmPrep(r, n); if (!P.ok) { out.textContent = `⚠️ 계정을 살피지 못했어요 (${P.err}) · database.rules.json을 게시했는지 확인`; return; }
-    if (P.taken) errs.push(`${n}: 이미 다른 계정이 쓰는 닉네임이에요`); prep.push([r, n, P]); lines.push(`${r} → ${n}${P.sec ? ' 🔒' : ''}${P.same ? ' (이미 연결됨)' : ''}`); }
+    if (P.taken) errs.push(`${n}: 이미 다른 계정이 쓰는 닉네임이에요`); if (!P.mapped && !P.same) errs.push(`${r}: 이 이름으로 들어온 계정을 찾지 못했어요. 학생이 실명과 다른 닉네임을 썼다면 '그 예전 닉네임 = ${n}'으로 적어요 (그대로 바꾸면 새 계정이 돼요)`); /* 🩺 1105w */ prep.push([r, n, P]); lines.push(`${r} → ${n}${P.sec ? ' 🔒' : ''}${P.same ? ' (이미 연결됨)' : ''}`); }
   const room = currentRoom, roots = [[`rooms/${room}/state`, await backend.rawGet(`rooms/${room}/state`)], [`rooms/${room}/earn`, await backend.rawGet(`rooms/${room}/earn`)], [`secrets/${room}/pins`, await backend.rawGet(`secrets/${room}/pins`)]];
   const w = { mv: [], set: [], txt: [] }; for (const [p, v] of roots) if (v) nmWalk(v, p, map, textRe, w);
   const ros = String(S.roster || ''), ros2 = ros.split(/([,\n]+)/).map(x => { const c = cleanNick(x); return c && map.has(c) ? x.replace(c, map.get(c)) : x; }).join('');
@@ -29952,6 +29953,35 @@ $('tpNmFill')?.addEventListener('click', () => { const ta = $('tpNmMap'), have =
 $('tpNmPrev')?.addEventListener('click', () => { nmPlan().catch(e => { $('tpNmOut').textContent = '⚠️ ' + (e?.message || e); }); });
 $('tpNmGo')?.addEventListener('click', () => { nmGo().catch(e => { $('tpNmOut').textContent = '⚠️ ' + (e?.message || e); }); });
 $('tpNmMap')?.addEventListener('input', () => { $('tpNmGo').disabled = true; nmW.plan = null; });
+/* 🩺 1105w 가방 점검 · 되살리기: 닉네임을 바꾼 뒤 새 계정(빈 가방)으로 들어간 학생 → 예전 계정 가방(rooms/{반}/bags/{uid})을 새 계정에 복사 + 땅 옮기기
+   가방 안: 🐚 조개 · 📊 능력치 · 🐾 펫 · 물건 · 옷 등 · 학생 기기는 다음 저장 때 '다른 기기에서 들어왔어요' → 새로고침하면 되살아난 가방 */
+function bagSum(x) { let o = {}; try { o = JSON.parse(x?.j || '{}') || {}; } catch (e) { } const st = Object.values(o.stat || {}).reduce((a, b) => a + (+b || 0), 0), pets = Object.keys(o.pets || {}).length, lv = Math.max(0, ...Object.values(o.pets || {}).map(q => +q?.lv || 0));
+  return { shell: o.shell | 0, st, pets, lv, at: +x?.at || 0, nk: String(x?.nk || ''), o, score: (o.shell | 0) + st / 10 + pets * 50 + lv * 20 }; }
+async function openBagFix() {
+  if (backend?.mode !== 'firebase') return toast('반 마을(Firebase)에 선생님으로 들어와야 해요', 'warn');
+  const room = currentRoom, bags = (await backend.rawGet(`rooms/${room}/bags`)) || {}, book = Object.values(nmBookGet()), newSet = new Set(book.map(b => nickKey(b.n)));
+  const L = Object.entries(bags).map(([u, x]) => ({ u, ...bagSum(x) })).sort((a, b) => b.at - a.at), dt = (t) => { const d = new Date(t); return t ? `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}` : '-'; };
+  const line = (b) => `${b.nk || '(이름 없음)'} · 🐚${b.shell} · 📊${b.st} · 🐾${b.pets}${b.lv ? ` (Lv${b.lv})` : ''} · ${dt(b.at)}`;
+  openLife('🩺 가방 점검 · 되살리기', (box) => { box.textContent = '';
+    box.append(el2('p', 'hint', '닉네임을 바꾼 뒤 가방이 비어 버린 학생을 찾아, 예전 계정 가방(조개·능력치·펫·물건)을 새 계정으로 옮겨요. 학생은 옮긴 뒤 새로고침하면 돼요. 예전 가방은 지우지 않아요.'));
+    const olds = L.filter(b => !newSet.has(nickKey(b.nk))), news = L.filter(b => newSet.has(nickKey(b.nk)) || b.score < 260);
+    const sec = el2('div', ''); box.append(el2('h3', 'lp-sec', `⚠️ 가방이 거의 빈 계정 ${news.filter(b => b.score < 260).length}개`), sec);
+    for (const b of news.filter(x => x.score < 260)) { const bk = book.find(q => nickKey(q.n) === nickKey(b.nk)), r = el2('div', 'pet-row'); r.style.flexWrap = 'wrap';
+      r.append(el2('span', '', `🆕 ${line(b)}${bk ? ` · 실명 ${bk.r}` : ''}`)); const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.cssText = 'width:auto;max-width:100%';
+      const cand = olds.filter(o => o.u !== b.u && o.score > b.score).sort((x, y) => (bk && nickKey(y.nk) === nickKey(bk.r)) - (bk && nickKey(x.nk) === nickKey(bk.r)) || y.at - x.at);
+      sel.append(new Option('예전 가방 고르기…', '')); for (const o of cand) sel.append(new Option(`${bk && nickKey(o.nk) === nickKey(bk.r) ? '⭐ ' : ''}${line(o)}`, o.u)); if (cand[0] && bk && nickKey(cand[0].nk) === nickKey(bk.r)) sel.value = cand[0].u;
+      const go = el2('button', 'btn', '↩️ 되살리기'); go.style.background = '#FFD23C'; go.onclick = async () => { const o = L.find(q => q.u === sel.value); if (!o) return toast('예전 가방을 골라요', 'warn');
+        if (!(await confirmAction({ title: '↩️ 가방을 되살릴까요?', body: `「${o.nk}」 가방(🐚${o.shell} · 🐾${o.pets})을 「${b.nk}」 계정으로 옮겨요. 지금 「${b.nk}」 가방은 덮어써요.`, okText: '되살리기' }))) return;
+        const now = backend.now(), j = JSON.stringify({ ...o.o, _uid: b.u, _at: now }), up = { [`rooms/${room}/bags/${b.u}`]: { j, at: now, nk: b.nk } };
+        const lot = S.plotOwner?.[o.u]; if (lot && S.plots?.[lot]?.o === o.u && !S.plotOwner?.[b.u]) { up[`rooms/${room}/state/plots/${lot}/o`] = b.u; up[`rooms/${room}/state/plotOwner/${b.u}`] = lot; up[`rooms/${room}/state/plotOwner/${o.u}`] = null; }
+        const q = await backend.rawUpdate(up); if (!q.ok && up[`rooms/${room}/state/plotOwner/${b.u}`]) { delete up[`rooms/${room}/state/plots/${lot}/o`]; delete up[`rooms/${room}/state/plotOwner/${b.u}`]; delete up[`rooms/${room}/state/plotOwner/${o.u}`]; const q2 = await backend.rawUpdate(up); if (q2.ok) { toast('↩️ 가방은 되살렸어요 (땅은 옮기지 못했어요 · 규칙 게시 확인)', 'warn'); go.disabled = true; } else toast(`⚠️ 되살리지 못했어요 (${q2.err})`, 'warn'); return; }
+        if (q.ok) { toast(`↩️ 「${b.nk}」 가방을 되살렸어요${up[`rooms/${room}/state/plotOwner/${b.u}`] ? ' · 🏠 땅도 옮겼어요' : ''}. 학생 기기를 새로고침해요`, 'success'); go.disabled = true; go.textContent = '✅ 됐어요'; } else toast(`⚠️ 되살리지 못했어요 (${q.err})`, 'warn'); };
+      r.append(sel, go); sec.append(r); }
+    if (!sec.childElementCount) sec.append(el2('p', 'hint', '빈 가방 계정이 없어요 👍'));
+    box.append(el2('h3', 'lp-sec', `🎒 반 전체 가방 ${L.length}개 (최근 저장 순)`)); const all = el2('div', 'hint'); all.style.whiteSpace = 'pre-line'; all.textContent = L.map(line).join('\n'); box.append(all);
+  });
+}
+$('tpBagFix')?.addEventListener('click', () => { openBagFix().catch(e => toast('⚠️ ' + (e?.message || e), 'warn')); });
 $('tpNmBook')?.addEventListener('click', () => { const B = Object.values(nmBookGet()).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); $('tpNmOut').textContent = B.length ? `📒 이 기기에만 있는 표 (${B.length}명)\n` + B.map(x => `${x.n} = ${x.r}`).join('\n') : '📒 아직 바꾼 학생이 없어요 (이 기기 기준)'; });
 $('tpSecPins')?.addEventListener('click', async () => { const r = await backend.secPins(); if (!r.ok) { $('tpSecList').textContent = '⚠️ 읽지 못했어요 (database.rules.json을 게시했는지 확인)'; return; } const L = Object.values(r.v).filter(x => x && x.n).sort((a, b) => String(a.n).localeCompare(String(b.n), 'ko')); const done = new Set(L.map(x => nickKey(x.n))), cand = new Map(); const add = (n) => { const c = cleanNick(n); if (c && c !== '친구' && !done.has(nickKey(c))) cand.set(nickKey(c), c); };
   rosterNames().forEach(add); for (const [, r2] of remotes) add(r2.target?.n); { const E = await backend.earnGet?.(); for (const x of Object.values(E || {})) add(x?.n); } /* 🔒 1105p 아직 안 만든 학생 (명단 · 지금 접속 · 오늘 재화 기록에서 찾아요) */
