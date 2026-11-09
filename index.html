@@ -4932,7 +4932,7 @@ function updateInteract() {
   el.classList.remove('hidden');
 }
 async function triggerPrompt() {
-  if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요. 선생님 이야기를 들어요', 'info'); return; }
+  if (isFrozen()) { toast(isTeacherFrozen() ? '✋ 지금은 잠깐 멈춤이에요. 선생님 이야기를 들어요' : '🔒 먼저 내 비밀 숫자를 만들어요', 'info'); return; }
   if (!current || busy) return;
   busy = true;
   try { await current.run(); } finally { setTimeout(() => { busy = false; }, 250); }
@@ -12395,7 +12395,8 @@ function updateRest(dt) {
 }
 const isResting = () => rw.shown;
 const secNag = { on: false, fail: 0 }; /* 🔒 1105p 비밀 숫자를 만들 때까지 멈춤 */
-const isFrozen = () => !!(joined && !isTeacher && ((S.control?.freeze && backend && backend.now() - S.control.freeze < FREEZE_MAX) || rw.shown || secNag.on)); // 😌 쉬는 시간에도 멈춰요
+const isTeacherFrozen = () => !!(joined && !isTeacher && ((S.control?.freeze && backend && backend.now() - S.control.freeze < FREEZE_MAX) || rw.shown)); /* ✋ 선생님 잠깐 멈춤 · 칭찬 화면 */
+const isFrozen = () => isTeacherFrozen() || !!(joined && !isTeacher && secNag.on); /* 🔒 비밀 숫자를 만드는 동안도 못 움직여요 (멈춤 화면은 안 띄워요) */ // 😌 쉬는 시간에도 멈춰요
 let frozenShown = false;
 function syncControl(prev, first) {
   const g = S.control?.gather || 0, pg = prev.control?.gather || 0;
@@ -12425,7 +12426,7 @@ function gatherHere() {
   toast('📣 선생님이 모두를 광장으로 불렀어요!', 'success');
 }
 function updateControl() { // 멈춤 화면 켜고 끄기 (10분이 지나면 저절로 풀려요)
-  const f = isFrozen();
+  const f = isTeacherFrozen(); /* 1105za: 비밀 숫자 만들기(secNag)로 멈춘 건 '선생님 이야기를 들어요'를 띄우지 않아요 */
   if (f === frozenShown) return;
   frozenShown = f;
   if (f) playSfx('bell');
@@ -18574,6 +18575,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105za', d: '11월 9일', items: ['🔧 비밀 숫자를 만들 때 「✋ 잠깐 멈춤! 선생님 이야기를 들어요」가 잘못 뜨던 문제를 고쳤어요'] },
   { id: '1105z', d: '11월 9일', items: ['🔐 선생님 화면에서 지금 반 비밀번호를 볼 수 있어요'] },
   { id: '1105y', d: '11월 9일', items: ['🧹 선생님: 옮겨진 예전 계정 · 명단에 없는 계정 · 오래 안 들어온 계정을 골라 정리할 수 있어요'] },
   { id: '1105x', d: '11월 9일', items: ['🩺 가방 점검에서 「예전 가방 고르기」 칸이 바로 닫히던 문제를 고쳤어요'] },
