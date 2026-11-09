@@ -10162,6 +10162,7 @@ addEventListener('focusin', (e) => { const t = e.target; if (t?.closest?.('.moda
 function refillLife() { if (!$('lifePanel').classList.contains('hidden') && life.fill) life.fill($('lpBody')); }
 function lifeTyping() { // ✍️ 창 안 글칸에 쓰는 중이면 (글자가 있거나 커서가 있으면) 저절로 다시 그리지 않아요
   const b = $('lpBody'); if (!b || $('lifePanel').classList.contains('hidden')) return false;
+  if (document.activeElement?.tagName === 'SELECT' && b.contains(document.activeElement)) return true; /* 1105x 고르는 칸을 연 채로 다시 그리면 바로 닫혀요 */
   return [...b.querySelectorAll('textarea, input:not([type]), input[type=text]')].some(el => el === document.activeElement || el.value.trim());
 }
 function refillLifeSoft() { if (!lifeTyping()) refillLife(); } // 친구들 때문에 바뀐 공동 상태로 다시 그릴 때
@@ -18572,6 +18573,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105x', d: '11월 9일', items: ['🩺 가방 점검에서 「예전 가방 고르기」 칸이 바로 닫히던 문제를 고쳤어요'] },
   { id: '1105w', d: '11월 9일', items: ['🩺 선생님: 닉네임을 바꾼 뒤 가방이 비어 버린 학생의 예전 가방(조개·능력치·펫·물건)과 땅을 되살릴 수 있어요', '🔁 닉네임 바꾸기 미리 보기에서 계정을 못 찾으면 먼저 알려 줘요'] },
   { id: '1105v', d: '11월 8일', items: ['🙈 변신 숨바꼭질을 🔤 한글 마을에서도! 장독대·장승·볏가리·솟대·초가 헛간·돌담 같은 숨을 곳이 많아졌어요', '🗑️ 삼국 해전 · 뒷산 캠핑 모임 · 썰매장은 없어졌어요'] },
   { id: '1105u', d: '11월 8일', items: ['📚 선생님이 정한 진도(배운 단원)에서만 문제가 나와요: 펫 배틀 · 수영 경주 · 두더지 · 보물섬'] },
@@ -29962,7 +29964,7 @@ async function openBagFix() {
   const room = currentRoom, bags = (await backend.rawGet(`rooms/${room}/bags`)) || {}, book = Object.values(nmBookGet()), newSet = new Set(book.map(b => nickKey(b.n)));
   const L = Object.entries(bags).map(([u, x]) => ({ u, ...bagSum(x) })).sort((a, b) => b.at - a.at), dt = (t) => { const d = new Date(t); return t ? `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}` : '-'; };
   const line = (b) => `${b.nk || '(이름 없음)'} · 🐚${b.shell} · 📊${b.st} · 🐾${b.pets}${b.lv ? ` (Lv${b.lv})` : ''} · ${dt(b.at)}`;
-  openLife('🩺 가방 점검 · 되살리기', (box) => { box.textContent = '';
+  openLife('🩺 가방 점검 · 되살리기', (box) => { if (box.dataset.hk === 'bagfix') return; box.dataset.hk = 'bagfix'; box.textContent = ''; /* 1105x 반 자료가 바뀌어도 다시 그리지 않아요 (고르던 칸이 닫히지 않게) */
     box.append(el2('p', 'hint', '닉네임을 바꾼 뒤 가방이 비어 버린 학생을 찾아, 예전 계정 가방(조개·능력치·펫·물건)을 새 계정으로 옮겨요. 학생은 옮긴 뒤 새로고침하면 돼요. 예전 가방은 지우지 않아요.'));
     const olds = L.filter(b => !newSet.has(nickKey(b.nk))), news = L.filter(b => newSet.has(nickKey(b.nk)) || b.score < 260);
     const sec = el2('div', ''); box.append(el2('h3', 'lp-sec', `⚠️ 가방이 거의 빈 계정 ${news.filter(b => b.score < 260).length}개`), sec);
