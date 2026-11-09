@@ -18578,6 +18578,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zf', d: '11월 10일', items: ['📱 오목 화면이 태블릿에 맞게 바뀌었어요 (가로: 판 왼쪽 · 버튼 오른쪽)', '🧹 끝난 오목 판은 20초 뒤 저절로 새 판 (흑백 바꿈) · 아무도 없거나 오래 멈춘 탁자는 저절로 비워져요', '🔑 오목 방에 선생님 관리 책상 (비밀번호) · 두던 판도 새 판으로'] },
   { id: '1105ze', d: '11월 9일', items: ['⚫ 오목판이 20×20으로 커졌어요', '🚫 흑은 3-3(쌍삼) 자리에 둘 수 없어요 (흑 차례에 빨간 ✕로 보여 줘요)'] },
   { id: '1105zd', d: '11월 9일', items: ['⚫ 반월쉼터에 「오목 방」이 생겼어요! 탁자에 앉아 흑·백으로 오목 한 판 (화면 가득 큰 오목판 · 구경도 돼요 · 이기면 🐚3 하루 한 번)'] },
   { id: '1105zc', d: '11월 9일', items: ['🗑️ 끝난 펫 대전은 목록에서 빠지고, 「끝난 대전 지우기」로 지울 수 있어요 (선생님은 모두 · 학생은 내 대전)'] },
@@ -29876,6 +29877,7 @@ function buildBoardCafe() {
    state/om/t0~t2 {b 흑 uid, w 백 uid, nb, nw 이름, m 놓은 자리(2글자씩 36진수 · 칸 0~224), at 마지막 수, win {c 'b'|'w', u, n, l 이긴 줄, at}}
    흑이 먼저 · 다섯 개 이상 한 줄이면 승리 · 한 판 끝나면 「새 판」(흑백 바꿔요) · 3분 동안 안 둔 자리는 다른 친구가 앉을 수 있어요
    · 이기면 🐚3 (하루 한 번) · 화면은 큰 판(화면 가득)으로 따로 열려요 · 구경도 돼요 */
+const OM_AUTO = 20000; /* 🧹 1105zf 끝난 판은 20초 뒤 저절로 새 판 (흑백 바꿈) */
 const OM_N = 20, OM_TABLES = [[-7.5, 2.5], [0, 2.5], [7.5, 2.5]], OM_IDLE = 180000;
 const omw = { on: false, t: -1, key: '', el: null, cv: null, hover: -1 };
 const omMoves = (m) => { const a = []; for (let i = 0; i + 1 < (m || '').length; i += 2) a.push(parseInt(m.slice(i, i + 2), 36)); return a; };
@@ -29897,8 +29899,8 @@ function omSub(k) { const c = omCur(S.om?.['t' + k]); if (!c || (!c.b && !c.w)) 
 function omSit(k, seat, c) { if (isFrozen()) return; closeModals(); player.pos.set(seat[0], 0.15, seat[1]); player.vy = 0; player.heading = Math.atan2(c[0] - seat[0], c[1] - seat[1]); player.avatar.g.rotation.y = player.heading; playAct(player.avatar, 'sit'); omOpen(k); }
 function omOpen(k) {
   omw.t = k; omw.on = true; omw.key = ''; let el = omw.el;
-  if (!el) { el = document.createElement('div'); el.id = 'omPlay'; el.style.cssText = 'position:fixed;inset:0;z-index:82;background:rgba(36,28,20,.92);display:flex;flex-direction:column;align-items:center;padding:calc(6px + var(--safe-top)) 8px 8px;gap:6px;touch-action:none';
-    el.innerHTML = '<div id="omHead" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;color:#FFF6E0;font-size:18px;width:100%"></div><canvas id="omCv" style="background:#E2B86A;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);touch-action:none"></canvas><div id="omMsg" style="color:#FFE9A8;font-size:18px;min-height:24px;text-align:center"></div>';
+  if (!el) { el = document.createElement('div'); el.id = 'omPlay'; el.style.cssText = 'position:fixed;inset:0;z-index:82;background:rgba(36,28,20,.94);display:flex;align-items:center;justify-content:center;padding:calc(6px + var(--safe-top)) 8px 8px;gap:10px;touch-action:none;overflow:hidden';
+    el.innerHTML = '<canvas id="omCv" style="background:#E2B86A;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);touch-action:none;flex:none"></canvas><div id="omSide" style="display:flex;flex-direction:column;gap:8px;align-items:stretch;justify-content:center;min-width:0"><div id="omHead" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;color:#FFF6E0;font-size:18px"></div><div id="omMsg" style="color:#FFE9A8;font-size:18px;text-align:center;line-height:1.4"></div></div>'; /* 📱 1105zf 가로 태블릿: 판 왼쪽 · 버튼 오른쪽 / 세로: 판 위 · 버튼 아래 */
     document.body.append(el); omw.el = el; omw.cv = el.querySelector('#omCv');
     const pick = (ev) => { const cv = omw.cv, r = cv.getBoundingClientRect(), n = OM_N, pad = r.width / (n + 1), x = Math.round((ev.clientX - r.left) / pad) - 1, y = Math.round((ev.clientY - r.top) / pad) - 1; return x >= 0 && y >= 0 && x < n && y < n ? y * n + x : -1; };
     omw.cv.addEventListener('pointerdown', (ev) => { ev.preventDefault(); const i = pick(ev); if (i < 0) return; if (omw.hover === i) { omw.hover = -1; omPlace(i); } else { omw.hover = i; omDraw(); } }); /* 터치: 한 번 누르면 미리 보기 · 같은 자리를 한 번 더 누르면 놓기 */
@@ -29909,9 +29911,9 @@ function omClose() { omw.on = false; omw.t = -1; omw.hover = -1; omw.el?.classLi
 const omMy = (c) => !c ? '' : c.b === backend.uid ? 'b' : c.w === backend.uid ? 'w' : '';
 function omRender() {
   if (!omw.on) return; const c = omCur(S.om?.['t' + omw.t]), me = backend.uid, my = omMy(c), mv = omMoves(c?.m), turn = mv.length % 2 ? 'w' : 'b', now = backend.now(), idle = c && now - (c.at || 0) > OM_IDLE;
-  const key = JSON.stringify([c, omw.hover, innerWidth, innerHeight]); if (key === omw.key) return; omw.key = key;
+  const key = JSON.stringify([c, omw.hover, innerWidth, innerHeight, c?.win ? Math.ceil((now - c.win.at) / 1000) : 0]); if (key === omw.key) return; omw.key = key;
   const H = omw.el.querySelector('#omHead'); H.textContent = ''; const btn = (t, bg, f) => { const b = el2('button', 'btn', t); b.style.cssText = `background:${bg};color:#3B2F2A;font-size:17px;padding:6px 12px`; b.onclick = f; H.append(b); return b; };
-  H.append(el2('b', '', `⚫ 오목 탁자 ${omw.t + 1}`)); const seatTx = (s) => { const u = c?.[s], n = c?.['n' + s]; return u ? `${s === 'b' ? '⚫' : '⚪'} ${n || '친구'}${u === me ? ' (나)' : ''}` : `${s === 'b' ? '⚫' : '⚪'} 빈자리`; };
+  H.append(el2('b', '', `⚫ 오목 탁자 ${omw.t + 1}`)); if (c?.win) H.append(el2('span', '', `⏱️ ${Math.max(0, Math.ceil((OM_AUTO - (now - c.win.at)) / 1000))}초 뒤 새 판`)); const seatTx = (s) => { const u = c?.[s], n = c?.['n' + s]; return u ? `${s === 'b' ? '⚫' : '⚪'} ${n || '친구'}${u === me ? ' (나)' : ''}` : `${s === 'b' ? '⚫' : '⚪'} 빈자리`; };
   H.append(el2('span', '', `${seatTx('b')} vs ${seatTx('w')}`));
   for (const s of ['b', 'w']) if (!my && (!c?.[s] || idle)) btn(`${s === 'b' ? '⚫ 흑' : '⚪ 백'}으로 앉기`, '#FFD23C', () => omJoin(s));
   if (c?.win || (idle && mv.length)) btn('🔄 새 판', '#fff', omReset);
@@ -29923,7 +29925,9 @@ function omRender() {
   omDraw();
 }
 function omDraw() {
-  const cv = omw.cv; if (!cv) return; const c = omCur(S.om?.['t' + omw.t]), size = Math.max(240, Math.min(innerWidth - 16, innerHeight - 110)), dpr = Math.min(2, devicePixelRatio || 1);
+  const cv = omw.cv; if (!cv) return; const c = omCur(S.om?.['t' + omw.t]), vw = visualViewport?.width || innerWidth, vh = visualViewport?.height || innerHeight, land = vw > vh * 1.15, dpr = Math.min(2, devicePixelRatio || 1);
+  const size = Math.max(240, Math.floor(land ? Math.min(vh - 20, vw - 250) : Math.min(vw - 16, vh - 190))); /* 📱 1105zf 태블릿에 맞춰요 */
+  omw.el.style.flexDirection = land ? 'row' : 'column'; const side = omw.el.querySelector('#omSide'); side.style.width = land ? Math.min(320, vw - size - 40) + 'px' : Math.min(size, vw - 16) + 'px'; side.querySelector('#omHead').style.flexDirection = land ? 'column' : 'row'; side.querySelector('#omHead').style.alignItems = land ? 'stretch' : 'center';
   cv.style.width = cv.style.height = size + 'px'; cv.width = cv.height = Math.round(size * dpr); const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, size, size);
   const n = OM_N, p = size / (n + 1), at = (i) => [(i % n + 1) * p, (Math.floor(i / n) + 1) * p];
   x.strokeStyle = '#3B2A1A'; x.lineWidth = 1.2; for (let i = 1; i <= n; i++) { x.beginPath(); x.moveTo(p, i * p); x.lineTo(n * p, i * p); x.stroke(); x.beginPath(); x.moveTo(i * p, p); x.lineTo(i * p, n * p); x.stroke(); }
@@ -29945,7 +29949,26 @@ async function omPlace(i) { const me = backend.uid, now = backend.now(); let err
 async function omReset() { const now = backend.now(); const r = await backend.omTx('t' + omw.t, (c) => { if (!c) return undefined; if (!omCur(c)) return { v: OM_N, b: c.w || '', w: c.b || '', nb: c.nw || '', nw: c.nb || '', m: '', at: now, win: null }; const idle = now - (c.at || 0) > OM_IDLE, my = omMy(c); if (!c.win && !idle) return undefined; if (!my && !idle) return undefined; return { v: OM_N, b: c.w || '', w: c.b || '', nb: c.nw || '', nw: c.nb || '', m: '', at: now, win: null }; }); if (r.ok) toast('🔄 새 판! 흑백을 바꿨어요', 'info'); }
 async function omResign() { const me = backend.uid, now = backend.now(); if (!(await confirmAction({ title: '🏳️ 기권할까요?', body: '상대가 이긴 걸로 끝나요.', okText: '기권' }))) return; await backend.omTx('t' + omw.t, (c) => { const my = omMy(c); if (!my || c.win) return undefined; const o = my === 'b' ? 'w' : 'b'; c.win = { c: o, u: c[o] || '', n: c['n' + o] || '친구', l: '', at: now }; c.at = now; return c; }); }
 async function omLeave() { const me = backend.uid, now = backend.now(); await backend.omTx('t' + omw.t, (c) => { const my = omMy(c); if (!my) return undefined; c[my] = ''; c['n' + my] = ''; c.at = now; if (!c.win && omMoves(c.m).length) { const o = my === 'b' ? 'w' : 'b'; if (c[o]) c.win = { c: o, u: c[o], n: c['n' + o] || '친구', l: '', at: now }; } if (!c.b && !c.w) return null; return c; }); }
-function omTick() { if (!omw.on) return; if (roomNow() !== 'bg2') { omClose(); return; } omRender(); const c = S.om?.['t' + omw.t];
+function omAdminAsk() { const was = pin.ok; pin.ok = false; askPin(() => { pin.ok = true; openOmAdmin(); }); if (was && !$('pinPanel').classList.contains('hidden')) { const c0 = $('pinCancel').onclick; $('pinCancel').onclick = () => { pin.ok = was; $('pinCancel').onclick = c0; c0?.(); }; } } /* 🔑 1105zf 선생님 비밀번호(126758)를 넣어야 열려요 */
+function openOmAdmin() {
+  openLife('🔑 오목 관리 (선생님)', (box) => { const key = JSON.stringify(S.om || {}); if (box.dataset.hk === key) return; box.dataset.hk = key; box.textContent = '';
+    box.append(el2('p', 'hint', '두고 있던 판도 선생님이 새 판으로 바꾸거나 탁자를 비울 수 있어요.'));
+    const act = (k, f, msg) => async () => { const r = await backend.omTx('t' + k, f); toast(r.ok ? msg : '⚠️ 바꾸지 못했어요', r.ok ? 'success' : 'warn'); };
+    for (let k = 0; k < OM_TABLES.length; k++) { const raw = S.om?.['t' + k], c = omCur(raw), r = el2('div', 'pet-row'); r.style.flexWrap = 'wrap';
+      r.append(el2('span', '', `⚫ 탁자 ${k + 1}: ${raw ? c ? `${c.nb || '빈자리'} vs ${c.nw || '빈자리'} · ${omMoves(c.m).length}수${c.win ? ' · 끝' : ''}` : '예전 판' : '비어 있어요'}`));
+      const b1 = el2('button', 'btn', '🔄 새 판 (돌만 지우기)'); b1.style.background = '#FFD23C'; b1.disabled = !raw; b1.onclick = act(k, (x) => { const y = omCur(x) || {}; return { v: OM_N, b: y.b || '', w: y.w || '', nb: y.nb || '', nw: y.nw || '', m: '', at: backend.now(), win: null }; }, `🔄 탁자 ${k + 1} 새 판`);
+      const b2 = el2('button', 'btn', '🧹 탁자 비우기'); b2.style.background = '#fff'; b2.disabled = !raw; b2.onclick = act(k, () => null, `🧹 탁자 ${k + 1}을 비웠어요`); r.append(b1, b2); box.append(r); }
+    const all = el2('button', 'btn', '🧹 모든 탁자 비우기'); all.style.background = '#FFB4A8'; all.onclick = async () => { if (!(await confirmAction({ title: '🧹 모든 탁자를 비울까요?', body: '두고 있던 판도 모두 지워져요.', okText: '비우기' }))) return; for (let k = 0; k < OM_TABLES.length; k++) if (S.om?.['t' + k]) await backend.omTx('t' + k, () => null); toast('🧹 모든 오목 탁자를 비웠어요', 'success'); };
+    const r0 = el2('div', 'row-center'); r0.append(all); box.append(r0); });
+}
+function omSweep() { /* 🧹 1105zf 오목 방에 있는 기기(또는 선생님 기기)가 끝난 판 · 오래 멈춘 탁자를 정리해요 */
+  const now = backend.now(); if (now - (omw.sweepAt || 0) < 4000) return; omw.sweepAt = now; const me = backend.uid, here = roomNow() === 'bg2';
+  for (let k = 0; k < OM_TABLES.length; k++) { const raw = S.om?.['t' + k]; if (!raw) continue; const c = omCur(raw), mine = c && (c.b === me || c.w === me), idle = now - (raw.at || 0);
+    const due = !c ? here && idle > 60000 : c.win ? (now - c.win.at > OM_AUTO && (mine || ((here || isTeacher) && now - c.win.at > OM_AUTO + 15000))) : (here || isTeacher) && idle > OM_IDLE * 3;
+    if (!due) continue; const wat = c?.win?.at || 0;
+    backend.omTx('t' + k, (x) => { if (!x) return undefined; const y = omCur(x); if (!y) return null; if (y.win) { if (y.win.at !== wat) return undefined; if (!y.b || !y.w) return null; return { v: OM_N, b: y.w, w: y.b, nb: y.nw || '', nw: y.nb || '', m: '', at: now, win: null }; } return now - (y.at || 0) > OM_IDLE * 3 ? null : undefined; }); }
+}
+function omTick() { try { if (joined && (roomNow() === 'bg2' || isTeacher) && S.om && Object.keys(S.om).length) omSweep(); } catch (e) { } if (!omw.on) return; if (roomNow() !== 'bg2') { omClose(); return; } omRender(); const c = S.om?.['t' + omw.t];
   if (omCur(c) && c?.win?.u === backend.uid && omMoves(c.m).length >= 9 && bag.omWin !== c.win.at && !isTeacher) { bag.omWin = c.win.at; const d = dayNum(); if (bag.omWinD !== d) { bag.omWinD = d; giveShellCapped(3); toast('🏆 오목 승리! 🐚 +3', 'good'); } else toast('🏆 오목 승리! (조개는 하루 한 번)', 'good'); playSfx('fanfare'); saveBag(); } }
 function openBoardCafe() { // 🔐 1101c 반월쉼터 = 방탈출 카페 (보드게임 방도 그대로)
   openLife('🔐 반월 방탈출 카페', (box) => {
@@ -29981,6 +30004,8 @@ function buildBoardRooms(gAll) {
     for (let i = 0; i < 20; i++) { const k = -BW / 2 + 0.45 + i * (BW - 0.9) / 19; box(g, BW - 0.9, 0.04, 0.05, 0x3B2A1A, R.cx, 5.4 + k, wz + 0.14, o); box(g, 0.04, BW - 0.9, 0.05, 0x3B2A1A, R.cx + k, 5.4, wz + 0.14, o); }
     const st0 = [[7, 7, 1], [8, 8, 0], [6, 8, 1], [8, 6, 0], [5, 9, 1], [9, 9, 0], [7, 9, 1], [6, 6, 0]]; for (const [cx2, cy2, bk] of st0) { const sx = R.cx - BW / 2 + 0.45 + (cx2 + 2) * (BW - 0.9) / 19, sy = 5.4 + BW / 2 - 0.45 - (cy2 + 2) * (BW - 0.9) / 19; mesh(SPH_LO, g, 0.28, 0.28, 0.12, bk ? 0x1E1E22 : 0xF6F4EE, sx, sy, wz + 0.2, { solid: false, emissive: bk ? 0 : 0.5 }); }
     makeLabel(g, ['⚫ 오목 방 ⚪', '다섯 개를 먼저 한 줄로!'], 1.0, R.cx, 10.6, wz + 0.6);
+    { const ax = R.cx + R.w / 2 - 1.6, az = R.cz - R.d / 2 + 2.2; box(g, 1.4, 1.1, 0.8, 0x5A3A22, ax, 0.55, az); box(g, 1.5, 0.08, 0.9, 0x7A5234, ax, 1.14, az, o); mesh(SPH_LO, g, 0.16, 0.16, 0.16, 0xFFD23C, ax, 1.3, az, { solid: false, emissive: 0.6 }); makeLabel(g, ['🔑 오목 관리', '선생님만'], 0.6, ax, 2.1, az);
+      addInteract({ pos: new V3(ax, 1, az + 0.9), r: 2.2, text: () => roomNow() === 'bg2' ? ['🔑 오목 관리 (선생님)', '비밀번호를 넣어요'] : null, run: omAdminAsk }); } /* 🔑 1105zf */
     OM_TABLES.forEach(([dx, dz], k) => { const x = R.cx + dx, z = R.cz + dz; box(g, 2.4, 0.16, 1.6, 0x8A5A34, x, 0.8, z); for (const [a, b2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(g, 0.12, 0.8, 0.12, 0x6E4A2C, x + a * 1.05, 0.4, z + b2 * 0.65, o);
       box(g, 1.3, 0.06, 1.3, 0xE2B86A, x, 0.91, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0x1E1E22, x - 0.25, 0.97, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0xF6F4EE, x + 0.25, 0.97, z + 0.2, o);
       const seats = [[x, z - 1.7], [x, z + 1.7]]; seats.forEach(([sx, sz], i) => { cyl(g, 0.38, 0.5, i ? 0xF0EDE6 : 0x2A2A30, sx, 0.25, sz, o); cyl(g, 0.42, 0.08, i ? 0xFFFFFF : 0x44444C, sx, 0.52, sz, o); });
