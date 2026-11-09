@@ -2386,7 +2386,7 @@ function normalize(v) {
     qscope: v.qscope && typeof v.qscope === 'object' ? { e: String(v.qscope.e || '').slice(0, 40), m: String(v.qscope.m || '').slice(0, 40), h: String(v.qscope.h || '').slice(0, 120), at: +v.qscope.at || 0 } : null, /* 📚 1105u 문제 범위 */
     lib: Object.fromEntries(Object.entries(plainObj(v.lib)).filter(([k, x]) => /^m\d{1,15}$/.test(k) && x && typeof x === 'object' && /^https?:\/\//.test(String(x.u || ''))).slice(0, 80).map(([k, x]) => [k, { t: String(x.t || '').slice(0, 40), u: String(x.u).slice(0, 500), d: String(x.d || '').slice(0, 200), s: LIB_SUB[x.s] ? x.s : 'etc', at: +x.at || 0, pin: x.pin ? 1 : 0, ...(typeof x.img === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x.img) && x.img.length <= 90000 ? { img: x.img } : {}) }])), /* 📚 1105j */
     jmp: Object.fromEntries(Object.entries(plainObj(v.jmp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), at: +x.at || 0, ...Object.fromEntries(['e', 'm', 'h'].filter(k => +x[k] >= 3000 && +x[k] <= 3600000).map(k => [k, +x[k]])) }])), /* 🏁 1105a */
-    om: Object.fromEntries(Object.entries(plainObj(v.om)).filter(([t, x]) => /^t[0-2]$/.test(t) && x && typeof x === 'object').map(([t, x]) => [t, { b: String(x.b || ''), w: String(x.w || ''), nb: String(x.nb || ''), nw: String(x.nw || ''), m: String(x.m || '').replace(/[^0-9a-z]/g, '').slice(0, 450), at: +x.at || 0, win: x.win && typeof x.win === 'object' ? { c: x.win.c === 'w' ? 'w' : 'b', u: String(x.win.u || ''), n: String(x.win.n || ''), l: String(x.win.l || ''), at: +x.win.at || 0 } : null }])), /* ⚫ 1105zd 오목 */
+    om: Object.fromEntries(Object.entries(plainObj(v.om)).filter(([t, x]) => /^t[0-2]$/.test(t) && x && typeof x === 'object').map(([t, x]) => [t, { v: +x.v || 15, b: String(x.b || ''), w: String(x.w || ''), nb: String(x.nb || ''), nw: String(x.nw || ''), m: String(x.m || '').replace(/[^0-9a-z]/g, '').slice(0, 800), at: +x.at || 0, win: x.win && typeof x.win === 'object' ? { c: x.win.c === 'w' ? 'w' : 'b', u: String(x.win.u || ''), n: String(x.win.n || ''), l: String(x.win.l || ''), at: +x.win.at || 0 } : null }])), /* ⚫ 1105zd 오목 */
     wc: Object.fromEntries(Object.entries(plainObj(v.wc)).filter(([t, x]) => /^t[0-3]$/.test(t) && x && typeof x === 'object').map(([t, x]) => { const keep = (o, n) => Object.fromEntries(Object.entries(toObj(o)).filter(([k, y]) => /^i\d{1,3}$/.test(k) && typeof y === 'string').map(([k, y]) => [k, y.slice(0, n)])); const p = Object.fromEntries(Object.entries(toObj(x.p)).filter(([u, y]) => u.length <= 64 && y && typeof y === 'object').slice(0, 12).map(([u, y]) => [u, { n: String(y.n || '친구').slice(0, 12), j: +y.j || 0, o: y.o ? 1 : 0 }])); return [t, { w: keep(x.w, 8), u: keep(x.u, 64), n: keep(x.n, 12), at: +x.at || 0, p, tn: typeof x.tn === 'string' ? x.tn.slice(0, 64) : '', end: x.end && typeof x.end === 'object' ? { u: String(x.end.u || '').slice(0, 64), n: String(x.end.n || '').slice(0, 12), at: +x.end.at || 0 } : null }]; })), /* 🔤 1102x · 👥 1105i 차례 */
     evtk: Object.fromEntries(Object.entries(plainObj(v.evtk)).filter(([p, w]) => /^p[0-7]$/.test(p) && w && typeof w === 'object').map(([p, w]) => [p, { ...(ANON_ID.test(w.a || '') ? { a: w.a, an: String(w.an || '').slice(0, 12) } : {}), ...(ANON_ID.test(w.b || '') ? { b: w.b, bn: String(w.bn || '').slice(0, 12) } : {}), ...(isInt(w.lv, 7, 12) ? { lv: w.lv, sc: isInt(w.sc, 0, 9) ? w.sc : 0, i: isInt(w.i, 0, 20) ? w.i : 0, at: +w.at || 0, t: Object.fromEntries(Object.entries(toObj(w.t)).filter(([k, x]) => /^\d{1,2}$/.test(k) && typeof x === 'string').map(([k, x]) => [k, x.slice(0, 80)])) } : {}) }])), // 🗣️ 1102s
     str: v.str && typeof v.str === 'object' && v.str.on && typeof v.str.u === 'string' && ANON_ID.test(v.str.u) ? { on: 1, u: v.str.u, at: +v.str.at || 0, s: Object.fromEntries(Object.entries(plainObj(v.str.s)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99)).slice(0, 100)) } : null, // 🚂 1102j
@@ -18578,6 +18578,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105ze', d: '11월 9일', items: ['⚫ 오목판이 20×20으로 커졌어요', '🚫 흑은 3-3(쌍삼) 자리에 둘 수 없어요 (흑 차례에 빨간 ✕로 보여 줘요)'] },
   { id: '1105zd', d: '11월 9일', items: ['⚫ 반월쉼터에 「오목 방」이 생겼어요! 탁자에 앉아 흑·백으로 오목 한 판 (화면 가득 큰 오목판 · 구경도 돼요 · 이기면 🐚3 하루 한 번)'] },
   { id: '1105zc', d: '11월 9일', items: ['🗑️ 끝난 펫 대전은 목록에서 빠지고, 「끝난 대전 지우기」로 지울 수 있어요 (선생님은 모두 · 학생은 내 대전)'] },
   { id: '1105zb', d: '11월 9일', items: ['🔧 비밀 숫자 만들기 창이 깜빡이며 적던 숫자가 지워지던 문제를 고쳤어요'] },
@@ -29875,14 +29876,24 @@ function buildBoardCafe() {
    state/om/t0~t2 {b 흑 uid, w 백 uid, nb, nw 이름, m 놓은 자리(2글자씩 36진수 · 칸 0~224), at 마지막 수, win {c 'b'|'w', u, n, l 이긴 줄, at}}
    흑이 먼저 · 다섯 개 이상 한 줄이면 승리 · 한 판 끝나면 「새 판」(흑백 바꿔요) · 3분 동안 안 둔 자리는 다른 친구가 앉을 수 있어요
    · 이기면 🐚3 (하루 한 번) · 화면은 큰 판(화면 가득)으로 따로 열려요 · 구경도 돼요 */
-const OM_N = 15, OM_TABLES = [[-7.5, 2.5], [0, 2.5], [7.5, 2.5]], OM_IDLE = 180000;
+const OM_N = 20, OM_TABLES = [[-7.5, 2.5], [0, 2.5], [7.5, 2.5]], OM_IDLE = 180000;
 const omw = { on: false, t: -1, key: '', el: null, cv: null, hover: -1 };
 const omMoves = (m) => { const a = []; for (let i = 0; i + 1 < (m || '').length; i += 2) a.push(parseInt(m.slice(i, i + 2), 36)); return a; };
 const omEnc = (i) => i.toString(36).padStart(2, '0');
 function omGrid(m) { const g = new Array(OM_N * OM_N).fill(0); omMoves(m).forEach((i, k) => { if (i >= 0 && i < g.length) g[i] = k % 2 ? 2 : 1; }); return g; }
 function omWinLine(g, i) { const c = g[i]; if (!c) return null; const x0 = i % OM_N, y0 = Math.floor(i / OM_N);
   for (const [dx, dy] of [[1, 0], [0, 1], [1, 1], [1, -1]]) { const L = [i]; for (const s of [1, -1]) { let x = x0 + dx * s, y = y0 + dy * s; while (x >= 0 && y >= 0 && x < OM_N && y < OM_N && g[y * OM_N + x] === c) { L.push(y * OM_N + x); x += dx * s; y += dy * s; } } if (L.length >= 5) return L; } return null; }
-function omSub(k) { const c = S.om?.['t' + k]; if (!c || (!c.b && !c.w)) return '빈 탁자 · 앉아서 시작해요'; return `⚫ ${c.nb || '빈자리'} vs ⚪ ${c.nw || '빈자리'}${c.win ? ' · 끝' : ` · ${omMoves(c.m).length}수`}`; }
+const omCur = (c) => c && (c.v | 0) === OM_N ? c : null; /* 1105ze 20×20 판 (예전 15×15 판 기록은 빈 탁자로) */
+/* 🚫 1105ze 흑 3-3(쌍삼) 금지: 이 자리에 흑을 두면 '열린 3'이 두 방향 이상 생기면 못 둬요 (그 자리로 바로 5목이 되면 둘 수 있어요)
+   열린 3 = 그 줄에 흑 하나를 더 두면 양끝이 비어 있는 '열린 4'(딱 4개 · 양끝 빈칸 · 6목 아님)가 되는 모양 */
+function omOpenFour(g, i, dx, dy, s0) { /* s0: 더 둔 돌이 이 줄 안에서 i로부터 몇 칸 떨어졌는지 (그 돌이 4 안에 들어가야 해요) */ const n = OM_N, x0 = i % n, y0 = Math.floor(i / n), at = (x, y) => x < 0 || y < 0 || x >= n || y >= n ? -1 : g[y * n + x];
+  let a = 0, b = 0; while (at(x0 - dx * (a + 1), y0 - dy * (a + 1)) === 1) a++; while (at(x0 + dx * (b + 1), y0 + dy * (b + 1)) === 1) b++; if (a + b + 1 !== 4 || s0 < -a || s0 > b) return false;
+  const e1 = [x0 - dx * (a + 1), y0 - dy * (a + 1)], e2 = [x0 + dx * (b + 1), y0 + dy * (b + 1)]; if (at(...e1) !== 0 || at(...e2) !== 0) return false;
+  return at(e1[0] - dx, e1[1] - dy) !== 1 && at(e2[0] + dx, e2[1] + dy) !== 1; }
+function omBan33(g0, i) { if (g0[i]) return false; const g = g0.slice(); g[i] = 1; if (omWinLine(g, i)?.length === 5) return false; const n = OM_N, x0 = i % n, y0 = Math.floor(i / n); let threes = 0;
+  for (const [dx, dy] of [[1, 0], [0, 1], [1, 1], [1, -1]]) { let three = false; for (let s = -4; s <= 4 && !three; s++) { if (!s) continue; const x = x0 + dx * s, y = y0 + dy * s; if (x < 0 || y < 0 || x >= n || y >= n || g[y * n + x]) continue; const j = y * n + x; g[j] = 1; if (omOpenFour(g, i, dx, dy, s)) three = true; g[j] = 0; } if (three) threes++; }
+  return threes >= 2; }
+function omSub(k) { const c = omCur(S.om?.['t' + k]); if (!c || (!c.b && !c.w)) return '빈 탁자 · 앉아서 시작해요'; return `⚫ ${c.nb || '빈자리'} vs ⚪ ${c.nw || '빈자리'}${c.win ? ' · 끝' : ` · ${omMoves(c.m).length}수`}`; }
 function omSit(k, seat, c) { if (isFrozen()) return; closeModals(); player.pos.set(seat[0], 0.15, seat[1]); player.vy = 0; player.heading = Math.atan2(c[0] - seat[0], c[1] - seat[1]); player.avatar.g.rotation.y = player.heading; playAct(player.avatar, 'sit'); omOpen(k); }
 function omOpen(k) {
   omw.t = k; omw.on = true; omw.key = ''; let el = omw.el;
@@ -29897,7 +29908,7 @@ function omOpen(k) {
 function omClose() { omw.on = false; omw.t = -1; omw.hover = -1; omw.el?.classList.add('hidden'); }
 const omMy = (c) => !c ? '' : c.b === backend.uid ? 'b' : c.w === backend.uid ? 'w' : '';
 function omRender() {
-  if (!omw.on) return; const c = S.om?.['t' + omw.t] || null, me = backend.uid, my = omMy(c), mv = omMoves(c?.m), turn = mv.length % 2 ? 'w' : 'b', now = backend.now(), idle = c && now - (c.at || 0) > OM_IDLE;
+  if (!omw.on) return; const c = omCur(S.om?.['t' + omw.t]), me = backend.uid, my = omMy(c), mv = omMoves(c?.m), turn = mv.length % 2 ? 'w' : 'b', now = backend.now(), idle = c && now - (c.at || 0) > OM_IDLE;
   const key = JSON.stringify([c, omw.hover, innerWidth, innerHeight]); if (key === omw.key) return; omw.key = key;
   const H = omw.el.querySelector('#omHead'); H.textContent = ''; const btn = (t, bg, f) => { const b = el2('button', 'btn', t); b.style.cssText = `background:${bg};color:#3B2F2A;font-size:17px;padding:6px 12px`; b.onclick = f; H.append(b); return b; };
   H.append(el2('b', '', `⚫ 오목 탁자 ${omw.t + 1}`)); const seatTx = (s) => { const u = c?.[s], n = c?.['n' + s]; return u ? `${s === 'b' ? '⚫' : '⚪'} ${n || '친구'}${u === me ? ' (나)' : ''}` : `${s === 'b' ? '⚫' : '⚪'} 빈자리`; };
@@ -29907,33 +29918,35 @@ function omRender() {
   if (my && !c?.win && mv.length >= 4) btn('🏳️ 기권', '#fff', omResign);
   if (my) btn('🚶 일어나기', '#fff', omLeave); btn('✖ 닫기', '#fff', omClose);
   const M = omw.el.querySelector('#omMsg');
-  M.textContent = c?.win ? `🏆 ${c.win.c === 'b' ? '⚫ 흑' : '⚪ 백'} ${c.win.n || ''} 승리!${c.win.u === me ? ' 축하해요!' : ''}` : !c?.b || !c?.w ? '두 사람이 앉으면 시작해요 (흑이 먼저)' : my === turn ? `👉 내 차례 (${turn === 'b' ? '⚫ 흑' : '⚪ 백'}) · 놓을 자리를 누르고, 한 번 더 누르면 놓여요` : `⏳ ${turn === 'b' ? '⚫ ' + (c.nb || '흑') : '⚪ ' + (c.nw || '백')} 차례예요${my ? '' : ' (구경 중)'}`;
+  const ban = c && !c.win && my === 'b' && turn === 'b' && mv.length >= 4 && (() => { const g = omGrid(c.m); return g.some((v, i) => !v && omBan33(g, i)); })();
+  M.textContent = (ban ? '🚫 빨간 ✕ 자리는 3-3이라 흑이 둘 수 없어요 · ' : '') + (c?.win ? `🏆 ${c.win.c === 'b' ? '⚫ 흑' : '⚪ 백'} ${c.win.n || ''} 승리!${c.win.u === me ? ' 축하해요!' : ''}` : !c?.b || !c?.w ? '두 사람이 앉으면 시작해요 (흑이 먼저)' : my === turn ? `👉 내 차례 (${turn === 'b' ? '⚫ 흑' : '⚪ 백'}) · 놓을 자리를 누르고, 한 번 더 누르면 놓여요` : `⏳ ${turn === 'b' ? '⚫ ' + (c.nb || '흑') : '⚪ ' + (c.nw || '백')} 차례예요${my ? '' : ' (구경 중)'}`);
   omDraw();
 }
 function omDraw() {
-  const cv = omw.cv; if (!cv) return; const c = S.om?.['t' + omw.t] || null, size = Math.max(240, Math.min(innerWidth - 16, innerHeight - 110)), dpr = Math.min(2, devicePixelRatio || 1);
+  const cv = omw.cv; if (!cv) return; const c = omCur(S.om?.['t' + omw.t]), size = Math.max(240, Math.min(innerWidth - 16, innerHeight - 110)), dpr = Math.min(2, devicePixelRatio || 1);
   cv.style.width = cv.style.height = size + 'px'; cv.width = cv.height = Math.round(size * dpr); const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, size, size);
   const n = OM_N, p = size / (n + 1), at = (i) => [(i % n + 1) * p, (Math.floor(i / n) + 1) * p];
   x.strokeStyle = '#3B2A1A'; x.lineWidth = 1.2; for (let i = 1; i <= n; i++) { x.beginPath(); x.moveTo(p, i * p); x.lineTo(n * p, i * p); x.stroke(); x.beginPath(); x.moveTo(i * p, p); x.lineTo(i * p, n * p); x.stroke(); }
-  x.fillStyle = '#3B2A1A'; for (const [a, b] of [[3, 3], [11, 3], [7, 7], [3, 11], [11, 11]]) { x.beginPath(); x.arc((a + 1) * p, (b + 1) * p, p * 0.12, 0, 7); x.fill(); }
+  x.fillStyle = '#3B2A1A'; for (const [a, b] of [[3, 3], [16, 3], [3, 16], [16, 16], [9, 9], [9, 3], [3, 9], [16, 9], [9, 16]]) { x.beginPath(); x.arc((a + 1) * p, (b + 1) * p, p * 0.12, 0, 7); x.fill(); }
   const mv = omMoves(c?.m), win = new Set(omMoves(c?.win?.l || ''));
   mv.forEach((i, k) => { const [cx, cy] = at(i), bk = k % 2 === 0; const gr = x.createRadialGradient(cx - p * 0.15, cy - p * 0.15, p * 0.05, cx, cy, p * 0.46); if (bk) { gr.addColorStop(0, '#5A5A62'); gr.addColorStop(1, '#141418'); } else { gr.addColorStop(0, '#FFFFFF'); gr.addColorStop(1, '#D8D4CC'); }
     x.fillStyle = gr; x.beginPath(); x.arc(cx, cy, p * 0.45, 0, 7); x.fill(); if (win.has(i)) { x.strokeStyle = '#FF4A3A'; x.lineWidth = 3; x.stroke(); } });
   if (mv.length) { const [cx, cy] = at(mv.at(-1)); x.fillStyle = '#FF4A3A'; x.beginPath(); x.arc(cx, cy, p * 0.12, 0, 7); x.fill(); }
+  if (c && !c.win && mv.length % 2 === 0 && mv.length >= 4) { const g = omGrid(c.m); x.strokeStyle = 'rgba(220,40,30,.8)'; x.lineWidth = 2; for (let i = 0; i < g.length; i++) if (!g[i] && omBan33(g, i)) { const [cx, cy] = at(i), r0 = p * 0.2; x.beginPath(); x.moveTo(cx - r0, cy - r0); x.lineTo(cx + r0, cy + r0); x.moveTo(cx + r0, cy - r0); x.lineTo(cx - r0, cy + r0); x.stroke(); } } /* 🚫 흑 차례: 3-3 금지 자리 ✕ */
   if (omw.hover >= 0 && !c?.win) { const [cx, cy] = at(omw.hover), my = omMy(c); x.globalAlpha = 0.55; x.fillStyle = my === 'w' ? '#FFFFFF' : '#141418'; x.beginPath(); x.arc(cx, cy, p * 0.45, 0, 7); x.fill(); x.globalAlpha = 1; }
 }
 async function omJoin(s) { const me = backend.uid, nm = cleanNick(myNick) || '친구', now = backend.now();
-  const r = await backend.omTx('t' + omw.t, (c) => { c = c || { b: '', w: '', nb: '', nw: '', m: '', at: now }; const idle = now - (c.at || 0) > OM_IDLE; if (c.b === me || c.w === me) return undefined; if (c[s] && !idle) return undefined; c[s] = me; c['n' + s] = nm; c.at = now; if (idle && omMoves(c.m).length && !c.win) { c.m = ''; c.win = null; } return c; });
+  const r = await backend.omTx('t' + omw.t, (c) => { if (!omCur(c)) c = { v: OM_N, b: '', w: '', nb: '', nw: '', m: '', at: now, win: null }; const idle = now - (c.at || 0) > OM_IDLE; if (c.b === me || c.w === me) return undefined; if (c[s] && !idle) return undefined; c[s] = me; c['n' + s] = nm; c.at = now; if (idle && omMoves(c.m).length && !c.win) { c.m = ''; c.win = null; } return c; });
   if (!r.ok) toast('⚠️ 앉지 못했어요 (다른 친구가 먼저 앉았어요)', 'warn'); else playSfx('pick'); }
 async function omPlace(i) { const me = backend.uid, now = backend.now(); let err = '';
-  const r = await backend.omTx('t' + omw.t, (c) => { if (!c || !c.b || !c.w || c.win) { err = '두 사람이 앉아야 해요'; return undefined; } const mv = omMoves(c.m), turn = mv.length % 2 ? 'w' : 'b'; if (c[turn] !== me) { err = '내 차례가 아니에요'; return undefined; }
-    const g = omGrid(c.m); if (g[i]) { err = '이미 돌이 있어요'; return undefined; } c.m = (c.m || '') + omEnc(i); c.at = now; g[i] = turn === 'b' ? 1 : 2; const L = omWinLine(g, i); if (L) c.win = { c: turn, u: me, n: c['n' + turn] || '친구', l: L.map(omEnc).join(''), at: now }; return c; });
+  const r = await backend.omTx('t' + omw.t, (c) => { if (!omCur(c) || !c.b || !c.w || c.win) { err = '두 사람이 앉아야 해요'; return undefined; } const mv = omMoves(c.m), turn = mv.length % 2 ? 'w' : 'b'; if (c[turn] !== me) { err = '내 차례가 아니에요'; return undefined; }
+    const g = omGrid(c.m); if (g[i]) { err = '이미 돌이 있어요'; return undefined; } if (turn === 'b' && omBan33(g, i)) { err = '🚫 흑은 3-3(쌍삼) 자리에 둘 수 없어요'; return undefined; } c.m = (c.m || '') + omEnc(i); c.at = now; g[i] = turn === 'b' ? 1 : 2; const L = omWinLine(g, i); if (L) c.win = { c: turn, u: me, n: c['n' + turn] || '친구', l: L.map(omEnc).join(''), at: now }; return c; });
   if (!r.ok) { if (err) toast('⚠️ ' + err, 'warn'); return; } playSfx('plop'); }
-async function omReset() { const now = backend.now(); const r = await backend.omTx('t' + omw.t, (c) => { if (!c) return undefined; const idle = now - (c.at || 0) > OM_IDLE, my = omMy(c); if (!c.win && !idle) return undefined; if (!my && !idle) return undefined; return { b: c.w || '', w: c.b || '', nb: c.nw || '', nw: c.nb || '', m: '', at: now, win: null }; }); if (r.ok) toast('🔄 새 판! 흑백을 바꿨어요', 'info'); }
+async function omReset() { const now = backend.now(); const r = await backend.omTx('t' + omw.t, (c) => { if (!c) return undefined; if (!omCur(c)) return { v: OM_N, b: c.w || '', w: c.b || '', nb: c.nw || '', nw: c.nb || '', m: '', at: now, win: null }; const idle = now - (c.at || 0) > OM_IDLE, my = omMy(c); if (!c.win && !idle) return undefined; if (!my && !idle) return undefined; return { v: OM_N, b: c.w || '', w: c.b || '', nb: c.nw || '', nw: c.nb || '', m: '', at: now, win: null }; }); if (r.ok) toast('🔄 새 판! 흑백을 바꿨어요', 'info'); }
 async function omResign() { const me = backend.uid, now = backend.now(); if (!(await confirmAction({ title: '🏳️ 기권할까요?', body: '상대가 이긴 걸로 끝나요.', okText: '기권' }))) return; await backend.omTx('t' + omw.t, (c) => { const my = omMy(c); if (!my || c.win) return undefined; const o = my === 'b' ? 'w' : 'b'; c.win = { c: o, u: c[o] || '', n: c['n' + o] || '친구', l: '', at: now }; c.at = now; return c; }); }
 async function omLeave() { const me = backend.uid, now = backend.now(); await backend.omTx('t' + omw.t, (c) => { const my = omMy(c); if (!my) return undefined; c[my] = ''; c['n' + my] = ''; c.at = now; if (!c.win && omMoves(c.m).length) { const o = my === 'b' ? 'w' : 'b'; if (c[o]) c.win = { c: o, u: c[o], n: c['n' + o] || '친구', l: '', at: now }; } if (!c.b && !c.w) return null; return c; }); }
 function omTick() { if (!omw.on) return; if (roomNow() !== 'bg2') { omClose(); return; } omRender(); const c = S.om?.['t' + omw.t];
-  if (c?.win?.u === backend.uid && omMoves(c.m).length >= 9 && bag.omWin !== c.win.at && !isTeacher) { bag.omWin = c.win.at; const d = dayNum(); if (bag.omWinD !== d) { bag.omWinD = d; giveShellCapped(3); toast('🏆 오목 승리! 🐚 +3', 'good'); } else toast('🏆 오목 승리! (조개는 하루 한 번)', 'good'); playSfx('fanfare'); saveBag(); } }
+  if (omCur(c) && c?.win?.u === backend.uid && omMoves(c.m).length >= 9 && bag.omWin !== c.win.at && !isTeacher) { bag.omWin = c.win.at; const d = dayNum(); if (bag.omWinD !== d) { bag.omWinD = d; giveShellCapped(3); toast('🏆 오목 승리! 🐚 +3', 'good'); } else toast('🏆 오목 승리! (조개는 하루 한 번)', 'good'); playSfx('fanfare'); saveBag(); } }
 function openBoardCafe() { // 🔐 1101c 반월쉼터 = 방탈출 카페 (보드게임 방도 그대로)
   openLife('🔐 반월 방탈출 카페', (box) => {
     box.textContent = '';
@@ -29965,8 +29978,8 @@ function buildBoardRooms(gAll) {
     makeLabel(g, ['🔤 끝말잇기 방', '끝 글자로 이어 말해요 · 탁자마다 한 판!'], 1.0, R.cx, 3.9, R.cz - R.d / 2 + 1.2); }
   { const R = ROOMS.bg2; roomShell(g, R); /* ⚫ 1105zd 오목 방: 탁자 3개 (흑·백 의자) · 벽에 커다란 오목판 */
     const wz = R.cz - R.d / 2 + 0.3, BW = 9; box(g, BW + 0.6, BW + 0.6, 0.2, 0x6E4A2C, R.cx, 5.4, wz, o); box(g, BW, BW, 0.22, 0xE2B86A, R.cx, 5.4, wz + 0.02, { solid: false, emissive: 0.45 });
-    for (let i = 0; i < 15; i++) { const k = -BW / 2 + 0.45 + i * (BW - 0.9) / 14; box(g, BW - 0.9, 0.04, 0.05, 0x3B2A1A, R.cx, 5.4 + k, wz + 0.14, o); box(g, 0.04, BW - 0.9, 0.05, 0x3B2A1A, R.cx + k, 5.4, wz + 0.14, o); }
-    const st0 = [[7, 7, 1], [8, 8, 0], [6, 8, 1], [8, 6, 0], [5, 9, 1], [9, 9, 0], [7, 9, 1], [6, 6, 0]]; for (const [cx2, cy2, bk] of st0) { const sx = R.cx - BW / 2 + 0.45 + cx2 * (BW - 0.9) / 14, sy = 5.4 + BW / 2 - 0.45 - cy2 * (BW - 0.9) / 14; mesh(SPH_LO, g, 0.28, 0.28, 0.12, bk ? 0x1E1E22 : 0xF6F4EE, sx, sy, wz + 0.2, { solid: false, emissive: bk ? 0 : 0.5 }); }
+    for (let i = 0; i < 20; i++) { const k = -BW / 2 + 0.45 + i * (BW - 0.9) / 19; box(g, BW - 0.9, 0.04, 0.05, 0x3B2A1A, R.cx, 5.4 + k, wz + 0.14, o); box(g, 0.04, BW - 0.9, 0.05, 0x3B2A1A, R.cx + k, 5.4, wz + 0.14, o); }
+    const st0 = [[7, 7, 1], [8, 8, 0], [6, 8, 1], [8, 6, 0], [5, 9, 1], [9, 9, 0], [7, 9, 1], [6, 6, 0]]; for (const [cx2, cy2, bk] of st0) { const sx = R.cx - BW / 2 + 0.45 + (cx2 + 2) * (BW - 0.9) / 19, sy = 5.4 + BW / 2 - 0.45 - (cy2 + 2) * (BW - 0.9) / 19; mesh(SPH_LO, g, 0.28, 0.28, 0.12, bk ? 0x1E1E22 : 0xF6F4EE, sx, sy, wz + 0.2, { solid: false, emissive: bk ? 0 : 0.5 }); }
     makeLabel(g, ['⚫ 오목 방 ⚪', '다섯 개를 먼저 한 줄로!'], 1.0, R.cx, 10.6, wz + 0.6);
     OM_TABLES.forEach(([dx, dz], k) => { const x = R.cx + dx, z = R.cz + dz; box(g, 2.4, 0.16, 1.6, 0x8A5A34, x, 0.8, z); for (const [a, b2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(g, 0.12, 0.8, 0.12, 0x6E4A2C, x + a * 1.05, 0.4, z + b2 * 0.65, o);
       box(g, 1.3, 0.06, 1.3, 0xE2B86A, x, 0.91, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0x1E1E22, x - 0.25, 0.97, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0xF6F4EE, x + 0.25, 0.97, z + 0.2, o);
