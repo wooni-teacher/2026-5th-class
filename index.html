@@ -2314,7 +2314,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { qscope: null, chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {}, pbl: null }; }
+function emptyState() { return { om: {}, qscope: null, chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {}, pbl: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2386,6 +2386,7 @@ function normalize(v) {
     qscope: v.qscope && typeof v.qscope === 'object' ? { e: String(v.qscope.e || '').slice(0, 40), m: String(v.qscope.m || '').slice(0, 40), h: String(v.qscope.h || '').slice(0, 120), at: +v.qscope.at || 0 } : null, /* 📚 1105u 문제 범위 */
     lib: Object.fromEntries(Object.entries(plainObj(v.lib)).filter(([k, x]) => /^m\d{1,15}$/.test(k) && x && typeof x === 'object' && /^https?:\/\//.test(String(x.u || ''))).slice(0, 80).map(([k, x]) => [k, { t: String(x.t || '').slice(0, 40), u: String(x.u).slice(0, 500), d: String(x.d || '').slice(0, 200), s: LIB_SUB[x.s] ? x.s : 'etc', at: +x.at || 0, pin: x.pin ? 1 : 0, ...(typeof x.img === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(x.img) && x.img.length <= 90000 ? { img: x.img } : {}) }])), /* 📚 1105j */
     jmp: Object.fromEntries(Object.entries(plainObj(v.jmp)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').slice(0, 80).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), at: +x.at || 0, ...Object.fromEntries(['e', 'm', 'h'].filter(k => +x[k] >= 3000 && +x[k] <= 3600000).map(k => [k, +x[k]])) }])), /* 🏁 1105a */
+    om: Object.fromEntries(Object.entries(plainObj(v.om)).filter(([t, x]) => /^t[0-2]$/.test(t) && x && typeof x === 'object').map(([t, x]) => [t, { b: String(x.b || ''), w: String(x.w || ''), nb: String(x.nb || ''), nw: String(x.nw || ''), m: String(x.m || '').replace(/[^0-9a-z]/g, '').slice(0, 450), at: +x.at || 0, win: x.win && typeof x.win === 'object' ? { c: x.win.c === 'w' ? 'w' : 'b', u: String(x.win.u || ''), n: String(x.win.n || ''), l: String(x.win.l || ''), at: +x.win.at || 0 } : null }])), /* ⚫ 1105zd 오목 */
     wc: Object.fromEntries(Object.entries(plainObj(v.wc)).filter(([t, x]) => /^t[0-3]$/.test(t) && x && typeof x === 'object').map(([t, x]) => { const keep = (o, n) => Object.fromEntries(Object.entries(toObj(o)).filter(([k, y]) => /^i\d{1,3}$/.test(k) && typeof y === 'string').map(([k, y]) => [k, y.slice(0, n)])); const p = Object.fromEntries(Object.entries(toObj(x.p)).filter(([u, y]) => u.length <= 64 && y && typeof y === 'object').slice(0, 12).map(([u, y]) => [u, { n: String(y.n || '친구').slice(0, 12), j: +y.j || 0, o: y.o ? 1 : 0 }])); return [t, { w: keep(x.w, 8), u: keep(x.u, 64), n: keep(x.n, 12), at: +x.at || 0, p, tn: typeof x.tn === 'string' ? x.tn.slice(0, 64) : '', end: x.end && typeof x.end === 'object' ? { u: String(x.end.u || '').slice(0, 64), n: String(x.end.n || '').slice(0, 12), at: +x.end.at || 0 } : null }]; })), /* 🔤 1102x · 👥 1105i 차례 */
     evtk: Object.fromEntries(Object.entries(plainObj(v.evtk)).filter(([p, w]) => /^p[0-7]$/.test(p) && w && typeof w === 'object').map(([p, w]) => [p, { ...(ANON_ID.test(w.a || '') ? { a: w.a, an: String(w.an || '').slice(0, 12) } : {}), ...(ANON_ID.test(w.b || '') ? { b: w.b, bn: String(w.bn || '').slice(0, 12) } : {}), ...(isInt(w.lv, 7, 12) ? { lv: w.lv, sc: isInt(w.sc, 0, 9) ? w.sc : 0, i: isInt(w.i, 0, 20) ? w.i : 0, at: +w.at || 0, t: Object.fromEntries(Object.entries(toObj(w.t)).filter(([k, x]) => /^\d{1,2}$/.test(k) && typeof x === 'string').map(([k, x]) => [k, x.slice(0, 80)])) } : {}) }])), // 🗣️ 1102s
     str: v.str && typeof v.str === 'object' && v.str.on && typeof v.str.u === 'string' && ANON_ID.test(v.str.u) ? { on: 1, u: v.str.u, at: +v.str.at || 0, s: Object.fromEntries(Object.entries(plainObj(v.str.s)).filter(([u, x]) => ANON_ID.test(u) && isInt(x, 0, 99)).slice(0, 100)) } : null, // 🚂 1102j
@@ -2752,7 +2753,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (st.decor[key]) return { ok: false };
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
-    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async nmPrep() { return { ok: false }; }, async rawGet() { return null; }, async rawUpdate() { return { ok: false }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
+    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async omTx(t, fn) { const c = st.om?.[t]; const o = fn(c ? JSON.parse(JSON.stringify(c)) : null); if (o === undefined) return { ok: false }; st.om ||= {}; if (o === null) delete st.om[t]; else st.om[t] = o; emit(); return { ok: true }; }, async nmPrep() { return { ok: false }; }, async rawGet() { return null; }, async rawUpdate() { return { ok: false }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
     async attrClaim(k) { const c = (st.attr ||= {})[k]; if (c && c.u !== 'me' && Date.now() - c.t < ATTR_STALE) return { ok: false }; st.attr[k] = { u: 'me', t: Date.now() }; emit(); return { ok: true }; },
@@ -3283,6 +3284,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async evtkJoin(pid, s, nm) { try { const r = await D.runTransaction(R(`state/evtk/${pid}/${s}`), c => c && c !== uid ? undefined : uid); if (!r.committed) return { ok: false }; await D.update(R(`state/evtk/${pid}`), { [s + 'n']: nm }); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🗣️ 1102s 짝 대화 무대 자리
     async atlgTx(g, fn) { try { const r = await D.runTransaction(R(`state/atlg/${g}`), c => { const o = fn(c ? JSON.parse(JSON.stringify(c)) : null); return o === undefined ? undefined : o; }); return { ok: r.committed }; } catch (e) { console.warn('atlg', e); return { ok: false }; } }, /* 🔱 1104a */
     async atlrSet(o) { try { await D.set(R(`state/atlr/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, async jmpRec(o) { try { await D.set(R(`state/jmp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🏁 1105a */ async pblRec(o) { try { await D.set(R(`state/pbl/p/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🏆 1105m */
+    async omTx(t, fn) { try { const r = await D.runTransaction(R(`state/om/${t}`), c => fn(c)); return r.committed ? { ok: true } : { ok: false }; } catch (e) { return { ok: false, err: e?.code || 'x' }; } }, /* ⚫ 1105zd 오목 */
     async wcJoin(t, nm) { let err = ''; try { const r = await D.runTransaction(R(`state/wc/${t}`), c => { const o = wcJoinNext(c, uid, nm); err = o.err || ''; return o.err ? undefined : o; }); return r.committed ? { ok: true } : { ok: false, err }; } catch (e) { return { ok: false }; } },
     async wcTimeout(t) { try { const r = await D.runTransaction(R(`state/wc/${t}`), c => { const o = wcTimeoutNext(c, now()); return o.err ? undefined : o; }); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
     async wcLeave(t) { let err = ''; try { const r = await D.runTransaction(R(`state/wc/${t}`), c => { const o = wcLeaveNext(c, uid, now()); err = o.err || ''; return o.err ? undefined : o; }); return r.committed ? { ok: true } : { ok: false, err }; } catch (e) { return { ok: false }; } },
@@ -17726,6 +17728,7 @@ const ROOMS = {
   pg5: { name: '5단계 펫 체육관', icon: '🏟️', cx: 1450, cz: 130, w: 22, d: 18, wall: 0xFFF2DC, floor: 0xD8C4A0, site: null }, // 🔤 한글 마을 (1105m)
   etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
   bg1: { name: '끝말잇기 방', icon: '🔤', cx: 1515, cz: -86, w: 22, d: 18, wall: 0xFFF4C8, floor: 0xE8C890, site: null }, // 🎲 반월쉼터 (1021a)
+  bg2: { name: '오목 방', icon: '⚫', cx: 1580, cz: -98, w: 26, d: 22, wall: 0xF3EBDD, floor: 0xC9A36A, site: null }, // ⚫ 1105zd 오목
   gw: { name: '과거시험장', icon: '📜', cx: 1450, cz: 86, w: 28, d: 24, wall: 0xF3E6CC, floor: 0xC79A64, site: null }, // 📜 역사 마을 서당 옆 기와집 (1021d)
   mrc: { name: '수학 달리기장', icon: '🏃', cx: 1515, cz: 130, w: 34, d: 28, wall: 0xFFF1D6, floor: 0xC8A878, site: null }, // 🏃 수학 마을 달리기장 (1024m)
   esm: { name: '수학 비밀 금고', icon: '🧮', cx: 1450, cz: -150, w: 22, d: 18, wall: 0xE6EEFA, floor: 0xC8B48E, site: null }, // 🔐 1101a 방탈출 (반월쉼터)
@@ -18575,6 +18578,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zd', d: '11월 9일', items: ['⚫ 반월쉼터에 「오목 방」이 생겼어요! 탁자에 앉아 흑·백으로 오목 한 판 (화면 가득 큰 오목판 · 구경도 돼요 · 이기면 🐚3 하루 한 번)'] },
   { id: '1105zc', d: '11월 9일', items: ['🗑️ 끝난 펫 대전은 목록에서 빠지고, 「끝난 대전 지우기」로 지울 수 있어요 (선생님은 모두 · 학생은 내 대전)'] },
   { id: '1105zb', d: '11월 9일', items: ['🔧 비밀 숫자 만들기 창이 깜빡이며 적던 숫자가 지워지던 문제를 고쳤어요'] },
   { id: '1105za', d: '11월 9일', items: ['🔧 비밀 숫자를 만들 때 「✋ 잠깐 멈춤! 선생님 이야기를 들어요」가 잘못 뜨던 문제를 고쳤어요'] },
@@ -29742,6 +29746,7 @@ function fillEmoAdmin() {
 const BG_HOUSE = { x: -24, z: -27, w: 10, d: 8 };
 const BOARD_GAMES = [
   { k: 'wc', room: 'bg1', icon: '🔤', n: '끝말잇기', d: '끝 글자로 이어 말해요! 30초 안에 못 이으면 마지막 사람 승리' }, /* 🔤 1102x 할리갈리·부루마블 → 끝말잇기 */
+  { k: 'om', room: 'bg2', icon: '⚫', n: '오목', d: '흑과 백, 다섯 개를 먼저 한 줄로 놓으면 승리!' }, /* ⚫ 1105zd */
 ];
 /* ================= 🔤 1102x 끝말잇기 (반월쉼터 끝말잇기 방 · 탁자 4개) =================
    state/wc/t0~t3 {w {i0: 낱말}, u {i0: 쓴 사람}, n {i0: 이름}, at 마지막 낱말 시각} · 학생이 직접 써요 (트랜잭션으로 끝 글자 검사)
@@ -29866,6 +29871,69 @@ function buildBoardCafe() {
   addInteract({ pos: new V3(x, 1, z + d / 2 + 1.4), r: 2.8, text: () => ['🔐 반월 방탈출 카페 들어가기', `🗺️ 지도 조각 ${escPieces()}/4 · 🎲 보드게임도 있어요`], run: openBoardCafe });
   registerSolids(g, 'boardcafe'); batchStatic(g);
 }
+/* ================= ⚫ 1105zd 오목 (반월쉼터 오목 방 · 탁자 3개) =================
+   state/om/t0~t2 {b 흑 uid, w 백 uid, nb, nw 이름, m 놓은 자리(2글자씩 36진수 · 칸 0~224), at 마지막 수, win {c 'b'|'w', u, n, l 이긴 줄, at}}
+   흑이 먼저 · 다섯 개 이상 한 줄이면 승리 · 한 판 끝나면 「새 판」(흑백 바꿔요) · 3분 동안 안 둔 자리는 다른 친구가 앉을 수 있어요
+   · 이기면 🐚3 (하루 한 번) · 화면은 큰 판(화면 가득)으로 따로 열려요 · 구경도 돼요 */
+const OM_N = 15, OM_TABLES = [[-7.5, 2.5], [0, 2.5], [7.5, 2.5]], OM_IDLE = 180000;
+const omw = { on: false, t: -1, key: '', el: null, cv: null, hover: -1 };
+const omMoves = (m) => { const a = []; for (let i = 0; i + 1 < (m || '').length; i += 2) a.push(parseInt(m.slice(i, i + 2), 36)); return a; };
+const omEnc = (i) => i.toString(36).padStart(2, '0');
+function omGrid(m) { const g = new Array(OM_N * OM_N).fill(0); omMoves(m).forEach((i, k) => { if (i >= 0 && i < g.length) g[i] = k % 2 ? 2 : 1; }); return g; }
+function omWinLine(g, i) { const c = g[i]; if (!c) return null; const x0 = i % OM_N, y0 = Math.floor(i / OM_N);
+  for (const [dx, dy] of [[1, 0], [0, 1], [1, 1], [1, -1]]) { const L = [i]; for (const s of [1, -1]) { let x = x0 + dx * s, y = y0 + dy * s; while (x >= 0 && y >= 0 && x < OM_N && y < OM_N && g[y * OM_N + x] === c) { L.push(y * OM_N + x); x += dx * s; y += dy * s; } } if (L.length >= 5) return L; } return null; }
+function omSub(k) { const c = S.om?.['t' + k]; if (!c || (!c.b && !c.w)) return '빈 탁자 · 앉아서 시작해요'; return `⚫ ${c.nb || '빈자리'} vs ⚪ ${c.nw || '빈자리'}${c.win ? ' · 끝' : ` · ${omMoves(c.m).length}수`}`; }
+function omSit(k, seat, c) { if (isFrozen()) return; closeModals(); player.pos.set(seat[0], 0.15, seat[1]); player.vy = 0; player.heading = Math.atan2(c[0] - seat[0], c[1] - seat[1]); player.avatar.g.rotation.y = player.heading; playAct(player.avatar, 'sit'); omOpen(k); }
+function omOpen(k) {
+  omw.t = k; omw.on = true; omw.key = ''; let el = omw.el;
+  if (!el) { el = document.createElement('div'); el.id = 'omPlay'; el.style.cssText = 'position:fixed;inset:0;z-index:82;background:rgba(36,28,20,.92);display:flex;flex-direction:column;align-items:center;padding:calc(6px + var(--safe-top)) 8px 8px;gap:6px;touch-action:none';
+    el.innerHTML = '<div id="omHead" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;color:#FFF6E0;font-size:18px;width:100%"></div><canvas id="omCv" style="background:#E2B86A;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);touch-action:none"></canvas><div id="omMsg" style="color:#FFE9A8;font-size:18px;min-height:24px;text-align:center"></div>';
+    document.body.append(el); omw.el = el; omw.cv = el.querySelector('#omCv');
+    const pick = (ev) => { const cv = omw.cv, r = cv.getBoundingClientRect(), n = OM_N, pad = r.width / (n + 1), x = Math.round((ev.clientX - r.left) / pad) - 1, y = Math.round((ev.clientY - r.top) / pad) - 1; return x >= 0 && y >= 0 && x < n && y < n ? y * n + x : -1; };
+    omw.cv.addEventListener('pointerdown', (ev) => { ev.preventDefault(); const i = pick(ev); if (i < 0) return; if (omw.hover === i) { omw.hover = -1; omPlace(i); } else { omw.hover = i; omDraw(); } }); /* 터치: 한 번 누르면 미리 보기 · 같은 자리를 한 번 더 누르면 놓기 */
+    addEventListener('resize', () => { if (omw.on) { omw.key = ''; omRender(); } }); }
+  el.classList.remove('hidden'); omw.hover = -1; omRender();
+}
+function omClose() { omw.on = false; omw.t = -1; omw.hover = -1; omw.el?.classList.add('hidden'); }
+const omMy = (c) => !c ? '' : c.b === backend.uid ? 'b' : c.w === backend.uid ? 'w' : '';
+function omRender() {
+  if (!omw.on) return; const c = S.om?.['t' + omw.t] || null, me = backend.uid, my = omMy(c), mv = omMoves(c?.m), turn = mv.length % 2 ? 'w' : 'b', now = backend.now(), idle = c && now - (c.at || 0) > OM_IDLE;
+  const key = JSON.stringify([c, omw.hover, innerWidth, innerHeight]); if (key === omw.key) return; omw.key = key;
+  const H = omw.el.querySelector('#omHead'); H.textContent = ''; const btn = (t, bg, f) => { const b = el2('button', 'btn', t); b.style.cssText = `background:${bg};color:#3B2F2A;font-size:17px;padding:6px 12px`; b.onclick = f; H.append(b); return b; };
+  H.append(el2('b', '', `⚫ 오목 탁자 ${omw.t + 1}`)); const seatTx = (s) => { const u = c?.[s], n = c?.['n' + s]; return u ? `${s === 'b' ? '⚫' : '⚪'} ${n || '친구'}${u === me ? ' (나)' : ''}` : `${s === 'b' ? '⚫' : '⚪'} 빈자리`; };
+  H.append(el2('span', '', `${seatTx('b')} vs ${seatTx('w')}`));
+  for (const s of ['b', 'w']) if (!my && (!c?.[s] || idle)) btn(`${s === 'b' ? '⚫ 흑' : '⚪ 백'}으로 앉기`, '#FFD23C', () => omJoin(s));
+  if (c?.win || (idle && mv.length)) btn('🔄 새 판', '#fff', omReset);
+  if (my && !c?.win && mv.length >= 4) btn('🏳️ 기권', '#fff', omResign);
+  if (my) btn('🚶 일어나기', '#fff', omLeave); btn('✖ 닫기', '#fff', omClose);
+  const M = omw.el.querySelector('#omMsg');
+  M.textContent = c?.win ? `🏆 ${c.win.c === 'b' ? '⚫ 흑' : '⚪ 백'} ${c.win.n || ''} 승리!${c.win.u === me ? ' 축하해요!' : ''}` : !c?.b || !c?.w ? '두 사람이 앉으면 시작해요 (흑이 먼저)' : my === turn ? `👉 내 차례 (${turn === 'b' ? '⚫ 흑' : '⚪ 백'}) · 놓을 자리를 누르고, 한 번 더 누르면 놓여요` : `⏳ ${turn === 'b' ? '⚫ ' + (c.nb || '흑') : '⚪ ' + (c.nw || '백')} 차례예요${my ? '' : ' (구경 중)'}`;
+  omDraw();
+}
+function omDraw() {
+  const cv = omw.cv; if (!cv) return; const c = S.om?.['t' + omw.t] || null, size = Math.max(240, Math.min(innerWidth - 16, innerHeight - 110)), dpr = Math.min(2, devicePixelRatio || 1);
+  cv.style.width = cv.style.height = size + 'px'; cv.width = cv.height = Math.round(size * dpr); const x = cv.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, size, size);
+  const n = OM_N, p = size / (n + 1), at = (i) => [(i % n + 1) * p, (Math.floor(i / n) + 1) * p];
+  x.strokeStyle = '#3B2A1A'; x.lineWidth = 1.2; for (let i = 1; i <= n; i++) { x.beginPath(); x.moveTo(p, i * p); x.lineTo(n * p, i * p); x.stroke(); x.beginPath(); x.moveTo(i * p, p); x.lineTo(i * p, n * p); x.stroke(); }
+  x.fillStyle = '#3B2A1A'; for (const [a, b] of [[3, 3], [11, 3], [7, 7], [3, 11], [11, 11]]) { x.beginPath(); x.arc((a + 1) * p, (b + 1) * p, p * 0.12, 0, 7); x.fill(); }
+  const mv = omMoves(c?.m), win = new Set(omMoves(c?.win?.l || ''));
+  mv.forEach((i, k) => { const [cx, cy] = at(i), bk = k % 2 === 0; const gr = x.createRadialGradient(cx - p * 0.15, cy - p * 0.15, p * 0.05, cx, cy, p * 0.46); if (bk) { gr.addColorStop(0, '#5A5A62'); gr.addColorStop(1, '#141418'); } else { gr.addColorStop(0, '#FFFFFF'); gr.addColorStop(1, '#D8D4CC'); }
+    x.fillStyle = gr; x.beginPath(); x.arc(cx, cy, p * 0.45, 0, 7); x.fill(); if (win.has(i)) { x.strokeStyle = '#FF4A3A'; x.lineWidth = 3; x.stroke(); } });
+  if (mv.length) { const [cx, cy] = at(mv.at(-1)); x.fillStyle = '#FF4A3A'; x.beginPath(); x.arc(cx, cy, p * 0.12, 0, 7); x.fill(); }
+  if (omw.hover >= 0 && !c?.win) { const [cx, cy] = at(omw.hover), my = omMy(c); x.globalAlpha = 0.55; x.fillStyle = my === 'w' ? '#FFFFFF' : '#141418'; x.beginPath(); x.arc(cx, cy, p * 0.45, 0, 7); x.fill(); x.globalAlpha = 1; }
+}
+async function omJoin(s) { const me = backend.uid, nm = cleanNick(myNick) || '친구', now = backend.now();
+  const r = await backend.omTx('t' + omw.t, (c) => { c = c || { b: '', w: '', nb: '', nw: '', m: '', at: now }; const idle = now - (c.at || 0) > OM_IDLE; if (c.b === me || c.w === me) return undefined; if (c[s] && !idle) return undefined; c[s] = me; c['n' + s] = nm; c.at = now; if (idle && omMoves(c.m).length && !c.win) { c.m = ''; c.win = null; } return c; });
+  if (!r.ok) toast('⚠️ 앉지 못했어요 (다른 친구가 먼저 앉았어요)', 'warn'); else playSfx('pick'); }
+async function omPlace(i) { const me = backend.uid, now = backend.now(); let err = '';
+  const r = await backend.omTx('t' + omw.t, (c) => { if (!c || !c.b || !c.w || c.win) { err = '두 사람이 앉아야 해요'; return undefined; } const mv = omMoves(c.m), turn = mv.length % 2 ? 'w' : 'b'; if (c[turn] !== me) { err = '내 차례가 아니에요'; return undefined; }
+    const g = omGrid(c.m); if (g[i]) { err = '이미 돌이 있어요'; return undefined; } c.m = (c.m || '') + omEnc(i); c.at = now; g[i] = turn === 'b' ? 1 : 2; const L = omWinLine(g, i); if (L) c.win = { c: turn, u: me, n: c['n' + turn] || '친구', l: L.map(omEnc).join(''), at: now }; return c; });
+  if (!r.ok) { if (err) toast('⚠️ ' + err, 'warn'); return; } playSfx('plop'); }
+async function omReset() { const now = backend.now(); const r = await backend.omTx('t' + omw.t, (c) => { if (!c) return undefined; const idle = now - (c.at || 0) > OM_IDLE, my = omMy(c); if (!c.win && !idle) return undefined; if (!my && !idle) return undefined; return { b: c.w || '', w: c.b || '', nb: c.nw || '', nw: c.nb || '', m: '', at: now, win: null }; }); if (r.ok) toast('🔄 새 판! 흑백을 바꿨어요', 'info'); }
+async function omResign() { const me = backend.uid, now = backend.now(); if (!(await confirmAction({ title: '🏳️ 기권할까요?', body: '상대가 이긴 걸로 끝나요.', okText: '기권' }))) return; await backend.omTx('t' + omw.t, (c) => { const my = omMy(c); if (!my || c.win) return undefined; const o = my === 'b' ? 'w' : 'b'; c.win = { c: o, u: c[o] || '', n: c['n' + o] || '친구', l: '', at: now }; c.at = now; return c; }); }
+async function omLeave() { const me = backend.uid, now = backend.now(); await backend.omTx('t' + omw.t, (c) => { const my = omMy(c); if (!my) return undefined; c[my] = ''; c['n' + my] = ''; c.at = now; if (!c.win && omMoves(c.m).length) { const o = my === 'b' ? 'w' : 'b'; if (c[o]) c.win = { c: o, u: c[o], n: c['n' + o] || '친구', l: '', at: now }; } if (!c.b && !c.w) return null; return c; }); }
+function omTick() { if (!omw.on) return; if (roomNow() !== 'bg2') { omClose(); return; } omRender(); const c = S.om?.['t' + omw.t];
+  if (c?.win?.u === backend.uid && omMoves(c.m).length >= 9 && bag.omWin !== c.win.at && !isTeacher) { bag.omWin = c.win.at; const d = dayNum(); if (bag.omWinD !== d) { bag.omWinD = d; giveShellCapped(3); toast('🏆 오목 승리! 🐚 +3', 'good'); } else toast('🏆 오목 승리! (조개는 하루 한 번)', 'good'); playSfx('fanfare'); saveBag(); } }
 function openBoardCafe() { // 🔐 1101c 반월쉼터 = 방탈출 카페 (보드게임 방도 그대로)
   openLife('🔐 반월 방탈출 카페', (box) => {
     box.textContent = '';
@@ -29895,6 +29963,15 @@ function buildBoardRooms(gAll) {
     for (const sx of [-1, 1]) { const fx = R.cx + sx * (R.w / 2 - 1.2), fz = R.cz + R.d / 2 - 1.4; for (let i = 0; i < 3; i++) { const c = box(g, 0.8, 0.8, 0.8, LC[(i + (sx > 0 ? 2 : 0)) % 5], fx + (i === 2 ? 0 : (i - 0.5) * 0.9), 0.4 + (i === 2 ? 0.8 : 0), fz); c.rotation.y = 0.3 * i; } } /* 구석 글자 상자 */
     WC_TABLES.forEach(([dx, dz], k) => { const G = { ...BOARD_GAMES[0], n: `끝말잇기 탁자 ${k + 1}`, play: (seat, c) => wcSit(k, seat, c) }; table(R.cx + dx, R.cz + dz, 0xFFF6DA, G, (x, z) => { box(g, 1.1, 0.03, 0.8, 0xFFFFFF, x, 0.9, z, o); for (let q = 0; q < 3; q++) box(g, 0.3, 0.04, 0.3, LC[q], x - 0.35 + q * 0.35, 0.93, z, o); }); });
     makeLabel(g, ['🔤 끝말잇기 방', '끝 글자로 이어 말해요 · 탁자마다 한 판!'], 1.0, R.cx, 3.9, R.cz - R.d / 2 + 1.2); }
+  { const R = ROOMS.bg2; roomShell(g, R); /* ⚫ 1105zd 오목 방: 탁자 3개 (흑·백 의자) · 벽에 커다란 오목판 */
+    const wz = R.cz - R.d / 2 + 0.3, BW = 9; box(g, BW + 0.6, BW + 0.6, 0.2, 0x6E4A2C, R.cx, 5.4, wz, o); box(g, BW, BW, 0.22, 0xE2B86A, R.cx, 5.4, wz + 0.02, { solid: false, emissive: 0.45 });
+    for (let i = 0; i < 15; i++) { const k = -BW / 2 + 0.45 + i * (BW - 0.9) / 14; box(g, BW - 0.9, 0.04, 0.05, 0x3B2A1A, R.cx, 5.4 + k, wz + 0.14, o); box(g, 0.04, BW - 0.9, 0.05, 0x3B2A1A, R.cx + k, 5.4, wz + 0.14, o); }
+    const st0 = [[7, 7, 1], [8, 8, 0], [6, 8, 1], [8, 6, 0], [5, 9, 1], [9, 9, 0], [7, 9, 1], [6, 6, 0]]; for (const [cx2, cy2, bk] of st0) { const sx = R.cx - BW / 2 + 0.45 + cx2 * (BW - 0.9) / 14, sy = 5.4 + BW / 2 - 0.45 - cy2 * (BW - 0.9) / 14; mesh(SPH_LO, g, 0.28, 0.28, 0.12, bk ? 0x1E1E22 : 0xF6F4EE, sx, sy, wz + 0.2, { solid: false, emissive: bk ? 0 : 0.5 }); }
+    makeLabel(g, ['⚫ 오목 방 ⚪', '다섯 개를 먼저 한 줄로!'], 1.0, R.cx, 10.6, wz + 0.6);
+    OM_TABLES.forEach(([dx, dz], k) => { const x = R.cx + dx, z = R.cz + dz; box(g, 2.4, 0.16, 1.6, 0x8A5A34, x, 0.8, z); for (const [a, b2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(g, 0.12, 0.8, 0.12, 0x6E4A2C, x + a * 1.05, 0.4, z + b2 * 0.65, o);
+      box(g, 1.3, 0.06, 1.3, 0xE2B86A, x, 0.91, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0x1E1E22, x - 0.25, 0.97, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0xF6F4EE, x + 0.25, 0.97, z + 0.2, o);
+      const seats = [[x, z - 1.7], [x, z + 1.7]]; seats.forEach(([sx, sz], i) => { cyl(g, 0.38, 0.5, i ? 0xF0EDE6 : 0x2A2A30, sx, 0.25, sz, o); cyl(g, 0.42, 0.08, i ? 0xFFFFFF : 0x44444C, sx, 0.52, sz, o); });
+      makeLabel(g, [`⚫ 오목 탁자 ${k + 1}`], 0.7, x, 2.3, z); addInteract({ pos: new V3(x, 1, z), r: 3.0, text: () => omw.on ? null : [`⚫ 오목 탁자 ${k + 1}`, omSub(k)], run: () => { const p = player.pos, i = Math.hypot(p.x - seats[0][0], p.z - seats[0][1]) < Math.hypot(p.x - seats[1][0], p.z - seats[1][1]) ? 0 : 1; omSit(k, seats[i], [x, z]); } }); }); }
   registerSolids(g, 'boardrooms');
   // 게임 화면
   const el = document.createElement('div'); el.id = 'bgPlay'; el.className = 'hidden'; el.style.cssText = 'position:fixed;inset:0;z-index:80;background:rgba(30,26,22,.86);display:flex;flex-direction:column;padding:calc(6px + var(--safe-top)) 8px 8px';
@@ -30085,6 +30162,7 @@ function loop() {
   if (joined) { try { kvTick(); } catch (e) { console.warn('kv', e); } } // 🔤 1101i
   if (joined) { try { kvPoemRwTick(); } catch (e) { console.warn('kpoem', e); } } // ✍️ 1101l
   if (joined) { try { wcTick(); } catch (e) { console.warn('wc', e); } } /* 🔤 1102x 끝말잇기 */
+  if (joined) { try { omTick(); } catch (e) { console.warn('om', e); } } /* ⚫ 1105zd 오목 */
   if (joined && bldRegion()) { try { kdRoomTick(); } catch (e) { console.warn('kdr', e); } } else if (kdW.it) kdW.it.pos.set(0, -99, 0); // 🕵️ 1101k
   if (joined && esc.it) { try { escTick(); } catch (e) { console.warn('esc', e); } } // 🔐 1101a 방탈출
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
