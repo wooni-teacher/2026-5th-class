@@ -18575,6 +18575,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zc', d: '11월 9일', items: ['🗑️ 끝난 펫 대전은 목록에서 빠지고, 「끝난 대전 지우기」로 지울 수 있어요 (선생님은 모두 · 학생은 내 대전)'] },
   { id: '1105zb', d: '11월 9일', items: ['🔧 비밀 숫자 만들기 창이 깜빡이며 적던 숫자가 지워지던 문제를 고쳤어요'] },
   { id: '1105za', d: '11월 9일', items: ['🔧 비밀 숫자를 만들 때 「✋ 잠깐 멈춤! 선생님 이야기를 들어요」가 잘못 뜨던 문제를 고쳤어요'] },
   { id: '1105z', d: '11월 9일', items: ['🔐 선생님 화면에서 지금 반 비밀번호를 볼 수 있어요'] },
@@ -21177,7 +21178,7 @@ function pbEnd() {
   } else if (pb.mode === 'pvp') {
     if (bag.pvpDay?.d !== dayNum()) bag.pvpDay = { d: dayNum(), n: 0 };
     if (bag.pvpDay.n < 5) { bag.pvpDay.n++; const g = giveShellCapped(won ? 15 : 5); if (g) msg += ` 🐚 +${g}`; }
-    if (pb.mid && backend.uid === pb.mid.split('_')[0]) setTimeout(() => backend.pbDel(pb.mid), 8000);
+    if (pb.mid) { const mid = pb.mid; setTimeout(() => backend.pbDel(mid), backend.uid === mid.split('_')[0] ? 8000 : 15000); } /* 🗑️ 1105zc 두 사람 모두 끝난 대전을 지워요 (먼저 지운 쪽이 이겨요) */
     if (pb.league && pb.foeUid) { pb.league = false; leagueRec(won, pb.foeUid).then(t => { if (t) { $('pbLog').textContent += ' · ' + t; toast(t, 'info'); } }); } /* 🏆 1105m */
   }
   saveBag(); $('pbLog').textContent = `${msg} · 경험치 +${gain}${ups.length ? ` · ⬆️ ${ups.join(', ')}` : ''}`;
@@ -21235,10 +21236,17 @@ function pbTqPick(j) {
 function pbTqTick() { const z = pb.tq; if (!z || z.pick >= 0 || !pb.B) return; const el = document.querySelector('#pbMoves [data-tq]'), left = PB_TQ_SEC - (performance.now() - z.at) / 1000;
   if (left <= 0) { pbTqPick(9); toast('⏱️ 시간이 지나서 빗나가요', 'warn'); return; } if (el && el.textContent.startsWith('⏱️')) el.textContent = el.textContent.replace(/^⏱️ \d+초/, `⏱️ ${Math.ceil(left)}초`); }
 /* 👀 1105t 친구 대전 관전: 대전 기록(팀 · 씨앗 · 턴마다 고른 것)을 똑같이 다시 계산해서 보여 줘요 (두 사람 화면과 같은 결과) */
-function pbSpecList() { const ms = S.pb?.m || {}, now = backend.now(); return Object.entries(ms).filter(([, m]) => m && m.a && m.b && now - (m.at || 0) < 40 * 60000); }
+function pbMatchOver(m) { /* 🏁 1105zc 끝난 대전인지: 누가 그만했거나(-1) · 기록을 다시 계산해 한쪽 펫이 다 쓰러졌으면 */
+  if (!m?.a || !m?.b) return true; const B = { s: [pbSide(Object.values(m.ta || {}), 'A'), pbSide(Object.values(m.tb || {}), 'B')], over: -1, turn: 0 };
+  for (let g = 0; g < 200 && B.over < 0; g++) { const c = m.c?.[B.turn], ka = c?.[m.a], kb = c?.[m.b]; if (ka == null || kb == null) break; if (ka < 0 || kb < 0) return true; const T = pbTqMods(ka, kb); pbStep(B, T.ch, pbRng((m.s | 0) + B.turn * 7919), T.mod); }
+  return B.over >= 0; }
+function pbSpecList(all) { const ms = S.pb?.m || {}, now = backend.now(); return Object.entries(ms).filter(([, m]) => m && m.a && m.b && now - (m.at || 0) < 40 * 60000 && (all || !pbMatchOver(m))); }
 function openPbSpec() {
-  openLife('👀 펫 대전 관전', (box) => { box.textContent = ''; const L = pbSpecList();
-    box.append(el2('p', 'hint', '지금 하고 있는 친구 대전을 실시간으로 볼 수 있어요. 관전은 보상이 없고, 대전에 영향을 주지 않아요.'));
+  openLife('👀 펫 대전 관전', (box) => { box.textContent = ''; const L = pbSpecList(), me = backend.uid, done = Object.entries(S.pb?.m || {}).filter(([, m]) => m && (isTeacher || m.a === me || m.b === me) && (!m.a || !m.b || backend.now() - (m.at || 0) >= 40 * 60000 || pbMatchOver(m)));
+    box.append(el2('p', 'hint', '지금 하고 있는 친구 대전을 실시간으로 볼 수 있어요. 관전은 보상이 없고, 대전에 영향을 주지 않아요. 끝난 대전은 목록에 나오지 않아요.'));
+    if (done.length) { /* 🗑️ 1105zc 끝난 대전 지우기 (선생님은 모두 · 학생은 내 대전만) */ const r0 = el2('div', 'row-center wrap'), del = el2('button', 'btn', `🗑️ 끝난 대전 ${done.length}개 지우기${isTeacher ? '' : ' (내 대전)'}`); del.style.background = '#fff';
+      del.onclick = async () => { del.disabled = true; let n = 0; if (isTeacher) { const up = {}; for (const [k] of done) up[`pb/m/${k}`] = null; const q = await backend.adminUpdate(up); n = q?.ok === false ? 0 : done.length; } else for (const [k] of done) { const q = await backend.pbDel(k); if (q.ok) n++; } toast(n ? `🗑️ 끝난 대전 ${n}개를 지웠어요` : '⚠️ 지우지 못했어요', n ? 'success' : 'warn'); refillLife(); };
+      r0.append(del); box.append(r0); }
     if (!L.length) { box.append(el2('div', 'vempty', '지금 하는 대전이 없어요')); return; }
     for (const [mid, m] of L) { const r = el2('div', 'pet-row'), n = Object.keys(m.c || {}).filter(k => /^\d+$/.test(k)).length;
       r.append(el2('span', '', `⚔️ ${m.na || '친구'} vs ${m.nb || '친구'} · ${n ? `${n}턴째` : '🧩 시작 문제'}`)); const b = el2('button', 'btn', '👀 보기'); b.style.background = '#FFD23C'; b.onclick = () => { closeLife(); pbSpecStart(mid); }; r.append(b); box.append(r); } });
@@ -21866,7 +21874,7 @@ function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이�
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && pb.qz && performance.now() - pb.qz.at > 90000) pbQzCancel('⏱️ 친구가 오래 답하지 않아서 대전이 취소됐어요', true); /* 🧩 1105o */
   pbTqTick(); /* 🧩 1105t */
   if (pb.mode === 'pvp' && pb.B && pb.B.over < 0 && !pb.qz && pb.busy && pb.turnDone !== pb.B.turn && performance.now() - pb.waitAt > 45000) { pb.B.over = pb.me; $('pbLog').textContent = '⏱️ 친구가 오래 고르지 않아서 이겼어요'; pbEnd(); }
-  if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); backend.linkSweep?.(); /* 🧹 1105q */ const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000) up[`pb/m/${k}`] = null; for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
+  if (isTeacher && backend?.mode === 'firebase' && performance.now() - (pb.cleanAt || 0) > 60000) { pb.cleanAt = performance.now(); backend.linkSweep?.(); /* 🧹 1105q */ const up = {}, now = backend.now(); for (const [k, m] of Object.entries(S.pb?.m || {})) if (now - (m?.at || 0) > 1800000 || (now - (m?.at || 0) > 60000 && pbMatchOver(m)) || (now - (m?.at || 0) > 600000 && !Object.keys(m?.c || {}).some(x => /^\d+$/.test(x)))) up[`pb/m/${k}`] = null; /* 🧹 1105zc 끝난 대전(1분 뒤) · 10분 넘게 시작 못 한 대전도 */ for (const [k, o] of Object.entries(S.pb?.o || {})) if (now - (o?.at || 0) > 600000) up[`pb/o/${k}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
 }
 
 
