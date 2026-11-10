@@ -2194,7 +2194,7 @@ function sanitizeState(raw) {
     if (pl.h != null && ok(isInt(pl.h.s, 0, 6) && isInt(pl.h.c, 0, 9))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; if (typeof pl.h.n === 'string' && pl.h.n.length <= 8) out.plots[n].h.n = pl.h.n; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
       { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 5) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '', ...(isInt(pt.o, 1, 15) ? { o: pt.o } : {}), ...(pt.w === 1 ? { w: 1 } : {}) }; } // 🐾 집 펫
-      for (const L of ['c', 'g', 'u']) for (const [cell, d] of Object.entries(plainObj(inn[L]))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o[L] ||= {})[cell] = { t: d.t, r: d.r }; // 🛋️ c 가구 · g 바닥(러그) · u 위에 올린 작은 장식
+      for (const L of ['c', 'g', 'u']) for (const [cell, d] of Object.entries(plainObj(inn[L]))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o[L] ||= {})[cell] = { t: d.t, r: d.r, ...(isInt(d.k, 1, 11) ? { k: d.k } : {}) }; // 🎨 1105zh 색 · 🛋️ c 가구 · g 바닥(러그) · u 위에 올린 작은 장식
       for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
     for (const [k, d] of Object.entries(plainObj(pl.items))) if (ok(/^([0-5]_[0-5]|h(1[01]|[0-9])_(1[01]|[0-9]))$/.test(k) && d && isInt(d.t, 0, 19) && isInt(d.r, 0, 3))) out.plots[n].items[k] = { t: d.t, r: d.r };
@@ -15435,7 +15435,7 @@ function buildRoom(id) { // 지금 들어가 있는 집 안만 그려요
     const base = inn.c?.[cell]; if (L === 'u' && (!base || FURN_TOP[base.t] == null)) continue;
     const [x, z] = roomCellPos(id, cell), it = new THREE.Group(); it.position.set(x, L === 'g' ? 0.1 - 0.06 : 0.1, z); it.rotation.y = ((d.r | 0) % 4) * Math.PI / 2;
     if (L === 'u') { it.position.set(...topPos(id, cell, base)); it.scale.setScalar(TOP_SC); }
-    buildFurn(clamp(d.t | 0, 0, FURN.length - 1), it); g.add(it);
+    buildFurn(clamp(d.t | 0, 0, FURN.length - 1), it); if (d.k) furnTint(it, d.k); g.add(it); /* 🎨 1105zh 가구 색 */
   }
   for (const [slot, mi] of Object.entries(inn.p || {})) { // 🖼️ 벽에 건 벽화 액자
     const at = WALL_SLOTS[+slot], artP = typeof mi === 'string' ? S.art?.[mi]?.p : null; if (!at || (!MURALS[mi] && !artP)) continue;
@@ -15556,6 +15556,24 @@ async function homePlace() {
   homeEditStop();
 }
 const topLayer = (inn, cell) => ['u', 'c', 'g'].find(L => inn?.[L]?.[cell]) || ''; // 맨 위부터 치워요
+/* 🎨 1105zh 가구 색 바꾸기: 가구에서 가장 넓은 색(주된 색)을 고른 색으로 바꿔요 · plots/{집}/in/{층}/{칸}.k (1~11, 없으면 원래 색) · 무료 */
+const FCOL = [null, [0xE2584A, '빨강'], [0xF39A3C, '주황'], [0xF7D04A, '노랑'], [0x6BBF59, '초록'], [0x6EC1E4, '하늘'], [0x3E6FD1, '파랑'], [0x9B6BD6, '보라'], [0xF29AC0, '분홍'], [0xF4F1EA, '하양'], [0x3A3A40, '검정'], [0x8A5A34, '나무']];
+const furnTintMat = new Map();
+function furnTint(g, k) { const C = FCOL[k | 0]; if (!C) return; const area = new Map(), box3 = new THREE.Box3(), sz = new V3();
+  g.updateMatrixWorld(true); g.traverse(o => { if (!o.isMesh || !o.material?.color || o.material.transparent) return; box3.setFromObject(o).getSize(sz); const a = sz.x * sz.y + sz.y * sz.z + sz.x * sz.z, h = o.material.color.getHex(); area.set(h, (area.get(h) || 0) + a); });
+  let main = -1, best = 0; for (const [h, a] of area) if (a > best) { best = a; main = h; } if (main < 0) return;
+  g.traverse(o => { if (!o.isMesh || !o.material?.color || o.material.color.getHex() !== main) return; const key = o.material.uuid + ':' + k; let m = furnTintMat.get(key); if (!m) { m = o.material.clone(); m.color.setHex(C[0]); furnTintMat.set(key, m); } o.material = m; }); }
+function openFurnMenu(cell) {
+  const id = home.id, inn = S.plots[id]?.in, L = topLayer(inn, cell), d = inn?.[L]?.[cell]; if (!d) return; const F = FURN[d.t | 0];
+  openLife(`🎨 ${F?.icon || ''} ${F?.name || '가구'}`, (box) => { if (box.dataset.hk === cell + (d.k | 0)) return; box.dataset.hk = cell + (d.k | 0); box.textContent = '';
+    box.append(el2('p', 'hint', '색을 고르면 가구의 주된 색이 바뀌어요 (무료) · 친구가 놀러 와도 같은 색으로 보여요'));
+    const grid = el2('div', ''); grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;margin:8px 0';
+    FCOL.forEach((C, k) => { const b = el2('button', 'btn', ''); b.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:${(d.k | 0) === k ? '#FFF1B8' : '#fff'};border:${(d.k | 0) === k ? '3px solid #F2B636' : ''}`;
+      const sw = el2('span', ''); sw.style.cssText = `width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,0,0,.2);background:${C ? '#' + C[0].toString(16).padStart(6, '0') : 'conic-gradient(#E2584A,#F7D04A,#6BBF59,#6EC1E4,#9B6BD6,#E2584A)'}`;
+      b.append(sw, el2('span', '', C ? C[1] : '원래 색')); b.onclick = async () => { const cur = S.plots[id]?.in?.[L]?.[cell]; if (!cur) return closeLife(); const nv = { t: cur.t | 0, r: cur.r | 0 }; if (k) nv.k = k;
+        const res = await backend.homeSet(id, { [`${L}/${cell}`]: nv }); if (res.ok) { playSfx('pick'); toast(`🎨 ${F?.name || '가구'} 색을 ${C ? C[1] : '원래 색'}으로 바꿨어요`, 'success'); delete box.dataset.hk; } else toast('⚠️ 색을 바꾸지 못했어요 (규칙 게시 확인)', 'warn'); }; grid.append(b); });
+    box.append(grid); const rm = el2('button', 'btn', '📦 내 가구 상자로 치우기'); rm.style.background = '#fff'; rm.onclick = () => { closeLife(); homeRemove(cell); }; const r0 = el2('div', 'row-center'); r0.append(rm); box.append(r0); });
+}
 async function homeRemove(cell) {
   const id = home.id, inn = S.plots[id]?.in, L = topLayer(inn, cell), d = inn?.[L]?.[cell]; if (!d) return;
   const res = await backend.homeSet(id, { [`${L}/${cell}`]: null });
@@ -15895,7 +15913,7 @@ function initHomeUI() {
   home.doorI = addInteract({ pos: new V3(0, -99, 0), r: 2.2, text: () => { const pl = S.plots[home.doorId]; if (!pl) return null; return pl.o === backend?.uid ? ['우리 집 들어가기 🚪', '집 안을 꾸밀 수 있어요'] : ['친구 집 놀러 가기 🏠', `🏡 친구 집 · 구경만 해요`]; }, run: () => goHome(home.doorId, true) });
   home.exitI = addInteract({ pos: new V3(0, -99, 0), r: 1.8, text: () => home.id ? ['밖으로 나가기 🚪', '마당으로'] : null, run: () => goHome(home.id, false) });
   hpw.patI = addInteract({ pos: new V3(0, -99, 0), r: 1.6, text: () => hpw.inG && hpCur() ? ['🤚 쓰다듬기', `${HPETS[hpIdx(hpCur())].icon} ❤️ +1`] : null, run: () => hpetCare('pat') });
-  home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => { if (!home.inCell) return null; const inn = S.plots[home.id]?.in, L = topLayer(inn, home.inCell); return L ? ['가구 치우기 📦', `${FURN[inn[L][home.inCell].t | 0]?.name}${L === 'u' ? ' (위)' : L === 'g' ? ' (바닥)' : ''} → 내 가구 상자`] : null; }, run: () => homeRemove(home.inCell) });
+  home.inItem = addInteract({ pos: new V3(0, -99, 0), r: 1.7, text: () => { if (!home.inCell) return null; const inn = S.plots[home.id]?.in, L = topLayer(inn, home.inCell); return L ? ['🎨 색 바꾸기 · 📦 치우기', `${FURN[inn[L][home.inCell].t | 0]?.name}${L === 'u' ? ' (위)' : L === 'g' ? ' (바닥)' : ''}`] : null; }, run: () => openFurnMenu(home.inCell) }); /* 🎨 1105zh */
   $('hbEdit').onclick = openHomeDecor; $('hbPet').onclick = openHomePet;
   $('hbHouse').onclick = () => openHouse(home.id);
   $('hbPlace').onclick = homePlace;
@@ -18584,6 +18602,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zi', d: '11월 10일', items: ['🎨 우리 집 가구 색을 바꿀 수 있어요! 놓은 가구 앞에서 E → 11가지 색 중에서 골라요 (무료)'] },
   { id: '1105zg', d: '11월 10일', items: ['🎀 시즌 패스가 화면 위 가운데 리본으로 옮겨졌어요 (단계와 ⭐ 막대가 한눈에)'] },
   { id: '1105zf', d: '11월 10일', items: ['📱 오목 화면이 태블릿에 맞게 바뀌었어요 (가로: 판 왼쪽 · 버튼 오른쪽)', '🧹 끝난 오목 판은 20초 뒤 저절로 새 판 (흑백 바꿈) · 아무도 없거나 오래 멈춘 탁자는 저절로 비워져요', '🔑 오목 방에 선생님 관리 책상 (비밀번호) · 두던 판도 새 판으로'] },
   { id: '1105ze', d: '11월 9일', items: ['⚫ 오목판이 20×20으로 커졌어요', '🚫 흑은 3-3(쌍삼) 자리에 둘 수 없어요 (흑 차례에 빨간 ✕로 보여 줘요)'] },
