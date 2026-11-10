@@ -121,6 +121,12 @@
   #calBtn, #helpBtn, #teacherBtn, #actBtn, #bagBtn, #statBtn { width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 22px; }
 
   /* 알림 */
+  #ssnBtn { position: fixed; left: 50%; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 8px; padding: 6px 16px 7px; font: inherit; font-size: 15px; font-weight: 700; color: #3B2F2A; border: 2px solid #E8A33C; border-top: none; border-radius: 0 0 16px 16px; box-shadow: 0 3px 8px rgba(0,0,0,.16); cursor: pointer; white-space: nowrap; } /* 🎀 1105zg 시즌 패스 리본 */
+  #ssnBtn.hidden { display: none; } #ssnBtn:hover { filter: brightness(1.04); } #ssnBtn:active { transform: translateX(-50%) translateY(1px); }
+  #ssnBtn .ssn-bar { width: 84px; height: 9px; border-radius: 6px; background: rgba(0,0,0,.12); overflow: hidden; display: inline-block; } #ssnBtn .ssn-bar i { display: block; height: 100%; border-radius: 6px; }
+  #ssnBtn .ssn-n { font-size: 13px; color: #6B5A4E; }
+  @media (max-width: 620px) { #ssnBtn { font-size: 13px; padding: 4px 12px 5px; gap: 6px; } #ssnBtn .ssn-bar { width: 56px; } }
+  body.has-ssn #toast { top: calc(112px + var(--safe-top)); }
   #toast {
     position: fixed; left: 50%; top: calc(86px + var(--safe-top)); transform: translateX(-50%);
     max-width: min(560px, 92vw); padding: 10px 20px; text-align: center; font-size: 21px; color: #fff;
@@ -18578,6 +18584,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zg', d: '11월 10일', items: ['🎀 시즌 패스가 화면 위 가운데 리본으로 옮겨졌어요 (단계와 ⭐ 막대가 한눈에)'] },
   { id: '1105zf', d: '11월 10일', items: ['📱 오목 화면이 태블릿에 맞게 바뀌었어요 (가로: 판 왼쪽 · 버튼 오른쪽)', '🧹 끝난 오목 판은 20초 뒤 저절로 새 판 (흑백 바꿈) · 아무도 없거나 오래 멈춘 탁자는 저절로 비워져요', '🔑 오목 방에 선생님 관리 책상 (비밀번호) · 두던 판도 새 판으로'] },
   { id: '1105ze', d: '11월 9일', items: ['⚫ 오목판이 20×20으로 커졌어요', '🚫 흑은 3-3(쌍삼) 자리에 둘 수 없어요 (흑 차례에 빨간 ✕로 보여 줘요)'] },
   { id: '1105zd', d: '11월 9일', items: ['⚫ 반월쉼터에 「오목 방」이 생겼어요! 탁자에 앉아 흑·백으로 오목 한 판 (화면 가득 큰 오목판 · 구경도 돼요 · 이기면 🐚3 하루 한 번)'] },
@@ -26765,10 +26772,14 @@ function ssnTrailFx(a, code) { // 👣 걸을 때 발밑에서 반짝
 const ssnW = { btn: null, t: 0, deco: null, decoK: '', told: '' };
 function ssnTick() { // 1초마다: 시즌 버튼 · 광장 장식 · 처음 알림
   const Z = ssnNow();
-  if (!ssnW.btn) { const b = document.createElement('button'); b.id = 'ssnBtn'; b.className = 'btn hidden'; b.style.cssText = 'position:fixed;left:10px;top:302px;z-index:6;font-size:15px;padding:7px 12px;box-shadow:0 2px 8px rgba(0,0,0,.18)'; b.onclick = openSeason; document.body.append(b); ssnW.btn = b; }
-  const show = !!Z && joined && !(pb3.on || cart.on || sled.on || mrail.on); ssnW.btn.classList.toggle('hidden', !show);
-  if (show) { const me = bag.ssn?.id === Z.id ? bag.ssn : { lv: 0 }, t = Z.finale ? `${Z.icon} 마무리 축제` : isTeacher ? `${Z.icon} 시즌 패스` : `${Z.icon} 시즌 패스 ${me.lv}단계`; if (ssnW.btn.textContent !== t) ssnW.btn.textContent = t; ssnW.btn.style.background = Z.bg; ssnW.btn.style.border = `2px solid ${Z.col}`; }
-  if (Z && joined && stateLoaded && ssnW.told !== Z.id && bag.ssnTold !== Z.id) { ssnW.told = Z.id; if (!isTeacher) { bag.ssnTold = Z.id; saveBag(); } setTimeout(() => { playSfx('fanfare'); showBanner(`${Z.icon} ${Z.n} 시작!`, `${Z.sub} · 왼쪽 ${Z.icon} 버튼에서 시즌 패스를 봐요`, 7000); }, 2500); }
+  if (!ssnW.btn) { const b = document.createElement('button'); b.id = 'ssnBtn'; b.className = 'hidden'; b.setAttribute('aria-label', '시즌 패스 보기'); b.onclick = openSeason; document.body.append(b); ssnW.btn = b; } /* 🎀 1105zg 화면 위 가운데 · 상단 바 아래에 붙은 리본 (단계 + 별 막대) */
+  const show = !!Z && joined && !(pb3.on || cart.on || sled.on || mrail.on) && !$('hud').classList.contains('hidden'); ssnW.btn.classList.toggle('hidden', !show); document.body.classList.toggle('has-ssn', show);
+  if (show) { const me = bag.ssn?.id === Z.id ? bag.ssn : { lv: 0, s: 0 }, lv = me.lv | 0, st = me.s | 0, a = SSN_STARS[lv - 1] || 0, b2 = SSN_STARS[lv], pc = b2 ? Math.max(0, Math.min(100, Math.round((st - a) / (b2 - a) * 100))) : 100;
+    const t = Z.finale ? `${Z.icon} 마무리 축제` : isTeacher ? `${Z.icon} 시즌 패스` : `${Z.icon} 시즌 패스 · ${lv}단계`, k = [t, pc, st, Z.id].join('|');
+    if (ssnW.key !== k) { ssnW.key = k; ssnW.btn.innerHTML = ''; ssnW.btn.append(el2('span', 'ssn-t', t)); if (!Z.finale && !isTeacher) { const bar = el2('span', 'ssn-bar'), fill = el2('i', ''); fill.style.width = pc + '%'; fill.style.background = Z.col; bar.append(fill); ssnW.btn.append(bar, el2('span', 'ssn-n', b2 ? `⭐${st}/${b2}` : '⭐완료')); }
+      ssnW.btn.style.background = Z.bg; ssnW.btn.style.borderColor = Z.col; }
+    const hb = $('hud').getBoundingClientRect(), top = Math.round(hb.bottom - 3) + 'px'; if (ssnW.btn.style.top !== top) ssnW.btn.style.top = top; }
+  if (Z && joined && stateLoaded && ssnW.told !== Z.id && bag.ssnTold !== Z.id) { ssnW.told = Z.id; if (!isTeacher) { bag.ssnTold = Z.id; saveBag(); } setTimeout(() => { playSfx('fanfare'); showBanner(`${Z.icon} ${Z.n} 시작!`, `${Z.sub} · 화면 위 ${Z.icon} 시즌 패스 리본을 눌러 봐요`, 7000); }, 2500); }
   ssnSync(); ssnDeco(Z);
   if ($('tpSsnNow') && !$('teacherPanel').classList.contains('hidden')) { const t = Z ? `지금: ${Z.icon} ${Z.n} (${ssnMD(Z.from)}~${ssnMD(Z.to)})${S.ssnc && S.ssnc !== 'auto' ? ' · 🧑‍🏫 선생님이 미리 시작함' : ' · 날짜대로'}` : `지금은 시즌이 아니에요 · ${(SSNS.find(x => x.from > dayNum()) || {}).icon || ''} 다음 시즌 ${ssnMD((SSNS.find(x => x.from > dayNum()) || SSNS[0]).from)} 시작`; if ($('tpSsnNow').textContent !== t) $('tpSsnNow').textContent = t; }
 }
