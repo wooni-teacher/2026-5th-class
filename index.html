@@ -1319,6 +1319,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
   <p class="keys">움직이기: WASD 또는 방향키 / 점프: 스페이스 / 누르기: E / 공동 미션: B / 몸짓: Q / 지도: M</p>
   <div class="tl-row"><span class="tl-lab">🖥️ 화질</span><div id="gfxOpts" class="tl-opts"></div></div>
   <p class="hint" id="gfxNote" style="text-align:center;margin:0 0 10px"></p>
+  <div class="row-center" style="margin:0 0 10px"><button class="btn" id="perfBtn" type="button" style="background:#fff;font-size:15px">🩺 성능 보기 켜기/끄기</button></div>
   <div class="row-center wrap"><button class="btn" id="tipUpd" style="background:#FFF3C4">📰 업데이트 소식</button><button class="btn" id="tipGuide" style="background:#fff">🧭 첫걸음 안내 다시 보기</button><button class="btn" id="tipOk">알겠어요 👍</button></div>
   <button id="roleBtn" class="hidden" style="display:block;margin:12px auto 0;border:0;background:none;font-size:16px;text-decoration:underline;opacity:.7;cursor:pointer">🧑‍🏫 선생님으로 바꾸기</button>
 </section>
@@ -2879,7 +2880,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
       D.onValue(R('sgbots'), s => sgBotsRemote(s.val()), () => {}); // 🤖 컴퓨터 병사 위치 (선생님 기기가 올려요)
       D.onValue(R('sgbotdmg'), s => sgBotDmgRemote(s.val()), () => {}); // 학생이 🤖를 맞힌 기록 (선생님 기기만 반영)
       D.onValue(R('state'), s => {
-        cache = normalize(s.val());
+        const t0 = performance.now(); cache = normalize(s.val()); try { const d = performance.now() - t0, P = perfW.st; P.n++; P.ms += d; if (d > P.mx) P.mx = d; } catch (e) { } /* 🩺 1105zj */
         if (!timer) timer = setTimeout(() => { timer = 0; onState(cache); }, 80);
       }, err => onError(err));
       const pr = R('players');
@@ -3778,6 +3779,40 @@ function paintText(lines, o = {}) { // 글자 그림: 정해진 판(o.w·o.h)에
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
   return { tex, aspect: cv.width / cv.height };
 }
+/* ⚡ 1105zj 가볍게 돌리기
+   · perfFreeze: 숨겨 둔 큰 묶음(다른 마을·방 안 등)은 위치 계산을 건너뛰어요 (보이게 되면 그때 한 번 다시 계산)
+     + 방들이 모여 있는 먼 구역(x 1380~1650)의 묶음은 플레이어가 그 근처에 없으면 건너뛰어요
+   · perfLabels: 0.4초마다 이름표까지 거리를 재서 멀면 그리지 않아요 (크기에 따라 60~180m · 숨김은 layers로 해서 다른 코드의 visible과 안 부딪혀요)
+   · 🩺 성능 보기: 초당 화면 수 · 그리기 횟수 · 삼각형 · 물체 수 · 반 자료 크기 · 반 자료가 바뀐 횟수와 처리 시간 */
+const perfW = { labels: [], lt: 0, on: false, el: null, f: 0, t0: 0, worst: 0, last: 0, st: { n: 0, ms: 0, mx: 0, kb: 0, kbAt: 0 }, frozen: 0, hidLab: 0 };
+function perfFreeze() {
+  if (scene.matrixAutoUpdate) scene.matrixAutoUpdate = false; /* 장면 자체는 안 움직여요 · 이게 켜져 있으면 매 프레임 '모두 다시 계산'이 돼서 쉬기가 안 먹혀요 */
+  const px = joined ? player.pos.x : camera.position.x, nearRooms = px > 1330 && px < 1700, now = performance.now(), sweep = now - (perfW.fzAt || 0) > 3000; if (sweep) perfW.fzAt = now; let fz = 0;
+  for (const c of scene.children) { if (c.isLight || c.isCamera || !c.children.length) continue;
+    let want = c.visible; if (want && c.name && c.userData.pfRoom === undefined) c.userData.pfRoom = /^(Arena|PetGymRooms|BoardRooms|MrunHall)$/.test(c.name); /* 방 구역(x 1380~1650)에만 있는 묶음 */
+    const farRoom = want && c.userData.pfRoom && !nearRooms; if (farRoom) want = false;
+    if (!want) { const k = c.position.x * 1.1 + c.position.y * 1.3 + c.position.z * 1.7 + c.rotation.y * 2.3 + c.scale.x * 3.1 + c.children.length * 0.01; fz++;
+      if (c.matrixWorldAutoUpdate || c.userData.pfK !== k || (farRoom && sweep)) { c.userData.pfK = k; c.matrixWorldAutoUpdate = true; c.updateMatrixWorld(true); c.matrixWorldAutoUpdate = false; } /* 쉬기 전에(또는 옮겨졌으면 · 보이는 먼 방은 3초마다) 한 번 정확히 계산 */ }
+    else if (!c.matrixWorldAutoUpdate) { c.matrixWorldAutoUpdate = true; c.updateMatrixWorld(true); } }
+  perfW.frozen = fz;
+}
+function perfLabels() {
+  const now = performance.now(); if (now - perfW.lt < 400) return; perfW.lt = now; const cx = camera.position.x, cy = camera.position.y, cz = camera.position.z; let hid = 0, L = perfW.labels;
+  for (let i = L.length - 1; i >= 0; i--) { const sp = L[i]; if (!sp.parent) { L[i] = L[L.length - 1]; L.pop(); continue; }
+    const e = sp.matrixWorld.elements, dx = e[12] - cx, dy = e[13] - cy, dz = e[14] - cz, lim = Math.max(60, Math.min(180, sp.scale.y * 90)), far = dx * dx + dy * dy + dz * dz > lim * lim;
+    if (far) hid++; if (far !== (sp.userData.pfFar === true)) { sp.userData.pfFar = far; sp.layers.set(far ? 5 : 0); } }
+  perfW.hidLab = hid;
+}
+function perfTick() {
+  const now = performance.now(), d = now - (perfW.last || now); perfW.last = now; if (!perfW.on) return; perfW.f++; if (d > perfW.worst) perfW.worst = d;
+  if (now - perfW.t0 < 1000) return; const fps = perfW.f * 1000 / (now - perfW.t0), st = perfW.st, I = renderer.info.render;
+  if (now - st.kbAt > 5000) { st.kbAt = now; try { st.kb = Math.round(JSON.stringify(S).length / 1024); } catch (e) { } }
+  let obj = 0; for (const c of scene.children) if (c.visible) obj += 1 + (c.userData.pfN ??= (() => { let n = 0; c.traverse(() => n++); return n; })());
+  perfW.el.textContent = `🩺 ${fps.toFixed(0)}장/초 · 가장 느린 화면 ${perfW.worst.toFixed(0)}ms · 화질 ${gfx.level}단계\n🖌️ 그리기 ${I.calls}번 · 삼각형 ${(I.triangles / 1000).toFixed(0)}천 · 친구 ${remotes.size}명\n📦 반 자료 ${st.kb}KB · 1초에 ${st.n}번 바뀜 · 처리 ${st.n ? (st.ms / st.n).toFixed(1) : 0}ms (최대 ${st.mx.toFixed(0)}ms)\n⚡ 쉬는 묶음 ${perfW.frozen}개 · 숨긴 이름표 ${perfW.hidLab}/${perfW.labels.length}`;
+  perfW.f = 0; perfW.t0 = now; perfW.worst = 0; st.n = 0; st.ms = 0; st.mx = 0;
+}
+function perfToggle(on) { perfW.on = on ?? !perfW.on; if (!perfW.el) { const el = document.createElement('pre'); el.id = 'perfBox'; el.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:90;margin:0;padding:8px 10px;background:rgba(20,24,34,.86);color:#E8F4FF;font:13px/1.45 ui-monospace,monospace;border-radius:10px;pointer-events:none;white-space:pre;max-width:96vw;overflow:hidden'; document.body.append(el); perfW.el = el; }
+  perfW.el.style.display = perfW.on ? '' : 'none'; perfW.el.textContent = '🩺 재는 중…'; perfW.t0 = performance.now(); perfW.f = 0; store.set('sv-perf', perfW.on ? '1' : ''); }
 function makeLabel(parent, lines, height, x, y, z, o = {}) {
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, toneMapped: false }));
   sp.position.set(x, y, z);
@@ -3790,7 +3825,7 @@ function makeLabel(parent, lines, height, x, y, z, o = {}) {
     sp.scale.set(height * aspect, height, 1);
   };
   sp.userData.set(lines);
-  parent.add(sp);
+  parent.add(sp); perfW.labels.push(sp); /* ⚡ 1105zj 먼 이름표 숨기기용 */
   return sp;
 }
 function signPlane(parent, lines, w, h, x, y, z, o = {}) {
@@ -4921,13 +4956,13 @@ function updateInteract() {
   let best = null, bestScore = Infinity, bestText = null;
   const modalOpen = !!document.querySelector('.modal:not(.hidden)'); // 창이 열려 있으면 'E 누르기' 안내를 숨겨요 (창 버튼을 가리지 않게)
   if (joined && $('picker').classList.contains('hidden') && !placing.active && !modalOpen) {
-    for (const it of interactables) {
-      const t = it.text();
-      if (!t) continue;
-      const dy = (player.pos.y + 1) - it.pos.y;
-      if (Math.abs(dy) > (it.dy ?? 2.5)) continue;
-      const d = Math.hypot(player.pos.x - it.pos.x, player.pos.z - it.pos.z);
-      if (d < it.r && d / it.r < bestScore) { bestScore = d / it.r; best = it; bestText = t; }
+    const px = player.pos.x, pz = player.pos.z, py = player.pos.y + 1;
+    for (const it of interactables) { /* ⚡ 1105zj 가까운 것만 안내 글을 만들어요 (예전: 모든 지점의 글을 매 프레임 만든 뒤 거리를 봤어요) */
+      const dx = px - it.pos.x, dz = pz - it.pos.z; if (dx > it.r || dx < -it.r || dz > it.r || dz < -it.r) continue;
+      if (Math.abs(py - it.pos.y) > (it.dy ?? 2.5)) continue;
+      const d = Math.hypot(dx, dz); if (!(d < it.r && d / it.r < bestScore)) continue;
+      const t = it.text(); if (!t) continue;
+      bestScore = d / it.r; best = it; bestText = t;
     }
   }
   const key = best ? bestText.join('|') : '';
@@ -8585,7 +8620,7 @@ function setGfxMode(m) { // 도움말 창의 화질 버튼
   setGfxLevel(m === 'light' ? 2 : 0); renderGfxUI();
 }
 function renderGfxUI() {
-  const box = $('gfxOpts'); if (!box) return; box.textContent = '';
+  const box = $('gfxOpts'); if (!box) return; box.textContent = ''; if ($('perfBtn') && !$('perfBtn').onclick) $('perfBtn').onclick = () => { perfToggle(); toast(perfW.on ? '🩺 왼쪽 아래에 성능이 보여요' : '🩺 성능 보기를 껐어요', 'info'); };
   for (const [k, label] of [['auto', '⚙️ 자동'], ['light', '🪶 가볍게'], ['normal', '✨ 보통']]) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'tl-chip'; b.textContent = label;
     b.setAttribute('aria-pressed', String(gfx.mode === k)); b.onclick = () => setGfxMode(k); box.appendChild(b);
@@ -18602,6 +18637,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zj', d: '11월 10일', items: ['⚡ 마을이 더 가볍게 돌아가요: 안 보이는 곳 계산 쉬기 · 먼 이름표 숨기기 · 안내 검사 빠르게', '🩺 도움말(?) → 「성능 보기」로 이 기기의 속도를 볼 수 있어요'] },
   { id: '1105zi', d: '11월 10일', items: ['🎨 우리 집 가구 색을 바꿀 수 있어요! 놓은 가구 앞에서 E → 11가지 색 중에서 골라요 (무료)'] },
   { id: '1105zg', d: '11월 10일', items: ['🎀 시즌 패스가 화면 위 가운데 리본으로 옮겨졌어요 (단계와 ⭐ 막대가 한눈에)'] },
   { id: '1105zf', d: '11월 10일', items: ['📱 오목 화면이 태블릿에 맞게 바뀌었어요 (가로: 판 왼쪽 · 버튼 오른쪽)', '🧹 끝난 오목 판은 20초 뒤 저절로 새 판 (흑백 바꿈) · 아무도 없거나 오래 멈춘 탁자는 저절로 비워져요', '🔑 오목 방에 선생님 관리 책상 (비밀번호) · 두던 판도 새 판으로'] },
@@ -30271,6 +30307,7 @@ function loop() {
   if (rewardSpots.carousel?.spin) rewardSpots.carousel.spin.rotation.y = carAng() % (Math.PI * 2); // 모든 화면이 같은 시각으로 돌아요
   updateInteract();
   sendPresence(time);
+  try { perfFreeze(); perfLabels(); perfTick(); } catch (e) { } /* ⚡ 1105zj */
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
