@@ -18670,6 +18670,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zs', d: '11월 11일', items: ['🧩 오목 방에 노노그램이 생겼어요! 숫자를 보고 칸을 칠해 숨은 그림 찾기 (5×5 11개 · 10×10 12개)', '🐚 퍼즐을 처음 풀면 조개를 받아요 (5×5 🐚5 · 10×10 🐚15) · 가장 빠른 기록이 남아요'] },
   { id: '1105zr', d: '11월 11일', items: ['🧩 영어 골든벨: 정답이 문장인 쓰기 문제는 낱말 조각을 차례대로 눌러 답해요 (⌨️ 직접 쓰기도 돼요)'] },
   { id: '1105zq', d: '11월 11일', items: ['🧑‍🏫 🙋 발표 칭찬 목록: 접속하지 않은 예전 "(기기)" 이름은 🗑️로 지울 수 있어요'] },
   { id: '1105zp', d: '11월 11일', items: ['🧑‍🏫 능력치·조개·칭찬 줄 때 학생 목록 정리: 같은 닉네임 기기는 한 번만 보여요', '📝 명단을 「🔁 지금 쓰는 닉네임으로 채우기」로 바꿀 수 있어요'] },
@@ -30358,6 +30359,10 @@ function buildBoardRooms(gAll) {
     makeLabel(g, ['⚫ 오목 방 ⚪', '다섯 개를 먼저 한 줄로!'], 1.0, R.cx, 10.6, wz + 0.6);
     { const ax = R.cx + R.w / 2 - 1.6, az = R.cz - R.d / 2 + 2.2; box(g, 1.4, 1.1, 0.8, 0x5A3A22, ax, 0.55, az); box(g, 1.5, 0.08, 0.9, 0x7A5234, ax, 1.14, az, o); mesh(SPH_LO, g, 0.16, 0.16, 0.16, 0xFFD23C, ax, 1.3, az, { solid: false, emissive: 0.6 }); makeLabel(g, ['🔑 오목 관리', '선생님만'], 0.6, ax, 2.1, az);
       addInteract({ pos: new V3(ax, 1, az + 0.9), r: 2.2, text: () => roomNow() === 'bg2' ? ['🔑 오목 관리 (선생님)', '비밀번호를 넣어요'] : null, run: omAdminAsk }); } /* 🔑 1105zf */
+    { const ax = R.cx - R.w / 2 + 2.2, az = R.cz - R.d / 2 + 2.4; box(g, 2.6, 0.16, 1.6, 0x8A5A34, ax, 0.8, az); for (const [a, b2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(g, 0.12, 0.8, 0.12, 0x6E4A2C, ax + a * 1.15, 0.4, az + b2 * 0.65, o); /* 🧩 1105zs 노노그램 책상 */
+      box(g, 1.5, 0.05, 1.3, 0xFFFCF4, ax, 0.91, az, o); const HT = ['01010', '11111', '11111', '01110', '00100']; HT.forEach((row, y) => [...row].forEach((c, x) => { if (c === '1') box(g, 0.2, 0.04, 0.2, 0x2B2B33, ax - 0.44 + x * 0.22, 0.95, az - 0.44 + y * 0.22, o); }));
+      const wx = R.cx - R.w / 2 + 0.3; box(g, 0.14, 3.4, 3.4, 0xFFFCF4, wx, 3.4, az + 1.2, { solid: false, emissive: 0.4 }); HT.forEach((row, y) => [...row].forEach((c, x) => { if (c === '1') box(g, 0.1, 0.56, 0.56, 0xE2574C, wx + 0.1, 4.6 - y * 0.6, az + 2.4 - x * 0.6, { solid: false, emissive: 0.5 }); }));
+      makeLabel(g, ['🧩 노노그램', '숫자로 그림 찾기'], 0.7, ax, 2.2, az); addInteract({ pos: new V3(ax, 1, az + 0.6), r: 2.4, text: () => roomNow() === 'bg2' ? ['🧩 노노그램 풀기', '숫자를 보고 칸을 칠해 그림을 찾아요'] : null, run: openNono }); }
     OM_TABLES.forEach(([dx, dz], k) => { const x = R.cx + dx, z = R.cz + dz; box(g, 2.4, 0.16, 1.6, 0x8A5A34, x, 0.8, z); for (const [a, b2] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) box(g, 0.12, 0.8, 0.12, 0x6E4A2C, x + a * 1.05, 0.4, z + b2 * 0.65, o);
       box(g, 1.3, 0.06, 1.3, 0xE2B86A, x, 0.91, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0x1E1E22, x - 0.25, 0.97, z, o); mesh(SPH_LO, g, 0.18, 0.12, 0.18, 0xF6F4EE, x + 0.25, 0.97, z + 0.2, o);
       const seats = [[x, z - 1.7], [x, z + 1.7]]; seats.forEach(([sx, sz], i) => { cyl(g, 0.38, 0.5, i ? 0xF0EDE6 : 0x2A2A30, sx, 0.25, sz, o); cyl(g, 0.42, 0.08, i ? 0xFFFFFF : 0x44444C, sx, 0.52, sz, o); });
@@ -30505,6 +30510,60 @@ async function openAcctClean() {
       toast(`🧹 계정 ${ok}개를 정리했어요${fails.length ? ` (일부 못 지움: ${fails.join(', ')})` : ''}`, fails.length ? 'warn' : 'success'); closeLife(); };
   });
 }
+// ---------- 🧩 1105zs 노노그램 (오목 방 구석 · 혼자 푸는 숫자 그림 퍼즐 · 기기 안에서만 돌아가 15명이 한꺼번에 해도 서버를 안 써요) ----------
+// 퍼즐 [크기, 이름, 0/1 줄글] — 모두 줄 논리만으로 풀리는 것만 골랐어요. 이름(그림)은 다 풀어야 보여요. 기록 bag.nn[번호] = 가장 빠른 초
+const NN_PZ = [[5, "하트 ❤️", "0101011111111110111000100"], [5, "십자 ➕", "0010000100111110010000100"], [5, "화살표 ⬆️", "0010001110101010010000100"], [5, "기역 ㄱ", "1111100001000010000100001"], [5, "돛단배 ⛵", "0010000110001001111101110"], [5, "보석 💎", "0010001110111110111000100"], [5, "계단 🪜", "1000011000111001111011111"], [5, "우산 ☂️", "0111011111001000010001100"], [5, "집 🏠", "0010001110111111101111011"], [5, "컵 ☕", "1111011111111011111001100"], [5, "니은 ㄴ", "1000010000100001000011111"], [10, "하트 💖", "0110001100111101111011111111111111111111111111111101111111100011111100000111100000001100000000000000"], [10, "집 🏡", "0000110000000111100000111111000111111110111111111101100001100110110110011011011001101101100111111110"], [10, "나무 🌳", "0001111000001111110001111111101111111111111111111101111111100000110000000011000000001100000011111100"], [10, "버섯 🍄", "0001111000011111111011111111111101111011111111111100001100000001111000000111100000011110000011111100"], [10, "물고기 🐟", "0000000000000111000100111110110111111111110111111111111111110111111111001111101100011100010000000000"], [10, "오리 🦆", "0001110000001101100000111111100001110000000110000110011000111111111111111111111001111111000011111000"], [10, "별 ⭐", "0000110000000011000000011110001111111111011111111000111111000011111100011100111001100001101100000011"], [10, "열쇠 🔑", "0011110000011001100001000010000110011000001111000000011000000001100000000111100000011000000001111000"], [10, "우산 ☔", "0000110000001111110001111111101111111111111111111100001100000000110000000011000001001100000011100000"], [10, "도마뱀 🦎", "0000000110000000111101100011111111011110011111110000111110000111111100110110011010001000110001100000"], [10, "컵케이크 🧁", "0000110000000111100000111111000111111110111111111101111111100111111110001111110000111111000001111000"], [10, "배 🚢", "0000100000000011000000001110000000111100000010000011111111110111111110001111110000000000001010101010"]];
+const nn = { el: null, on: false, i: -1, n: 0, sol: null, R: null, C: null, g: null, mode: 1, t0: 0, sec: 0, done: false, drag: null, iv: 0 };
+const nnClue = (l) => { const r = []; let c = 0; for (const v of l) { if (v === 1) c++; else if (c) { r.push(c); c = 0; } } if (c) r.push(c); return r; };
+const nnFmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+function nnEl() { let el = nn.el; if (el) return el; el = nn.el = document.createElement('div'); el.id = 'nnPlay';
+  el.style.cssText = 'position:fixed;inset:0;z-index:82;background:rgba(30,36,52,.94);display:flex;flex-direction:column;align-items:center;padding:calc(6px + var(--safe-top)) 6px 6px;color:#fff;overflow:auto;-webkit-user-select:none;user-select:none';
+  for (const ev of ['keydown', 'keyup', 'keypress']) el.addEventListener(ev, (e) => e.stopPropagation()); document.body.append(el);
+  addEventListener('resize', () => { if (nn.on && nn.i >= 0) nnDraw(); }); return el; }
+function nnClose() { nn.on = false; clearInterval(nn.iv); nn.el?.classList.add('hidden'); }
+function openNono() { if (isFrozen()) return; closeModals(); nnEl().classList.remove('hidden'); nn.on = true; clearInterval(nn.iv);
+  nn.iv = setInterval(() => { if (!nn.on) return; if (roomNow() !== 'bg2' || !joined) { nnClose(); return; } if (nn.i >= 0 && !nn.done) { nn.sec = Math.floor((Date.now() - nn.t0) / 1000); const t = nn.el.querySelector('#nnTime'); if (t) t.textContent = `⏱️ ${nnFmt(nn.sec)}`; } }, 500);
+  if (nn.i >= 0 && nn.g) nnDraw(); else nnMenu(); }
+function nnBtn(t, f, bg = '#fff') { const b = el2('button', 'btn', t); b.style.cssText = `background:${bg};color:#3B2F2A;font-size:16px;padding:6px 12px`; b.onclick = f; return b; }
+function nnMenu() { nn.i = -1; const el = nnEl(); el.textContent = ''; const w = el2('div', ''); w.style.cssText = 'width:100%;max-width:760px;background:#FFFCF4;color:#3B2F2A;border-radius:16px;padding:14px 16px;box-sizing:border-box;text-align:center';
+  const h = el2('div', '', '🧩 노노그램'); h.style.cssText = 'font-size:26px;font-weight:900'; w.append(h, el2('p', 'hint', '숫자를 보고 칸을 칠해 숨은 그림을 찾아요! 줄 옆 숫자는 "이어서 칠한 칸 수"예요. 「3 1」이면 3칸을 잇달아 칠하고, 한 칸 넘게 띄운 다음 1칸을 칠해요. 빈칸이 확실하면 ✕로 표시해 두면 편해요.'));
+  for (const sz of [5, 10]) { const t = el2('div', '', sz === 5 ? '🌱 5×5 (처음이면 여기부터)' : '🔥 10×10'); t.style.cssText = 'font-weight:800;font-size:18px;margin:10px 0 6px'; const g = el2('div', ''); g.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px'; let k = 0;
+    NN_PZ.forEach((P, i) => { if (P[0] !== sz) return; k++; const best = bag.nn?.[i], b = el2('button', 'btn', best ? `✅ ${P[1]} · ${nnFmt(best)}` : `${k}번 퍼즐`); b.style.cssText = `background:${best ? '#CDEFC2' : '#FFF1C9'};font-size:17px;padding:10px 6px`; b.onclick = () => nnStart(i); g.append(b); }); w.append(t, g); }
+  const done = NN_PZ.filter((_, i) => bag.nn?.[i]).length, r = el2('div', 'row-center wrap'); r.style.marginTop = '12px'; r.append(el2('span', 'hint', `푼 퍼즐 ${done} / ${NN_PZ.length}`), nnBtn('✖ 닫기', nnClose)); w.append(r); el.append(w); }
+function nnStart(i) { const P = NN_PZ[i], n = P[0]; nn.i = i; nn.n = n; nn.sol = [...P[2]].map(Number); nn.g = new Array(n * n).fill(0); nn.done = false; nn.mode = 1; nn.t0 = Date.now(); nn.sec = 0;
+  nn.R = []; nn.C = []; for (let y = 0; y < n; y++) nn.R.push(nnClue(nn.sol.slice(y * n, y * n + n))); for (let x = 0; x < n; x++) nn.C.push(nnClue(Array.from({ length: n }, (_, y) => nn.sol[y * n + x]))); nnDraw(); }
+function nnLineOk(isRow, k) { const n = nn.n, l = Array.from({ length: n }, (_, j) => nn.g[isRow ? k * n + j : j * n + k]); return nnClue(l).join() === (isRow ? nn.R : nn.C)[k].join(); }
+function nnDraw() { const el = nnEl(), n = nn.n, P = NN_PZ[nn.i]; el.textContent = '';
+  const top = el2('div', ''); top.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;flex:none;padding-bottom:6px';
+  const ti = el2('b', '', nn.done ? `🎉 ${P[1]}` : `🧩 ${n}×${n}`), tm = el2('span', '', `⏱️ ${nnFmt(nn.sec)}`); ti.style.fontSize = '19px'; tm.id = 'nnTime'; tm.style.cssText = 'color:#FFE9A8;font-size:17px;min-width:76px'; top.append(ti, tm);
+  if (!nn.done) { top.append(nnBtn('■ 칠하기', () => { nn.mode = 1; nnDraw(); }, nn.mode === 1 ? '#FFD23C' : '#fff'), nnBtn('✕ 빈칸 표시', () => { nn.mode = 2; nnDraw(); }, nn.mode === 2 ? '#FFD23C' : '#fff'), nnBtn('🔍 틀린 칸', nnCheck), nnBtn('↩️ 처음부터', () => { nn.g.fill(0); nn.t0 = Date.now(); nn.sec = 0; nnDraw(); })); }
+  top.append(nnBtn('📋 퍼즐 고르기', nnMenu), nnBtn('✖ 닫기', nnClose)); el.append(top);
+  const mr = Math.max(1, ...nn.R.map(c => c.length)), mc = Math.max(1, ...nn.C.map(c => c.length)), W = Math.min(innerWidth, 980) - 16, H = innerHeight - top.offsetHeight - 40;
+  const s = Math.max(20, Math.floor(Math.min(W / (n + mr * 0.62), H / (n + mc * 0.62), 76))), cw = Math.ceil(mr * s * 0.62), chh = Math.ceil(mc * s * 0.62), fs = Math.max(12, Math.floor(s * 0.42));
+  const G = el2('div', ''); G.style.cssText = `display:grid;grid-template-columns:${cw}px repeat(${n},${s}px);grid-template-rows:${chh}px repeat(${n},${s}px);background:#FFFCF4;border-radius:12px;padding:6px;touch-action:none;flex:none`;
+  G.append(el2('div', '')); const clueEls = { r: [], c: [] };
+  for (let x = 0; x < n; x++) { const c = el2('div', '', (nn.C[x].length ? nn.C[x] : [0]).join('\n')); c.style.cssText = `white-space:pre;display:flex;align-items:flex-end;justify-content:center;font-weight:800;font-size:${fs}px;line-height:1.15;padding-bottom:3px;text-align:center`; clueEls.c.push(c); G.append(c); }
+  const cells = [];
+  for (let y = 0; y < n; y++) { const c = el2('div', '', (nn.R[y].length ? nn.R[y] : [0]).join(' ')); c.style.cssText = `display:flex;align-items:center;justify-content:flex-end;font-weight:800;font-size:${fs}px;padding-right:5px;white-space:nowrap`; clueEls.r.push(c); G.append(c);
+    for (let x = 0; x < n; x++) { const d = el2('div', ''); d.dataset.k = y * n + x; d.style.cssText = `box-sizing:border-box;border:1px solid #B9A98A;${x % 5 === 0 ? 'border-left:3px solid #5A4630;' : ''}${y % 5 === 0 ? 'border-top:3px solid #5A4630;' : ''}${x === n - 1 ? 'border-right:3px solid #5A4630;' : ''}${y === n - 1 ? 'border-bottom:3px solid #5A4630;' : ''}display:flex;align-items:center;justify-content:center;font-size:${Math.floor(s * 0.6)}px;font-weight:900;color:#C0453A;line-height:1`; cells.push(d); G.append(d); } }
+  const paint = (k) => { const d = cells[k], v = nn.g[k]; d.style.background = v === 1 ? (nn.done ? '#3E8ED0' : '#2B2B33') : '#fff'; d.textContent = v === 2 && !nn.done ? '✕' : ''; };
+  const clues = () => { for (let k = 0; k < n; k++) { const a = nnLineOk(true, k), b = nnLineOk(false, k); clueEls.r[k].style.color = a ? '#B9B0A0' : '#3B2F2A'; clueEls.c[k].style.color = b ? '#B9B0A0' : '#3B2F2A'; } };
+  for (let k = 0; k < n * n; k++) paint(k); clues(); nn.cells = cells;
+  const at = (e) => { const t = document.elementFromPoint(e.clientX, e.clientY), k = t?.dataset?.k; return k == null || !G.contains(t) ? -1 : +k; };
+  const put = (k) => { if (k < 0 || nn.done || nn.g[k] === nn.drag) return; nn.g[k] = nn.drag; paint(k); clues(); };
+  G.addEventListener('pointerdown', (e) => { if (nn.done) return; const k = at(e); if (k < 0) return; e.preventDefault(); nn.drag = nn.g[k] === nn.mode ? 0 : nn.mode; put(k); try { playSfx('pick'); } catch (er) { } });
+  G.addEventListener('pointermove', (e) => { if (nn.drag == null || !(e.buttons || e.pointerType === 'touch')) return; e.preventDefault(); put(at(e)); });
+  const up = () => { if (nn.drag == null) return; nn.drag = null; nnWin(); }; G.addEventListener('pointerup', up); G.addEventListener('pointercancel', up); G.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') up(); });
+  el.append(G);
+  if (nn.done) { const m = el2('div', '', `🎉 「${P[1]}」 완성! ${nnFmt(nn.sec)}`); m.style.cssText = 'font-size:22px;font-weight:900;color:#FFE066;margin-top:10px'; const r = el2('div', 'row-center wrap'); const nx = NN_PZ.findIndex((Q, i) => i > nn.i && !bag.nn?.[i]); if (nx >= 0) r.append(nnBtn('➡️ 다음 퍼즐', () => nnStart(nx), '#FFD23C')); r.append(nnBtn('🔁 다시 풀기', () => nnStart(nn.i))); el.append(m, r); }
+  else el.append(el2('div', 'hint', '손가락으로 누르거나 쭉 끌어서 칠해요 · 다 맞은 줄은 숫자가 흐려져요'));
+}
+function nnCheck() { if (nn.done || !nn.cells) return; const bad = []; nn.g.forEach((v, k) => { if (v === 1 && !nn.sol[k]) bad.push(k); }); if (!bad.length) { toast('🔍 잘못 칠한 칸은 없어요!', 'success'); return; }
+  toast(`🔍 잘못 칠한 칸 ${bad.length}개를 빨갛게 보여 줘요`, 'warn'); for (const k of bad) { const d = nn.cells[k]; d.style.background = '#E2574C'; } setTimeout(() => { if (nn.on && !nn.done && nn.cells) for (const k of bad) if (nn.cells[k] && nn.g[k] === 1) nn.cells[k].style.background = '#2B2B33'; }, 1600); }
+function nnWin() { if (nn.done) return; const n = nn.n; for (let k = 0; k < n; k++) if (!nnLineOk(true, k) || !nnLineOk(false, k)) return;
+  nn.done = true; nn.sec = Math.max(1, Math.floor((Date.now() - nn.t0) / 1000)); for (let k = 0; k < n * n; k++) if (nn.g[k] === 2) nn.g[k] = 0;
+  bag.nn ??= {}; const first = !bag.nn[nn.i], sh = n >= 10 ? 15 : 5; if (first || nn.sec < bag.nn[nn.i]) bag.nn[nn.i] = Math.min(35999, nn.sec);
+  if (first && !isTeacher) { earnShell(sh); renderCoinChip(); } saveBag(); try { playSfx('fanfare'); } catch (e) { } toast(`🎉 노노그램 「${NN_PZ[nn.i][1]}」 완성!${first && !isTeacher ? ` 🐚 +${sh}` : ''}`, 'success'); nnDraw(); }
 /* 👥 1105zm 같은 닉네임 계정 합치기: 닉네임(띄어쓰기·대소문자 무시)이 같은 가방이 여러 개면 대표 계정 하나로 모으고 나머지는 지워요
    · 수량(조개·재료·가구·광석·보석·물약·능력치): 더하기 또는 큰 값 · 펫: 모두 모으고 같은 펫은 레벨 높은 쪽 · 가진 것(옷·배지·도감 등): 모두
    · 하루 제한·최고 기록·설정은 대표 계정 것 그대로 · 합치기 전 가방은 선생님 기기에 파일로 내려받아요 */
