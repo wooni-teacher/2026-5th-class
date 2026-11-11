@@ -18670,6 +18670,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zq', d: '11월 11일', items: ['🧑‍🏫 🙋 발표 칭찬 목록: 접속하지 않은 예전 "(기기)" 이름은 🗑️로 지울 수 있어요'] },
   { id: '1105zp', d: '11월 11일', items: ['🧑‍🏫 능력치·조개·칭찬 줄 때 학생 목록 정리: 같은 닉네임 기기는 한 번만 보여요', '📝 명단을 「🔁 지금 쓰는 닉네임으로 채우기」로 바꿀 수 있어요'] },
   { id: '1105zo', d: '11월 11일', items: ['⌨️ 영어 골든벨·듣고 쓰기의 주관식 답은 화면 안 영어 자판으로 써요 (문제가 가려지지 않아요 · 한글 답은 ⌨️ 기본 키보드로)', '✍️ 골든벨 쓰기 문제는 답 쓰는 시간이 1분이에요', '👌 주관식 채점이 너그러워졌어요: 대소문자·띄어쓰기·문장 부호·따옴표 모양은 달라도 정답'] },
   { id: '1105zn', d: '11월 11일', items: ['🏋️ 영어 훈련소 Lesson 10: 📝 단원평가 연습 2 · 3이 생겼어요 (10문제씩 · 🎧 듣기 음원 포함)', '🔔 영어 골든벨 예시 문제 은행 Lesson 10에 19문제 추가 (선생님: ➕ Lesson 10 새 문제 더하기)'] },
@@ -25334,7 +25335,7 @@ function openPraise() {
       const on = [...remotes.entries()].some(([ru, r]) => ru === u || rosterOf(ru, r.target) === u);
       const b = el2('button', 'btn', `${on ? '🟢' : '⚪'} ${nm}${n ? ` · 🙋${n}` : ''}`); b.style.cssText = `font-size:17px;padding:8px 12px;background:${n ? '#FFE9A8' : '#fff'}`; b.onclick = () => praiseGive(u, nm, 1);
       const un = el2('button', 'btn', '↩️'); un.title = '하나 취소'; un.setAttribute('aria-label', `${nm} 칭찬 하나 취소`); un.style.cssText = 'font-size:13px;padding:6px 6px;background:#fff'; un.disabled = !n; un.onclick = () => praiseGive(u, nm, -1);
-      wrap.append(b, un); grid.append(wrap); }
+      wrap.append(b, un); if (nm.endsWith(' (기기)') && !on) { const rm = el2('button', 'btn', '🗑️'); rm.title = '목록에서 지우기'; rm.setAttribute('aria-label', `${nm} 목록에서 지우기`); rm.style.cssText = 'font-size:13px;padding:6px 6px;background:#FFE0E0'; rm.onclick = () => adminDo({ [`nick/${u}`]: null, [`praise/${u}`]: null }, `🗑️ ${nm.replace(' (기기)', '')} 을(를) 목록에서 지웠어요`).then(() => setTimeout(refillLife, 300)); wrap.append(rm); } /* 🗑️ 1105zq 접속하지 않은 예전 기기 이름 지우기 */ grid.append(wrap); }
     box.append(grid, el2('h3', 'lp-sec', '⚙️ 설정'));
     const row = el2('div', 'row-center wrap'), mk = (lab, key, opts) => { const l = el2('label', ''); l.style.cssText = 'font-size:16px;display:flex;gap:6px;align-items:center'; const s = document.createElement('select'); s.className = 'tinput'; s.style.width = 'auto'; for (const [v, t] of opts) { const o = document.createElement('option'); o.value = v; o.textContent = t; s.append(o); } s.value = String(C[key]); s.onchange = () => adminDo({ [`talk/${key}`]: +s.value, ...(S.talk?.d == null ? { 'talk/d': dayNum(), 'talk/n': 0 } : {}) }, '⚙️ 발표 설정을 바꿨어요').then(() => setTimeout(refillLife, 300)); l.append(lab, s); return l; };
     row.append(mk('📣 하루 반 목표', 'g', [[0, '끔'], [10, '10번'], [20, '20번'], [30, '30번'], [40, '40번'], [50, '50번']]), mk('🙋 칭찬 1번', 'p', [[0, '🐚 0'], [5, '🐚 5'], [10, '🐚 10'], [20, '🐚 20']]), mk('🎉 목표 달성', 'r', [[0, '🐚 0'], [10, '🐚 10'], [20, '🐚 20'], [30, '🐚 30'], [50, '🐚 50']]));
