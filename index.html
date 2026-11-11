@@ -10197,6 +10197,7 @@ function openLife(title, fill) {
 /* 📱 1028h 태블릿 화면 키보드: 키보드가 창을 가리면(아이패드처럼 화면 높이는 그대로일 때) 창을 키보드 위 보이는 곳으로 올리고, 적는 칸을 가운데로
    · 창 안 글칸은 자동 고침·맞춤법 밑줄을 꺼요 (영어 답 swam → swan 처럼 바뀌지 않게) */
 function kbFit(vh, vt) {
+  { const pad = typeof svKbPad === 'function' ? svKbPad() : 0; if (pad) { vh = Math.min(vh, innerHeight - pad); vt = 0; } } /* ⌨️ 1105zo 화면 안 자판이 떠 있으면 그 위로 */
   const a = document.activeElement, m = a && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.type !== 'checkbox' && a.type !== 'range' ? a.closest('.modal') : null;
   for (const x of document.querySelectorAll('.modal.kb-fit')) if (x !== m || !(vh < innerHeight - 120)) { x.classList.remove('kb-fit'); x.style.top = x.style.maxHeight = x.style.transform = ''; }
   if (!m || !(vh < innerHeight - 120)) return;
@@ -10205,6 +10206,33 @@ function kbFit(vh, vt) {
 }
 if (window.visualViewport) { const f = () => kbFit(visualViewport.height, visualViewport.offsetTop); visualViewport.addEventListener('resize', f); visualViewport.addEventListener('scroll', f); addEventListener('focusout', () => setTimeout(f, 150)); }
 addEventListener('focusin', (e) => { const t = e.target; if (t?.closest?.('.modal') && /^(INPUT|TEXTAREA)$/.test(t.tagName)) { t.setAttribute('autocorrect', 'off'); t.spellcheck = false; if (window.visualViewport) setTimeout(() => kbFit(visualViewport.height, visualViewport.offsetTop), 350); } });
+/* ⌨️ 1105zo 화면 안 전용 자판 (영어·숫자): 태블릿 기본 키보드를 띄우지 않고(inputMode none) 화면 아래에 우리 자판 → 문제·답 칸이 가려지지 않고 자동 고침·한/영 전환이 없어요
+   svKbAttach(글칸): 그 칸에 초점이 가면 자판이 떠요 · ⌨️ 키로 기본 키보드로 바꿀 수 있어요 (이 기기에 기억) · 노트북 키보드는 그대로 써져요 */
+const svKb = { el: null, inp: null, shift: false, num: false, native: false };
+try { svKb.native = localStorage.getItem('sv-kb-native') === '1'; } catch (e) { }
+const svKbPad = () => svKb.el && !svKb.el.classList.contains('hidden') ? svKb.el.offsetHeight : 0;
+function svKbDraw() { const el = svKb.el; el.textContent = ''; const rows = svKb.num ? [['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], ['-', ',', '.', '?', '!', "'", '"', ':', '(', ')'], ['ABC', ' ', '⌫', '⏎']] : [[...'qwertyuiop'], [...'asdfghjkl', "'"], ['⇧', ...'zxcvbnm', '⌫'], ['123', ',', ' ', '.', '?', '⏎']];
+  for (const r of rows) { const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:5px;justify-content:center;margin:5px 0';
+    for (const k of r) { const b = document.createElement('button'); b.type = 'button'; const wide = k === ' ' ? 5 : ['⏎', '⌫', '⇧', '123', 'ABC'].includes(k) ? 1.6 : 1; b.textContent = k === ' ' ? '띄어쓰기' : k === '⏎' ? '✅ 다 썼어요' : svKb.shift && k.length === 1 ? k.toUpperCase() : k;
+      b.style.cssText = `flex:${wide} 1 0;min-width:0;max-width:${wide * 78}px;height:clamp(40px,7.2vh,58px);border:none;border-radius:10px;font:inherit;font-size:${k.length > 1 || k === ' ' ? 16 : 22}px;font-weight:700;color:#3B2F2A;background:${k === '⏎' ? '#FFD23C' : k === '⇧' && svKb.shift ? '#9ED8FF' : ['⌫', '⇧', '123', 'ABC'].includes(k) ? '#E3D6BF' : '#fff'};box-shadow:0 2px 0 rgba(0,0,0,.18);touch-action:manipulation;padding:0`;
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); svKbKey(k); }); row.append(b); } el.append(row); }
+  const sw = document.createElement('button'); sw.type = 'button'; sw.textContent = '⌨️ 기본 키보드로 쓰기 (한글 답)'; sw.style.cssText = 'display:block;margin:2px auto 0;border:none;background:none;color:#FFE9A8;font:inherit;font-size:14px;text-decoration:underline;padding:4px 10px'; sw.addEventListener('pointerdown', (e) => { e.preventDefault(); svKbNative(true); }); el.append(sw); }
+function svKbKey(k) { const i = svKb.inp; if (!i || !document.contains(i)) { svKbHide(); return; }
+  if (k === '⇧') { svKb.shift = !svKb.shift; svKbDraw(); return; } if (k === '123' || k === 'ABC') { svKb.num = k === '123'; svKbDraw(); return; }
+  if (k === '⏎') { i.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); return; }
+  const a = i.selectionStart ?? i.value.length, b = i.selectionEnd ?? a;
+  if (k === '⌫') { if (a !== b) i.setRangeText('', a, b, 'end'); else if (a > 0) i.setRangeText('', a - 1, a, 'end'); }
+  else { const ch = svKb.shift && k.length === 1 ? k.toUpperCase() : k; if (i.maxLength > 0 && i.value.length - (b - a) + ch.length > i.maxLength) return; i.setRangeText(ch, a, b, 'end'); if (svKb.shift) { svKb.shift = false; svKbDraw(); } }
+  i.dispatchEvent(new Event('input', { bubbles: true })); }
+function svKbShow(inp) { if (svKb.native) return; svKb.inp = inp; let el = svKb.el;
+  if (!el) { el = svKb.el = document.createElement('div'); el.id = 'svKb'; el.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:90;background:rgba(58,44,32,.97);padding:4px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.3);user-select:none;-webkit-user-select:none'; el.addEventListener('pointerdown', (e) => e.preventDefault()); document.body.append(el); }
+  svKb.shift = false; svKb.num = false; svKbDraw(); el.classList.remove('hidden'); try { kbFit(innerHeight, 0); } catch (e) { } }
+function svKbHide() { if (!svKb.el || svKb.el.classList.contains('hidden')) return; svKb.el.classList.add('hidden'); svKb.inp = null; try { kbFit(window.visualViewport?.height || innerHeight, window.visualViewport?.offsetTop || 0); } catch (e) { } }
+function svKbNative(on) { svKb.native = on; try { localStorage.setItem('sv-kb-native', on ? '1' : '0'); } catch (e) { } const i = svKb.inp || document.activeElement; if (i?.dataset?.svkb) { i.inputMode = on ? 'text' : 'none'; if (on) { svKbHide(); i.blur(); setTimeout(() => i.focus(), 60); } else { i.blur(); setTimeout(() => i.focus(), 60); } } }
+function svKbAttach(inp, wrap) { inp.dataset.svkb = '1'; inp.inputMode = svKb.native ? 'text' : 'none';
+  inp.addEventListener('focus', () => { inp.inputMode = svKb.native ? 'text' : 'none'; svKbShow(inp); }); inp.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== inp && svKb.inp === inp) svKbHide(); }, 120));
+  if (wrap) { const t = el2('button', 'btn', ''); const paint = () => { t.textContent = svKb.native ? '🔤 영어 자판으로' : '⌨️ 기본 키보드'; }; paint(); t.style.cssText = 'background:#fff;font-size:13px;padding:4px 10px'; t.onclick = () => { svKb.inp = inp; inp.dataset.svkb = '1'; svKbNative(!svKb.native); paint(); if (!svKb.native) setTimeout(() => inp.focus(), 80); }; wrap.append(t); } }
+setInterval(() => { if (svKb.inp && (!document.contains(svKb.inp) || svKb.inp.offsetParent === null)) svKbHide(); }, 700);
 function refillLife() { if (!$('lifePanel').classList.contains('hidden') && life.fill) life.fill($('lpBody')); }
 function lifeTyping() { // ✍️ 창 안 글칸에 쓰는 중이면 (글자가 있거나 커서가 있으면) 저절로 다시 그리지 않아요
   const b = $('lpBody'); if (!b || $('lifePanel').classList.contains('hidden')) return false;
@@ -18642,6 +18670,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zo', d: '11월 11일', items: ['⌨️ 영어 골든벨·듣고 쓰기의 주관식 답은 화면 안 영어 자판으로 써요 (문제가 가려지지 않아요 · 한글 답은 ⌨️ 기본 키보드로)', '✍️ 골든벨 쓰기 문제는 답 쓰는 시간이 1분이에요', '👌 주관식 채점이 너그러워졌어요: 대소문자·띄어쓰기·문장 부호·따옴표 모양은 달라도 정답'] },
   { id: '1105zn', d: '11월 11일', items: ['🏋️ 영어 훈련소 Lesson 10: 📝 단원평가 연습 2 · 3이 생겼어요 (10문제씩 · 🎧 듣기 음원 포함)', '🔔 영어 골든벨 예시 문제 은행 Lesson 10에 19문제 추가 (선생님: ➕ Lesson 10 새 문제 더하기)'] },
   { id: '1105zm', d: '11월 11일', items: ['🧑‍🏫 선생님 도구: 👥 같은 닉네임 계정 합치기 (조개·재료·능력치·펫·옷을 대표 계정 하나로 모으고 나머지 계정은 정리)'] },
   { id: '1105zl', d: '11월 11일', items: ['📖 국어 공부방 학습지에서 블로그 글을 뺐어요 · 「🔗 블로그 글 보러 가기」로 선생님이 알려 준 누리집에서 읽어요'] },
@@ -19796,7 +19825,7 @@ function lwOpen() {
     const R = lwW.res, done = R && (R.ok || lwW.tries >= 2);
     if (!done) { const inp = el2('input', 'tinput', null); inp.maxLength = lwW.mode === 's' ? 80 : 20; inp.placeholder = lwW.mode === 's' ? '들은 문장을 영어로 써요' : '영어로 써요'; inp.value = lwW.typed; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('enterkeyhint', 'done'); inp.style.cssText = 'width:100%;font-size:20px;padding:10px;box-sizing:border-box;text-align:center';
       inp.oninput = () => { lwW.typed = inp.value; }; const go = () => { const v = inp.value.trim(); if (!v) { toast('✏️ 먼저 써요', 'info'); return; } lwW.tries++; const G = lwGrade(it, v); lwW.res = G; playSfx(G.ok ? 'right' : 'wrong'); if (G.ok) { lwW.ok++; lwReward(); } refillLife(); };
-      inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') go(); }; box.append(inp); const r = el2('div', 'row-center'), sb = el2('button', 'btn', lwW.tries ? '✅ 다시 내기 (마지막 기회)' : '✅ 채점'); sb.style.cssText = 'background:#FFD23C;font-size:18px;padding:8px 22px'; sb.onclick = go; r.append(sb); box.append(r); setTimeout(() => { try { inp.focus(); } catch (e) { } }, 50); }
+      inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') go(); }; box.append(inp); const r = el2('div', 'row-center'), sb = el2('button', 'btn', lwW.tries ? '✅ 다시 내기 (마지막 기회)' : '✅ 채점'); sb.style.cssText = 'background:#FFD23C;font-size:18px;padding:8px 22px'; sb.onclick = go; r.append(sb); svKbAttach(inp, r); box.append(r); setTimeout(() => { try { inp.focus(); } catch (e) { } }, 50); }
     if (R) { const v = el2('div', ''); v.style.cssText = `font-size:${R.word ? 20 : 26}px;font-weight:800;text-align:center;margin:6px 0;letter-spacing:${R.word ? '.3px' : '2px'}`; for (const [ch0, ok] of R.view) { const ch = R.word && !ok && !done ? '_'.repeat(Math.max(2, ch0.replace(/[^A-Za-z']/g, '').length)) + ch0.replace(/[A-Za-z']/g, '') : ch0; const sp = el2('span', '', R.word ? ch + ' ' : ch); sp.style.color = ok ? '#2E9E4A' : '#D8343A'; if (!ok) sp.style.textDecoration = 'underline'; v.append(sp); }
       box.append(el2('p', 'hint', R.ok ? '' : `내가 쓴 것: "${lwW.typed}"`), v, el2('p', 'lp-big', R.ok ? `🎉 정답!${lwW.tries > 1 ? ' (두 번째에)' : ''}` : lwW.tries >= 2 ? `정답: ${it.ans}` : `${Math.round(R.sc * 100)}% · 빨간 곳을 고쳐서 한 번 더!`));
       if (lwW.mode !== 'w' && done) box.append(el2('p', 'hint', `📖 ${it.say}`)); }
@@ -25643,7 +25672,7 @@ const GW_SETS = [ /* 📜 1105h 단원별 기본 문제 (5-2 사회 공책정리
 보기: 청과 조선이 임금과 신하의 관계를 맺었다 / 조선이 청을 정복했다 / 조선이 쓰시마섬을 차지했다 / 청이 조선의 신하가 되었다
 정답: 1` },
 ];
-const gwNorm = (s) => String(s || '').toLowerCase().replace(/[\s.,!?·~\-()'"「」]/g, '');
+const gwNorm = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s.,!?·~\-()'"「」’‘`´“”;:…_]/g, ''); /* 1105zo 휜 따옴표·전각 글자·쌍점도 무시 */
 function gwParse(txt) { // 빈 줄로 문제를 나눠요 · 문제:/보기:/정답:
   const out = [], errs = [];
   String(txt || '').replace(/\r/g, '').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach((b, i) => {
@@ -26158,7 +26187,8 @@ const egVenue = () => S.eg?.v === 'stg' ? 'stg' : 'egb'; // 🎤 1101g 골든벨
 const egHall = (p) => { if (egVenue() === 'stg') return inStage(p.x, p.z); const R = ROOMS.egb; return !!R && Math.abs(p.x - R.cx) <= R.w / 2 + 0.5 && Math.abs(p.z - R.cz) <= R.d / 2 + 0.5; };
 const egAlive = (G, u) => !!G?.p?.[u] && G.out?.[u] == null;
 const egAliveN = (G) => Object.keys(G?.p || {}).filter(u => G.out?.[u] == null).length;
-const egLeft = (G) => G?.ph === 'q' && G.lim ? Math.max(0, Math.ceil((G.qt + G.lim * 1000 - Date.now()) / 1000)) : -1;
+const egLimOf = (G) => G?.lim ? (toObj(G.qs)[G.cur]?.t === 'sa' ? Math.max(G.lim, 60) : G.lim) : 0; /* ✍️ 1105zo 주관식(쓰기) 문제는 1분 */
+const egLeft = (G) => G?.ph === 'q' && G.lim ? Math.max(0, Math.ceil((G.qt + egLimOf(G) * 1000 - Date.now()) / 1000)) : -1;
 const egSayText = (Q) => Q?.s || '';
 function egBell() { // 🔔 금빛 종 (LatheGeometry)
   const pts = [[0, 1.5], [0.18, 1.48], [0.32, 1.4], [0.42, 1.2], [0.48, 0.9], [0.55, 0.55], [0.68, 0.25], [0.86, 0.06], [0.9, 0], [0.82, 0.02]].map(([x, y]) => new THREE.Vector2(x, y));
@@ -26236,7 +26266,7 @@ function openEgPlay() {
     if (G.ph === 'rev') { const key = G.rev?.[G.cur] || ''; const ok = my != null && (Q.t === 'sa' ? key.split('/').some(k => gwNorm(k) === gwNorm(my)) : Q.t === 'mc' ? key.startsWith(`${my}번`) : key === my);
       box.append(el2('p', 'lp-big', `정답: ${key}`), el2('p', 'hint', my == null ? '답을 내지 않았어요' : `내 답: ${Q.t === 'mc' ? `${my}번 ${Q.o[+my - 1] || ''}` : my} ${ok ? '⭕' : '❌'}`)); if (inP) box.append(el2('p', 'lp-big', out == null ? '🙋 살아남았어요!' : out === G.cur ? '😢 탈락…' : '')); return; }
     if (Q.t === 'sa') { const inp = el2('input', 'tinput', null); inp.maxLength = 40; inp.placeholder = '답을 영어로 적어요'; const dk = `${G.n}|${G.cur}`; inp.value = eg.draft?.k === dk ? eg.draft.v : (my || ''); inp.oninput = () => { eg.draft = { k: dk, v: inp.value }; }; inp.autocomplete = 'off'; inp.spellcheck = false; inp.setAttribute('autocapitalize', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('enterkeyhint', 'send'); const b = el2('button', 'btn', '🔔 제출'); b.style.background = '#FFD23C';
-      b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (nickBad(v) || thxBadWord(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; inp.onkeydown = (e) => { if (e.key === 'Enter') b.onclick(); }; const rw = el2('div', 'row-center wrap'); rw.append(inp, b); box.append(rw); }
+      b.onclick = () => { const v = inp.value.trim(); if (!v) return; if (nickBad(v) || thxBadWord(v)) { toast('🙅 고운 말로 적어요', 'warn'); return; } send(v); }; inp.onkeydown = (e) => { if (e.key === 'Enter') b.onclick(); }; const rw = el2('div', 'row-center wrap'); rw.append(inp, b); svKbAttach(inp, rw); box.append(rw, el2('p', 'hint', '✍️ 쓰기 문제는 1분 동안 쓸 수 있어요 · 대문자·소문자, 띄어쓰기, 마침표·물음표는 달라도 맞아요')); }
     else { const grid = el2('div', 'mx-opts'); Q.o.forEach((op, i) => { const v = Q.t === 'ox' ? op : String(i + 1), b = el2('button', 'btn mx-opt', Q.t === 'ox' ? (op === 'O' ? '⭕ O' : '❌ X') : `${i + 1}) ${op}`); if (my === v) b.style.background = '#FFE066'; b.onclick = () => send(v); grid.append(b); }); box.append(grid); }
     if (my != null) box.append(el2('p', 'hint', `✅ 제출한 답: ${Q.t === 'mc' ? `${my}번` : my}`));
   });
@@ -26255,7 +26285,7 @@ function openEgAdmin() {
       const ti = el2('input', 'tinput', null); ti.maxLength = 30; ti.value = eg.draftT || `제${n}회 영어 골든벨`; ti.oninput = () => { eg.draftT = ti.value; };
       const opt = el2('div', 'row-center wrap'), sel = (lbl, vals, cur, fn, fmt) => { const l = el2('label', null, lbl); l.style.fontSize = '15px'; const s = el2('select', 'tinput', null); s.style.width = 'auto'; for (const v of vals) { const op = document.createElement('option'); op.value = v; op.textContent = fmt(v); if (v === cur) op.selected = true; s.append(op); } s.onchange = () => fn(+s.value); l.append(' ', s); opt.append(l); };
       sel('문제 수', [5, 10, 15, 20, 30, 40], eg.cnt, (v) => { eg.cnt = v; renderUnits(); }, (v) => `${v}문제`);
-      sel('제한 시간', [0, 10, 15, 20, 30, 45], eg.lim, (v) => { eg.lim = v; }, (v) => v ? `${v}초` : '없음 (선생님이 마감)');
+      sel('제한 시간', [0, 10, 15, 20, 30, 45], eg.lim, (v) => { eg.lim = v; }, (v) => v ? `${v}초 (✍️ 쓰기 문제는 60초)` : '없음 (선생님이 마감)');
       { const l = el2('label', null, ''); l.style.fontSize = '15px'; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = eg.mix; cb.onchange = () => { eg.mix = cb.checked; }; l.append(cb, ' 문제 섞기'); opt.append(l); }
       let parsed = { qs: [], errs: [] };
       function renderUnits() {
@@ -26355,7 +26385,7 @@ function egTick(dt) {
   if (!isTeacher && G.ph === 'end' && bag.egDone !== G.n && G.p) { bag.egDone = G.n; const me = backend.uid; if (G.p[me]) { const o = G.out?.[me], s = o != null ? o : (G.qs || []).length; if (s) { addStat(G.kk ? 'read' : 'eng', Math.min(30, s * 2), true); earnShell(Math.min(40, s * 3)); } if (G.win?.[me] && G.kk && G.wk !== 'last') { earnShell(100); burst(player.pos.clone().setY(2), RAINBOW, 80, 6, 3); showBanner('🎭 꿈끼왕!', `대본 골든벨을 끝까지 다 맞혔어요 · 🏷️ 칭호 🎭꿈끼왕 · 👕 옷가게에 안중근 꾸미기가 열렸어요 · 🐚 +${100 + Math.min(40, s * 3)}`, 7000); } else if (G.win?.[me] && !G.kk) { const last = G.wk === 'last', b = last ? 30 : 60; earnShell(b); burst(player.pos.clone().setY(2), RAINBOW, 60, 6, 3); showBanner(last ? '🔔 최후의 1인!' : '🔔 골든벨을 울렸어요!', `${last ? '가장 오래 버텼어요' : '끝까지 살아남았어요'} · 이번 주 칭호 · 🐚 +${b + Math.min(40, s * 3)}`, 6000); } } saveBag(); }
   if (!isTeacher && G.open && roomNow() === egVenue()) { const k = JSON.stringify([G.n, G.cur, G.ph]); if (k !== eg.sKey) { const open = !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지'; if (open || G.ph === 'q') { openEgPlay(); const Q = G.qs?.[G.cur]; if (G.ph === 'q' && Q?.s && eg.said !== k) { eg.said = k; setTimeout(() => sayEn(Q.s), 500); } } else eg.sKey = k; }
     else if (G.ph === 'q' && G.lim && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 문제지') { const l = egLeft(G); if (l !== eg.lastL) { eg.lastL = l; const el = $('egLeftTxt'); if (el) el.textContent = egLeftText(G, l); else refillLife(); } } }
-  if (isTeacher) { const key = bag.egKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + G.lim * 1000 + 1500 && !eg.autoBusy) { eg.autoBusy = true; egReveal().finally(() => { setTimeout(() => { eg.autoBusy = false; }, 2000); }); }
+  if (isTeacher) { const key = bag.egKey; if (G.open && G.ph === 'q' && G.lim && key?.n === G.n && Date.now() > G.qt + egLimOf(G) * 1000 + 1500 && !eg.autoBusy) { eg.autoBusy = true; egReveal().finally(() => { setTimeout(() => { eg.autoBusy = false; }, 2000); }); }
     if (G.open && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent === '🔔 골든벨 진행') { const k = JSON.stringify([G.ph, G.cur, egAliveN(G), Object.keys(S.ega || {}).length, Object.values(S.ega || {}).map(v => Object.keys(v?.a || {}).length).join(), G.ph === 'q' ? egLeft(G) : 0]); if (k !== eg.aKey) { eg.aKey = k; if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') refillLife(); } } }
 }
 // ================= 🎭 1102a 꿈끼 골든벨 (영어 골든벨과 완전히 따로 · 꿈나무 무대 공연장) =================
