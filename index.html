@@ -2760,6 +2760,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       if (st.decor[key]) return { ok: false };
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
+    async kwsGet(s, k) { return k ? (KWS_LOCAL[s]?.[k] ?? null) : (KWS_LOCAL[s] || null); }, async kwsSet(s, k, o) { (KWS_LOCAL[s] ||= {}); if (o) KWS_LOCAL[s][k] = JSON.parse(JSON.stringify(o)); else delete KWS_LOCAL[s][k]; return { ok: true }; }, /* 📖 1105zk */
     presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async omTx(t, fn) { const c = st.om?.[t]; const o = fn(c ? JSON.parse(JSON.stringify(c)) : null); if (o === undefined) return { ok: false }; st.om ||= {}; if (o === null) delete st.om[t]; else st.om[t] = o; emit(); return { ok: true }; }, async nmPrep() { return { ok: false }; }, async rawGet() { return null; }, async rawUpdate() { return { ok: false }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
@@ -3280,6 +3281,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async scrpSet(o) { try { await D.set(R(`state/scrp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1029c
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
     async escSet(room, o) { try { await D.set(R(`state/esc/${room}/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🔐 1101a 방탈출 기록
+    async kwsGet(s, k) { try { return (await D.get(R(`kws/${s}${k ? '/' + k : ''}`))).val(); } catch (e) { return undefined; } }, async kwsSet(s, k, o) { try { await D.set(R(`kws/${s}/${k}`), o || null); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 📖 1105zk 국어 학습지 (state 밖) */
     async kpoemSet(o) { try { await D.set(R(`state/kpoem/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // ✍️ 1101i 한글 마을 시
     async kpoemvSet(t) { try { await D.set(R(`state/kpoemv/${uid}`), t || null); return { ok: true }; } catch (e) { return { ok: false }; } }, // ✍️ 1101l 시 투표
     async kdetpSet(o) { try { await D.set(R(`state/kdetp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🕵️ 1101j 정보 탐정단 내 기록
@@ -17794,6 +17796,7 @@ const ROOMS = {
   ese: { name: '영어 마법 도서관', icon: '🔤', cx: 1515, cz: -150, w: 22, d: 18, wall: 0xF0E6FA, floor: 0xB89B74, site: null },
   ess: { name: '역사 수장고', icon: '🏛️', cx: 1580, cz: -150, w: 22, d: 18, wall: 0xF6EBDA, floor: 0xC9A27A, site: null },
   esc: { name: '과학 실험실', icon: '🔬', cx: 1515, cz: -200, w: 22, d: 18, wall: 0xE2F6F4, floor: 0xD8DEE0, site: null },
+  kst: { name: '국어 공부방', icon: '📖', cx: 1580, cz: -250, w: 24, d: 18, wall: 0xEEF3E6, floor: 0xC79A64, site: null }, /* 📖 1105zk 한글 마을 국어 학습 본부 */
   kdr: { name: '덜렁이의 개교기념일', icon: '🕵️', cx: 1580, cz: -205, w: 26, d: 22, wall: 0xE6E0F0, floor: 0xB89B74, site: null }, // 🕵️ 1101k 한글 마을 정보 탐정단 (단서 8개는 이 안에)
   stg: { name: '꿈나무 무대 공연장', icon: '🎤', cx: 1515, cz: -270, w: 36, d: 30, wall: 0x0B1226, floor: 0x141B2E, site: null }, // 🎤 1101d 꿈끼 발표회 연습 (가시나무 숲 무대)
   reef: { name: '바닷속 산호초', icon: '🤿', cx: 3200, cz: 0, w: 56, d: 56, wall: 0x1E6FA8, floor: 0xE6D6A8, site: null }, // 🤿 1031b 바닷속 탐험
@@ -18241,6 +18244,7 @@ function buildInteriors() {
   escBuild(g); // 🔐 1101a 방탈출 방 4개
   stgBuild(g); // 🎤 1101d 꿈나무 무대 공연장
   kdBuild(g); // 🕵️ 1101k 정보 탐정단 본부
+  kstBuild(g); /* 📖 1105zk 국어 공부방 */
   { const r = ROOMS.gym; roomShell(g, r); buildPool(g, r); bld.gymLabel = makeLabel(g, [''], 0.8, r.cx, 4.0, r.cz - r.d / 2 + 1); }
   // ---------- 📜 서당 (한옥 교실): 서안·방석에 앉으면 사회 학습지를 펴요 ----------
   { const r = ROOMS.sd, { cx, cz, w, d } = r; roomShell(g, r);
@@ -18324,6 +18328,7 @@ async function enterRoom(id) {
   if (id === 'mrc') { toast(mrunOpen() ? `🏃 ${S.mrun.title || '수학 달리기'}! 뒤쪽 의자에 앉아 문제를 풀며 달려요` : '🏃 수학 달리기장이에요. 선생님은 앞쪽 순위판 앞에서 경주를 열어요', 'info'); return; }
   if (id === 'egb') { toast(egOpen() ? `🔔 ${S.eg.title || '영어 골든벨'}! 빈 방석에 앉아 골든벨 문제지를 펴요` : '🔔 영어 골든벨 홀이에요. 선생님은 무대 앞에서 문제를 올려 골든벨을 열어요', 'info'); return; }
   if (id === 'stg') return; // 🎤 안내는 stgTick이 해요
+  if (id === 'kst') { toast('📖 국어 공부방이에요! 유생 옷으로 갈아입었어요 · 방석에 앉아 내 번호 학습지를 펴요', 'info'); return; }
   if (id === 'kdr') { toast('🕵️ 방탈출 「덜렁이의 개교기념일」! 가운데 🗂️ 사건 게시판에서 E · 벽을 따라 단서 8개를 찾아요', 'info'); return; }
   if (ESC_ROOMS[id]) { setTimeout(() => { if (!esc.run && roomNow() === id) escIntro(id); }, 400); return; } // 🔐
   if (/^atl[1-4]$/.test(id)) { const G = S.atlg?.['g' + id[3]]; toast(G?.st ? (G.sg >= 9 ? '🏆 이 모둠은 이미 아틀란티스를 찾았어요!' : `🔱 ${id[3]}모둠 탐사 이어 하기 · 제${G.sg}관문 · 위 📜 버튼으로 문제를 봐요`) : `🔱 ${id[3]}모둠 방이에요! 모둠원이 다 들어오면 남쪽 🚀 잠수정 출발대에서 탈출 시작`, 'info'); return; }
@@ -18351,7 +18356,7 @@ async function exitRoom(id) {
   else if (id === 'gw') { x = GW_HOUSE.x; z = GW_HOUSE.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 📜 과거시험장 문 앞
   else if (id === 'mrc') { x = MR_HALL.x; z = MR_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🏃 달리기장 문 앞
   else if (id === 'egb') { x = EG_HALL.x; z = EG_HALL.z - 3.5 - 2.6; h = Math.PI; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🔔 골든벨 홀 문 앞
-  else if (id === 'kdr') { x = KV_ST.det.x; z = KV_ST.det.z + 3 + 2.6; h = 0; } // 🕵️ 한글 마을 본부 문 앞
+  else if (id === 'kdr' || id === 'kst') { x = KV_ST.det.x; z = KV_ST.det.z + 3 + 2.6; h = 0; if (isSeated(player.avatar)) playAct(player.avatar, null); } // 🕵️ 한글 마을 본부 문 앞
   else if (id === 'stg') { const sp = rewardSpots.stage?.spot, p = sp ? sp.localToWorld(new V3(0, 0, -5.2)) : new V3(24, 0, -38); x = p.x; z = p.z; h = sp ? sp.rotation.y : 0; stgCardClose(); } // 🎤 마을 꿈나무 무대 앞
   else if (ESC_ROOMS[id]) { x = BG_HOUSE.x + 1.5; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; esc.run = null; escMarks(); } // 🔐 방탈출 → 반월쉼터 문 앞
   else if (id.startsWith('bg')) { x = BG_HOUSE.x; z = BG_HOUSE.z + BG_HOUSE.d / 2 + 2.2; h = 0; bgClose(); } // 🎲 반월쉼터 문 앞
@@ -18637,6 +18642,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zk', d: '11월 10일', items: ['📚 한글 마을 「국어 방탈출 본부」가 「국어 학습 본부」가 됐어요', '📖 새 방 「국어 공부방」: 유생 옷으로 갈아입고 방석에 앉아 공부해요', '🔢 내 번호를 누르면 내 학습지 「정보 탐정단 — 이 블로그, 믿어도 될까?」가 펴져요 (저절로 저장 · 이어 쓰기)', '🕵️ 방탈출 「덜렁이의 개교기념일」은 그대로 있어요'] },
   { id: '1105zj', d: '11월 10일', items: ['⚡ 마을이 더 가볍게 돌아가요: 안 보이는 곳 계산 쉬기 · 먼 이름표 숨기기 · 안내 검사 빠르게', '🩺 도움말(?) → 「성능 보기」로 이 기기의 속도를 볼 수 있어요'] },
   { id: '1105zi', d: '11월 10일', items: ['🎨 우리 집 가구 색을 바꿀 수 있어요! 놓은 가구 앞에서 E → 11가지 색 중에서 골라요 (무료)'] },
   { id: '1105zg', d: '11월 10일', items: ['🎀 시즌 패스가 화면 위 가운데 리본으로 옮겨졌어요 (단계와 ⭐ 막대가 한눈에)'] },
@@ -25632,10 +25638,11 @@ function gwCostume(a, kind) { // 🎩 선비 · 👑 임금
   if ((a.gwKind || '') === kind) return; a.gwG?.parent?.remove(a.gwG); a.gwH?.parent?.remove(a.gwH); a.gwG = a.gwH = null; a.gwKind = kind;
   if (a.tl) for (const x of a.tl.objs) if (!x.isSprite) x.visible = kind !== 'king'; // 👑 임금 옷일 때는 선생님 모자를 잠깐 숨겨요
   if (!kind) return;
-  const g = new THREE.Group(), h = new THREE.Group(), o = { solid: false }, king = kind === 'king';
-  box(g, 0.92, 0.98, 0.6, king ? 0xB0302A : 0xF1EEE6, 0, 0.74, 0, o); box(g, 0.3, 0.5, 0.04, king ? 0x8A1E1A : 0xFFFFFF, 0, 1.0, 0.31, o);
-  box(g, 0.94, 0.07, 0.62, king ? 0xE8C547 : 0x2F3E6E, 0, 0.98, 0, o);
+  const g = new THREE.Group(), h = new THREE.Group(), o = { solid: false }, king = kind === 'king', yu = kind === 'yu'; /* 📖 1105zk yu = 유생 (옥색 도포 + 유건) */
+  box(g, 0.92, 0.98, 0.6, king ? 0xB0302A : yu ? 0xA9D6CF : 0xF1EEE6, 0, 0.74, 0, o); box(g, 0.3, 0.5, 0.04, king ? 0x8A1E1A : 0xFFFFFF, 0, 1.0, 0.31, o);
+  box(g, 0.94, 0.07, 0.62, king ? 0xE8C547 : yu ? 0x1E1E22 : 0x2F3E6E, 0, 0.98, 0, o);
   if (king) { mesh(CYL, g, 0.2, 0.03, 0.2, 0xE8C547, 0, 0.8, 0.31, { solid: false, rx: Math.PI / 2 }); cyl(h, 0.42, 0.34, 0x1E1E22, 0, 2.3, -0.02, o); for (const sx of [-1, 1]) box(h, 0.32, 0.26, 0.04, 0x1E1E22, sx * 0.3, 2.45, -0.36, { solid: false, rz: sx * 0.3 }); }
+  else if (yu) { box(h, 0.66, 0.34, 0.56, 0x1E1E22, 0, 2.34, 0, o); for (const sx of [-1, 1]) box(h, 0.14, 0.2, 0.5, 0x1E1E22, sx * 0.26, 2.58, 0, o); }
   else { cyl(h, 0.8, 0.04, 0x1E1E22, 0, 2.18, 0, o); cyl(h, 0.32, 0.46, 0x2A2A30, 0, 2.42, 0, o); }
   a.rig.add(g); a.head.add(h); a.gwG = g; a.gwH = h;
 }
@@ -25759,8 +25766,8 @@ async function gwGrade() {
 function gwTick(dt) {
   if ((gw.t = (gw.t || 0) - dt) > 0) return; gw.t = 0.4;
   // 옷: 과거시험장 안에서만
-  if (player.avatar) gwCostume(player.avatar, joined && gwHall(player.pos) ? (isTeacher ? 'king' : 'seonbi') : '');
-  for (const [, r] of remotes) gwCostume(r.a, r.pos && gwHall(r.a.g.position) ? (r.target?.t ? 'king' : 'seonbi') : '');
+  if (player.avatar) gwCostume(player.avatar, joined && gwHall(player.pos) ? (isTeacher ? 'king' : 'seonbi') : joined && kstIn(player.pos) ? (isTeacher ? 'seonbi' : 'yu') : '');
+  for (const [, r] of remotes) gwCostume(r.a, r.pos && gwHall(r.a.g.position) ? (r.target?.t ? 'king' : 'seonbi') : r.pos && kstIn(r.a.g.position) ? (r.target?.t ? 'seonbi' : 'yu') : '');
   gwDrawBoard();
   if (gw.champ) { const c = S.gwc, t = c?.name ? [`🎓 제${c.n}회 장원급제`, c.name] : ['🎓 장원급제 방', '아직 없어요']; const k = t.join('|'); if (gw.champK !== k) { gw.champK = k; gw.champ.userData.set(t); } }
   if (gw.entry) { const t = gwOpen() ? ['📜 지금 과거시험 중!', '들어와서 시험을 봐요'] : ['📜 과거시험장', '선생님이 문제를 내면 열려요']; const k = t.join('|'); if (gw.entryK !== k) { gw.entryK = k; gw.entry.userData.set(t); } }
@@ -28828,7 +28835,7 @@ const KV_ST = {
   prov: { icon: '🏮', n: '속담 정자', sub: '속담 · 관용 표현', x: KV.cx - 40, z: KV.cz + 30 },
   read: { icon: '📖', n: '이야기 도서관', sub: '짧은 글 읽고 답하기', x: KV.cx + 40, z: KV.cz + 30 },
   poem: { icon: '✍️', n: '시 게시판', sub: '운을 띄운 삼행시 · 투표', x: KV.cx, z: KV.cz + 34 },
-  det: { icon: '🗝️', n: '국어 방탈출 본부', sub: '방탈출 고르기 · 들어가기', x: KV.cx, z: KV.cz - 52 }, /* 1105e 정보 탐정단 본부 → 방탈출 컨텐츠 모음 */
+  det: { icon: '📚', n: '국어 학습 본부', sub: '국어 공부방 · 방탈출', x: KV.cx, z: KV.cz - 52 }, /* 1105e 정보 탐정단 본부 → 방탈출 컨텐츠 모음 */
 };
 // ---------- 문제 은행 ----------
 const KV_SOV = [['민수가', '책을', '읽는다'], ['강아지가', '공을', '물었다'], ['나는', '편지를', '썼다'], ['친구들이', '노래를', '불렀다'], ['바람이', '나뭇잎을', '흔든다'], ['우리 반이', '축구 경기를', '이겼다'], ['고양이가', '생선을', '훔쳤다'], ['지우가', '그림을', '그렸다'], ['형이', '자전거를', '고쳤다'], ['동생이', '우유를', '마셨다'], ['할머니께서', '떡을', '만드셨다'], ['아기가', '장난감을', '던졌다'], ['꽃이', '', '피었다'], ['하늘이', '', '맑다'], ['기차가', '', '달린다']];
@@ -28943,18 +28950,145 @@ function kvOpen(k) {
 }
 // ---------- 🗝️ 1105e 국어 방탈출 본부 (보드게임방처럼 컨텐츠를 골라 들어가요 · 새 방탈출은 KV_ESC에 더해요) ----------
 const KV_ESC = [
+  { k: 'kst', icon: '📖', n: '국어 공부방', sub: '학습지 · 정보 탐정단', d: '유생 옷으로 갈아입고 서안 앞 방석에 앉아요. 내 번호를 누르면 내 학습지 「이 블로그, 믿어도 될까?」가 펴져요.', room: 'kst', live: () => '✍️ 번호별 학습지' },
   { k: 'kd', icon: '🕵️', n: '덜렁이의 개교기념일', sub: '정보 판단 · 매체', d: '내일 학교를 쉰다는 소문은 진짜일까? 단서 8개의 출처를 밝히고 믿을 만한지 판단해서 덜렁이를 구해요.', room: 'kdr', live: () => S.kdet?.on ? (S.kdet.ph === 'rev' ? '📣 진실 공개 중' : '🟢 모둠전 진행 중') : '🙋 혼자 연습' },
 ];
 function kvEscLobby() {
-  openLife('🗝️ 국어 방탈출 본부', (box) => {
-    box.textContent = ''; box.append(el2('p', 'hint', '탈출할 방을 골라 들어가요. 방 안에서 나오면 다시 한글 마을이에요.'));
+  openLife('📚 국어 학습 본부', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', '들어갈 방을 골라요. 방 안에서 나오면 다시 한글 마을이에요.'));
     for (const E of KV_ESC) { const c = el2('div', ''); c.style.cssText = 'background:#F3EEFF;border-radius:14px;padding:12px;margin:8px 0;text-align:left';
       c.append(el2('div', 'lp-big', `${E.icon} ${E.n}`), el2('p', 'hint', `${E.sub} · ${E.live()}`), el2('p', '', E.d));
       const r = el2('div', 'row-center wrap'), b = el2('button', 'btn', '🚪 들어가기'); b.style.background = '#FFD23C'; b.onclick = () => { closeModals(); enterRoom(E.room); }; r.append(b);
-      if (isTeacher && E.k === 'kd') { const t = el2('button', 'btn', '🧑‍🏫 모둠전 관리'); t.onclick = () => kvDetOpen(); r.append(t); } c.append(r); box.append(c); }
-    box.append(el2('p', 'hint', '🔜 새 방탈출이 생기면 여기에 늘어나요.'));
+      if (isTeacher && E.k === 'kd') { const t = el2('button', 'btn', '🧑‍🏫 모둠전 관리'); t.onclick = () => kvDetOpen(); r.append(t); } if (isTeacher && E.k === 'kst') { const t = el2('button', 'btn', '🧑‍🏫 학습지 모아 보기'); t.onclick = () => kwsTeacher(); r.append(t); } c.append(r); box.append(c); }
+    box.append(el2('p', 'hint', '🔜 새 학습지와 방탈출이 생기면 여기에 늘어나요.'));
   });
 }
+// ---------- 📖 1105zk 국어 공부방 (국어 학습 본부 안 · 유생 옷 입고 서안에 앉아 번호별 학습지) ----------
+// 저장: rooms/{반}/kws/{학습지}/{번호} { u 기기, n 이름표, d JSON 글, at } · state 밖이라 다른 친구 화면을 다시 그리지 않아요
+// · 블로그 글은 KWS_BLOG(연습용 가상 글) · 선생님이 고치면 kws/{학습지}/cfg 에 저장 · 답(핵심 단서)은 코드에 없어요
+const KWS_SID = 'd34', KWS_MAXNO = 30;
+const KWS_WAYS = ['출처 확인', '극단적이거나 과장된 표현 확인', '뒷받침 근거 확인', '글쓴이 확인', '너무 좋은 조건 의심', '글쓴이의 목적 확인', '제작자의 전문성 확인', '구입 후기, 사진의 사실 여부 확인'];
+const KWS_JUDGE = ['신뢰할 수 있다', '일부 내용을 추가로 확인해야 한다', '신뢰하기 어렵다'], KWS_JCOL = ['#2E9E5B', '#D08A1E', '#D2453A'];
+const KWS_BLOG = [
+  { blog: '오늘의 맛집 대탐험', t: '[대박 맛집] 단돈 9,900원! 세상에서 가장 맛있는 치즈폭포 돈가스', who: '글쓴이: 맛집헌터 (소개 없음)',
+    body: '여러분, 드디어 찾았습니다! 세상에서 가장 맛있는 돈가스예요!\n한 입만 먹어도 누구나 100% 반하게 됩니다. 이 돈가스를 먹어 본 사람은 한 명도 빠짐없이 단골이 되었다고 해요.\n게다가 단돈 9,900원에 돈가스, 음료수, 아이스크림까지 전부 무제한! 오늘 가면 선착순 100명에게 선물도 준답니다.\n이런 기회는 두 번 다시 없어요. 고민하지 말고 지금 당장 달려가세요!\n(사진: 가게에서 보내 준 홍보 사진 3장)\n※ 이 글은 가게에서 식사비를 지원받아 썼습니다.' },
+  { blog: '맛있는 하루의 기록', t: '동네 중식당 방문 후기! 양은 넉넉할까?', who: '글쓴이: 하루 (우리 동네 음식점을 다녀와서 기록하는 블로그)',
+    body: '지난 토요일 점심에 가족 네 명이 우리 동네 중식당에 다녀왔어요.\n짜장면 두 그릇과 탕수육 작은 것을 시켰고, 모두 23,000원이 나왔습니다. (영수증 사진을 아래에 올려요.)\n짜장면은 어른이 먹기에도 넉넉했지만, 탕수육은 네 명이 나눠 먹기에는 조금 적었어요.\n주말 점심이라 20분쯤 기다렸습니다. 제 입맛에는 조금 달았는데, 맛은 사람마다 다르게 느낄 수 있어요.\n(사진: 직접 찍은 음식 사진 4장, 영수증 사진 1장)\n※ 제 돈으로 사 먹고 쓴 후기입니다.' },
+  { blog: '우리 가족 건강 주치의', t: '물을 충분히 마시는 것이 왜 중요할까요?', who: '글쓴이: 동네 의원에서 20년째 진료하는 가정의학과 전문의',
+    body: '우리 몸은 물이 있어야 체온을 조절하고, 영양소를 온몸으로 나르고, 필요 없는 찌꺼기를 내보낼 수 있습니다.\n물이 부족하면 쉽게 피곤해지거나 머리가 아플 수 있어요.\n다만 하루에 마셔야 하는 물의 양은 나이, 몸무게, 활동량, 날씨에 따라 사람마다 다릅니다. 한꺼번에 많이 마시기보다 조금씩 자주 마시는 것이 좋습니다.\n몸이 아픈 사람은 마셔야 하는 물의 양이 다를 수 있으니 의사와 상담하세요.\n※ 참고 자료: 보건 당국의 건강 정보 누리집, 영양 관련 학회 안내서 (글 아래에 주소를 적어 두었습니다.)' },
+  { blog: '하루 1분 건강 비밀', t: '충격! 레몬물 한 잔이면 몸속 독소가 전부 사라진다?', who: '글쓴이: 건강지킴이77 (소개 없음)',
+    body: '아직도 모르셨나요? 아침에 레몬물 딱 한 잔이면 몸속 독소가 전부 사라집니다!\n병원에 갈 필요도, 약을 먹을 필요도 없어요. 일주일만 마시면 누구나 키가 크고 피부가 좋아지고 절대 감기에 걸리지 않습니다.\n외국의 유명한 박사님도 그렇게 말했다고 해요. (누구인지, 어디에 나온 말인지는 적혀 있지 않음)\n제 친구의 친구도 효과를 봤대요!\n지금 아래 주소에서 「기적의 레몬 가루」를 사면 오늘만 반값! 서두르세요!' },
+];
+const KWS_LOCAL = {}; /* 연습 방(Firebase 없음)용 */
+const kws = { el: null, on: false, no: 0, d: null, dirty: false, saveT: 0, saving: false, cfg: null, all: null, tick: 0 };
+const kwsEmpty = () => ({ k: ['', '', '', '', '', '', ''], b: KWS_BLOG.map(() => ({ c: 0, j: 0, r: '' })), s: [0, 0, 0, 0], x: ['', '', '', ''], o1: '', o2: '' });
+function kwsParse(v) { const e = kwsEmpty(); let o = null; try { o = JSON.parse(v?.d || 'null'); } catch (err) { } if (!o || typeof o !== 'object') return e; const S1 = (x, n) => typeof x === 'string' ? x.slice(0, n) : '';
+  return { k: e.k.map((_, i) => S1(o.k?.[i], 10)), b: e.b.map((_, i) => ({ c: (o.b?.[i]?.c | 0) & 255, j: Math.min(3, Math.max(0, o.b?.[i]?.j | 0)), r: S1(o.b?.[i]?.r, 300) })), s: e.s.map((_, i) => Math.min(3, Math.max(0, o.s?.[i] | 0))), x: e.x.map((_, i) => S1(o.x?.[i], 120)), o1: S1(o.o1, 10), o2: S1(o.o2, 200) }; }
+const kwsNoKey = () => `sv-kwsno:${currentRoom || 'local'}`;
+const kwsBlogs = () => KWS_BLOG.map((B, i) => { const c = kws.cfg?.[i]; return { ...B, who: typeof c?.who === 'string' && c.who ? c.who : B.who, body: typeof c?.body === 'string' && c.body ? c.body : B.body }; });
+async function kwsLoadCfg() { const v = await backend.kwsGet(KWS_SID, 'cfg'); if (v === undefined) return; let o = null; try { o = JSON.parse(v?.d || 'null'); } catch (e) { } kws.cfg = Array.isArray(o) ? o : null; }
+const kstIn = (p) => { const R = ROOMS.kst; return !!R && Math.abs(p.x - R.cx) <= R.w / 2 + 0.5 && Math.abs(p.z - R.cz) <= R.d / 2 + 0.5; };
+function kstBuild(g) {
+  const R = ROOMS.kst, { cx, cz, w, d } = R, o = { solid: false }; roomShell(g, R);
+  box(g, w - 1, 0.03, d - 1, 0xE9DDBA, cx, 0.12, cz, o); for (let k = -3; k <= 3; k++) box(g, 0.08, 0.02, d - 1.2, 0xCDBB8C, cx + k * 3.4, 0.14, cz, o); /* 돗자리 */
+  const fz = cz - d / 2 + 1.7;
+  for (let k = 0; k < 8; k++) box(g, 1.2, 2.3, 0.08, [0xF4EAD2, 0xE3EEF0][k % 2], cx - 4.2 + k * 1.2, 1.25, fz - 1.2, { solid: false, ry: (k % 2 ? 0.12 : -0.12) }); /* 병풍 */
+  box(g, 2.4, 0.45, 0.9, 0x6A4630, cx, 0.35, fz, o); box(g, 1.7, 0.12, 1.4, 0x3E5E9A, cx, 0.18, fz - 0.9, o); box(g, 1.2, 0.04, 0.5, 0xF4EAD2, cx, 0.6, fz, o);
+  signPlane(g, ['🔎 정보 탐정단', '이 블로그, 믿어도 될까?'], 4.2, 1.3, cx - 7.6, 2.0, cz - d / 2 + 0.2, { font: 40, pad: 8, fg: '#3B2F2A', bg: '#F7EED8', stroke: false }).rotation.y = 0;
+  signPlane(g, ['가나다라마바사', '아자차카타파하'], 3.6, 1.2, cx + 7.8, 2.0, cz - d / 2 + 0.2, { font: 40, pad: 8, fg: '#3B2F2A', bg: '#F7EED8', stroke: false }).rotation.y = 0;
+  for (const sx of [-1, 1]) { const bx = cx + sx * (w / 2 - 0.7); box(g, 0.7, 2.3, 4.2, 0x7A5234, bx, 1.15, cz - 1); for (let r = 0; r < 3; r++) for (let k = 0; k < 6; k++) box(g, 0.5, 0.5, 0.42, [0xB0303A, 0x2F5E9E, 0xE8C547, 0x3E8A5A, 0xF4EAD2][(r * 2 + k) % 5], bx - sx * 0.14, 0.5 + r * 0.72, cz - 2.7 + k * 0.68, o); } /* 책장 */
+  addInteract({ pos: new V3(cx, 1, fz - 0.9), r: 1.6, text: () => roomNow() !== 'kst' ? null : isTeacher ? ['🧑‍🏫 훈장 자리', '학습지 모아 보기 · 글 고치기'] : ['🧑‍🏫 선생님 자리', '방석에 앉아 공부해요'], run: () => isTeacher ? kwsTeacher() : toast('🧑‍🏫 선생님 자리예요. 방석에 앉아 학습지를 펴요!', 'info') });
+  makeLabel(g, ['📖 국어 공부방', '방석에 앉으면 내 번호 학습지가 펴져요'], 0.85, cx, 3.5, fz - 1.2);
+  for (let row = 0; row < 4; row++) for (let col = 0; col < 5; col++) { /* 서안 20자리 (4줄 × 5) */
+    const x = cx - 7.2 + col * 3.6, z = cz - 3.4 + row * 2.5;
+    box(g, 1.5, 0.42, 0.7, 0x8A5A34, x, 0.33, z, o); box(g, 1.3, 0.04, 0.5, 0xF4EAD2, x, 0.56, z, o);
+    box(g, 0.9, 0.1, 0.9, [0x3E5E9A, 0x4E9A8A][(row + col) % 2], x, 0.18, z + 0.85, o);
+    addInteract({ pos: new V3(x, 1, z + 0.85), r: 1.25, text: () => roomNow() === 'kst' ? ['자리에 앉아 공부하기 📖', kws.no ? `${kws.no}번 학습지를 펴요` : '내 번호로 학습지를 펴요'] : null, run: () => kstSit(x, z + 0.85) });
+  }
+}
+function kstSit(x, z) { if (isFrozen()) return; closeModals();
+  player.pos.set(x, 0.12, z); player.vy = 0; player.heading = Math.PI; player.avatar.g.position.copy(player.pos); player.avatar.g.rotation.y = Math.PI;
+  camYaw = 0; camPitch = 0.55; playAct(player.avatar, 'sit'); playSfx('pick'); kwsOpen(); }
+function kwsEl() { let el = kws.el; if (el) return el;
+  el = document.createElement('div'); el.id = 'kwsPlay'; el.style.cssText = 'position:fixed;inset:0;z-index:82;background:rgba(36,28,20,.9);display:flex;flex-direction:column;align-items:center;padding:calc(6px + var(--safe-top)) 6px 6px';
+  el.innerHTML = '<div id="kwsHead" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;color:#FFF6E0;font-size:17px;padding:2px 0 6px;flex:none"></div><div id="kwsBody" style="flex:1;min-height:0;width:100%;max-width:860px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#FFFCF4;border-radius:14px;padding:14px 16px 40px;box-sizing:border-box;color:#3B2F2A;font-size:17px;line-height:1.6;text-align:left"></div>';
+  for (const ev of ['keydown', 'keyup', 'keypress']) el.addEventListener(ev, (e) => e.stopPropagation()); /* 글 쓰는 동안 캐릭터가 움직이지 않게 */
+  document.body.append(el); kws.el = el; return el; }
+function kwsClose() { if (!kws.on) return; kws.on = false; kws.el?.classList.add('hidden'); if (kws.dirty) kwsSave(); if (roomNow() === 'kst' && isSeated(player.avatar)) playAct(player.avatar, null); }
+function kwsHead(msg) { const H = kwsEl().querySelector('#kwsHead'); H.textContent = ''; const btn = (t, f, bg = '#fff') => { const b = el2('button', 'btn', t); b.style.cssText = `background:${bg};color:#3B2F2A;font-size:16px;padding:5px 12px`; b.onclick = f; H.append(b); return b; };
+  H.append(el2('b', '', kws.no ? `🔎 정보 탐정단 · ${kws.no}번` : '🔎 정보 탐정단')); const s = el2('span', '', msg || ''); s.id = 'kwsStat'; s.style.cssText = 'color:#FFE9A8;font-size:15px'; H.append(s);
+  if (kws.no && kws.d) { btn('💾 저장', () => kwsSave(true), '#FFD23C'); btn('🔢 번호 바꾸기', async () => { if (kws.dirty) await kwsSave(); kws.d = null; kwsPickNo(); }); }
+  btn('✖ 닫기', kwsClose); }
+const kwsStat = (t) => { const s = kws.el?.querySelector('#kwsStat'); if (s) s.textContent = t; };
+function kwsOpen() { const el = kwsEl(); el.classList.remove('hidden'); kws.on = true;
+  let no = 0; try { no = +localStorage.getItem(kwsNoKey()) | 0; } catch (e) { } if (no >= 1 && no <= KWS_MAXNO && kws.no === no && kws.d) { kwsHead(kws.dirty ? '✏️ 고치는 중' : '✅ 저장됨'); kwsRender(); return; }
+  if (no >= 1 && no <= KWS_MAXNO) kwsEnter(no, true); else kwsPickNo(); }
+function kwsPickNo() { kws.no = 0; kwsHead(''); const B = kwsEl().querySelector('#kwsBody'); B.textContent = ''; B.scrollTop = 0;
+  const h = el2('div', '', '🔢 내 번호를 눌러요'); h.style.cssText = 'font-size:24px;font-weight:800;text-align:center;margin:8px 0'; B.append(h, el2('p', 'hint', '내 번호로 들어가면 내 학습지가 펴져요. 다음에 앉을 때는 번호를 다시 묻지 않아요. 친구 번호를 누르면 안 돼요!'));
+  const g = el2('div', ''); g.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px;margin-top:10px';
+  for (let n = 1; n <= KWS_MAXNO; n++) { const b = el2('button', 'btn', `${n}번`); b.style.cssText = 'background:#FFF1C9;font-size:22px;padding:14px 0;border-radius:14px'; b.onclick = () => kwsEnter(n, false); g.append(b); } B.append(g); }
+async function kwsEnter(no, known) { const B = kwsEl().querySelector('#kwsBody'); kws.no = no; kws.d = null; kwsHead('⏳ 불러오는 중…'); B.textContent = ''; B.append(el2('p', 'hint', `⏳ ${no}번 학습지를 불러오는 중…`));
+  const [v] = await Promise.all([backend.kwsGet(KWS_SID, String(no)), kwsLoadCfg()]); if (!kws.on || kws.no !== no) return;
+  if (v === undefined) { B.textContent = ''; B.append(el2('p', '', '⚠️ 학습지를 불러오지 못했어요. 인터넷을 확인하고 다시 눌러요. (선생님: database.rules.json 게시 확인)')); const r = el2('button', 'btn', '🔄 다시 불러오기'); r.onclick = () => kwsEnter(no, known); B.append(r); kwsHead('⚠️ 불러오기 실패'); return; }
+  const go = () => { try { localStorage.setItem(kwsNoKey(), String(no)); } catch (e) { } kws.d = kwsParse(v); kws.dirty = false; kwsHead(v ? '✅ 저장된 글을 불러왔어요' : '🆕 새 학습지'); kwsRender(); };
+  if (v && v.u && v.u !== backend.uid && !known) { B.textContent = ''; const q = el2('div', '', `🤔 ${no}번은 이미 다른 기기${v.n ? `(${v.n})` : ''}에서 쓰고 있어요.`); q.style.cssText = 'font-size:21px;font-weight:800;margin:10px 0'; B.append(q, el2('p', '', '정말 내 번호가 맞나요? 맞으면 이어서 쓸 수 있어요. 친구 번호라면 친구 글이 지워질 수 있으니 다시 골라요.'));
+    const r = el2('div', 'row-center wrap'), y = el2('button', 'btn', `✅ 네, 제가 ${no}번이에요`), n = el2('button', 'btn', '↩️ 번호 다시 고르기'); y.style.background = '#FFD23C'; y.onclick = go; n.onclick = kwsPickNo; r.append(y, n); B.append(r); kwsHead(''); return; }
+  go(); }
+function kwsTouch() { kws.dirty = true; kwsStat('✏️ 고치는 중… (잠시 뒤 저절로 저장)'); clearTimeout(kws.saveT); kws.saveT = setTimeout(() => kwsSave(), 2500); }
+async function kwsSave(loud) { clearTimeout(kws.saveT); if (!kws.no || !kws.d) return; if (kws.saving) { kws.saveT = setTimeout(() => kwsSave(loud), 600); return; } kws.saving = true; kws.dirty = false; const no = kws.no;
+  const r = await backend.kwsSet(KWS_SID, String(no), { u: backend.uid, n: (cleanNick(myNick) || '친구').slice(0, 12), d: JSON.stringify(kws.d).slice(0, 7900), at: backend.now() }); kws.saving = false;
+  if (r?.ok) { if (kws.no === no) kwsStat(kws.dirty ? '✏️ 고치는 중…' : '✅ 저장됨'); if (loud) { playSfx('pick'); toast(`💾 ${no}번 학습지를 저장했어요`, 'success'); } }
+  else { kws.dirty = true; kwsStat('⚠️ 저장 못 함 · 💾 저장을 다시 눌러요'); if (loud) toast('⚠️ 저장하지 못했어요. 인터넷을 확인해요 (선생님: database.rules.json)', 'warn'); } }
+function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d; B.textContent = ''; B.scrollTop = 0; if (!D) return;
+  const sec = (t, bg) => { const c = el2('div', ''); c.style.cssText = `background:${bg || '#FFF6E0'};border-radius:14px;padding:12px 14px;margin:12px 0`; if (t) { const h = el2('div', '', t); h.style.cssText = 'font-weight:800;font-size:19px;margin-bottom:6px'; c.append(h); } B.append(c); return c; };
+  const inp = (val, max, wd, ph, set) => { const i = el2('input', ''); i.type = 'text'; i.maxLength = max; i.value = val; i.placeholder = ph || ''; i.style.cssText = `width:${wd};max-width:100%;font:inherit;font-size:18px;padding:4px 8px;margin:2px 4px;border:none;border-bottom:3px solid #C9A36A;background:#fff;border-radius:6px 6px 0 0;text-align:center;box-sizing:border-box`; i.oninput = () => { set(i.value); kwsTouch(); }; return i; };
+  const area = (val, max, ph, set) => { const t = el2('textarea', ''); t.maxLength = max; t.value = val; t.placeholder = ph; t.rows = 3; t.style.cssText = 'width:100%;font:inherit;font-size:17px;padding:8px 10px;border:2px solid #E0CDA8;border-radius:10px;background:#fff;box-sizing:border-box;resize:vertical'; t.oninput = () => { set(t.value); kwsTouch(); }; return t; };
+  const line = (c, ...parts) => { const p = el2('div', ''); p.style.cssText = 'margin:6px 0;line-height:2.1'; for (const x of parts) p.append(typeof x === 'string' ? document.createTextNode(x) : x); c.append(p); };
+  { const h = el2('div', ''); h.style.cssText = 'text-align:center'; const a = el2('div', '', '🔎 정보 탐정단'), b = el2('div', '', '미션: 이 블로그, 믿어도 될까?'), c = el2('div', 'hint', '5-2(나) 판단하며 이용해요 · 매체 자료의 신뢰성을 판단하는 방법 알기'); a.style.cssText = 'font-size:28px;font-weight:900'; b.style.cssText = 'font-size:20px;font-weight:800;color:#8A4A1E'; h.append(a, b, c); B.append(h); }
+  sec('[탐정의 임무]', '#EEF6FF').append(el2('div', '', "네 명의 블로거가 쓴 글을 읽고, 각 블로그를 믿어도 되는지 판단해 봅시다. 처음부터 정답을 찾기보다 판단의 단서를 글 속에서 찾아 적는 것이 중요합니다. 애매할 때는 '추가 확인이 필요하다'를 골라도 됩니다."));
+  { const c = sec('[핵심 단서]'), K = (i, ph, wd = '110px') => inp(D.k[i], 10, wd, ph, (v) => D.k[i] = v);
+    line(c, '어떤 자료에 대해 믿을 수 있는 정도를 ', K(0, '', '130px'), ' 이라고 한다.');
+    line(c, '· 인터넷 광고에서 너무 ', K(1, 'ㄱㅈ'), '된 표현과 지나치게 좋은 ', K(2, 'ㅈㄱ'), '은 주의하고, 구입 후기가 사실인지, 숨은 ', K(3, 'ㅇㄷ'), '가 있는지 확인한다.');
+    line(c, '· ', K(4, 'ㅊㅊ'), '가 믿을 수 있는지, 참고한 ', K(5, 'ㅅㅈ'), ' 같은 것이 조작된 것은 아닌지 확인한다.');
+    line(c, '· 글쓴이가 어떤 사람이고 관련 분야의 ', K(6, 'ㅈㅁㄱ', '130px'), '인지를 확인한다.'); }
+  const starRows = [];
+  kwsBlogs().forEach((P, i) => { const X = D.b[i], c = sec(`${'①②③④'[i]} <${P.blog}>`, ['#FFF1E6', '#EAF7EC', '#E8F1FF', '#F6EAFB'][i]);
+    const post = el2('div', ''); post.style.cssText = 'background:#fff;border-radius:12px;padding:12px 14px;border:2px solid #E6DCC8;margin:4px 0 10px'; const tt = el2('div', '', P.t), wh = el2('div', 'hint', P.who), bd = el2('div', ''); tt.style.cssText = 'font-weight:800;font-size:19px'; bd.style.cssText = 'white-space:pre-wrap;margin-top:6px;line-height:1.75'; bd.textContent = P.body; post.append(tt, wh, bd); c.append(post);
+    c.append(el2('b', '', '1. 이 블로그 글의 신뢰성을 판단하는 방법은? (모두 골라요)')); const cw = el2('div', ''); cw.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px';
+    KWS_WAYS.forEach((w, k) => { const b = el2('button', 'btn', ''); const paint = () => { const on = X.c >> k & 1; b.textContent = `${on ? '☑' : '☐'} ${w}`; b.style.cssText = `font-size:16px;padding:6px 10px;border-radius:10px;background:${on ? '#FFD23C' : '#fff'};border:2px solid ${on ? '#C9962A' : '#E0CDA8'}`; }; b.onclick = () => { X.c ^= 1 << k; paint(); kwsTouch(); }; paint(); cw.append(b); }); c.append(cw);
+    c.append(el2('b', '', '2. 이 블로그 글의 신뢰성을 어떻게 판단하나요?')); const jw = el2('div', ''); jw.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px'; const jb = [];
+    const jpaint = () => jb.forEach((b, k) => { const on = X.j === k + 1; b.textContent = `${on ? '◉' : '○'} ${KWS_JUDGE[k]}`; b.style.cssText = `font-size:16px;padding:6px 10px;border-radius:10px;background:${on ? KWS_JCOL[k] : '#fff'};color:${on ? '#fff' : '#3B2F2A'};border:2px solid ${KWS_JCOL[k]}`; });
+    KWS_JUDGE.forEach((_, k) => { const b = el2('button', 'btn', ''); b.onclick = () => { X.j = X.j === k + 1 ? 0 : k + 1; jpaint(); kwsTouch(); }; jb.push(b); jw.append(b); }); jpaint(); c.append(jw);
+    c.append(el2('b', '', '3. 2번과 같이 생각한 까닭을 써 보세요.'), area(X.r, 300, '글 속에서 찾은 단서를 넣어 써요', (v) => X.r = v)); });
+  { const c = sec('[탐사 결과]', '#FFF6E0'); c.append(el2('p', 'hint', '별을 눌러 내가 판단한 신뢰도를 칠해요 (★ 많을수록 믿을 만해요)'));
+    kwsBlogs().forEach((P, i) => { const r = el2('div', ''); r.style.cssText = 'background:#fff;border-radius:12px;padding:8px 10px;margin:6px 0'; const t = el2('div', '', `${'①②③④'[i]} ${P.t}`); t.style.fontWeight = '700'; const st = el2('div', ''); st.style.cssText = 'font-size:32px;line-height:1.2;color:#E8A91E;user-select:none'; const ss = [];
+      const paint = () => ss.forEach((s, k) => s.textContent = D.s[i] > k ? '★' : '☆'); for (let k = 0; k < 3; k++) { const s = el2('span', '', '☆'); s.style.cssText = 'cursor:pointer;padding:0 4px'; s.onclick = () => { D.s[i] = D.s[i] === k + 1 ? k : k + 1; paint(); kwsTouch(); }; ss.push(s); st.append(s); } paint();
+      const x = inp(D.x[i], 120, '100%', '추가로 찾아보면 좋을 정보는?', (v) => D.x[i] = v); x.style.textAlign = 'left'; x.style.margin = '4px 0 0'; r.append(t, st, x); c.append(r); }); }
+  { const c = sec('오늘의 한 줄 정리', '#EEF6FF'); line(c, '어떤 자료에 대해 믿을 수 있는 정도를 ', inp(D.o1, 10, '130px', '', (v) => D.o1 = v), ' 이라고 한다.'); line(c, '매체 자료를 바르게 이용하려면'); c.append(area(D.o2, 200, '내 생각을 한 문장으로 써요', (v) => D.o2 = v)); }
+  { const r = el2('div', 'row-center wrap'), s = el2('button', 'btn', '💾 저장하기'), x = el2('button', 'btn', '✖ 닫고 일어나기'); s.style.cssText = 'background:#FFD23C;font-size:19px;padding:10px 22px'; s.onclick = () => kwsSave(true); x.onclick = kwsClose; r.append(s, x); B.append(r, el2('p', 'hint', '쓰는 동안 저절로 저장돼요. 다음에 같은 번호로 앉으면 이어서 쓸 수 있어요. · 블로그 글은 공부하려고 만든 가상의 글이에요.')); }
+}
+function kwsTick() { if (!kws.on) return; const t = performance.now(); if (t - kws.tick < 500) return; kws.tick = t; if (roomNow() !== 'kst' || !joined) { kwsClose(); return; } if (!isSeated(player.avatar)) { kws.on = false; kws.el?.classList.add('hidden'); if (kws.dirty) kwsSave(); } }
+// 🧑‍🏫 선생님: 번호별 모아 보기 · 블로그 글 고치기
+function kwsTeacher() { kws.all = null; kws.tv = 0; kws.ed = false;
+  const load = async () => { const [a] = await Promise.all([backend.kwsGet(KWS_SID, ''), kwsLoadCfg()]); kws.all = a === undefined ? false : (a || {}); refillLife(); };
+  openLife('🧑‍🏫 정보 탐정단 학습지 모아 보기', (box) => { if (box.dataset.hk === 'kwsed' && kws.ed) return; box.textContent = ''; delete box.dataset.hk;
+    if (kws.all === null) { box.append(el2('p', 'hint', '⏳ 불러오는 중…')); return; } if (kws.all === false) { box.append(el2('p', '', '⚠️ 불러오지 못했어요. database.rules.json 을 게시했는지 확인해요.')); return; }
+    const top = el2('div', 'row-center wrap'), rf = el2('button', 'btn', '🔄 새로 고침'), ed = el2('button', 'btn', kws.ed ? '↩️ 학습지 보기' : '📰 블로그 글 고치기'); rf.onclick = () => { kws.all = null; refillLife(); load(); }; ed.onclick = () => { kws.ed = !kws.ed; refillLife(); }; top.append(rf, ed); box.append(top);
+    if (kws.ed) { box.dataset.hk = 'kwsed'; box.append(el2('p', 'hint', '학생 학습지에 보이는 블로그 글이에요. 비워 두면 기본 글이 보여요. 제목은 학습지 그대로예요.')); const cur = kwsBlogs(), tas = [];
+      cur.forEach((P, i) => { box.append(el2('b', '', `${'①②③④'[i]} ${P.t}`)); const w = el2('input', 'tinput'), t = el2('textarea', 'tinput'); w.maxLength = 60; w.value = P.who; w.style.width = '100%'; t.maxLength = 900; t.rows = 6; t.value = P.body; t.style.cssText = 'width:100%;box-sizing:border-box;margin-bottom:10px'; box.append(w, t); tas.push([w, t]); });
+      const r = el2('div', 'row-center wrap'), sv = el2('button', 'btn', '💾 글 저장'), df = el2('button', 'btn', '↩️ 기본 글로'); sv.style.background = '#FFD23C';
+      sv.onclick = async () => { const o = tas.map(([w, t]) => ({ who: w.value.trim().slice(0, 60), body: t.value.trim().slice(0, 900) })); const q = await backend.kwsSet(KWS_SID, 'cfg', { u: backend.uid, d: JSON.stringify(o), at: backend.now() }); if (q?.ok) { kws.cfg = o; toast('💾 블로그 글을 저장했어요 · 학생은 다시 앉으면 보여요', 'success'); kws.ed = false; refillLife(); } else toast('⚠️ 저장하지 못했어요 (database.rules.json)', 'warn'); };
+      df.onclick = async () => { const q = await backend.kwsSet(KWS_SID, 'cfg', null); if (q?.ok) { kws.cfg = null; toast('↩️ 기본 글로 돌렸어요', 'info'); kws.ed = false; refillLife(); } else toast('⚠️ 못 했어요 (database.rules.json)', 'warn'); }; r.append(sv, df); box.append(r); return; }
+    const L = Object.entries(kws.all).filter(([k, v]) => /^[0-9]{1,2}$/.test(k) && v).map(([k, v]) => ({ no: +k, v, d: kwsParse(v) })).sort((a, b) => a.no - b.no);
+    box.append(el2('p', 'hint', `낸 학생 ${L.length}명 · 번호를 누르면 쓴 글이 모두 보여요`)); if (!L.length) { box.append(el2('p', '', '아직 학습지를 쓴 학생이 없어요.')); return; }
+    { const t = el2('div', ''); t.style.cssText = 'background:#EEF6FF;border-radius:12px;padding:8px 10px;margin:6px 0;text-align:left;font-size:15px;line-height:1.7'; kwsBlogs().forEach((P, i) => { const n = [0, 0, 0, 0]; for (const x of L) n[x.d.b[i].j]++; t.append(el2('div', '', `${'①②③④'[i]} ${P.blog}: 🟢 신뢰 ${n[1]} · 🟡 추가 확인 ${n[2]} · 🔴 어렵다 ${n[3]} · 안 고름 ${n[0]}`)); }); box.append(t); }
+    for (const x of L) { const c = el2('div', ''); c.style.cssText = 'background:#FFF6E6;border-radius:12px;padding:8px 10px;margin:6px 0;text-align:left'; const open = kws.tv === x.no, done = x.d.b.filter(b => b.j && b.r.trim()).length;
+      const h = el2('button', 'btn', `${open ? '▼' : '▶'} ${x.no}번${x.v.n ? ` · ${x.v.n}` : ''} · 블로그 ${done}/4 · ${x.d.b.map(b => ['⚪', '🟢', '🟡', '🔴'][b.j]).join('')}`); h.style.cssText = 'background:#fff;font-size:15px;width:100%;text-align:left'; h.onclick = () => { kws.tv = open ? 0 : x.no; refillLife(); }; c.append(h);
+      if (open) { const p = (t) => { const e = el2('div', '', t); e.style.cssText = 'font-size:15px;line-height:1.6;white-space:pre-wrap;margin:3px 0'; c.append(e); };
+        p(`[핵심 단서] ${x.d.k.map(s => s || '＿').join(' / ')}`); kwsBlogs().forEach((P, i) => { const b = x.d.b[i]; p(`${'①②③④'[i]} ${P.blog} — ${b.j ? KWS_JUDGE[b.j - 1] : '안 고름'} · ${'★'.repeat(x.d.s[i])}${'☆'.repeat(3 - x.d.s[i])}\n   방법: ${KWS_WAYS.filter((_, k) => b.c >> k & 1).join(', ') || '없음'}\n   까닭: ${b.r || '없음'}\n   더 찾을 정보: ${x.d.x[i] || '없음'}`); });
+        p(`[한 줄 정리] ${x.d.o1 || '＿'} · ${x.d.o2 || '없음'}`); const del = el2('button', 'btn', `🗑️ ${x.no}번 학습지 지우기`); del.style.cssText = 'background:#fff;font-size:13px'; let arm = false; del.onclick = async () => { if (!arm) { arm = true; del.textContent = '⚠️ 한 번 더 누르면 지워져요'; return; } const q = await backend.kwsSet(KWS_SID, String(x.no), null); if (q?.ok) { delete kws.all[x.no]; toast('🗑️ 지웠어요', 'info'); refillLife(); } else toast('⚠️ 지우지 못했어요', 'warn'); }; c.append(del); }
+      box.append(c); } });
+  load(); }
 // ---------- ✍️ 시 게시판 (1101l 운을 띄운 N행시 · 투표 · 걸리면 보상) ----------
 // state/kpw 운(2~4글자, 선생님) · state/kpoem/{uid} {n, w 운, t, at, ok} · state/kpoemv/{uid} 투표한 시의 기기
 const KV_RHYMES = ['한글날', '가을빛', '도서관', '우리반', '친구야', '단풍잎', '꿈나무', '반월초'];
@@ -30267,6 +30401,7 @@ function loop() {
   if (joined) { try { kvPoemRwTick(); } catch (e) { console.warn('kpoem', e); } } // ✍️ 1101l
   if (joined) { try { wcTick(); } catch (e) { console.warn('wc', e); } } /* 🔤 1102x 끝말잇기 */
   if (joined) { try { omTick(); } catch (e) { console.warn('om', e); } } /* ⚫ 1105zd 오목 */
+  try { kwsTick(dt); } catch (e) { console.warn('kws', e); } /* 📖 1105zk */
   if (joined && bldRegion()) { try { kdRoomTick(); } catch (e) { console.warn('kdr', e); } } else if (kdW.it) kdW.it.pos.set(0, -99, 0); // 🕵️ 1101k
   if (joined && esc.it) { try { escTick(); } catch (e) { console.warn('esc', e); } } // 🔐 1101a 방탈출
   if (joined) { updateHist(dt); updateSiege(dt); if (sgw.field) updateSgBots(dt); specUi(); dashStep(dt); updateOrbs(dt); updateCoinEvent(dt); }
