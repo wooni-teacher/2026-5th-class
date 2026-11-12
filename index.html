@@ -18701,6 +18701,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zv', d: '11월 12일', items: ['🐎 개마무사는 이제 「기병」: 말 위에서 검을 휘두르고 ⚡ 돌격해요', '🔥 백제 결사대: 체력이 절반 이하면 피해 +2 (끝까지 싸운다)', '🤝 고조선 청동검 전사: 우리 편이 2명 이상 가까이 있으면 피해 +2 (함께 싸우는 부족)'] },
   { id: '1105zu', d: '11월 12일', items: ['⏳ 성 공방전 새 시대 「시대를 넘은 대결」: 고조선·삼국·남북국·고려 나라 중 2~4개가 한자리에서 싸워요', '⭐ 나라마다 특수 병력: 고구려 개마무사 🐎 · 백제 결사대 · 신라 화랑 · 가야 철갑 보병 · 발해 기마 궁수 · 고려 승병 · 고조선 청동검 전사', '🏛️ 고려 인물 등용: 서희 · 강감찬 · 김윤후 · 광종 · 천리장성 · 벽란도 상인 · 처인성 백성 (+ 왕건) · 고조선: 단군왕검 · 8조법'] },
   { id: '1105zt', d: '11월 12일', items: ['🐸 새 탈것 「개구리」: 움직이면 폴짝폴짝 높이 뛰고, 쉴 때는 울음주머니가 볼록볼록해요', '🐾 동물 탈것이 동물답게 움직여요: 거북이는 뒤뚱·머리 쏙, 조랑말은 다그닥, 공룡은 쿵쿵, 돌고래는 물 위로 뛰고, 상어는 스윽, 복어는 빵빵, 고래는 물을 뿜어요'] },
   { id: '1105zs', d: '11월 11일', items: ['🧩 오목 방에 노노그램이 생겼어요! 숫자를 보고 칸을 칠해 숨은 그림 찾기 (5×5 11개 · 10×10 12개)', '🐚 퍼즐을 처음 풀면 조개를 받아요 (5×5 🐚5 · 10×10 🐚15) · 가장 빠른 기록이 남아요'] },
@@ -23094,9 +23095,9 @@ const SG_HERO = {
 SG_HERO.wanggeon.nat = ['후고구려', '고려'];
 /* ⭐ 1105zu 특수 병력: 나라마다 하나 · 2명까지 · 바탕 직업(base)의 무기·스킬을 그대로 쓰고 체력·빠르기·피해가 더해져요 · state/siege/spc/{uid} */
 const SG_SPC = {
-  bp: { n: '청동검 전사', icon: '🗡️', nat: ['고조선'], base: 'sol', hp: 2, dmg: 1, d: '비파형 동검을 든 고조선 전사 · 보병 ❤️+2 · 피해 +1' },
-  gm: { n: '개마무사', icon: '🐎', nat: ['고구려'], base: 'gen', hp: 4, ride: 'gmh', d: '쇠 갑옷을 두른 말을 탄 고구려 철갑 기병 · 장군 ❤️+4 · 말을 타서 빠르기 +30%' },
-  gs: { n: '결사대', icon: '🔥', nat: ['백제'], base: 'sol', hp: 3, dmg: 1, d: '계백 장군과 끝까지 싸운 백제 결사대 · 보병 ❤️+3 · 피해 +1' },
+  bp: { n: '청동검 전사', icon: '🗡️', nat: ['고조선'], base: 'sol', hp: 2, pack: 2, d: '비파형 동검을 든 고조선 전사 · 보병 ❤️+2 · 🤝 함께 싸우는 부족: 4걸음 안에 우리 편이 2명 이상 있으면 피해 +2' },
+  gm: { n: '개마무사', icon: '🐎', nat: ['고구려'], base: 'sol', cls: '기병', hp: 4, ride: 'gmh', d: '쇠 갑옷을 두른 말을 탄 고구려 철갑 기병 · 말 위에서 검을 휘두르고 ⚡ 돌격해요 · ❤️+4 · 빠르기 +30%' },
+  gs: { n: '결사대', icon: '🔥', nat: ['백제'], base: 'sol', hp: 3, low: 2, d: '계백 장군과 끝까지 싸운 백제 결사대 · 보병 ❤️+3 · 🔥 끝까지 싸운다: 체력이 절반 이하면 피해 +2' },
   hr: { n: '화랑', icon: '🌸', nat: ['신라', '통일 신라'], base: 'sol', hp: 2, spd: 1.2, d: '몸과 마음을 닦은 신라의 화랑 · 날쌘 보병 ❤️+2 · 빠르기 +20%' },
   cg: { n: '철갑 보병', icon: '🛡️', nat: ['가야'], base: 'sol', hp: 6, spd: 0.9, d: '철이 풍부한 가야의 쇠 갑옷 보병 · 보병 ❤️+6 (아주 튼튼) · 조금 느려요' },
   bm: { n: '기마 궁수', icon: '🏇', nat: ['발해'], base: 'arch', hp: 2, ride: 'bhh', d: '말 위에서 활을 쏘는 발해 기병 · 궁병 ❤️+2 · 말을 타서 빠르기 +30%' },
@@ -23106,6 +23107,11 @@ for (const [k, U] of Object.entries(SG_SPC)) U.k = k;
 const SG_SPC_CAP = 2;
 const sgSpcFor = (t) => { const set = sgSet(), N = set?.nat?.[t - 1]; if (!N || (set.scen && t === 2)) return null; return Object.values(SG_SPC).find(U => U.nat.includes(N.name)) || null; };
 const sgSpcOf = (u) => { const U = SG_SPC[S.siege?.spc?.[u]], t = sgTeamOf(u); if (!U || !t) return null; return sgSpcFor(t) === U && sgRoleOf(u) === U.base ? U : null; };
+function sgSpcDmg(u) { /* 🔥 1105zv 결사대(low) · 🤝 청동검 전사(pack): 조건이 맞을 때 더하는 피해 */
+  const U = sgSpcOf(u); if (!U) return 0; let d = U.dmg || 0;
+  if (U.low && sgCurHp(u) * 2 <= sgMaxHp(u)) d += U.low;
+  if (U.pack && u === backend?.uid) { const t = sgTeamOf(u), p = player.pos; let n = 0; for (const [v, r] of remotes) if (sgTeamOf(v) === t && !sgHurt(v) && Math.hypot(r.pos.x - p.x, r.pos.z - p.z) <= 4) n++; for (const [id, b] of Object.entries(sgb.list || {})) { if (b.t !== t || b.down) continue; const q = sgb.av[id]?.g.position || b; if (Math.hypot(q.x - p.x, q.z - p.z) <= 4) n++; } if (n >= 2) d += U.pack; }
+  return d; }
 const sgSpcCount = (t, but) => Object.keys(S.siege?.spc || {}).filter(u => u !== but && sgTeamOf(u) === t && sgSpcOf(u)).length;
 const SG_HERO_COST = { w: 10, i: 10, f: 10 };
 { const RR = { yunhu: 'arch', baekseong: 'sol', byeokran: 'sol', cheolli: 'sol', beop8: 'sol', jumong: 'arch', haedong: 'arch', gaya1: 'smith', onjo: 'sol', gyebaek: 'sol', hyeok: 'sol', chunchu: 'sol', gyeon: 'sol', hojok: 'sol', gaya2: 'sol' }; for (const [k, H] of Object.entries(SG_HERO)) H.r = RR[k] || 'gen'; } /* ⚔️ 1103i 인물 병사로 나가 싸울 때 무기 */
@@ -23954,7 +23960,7 @@ function sgStudyFill(box) {
 }
 function openSgStudy() { openLife('📚 공부의 힘 결과', sgStudyFill); }
 async function sgHitPlayer(uid, dmg, tt, o = {}) { // 맞은 친구 체력을 줄이고, 0이 되면 쓰러져요 (방패진이면 1 덜 아파요)
-  const sh = sgPB(backend.uid, 'sharp') ? 1 : 0, ro = sgPB(backend.uid, 'roar') ? 1 : 0; dmg += sh + ro + (sgSpcOf(backend.uid)?.dmg || 0); // ⚔️ 대장장이가 갈아 준 무기 · 📣 왕의 함성
+  const sh = sgPB(backend.uid, 'sharp') ? 1 : 0, ro = sgPB(backend.uid, 'roar') ? 1 : 0; dmg += sh + ro + sgSpcDmg(backend.uid); // ⚔️ 대장장이가 갈아 준 무기 · 📣 왕의 함성
   if (o.stun && !sgHurt(uid)) backend.sgPBuffSet(uid, 'stun', backend.now() + SG_STUN); // 🔨 어질어질
   if (sgKingSafe(uid)) { toast('🏰 성 안에 있는 왕은 맞지 않아요! 성 밖으로 나올 때를 노려요', 'info'); return; }
   if (sgPB(uid, 'shield')) dmg = Math.max(1, dmg - 1);
@@ -24084,7 +24090,7 @@ function openSgRole() {
     const list = el2('div', 'sg-roles');
     { const U = sgSpcFor(sgMine()); if (U && !(sgMyRole() === 'pow' && sgHasRole(backend.uid))) { /* ⭐ 1105zu 특수 병력 */
       const R = SG_ROLES[U.base], on = !!sgSpcOf(backend.uid), n = sgSpcCount(sgMine(), backend.uid), full = !on && n >= SG_SPC_CAP, b = el2('button', 'sg-role' + (on ? ' on' : '')); b.style.cssText = 'border:3px solid #E8C547;background:#FFF8DC'; if (full) { b.disabled = true; b.style.opacity = '0.55'; }
-      const txt = el2('span', 'sg-role-txt'); txt.append(el2('b', '', `⭐ 특수 병력 · ${U.n}`), el2('span', 'sg-role-tag', U.d), el2('span', 'sg-role-can', `${R.icon} ${R.name}의 무기와 스킬을 그대로 써요 · 나라마다 ${SG_SPC_CAP}명까지`)); for (const c of R.can) txt.append(el2('span', 'sg-role-can', c));
+      const txt = el2('span', 'sg-role-txt'); txt.append(el2('b', '', `⭐ 특수 병력 · ${U.n}${U.cls ? ` (${U.cls})` : ''}`), el2('span', 'sg-role-tag', U.d), el2('span', 'sg-role-can', `${U.cls ? `🐎 말을 탄 ${R.name}처럼` : `${R.icon} ${R.name}의`} 무기와 스킬을 그대로 써요 · 나라마다 ${SG_SPC_CAP}명까지`)); for (const c of R.can) txt.append(el2('span', 'sg-role-can', c));
       b.append(el2('span', 'sg-role-ic', U.icon), txt, el2('span', 'sg-role-n', on ? `✅ 지금 역할 (${n + 1}/${SG_SPC_CAP})` : full ? `자리 없음 (${n}/${SG_SPC_CAP})` : `빈 자리 ${SG_SPC_CAP - n} (${n}/${SG_SPC_CAP})`));
       b.onclick = async () => { if (on) { closeLife(); return; } if (!sgRoleOk()) { toast('⏳ 역할은 🗺️ 작전 시간에 바꿀 수 있어요', 'info'); return; } if (sgSpcCount(sgMine(), backend.uid) >= SG_SPC_CAP) { toast(`😅 ${U.n} 자리가 다 찼어요`, 'warn'); refillLife(); return; }
         if (!(sgHasRole(backend.uid) && sgMyRole() === U.base) && sgRoleCount(sgMine(), U.base, backend.uid) >= sgRoleCap(sgMine(), U.base, backend.uid)) { toast(`😅 ${R.icon} ${R.name} 자리가 다 찼어요 (${U.n}은 ${R.name} 자리를 써요)`, 'warn'); return; }
@@ -24112,7 +24118,7 @@ const SG_GUIDE = [
   ['🎭', '직업과 스킬', null],
   ['🚩', '거점(점령지) 효과', ['거점 동그라미 안에 <b>우리 편만</b> 서 있으면 깃발이 올라가요. 상대가 같이 있으면 멈춰요. 👑 왕은 2명 몫이에요.', '차지한 거점은 <b>3초마다</b> 점수와 자원을 줘요.', '🏯 <b>산성</b>(가운데): +2점 · ⚒️ 대장장이가 산성 투석기로 <b>원하는 상대 성문</b>을 골라 쏠 수 있어요 (성문 -10)', '⛏️ <b>철광산 ①②</b>: +1점 · ⛓️ 철 +2', '🌾 <b>곡창</b>: +1점 · 🍚 군량 +2 · 쓰러져도 빨리 일어나요 (12초 → 7초)', '⛵ <b>나루터</b>: +1점 · 🪵 목재 +2 · 우리 편 모두 발이 빨라져요', '🔥 <b>봉수대</b>: +1점 · 다른 거점을 1.3배 빨리 차지해요']],
   ['🏛️', '역사 인물 고용', null, 'hero'],
-  ['⭐', '특수 병력', ['나라마다 그 나라를 대표하는 <b>특수 병력</b>이 있어요. 🎭 역할 고르기 맨 위에서 골라요 (나라마다 2명까지).', ...Object.values(SG_SPC).map(U => `${U.icon} <b>${U.n}</b> (${U.nat.join('·')}): ${U.d}`), '특수 병력은 바탕 직업(장군·보병·궁병) 자리를 함께 써요.', '⏳ <b>시대를 넘은 대결</b>: 여러 시대 나라가 한자리에 모인 상상 전투예요. 나라 창고 문제와 인물 등용은 <b>우리 나라 시대 학습지</b>에서 나와요. 실제 역사에서 이 나라들이 함께 싸운 것은 아니에요!']],
+  ['⭐', '특수 병력', ['나라마다 그 나라를 대표하는 <b>특수 병력</b>이 있어요. 🎭 역할 고르기 맨 위에서 골라요 (나라마다 2명까지).', ...Object.values(SG_SPC).map(U => `${U.icon} <b>${U.n}</b> (${U.nat.join('·')}): ${U.d}`), '특수 병력은 바탕 직업(보병·궁병) 자리를 함께 써요. 🐎 기병은 말을 탄 보병이에요 (검 · ⚡ 돌격).', '⏳ <b>시대를 넘은 대결</b>: 여러 시대 나라가 한자리에 모인 상상 전투예요. 나라 창고 문제와 인물 등용은 <b>우리 나라 시대 학습지</b>에서 나와요. 실제 역사에서 이 나라들이 함께 싸운 것은 아니에요!']],
   ['🪵', '자원은 어디에 써요?', ['자원은 나라가 함께 써요. 거점과 나라 창고 문제로 모아요.', '⛓️ <b>철</b>: ⚔️ 무기 갈기(3) · 🛡️ 갑옷(가죽 4 → 철 8) · ⛓️ 강철 무기(15, 60초 피해 +1 · 성문 2배) · 🏹 포탑(6) · 🪨 산성 투석기(6) · 🧱 성벽 강화(5 → 15)', '🪵 <b>목재</b>: 🪵 목책(6) · 🏹 포탑(6) · 🪨 산성 투석기(8) · 🧱 성벽 강화: 목책 → 토성(20) → 석성(30)', '🍚 <b>군량</b>: 🏛️ 역사 인물 고용(10)', '🏛️ 인물 고용은 🪵10 ⛓️10 🍚10이 들어요.']],
 
   ['🏳️', '성 함락과 포로', ['① 상대 <b>성문을 부숴요</b> (체력이 0이 되면 +15점 · 45초 뒤에 다시 서요)', '② 성 한가운데 <b>🚩 깃발 자리</b>에 들어가요', '③ 깃발 자리에 <b>지키는 친구보다 우리 편이 더 많으면</b> 차지가 올라가요. 100%가 되면 함락! (+50점)', '👑 <b>왕을 쓰러뜨리면</b> 30초 동안 그 성을 지키는 힘이 절반이 돼요. 왕을 먼저 잡고 쳐들어가요!', '🏰 성문이 서 있을 때 성 안의 왕은 맞지 않아요. 성문이 부서지면 왕도 맞아요.', '⛓️ 함락된 나라 친구들은 이긴 나라의 <b>포로</b>가 돼서 그 나라 편으로 싸워요 (❤️ 4 · 주먹만)', '🛡️ 지키는 법: 대장장이가 성문을 고치고, 모두 깃발 자리로 모여요. 성문이 부서진 나라는 6초 늦게 일어나요.']],
@@ -24470,7 +24476,7 @@ function updateSgBots(dt) {
   for (const id of Object.keys(sgb.av)) if (!sgb.list[id]) { scene.remove(sgb.av[id].g); delete sgb.av[id]; }
 }
 async function sgHitBot(id, dmg, pw = 0) { // 학생이 컴퓨터 병사를 맞혔어요
-  const sh = sgPB(backend.uid, 'sharp') ? 1 : 0, ro = sgPB(backend.uid, 'roar') ? 1 : 0; dmg += sh + ro + (sgSpcOf(backend.uid)?.dmg || 0); // ⚔️ 갈아 준 무기 · 📣 왕의 함성
+  const sh = sgPB(backend.uid, 'sharp') ? 1 : 0, ro = sgPB(backend.uid, 'roar') ? 1 : 0; dmg += sh + ro + sgSpcDmg(backend.uid); // ⚔️ 갈아 준 무기 · 📣 왕의 함성
   const b = sgb.list[id]; if (!b) return;
   sgHitPop(sgb.av[id]?.g.position || b, '', dmg, pw, sh, ro);
   if (sgBotHost()) { const sim = sgb.sim[id]; if (sim && !sim.down) { sgBotHurt(sim, dmg); toast(sim.down ? '🎯 컴퓨터 병사를 쓰러뜨렸어요!' : `🎯 명중! 컴퓨터 병사 ❤️ ${sim.hp}/${sim.mx}`, 'success'); } return; }
@@ -24683,7 +24689,7 @@ function renderSgBar(force) {
   const k = [Math.ceil(cd * 10), sgDashLeft(), sgQLeft(), sgMultiLeft(), Math.round(sgDrawK() * 8), !!sgw.draw, sgBreak(), Math.ceil(((sgw.waveCd || 0) - performance.now()) / 1000), sgw.healTarget, sgPB(sgw.healTarget || backend.uid, 'sharp'), sgPB(backend.uid, 'sharp'), !!sgw.fireAim, sgKingSafe(backend.uid), w, hurt, role, (sgRes(sgMine()).w || 0) >= 4, sgCurHp(backend.uid), sgMaxHp(backend.uid), ['horn', 'shield', 'fire'].map(q => sgBuff(sgMine(), q)).join(), JSON.stringify(sgRes(sgMine()))].join('|'); if (!force && k === sgw.barKey2) return; sgw.barKey2 = k;
   const me = backend.uid, R = SG_ROLES[role] || SG_ROLES.sol;
   const sharpTag = sgPB(backend.uid, 'sharp') ? ' · ⚔️+1' : '';
-  $('sgAmmo').textContent = w ? '🏁 전쟁이 끝났어요' : hurt ? '🤕 쓰러졌어요 · 곧 우리 성에서 다시 일어나요' : `${sgSpcOf(me) ? `⭐${sgSpcOf(me).icon} ${sgSpcOf(me).n}` : `${R.icon} ${R.name}`} · ❤️ ${sgCurHp(me)}/${sgMaxHp(me)}${sharpTag}${sgArm(me) ? ` · ${SG_ARM[sgArm(me)].name}` : ''}${role === 'king' ? ` · 🗡️ 왕의 검 (피해 ${SG_KING.pd})${sgKingSafe(backend.uid) ? ' · 🏰 성 안이라 안전해요' : ' · ⚠️ 성 밖이에요!'}` : role === 'sch' ? ` · ✨ 기운 구슬 (피해 ${SG_FAN.pd})` : role === 'sol' ? ` · 🗡️ 검 (피해 ${sgSwordDmg()})` : role === 'smith' ? ` · 🔨 망치 (피해 ${SG_HAMMER.pd + Math.floor(statTier('read') / 2)} · 성문 ${SG_HAMMER.gate})` : role === 'gen' ? ` · 🗡️ 큰 칼 (피해 ${SG_GEN.pd + sgPow('math')})` : role === 'pow' ? ' · 👊 주먹 (피해 1)' : role === 'arch' ? (sgw.draw ? ` · 🏹 당기는 중 ${'▮'.repeat(Math.round(sgDrawK() * 8))}${'▯'.repeat(8 - Math.round(sgDrawK() * 8))} ${sgDrawK() >= 1 ? '가득! 놓아요' : ''}` : ` · 🏹 활 (가득 당기면 피해 ${3 + sgPow('eng')})`) : ` · ${W.icon} ${W.name} (피해 ${sgPlayerDmg()})`}${sgBreak() ? ' · 🗺️ 작전 시간' : ''}`;
+  $('sgAmmo').textContent = w ? '🏁 전쟁이 끝났어요' : hurt ? '🤕 쓰러졌어요 · 곧 우리 성에서 다시 일어나요' : `${sgSpcOf(me) ? `⭐${sgSpcOf(me).icon} ${sgSpcOf(me).n}${sgSpcDmg(me) ? ` 💥+${sgSpcDmg(me)}` : ''}` : `${R.icon} ${R.name}`} · ❤️ ${sgCurHp(me)}/${sgMaxHp(me)}${sharpTag}${sgArm(me) ? ` · ${SG_ARM[sgArm(me)].name}` : ''}${role === 'king' ? ` · 🗡️ 왕의 검 (피해 ${SG_KING.pd})${sgKingSafe(backend.uid) ? ' · 🏰 성 안이라 안전해요' : ' · ⚠️ 성 밖이에요!'}` : role === 'sch' ? ` · ✨ 기운 구슬 (피해 ${SG_FAN.pd})` : role === 'sol' ? ` · 🗡️ 검 (피해 ${sgSwordDmg()})` : role === 'smith' ? ` · 🔨 망치 (피해 ${SG_HAMMER.pd + Math.floor(statTier('read') / 2)} · 성문 ${SG_HAMMER.gate})` : role === 'gen' ? ` · 🗡️ 큰 칼 (피해 ${SG_GEN.pd + sgPow('math')})` : role === 'pow' ? ' · 👊 주먹 (피해 1)' : role === 'arch' ? (sgw.draw ? ` · 🏹 당기는 중 ${'▮'.repeat(Math.round(sgDrawK() * 8))}${'▯'.repeat(8 - Math.round(sgDrawK() * 8))} ${sgDrawK() >= 1 ? '가득! 놓아요' : ''}` : ` · 🏹 활 (가득 당기면 피해 ${3 + sgPow('eng')})`) : ` · ${W.icon} ${W.name} (피해 ${sgPlayerDmg()})`}${sgBreak() ? ' · 🗺️ 작전 시간' : ''}`;
   const ic = role === 'sol' || role === 'king' || role === 'gen' ? '🗡️' : role === 'sch' ? '✨' : role === 'smith' ? '🔨' : role === 'pow' ? '👊' : role === 'arch' ? '🏹' : W.icon, verb = role === 'sol' || role === 'king' || role === 'gen' ? '베기' : role === 'sch' ? '구슬' : role === 'smith' ? '치기' : role === 'pow' ? '주먹' : role === 'arch' ? '꾹 당기기' : '쏘기';
   $('sgThrow').textContent = sgw.draw ? `🏹 ${Math.round(sgDrawK() * 100)}% · 놓으면 쏴요` : cd > 0 ? `${ic} ${cd.toFixed(1)}` : `${ic} ${verb} (F)`; $('sgThrow').disabled = !!w || hurt || (cd > 0 && !sgw.draw) || sgBreak();
   $('sgThrow').classList.toggle('hidden', !!w);
