@@ -415,6 +415,8 @@
     width: 52px; height: 52px; padding: 0; border-radius: 50%; font-size: 26px; background: #fff;
   }
   #rideBtn.on { background: #FFE066; }
+  #swAct { right: calc(132px + env(safe-area-inset-right, 0px)); } body:not(.touch) #swAct { right: calc(190px + env(safe-area-inset-right, 0px)); } /* ☁️ 1105zz 💬🔊😊 줄과 겹치지 않게 */
+  #swExit { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(72px + var(--safe-top, 0px)); z-index: 27; font-size: 15px; padding: 7px 12px; background: #FFD9D9; }
   body:has(#emoteBar:not(.hidden)) #rideBtn { visibility: hidden; }
   #stageBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + var(--safe-bottom, 0px)); z-index: 26; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 8px 12px; max-width: 94vw; }
   .mole-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: min(380px, 86vw); margin: 10px auto; }
@@ -11153,7 +11155,11 @@ const rideGoldMat = () => rideGoldM ||= new THREE.MeshStandardMaterial({ color: 
 const rideAuroraMat = () => rideAuroraM ||= new THREE.MeshBasicMaterial({ color: 0x9AF0FF, transparent: true, opacity: 0.8, toneMapped: false });
 function rideDecorate(a, R0, k, q) { // 색 바꾸고 장식 달기 (rideBuild 뒤)
   const ci = Math.floor(q / 10), ai = q % 10, main = RIDE_MAIN[k], col = RIDE_COLORS[ci]?.c;
-  if (col && main != null) { const from = M(main), to = RIDE_COLORS[ci]?.star ? rideGoldMat() : M(col); R0.g.traverse(m => { if (m.isMesh && m.material === from) m.material = to; }); if (RIDE_COLORS[ci]?.star) R0.gold = true; } // ⭐ 금색은 반짝이는 금속
+  if (col && main != null) { const star = !!RIDE_COLORS[ci]?.star, from = M(main), to = star ? rideGoldMat() : M(col); /* 🎨 1105zz 바탕색만이 아니라 같은 계열의 진한·옅은 색(다리·코·귀·주둥이 등)도 새 색의 진하기에 맞춰 바꿔요 */
+    const CS = THREE.SRGBColorSpace, hm = {}, hs = {}, hc = {}; new THREE.Color(main).getHSL(hm, CS); new THREE.Color(star ? 0xE8C547 : col).getHSL(hc, CS); /* 눈에 보이는 색(sRGB)으로 비교해요 */ const gray = hm.s < 0.15, memo = {};
+    const shadeOf = (hex) => { if (hex in memo) return memo[hex]; new THREE.Color(hex).getHSL(hs, CS); let ok = hs.l >= 0.15 && hs.l <= 0.93; if (ok) ok = gray ? hs.s < 0.18 : hs.s >= 0.15 && Math.min(Math.abs(hs.h - hm.h), 1 - Math.abs(hs.h - hm.h)) < 0.05 && Math.abs(hs.s - hm.s) < 0.35;
+      return memo[hex] = ok ? M(new THREE.Color().setHSL(hc.h, Math.max(0, Math.min(1, hc.s * (gray || hm.s < 0.01 ? 1 : hs.s / hm.s))), Math.max(0.06, Math.min(0.92, hc.l + (hs.l - hm.l))), CS).getHex()) : null; };
+    R0.g.traverse(m => { if (!m.isMesh || !m.material?.color || (m.material.emissive && m.material.emissive.getHex() !== 0)) return; /* 반짝이는 장식은 그대로 */ if (m.material === from) { m.material = to; return; } const sm = shadeOf(m.material.color.getHex()); if (sm) m.material = sm; }); if (star) R0.gold = true; } // ⭐ 금색은 반짝이는 금속
   if (ai === 9) { const ring = new THREE.Mesh(RIDE_RING, rideAuroraMat()); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.12; R0.g.add(ring); R0.spin = ring; R0.acc = 9; return; } // 💫 오로라 고리
   const A = RIDE_ACC[ai]; if (!A || !ai || !RIDE_ANCHOR[k]) return;
   const [x, y, z] = RIDE_ANCHOR[k], o = { solid: false }, q2 = new THREE.Group(); q2.position.set(x, y, z); R0.g.add(q2); R0.acc = ai;
@@ -18748,6 +18754,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zz', d: '11월 16일', items: ['🎨 탈것 색 바꾸기: 코끼리·곰 등 다리·코·귀처럼 진하거나 옅은 부분도 새 색에 맞춰 바뀌어요', '☁️ 하늘 섬: 쏘기·스킬 버튼이 💬🔊😊 버튼과 겹치지 않게 옮겼어요', '🚪 하늘 섬 연습장(구경 중에도) 오른쪽 위 「나가기」로 언제든 광장으로'] },
   { id: '1105zy', d: '11월 14일', items: ['☁️ 새 놀이 「하늘 섬 깃발전」! 페가수스를 타고 하늘 섬 7개의 깃발을 차지해요 (섬 위에서 E → 영어 문제)', '⚡ 그리스 로마 신 모시기: 제우스 번개 · 포세이돈 폭풍우 · 아이올로스 돌풍 · 아폴론 햇살 · 보레아스 눈보라 · 아테나 · 헤르메스 · 헤파이스토스', '🏝️ 날씨 섬: 번개(Stormy) · 바람(Windy) · 햇빛(Sunny) · 비구름(Rainy) · 눈꽃(Snowy) · 무지개(Rainbow) 섬마다 힘이 달라요', '🎯 역할 체험장이 두 파트로: ① 지상 공방전 ② 하늘 섬 깃발전 (🌀 포털에서 골라요)', '🔱 심해 방탈출은 문을 닫았어요. 재밌게 즐겨 줘서 고마워요!'] },
   { id: '1105zx', d: '11월 13일', items: ['🏰 성 공방전: 성문이 서 있는 동안 성 안에 있는 병사는 성 밖에서 때릴 수 없어요 (화살도 · 성문부터 부숴요!)', '🐾 내 펫 타기! 집에서 키우는 펫이 커져서 탈것이 돼요 (🚲 탈것 가게 맨 위 · 🦎 히로도!)', '🐘 새 탈것 코끼리 · 🐻 곰', '🚪 점프맵에 「나가기」 버튼: 도전 중에도 바로 밖으로 나가요'] },
   { id: '1105zw', d: '11월 12일', items: ['🌸 신라 화랑 → 궁병: 시위를 40% 빨리 당겨요', '⚒️ 가야 「철기 장인」(대장장이): 갑옷·무기 갈기에 드는 철이 절반', '🙏 고려 승병 → 장군: 회오리 베기 범위 1.4배'] },
@@ -30863,8 +30870,10 @@ function swLook(a, u) { const G = swG(), t = G.on ? G.team?.[u] | 0 : 0, on = !!
   if (!a.swObjs) { if (!on) return; const cape = box(a.rig, 0.8, 0.9, 0.08, 0xFFFFFF, 0, 1.0, -0.36, { solid: false }); cape.material = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.8 }); const bub = new THREE.Mesh(SPH_MID, new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.28, depthWrite: false })); bub.scale.setScalar(1.6); bub.position.y = 1.4; a.g.add(bub); a.swObjs = { cape, bub, lab: makeLabel(a.g, [''], 0.5, 0, 3.6, 0) }; }
   const O = a.swObjs; O.cape.visible = O.lab.visible = on; O.bub.visible = !!sh; if (!on) return; const T = SW_TEAM[t], R = SW_ROLE[swRole(u)]; O.cape.material.color.setHex(T.col); O.lab.userData.set([swIsDown(u) ? '💫' : `${T.icon}${R.icon} ❤️${swHp(u)}`]); }
 function swHudDraw() { const G = swG(), on = swHere() && !!G.on; if (!sww.hud) { const h = sww.hud = document.createElement('div'); h.id = 'swHud'; h.className = 'sticker hidden'; h.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(108px + var(--safe-top,0px));z-index:24;padding:6px 12px;border-radius:16px;background:rgba(255,255,255,.94);font-size:15px;font-weight:700;text-align:center;max-width:94vw;pointer-events:none'; document.body.append(h);
-    const a = sww.act = document.createElement('div'); a.id = 'swAct'; a.className = 'hidden'; a.style.cssText = 'position:fixed;right:calc(132px + env(safe-area-inset-right,0px));bottom:calc(38px + var(--safe-bottom,0px));z-index:27;display:flex;gap:8px;align-items:flex-end;flex-direction:row-reverse'; document.body.append(a); }
-  const modal = !$('lifePanel').classList.contains('hidden'); sww.hud.classList.toggle('hidden', !on || modal); sww.act.classList.toggle('hidden', !on || !swCan() || modal); if (!on) return; const now = swNow(), me = swMe(), t = swMine(), left = G.end === Infinity ? -1 : Math.max(0, Math.ceil((G.end - now) / 1000));
+    const a = sww.act = document.createElement('div'); a.id = 'swAct'; a.className = 'hidden'; a.style.cssText = 'position:fixed;bottom:calc(34px + var(--safe-bottom,0px));z-index:27;display:flex;gap:8px;align-items:flex-end;flex-direction:row-reverse'; document.body.append(a); }
+  if (!sww.exit) { const x = sww.exit = document.createElement('button'); x.id = 'swExit'; x.className = 'btn hidden'; x.textContent = '🚪 나가기'; x.onclick = () => { if (!swHere()) return; closeModals(); travelTo('home', true); }; document.body.append(x); } /* 🚪 1105zz 연습장·구경 중에는 언제든 나가요 */
+  const modal = !$('lifePanel').classList.contains('hidden'); sww.exit.classList.toggle('hidden', !on || modal || (G !== swL && !!swMine() && swNow() < (G.end || 0)) && !isTeacher);
+  sww.hud.classList.toggle('hidden', !on || modal); sww.act.classList.toggle('hidden', !on || !swCan() || modal); if (!on) return; const now = swNow(), me = swMe(), t = swMine(), left = G.end === Infinity ? -1 : Math.max(0, Math.ceil((G.end - now) / 1000));
   const sc = Array.from({ length: G.n || 2 }, (_, k) => k + 1).filter(k => G !== swL || k === 1).map(k => `<span style="color:#${SW_TEAM[k].col.toString(16).padStart(6, '0')}">${SW_TEAM[k].icon}${k === t ? '<u>' : ''}${swScore(k)}${k === t ? '</u>' : ''}</span>`).join(' · ');
   const R = SW_ROLE[swRole(me)], isl = SW_ISL.map((I, i) => { const ow = G.isl?.[i]?.t; return `<span style="opacity:${ow ? 1 : 0.35}">${ow ? SW_TEAM[ow].icon : '⚪'}</span>`; }).join('');
   const pre = G !== swL && now < (G.at || 0) ? Math.ceil((G.at - now) / 1000) : 0;
