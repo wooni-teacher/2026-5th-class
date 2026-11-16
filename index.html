@@ -1566,6 +1566,9 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <p class="hint">하늘 경기장에서 팀별로 페가수스를 타고 섬 7개의 깃발을 차지해요. 섬 위에서 E → 영어 문제(문제 범위의 Lesson)를 맞히면 깃발이 올라가고, 차지한 시간만큼 점수가 쌓여요. 신전에서 역할(돌격·기수·호위·정비)과 그리스 로마 신(제우스 번개 · 포세이돈 폭풍우 등)을 골라요. 경기가 없을 때는 연습장이에요.</p>
     <div class="row-center wrap"><label for="tpSwN">팀</label><select id="tpSwN" class="tinput" style="width:auto"><option value="2">2팀</option><option value="3" selected>3팀</option><option value="4">4팀</option></select><label for="tpSwMin">시간</label><select id="tpSwMin" class="tinput" style="width:auto"><option value="6">6분</option><option value="10" selected>10분</option><option value="15">15분</option><option value="20">20분</option></select><button class="btn" id="tpSwStart" style="background:#FFD23C">☁️ 시작</button><button class="btn danger" id="tpSwStop">닫기</button></div>
     <p class="hint" id="tpSwInfo"></p>
+    <div class="field">팀 정하기 (자동 = 사람이 적은 팀으로)</div>
+    <div id="tpSwList"></div><p class="hint" id="tpSwSum" style="margin:4px 0"></p>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSwMix" type="button" style="background:#fff">🔀 팀 섞기</button><button class="btn" id="tpSwStat" type="button" style="background:#fff" title="능력치(영어·수학·사회 + 독서×2)가 팀마다 비슷하게">💪 능력치로 고르게</button><button class="btn" id="tpSwClr" type="button" style="background:#fff">↩️ 모두 자동</button></div>
 
     <h3>⚔️ 성 공방전 (따로 된 큰 전쟁터)</h3>
     <p class="hint" id="tpSgNow"></p>
@@ -18756,6 +18759,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zz6', d: '11월 16일', items: ['🧑‍🏫 하늘 섬 깃발전 팀 정하기: 학생마다 팀 칸 · 🔀 팀 섞기 · 💪 능력치로 고르게 (공성전과 같아요)'] },
   { id: '1105zz5', d: '11월 16일', items: ['🏹 하늘 섬 쏘기가 공성전 궁병처럼! F(또는 🏹 버튼)를 꾹 눌러 당기고 놓으면 쏴요 · 오래 당길수록 멀리, 가득 당기면 더 세게', '🎯 당기는 동안 하늘에 겨눔 표시가 보여요 (빨강 = 상대를 겨눴어요)', '🖥️ 하늘 섬 화면이 공성전과 같은 꼴: 오른쪽 위 팀 점수 막대 · 아래 가운데 쏘기·스킬·신의 힘 버튼'] },
   { id: '1105zz4', d: '11월 16일', items: ['🤖 하늘 섬 연습장에 AI 상대! 🌊 바다 팀 AI가 날아다니며 섬을 빼앗고 번개 구슬을 쏴요', '🏛️ 신전에서 AI 수(0~4명)와 세기(쉬움·보통·어려움)를 골라요 · 점수·깃발 처음부터 버튼'] },
   { id: '1105zz3', d: '11월 16일', items: ['🎯 하늘 섬 쏘기가 쉬워졌어요: 더 멀리(32걸음)서 겨누고, 맞는 범위가 넓어지고, 번개 구슬이 겨눈 상대를 살짝 따라가요'] },
@@ -31026,13 +31030,31 @@ function swResult() { const G = S.sw; if (!G) return; const n = G.n || 2, rank =
 addEventListener('keydown', (e) => { if (!swHere() || !swCan() || e.repeat || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '') || !$('lifePanel').classList.contains('hidden')) return; const k = e.key.toLowerCase(); if (k === 'f') { e.preventDefault(); swDrawStart(); } else if (k === 'q') { e.preventDefault(); swSkill(); } else if (k === '1' || k === '2') { const gods = Object.values(swG().god?.[swMine()] || {}).filter(x => SW_GOD[x]?.act); if (gods[+k - 1]) { e.preventDefault(); swCast(gods[+k - 1]); } } }, true);
 addEventListener('keyup', (e) => { if (e.key.toLowerCase() === 'f' && sww.draw) swDrawRelease(); }); /* 🏹 1105zz5 F 를 떼면 쏴요 */
 /* ---------- 선생님 ---------- */
-async function swStart() { if (!isTeacher) return; if (S.siege?.on) { toast('⚔️ 성 공방전이 열려 있어요. 먼저 끝내요', 'warn'); return; } const n = +$('tpSwN').value || 3, min = +$('tpSwMin').value || 10, list = sgStudents().map(([u]) => u).sort(() => Math.random() - 0.5); if (list.length < 1) { toast('접속한 학생이 없어요', 'warn'); return; }
-  if (!(await confirmAction({ title: '☁️ 하늘 섬 깃발전을 시작할까요?', body: `${n}팀 · ${min}분 · 학생 ${list.length}명을 고르게 나눠요. 학생들은 하늘 경기장으로 올라가요.`, okText: '시작' }))) return;
-  const team = {}; list.forEach((u, i) => { team[u] = i % n + 1; }); const at = backend.now() + 12000; await adminDo({ sw: { on: 1, r: Date.now().toString(36), n, at, end: at + min * 60000, team } }, `☁️ 하늘 섬 깃발전을 시작했어요 (${n}팀 · ${min}분)`); }
+/* 👥 1105zz6 팀 정하기 (공성전과 같은 꼴): 학생마다 팀 칸 · 🔀 팀 섞기(사람 수 고르게 무작위) · 💪 능력치로 고르게(힘 센 학생부터 사람 적고 → 힘 합 작은 팀으로) · 자동 칸은 시작할 때 사람이 적은 팀으로 */
+sww.assign = {};
+function swBalance(n, list, byStat) { sww.assign = {}; const cnt = {}, sum = {}, L = hShuffle([...list]).map(([u, tg]) => [u, byStat ? (sgPowerOf(u, tg) ?? 0) : 0]); if (byStat) L.sort((a, b) => b[1] - a[1]);
+  for (const [u, pw] of L) { let best = 0; for (let t = 1; t <= n; t++) { const c = cnt[t] || 0, s2 = sum[t] || 0; if (!best || c < (cnt[best] || 0) || (c === (cnt[best] || 0) && byStat && s2 < (sum[best] || 0))) best = t; } sww.assign[u] = best; cnt[best] = (cnt[best] || 0) + 1; sum[best] = (sum[best] || 0) + pw; } }
+function swTeamPlan(n, list) { const team = {}, cnt = {}; for (const [u] of list) { const v = sww.assign[u]; if (v >= 1 && v <= n) { team[u] = v; cnt[v] = (cnt[v] || 0) + 1; } } for (const [u] of hShuffle([...list])) if (!team[u]) { let best = 1; for (let t = 1; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; team[u] = best; cnt[best] = (cnt[best] || 0) + 1; } return team; }
+function fillSwList(force) { const box = $('tpSwList'); if (!box) return; const G = S.sw?.on ? S.sw : null, n = G ? G.n : +$('tpSwN').value || 3, list = sgStudents(), cur = G ? G.team || {} : sww.assign;
+  const key = [n, !!G, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?')).join(','), JSON.stringify(cur)].join('|'); if (!force && box.dataset.k === key) return; if (box.contains(document.activeElement) && document.activeElement.tagName === 'SELECT') return; box.dataset.k = key; box.textContent = '';
+  if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); $('tpSwSum').textContent = ''; return; }
+  const cnt = {}, sum = {}; list.forEach(([u, tg], i) => { const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot'); dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
+    row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
+    const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b);
+    const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 팀`); if (!G) sel.append(new Option('자동', '0')); for (let t = 1; t <= n; t++) sel.append(new Option(`${SW_TEAM[t].icon} ${SW_TEAM[t].n}`, String(t))); const v = cur[u] | 0; sel.value = String(v >= 1 && v <= n ? v : 0); if (v >= 1 && v <= n) { cnt[v] = (cnt[v] || 0) + 1; sum[v] = (sum[v] || 0) + (pw || 0); }
+    sel.onchange = async () => { const t = +sel.value; if (G) { if (!t) { fillSwList(true); return; } const r = await backend.adminUpdate({ [`sw/team/${u}`]: t }); toast(r?.ok ? `${SW_TEAM[t].icon} ${SW_TEAM[t].n} 팀으로 옮겼어요` : '바꾸지 못했어요 (database.rules.json 확인)', r?.ok ? 'info' : 'warn'); } else { if (t) sww.assign[u] = t; else delete sww.assign[u]; } fillSwList(true); }; row.append(sel); box.append(row); });
+  $('tpSwSum').textContent = Array.from({ length: n }, (_, k) => k + 1).map(t => `${SW_TEAM[t].icon} ${cnt[t] || 0}명 💪${sum[t] || 0}`).join(' · ') + (G ? ' (경기 중 · 칸을 바꾸면 바로 옮겨요)' : ''); }
+$('tpSwMix')?.addEventListener('click', () => { if (S.sw?.on) { toast('🔀 팀 섞기는 시작하기 전에 써요 (경기 중에는 학생 칸에서 바꿔요)', 'info'); return; } const list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } swBalance(+$('tpSwN').value || 3, list, false); fillSwList(true); playSfx('pick'); toast('🔀 팀을 섞었어요 (사람 수는 고르게)', 'success'); });
+$('tpSwStat')?.addEventListener('click', () => { if (S.sw?.on) { toast('💪 능력치로 나누기는 시작하기 전에 써요', 'info'); return; } const list = sgStudents(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; } swBalance(+$('tpSwN').value || 3, list, true); fillSwList(true); toast(`💪 능력치가 팀마다 비슷하게 나눴어요${list.some(([u, tg]) => sgPowerOf(u, tg) == null) ? ' (💪? 학생은 0으로 쳤어요)' : ''}`, 'success'); });
+$('tpSwClr')?.addEventListener('click', () => { if (S.sw?.on) return; sww.assign = {}; fillSwList(true); });
+$('tpSwN')?.addEventListener('change', () => { const n = +$('tpSwN').value || 3; for (const u of Object.keys(sww.assign)) if (sww.assign[u] > n) delete sww.assign[u]; fillSwList(true); });
+async function swStart() { if (!isTeacher) return; if (S.siege?.on) { toast('⚔️ 성 공방전이 열려 있어요. 먼저 끝내요', 'warn'); return; } const n = +$('tpSwN').value || 3, min = +$('tpSwMin').value || 10, stu = sgStudents(), list = stu.map(([u]) => u); if (list.length < 1) { toast('접속한 학생이 없어요', 'warn'); return; }
+  if (!(await confirmAction({ title: '☁️ 하늘 섬 깃발전을 시작할까요?', body: `${n}팀 · ${min}분 · 학생 ${list.length}명 (정한 팀대로 · 자동 칸은 사람이 적은 팀으로). 학생들은 하늘 경기장으로 올라가요.`, okText: '시작' }))) return;
+  const team = swTeamPlan(n, stu); const at = backend.now() + 12000; await adminDo({ sw: { on: 1, r: Date.now().toString(36), n, at, end: at + min * 60000, team } }, `☁️ 하늘 섬 깃발전을 시작했어요 (${n}팀 · ${min}분)`); }
 async function swStop() { if (!isTeacher || !S.sw) return; if (!(await confirmAction({ title: '하늘 섬 깃발전을 닫을까요?', body: '경기가 끝나고 연습장으로 돌아가요.', okText: '닫기' }))) return; await adminDo({ sw: null }, '☁️ 하늘 섬 깃발전을 닫았어요'); }
 function swAdminFill() { const w = $('tpSwInfo'); if (!w) return; const G = S.sw; const key = G?.on ? `${G.r}|${Math.floor(backend.now() / 2000)}` : 'off'; if (w.dataset.k === key) return; w.dataset.k = key; $('tpSwStart').disabled = !!G?.on; $('tpSwStop').disabled = !G?.on;
   if (!G?.on) { w.textContent = '지금은 연습장이에요. 학생들은 🌀 포털 → 「☁️ 하늘 섬 연습」으로 미리 연습할 수 있어요.'; return; } const left = Math.max(0, Math.ceil((G.end - backend.now()) / 1000)); w.textContent = `${left ? `⏱️ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : '🏁 끝났어요 (닫기를 눌러요)'} · ` + Array.from({ length: G.n }, (_, k) => k + 1).map(t => `${SW_TEAM[t].icon} ${SW_TEAM[t].n} ${swScore(t)}점 (${Object.values(G.team || {}).filter(x => x === t).length}명${Object.values(G.god?.[t] || {}).map(k => ' ' + SW_GOD[k]?.icon).join('')})`).join(' · '); }
-$('tpSwStart')?.addEventListener('click', () => swStart()); $('tpSwStop')?.addEventListener('click', () => swStop()); setInterval(() => { try { if (isTeacher && !$('teacherPanel')?.classList.contains('hidden')) swAdminFill(); } catch (e) { } }, 1000);
+$('tpSwStart')?.addEventListener('click', () => swStart()); $('tpSwStop')?.addEventListener('click', () => swStop()); setInterval(() => { try { if (isTeacher && !$('teacherPanel')?.classList.contains('hidden')) { swAdminFill(); fillSwList(); } } catch (e) { } }, 1000);
 /* 👥 1105zm 같은 닉네임 계정 합치기: 닉네임(띄어쓰기·대소문자 무시)이 같은 가방이 여러 개면 대표 계정 하나로 모으고 나머지는 지워요
    · 수량(조개·재료·가구·광석·보석·물약·능력치): 더하기 또는 큰 값 · 펫: 모두 모으고 같은 펫은 레벨 높은 쪽 · 가진 것(옷·배지·도감 등): 모두
    · 하루 제한·최고 기록·설정은 대표 계정 것 그대로 · 합치기 전 가방은 선생님 기기에 파일로 내려받아요 */
