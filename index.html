@@ -18759,6 +18759,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zz8', d: '11월 17일', items: ['🐾 펫 45마리가 모두 새 3D 모습으로! 큰 머리 · 큰 눈 · 또렷한 테두리', '✨ 펫 진화: Lv15에 2단계, Lv30에 3단계로 진화해요 · 몸이 커지고 속성 장식이 늘어나요 · 이름도 바뀌어요 (예: 붕붕이 → 윙윙대장 → 번개여왕벌)', '🎉 진화하는 순간 반짝반짝 진화 장면이 나와요 · 펫 센터에 다음 진화 레벨과 이름이 보여요', '🪪 펫 카드 그림도 새 3D 모습으로 바뀌어요'] },
   { id: '1105zz7', d: '11월 17일', items: ['✨ 펫 배틀 기술마다 효과가 달라졌어요! 불씨는 불덩이 세 개, 해일은 큰 파도, 천둥벼락은 하늘이 어두워지고 큰 번개가 쾅', '💥 센 기술일수록 더 크고 화려해요 · 맞는 순간 화면이 살짝 다가가요 · 🌟 별빛 필살기는 특별 연출', '⬆️ 힘내기 · 🛡️ 단단해지기 · ⬇️ 겁주기 · ➕ 회복하기도 모양이 보여요'] },
   { id: '1105zz6', d: '11월 16일', items: ['🧑‍🏫 하늘 섬 깃발전 팀 정하기: 학생마다 팀 칸 · 🔀 팀 섞기 · 💪 능력치로 고르게 (공성전과 같아요)'] },
   { id: '1105zz5', d: '11월 16일', items: ['🏹 하늘 섬 쏘기가 공성전 궁병처럼! F(또는 🏹 버튼)를 꾹 눌러 당기고 놓으면 쏴요 · 오래 당길수록 멀리, 가득 당기면 더 세게', '🎯 당기는 동안 하늘에 겨눔 표시가 보여요 (빨강 = 상대를 겨눴어요)', '🖥️ 하늘 섬 화면이 공성전과 같은 꼴: 오른쪽 위 팀 점수 막대 · 아래 가운데 쏘기·스킬·신의 힘 버튼'] },
@@ -21028,15 +21029,16 @@ function petAdopt(id) {
 }
 function petGainXp(id, n) { // 레벨업 · Lv10에 속성 기술
   const p = bag.pets[id]; if (!p) return '';
-  p.xp += n; let up = 0;
+  p.xp += n; let up = 0; const st0 = petStage(p.lv);
   while (p.lv < PB_MAXLV && p.xp >= petNeed(p.lv)) { p.xp -= petNeed(p.lv); p.lv++; up++; if (p.lv === 10) { const m2 = PTYPE_MV[petType(id)][1]; if (!p.mv.includes(m2)) { if (p.mv.length < 4) p.mv.push(m2); else p.mv[1] = m2; } } }
   if (p.lv >= PB_MAXLV) p.xp = 0;
-  return up ? `${CRITTER[id].icon} ${CRITTER[id].name} Lv${p.lv}!` : '';
+  const st1 = petStage(p.lv); if (st1 > st0) setTimeout(() => petEvoShow(id, st0, st1), 900); /* ✨ 1105zz8 Lv15 · Lv30 진화 */
+  return up ? `${CRITTER[id].icon} ${petNameLv(id, p.lv)} Lv${p.lv}!${st1 > st0 ? ' ✨진화!' : ''}` : '';
 }
 const petSnap = () => bag.pteam.filter(id => bag.pets[id]).slice(0, PB_TEAM).map(id => ({ i: id, l: bag.pets[id].lv, m: bag.pets[id].mv.slice(0, 4) }));
 // ---------- 배틀 계산 (두 기기가 똑같이 계산하도록 씨앗 난수만 써요) ----------
 const pbRng = (seed) => { let a = seed | 0; return () => { a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
-function pbSide(snap, name) { return { name, cur: 0, mons: snap.filter(x => x && PET[x.i]).map(x => { const s = petStats(x.i, x.l); return { id: x.i, lv: x.l, mv: (Array.isArray(x.m) ? x.m : Object.values(x.m || {})).filter(k => PMOVE[k]).slice(0, 4), hp: s.hp, max: s.hp, atk: s.atk, def: s.def, spd: s.spd, sa: 0, sd: 0 }; }) }; }
+function pbSide(snap, name) { return { name, cur: 0, mons: snap.filter(x => x && PET[x.i]).map(x => { const s = petStats(x.i, x.l); return { id: x.i, lv: x.l, nm: petNameLv(x.i, x.l), mv: (Array.isArray(x.m) ? x.m : Object.values(x.m || {})).filter(k => PMOVE[k]).slice(0, 4), hp: s.hp, max: s.hp, atk: s.atk, def: s.def, spd: s.spd, sa: 0, sd: 0 }; }) }; }
 const pbMon = (side) => side.mons[side.cur];
 const pbStage = (s) => s >= 0 ? 1 + 0.5 * s : 1 / (1 - 0.5 * s);
 function pbStep(B, ch, rng, mod) { // ch = [A가 고른 기술 번호, B가 고른 기술 번호] → 일어난 일 목록 · 🧩 1105t mod = [A 배수, B 배수] (0 = 문제를 틀려 빗나감)
@@ -21161,7 +21163,7 @@ function petArt(id) {
   if (tier >= 4) for (const [px, py] of [[44, 50], [60, 214], [214, 200]]) { x.fillStyle = '#FFE066'; x.beginPath(); for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2 - Math.PI / 2, r = k % 2 ? 4 : 10; x.lineTo(px + Math.cos(a) * r, py + Math.sin(a) * r); } x.closePath(); x.fill(); } // ✨ 귀한 펫은 반짝
   return (PET_ART[id] = cv.toDataURL());
 }
-function petImg(id, cls = 'pet-art') { const im = document.createElement('img'); im.src = petArt(id); im.alt = CRITTER[id]?.name || ''; im.className = cls; im.draggable = false; return im; }
+function petImg(id, cls = 'pet-art', lv = 1) { const im = document.createElement('img'), st = petStage(lv), k = id + ':' + st; im.src = PET_ART3[k] || petArt(id); if (!(k in PET_ART3)) { petArtQ.push([im, id, st]); petArtPump(); } im.alt = petNameLv(id, lv); im.className = cls; im.draggable = false; return im; }
 function pbCard(el, m, side) { // 🪪 이름표: 같은 펫이면 체력 막대만 부드럽게 줄어요
   if (!m) { el.textContent = ''; el.dataset.id = ''; return; }
   const c = CRITTER[m.id], t = PT[petType(m.id)];
@@ -21209,86 +21211,259 @@ function pb3Init() {
   for (let k = 0; k < 5; k++) { const cl = new THREE.Group(); cl.position.set(-14 + k * 7, 9 + (k % 2) * 2, -22 - (k % 3) * 3); sc.add(cl); for (let j = 0; j < 4; j++) { const m = new THREE.Mesh(PB3_G.sphL, new THREE.MeshBasicMaterial({ color: 0xFFFFFF })); m.scale.setScalar(1.2 + (j % 2) * 0.5); m.position.set(j * 1.3 - 2, (j % 2) * 0.5, 0); cl.add(m); } cl.userData.cloud = 0.25 + k * 0.05; pb3.parts.push({ cloud: cl }); }
   for (const p of PB3_POS) { const pl = new THREE.Group(); pl.position.set(p.x, 0, p.z); sc.add(pl); const top = new THREE.Mesh(PB3_G.cyl, T(0xC8E6A0)); top.scale.set(1.7, 0.3, 1.7); top.position.y = 0.15; pl.add(top); const rim = new THREE.Mesh(PB3_G.cyl, T(0x7FB35A)); rim.scale.set(1.95, 0.2, 1.95); rim.position.y = 0.08; pl.add(rim); }
 }
-function pb3Pet(id) { // 🐾 3D 펫 만들기 (툰 재질 · 큰 눈 · 속성 장식) — 앞쪽 = +z
-  const c = CRITTER[id], t = petType(id), kind = PET_KIND[id] || 'fish', tier = c.price <= 20 ? 1 : c.price <= 45 ? 2 : c.price <= 80 ? 3 : 4;
-  const root = new THREE.Group(), body = new THREE.Group(); root.add(body); const mats = [], anim = { wings: [], tails: [], tents: [], spin: [], flick: [] };
-  const base = new THREE.Color(PET_COL[id] ?? c.col ?? 0xCCCCCC), lt = (a) => base.clone().lerp(new THREE.Color(0xFFFFFF), a).getHex(), dk = (a) => base.clone().lerp(new THREE.Color(0x1E1408), a).getHex();
-  const mat = (col, o = {}) => { const m = new THREE.MeshToonMaterial({ color: col, gradientMap: pb3Toon(), ...o }); m.userData.em0 = (o.emissive != null) ? new THREE.Color(o.emissive) : new THREE.Color(0); m.userData.ei0 = o.emissiveIntensity ?? 1; mats.push(m); return m; };
-  const OL = new THREE.MeshBasicMaterial({ color: 0x2B1E16, side: THREE.BackSide });
-  const P = (geo, col, x, y, z, sx, sy, sz, o = {}) => { const m = new THREE.Mesh(geo, o.mat || mat(col, o.m || {})); m.position.set(x, y, z); m.scale.set(sx, sy, sz); if (o.r) m.rotation.set(o.r[0], o.r[1], o.r[2]); (o.p || body).add(m);
-    if (o.ol) { const l = new THREE.Mesh(geo, OL); l.scale.setScalar(1.06); m.add(l); } return m; };
-  const eye = (x, y, z, r, n = new V3(0, 0, 1), p = body) => { const w = P(PB3_G.sph, 0xFFFFFF, x, y, z, r, r, r, { p, ol: true }); const pu = P(PB3_G.sph, 0x2B1E16, x + n.x * r * 0.5, y + n.y * r * 0.5, z + n.z * r * 0.5, r * 0.62, r * 0.62, r * 0.62, { p });
-    P(PB3_G.sphL, 0xFFFFFF, x + n.x * r * 0.92 - 0.25 * r * (n.z ? 1 : 0), y + r * 0.32, z + n.z * r * 0.92 + 0.25 * r * n.x, r * 0.22, r * 0.22, r * 0.22, { p, m: { emissive: 0xFFFFFF, emissiveIntensity: 0.8 } }); return [w, pu]; };
-  const cheeks = (x, y, z, sp, s = 1, n = new V3(0, 0, 1)) => { const col = t === 'elec' ? 0xFFD23C : 0xFF8FB3; for (const sx of [-1, 1]) P(PB3_G.sphL, col, x + sx * sp, y, z, 0.11 * s, 0.06 * s, 0.05 * s, { m: { transparent: true, opacity: 0.85 } }); void n; };
-  const mouth = (x, y, z, s = 1, ry = 0) => P(PB3_G.arc, 0x5A2A1E, x, y, z, 0.07 * s, 0.07 * s, 0.07 * s, { r: [Math.PI, ry, 0] });
-  const face = (y, z, s = 1, sp = 0.24) => { eye(-sp * s, y, z, 0.17 * s); eye(sp * s, y, z, 0.17 * s); cheeks(0, y - 0.17 * s, z - 0.02, (sp + 0.17) * s, s); mouth(0, y - 0.14 * s, z + 0.02, s); };
-  const wing = (x, y, z, sx, sy, col, side, opa = 1, rz = 0) => { const pv = new THREE.Group(); pv.position.set(x, y, z); body.add(pv); P(PB3_G.sph, col, side * sx * 0.9, 0, 0, sx, sy, 0.05, { p: pv, ol: opa >= 1, m: opa < 1 ? { transparent: true, opacity: opa } : {}, r: [0, 0, rz * side] }); anim.wings.push([pv, side]); return pv; };
-  const ant2 = (y, z, sp = 0.18, len = 0.5) => { for (const s of [-1, 1]) { P(PB3_G.cyl, 0x3B2A1C, s * sp, y + len / 2, z, 0.025, len, 0.025, { r: [0.3, 0, -s * 0.4] }); P(PB3_G.sphL, 0x3B2A1C, s * (sp + len * 0.42), y + len * 0.95, z + 0.15, 0.06, 0.06, 0.06); } };
-  const legs = (y, n = 3, sp = 0.45, col = 0x3B2A1C) => { for (const s of [-1, 1]) for (let k = 0; k < n; k++) P(PB3_G.cyl, col, s * sp, y, 0.25 - k * 0.25, 0.03, 0.4, 0.03, { r: [0, 0, s * 1.1] }); };
-  let accY = 1.6, accZ = 0;
-  if (kind === 'wing') { const wc = id === 'b2' ? 0xF5A623 : base.getHex(); for (const s of [-1, 1]) { const w1 = wing(s * 0.12, 0.95, -0.05, 0.46, 0.54, wc, s, 1, 0.5); P(PB3_G.sphL, id === 'b2' ? 0x2B1E16 : 0xFFFFFF, s * 0.52, 0.14, 0.06, 0.1, 0.1, 0.02, { p: w1 }); const w2 = wing(s * 0.1, 0.6, -0.05, 0.3, 0.34, lt(0.15), s, 1, -0.6); void w2; }
-    P(PB3_G.sph, 0x5A3E28, 0, 0.7, 0, 0.14, 0.42, 0.14, { ol: true }); P(PB3_G.sph, 0xF2D2B0, 0, 1.2, 0.05, 0.3, 0.28, 0.28, { ol: true }); face(1.2, 0.29, 0.8, 0.2); ant2(1.42, 0.05, 0.1, 0.42); accY = 1.85; }
-  else if (['lady', 'bee', 'cicada', 'stag', 'firefly', 'cricket', 'ant'].includes(kind)) {
-    const by = kind === 'ant' ? 0.75 : 0.62, br = kind === 'ant' ? 0.36 : 0.52;
-    if (kind === 'ant') { P(PB3_G.sph, base.getHex(), 0, 0.5, -0.65, 0.42, 0.36, 0.48, { ol: true }); P(PB3_G.sph, base.getHex(), 0, 0.55, -0.2, 0.22, 0.2, 0.24, { ol: true }); }
-    if (kind === 'firefly') { const g = P(PB3_G.sph, 0xEFFF70, 0, 0.45, -0.55, 0.38, 0.34, 0.42, { m: { emissive: 0xDFFF50, emissiveIntensity: 0.9 } }); anim.flick.push(g); }
-    if (kind === 'bee' || kind === 'cicada' || kind === 'firefly') for (const s of [-1, 1]) wing(s * 0.2, by + 0.45, -0.2, kind === 'cicada' ? 0.5 : 0.36, kind === 'cicada' ? 0.28 : 0.24, 0xE6F6FF, s, 0.55, 0.3);
-    const bd = P(PB3_G.sph, kind === 'bee' ? 0xFFD23C : kind === 'lady' ? 0xE2584A : base.getHex(), 0, by, kind === 'ant' ? 0.25 : 0, br, br * 0.92, br * (kind === 'cicada' || kind === 'cricket' ? 1.25 : 1), { ol: true });
-    if (kind === 'bee') for (const z of [-0.12, -0.36]) P(PB3_G.tor, 0x3B2A1C, 0, by, z, br * 0.96, br * 0.9, 1.6, { r: [0, 0, 0] });
-    if (kind === 'bee') P(PB3_G.cone, 0x3B2A1C, 0, by, -br - 0.1, 0.08, 0.2, 0.08, { r: [-Math.PI / 2, 0, 0] });
-    if (kind === 'lady') { for (const [x, y, z] of [[0.25, 0.95, 0.15], [-0.25, 0.95, 0.15], [0.32, 0.75, -0.25], [-0.32, 0.75, -0.25], [0, 1.05, -0.2]]) P(PB3_G.sphL, 0x2B1E16, x, y, z, 0.1, 0.06, 0.1); P(PB3_G.box, 0x2B1E16, 0, by + 0.35, -0.05, 0.02, 0.4, 0.8); }
-    if (kind === 'stag') for (const s of [-1, 1]) { const pv = new THREE.Group(); pv.position.set(s * 0.18, by + 0.35, 0.3); body.add(pv); P(PB3_G.arc, 0x4A2E1C, 0, 0.25, 0, 0.28, 0.4, 0.3, { p: pv, r: [0, s * 0.4, 0] }); }
-    if (kind === 'cricket') { for (const s of [-1, 1]) { P(PB3_G.cyl, dk(0.2), s * 0.5, 0.75, -0.3, 0.06, 0.7, 0.06, { r: [0.6, 0, -s * 0.5] }); P(PB3_G.cyl, dk(0.2), s * 0.65, 0.35, -0.55, 0.05, 0.6, 0.05, { r: [-0.8, 0, 0] }); } }
-    legs(by - 0.35, 3, br * 0.85);
-    const fz = (kind === 'ant' ? 0.25 : 0) + br * (kind === 'cicada' || kind === 'cricket' ? 1.15 : 0.92);
-    face(by + 0.08, fz, kind === 'ant' ? 0.75 : 0.95, kind === 'ant' ? 0.2 : 0.24); ant2(by + br * 0.75, fz - 0.15, 0.15, kind === 'cricket' ? 0.8 : 0.45); accY = by + br + 0.45; }
-  else if (kind === 'snail') { P(PB3_G.sph, 0xEED0A8, 0, 0.25, 0.1, 0.42, 0.22, 0.85, { ol: true }); const sh = P(PB3_G.sph, 0xD89A50, 0, 0.75, -0.25, 0.5, 0.5, 0.42, { ol: true }); for (let k = 0; k < 3; k++) P(PB3_G.tor, 0x8A5A2A, 0.42, 0.75, -0.25, 0.35 - k * 0.1, 0.35 - k * 0.1, 0.6, { r: [0, Math.PI / 2, 0] }); void sh;
-    P(PB3_G.sph, 0xF2D8B0, 0, 0.55, 0.65, 0.28, 0.3, 0.26, { ol: true }); for (const s of [-1, 1]) { P(PB3_G.cyl, 0xEED0A8, s * 0.12, 0.95, 0.7, 0.04, 0.4, 0.04, { r: [0, 0, -s * 0.3] }); eye(s * 0.2, 1.17, 0.72, 0.1); } cheeks(0, 0.48, 0.88, 0.16, 0.8); mouth(0, 0.52, 0.9, 0.8); accY = 1.5; }
-  else if (kind === 'turtle') { for (const [x, z] of [[-0.5, 0.4], [0.5, 0.4], [-0.5, -0.4], [0.5, -0.4]]) P(PB3_G.sph, 0x9AC070, x, 0.18, z, 0.2, 0.12, 0.26, { ol: true }); P(PB3_G.hemi, base.getHex(), 0, 0.25, 0, 0.75, 0.6, 0.85, { ol: true });
-    for (const [x, y, z] of [[0, 0.82, 0], [0.32, 0.62, 0.3], [-0.32, 0.62, 0.3], [0.32, 0.62, -0.3], [-0.32, 0.62, -0.3]]) P(PB3_G.cyl, dk(0.3), x, y, z, 0.18, 0.04, 0.18, { r: [x * 0.6, 0, -x * 0.9] });
-    P(PB3_G.sph, 0xA8C878, 0, 0.5, 0.9, 0.3, 0.28, 0.3, { ol: true }); face(0.55, 1.15, 0.7, 0.2); accY = 1.4; }
-  else if (kind === 'octo') { for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, tg = new THREE.Group(); tg.position.set(Math.cos(a) * 0.35, 0.35, Math.sin(a) * 0.35); tg.rotation.y = -a; body.add(tg); let prev = tg; for (let j = 0; j < 4; j++) { const sg = new THREE.Group(); sg.position.x = j ? 0.16 : 0; prev.add(sg); P(PB3_G.sph, base.getHex(), 0.08, -0.04, 0, 0.12 - j * 0.02, 0.1 - j * 0.015, 0.12 - j * 0.02, { p: sg }); anim.tents.push([sg, k * 0.7 + j * 0.5]); prev = sg; } }
-    P(PB3_G.sph, base.getHex(), 0, 0.95, 0, 0.62, 0.65, 0.6, { ol: true }); for (const [x, y, z] of [[-0.3, 1.35, 0.3], [0.25, 1.4, 0.25], [0, 1.5, -0.1]]) P(PB3_G.sphL, lt(0.5), x, y, z, 0.07, 0.07, 0.07); face(0.85, 0.58, 1, 0.24); accY = 1.85; }
-  else if (kind === 'jelly') { for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, tg = new THREE.Group(); tg.position.set(Math.cos(a) * 0.35, 0.8, Math.sin(a) * 0.35); body.add(tg); P(PB3_G.cyl, lt(0.3), 0, -0.35, 0, 0.03, 0.7, 0.03, { p: tg, m: { transparent: true, opacity: 0.7 } }); anim.tents.push([tg, k]); }
-    P(PB3_G.hemi, lt(0.25), 0, 0.8, 0, 0.7, 0.65, 0.7, { m: { transparent: true, opacity: 0.85, emissive: lt(0.3), emissiveIntensity: 0.3 } }); P(PB3_G.cyl, lt(0.4), 0, 0.8, 0, 0.7, 0.04, 0.7, { m: { transparent: true, opacity: 0.8 } }); face(1.05, 0.62, 0.9, 0.22); accY = 1.75; }
-  else if (kind === 'tad') { const tl = new THREE.Group(); tl.position.set(0, 0.55, -0.45); body.add(tl); P(PB3_G.sph, base.getHex(), 0, 0, -0.35, 0.08, 0.28, 0.45, { p: tl, ol: true }); anim.tails.push([tl, 0.5]); P(PB3_G.sph, base.getHex(), 0, 0.6, 0, 0.55, 0.5, 0.55, { ol: true }); face(0.72, 0.5, 1, 0.22); accY = 1.4; }
-  else if (kind === 'dfly') { for (const [z, s0] of [[0.15, 1], [-0.1, 0.9]]) for (const s of [-1, 1]) wing(s * 0.1, 0.95, z, 0.75 * s0, 0.14, 0xE6F6FF, s, 0.55, 0.05); const tl = new THREE.Group(); tl.position.set(0, 0.9, -0.2); body.add(tl); for (let k = 0; k < 4; k++) P(PB3_G.sph, base.getHex(), 0, -0.02 * k, -0.22 * k, 0.09 - k * 0.012, 0.09 - k * 0.012, 0.13, { p: tl }); anim.tails.push([tl, 0.15]);
-    P(PB3_G.sph, base.getHex(), 0, 0.92, 0.25, 0.16, 0.16, 0.24, { ol: true }); P(PB3_G.sph, base.getHex(), 0, 1.05, 0.58, 0.28, 0.25, 0.25, { ol: true }); eye(-0.17, 1.12, 0.72, 0.15); eye(0.17, 1.12, 0.72, 0.15); mouth(0, 0.95, 0.82, 0.8); accY = 1.6; }
-  else { // 🐟 물고기 (머리 = +z)
-    const long = kind === 'eel', flat = kind === 'flat', L = long ? 1.0 : flat ? 0.75 : 0.7, Hh = long ? 0.26 : flat ? 0.2 : 0.48, Wd = long ? 0.22 : flat ? 0.62 : 0.32, y0 = 0.75;
-    const bc = kind === 'koi' ? 0xFFFFFF : base.getHex();
-    P(PB3_G.sph, bc, 0, y0, 0, Wd, Hh, L, { ol: true }); P(PB3_G.sph, 0xFFFFFF, 0, y0 - Hh * 0.45, 0.05, Wd * 0.85, Hh * 0.45, L * 0.85, { m: { transparent: true, opacity: 0.45 } });
-    if (kind === 'koi') for (const [x, y, z, r] of [[0.15, y0 + 0.2, 0.1, 0.22], [-0.12, y0 + 0.1, -0.3, 0.18], [0.05, y0 + 0.3, -0.05, 0.16]]) P(PB3_G.sph, 0xF08A24, x, y, z, r, r * 0.7, r, {});
-    const tl = new THREE.Group(); tl.position.set(0, y0, -L * 0.95); body.add(tl);
-    if (kind === 'gold') for (const s of [-1, 1]) P(PB3_G.sph, lt(0.15), s * 0.15, s * 0.08, -0.35, 0.05, 0.3, 0.45, { p: tl, m: { transparent: true, opacity: 0.85 }, r: [s * 0.3, 0, 0] });
-    else P(PB3_G.cone, dk(0.1), 0, 0, -0.18, 0.04, 0.42, 0.34, { p: tl, r: [Math.PI / 2, 0, 0], ol: true });
-    if (long) { const t2 = new THREE.Group(); t2.position.z = -0.3; tl.add(t2); P(PB3_G.sph, bc, 0, 0, -0.2, Wd * 0.8, Hh * 0.8, 0.4, { p: t2 }); anim.tails.push([t2, 0.6]); }
-    anim.tails.push([tl, 0.5]);
-    if (!flat) P(PB3_G.cone, dk(0.1), 0, y0 + Hh + 0.08, -0.05, 0.04, 0.3, 0.3, { r: [0, 0, 0], ol: true });
-    for (const s of [-1, 1]) { const fn = new THREE.Group(); fn.position.set(s * Wd * 0.9, y0 - 0.1, 0.15); body.add(fn); P(PB3_G.sph, dk(0.05), s * 0.1, 0, -0.05, 0.14, 0.04, 0.1, { p: fn }); anim.wings.push([fn, s]); }
-    if (kind === 'cat' || kind === 'koi') for (const s of [-1, 1]) P(PB3_G.cyl, 0x3B2A1C, s * 0.12, y0 - 0.12, L * 0.95, 0.015, 0.45, 0.015, { r: [Math.PI / 2 - 0.3, 0, s * 0.6] });
-    if (flat) { eye(-0.13, y0 + 0.2, L * 0.55, 0.12, new V3(0, 0.5, 0.8)); eye(0.13, y0 + 0.22, L * 0.45, 0.12, new V3(0, 0.5, 0.8)); }
-    else for (const s of [-1, 1]) eye(s * Wd * 0.72, y0 + 0.08, L * 0.62, long ? 0.1 : 0.15, new V3(s * 0.8, 0, 0.6));
-    mouth(0, y0 - 0.06, L * 0.99, 0.9); cheeks(0, y0 - 0.05, L * 0.75, Wd * 0.85, 0.8); accY = y0 + Hh + 0.32; accZ = -0.1;
+/* 🐾 1105zz8 새 3D 펫 (오리지널 디자인 · 큰 머리 툰 + 바깥 선) · mon3(id, st): st 1·2·3 = 진화 단계 (Lv15 · Lv30) · 앞 = +z · 땅 = y0 */
+const MON_G = {}; const monG = (k, f) => MON_G[k] ||= f();
+const MON_SPH = () => monG('sph', () => new THREE.SphereGeometry(1, 28, 20)), MON_CON = () => monG('con', () => new THREE.ConeGeometry(1, 1, 22)), MON_CYL = () => monG('cyl', () => new THREE.CylinderGeometry(1, 1, 1, 22)), MON_TOR = () => monG('tor', () => new THREE.TorusGeometry(1, 0.2, 10, 36)), MON_ICO = () => monG('ico', () => new THREE.DodecahedronGeometry(1, 0)), MON_BOX = () => monG('box', () => new THREE.BoxGeometry(1, 1, 1));
+const MON_BOLT = () => monG('bolt', () => { const s = new THREE.Shape([[0, 1], [0.55, 1], [0.15, 0.15], [0.6, 0.15], [-0.25, -1], [0.05, -0.12], [-0.4, -0.12]].map(([x, y]) => new THREE.Vector2(x, y))); const g = new THREE.ExtrudeGeometry(s, { depth: 0.18, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05, bevelSegments: 2 }); g.center(); return g; });
+const MON_LEAF = () => monG('leaf', () => { const s = new THREE.Shape(); s.moveTo(0, 0); s.bezierCurveTo(0.6, 0.3, 0.5, 1.0, 0, 1.4); s.bezierCurveTo(-0.5, 1.0, -0.6, 0.3, 0, 0); const g = new THREE.ExtrudeGeometry(s, { depth: 0.06, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.04, bevelSegments: 2 }); g.translate(0, 0, -0.05); return g; });
+const MON_FIN = () => monG('fin', () => { const s = new THREE.Shape(); s.moveTo(0, 0); s.quadraticCurveTo(0.2, 1.0, 1.1, 1.2); s.quadraticCurveTo(0.7, 0.5, 1.0, 0); s.lineTo(0, 0); const g = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.04, bevelSegments: 2 }); g.translate(-0.5, 0, -0.04); return g; });
+const MON_OL = () => monG('ol', () => new THREE.MeshBasicMaterial({ color: 0x2A1E1A, side: THREE.BackSide }));
+const MON_GRAD = () => monG('grad', () => { const d = new Uint8Array([70, 150, 215, 255]); const t = new THREE.DataTexture(d, 4, 1, THREE.RedFormat); t.minFilter = t.magFilter = THREE.NearestFilter; t.needsUpdate = true; return t; });
+const MON_NORM = 0.72, PET_EVO_LV = [15, 30];
+const MON_CFG = { b1: { k: 'bfly', c: 0xF2D04A, hc: 0xFFF0B0, w: [0xFFE066, 0xFFF2A8], pat: 'dot', pc: 0x3B2F2A }, b2: { k: 'bfly', c: 0x3B2F2A, hc: 0xFFD9A0, w: [0xF5A623, 0xFFCF7A], pat: 'tiger', pc: 0x3B2F2A }, r1: { k: 'bfly', c: 0x8A6AD0, hc: 0xE6D8FF, w: [0xC89AF0, 0x9AD8FF], pat: 'rainbow' },
+  b3: { k: 'lady', c: 0xE2584A }, b5: { k: 'cicada', c: 0x7A6A4F }, b7: { k: 'firefly', c: 0x4A4A3A, hc: 0xFF9A6A, glow: 0xDFFF6A }, r5: { k: 'firefly', c: 0x4FA06A, hc: 0xC8F5C8, glow: 0x7CF0A0, fairy: 1 },
+  b8: { k: 'cricket', c: 0x8A6A3A }, h2: { k: 'cricket', c: 0x7CC04A, hop: 1 }, b9: { k: 'snail', c: 0xE8C8A0, sh: 0xC98A5A }, b10: { k: 'ant', c: 0x5A3A2A, carry: 1 }, r6: { k: 'ant', c: 0xB0763A },
+  f1: { k: 'fish', c: 0xC8A86A, L: 0.85, H: 0.66, mouth: 'o', tail: 'fan' }, f3: { k: 'fish', c: 0x8FB8D8, L: 1.1, H: 0.46, tail: 'fork', bands: 0xF2A07A }, f4: { k: 'fish', c: 0x9AD0B8, L: 0.7, H: 0.52, es: 1.25, tail: 'round' },
+  f6: { k: 'fish', c: 0x7A7A68, L: 1.05, H: 0.5, W: 0.72, whisk: 'long', mouth: 'wide', tail: 'round', dors: 'long' }, f7: { k: 'fish', c: 0xD89A40, L: 1.05, H: 0.62, whisk: 'short', tail: 'fork', dors: 'long' },
+  f8: { k: 'fish', c: 0x4A5A70, L: 1.3, H: 0.46, dors: 'long', spots: 0x2A3440, tail: 'round', iris: 0xC8A020 }, f9: { k: 'fish', c: 0xBFE6F2, L: 0.95, H: 0.42, tail: 'fork', ice: 1, line: 0xFFFFFF },
+  f11: { k: 'fish', c: 0x8FB0D0, L: 1.0, H: 0.5, tail: 'fork', line: 0xF2C230 }, f12: { k: 'fish', c: 0x4A8AC8, L: 1.15, H: 0.48, tail: 'fork', stripe: 0x24486A }, f13: { k: 'fish', c: 0xF08A9A, L: 0.92, H: 0.74, tail: 'fork', dors: 'spiky', spots: 0x7AC8F0 },
+  s1: { k: 'fish', c: 0xFF7A1A, L: 0.82, H: 0.68, tail: 'round', bands: 0xFFFFFF, fc: 0xFF9A3A }, f5: { k: 'loach', c: 0xA8905A }, f10: { k: 'tad', c: 0x5A6A48 }, f14: { k: 'flat', c: 0xB8A07A }, f15: { k: 'octo', c: 0xD8604A }, f16: { k: 'jelly', c: 0xE6D0FF },
+  h1: { k: 'dfly', c: 0xE2402A }, h4: { k: 'turtle', c: 0x7A8A50, sh: 0x5A6A40 }, s2: { k: 'turtle', c: 0x7FB05A, sh: 0x5E8A3A, sea: 1 }, r3: { k: 'turtle', c: 0x8FE0F0, sh: 0x6EC8E8, crys: 1, sea: 1 },
+  s3: { k: 'horse', c: 0xF2C230 }, s4: { k: 'dolph', c: 0x8FA6B8 }, s6: { k: 'crab', c: 0xE2384A }, s7: { k: 'ray', c: 0x9A7A5A }, s8: { k: 'star', c: 0xFF8A3C } };
+const PET_EVO = { b1: ['팔랑나래', '바람나래'], b2: ['호랑날개', '호랑바람왕'], b3: ['점박이꽃', '꽃방패점박'], b4: ['윙윙대장', '번개여왕벌'], b5: ['맴맴소리꾼', '폭풍매미'], b6: ['바위뿔', '대지의 왕뿔'], b7: ['반짝등불', '별빛반딧'], b8: ['귀뚤악사', '숲의 악사'], b9: ['물방울집', '파도성채'], b10: ['영차영차', '바위개미왕'],
+  f1: ['뽀글뽀글', '거품왕붕'], f2: ['불꽃꼬리', '태양금붕'], f3: ['물살쌩쌩', '급류대장'], f4: ['물방울꼬마', '물방울요정'], f5: ['진흙미끌', '대지미꾸리'], f6: ['찌릿수염', '천둥수염왕'], f7: ['은비늘장군', '용비늘장군'], f8: ['먹구름번개', '폭풍가물'], f9: ['얼음알갱', '눈꽃빙어'], f10: ['다리꼬물', '풀잎개구리'],
+  f11: ['물결돌이', '파도대장'], f12: ['바람화살', '폭풍화살'], f13: ['불꽃돔', '태양돔'], f14: ['모래납작', '대지납작왕'], f15: ['먹물장군', '심해먹물왕'], f16: ['번쩍젤리', '천둥해파리'], h1: ['불꽃잠자리', '태양잠자리'], h2: ['풀잎껑충', '숲의 껑충왕'], h3: ['비단꽃용', '비단천룡'], h4: ['바위성곽', '산등딱지'],
+  r1: ['무지개날개', '무지개여왕'], r2: ['여의주용', '황금천룡'], r3: ['수정성거북', '수정궁거북'], r4: ['번개제왕', '천둥제왕'], r5: ['숲빛요정', '숲의 여왕'], r6: ['바위대장군', '산맥장군'],
+  s1: ['흰동산호', '산호왕'], s2: ['바위꼬북', '대지거북왕'], s3: ['물결해마', '바다기사'], s4: ['바람돌핀', '하늘돌핀'], s5: ['파도상어', '해일상어'], s6: ['바위집게', '대지집게왕'], s7: ['번쩍가오리', '천둥가오리'], s8: ['불꽃별', '태양별'], s9: ['푸른고래', '바다의 왕고래'] };
+const petStage = (lv) => (lv | 0) >= PET_EVO_LV[1] ? 3 : (lv | 0) >= PET_EVO_LV[0] ? 2 : 1;
+const petNameLv = (id, lv) => { const st = petStage(lv); return st > 1 && PET_EVO[id] ? PET_EVO[id][st - 2] : CRITTER[id]?.name || ''; };
+function mon3(id, st = 1) {
+  st = Math.max(1, Math.min(3, st | 0)); const t = petType(id), cf = MON_CFG[id] || { k: 'fish', c: CRITTER[id]?.col ?? 0xCCCCCC, L: 0.9, H: 0.55 };
+  const root = new THREE.Group(), bodyO = new THREE.Group(), body = new THREE.Group(); root.add(bodyO); bodyO.add(body); const anim = { wings: [], tails: [], tents: [], spin: [], flick: [] }, mats = {}, mlist = [];
+  const M = (c, o = {}) => { const k = c + '|' + (o.e || 0) + '|' + (o.op || 1); if (mats[k]) return mats[k]; const m = new THREE.MeshToonMaterial({ color: c, gradientMap: MON_GRAD(), transparent: !!o.op && o.op < 1, opacity: o.op || 1 }); if (o.e) { m.emissive = new THREE.Color(c); m.emissiveIntensity = o.e; } m.userData.em0 = m.emissive.clone(); m.userData.ei0 = m.emissiveIntensity; mlist.push(m); return (mats[k] = m); };
+  const P = (geo, col, sc, pos, rot = [0, 0, 0], par = body, o = {}) => { const m = new THREE.Mesh(geo, M(col, o)); m.scale.set(...sc); m.position.set(...pos); m.rotation.set(...rot); par.add(m); if (o.ol !== false) { const l = new THREE.Mesh(geo, MON_OL()); l.scale.setScalar(o.olw || 1.07); if (geo === MON_BOLT() || geo === MON_LEAF() || geo === MON_FIN()) l.scale.set(1.06, 1.06, 1.6); m.add(l); } return m; };
+  const G = (pos, rot = [0, 0, 0], par = body) => { const g = new THREE.Group(); g.position.set(...pos); g.rotation.set(...rot); par.add(g); return g; };
+  const eye1 = (par, pos, r, iris = 0x3B2A20, sq = 1, ry = 0) => { const g = G(pos, [0, ry, 0], par); P(MON_SPH(), 0xFFFFFF, [r, r * 1.15 * sq, r * 0.55], [0, 0, 0], [0, 0, 0], g);
+    P(MON_SPH(), iris, [r * 0.72, r * 0.86 * sq, r * 0.3], [0, -r * 0.06, r * 0.36], [0, 0, 0], g, { ol: false }); P(MON_SPH(), 0x14100E, [r * 0.42, r * 0.52 * sq, r * 0.22], [0, -r * 0.06, r * 0.48], [0, 0, 0], g, { ol: false });
+    P(MON_SPH(), 0xFFFFFF, [r * 0.24, r * 0.24, r * 0.12], [-r * 0.22, r * 0.28, r * 0.56], [0, 0, 0], g, { ol: false, e: 0.6 }); P(MON_SPH(), 0xFFFFFF, [r * 0.1, r * 0.1, r * 0.06], [r * 0.24, -r * 0.3, r * 0.56], [0, 0, 0], g, { ol: false, e: 0.6 }); return g; };
+  const eyes = (par, x, y, z, r, iris = 0x3B2A20, sq = 1) => { for (const s of [-1, 1]) eye1(par, [s * x, y, z], r, iris ?? 0x3B2A20, sq, s * 0.18); };
+  const flapOf = (w) => { const p = G(w.position.toArray(), [Math.PI / 2, 0, 0], w.parent), q = G([0, 0, 0], [-Math.PI / 2, 0, 0], p); q.add(w); w.position.set(0, 0, 0); return p; }; /* 날개: 배틀 화면이 rotation.y 를 흔들면 몸 앞뒤 축으로 파닥여요 */
+  const cheeks = (par, x, y, z, r, col = 0xFF9AAE) => { for (const s of [-1, 1]) P(MON_SPH(), col, [r, r * 0.6, r * 0.3], [s * x, y, z], [0, s * 0.4, 0], par, { ol: false, op: 0.85 }); };
+  const smile = (par, y, z, w = 0.16, col = 0x3B2420) => { const m = new THREE.Mesh(monG('sm', () => new THREE.TorusGeometry(1, 0.16, 8, 20, Math.PI)), M(col)); m.scale.setScalar(w); m.rotation.set(0, 0, Math.PI); m.position.set(0, y, z); par.add(m); };
+  const flame = (par, pos, s, rot = [0, 0, 0]) => { const g = G(pos, rot, par); P(MON_SPH(), 0xFF5A1A, [s, s, s], [0, 0, 0], [0, 0, 0], g, { e: 0.5 }); P(MON_CON(), 0xFF7A1A, [s * 0.95, s * 2.1, s * 0.95], [0, s * 1.3, 0], [0, 0, 0], g, { e: 0.5 }); P(MON_SPH(), 0xFFD23C, [s * 0.55, s * 0.6, s * 0.55], [0, s * 0.2, s * 0.25], [0, 0, 0], g, { ol: false, e: 0.9 }); P(MON_CON(), 0xFFE066, [s * 0.5, s * 1.2, s * 0.5], [0, s * 0.95, s * 0.25], [0, 0, 0], g, { ol: false, e: 0.9 }); anim.flick.push(g); return g; };
+  const drop = (par, pos, s) => { const g = G(pos, [0, 0, 0], par); P(MON_SPH(), 0x5EC4FF, [s, s, s], [0, 0, 0], [0, 0, 0], g, { e: 0.15 }); P(MON_CON(), 0x5EC4FF, [s * 0.86, s * 1.3, s * 0.86], [0, s * 1.05, 0], [0, 0, 0], g, { e: 0.15 }); P(MON_SPH(), 0xFFFFFF, [s * 0.25, s * 0.35, s * 0.15], [-s * 0.35, s * 0.3, s * 0.8], [0, 0, 0], g, { ol: false, e: 0.6 }); return g; };
+  const bolt = (par, pos, s, rot = [0, 0, 0]) => P(MON_BOLT(), 0xFFD84A, [s, s, s], pos, rot, par, { e: 0.45 });
+  const flower = (par, pos, s) => { const g = G(pos, [0, 0, 0], par); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; P(MON_SPH(), [0xFF9AC8, 0xFFFFFF][i % 2], [s * 0.55, s * 0.18, s * 0.38], [Math.cos(a) * s * 0.6, 0, Math.sin(a) * s * 0.6], [0, -a, 0], g); } P(MON_SPH(), 0xFFD23C, [s * 0.35, s * 0.25, s * 0.35], [0, s * 0.1, 0], [0, 0, 0], g, { e: 0.3 }); return g; };
+  const leaf = (par, pos, s, rot) => P(MON_LEAF(), 0x5FBE5A, [s, s, s], pos, rot, par);
+  const rock = (par, pos, s, col = 0x9A7A5A) => P(MON_ICO(), col, [s, s * 0.8, s], pos, [0.4, 0.6, 0.2], par);
+  const star = (par, pos, s) => { const g = G(pos, [0, 0, 0], par); for (let i = 0; i < 5; i++) P(MON_CON(), 0xFFE066, [s * 0.35, s, s * 0.2], [Math.sin(i * 1.2566) * s * 0.5, Math.cos(i * 1.2566) * s * 0.5, 0], [0, 0, -i * 1.2566], g, { e: 0.6 }); return g; };
+  const crown = (par, pos, s, col = 0xFFD23C) => { const g = G(pos, [0, 0, 0], par); P(MON_CYL(), col, [s, s * 0.35, s], [0, 0, 0], [0, 0, 0], g, { e: 0.3 }); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; P(MON_CON(), col, [s * 0.22, s * 0.55, s * 0.22], [Math.sin(a) * s * 0.85, s * 0.42, Math.cos(a) * s * 0.85], [0, 0, 0], g, { e: 0.3 }); } P(MON_SPH(), 0xE2384A, [s * 0.18, s * 0.18, s * 0.12], [0, 0, s * 0.98], [0, 0, 0], g, { e: 0.4 }); return g; };
+  const aura = (col, r = 1.4) => { const m = new THREE.Mesh(MON_TOR(), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.45 })); r *= 0.8; m.scale.set(r, r, 0.35); m.rotation.x = Math.PI / 2; m.position.y = 0.05; m.userData.aura = 1; body.add(m); };
+  const deco = (hp, hd, bk, s = 1) => { if (st < 2) return; /* ✨ 진화 장식: 2단계 = 머리 장식 · 3단계 = 등 장식 + 바닥 빛 고리 */
+    if (t === 'fire') { flame(hp, hd, 0.14 * s); if (st === 3) { for (let i = 0; i < 3; i++) flame(body, [bk[0], bk[1] - i * 0.04, bk[2] + 0.25 - i * 0.25], 0.12, [-0.3 - i * 0.2, 0, 0]); aura(0xFF8A2A); } }
+    else if (t === 'water') { drop(hp, [hd[0], hd[1] + 0.08, hd[2]], 0.1 * s); if (st === 3) { const ring = G([0, bk[1] * 0.6, 0]); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; P(MON_SPH(), 0x9ADFFF, [0.09, 0.09, 0.09], [Math.cos(a) * 1.1, Math.sin(a * 2) * 0.12, Math.sin(a) * 1.1], [0, 0, 0], ring, { ol: false, e: 0.4, op: 0.8 }); } anim.tents.push([ring, 0]); aura(0x5EC4FF); } }
+    else if (t === 'grass') { for (const g of [-1, 1]) leaf(hp, [hd[0] + g * 0.05, hd[1] - 0.05, hd[2]], 0.26 * s, [0, 0, g * -0.5]); if (st === 3) { flower(body, bk, 0.24); aura(0x7CC85C); } }
+    else if (t === 'elec') { bolt(hp, [hd[0], hd[1] + 0.12, hd[2]], 0.16 * s, [0, 0, 0.2]); if (st === 3) { for (const g of [-1, 1]) bolt(body, [bk[0] + g * 0.22, bk[1] + 0.1, bk[2]], 0.15, [0, Math.PI / 2, g * 0.4]); aura(0xFFE066); } }
+    else if (t === 'wind') { for (const g of [-1, 1]) P(MON_CON(), 0xDFFFF8, [0.07, 0.4 * s, 0.07], [hd[0] + g * 0.08, hd[1] + 0.12, hd[2] - 0.05], [-0.6, 0, g * -0.35], hp, { e: 0.2 }); if (st === 3) { for (let i = 0; i < 2; i++) { const r = P(MON_TOR(), 0xBFF5EC, [1.0 + i * 0.2, 1.0 + i * 0.2, 0.5], [0, bk[1] * 0.5 + i * 0.35, 0], [Math.PI / 2 + 0.2 - i * 0.4, 0, i], body, { ol: false, op: 0.55, e: 0.3 }); for (let j = 0; j < 3; j++) { const a = j / 3 * Math.PI * 2; const d = new THREE.Mesh(MON_SPH(), M(0xFFFFFF, { e: 0.6 })); d.scale.set(0.08, 0.08, 0.16); d.position.set(Math.cos(a), Math.sin(a), 0); r.add(d); } anim.spin.push(r); } aura(0x9AE8DA); } }
+    else if (t === 'earth') { rock(hp, [hd[0], hd[1] + 0.02, hd[2]], 0.14 * s, 0xA88A64); if (st === 3) { for (let i = 0; i < 3; i++) rock(body, [bk[0] + (i - 1) * 0.25, bk[1] - Math.abs(i - 1) * 0.06, bk[2] + (i % 2) * 0.1], 0.17, [0xC09A6A, 0xA88A64, 0xB89A70][i]); aura(0xC09A6A); } }
+    if (st === 3 && id[0] === 'r') { star(body, [0.9, h * 0.85, 0], 0.15); star(body, [-0.9, h * 0.7, -0.2], 0.12); } };
+  const S = [1, 1.22, 1.45][st - 1]; let h = 1.6;
+  if (id === 'b4') { /* 붕붕이 → 윙윙대장 → 번개여왕벌 (전기) */
+    const y0 = 0.95; P(MON_SPH(), 0xFFD23C, [0.62, 0.58, 0.72], [0, y0, -0.25]); for (const z of [-0.05, -0.4]) P(MON_CYL(), 0x2E2A26, [0.64, 0.12, 0.64], [0, y0, z], [Math.PI / 2, 0, 0], body, { ol: false }); P(MON_CON(), 0x2E2A26, [0.14, 0.3, 0.14], [0, y0 - 0.05, -0.98], [-Math.PI / 2, 0, 0]);
+    const hd = G([0, y0 + 0.42, 0.32]); P(MON_SPH(), 0xFFDF6A, [0.6, 0.55, 0.55], [0, 0, 0], [0, 0, 0], hd); eyes(hd, 0.24, 0.05, 0.42, 0.17); cheeks(hd, 0.4, -0.15, 0.38, 0.1); smile(hd, -0.22, 0.5, 0.08);
+    for (const s of [-1, 1]) { const a = G([s * 0.18, 0.45, 0.05], [0, 0, s * -0.35], hd); P(MON_CYL(), 0x2E2A26, [0.03, 0.42, 0.03], [0, 0.2, 0], [0, 0, 0], a); if (st >= 2) bolt(a, [0, 0.52, 0], 0.16, [0, 0, s * 0.3]); else P(MON_SPH(), 0x2E2A26, [0.07, 0.07, 0.07], [0, 0.42, 0], [0, 0, 0], a); }
+    const nw = st === 3 ? 2 : 1; for (const s of [-1, 1]) for (let k = 0; k < nw; k++) { const w = G([s * 0.35, y0 + 0.45 - k * 0.15, -0.3 - k * 0.15], [0.3, s * 0.3, s * (0.5 + k * 0.4)]); P(MON_SPH(), 0xF4FBFF, [0.55 + st * 0.08, 0.05, 0.32], [s * 0.45, 0, 0], [0, 0, 0], w, { op: 0.7, e: 0.5, ol: false }); P(MON_TOR(), 0x9AB8CC, [0.5 + st * 0.07, 0.3, 0.5], [s * 0.45, 0, 0], [Math.PI / 2, 0, 0], w, { ol: false }); anim.wings.push([flapOf(w), s]); }
+    for (const s of [-1, 1]) for (const z of [0.1, -0.3]) P(MON_CYL(), 0x2E2A26, [0.05, 0.3, 0.05], [s * 0.42, y0 - 0.5, z], [0, 0, s * 0.3]);
+    if (st >= 2) { P(MON_SPH(), 0xFFFFFF, [0.4, 0.22, 0.3], [0, y0 + 0.05, 0.18], [0, 0, 0], body, { ol: false }); bolt(body, [0, y0 + 0.15, -1.05], 0.22, [0, Math.PI / 2, 0]); }
+    if (st === 3) { crown(hd, [0, 0.52, 0], 0.26); aura(0xFFE066); }
+    h = 2.2;
+  } else if (id === 'b6' || id === 'r4') { /* 뿔대장 → 바위뿔 → 대지의 왕뿔 (땅) · r4 번개대왕은 같은 몸에 금빛 + 번개 */
+    const R4 = id === 'r4', c = R4 ? 0xD8A820 : 0x5A3A26, y0 = 0.7; P(MON_SPH(), c, [0.72, 0.5, 0.85], [0, y0, -0.15]); P(MON_SPH(), R4 ? 0xFFE066 : 0x7A5236, [0.68, 0.18, 0.8], [0, y0 + 0.28, -0.18], [0, 0, 0], body, { ol: false }); P(MON_CYL(), 0x2E1E14, [0.02, 0.5, 0.02], [0, y0 + 0.45, -0.2], [Math.PI / 2, 0, 0], body, { ol: false });
+    const hd = G([0, y0 + 0.12, 0.62]); P(MON_SPH(), R4 ? 0xE8B830 : 0x6A462C, [0.48, 0.42, 0.42], [0, 0, 0], [0, 0, 0], hd); eyes(hd, 0.2, 0.06, 0.34, 0.14, R4 ? 0x2A4AA0 : 0x2A5A2A); if (R4) cheeks(hd, 0.3, -0.08, 0.32, 0.07, 0xFFB03C); smile(hd, -0.16, 0.4, 0.07);
+    const hl = 0.5 + st * 0.22; for (const s of [-1, 1]) { const hn = G([s * 0.22, 0.25, 0.2], [-0.5, 0, s * -0.25], hd); const hc = R4 ? 0x8A5A10 : 0x3A2416; P(MON_CON(), hc, [0.09, hl, 0.09], [0, hl / 2, 0], [0, 0, 0], hn); P(MON_CON(), hc, [0.06, 0.25, 0.06], [s * -0.08, hl * 0.6, 0.08], [0.4, 0, s * 0.6], hn); if (R4 && st >= 2) bolt(hn, [0, hl + 0.05, 0], 0.12); if (st === 3) P(MON_CON(), hc, [0.06, 0.28, 0.06], [s * 0.08, hl * 0.82, 0.04], [0.2, 0, s * -0.7], hn); }
+    for (const s of [-1, 1]) for (const z of [0.3, 0, -0.35]) P(MON_CYL(), 0x2E1E14, [0.06, 0.45, 0.06], [s * 0.62, y0 - 0.32, z], [0, 0, s * 0.6]);
+    if (R4) { if (st >= 2) for (const s of [-1, 1]) bolt(body, [s * 0.5, y0 + 0.45, -0.3], 0.18, [0, Math.PI / 2, s * 0.5]); if (st === 3) { crown(hd, [0, 0.4, -0.05], 0.2); star(body, [0.9, 1.9, 0], 0.15); aura(0xFFE066, 1.5); } }
+    else if (st >= 2) { for (const s of [-1, 1]) { rock(body, [s * 0.55, y0 + 0.35, 0.2], 0.22, 0xA88A64); rock(body, [s * 0.5, y0 + 0.3, -0.4], 0.18, 0x8F7454); } }
+    if (!R4 && st === 3) { rock(body, [0, y0 + 0.55, -0.15], 0.3, 0xC09A6A); rock(body, [0, y0 + 0.5, -0.55], 0.22, 0xB08A5E); aura(0xC09A6A, 1.5); }
+    h = 1.9;
+  } else if (id === 'f2') { /* 금빛꼬리 → 불꽃꼬리 → 태양금붕 (불) */
+    const c = 0xFF8A2A, y0 = 1.2; P(MON_SPH(), c, [0.7, 0.66, 0.78], [0, y0, 0]); P(MON_SPH(), 0xFFE2B0, [0.5, 0.42, 0.5], [0, y0 - 0.2, 0.32], [0, 0, 0], body, { ol: false });
+    eyes(body, 0.3, y0 + 0.2, 0.62, 0.19); cheeks(body, 0.48, y0 - 0.02, 0.56, 0.1); P(MON_SPH(), 0xE2574C, [0.11, 0.08, 0.06], [0, y0 - 0.1, 0.77], [0, 0, 0], body, { ol: false });
+    const tl = G([0, y0, -0.7]); for (const s of [-1, 1]) { const f = P(MON_FIN(), 0xFFB04A, [0.62 + st * 0.12, 0.62 + st * 0.12, 0.9], [0, 0, 0], [0, 0, 0], tl, {}); f.rotation.set(0, Math.PI / 2, s > 0 ? -1.1 : Math.PI + 1.3); } anim.tails.push([tl, 0.5]);
+    P(MON_FIN(), 0xFFB04A, [0.5, 0.5 + st * 0.08, 0.6], [0, y0 + 0.6, -0.1], [0, Math.PI / 2, 0.3]); for (const s of [-1, 1]) P(MON_SPH(), 0xFFB04A, [0.3, 0.05, 0.18], [s * 0.72, y0 - 0.2, 0.05], [0, s * 0.5, s * -0.5]);
+    if (st >= 2) { flame(tl, [0, 0.55, -0.35], 0.16, [-0.6, 0, 0]); flame(tl, [0, -0.5, -0.35], 0.13, [-2.4, 0, 0]); flame(body, [0, y0 + 0.95, -0.15], 0.15); }
+    if (st === 3) { for (let i = 0; i < 3; i++) flame(body, [0, y0 + 0.75 - i * 0.05, 0.25 - i * 0.35], 0.18 - i * 0.02, [-0.3 - i * 0.2, 0, 0]); crown(body, [0, y0 + 0.62, 0.38], 0.2); aura(0xFF8A2A); }
+    h = 2.3;
+  } else if (id === 's5') { /* 샤크 → 파도상어 → 해일상어 (물) */
+    const c = 0x6E8AA8, y0 = 1.0, L = 1.0 + st * 0.12; P(MON_SPH(), c, [0.58, 0.55, L], [0, y0, 0]); P(MON_SPH(), 0xF4F6FA, [0.48, 0.32, L * 0.85], [0, y0 - 0.22, 0.1], [0, 0, 0], body, { ol: false });
+    eyes(body, 0.3, y0 + 0.16, L * 0.72, 0.14, 0x1E4A7A, 0.8); for (let i = -2; i <= 2; i++) P(MON_CON(), 0xFFFFFF, [0.04, 0.08, 0.04], [i * 0.07, y0 - 0.17, L * 0.86], [Math.PI, 0, 0], body, { ol: false }); P(MON_CYL(), 0x3B2420, [0.2, 0.02, 0.02], [0, y0 - 0.12, L * 0.86], [0, 0, Math.PI / 2], body, { ol: false });
+    P(MON_FIN(), c, [0.55 + st * 0.12, 0.6 + st * 0.15, 0.7], [0, y0 + 0.42, -0.15], [0, Math.PI / 2, 0]); const tl = G([0, y0, -L * 0.95]); P(MON_FIN(), c, [0.6, 0.7 + st * 0.1, 0.7], [0, 0.05, 0], [0, Math.PI / 2, 0.5], tl); P(MON_FIN(), c, [0.45, 0.45, 0.7], [0, -0.05, 0], [Math.PI, Math.PI / 2, 0.6], tl); anim.tails.push([tl, 0.5]);
+    for (const s of [-1, 1]) P(MON_SPH(), c, [0.42, 0.06, 0.2], [s * 0.62, y0 - 0.25, 0.25], [0, s * 0.5, s * -0.6]);
+    for (const s of [-1, 1]) for (let i = 0; i < 3; i++) P(MON_CYL(), 0x3E5670, [0.018, 0.2, 0.018], [s * 0.5, y0 + 0.02, L * 0.42 - i * 0.1], [0, 0, s * 0.25], body, { ol: false });
+    if (st >= 2) { for (const s of [-1, 1]) P(MON_SPH(), 0x5EC4FF, [0.06, 0.16, 0.5], [s * 0.5, y0 + 0.2, -0.2], [0, 0, s * 0.5], body, { ol: false, e: 0.35 }); drop(body, [0, y0 + 1.15, -0.1], 0.12); }
+    if (st === 3) { const ring = G([0, y0, 0]); for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; P(MON_SPH(), 0x9ADFFF, [0.1, 0.1, 0.1], [Math.cos(a) * 1.25, Math.sin(a * 2) * 0.15, Math.sin(a) * 1.25], [0, 0, 0], ring, { ol: false, e: 0.4, op: 0.8 }); } anim.tents.push([ring, 0]); aura(0x5EC4FF, 1.6); }
+    h = 2.0;
+  } else if (id === 's9') { /* 아기고래 → 푸른고래 → 바다의 왕고래 (물) */
+    const c = 0x4E7AB8, y0 = 1.0, B = 0.8 + st * 0.08; P(MON_SPH(), c, [B, B * 0.82, B * 1.15], [0, y0, 0]); P(MON_SPH(), 0xE9F2FA, [B * 0.82, B * 0.5, B * 1.05], [0, y0 - B * 0.32, 0.08], [0, 0, 0], body, { ol: false });
+        eyes(body, B * 0.45, y0 + 0.08, B * 0.92, 0.2); cheeks(body, B * 0.68, y0 - 0.14, B * 0.8, 0.11); smile(body, y0 - 0.2, B * 1.1, 0.14);
+    const tl = G([0, y0 + 0.1, -B * 1.1]); for (const s of [-1, 1]) P(MON_SPH(), c, [0.42, 0.08, 0.24], [s * 0.32, 0.12, -0.12], [0, s * -0.4, s * 0.25], tl); P(MON_CYL(), c, [0.16, 0.4, 0.16], [0, 0, 0.06], [Math.PI / 2 - 0.4, 0, 0], tl); anim.tails.push([tl, 0.5]);
+    for (const s of [-1, 1]) P(MON_SPH(), c, [0.38, 0.07, 0.2], [s * B * 0.95, y0 - 0.25, 0.25], [0, 0, s * -0.4]);
+    const sp = G([0, y0 + B * 0.8, -0.15]); const n = st + 1; for (let i = 0; i < n; i++) { const a = (i / Math.max(1, n - 1) - 0.5) * 1.2; P(MON_CYL(), 0x9ADFFF, [0.05, 0.4 + st * 0.12, 0.05], [Math.sin(a) * 0.15, 0.25 + st * 0.06, 0], [0, 0, -a * 0.6], sp, { ol: false, e: 0.3, op: 0.85 }); drop(sp, [Math.sin(a) * 0.35, 0.6 + st * 0.15, 0], 0.09); } anim.tents.push([sp, 1]);
+    if (st === 3) { crown(body, [0, y0 + B * 0.62, B * 0.72], 0.24, 0x9ADFFF); aura(0x5EC4FF, 1.8); }
+    h = 2.4;
+  } else if (id === 'r2' || id === 'h3') { /* 황금용 → 여의주용 → 황금천룡 (불 · 희귀) · h3 비단용은 같은 몸에 주홍·흰 무늬 */
+    const H3 = id === 'h3', c = H3 ? 0xF2742A : 0xFFC93C, y0 = 1.1;
+    if (st < 3) { const L = 1.0 + st * 0.1; P(MON_SPH(), c, [0.55, 0.58, L], [0, y0, 0]); if (H3) for (const [x, yy, z, r] of [[0.3, 0.3, 0.3, 0.2], [-0.25, 0.35, -0.2, 0.24], [0.2, 0.25, -0.6, 0.16]]) P(MON_SPH(), 0xFFFFFF, [r, r * 0.7, r], [x, y0 + yy, z], [0, 0, 0], body, { ol: false }); for (let i = 0; i < 4; i++) P(MON_SPH(), H3 ? 0xFFD0B0 : 0xFFE58A, [0.5, 0.06, 0.18], [0, y0 + 0.25 - Math.abs(i - 1.5) * 0.08, 0.4 - i * 0.3], [0.4, 0, 0], body, { ol: false });
+      eyes(body, 0.28, y0 + 0.18, L * 0.74, 0.17); cheeks(body, 0.42, y0 - 0.05, L * 0.7, 0.09); for (const s of [-1, 1]) P(MON_CYL(), 0xE89A2A, [0.025, 0.55, 0.025], [s * 0.36, y0 - 0.12, L * 0.82], [0.3, 0, s * 1.2]);
+      const tl = G([0, y0, -L * 0.95]); for (const s of [-1, 1]) P(MON_FIN(), 0xFFAA3C, [0.75, 0.75, 0.8], [0, 0, 0], [0, Math.PI / 2, s > 0 ? -1.1 : Math.PI + 1.3], tl); anim.tails.push([tl, 0.5]); P(MON_FIN(), 0xFFAA3C, [0.6, 0.6, 0.7], [0, y0 + 0.5, -0.15], [0, Math.PI / 2, 0.2]);
+      if (st === 2) { for (const s of [-1, 1]) { P(MON_CON(), 0xFFF2C0, [0.06, 0.32, 0.06], [s * 0.18, y0 + 0.6, L * 0.45], [-0.4, 0, s * -0.3]); const w = G([s * 0.5, y0 + 0.15, 0.05], [0, 0, s * -0.5]); P(MON_FIN(), 0xFFAA3C, [0.55, 0.55, 0.6], [s * 0.3, 0, 0], [0, s * 0.4, s > 0 ? -1.3 : Math.PI + 1.3], w); anim.wings.push([flapOf(w), s]); } flame(body, [0, y0 + 0.75, 0.1], 0.13); } }
+    else { /* 3단계: 몸을 마디로 늘인 용 */ const y0 = 0.82, segs = 9, pts = []; for (let i = 0; i < segs; i++) { const t = i / (segs - 1), r = 0.42 - t * 0.28, z = 0.25 - i * 0.27, yy = y0 - 0.05 + Math.sin(t * Math.PI * 1.7) * 0.42 + t * 0.5; pts.push([yy, z]); const sg = G([0, yy, z]); P(MON_SPH(), c, [r, r, r * 1.2], [0, 0, 0], [0, 0, 0], sg); P(MON_SPH(), 0xFFF2C0, [r * 0.8, r * 0.55, r * 1.05], [0, -r * 0.42, 0.02], [0, 0, 0], sg, { ol: false }); if (H3 && i % 3 === 1) P(MON_SPH(), 0xFFFFFF, [r * 0.6, r * 0.5, r * 0.7], [r * 0.4, r * 0.5, 0], [0, 0, 0], sg, { ol: false }); if (i % 2 === 0 && i < segs - 1) flame(sg, [0, r * 0.85, 0], 0.08 + r * 0.22, [-0.5, 0, 0]); anim.tails.push([sg, 0.18]); }
+      const tip = pts[segs - 1]; flame(body, [0, tip[0] + 0.1, tip[1] - 0.18], 0.2, [-1.2, 0, 0]);
+      const hd = G([0, y0 + 0.5, 0.75]); P(MON_SPH(), c, [0.56, 0.5, 0.56], [0, 0, 0], [0, 0, 0], hd); P(MON_SPH(), 0xFFE58A, [0.36, 0.24, 0.34], [0, -0.16, 0.4], [0, 0, 0], hd); for (const s of [-1, 1]) P(MON_SPH(), 0x5A3A26, [0.03, 0.03, 0.02], [s * 0.1, -0.1, 0.73], [0, 0, 0], hd, { ol: false });
+      eyes(hd, 0.25, 0.12, 0.42, 0.17, 0xC0392B); cheeks(hd, 0.42, -0.08, 0.38, 0.08);
+      for (const s of [-1, 1]) { const hn = G([s * 0.22, 0.38, -0.1], [-0.55, 0, s * -0.35], hd); P(MON_CON(), 0xFFF2C0, [0.08, 0.6, 0.08], [0, 0.3, 0], [0, 0, 0], hn); P(MON_CON(), 0xFFF2C0, [0.055, 0.26, 0.055], [s * 0.08, 0.38, 0.05], [0.3, 0, s * -0.8], hn);
+        const wh = G([s * 0.2, -0.14, 0.62], [0, 0, 0], hd); for (let k = 0; k < 6; k++) P(MON_SPH(), 0xFF8A2A, [0.045, 0.045, 0.09], [s * (0.08 + k * 0.12), -k * 0.05 + Math.sin(k * 1.3) * 0.05, -k * 0.07], [0, 0, 0], wh, { ol: false, e: 0.2 }); anim.tents.push([wh, s]); }
+      flame(hd, [0, 0.42, -0.25], 0.13, [-0.4, 0, 0]);
+      for (const s of [-1, 1]) for (const [z, yy] of [[0.2, y0 - 0.05], [pts[3][1], Math.min(pts[3][0], y0 + 0.05)]]) { const lg = G([s * 0.3, yy - 0.2, z], [0, 0, s * 0.25]); const L = yy - 0.2; P(MON_CYL(), c, [0.12, L, 0.12], [0, -L / 2, 0], [0, 0, 0], lg); P(MON_SPH(), 0xFFE58A, [0.13, 0.08, 0.16], [0, -L, 0.04], [0, 0, 0], lg); }
+      if (!H3) { star(body, [1.0, 2.7, 0], 0.18); star(body, [-1.0, 2.3, -0.3], 0.14); } aura(H3 ? 0xFF8A5A : 0xFFD23C, 1.8); }
+    h = 2.4;
+  } else { /* 🐾 나머지 펫: 모양 틀(cf.k) + 속성 장식(deco) */
+    const c = cf.c, lt = (a) => new THREE.Color(c).lerp(new THREE.Color(0xFFFFFF), a).getHex(), dk = (a) => new THREE.Color(c).lerp(new THREE.Color(0x1E1408), a).getHex(), DK = 0x2E2A26;
+    let HP = body, HD = [0, 2, 0], BK = [0, 1.5, -0.2], sz = 1;
+    const ant2 = (par, x, y, z, len, col = DK, tip = null, bk = -0.3) => { for (const s of [-1, 1]) { const a = G([s * x, y, z], [bk, 0, s * -0.35], par); P(MON_CYL(), col, [0.025, len, 0.025], [0, len / 2, 0], [0, 0, 0], a); P(MON_SPH(), tip ?? col, [0.07, 0.07, 0.07], [0, len, 0], [0, 0, 0], a); } };
+    const legs = (y, zs, sp, col = DK, l = 0.32) => { for (const s of [-1, 1]) for (const z of zs) P(MON_CYL(), col, [0.045, l, 0.045], [s * sp, y, z], [0, 0, s * 0.45]); };
+    const face = (par, y, z, r, sp, iris) => { eyes(par, sp, y, z, r, iris); cheeks(par, sp + r * 0.9, y - r * 1.1, z - 0.04, r * 0.55); smile(par, y - r * 1.2, z + 0.05, r * 0.45); };
+    const k = cf.k;
+    if (k === 'bfly') { const y0 = 1.0; P(MON_SPH(), c, [0.26, 0.28, 0.5], [0, y0, -0.15]); const hd = G([0, y0 + 0.22, 0.38]); HP = hd; P(MON_SPH(), cf.hc ?? lt(0.35), [0.44, 0.42, 0.42], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.05, 0.33, 0.15, 0.17); ant2(hd, 0.14, 0.3, 0, 0.45, DK, cf.w[0]);
+      for (const s of [-1, 1]) { const w = G([s * 0.18, y0 + 0.12, -0.1]); const uw = 0.62 + st * 0.12, lw = 0.42 + st * 0.07;
+        P(MON_SPH(), cf.w[0], [uw, 0.05, 0.46 + st * 0.06], [s * uw * 0.9, 0.18, 0.12], [0, s * -0.45, s * 0.35], w); P(MON_SPH(), cf.w[1], [lw, 0.05, 0.32 + st * 0.04], [s * lw * 0.9, -0.08, -0.32], [0, s * 0.55, s * 0.2], w);
+        if (cf.pat === 'dot') { P(MON_SPH(), cf.pc, [0.12, 0.06, 0.12], [s * uw * 1.25, 0.37, 0.25], [0, 0, s * 0.35], w, { ol: false }); P(MON_SPH(), 0xFFFFFF, [0.07, 0.06, 0.07], [s * uw * 1.25, 0.39, 0.25], [0, 0, s * 0.35], w, { ol: false }); }
+        if (cf.pat === 'tiger') for (let i = 0; i < 3; i++) P(MON_SPH(), cf.pc, [0.05, 0.06, 0.3], [s * (0.35 + i * 0.3) * uw * 1.2, 0.15 + i * 0.1, 0.12], [0, s * -0.45, s * 0.35], w, { ol: false });
+        if (cf.pat === 'rainbow') [0xFF8AB8, 0xFFE066, 0x9ADFFF].forEach((col, i) => P(MON_SPH(), col, [uw * (0.75 - i * 0.2), 0.06, 0.34 - i * 0.08], [s * uw * 0.95, 0.2 + i * 0.012, 0.12], [0, s * -0.45, s * 0.35], w, { ol: false }));
+        if (st === 3) P(MON_CON(), cf.w[1], [0.08, 0.55, 0.04], [s * lw * 1.1, -0.2, -0.75], [-1.3, 0, 0], w); anim.wings.push([flapOf(w), s]); }
+      HD = [0, 0.45, 0]; BK = [0, y0 + 0.3, -0.25]; h = 2.0;
+    } else if (k === 'lady') { const y0 = 0.6, sc = st === 3 ? 0xF0503A : c; P(MON_SPH(), sc, [0.7, 0.55, 0.78], [0, y0, -0.1]); P(MON_BOX(), DK, [0.03, 0.04, 1.5], [0, y0 + 0.53, -0.12], [0.08, 0, 0], body, { ol: false });
+      const sp = [[0.35, 0.9, 0.3], [-0.35, 0.9, 0.3], [0.55, 0.6, -0.25], [-0.55, 0.6, -0.25], [0.25, 0.85, -0.55], [-0.25, 0.85, -0.55], [0, 1, 0]].slice(0, st >= 2 ? 7 : 6); for (const [x, yy, z] of sp) { const d = new THREE.Vector3(x, yy, z).normalize(); P(MON_SPH(), st >= 2 ? 0x2E2A26 : DK, [0.12, 0.12, 0.12], [d.x * 0.68, y0 + d.y * 0.53, -0.1 + d.z * 0.76], [0, 0, 0], body, { ol: false }); }
+      const hd = G([0, y0 + 0.02, 0.6]); HP = hd; P(MON_SPH(), DK, [0.42, 0.37, 0.36], [0, 0, 0], [0, 0, 0], hd); for (const s of [-1, 1]) P(MON_SPH(), 0xFFFFFF, [0.1, 0.12, 0.06], [s * 0.3, 0.12, 0.22], [0, s * 0.6, 0], hd, { ol: false }); face(hd, 0.03, 0.28, 0.14, 0.15); ant2(hd, 0.12, 0.28, 0.05, 0.3);
+      legs(y0 - 0.45, [0.25, 0, -0.25], 0.55); HD = [0, 0.32, 0]; BK = [0, y0 + 0.55, -0.15]; h = 1.35;
+    } else if (k === 'cicada') { const y0 = 0.8; P(MON_SPH(), c, [0.48, 0.45, 0.75], [0, y0, -0.15]); for (let i = 0; i < 3; i++) P(MON_TOR(), lt(0.3), [0.4 - i * 0.07, 0.4 - i * 0.07, 0.4], [0, y0 - 0.05, -0.45 - i * 0.15], [0, 0, 0], body, { ol: false });
+      const hd = G([0, y0 + 0.08, 0.55]); HP = hd; P(MON_SPH(), lt(0.15), [0.58, 0.38, 0.4], [0, 0, 0], [0, 0, 0], hd); for (const s of [-1, 1]) P(MON_SPH(), 0x6A9A5A, [0.2, 0.2, 0.2], [s * 0.5, 0.08, 0.05], [0, 0, 0], hd); face(hd, 0.03, 0.33, 0.13, 0.2); P(MON_SPH(), 0xA8D88A, [0.12, 0.08, 0.06], [0, 0.3, 0.2], [0, 0, 0], hd, { ol: false, e: 0.3 });
+      for (const s of [-1, 1]) { const w = G([s * 0.22, y0 + 0.35, 0.05]); P(MON_SPH(), 0xE6F6FF, [0.3, 0.04, 0.95 + st * 0.12], [s * 0.2, 0, -0.6], [0.15, s * 0.12, s * 0.3], w, { op: 0.6, ol: false, e: 0.3 }); P(MON_CYL(), 0x6A7A5A, [0.012, 1.6 + st * 0.2, 0.012], [s * 0.2, 0.02, -0.6], [Math.PI / 2 + 0.15, 0, 0], w, { ol: false }); anim.wings.push([flapOf(w), s]); }
+      legs(y0 - 0.45, [0.25, 0, -0.25], 0.42); HD = [0, 0.28, 0]; BK = [0, y0 + 0.45, -0.35]; h = 1.6;
+    } else if (k === 'firefly') { const y0 = 0.9; P(MON_SPH(), c, [0.4, 0.38, 0.55], [0, y0, 0]); const lan = G([0, y0 - 0.05, -0.62]); P(MON_SPH(), cf.glow, [0.38 + st * 0.06, 0.36 + st * 0.05, 0.42 + st * 0.05], [0, 0, 0], [0, 0, 0], lan, { e: 0.9 }); P(MON_SPH(), 0xFFFFFF, [0.15, 0.12, 0.1], [-0.12, 0.15, 0.25], [0, 0, 0], lan, { ol: false, e: 1 }); anim.flick.push(lan);
+      const hd = G([0, y0 + 0.2, 0.45]); HP = hd; P(MON_SPH(), cf.hc, [0.44, 0.42, 0.42], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.03, 0.33, 0.15, 0.17); ant2(hd, 0.13, 0.3, 0, 0.4, DK, cf.glow);
+      for (const s of [-1, 1]) { const w = G([s * 0.2, y0 + 0.32, 0.05]); P(MON_SPH(), 0xF4FBFF, [0.42 + st * 0.08 + (cf.fairy ? 0.2 : 0), 0.04, 0.3], [s * 0.42, 0.05, -0.2], [0.3, s * 0.4, s * 0.4], w, { op: 0.6, ol: false, e: 0.5 }); anim.wings.push([flapOf(w), s]); }
+      if (cf.fairy) { P(MON_LEAF(), 0x5FBE5A, [0.35, 0.35, 0.35], [0, 0.38, -0.05], [-0.3, 0, 0], hd); for (let i = 0; i < 2 + st; i++) P(MON_SPH(), 0xDFFFB0, [0.06, 0.06, 0.06], [Math.cos(i * 2.2) * 0.9, y0 + 0.5 + (i % 2) * 0.3, Math.sin(i * 2.2) * 0.6], [0, 0, 0], body, { ol: false, e: 1 }); }
+      legs(y0 - 0.42, [0.15, -0.15], 0.38); HD = [0, 0.42, 0]; BK = [0, y0 + 0.4, -0.15]; h = 1.8;
+    } else if (k === 'cricket') { const y0 = 0.6; P(MON_SPH(), c, [0.4, 0.38, 0.85], [0, y0, -0.15]); P(MON_SPH(), dk(0.25), [0.38, 0.18, 0.75], [0, y0 + 0.22, -0.25], [0, 0, 0], body, { ol: false });
+      const hd = G([0, y0 + 0.24, 0.66]); HP = hd; P(MON_SPH(), lt(0.15), [0.42, 0.42, cf.hop ? 0.5 : 0.4], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.06, cf.hop ? 0.4 : 0.31, 0.15, 0.17);
+      for (const s of [-1, 1]) { const a = G([s * 0.12, 0.3, 0.1], [-0.9, 0, s * -0.25], hd); P(MON_CYL(), DK, [0.018, 1.1 + st * 0.15, 0.018], [0, (1.1 + st * 0.15) / 2, 0], [0, 0, 0], a); }
+      for (const s of [-1, 1]) { const lg = G([s * 0.38, y0 + 0.05, -0.35]); P(MON_SPH(), c, [0.13, 0.14, 0.45 + st * 0.05], [0, 0.18, -0.08], [0.85, 0, 0], lg); P(MON_CYL(), dk(0.4), [0.04, 0.6, 0.04], [0, -0.12, -0.4], [0.55, 0, 0], lg); }
+      legs(y0 - 0.4, [0.35, 0.1], 0.4); if (st === 3 && !cf.hop) { const v = G([0.55, y0 + 0.3, 0.35], [0, 0, -0.5]); P(MON_SPH(), 0xA8743A, [0.2, 0.28, 0.08], [0, 0, 0], [0, 0, 0], v); P(MON_CYL(), 0x5A3A22, [0.02, 0.5, 0.02], [0, 0.35, 0], [0, 0, 0], v); }
+      HD = [0, 0.42, 0]; BK = [0, y0 + 0.42, -0.25]; h = 1.35;
+    } else if (k === 'snail') { P(MON_SPH(), c, [0.38, 0.28, 0.95], [0, 0.3, 0.1]); const hd = G([0, 0.75, 0.72]); HP = hd; P(MON_SPH(), c, [0.38, 0.4, 0.36], [0, 0, 0], [0, 0, 0], hd); cheeks(hd, 0.25, -0.1, 0.3, 0.08); smile(hd, -0.12, 0.36, 0.07);
+      for (const s of [-1, 1]) { const a = G([s * 0.15, 0.28, 0.05], [0.15, 0, s * -0.3], hd); P(MON_CYL(), c, [0.05, 0.42, 0.05], [0, 0.21, 0], [0, 0, 0], a); eye1(a, [0, 0.46, 0.04], 0.13); }
+      const sh = G([0, 0.88, -0.25]); P(MON_SPH(), st >= 2 ? 0x8FC8E8 : cf.sh, [0.55, 0.6, 0.6], [0, 0, 0], [0, 0, 0], sh); for (const s of [-1, 1]) { P(MON_TOR(), dk(0.35), [0.4, 0.4, 0.5], [s * 0.5, 0.02, 0], [0, Math.PI / 2, 0], sh, { ol: false }); P(MON_TOR(), dk(0.35), [0.2, 0.2, 0.4], [s * 0.54, 0.05, 0.05], [0, Math.PI / 2, 0], sh, { ol: false }); }
+      if (st === 3) for (let i = 0; i < 3; i++) { P(MON_CYL(), 0xE8F4FA, [0.11, 0.3, 0.11], [(i - 1) * 0.28, 0.65, (i % 2) * -0.15], [0, 0, 0], sh); P(MON_CON(), 0x4A8AC8, [0.15, 0.22, 0.15], [(i - 1) * 0.28, 0.9, (i % 2) * -0.15], [0, 0, 0], sh); }
+      HD = [0, 0.48, 0]; BK = [0, 1.55, -0.2]; h = 1.6;
+    } else if (k === 'ant') { const y0 = 0.62; P(MON_SPH(), c, [0.48, 0.44, 0.55], [0, y0 + 0.05, -0.65]); P(MON_SPH(), c, [0.27, 0.25, 0.3], [0, y0, -0.08]); const hd = G([0, y0 + 0.3, 0.38]); HP = hd; P(MON_SPH(), lt(0.12), [0.5, 0.46, 0.45], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.04, 0.36, 0.16, 0.2);
+      for (const s of [-1, 1]) { const a = G([s * 0.15, 0.36, 0.1], [0.4, 0, s * -0.5], hd); P(MON_CYL(), DK, [0.022, 0.3, 0.022], [0, 0.15, 0], [0, 0, 0], a); P(MON_CYL(), DK, [0.022, 0.3, 0.022], [0, 0.32, 0.12], [1.1, 0, 0], a); P(MON_CON(), dk(0.3), [0.05, 0.16, 0.05], [s * -0.13, -0.27, 0.36], [1.5, 0, 0], hd); }
+      legs(y0 - 0.38, [0.12, -0.08, -0.28], 0.42, DK, 0.42);
+      if (cf.carry) { const r = [0.2, 0.28, 0.38][st - 1]; const ry = 0.4 + r * 0.75, ar = G([0, ry, 0.05], [0, 0, 0], hd); P(MON_ICO(), [0xE8D4A0, 0xA88A64, 0x9A7A5A][st - 1], [r, r * 0.8, r], [0, 0, 0], [0.3, 0.5, 0], ar); for (const s of [-1, 1]) { const x0 = s * 0.32, y1 = 0.0, x1 = s * r * 0.95, dx = x1 - x0, dy = ry - y1, len = Math.hypot(dx, dy); P(MON_CYL(), DK, [0.035, len, 0.035], [(x0 + x1) / 2, (y1 + ry) / 2, 0.12], [0, 0, Math.atan2(-dx, dy)], hd); P(MON_SPH(), DK, [0.06, 0.06, 0.06], [x1, ry, 0.12], [0, 0, 0], hd); } HD = [0, ry + r * 0.75, 0.05]; }
+      else { P(MON_SPH(), 0x8F7454, [0.52, 0.2, 0.5], [0, 0.28, -0.05], [0.2, 0, 0], hd); for (let i = 0; i < st; i++) rock(body, [(i - (st - 1) / 2) * 0.3, y0 + 0.45, -0.65], 0.16, 0xC09A6A); HD = [0, 0.55, 0]; }
+      if (!cf.carry) HD = [0, 0.55, 0]; BK = [0, y0 + 0.5, -0.65]; h = 1.5;
+    } else if (k === 'fish') { const y0 = 0.95, L = cf.L, H = cf.H, W = cf.W ?? H * 0.82, fc = cf.fc ?? lt(0.25); P(MON_SPH(), c, [W, H, L], [0, y0, 0]); P(MON_SPH(), cf.belly ?? lt(0.6), [W * 0.86, H * 0.6, L * 0.86], [0, y0 - H * 0.35, 0.05], [0, 0, 0], body, { ol: false });
+      eyes(body, W * 0.5, y0 + H * 0.22, L * 0.68, 0.17 * (cf.es ?? 1), cf.iris); cheeks(body, W * 0.78, y0 - H * 0.08, L * 0.6, 0.08);
+      if (cf.mouth === 'o') P(MON_TOR(), 0xE2574C, [0.07, 0.07, 0.07], [0, y0 - H * 0.12, L * 0.98], [0, 0, 0], body, { ol: false }); else if (cf.mouth === 'wide') smile(body, y0 - H * 0.2, L * 0.94, 0.2); else smile(body, y0 - H * 0.18, L * 0.95, 0.08);
+      if (cf.whisk) for (const s of [-1, 1]) for (const [l, ry] of (cf.whisk === 'long' ? [[0.9, 0.9], [0.45, 0.4]] : [[0.4, 0.6]])) P(MON_CYL(), dk(0.3), [0.02, l, 0.02], [s * W * 0.45, y0 - H * 0.2, L * 0.88], [Math.PI / 2 - 0.4, 0, s * ry], body, { ol: false });
+      const dh = 0.45 + st * 0.08; if (cf.dors === 'long') for (let i = 0; i < 3; i++) P(MON_FIN(), fc, [0.35, dh * 0.7, 0.5], [0, y0 + H * 0.85, L * 0.35 - i * L * 0.35], [0, Math.PI / 2, 0.4], body); else if (cf.dors === 'spiky') for (let i = 0; i < 5; i++) P(MON_CON(), fc, [0.07, 0.35 + st * 0.06 - Math.abs(i - 2) * 0.05, 0.07], [0, y0 + H * 0.95, L * 0.4 - i * L * 0.2], [-0.35, 0, 0]); else P(MON_FIN(), fc, [0.5, dh, 0.6], [0, y0 + H * 0.82, -L * 0.1], [0, Math.PI / 2, 0.3]);
+      const tl = G([0, y0, -L * 0.94]); const tt = cf.tail || 'fan'; if (tt === 'round') P(MON_SPH(), fc, [0.05, 0.42 + st * 0.05, 0.32], [0, 0, -0.25], [0, 0, 0], tl); else for (const s of [-1, 1]) { const f = P(MON_FIN(), fc, tt === 'fork' ? [0.42, 0.62 + st * 0.08, 0.8] : [0.6 + st * 0.1, 0.6 + st * 0.1, 0.8], [0, 0, 0], [0, 0, 0], tl); f.rotation.set(0, Math.PI / 2, s > 0 ? (tt === 'fork' ? -1.3 : -1.1) : Math.PI + (tt === 'fork' ? 1.3 : 1.2)); } anim.tails.push([tl, 0.5]);
+      for (const s of [-1, 1]) P(MON_SPH(), fc, [0.3, 0.05, 0.17], [s * W * 1.02, y0 - H * 0.3, L * 0.1], [0, s * 0.5, s * -0.5]);
+      if (cf.bands) for (const z of [L * 0.42, -L * 0.25]) { const f = Math.sqrt(1 - (z / L) ** 2); P(MON_SPH(), cf.bands, [W * f * 1.03, H * f * 1.03, 0.09], [0, y0, z], [0, 0, 0], body, { ol: false }); }
+      if (cf.line) P(MON_SPH(), cf.line, [W * 1.01, 0.05, L * 0.75], [0, y0 + H * 0.05, -0.05], [0, 0, 0], body, { ol: false });
+      if (cf.stripe) for (let i = 0; i < 4; i++) { const z = L * 0.35 - i * L * 0.22, f = Math.sqrt(1 - (z / L) ** 2); P(MON_SPH(), cf.stripe, [W * f * 1.02, 0.06, 0.06], [0, y0 + H * f * 0.75, z], [0.3, 0, 0], body, { ol: false }); }
+      if (cf.spots) for (let i = 0; i < 6; i++) { const d = new THREE.Vector3(i % 2 ? 1 : -1, 0.3 + (i % 3) * 0.25, 0.3 - (i >> 1) * 0.4).normalize(); P(MON_SPH(), cf.spots, [0.1, 0.1, 0.1], [d.x * W * 0.95, y0 + d.y * H * 0.95, d.z * L * 0.95], [0, 0, 0], body, { ol: false }); }
+      if (cf.ice && st >= 2) for (let i = 0; i < st + 1; i++) P(MON_CON(), 0xE8F8FF, [0.08, 0.3, 0.08], [(i - st / 2) * 0.2, y0 + H + 0.1, 0.1 - i * 0.12], [-0.3, 0, (i - st / 2) * 0.3], body, { e: 0.3 });
+      HD = [0, y0 + H * 0.95, L * 0.3]; BK = [0, y0 + H * 0.9, -L * 0.35]; h = y0 + H + 0.55;
+    } else if (k === 'loach') { const y0 = 0.55; const n = 7; for (let i = 0; i < n; i++) { const tt = i / (n - 1), r = 0.34 - tt * 0.18, sg = G([Math.sin(i * 0.9) * 0.12, y0 + r * 0.2, 0.55 - i * 0.3]); P(MON_SPH(), c, [r, r, r * 1.35], [0, 0, 0], [0, 0, 0], sg); P(MON_SPH(), lt(0.5), [r * 0.8, r * 0.5, r * 1.2], [0, -r * 0.45, 0], [0, 0, 0], sg, { ol: false }); if (i % 2) P(MON_SPH(), dk(0.4), [0.05, 0.05, 0.05], [r * 0.7, r * 0.4, 0], [0, 0, 0], sg, { ol: false }); anim.tails.push([sg, 0.25]); if (i === n - 1) P(MON_SPH(), lt(0.2), [0.04, 0.22, 0.25], [0, 0, -0.25], [0, 0, 0], sg); }
+      const hd = G([0, y0 + 0.2, 0.85]); HP = hd; P(MON_SPH(), c, [0.42, 0.38, 0.42], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.1, 0.32, 0.14, 0.17); for (const s of [-1, 1]) for (let i = 0; i < 3; i++) P(MON_CYL(), dk(0.3), [0.018, 0.3 + i * 0.05, 0.018], [s * 0.1, -0.15, 0.35], [Math.PI / 2 - 0.5 - i * 0.3, 0, s * (0.3 + i * 0.35)], hd, { ol: false });
+      HD = [0, 0.38, 0]; BK = [0, y0 + 0.4, 0.1]; h = 1.25;
+    } else if (k === 'tad') { if (st < 3) { const y0 = 0.75; P(MON_SPH(), c, [0.55, 0.5, 0.58], [0, y0, 0.05]); P(MON_SPH(), lt(0.4), [0.45, 0.32, 0.45], [0, y0 - 0.2, 0.12], [0, 0, 0], body, { ol: false }); face(body, y0 + 0.12, 0.5, 0.17, 0.22);
+        const tl = G([0, y0 + 0.02, -0.45]); P(MON_FIN(), lt(0.25), [0.6, 0.55, 0.6], [0, 0, -0.1], [0, Math.PI / 2, -1.6], tl); P(MON_CYL(), c, [0.1, 0.6, 0.1], [0, 0, -0.3], [Math.PI / 2, 0, 0], tl); anim.tails.push([tl, 0.9]);
+        if (st === 2) for (const s of [-1, 1]) { P(MON_CYL(), c, [0.07, 0.3, 0.07], [s * 0.35, y0 - 0.35, -0.25], [0.4, 0, s * 0.5]); P(MON_SPH(), lt(0.3), [0.12, 0.05, 0.15], [s * 0.45, y0 - 0.5, -0.3], [0, 0, 0], body); }
+        HD = [0, y0 + 0.5, 0.05]; BK = [0, y0 + 0.45, -0.2]; h = 1.35; }
+      else { const fc2 = 0x6CC85C, y0 = 0.55; P(MON_SPH(), fc2, [0.7, 0.52, 0.62], [0, y0, 0]); P(MON_SPH(), 0xF2F8D0, [0.55, 0.32, 0.45], [0, y0 - 0.18, 0.22], [0, 0, 0], body, { ol: false }); for (const s of [-1, 1]) { const e = G([s * 0.3, y0 + 0.48, 0.25]); P(MON_SPH(), fc2, [0.24, 0.22, 0.22], [0, 0, 0], [0, 0, 0], e); eye1(e, [0, 0.03, 0.12], 0.17); }
+        cheeks(body, 0.45, y0 + 0.02, 0.5, 0.1); smile(body, y0 + 0.05, 0.6, 0.22); for (const s of [-1, 1]) { P(MON_SPH(), fc2, [0.28, 0.2, 0.42], [s * 0.6, y0 - 0.25, -0.15], [0, s * 0.3, 0]); P(MON_SPH(), 0x8ED86A, [0.18, 0.05, 0.22], [s * 0.7, 0.04, 0.2], [0, s * 0.3, 0]); P(MON_CYL(), fc2, [0.07, 0.3, 0.07], [s * 0.35, y0 - 0.35, 0.4], [0.3, 0, s * 0.2]); }
+        for (let i = 0; i < 4; i++) P(MON_SPH(), 0x4FA04F, [0.08, 0.08, 0.08], [(i - 1.5) * 0.25, y0 + 0.42, -0.25 + (i % 2) * 0.15], [0, 0, 0], body, { ol: false });
+        HD = [0, y0 + 0.75, 0.05]; BK = [0, y0 + 0.55, -0.2]; h = 1.4; }
+    } else if (k === 'flat') { const y0 = 0.4; P(MON_SPH(), c, [0.85, 0.24, 0.72], [0, y0, 0]); P(MON_TOR(), lt(0.25), [0.82, 0.7, 0.7], [0, y0 - 0.03, 0], [Math.PI / 2, 0, 0], body, { ol: false }); for (let i = 0; i < 5; i++) P(MON_SPH(), dk(0.3), [0.09, 0.05, 0.09], [Math.cos(i * 1.3) * 0.5, y0 + 0.2, Math.sin(i * 1.3) * 0.4 - 0.1], [0, 0, 0], body, { ol: false });
+      for (const s of [-1, 1]) { const e = G([s * 0.2, y0 + 0.24, 0.35]); P(MON_SPH(), c, [0.17, 0.15, 0.17], [0, 0, 0], [0, 0, 0], e); eye1(e, [0, 0.07, 0.08], 0.13); } cheeks(body, 0.42, y0 + 0.1, 0.6, 0.09); smile(body, y0 + 0.02, 0.72, 0.1);
+      const tl = G([0, y0, -0.7]); P(MON_SPH(), lt(0.25), [0.4, 0.05, 0.3], [0, 0, -0.2], [0, 0, 0], tl); anim.tails.push([tl, 0.4]); HD = [0, y0 + 0.35, 0.05]; BK = [0, y0 + 0.28, -0.3]; h = 1.0;
+    } else if (k === 'octo') { const y0 = 1.25; P(MON_SPH(), c, [0.62, 0.72, 0.6], [0, y0, -0.05]); P(MON_SPH(), lt(0.2), [0.5, 0.35, 0.45], [0, y0 - 0.38, 0.12], [0, 0, 0], body, { ol: false }); face(body, y0 - 0.1, 0.5, 0.18, 0.22);
+      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2, tg = G([Math.sin(a) * 0.32, y0 - 0.55, Math.cos(a) * 0.32]); for (let j = 0; j < 4; j++) { const rr = 0.15 - j * 0.025, d = 0.15 + j * 0.2; P(MON_SPH(), j % 2 ? c : lt(0.1), [rr, rr, rr], [Math.sin(a) * d, -0.15 - j * 0.12 + (j > 2 ? 0.08 : 0), Math.cos(a) * d], [0, 0, 0], tg); } anim.tents.push([tg, i]); }
+      for (let i = 0; i < 3; i++) P(MON_SPH(), dk(0.25), [0.07, 0.07, 0.07], [(i - 1) * 0.25, y0 + 0.45, -0.3 - (i % 2) * 0.1], [0, 0, 0], body, { ol: false });
+      if (st === 3) crown(body, [0, y0 + 0.74, -0.05], 0.22, 0x4A3A8A); HD = [0, y0 + 0.75, -0.05]; BK = [0, y0 + 0.5, -0.35]; h = 2.1;
+    } else if (k === 'jelly') { const y0 = 1.35; P(MON_SPH(), c, [0.62, 0.5, 0.6], [0, y0, 0], [0, 0, 0], body, { op: 0.85, e: 0.35 }); P(MON_SPH(), 0xFFE066, [0.3, 0.22, 0.28], [0, y0 + 0.1, -0.05], [0, 0, 0], body, { ol: false, e: 0.8, op: 0.9 }); P(MON_TOR(), lt(0.4), [0.6, 0.6, 0.6], [0, y0 - 0.2, 0], [Math.PI / 2, 0, 0], body, { op: 0.9 });
+      face(body, y0 - 0.02, 0.56, 0.15, 0.2); for (let i = 0; i < 6 + st; i++) { const a = i / (6 + st) * Math.PI * 2, tg = G([Math.sin(a) * 0.38, y0 - 0.3, Math.cos(a) * 0.38]); for (let j = 0; j < 3; j++) P(MON_CYL(), i % 2 ? 0xE8A0FF : lt(0.2), [0.03, 0.25, 0.03], [Math.sin(j * 2) * 0.05, -0.12 - j * 0.24, 0], [0, 0, Math.sin(j * 2 + i) * 0.3], tg, { ol: false, op: 0.9, e: 0.3 }); anim.tents.push([tg, i]); }
+      HD = [0, y0 + 0.5, 0]; BK = [0, y0 + 0.4, -0.3]; h = 2.0;
+    } else if (k === 'dfly') { const y0 = 1.0; for (let i = 0; i < 6; i++) P(MON_SPH(), i % 2 ? c : dk(0.15), [0.12 - i * 0.008, 0.12 - i * 0.008, 0.16], [0, y0 + i * 0.03, -0.35 - i * 0.24]); P(MON_SPH(), c, [0.3, 0.28, 0.38], [0, y0, 0.05]);
+      const hd = G([0, y0 + 0.15, 0.45]); HP = hd; P(MON_SPH(), lt(0.2), [0.38, 0.34, 0.34], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.08, 0.28, 0.17, 0.17);
+      for (const s of [-1, 1]) for (const [z, l] of [[0.12, 0.8], [-0.12, 0.7]]) { const w = G([s * 0.15, y0 + 0.2, z]); P(MON_SPH(), 0xF4FBFF, [l + st * 0.12, 0.03, 0.15], [s * (l + st * 0.12) * 0.95, 0, 0], [0, 0, 0], w, { op: 0.6, ol: false, e: 0.4 }); P(MON_SPH(), c, [0.08, 0.035, 0.06], [s * (l + st * 0.12) * 1.6, 0.01, 0], [0, 0, 0], w, { ol: false }); anim.wings.push([flapOf(w), s]); }
+      legs(y0 - 0.25, [0.1, -0.05], 0.22, DK, 0.3); HD = [0, 0.38, 0]; BK = [0, y0 + 0.25, -0.2]; h = 1.6;
+    } else if (k === 'turtle') { const y0 = 0.55, sh = st >= 2 && cf.crys ? 0x9AE8FF : cf.sh; P(MON_SPH(), sh, [0.75, 0.52, 0.85], [0, y0 + 0.08, -0.08], [0, 0, 0], body, cf.crys ? { op: 0.85, e: 0.2 } : {}); P(MON_TOR(), lt(0.25), [0.72, 0.82, 0.5], [0, y0 - 0.04, -0.08], [Math.PI / 2, 0, 0], body, { ol: false });
+      for (const [x, z] of [[0, 0], [0.32, 0.25], [-0.32, 0.25], [0.32, -0.38], [-0.32, -0.38], [0, -0.55], [0, 0.45]]) { const d = new THREE.Vector3(x, 0.85, z).normalize(); P(MON_SPH(), lt(0.3), [0.17, 0.08, 0.17], [d.x * 0.72, y0 + 0.08 + d.y * 0.5, -0.08 + d.z * 0.82], [d.z * 0.8, 0, -d.x * 0.8], body, { ol: false }); }
+      const hd = G([0, y0 + 0.12, 0.85]); HP = hd; P(MON_SPH(), c, [0.38, 0.36, 0.38], [0, 0, 0], [0, 0, 0], hd); face(hd, 0.08, 0.3, 0.14, 0.17);
+      for (const s of [-1, 1]) for (const z of [0.45, -0.55]) { if (cf.sea && z > 0) P(MON_SPH(), c, [0.42, 0.08, 0.2], [s * 0.8, y0 - 0.15, z], [0, s * -0.5, s * -0.3]); else P(MON_SPH(), c, [0.17, 0.25, 0.17], [s * 0.55, 0.2, z]); }
+      if (cf.crys) for (let i = 0; i < st + 1; i++) P(MON_CON(), [0xBFF5FF, 0xE6D0FF][i % 2], [0.1 + st * 0.02, 0.4 + st * 0.1, 0.1 + st * 0.02], [(i - st / 2) * 0.28, y0 + 0.65, -0.08 - (i % 2) * 0.25], [(i % 2) * -0.3, 0, (i - st / 2) * 0.25], body, { e: 0.4, op: 0.9 });
+      HD = [0, 0.38, 0]; BK = [0, y0 + 0.62, -0.1]; h = 1.35;
+    } else if (k === 'horse') { const y0 = 1.05; P(MON_SPH(), c, [0.38, 0.55, 0.38], [0, y0, 0]); P(MON_SPH(), lt(0.4), [0.28, 0.42, 0.15], [0, y0 - 0.05, 0.27], [0, 0, 0], body, { ol: false }); for (let i = 0; i < 4; i++) P(MON_TOR(), dk(0.15), [0.3 - i * 0.02, 0.3 - i * 0.02, 0.5], [0, y0 + 0.25 - i * 0.18, 0.02], [Math.PI / 2, 0, 0], body, { ol: false });
+      const hd = G([0, y0 + 0.62, 0.12]); HP = hd; P(MON_SPH(), c, [0.36, 0.36, 0.4], [0, 0, 0], [0, 0, 0], hd); P(MON_CYL(), c, [0.09, 0.35, 0.09], [0, -0.06, 0.42], [Math.PI / 2, 0, 0], hd); eyes(hd, 0.2, 0.08, 0.27, 0.13); cheeks(hd, 0.3, -0.07, 0.25, 0.07);
+      for (let i = 0; i < 2 + st; i++) P(MON_CON(), st === 3 ? 0xFFD23C : lt(0.2), [0.06, 0.25, 0.06], [0, 0.32, -0.05 - i * 0.12], [-0.4 - i * 0.2, 0, 0], hd);
+      const tl = G([0, y0 - 0.5, -0.05]); for (let i = 0; i < 7; i++) { const a = i * 0.8; P(MON_SPH(), c, [0.13 - i * 0.012, 0.13 - i * 0.012, 0.13 - i * 0.012], [0, -0.15 - Math.sin(Math.min(a, 3)) * 0.1 - i * 0.04, -Math.sin(a) * 0.22 - i * 0.03], [0, 0, 0], tl); } anim.tails.push([tl, 0.3]);
+      const fn = G([0, y0 + 0.1, -0.35]); P(MON_FIN(), lt(0.2), [0.3, 0.35 + st * 0.05, 0.4], [0, 0, 0], [0, Math.PI / 2, 0.8], fn); anim.tails.push([fn, 0.6]); HD = [0, 0.4, -0.05]; BK = [0, y0 + 0.4, -0.3]; h = 2.2;
+    } else if (k === 'dolph') { const y0 = 1.0, L = 1.05 + st * 0.08; P(MON_SPH(), c, [0.48, 0.5, L], [0, y0, 0]); P(MON_SPH(), 0xEEF2F6, [0.4, 0.3, L * 0.85], [0, y0 - 0.22, 0.1], [0, 0, 0], body, { ol: false }); P(MON_SPH(), c, [0.17, 0.13, 0.32], [0, y0 - 0.12, L * 0.95]); eyes(body, 0.27, y0 + 0.12, L * 0.68, 0.15); smile(body, y0 - 0.17, L * 1.12, 0.1); cheeks(body, 0.4, y0 - 0.05, L * 0.62, 0.08);
+      P(MON_FIN(), c, [0.45, 0.55 + st * 0.08, 0.6], [0, y0 + 0.42, -0.15], [0, Math.PI / 2, 0.55]); for (const s of [-1, 1]) P(MON_SPH(), c, [0.34, 0.06, 0.16], [s * 0.5, y0 - 0.22, 0.25], [0, s * 0.5, s * -0.5]);
+      const tl = G([0, y0 + 0.05, -L * 0.95]); for (const s of [-1, 1]) P(MON_SPH(), c, [0.38, 0.06, 0.2], [s * 0.28, 0.08, -0.1], [0, s * -0.4, 0], tl); anim.tails.push([tl, 0.4]); HD = [0, y0 + 0.5, 0.25]; BK = [0, y0 + 0.5, -0.4]; h = 1.9;
+    } else if (k === 'crab') { const y0 = 0.6; P(MON_SPH(), c, [0.72, 0.42, 0.55], [0, y0, 0]); P(MON_SPH(), lt(0.5), [0.55, 0.22, 0.4], [0, y0 - 0.18, 0.1], [0, 0, 0], body, { ol: false }); cheeks(body, 0.45, y0 + 0.02, 0.48, 0.1); smile(body, y0 - 0.02, 0.55, 0.12);
+      for (const s of [-1, 1]) { const a = G([s * 0.22, y0 + 0.35, 0.3], [0, 0, s * -0.15]); P(MON_CYL(), c, [0.05, 0.3, 0.05], [0, 0.15, 0], [0, 0, 0], a); eye1(a, [0, 0.36, 0.03], 0.15); }
+      const cs = 0.26 + st * 0.07; for (const s of [-1, 1]) { const ar = G([s * 0.72, y0 + 0.05, 0.3], [0, s * -0.4, 0]); P(MON_CYL(), c, [0.07, 0.4, 0.07], [s * 0.15, 0.1, 0.1], [0.6, 0, s * -0.8], ar); P(MON_SPH(), c, [cs, cs * 0.8, cs * 1.1], [s * 0.3, 0.3, 0.3], [0, 0, 0], ar); P(MON_CON(), c, [cs * 0.35, cs * 1.2, cs * 0.35], [s * 0.28, 0.48 + cs * 0.3, 0.55], [1.1, 0, 0], ar); P(MON_CON(), lt(0.3), [cs * 0.28, cs * 0.9, cs * 0.28], [s * 0.3, 0.2, 0.58], [1.7, 0, 0], ar); }
+      legs(y0 - 0.32, [0.1, -0.12, -0.32], 0.72, c, 0.42); HD = [0, y0 + 0.4, -0.05]; BK = [0, y0 + 0.38, -0.2]; h = 1.35;
+    } else if (k === 'ray') { const y0 = 0.85; P(MON_SPH(), c, [0.52, 0.24, 0.68], [0, y0, 0]); P(MON_SPH(), lt(0.55), [0.42, 0.18, 0.55], [0, y0 - 0.12, 0.02], [0, 0, 0], body, { ol: false });
+      for (const s of [-1, 1]) { const w = G([s * 0.35, y0, 0.05]); P(MON_SPH(), c, [0.65 + st * 0.08, 0.1, 0.48], [s * 0.42, 0.08, -0.05], [0, s * -0.3, s * 0.25], w); anim.wings.push([flapOf(w), s]); }
+      eyes(body, 0.22, y0 + 0.16, 0.56, 0.17); cheeks(body, 0.34, y0 - 0.01, 0.6, 0.08); smile(body, y0 - 0.06, 0.68, 0.09); const tl = G([0, y0, -0.6]); P(MON_CYL(), c, [0.035, 0.9 + st * 0.15, 0.035], [0, 0.05, -0.45], [Math.PI / 2 - 0.15, 0, 0], tl); if (st >= 2) bolt(tl, [0, 0.18, -0.95 - st * 0.08], 0.14, [0, Math.PI / 2, 0]); anim.tails.push([tl, 0.6]);
+      HD = [0, y0 + 0.28, 0.2]; BK = [0, y0 + 0.25, -0.2]; h = 1.4;
+    } else if (k === 'star') { const y0 = 1.0; P(MON_SPH(), c, [0.38, 0.38, 0.22], [0, y0, 0]); for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; const g2 = G([Math.sin(a) * 0.32, y0 + Math.cos(a) * 0.32, 0], [0, 0, -a]); P(MON_CON(), c, [0.24, 0.6 + st * 0.05, 0.16], [0, 0.28, 0], [0, 0, 0], g2); for (let j = 0; j < 2; j++) P(MON_SPH(), lt(0.4), [0.04, 0.04, 0.03], [0, 0.12 + j * 0.18, 0.12 - j * 0.02], [0, 0, 0], g2, { ol: false }); if (st === 3) flame(g2, [0, 0.66, 0], 0.07); }
+      face(body, y0 + 0.05, 0.2, 0.13, 0.15); HD = [0, y0 + 0.75, 0]; BK = [0, y0 + 0.3, -0.2]; h = 1.95;
+    }
+    deco(HP, HD, BK, sz, k);
   }
-  // 속성 장식
-  const acc = new THREE.Group(); acc.position.set(0.32, accY, accZ); body.add(acc);
-  if (t === 'fire') { const f1 = P(PB3_G.cone, 0xFF6A2A, 0, 0.12, 0, 0.14, 0.38, 0.14, { p: acc, m: { emissive: 0xFF5A1A, emissiveIntensity: 0.8 } }); P(PB3_G.cone, 0xFFE066, 0, 0.06, 0.02, 0.08, 0.22, 0.08, { p: acc, m: { emissive: 0xFFD23C, emissiveIntensity: 0.9 } }); anim.flick.push(f1); }
-  else if (t === 'water') { P(PB3_G.sph, 0x6EC1EC, 0, 0, 0, 0.12, 0.12, 0.12, { p: acc, ol: true, m: { transparent: true, opacity: 0.9 } }); P(PB3_G.cone, 0x6EC1EC, 0, 0.15, 0, 0.09, 0.2, 0.09, { p: acc, m: { transparent: true, opacity: 0.9 } }); }
-  else if (t === 'grass') { P(PB3_G.cyl, 0x3E7A2E, 0, 0, 0, 0.02, 0.22, 0.02, { p: acc }); for (const s of [-1, 1]) P(PB3_G.sph, 0x7CC85C, s * 0.13, 0.12, 0, 0.13, 0.05, 0.08, { p: acc, ol: true, r: [0, 0, s * 0.5] }); }
-  else if (t === 'elec') { for (const [x, y, rz] of [[0.03, 0.15, 0.5], [-0.03, 0, -0.5], [0.03, -0.15, 0.5]]) P(PB3_G.box, 0xFFE066, x, y, 0, 0.06, 0.2, 0.06, { p: acc, r: [0, 0, rz], m: { emissive: 0xFFD23C, emissiveIntensity: 0.7 } }); }
-  else if (t === 'wind') { for (let k = 0; k < 2; k++) { const r = P(PB3_G.tor, 0x3FB8A8, 0, k * 0.12, 0, 0.16 - k * 0.04, 0.16 - k * 0.04, 0.16, { p: acc, r: [Math.PI / 2, 0, 0] }); anim.spin.push(r); } }
-  else if (t === 'earth') { for (const [x, y, s] of [[0, 0, 0.12], [-0.16, -0.08, 0.08], [0.13, -0.1, 0.07]]) P(PB3_G.dod, [0xB08A5A, 0x9A7A50, 0xC8A070][Math.round(s * 30) % 3], x, y, 0, s, s, s, { p: acc, ol: true }); }
-  if (tier >= 4) { const ring = P(PB3_G.tor, 0xFFE066, 0, 0.05, 0, 0.9, 0.9, 0.9, { r: [Math.PI / 2, 0, 0], m: { emissive: 0xFFD23C, emissiveIntensity: 0.6 } }); anim.spin.push(ring); }
-  root.userData = { id, body, mats, anim, h: accY + 0.3 };
-  return root;
+  body.scale.setScalar(S * MON_NORM); root.userData = { id, body: bodyO, mats: mlist, anim, h: h * S * MON_NORM, st }; return root; }
+function pb3Pet(id, st = 1) { return mon3(id, st); } // 🐾 1105zz8 새 3D 펫 (진화 단계 st)
+// ---------- 🎨 펫 카드 그림: 3D 모델을 작은 화면에 한 번 그려 두고 써요 (먼저 예전 그림 → 준비되면 바꿔요) ----------
+const PET_ART3 = {}, petArtQ = []; let petArtR = null, petArtBusy = false;
+function petArt3(id, st = 1) { const k = id + ':' + st; if (k in PET_ART3) return PET_ART3[k];
+  try { if (!petArtR) { petArtR = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); petArtR.setPixelRatio(1); petArtR.setSize(200, 200, false); petArtR.outputColorSpace = THREE.SRGBColorSpace; petArtR.toneMapping = renderer.toneMapping; petArtR.setClearColor(0x000000, 0); }
+    const sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight(0xFFFFFF, 0x8899AA, 1.7)); const dl = new THREE.DirectionalLight(0xFFFFFF, 2.1); dl.position.set(3, 6, 5); sc.add(dl);
+    const g = mon3(id, st); g.rotation.y = 0.45; sc.add(g); sc.updateMatrixWorld(true); const bb = new THREE.Box3(); g.traverse(o => { if (o.isMesh && !o.userData.aura) bb.expandByObject(o, false); }); const ctr = bb.getCenter(new V3()), sz = bb.getSize(new V3()), R = Math.max(sz.x, sz.y * 1.05, sz.z * 0.8) * 0.58;
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100); cam.position.copy(ctr).addScaledVector(new V3(0, 0.3, 1).normalize(), R / Math.sin(15 * Math.PI / 180)); cam.lookAt(ctr); petArtR.render(sc, cam); PET_ART3[k] = petArtR.domElement.toDataURL(); for (const m of g.userData.mats) m.dispose();
+  } catch (e) { PET_ART3[k] = null; } return PET_ART3[k]; }
+function petArtPump() { if (petArtBusy || !petArtQ.length) return; petArtBusy = true; setTimeout(() => { petArtBusy = false; const [im, id, st] = petArtQ.shift(); const u = petArt3(id, st); if (u) im.src = u; petArtPump(); }, 20); } // 한 장씩 (화면이 멈추지 않게)
+function petEvoShow(id, s0, s1) { // ✨ 진화하는 순간: 예전 모습 ↔ 새 모습이 번갈아 반짝 → 새 모습 + 이름
+  const lvOf = (s) => [1, PET_EVO_LV[0], PET_EVO_LV[1]][s - 1], n0 = petNameLv(id, lvOf(s0)), n1 = petNameLv(id, lvOf(s1)), u0 = petArt3(id, s0) || petArt(id), u1 = petArt3(id, s1) || petArt(id);
+  const ov = el2('div', 'pet-evo'); ov.style.cssText = 'position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at 50% 45%,rgba(255,248,214,.97) 0,rgba(255,224,140,.9) 28%,rgba(46,34,72,.94) 70%);font-weight:900;text-align:center;padding:16px;cursor:pointer';
+  const im = document.createElement('img'); im.src = u0; im.alt = n1; im.style.cssText = 'width:min(56vmin,260px);height:min(56vmin,260px);object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))'; const tx = el2('div', '', `✨ 어? ${n0}의 모습이…!`); tx.style.cssText = 'color:#3B2F2A;font-size:calc(18px + 1.6vmin);background:rgba(255,255,255,.85);padding:8px 16px;border-radius:99px';
+  ov.append(im, tx); document.body.append(ov); playSfx('cheer'); const t0 = performance.now(); let i = 0, done = 0, shut = 0; /* 시간으로 진행 (느린 기기에서 타이머가 늦어도 같은 길이) */
+  const close = () => { clearInterval(blink); clearTimeout(shut); ov.remove(); };
+  const blink = setInterval(() => { if (done) return; const e = performance.now() - t0; if (e < 2100) { i = Math.floor(e / (e < 1200 ? 240 : 120)); im.src = i % 2 ? u1 : u0; im.style.filter = i % 2 ? 'brightness(3) drop-shadow(0 0 18px #fff)' : 'drop-shadow(0 8px 14px rgba(0,0,0,.35))'; return; }
+    done = 1; clearInterval(blink); im.src = u1; im.style.filter = 'drop-shadow(0 0 22px rgba(255,230,120,.9))'; im.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], { duration: 600, easing: 'ease-out' }); tx.textContent = `🎉 ${n0} → ${n1} 진화했어요!`; playSfx('fanfare'); shut = setTimeout(close, 4500); }, 60);
+  ov.onclick = () => { if (done) close(); };
 }
 function pb3SetMon(side, m) { // side 0 = 나 · 1 = 상대
-  const cur = pb3.mons[side]; if (cur?.userData.id === m?.id && cur.userData.alive === (m && m.hp > 0)) return;
-  if (cur && cur.userData.id === m?.id) { cur.userData.alive = m.hp > 0; return; }
+  const cur = pb3.mons[side], same = cur && cur.userData.id === m?.id && cur.userData.st === petStage(m?.lv); if (same && cur.userData.alive === (m && m.hp > 0)) return;
+  if (same) { cur.userData.alive = m.hp > 0; return; }
   if (cur) pb3.scene.remove(cur); pb3.mons[side] = null; if (!m) return;
-  const g = pb3Pet(m.id), p = PB3_POS[side], o = PB3_POS[1 - side]; g.position.copy(p); g.rotation.y = Math.atan2(o.x - p.x, o.z - p.z); g.userData.alive = m.hp > 0; g.userData.base = p.clone(); g.userData.ry = g.rotation.y;
-  g.scale.setScalar(m.boss ? 1.9 : side ? 1.1 : 1.0); g.userData.sc = g.scale.x; /* 🐉 보스는 크게 */ pb3.scene.add(g); pb3.mons[side] = g;
+  const g = pb3Pet(m.id, petStage(m.lv)), p = PB3_POS[side], o = PB3_POS[1 - side]; g.position.copy(p); g.rotation.y = Math.atan2(o.x - p.x, o.z - p.z); g.userData.alive = m.hp > 0; g.userData.base = p.clone(); g.userData.ry = g.rotation.y;
+  const st = g.userData.st || 1, fit = Math.max(0.45, Math.min(1.2, [1.3, 1.45, 1.6][st - 1] / (g.userData.h || 1.5))); /* 진화할수록 조금 크게 · 너무 크면 맞춰요 */ g.scale.setScalar((m.boss ? 1.9 : side ? 1.1 : 1.0) * fit); g.userData.sc = g.scale.x; /* 🐉 보스는 크게 */ pb3.scene.add(g); pb3.mons[side] = g;
   pb3Tween(450, (k) => { const s = g.userData.sc * (k < 0.7 ? k / 0.7 * 1.12 : 1.12 - (k - 0.7) / 0.3 * 0.12); g.scale.setScalar(Math.max(0.01, s)); });
   if (m.hp <= 0) { g.visible = false; }
 }
@@ -21851,10 +22026,10 @@ function buddyFirst(id) { const L = buddyIds(); if (!L.includes(id)) return; bag
 function buddyTex(id) { if (!bdw.tex[id]) { const t = new THREE.TextureLoader().load(petArt(id)); t.colorSpace = THREE.SRGBColorSpace; bdw.tex[id] = t; } return bdw.tex[id]; }
 function buddyModel(id, lv) {
   const g = new THREE.Group(), o = { solid: false }, col = new THREE.Color(PT[petType(id)].c).getHex();
-  const sp = pb3Pet(id), h = sp.userData.h || 1, k = 1.25 / Math.max(0.6, h); sp.scale.setScalar(k); sp.position.y = 0.55; sp.traverse(m => { if (m.isMesh && m.material?.isMeshToonMaterial && !m.material.userData.lit) { m.material.userData.lit = 1; if (m.material.emissive && m.material.emissive.getHex() === 0) { m.material.emissive.copy(m.material.color).multiplyScalar(0.22); } } }); /* 마을 빛에서도 또렷하게 */ g.add(sp); g.userData.sp = sp; g.userData.ph = Math.random() * 6; // 🐾 1024h: 체육관 배틀과 같은 3D 펫 (툰 재질 · 큰 눈 · 속성 장식)
+  const st = petStage(lv), sp = pb3Pet(id, st), h = sp.userData.h || 1, k = 1.25 / Math.max(0.6, h) * [1, 1.15, 1.3][st - 1]; /* 진화하면 조금 더 커요 */ sp.scale.setScalar(k); sp.position.y = 0.55; sp.traverse(m => { if (m.isMesh && m.material?.isMeshToonMaterial && !m.material.userData.lit) { m.material.userData.lit = 1; if (m.material.emissive && m.material.emissive.getHex() === 0) { m.material.emissive.copy(m.material.color).multiplyScalar(0.22); } } }); /* 마을 빛에서도 또렷하게 */ g.add(sp); g.userData.sp = sp; g.userData.ph = Math.random() * 6; // 🐾 1024h: 체육관 배틀과 같은 3D 펫 (툰 재질 · 큰 눈 · 속성 장식)
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.05, 6, 24), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85 })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.06; g.add(ring); g.userData.ring = ring;
   const sh = new THREE.Mesh(new THREE.CircleGeometry(0.38, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.18, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.04; g.add(sh);
-  makeLabel(g, [`${PT[petType(id)].i} ${CRITTER[id].name} Lv${lv}`], 0.55, 0, 2.15, 0);
+  makeLabel(g, [`${PT[petType(id)].i} ${petNameLv(id, lv)} Lv${lv}`], 0.55, 0, 2.15 + (st - 1) * 0.25, 0);
   return g;
 }
 function buddyAnim(sp, t, mv) { // 날개 파닥 · 꼬리 살랑 · 장식 빙글 (배틀 화면과 같은 움직임)
@@ -21954,8 +22129,9 @@ function pbStartNpcGo(li) {
 // ---------- 펫 센터 · 기술머신 · 관장 · 친구 대전 창 ----------
 function petRow(box, id, extra) {
   const c = CRITTER[id], p = bag.pets[id], t = PT[petType(id)], s = petStats(id, p.lv), r = el2('div', 'pet-row');
-  const ic = el2('span', 'pet-ic'); ic.append(petImg(id)); ic.style.setProperty('--tc', t.c);
-  const tx = el2('span', 'pet-tx'); tx.append(el2('b', '', `${c.name} Lv${p.lv}`), el2('span', 'pb-type', `${t.i} ${t.n}`), el2('span', 'hint', ` ❤️${s.hp} ⚔️${s.atk} 🛡️${s.def} 💨${s.spd} · 경험치 ${p.xp}/${petNeed(p.lv)}`), el2('span', 'pet-mv', p.mv.map(k => `${PT[PMOVE[k].t].i}${PMOVE[k].n}`).join(' · ')));
+  const ic = el2('span', 'pet-ic'); ic.append(petImg(id, 'pet-art', p.lv)); ic.style.setProperty('--tc', t.c);
+  const st = petStage(p.lv), nx = st < 3 && PET_EVO[id] ? ` · ✨ Lv${PET_EVO_LV[st - 1]} 진화 → ${PET_EVO[id][st - 1]}` : '';
+  const tx = el2('span', 'pet-tx'); tx.append(el2('b', '', `${petNameLv(id, p.lv)} Lv${p.lv}`), el2('span', 'pb-type', `${t.i} ${t.n}`), el2('span', 'hint', ` ❤️${s.hp} ⚔️${s.atk} 🛡️${s.def} 💨${s.spd} · 경험치 ${p.xp}/${petNeed(p.lv)}${nx}`), el2('span', 'pet-mv', p.mv.map(k => `${PT[PMOVE[k].t].i}${PMOVE[k].n}`).join(' · ')));
   r.append(ic, tx); if (extra) extra(r); box.append(r);
 }
 function openPetCenter(tab = 'team') {
@@ -21988,7 +22164,7 @@ function openPetCenter(tab = 'team') {
       box.append(el2('p', 'hint', `🐾 우리 마을 펫 ${PET_IDS.length}가지 (🥚 희귀 펫 ${Object.keys(PET_RARE).length}가지 포함).` + ' 속성 상성: 🔥불 → 🌿풀·🌪️바람 · 💧물 → 🔥불·🪨땅 · 🌿풀 → 💧물·🪨땅 · ⚡전기 → 💧물·🌪️바람 · 🌪️바람 → 🌿풀·🪨땅 · 🪨땅 → 🔥불·⚡전기 (2배)'));
       const g = el2('div', 'lp-grid'), where = (c) => c.rare ? '🥚 반 기부함 희귀 알' : BUGS.includes(c) ? '🦋 곤충 채집' : FISH.includes(c) ? (c.w === 'sea' ? '🌊 바다 낚시' : '🎣 연못 낚시') : '🏯 역사 마을';
       for (const id of PET_IDS) { const c = CRITTER[id], t = PT[petType(id)], seen = !!bag.seen?.[id] || !!bag.pets[id] || isTeacher, card = el2('div', 'lp-card' + (bag.pets[id] ? ' done' : ''));
-        { const ic = el2('div', 'lp-icon pet-big'); if (seen) ic.append(petImg(id)); else { ic.textContent = '❔'; } card.append(ic); } card.append(el2('div', 'lp-name', seen ? c.name : '???'), el2('div', 'hint', `${t.i} ${t.n} · ${where(c)}`)); g.append(card); }
+        { const ic = el2('div', 'lp-icon pet-big'); if (seen) ic.append(petImg(id)); else { ic.textContent = '❔'; } card.append(ic); } card.append(el2('div', 'lp-name', seen ? c.name : '???'), el2('div', 'hint', `${t.i} ${t.n} · ${where(c)}`)); if (seen && PET_EVO[id]) card.append(el2('div', 'hint', `✨ ${PET_EVO[id][0]}(Lv${PET_EVO_LV[0]}) → ${PET_EVO[id][1]}(Lv${PET_EVO_LV[1]})`)); g.append(card); }
       box.append(g);
     }
   });
