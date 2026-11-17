@@ -1613,7 +1613,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div id="tpPgym"></div>
 
     <h3>📅 하루 능력치 상한</h3>
-    <p class="hint">과목마다 하루에 오를 수 있는 최대 점수예요 (10~500, 기본 200 · 능력치 만렙은 과목마다 누적 1000점이라 200이면 5일, 250이면 4일). 주간 랭킹 점수도 같이 막혀요. 바꾸면 바로 모두에게 적용돼요. 📚 독서 축제 기간(10월 30일까지)에는 독서력만 상한이 없어요.</p>
+    <p class="hint">과목마다 하루에 오를 수 있는 최대 점수예요 (10~500, 기본 200 · 능력치 만렙은 과목마다 누적 1000점이라 200이면 5일, 250이면 4일). 주간 랭킹 점수도 같이 막혀요. 바꾸면 바로 모두에게 적용돼요. 📚 독서 축제 기간(10월 30일까지)에는 국어력만 상한이 없어요.</p>
     <div id="tpScap"></div>
 
     <h3>⭐ 능력치 레벨 경험치</h3>
@@ -12063,7 +12063,7 @@ function openBoatShop(tab = 'parts') {
     box.append(tabs, el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`));
     const buy = (pr, fn) => { if ((bag.shell || 0) < pr) { toast(`🐚 조개돈이 ${pr - (bag.shell || 0)} 모자라요`, 'warn'); return; } bag.shell -= pr; fn(); saveBag(); updateHUD(null); playSfx('coin'); refillLife(); };
     if (tab === 'war') { // ⚔️ 1031g 삼국 해전에서 내 배를 강하게 (한 번 사면 계속)
-      const U = nvUp(); box.append(el2('p', 'hint', '삼국 해전에서 내 배에 달려요. 한 번 사면 계속 내 것이에요. 공부 능력치도 해전 능력이 돼요: 🧮 수학력 → 포탄 위력 · 🔤 영어력 → 장전 속도 · 🏛️ 사회력 → 배 튼튼함 · 📚 독서력 → 위력'));
+      const U = nvUp(); box.append(el2('p', 'hint', '삼국 해전에서 내 배에 달려요. 한 번 사면 계속 내 것이에요. 공부 능력치도 해전 능력이 돼요: 🧮 수학력 → 포탄 위력 · 🔤 영어력 → 장전 속도 · 🏛️ 사회력 → 배 튼튼함 · 📚 국어력 → 위력'));
       box.append(el2('p', 'hint', `⛵ 배 크기: ${BOAT_H.map((H, i) => `${H.icon}${H.n} 🛡️${NV_HULL[i]} · ${1 + Math.min(3, BOAT_SEATS[i].length)}명`).join(' / ')}`));
       const grid = el2('div', 'lp-grid');
       for (const [k, icon, n, d] of [['ar', '🛡️', '철판 장갑', (l) => `배 튼튼함 +${NV_ARM[l]}`], ['gn', '💣', '화포', (l) => `포탄 위력 +${l}`]]) { const lv = U[k], card = el2('div', 'lp-card' + (lv >= 3 ? ' done' : '')); card.append(el2('div', 'lp-icon', icon), el2('div', 'lp-name', `${n} Lv${lv}`), el2('div', 'lp-sub', lv ? d(lv) : '아직 없어요'));
@@ -17920,7 +17920,7 @@ const ROOMS = {
   egb: { name: '영어 골든벨', icon: '🔔', cx: 1580, cz: 92, w: 28, d: 24, wall: 0xFFF6DA, floor: 0xC8A878, site: null }, // 🔔 영어 마을 골든벨 홀 (1024l)
 };
 const READ_GENRES = [['📗', '동화'], ['🔬', '과학'], ['🏯', '역사'], ['🌸', '시'], ['💬', '만화'], ['🦸', '위인전'], ['📙', '기타']];
-const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.7, '그림과 글이 반반'], ['💬', '만화책', 0.4, '말풍선 만화'], ['🧸', '그림책', 0.5, '그림이 대부분']]; // 📚 독서력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
+const READ_KINDS = [['📖', '줄글책', 1, '글이 대부분인 책'], ['🖼️', '그림이 많은 책', 0.7, '그림과 글이 반반'], ['💬', '만화책', 0.4, '말풍선 만화'], ['🧸', '그림책', 0.5, '그림이 대부분']]; // 📚 국어력 = 쪽수 × 배율 (선생님 요청: 쪽수를 그대로)
 const READ_DAY_MAX = 2000; // (독서 기록 자체 제한 · 실제로는 능력치 하루 상한 STAT_DAY_MAX가 먼저 걸려요)
 const READ_BONUS = 10; // 📚 1017b 책 한 권 다 읽으면 완독 보너스
 const readPts = (p, k) => READ_BONUS + Math.max(1, Math.round(Math.min(999, Math.max(0, p | 0)) * (READ_KINDS[k]?.[2] ?? 0)));
@@ -18174,7 +18174,7 @@ function swimPose(a, mv, dt) {
   else { R.rotation.set(1.25, 0, 0); R.position.y = 0.75 + Math.abs(s) * 0.03; a.armL.rotation.x = t % P2; a.armR.rotation.x = (t + Math.PI) % P2; if (L) { L.rotation.x = 0.35 * Math.sin(t * 3); Rg.rotation.x = -L.rotation.x; } } // 🏊 자유형
 }
 // ================= 🤿 1031b 바닷속 탐험 (바닷가 선착장 끝에서 잠수 · 방 id 'reef') =================
-// 바닷속 산호초를 헤엄치며 바다 생물 15가지를 관찰해요 → 과학 상식 문제 (맞히면 🐚 · 📚 독서력) · 바다 도감 · 다 모으면 🐚100
+// 바닷속 산호초를 헤엄치며 바다 생물 15가지를 관찰해요 → 과학 상식 문제 (맞히면 🐚 · 📚 국어력) · 바다 도감 · 다 모으면 🐚100
 // · 저장: 이 기기 bag.reefDex {id:1} 찾은 생물 · bag.reefDay {d, got{id:1}} 오늘 보상 받은 생물 · bag.reefAll 1 = 다 모은 보상
 const REEF_ANIMALS = [
   { id: 'clown', icon: '🐠', n: '흰동가리', fact: '말미잘의 독 촉수 사이에 숨어 살아요. 흰동가리는 말미잘을 청소해 주고, 말미잘은 흰동가리를 지켜 줘요.', qs: [['흰동가리가 함께 사는 바다 생물은?', ['말미잘', '해파리', '문어', '불가사리']], ['흰동가리와 말미잘처럼 서로 도우며 함께 사는 관계를 무엇이라고 할까요?', ['공생', '기생', '경쟁', '먹이 사슬']]] },
@@ -18283,7 +18283,7 @@ function reefReward(id) {
   let sh = 0; if (!bag.reefDay.got[id]) { bag.reefDay.got[id] = 1; sh = giveShellCapped(first ? 15 : 5); addStat('read', 2); }
   const all = REEF_ANIMALS.every(a => bag.reefDex[a.id]); let bonus = 0; if (all && !bag.reefAll) { bag.reefAll = 1; bonus = giveShellCapped(100); setTimeout(() => { showBanner('🤿 바다 도감 완성!', `바닷속 생물 ${REEF_ANIMALS.length}가지를 모두 찾았어요 · 🐚 +${bonus}`, 6000); playSfx('fanfare'); burst(player.pos.clone().setY(2.5), RAINBOW, 60, 6, 3); }, 600); }
   saveBag(); updateHUD(null); playSfx('coin');
-  return `✅ 정답!${first ? ' 🆕 바다 도감에 새로 올렸어요' : ''}${sh ? ` · 🐚 +${sh} · 📚 독서력 +2` : ' · (오늘 이 생물 보상은 받았어요)'}`;
+  return `✅ 정답!${first ? ' 🆕 바다 도감에 새로 올렸어요' : ''}${sh ? ` · 🐚 +${sh} · 📚 국어력 +2` : ' · (오늘 이 생물 보상은 받았어요)'}`;
 }
 function poolTick(dt) { // 매 프레임 (아바타 위치를 다 정한 뒤)
   if (!pool.built) return;
@@ -18552,21 +18552,21 @@ function openReadLog() {
   const pick = { g: -1, s: 0, f: -1, k: -1, p: 0 };
   openLife('📒 독서 기록장', (box) => {
     box.textContent = '';
-    box.append(el2('p', 'up-win', '📌 책을 다 읽고 선생님께 확인받은 다음에 기록해요')); if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중 (10월 30일까지)! 독서력 하루 상한이 없어요 · 책 한 권마다 완독 보너스 +10`));
+    box.append(el2('p', 'up-win', '📌 책을 다 읽고 선생님께 확인받은 다음에 기록해요')); if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중 (10월 30일까지)! 국어력 하루 상한이 없어요 · 책 한 권마다 완독 보너스 +10`));
     box.append(el2('p', 'hint', `읽은 책을 기록하면 반 전체 독서 나무가 자라요. 자세한 내용은 종이 독서 기록장에 써요. ${bag.readDay === dayNum() ? '🎁 오늘 보상은 받았어요' : '🎁 오늘 처음 기록하면 🐚 +10'}`));
     box.append(el2('h3', 'lp-sec', '1. 어떤 책이에요?'));
     const gr = el2('div', 'row-center wrap');
     READ_GENRES.forEach(([ic, nm], i) => { const b = el2('button', 'btn' + (pick.g === i ? ' on' : ''), `${ic} ${nm}`); b.style.background = pick.g === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.g === i)); b.onclick = () => { pick.g = i; refillLife(); }; gr.append(b); });
-    box.append(gr, el2('h3', 'lp-sec', '2. 책 모양 · 쪽수 (📚 독서력이 정해져요)'));
+    box.append(gr, el2('h3', 'lp-sec', '2. 책 모양 · 쪽수 (📚 국어력이 정해져요)'));
     const kd = el2('div', 'row-center wrap');
     READ_KINDS.forEach(([ic, nm, mul, d], i) => { const b = el2('button', 'btn', `${ic} ${nm}`); b.title = `${d} · ×${mul}`; b.style.background = pick.k === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.k === i)); b.onclick = () => { pick.k = i; refillLife(); }; kd.append(b); });
     box.append(kd);
     const pr = el2('div', 'row-center wrap'), pin = el2('input', 'tinput', null); pin.type = 'number'; pin.min = 1; pin.max = 999; pin.inputMode = 'numeric'; pin.placeholder = '쪽수'; pin.style.width = '7em'; pin.value = pick.p || ''; pin.setAttribute('aria-label', '책 쪽수');
-    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 독서력 +${Math.min(readPts(pick.p, pick.k), capL)}${readPts(pick.p, pick.k) > capL ? ` (오늘 남은 ${capL}점까지)` : ''}${readFestOn() ? ' · 🎉 독서 축제: 상한 없음' : ''}` : '📚 책 모양과 쪽수를 골라요'; go.disabled = !(pick.g >= 0 && pick.k >= 0 && pick.p > 0) || bld.readBusy; };
+    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 국어력 +${Math.min(readPts(pick.p, pick.k), capL)}${readPts(pick.p, pick.k) > capL ? ` (오늘 남은 ${capL}점까지)` : ''}${readFestOn() ? ' · 🎉 독서 축제: 상한 없음' : ''}` : '📚 책 모양과 쪽수를 골라요'; go.disabled = !(pick.g >= 0 && pick.k >= 0 && pick.p > 0) || bld.readBusy; };
     pin.oninput = () => { pick.p = Math.min(999, Math.max(0, parseInt(pin.value, 10) || 0)); upd(); };
     pr.append(pin, el2('span', 'hint', '쪽'));
     for (const n of [30, 50, 100, 150, 200, 300]) { const b = el2('button', 'btn', `${n}`); b.style.background = pick.p === n ? '#FFF3C4' : '#fff'; b.onclick = () => { pick.p = n; refillLife(); }; pr.append(b); }
-    box.append(pr, prev, el2('p', 'hint', '독서력 = 쪽수 × 책 모양 배율 · 줄글책 150쪽 → +150 · 그림이 많은 책 100쪽 → +50 · 만화책 200쪽 → +60 · 그림책 40쪽 → +10'));
+    box.append(pr, prev, el2('p', 'hint', '국어력 = 쪽수 × 책 모양 배율 · 줄글책 150쪽 → +150 · 그림이 많은 책 100쪽 → +50 · 만화책 200쪽 → +60 · 그림책 40쪽 → +10'));
     var go = el2('button', 'btn lp-btn', '📒 기록하기'); upd();
     go.onclick = async () => {
       bld.readBusy = true; refillLife();
@@ -18574,7 +18574,7 @@ function openReadLog() {
       if (res.ok) { earnMat('독서 기록'); creditAction('read'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(pick.p, pick.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
       if (!res.ok) { if (res.reason !== 'offline') toast('⚠️ 기록하지 못했어요. 한 번 더 해 봐요', 'warn'); refillLife(); return; }
       bag.reads.unshift({ g: pick.g, k: pick.k, p: pick.p, at: Date.now() }); /* 1020d: 제목·별점·느낌은 종이 기록장에 */ bag.reads = bag.reads.slice(0, 60);
-      let msg = `📒 기록했어요! ${gain > 0 ? `📚 독서력 +${gain}` : '오늘 독서력은 가득 찼어요'} · 독서 나무가 자라요`;
+      let msg = `📒 기록했어요! ${gain > 0 ? `📚 국어력 +${gain}` : '오늘 국어력은 가득 찼어요'} · 독서 나무가 자라요`;
       if (bag.readDay !== dayNum()) { bag.readDay = dayNum(); earnShell(10); msg += ' · 🎁 🐚 +10'; }
       saveBag(); playSfx('coin'); toast(msg, 'success');
       pick.g = -1; pick.s = 0; pick.f = -1; pick.t = ''; pick.k = -1; pick.p = 0; refillLife();
@@ -18759,6 +18759,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1105zz9', d: '11월 18일', items: ['📚 「독서력」 이름이 「국어력」으로 바뀌었어요 · 지금까지 모은 점수와 레벨은 그대로예요', '📚 국어력은 독서 기록장 · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈로 올라요'] },
   { id: '1105zz8', d: '11월 17일', items: ['🐾 펫 45마리가 모두 새 3D 모습으로! 큰 머리 · 큰 눈 · 또렷한 테두리', '✨ 펫 진화: Lv15에 2단계, Lv30에 3단계로 진화해요 · 몸이 커지고 속성 장식이 늘어나요 · 이름도 바뀌어요 (예: 붕붕이 → 윙윙대장 → 번개여왕벌)', '🎉 진화하는 순간 반짝반짝 진화 장면이 나와요 · 펫 센터에 다음 진화 레벨과 이름이 보여요', '🪪 펫 카드 그림도 새 3D 모습으로 바뀌어요'] },
   { id: '1105zz7', d: '11월 17일', items: ['✨ 펫 배틀 기술마다 효과가 달라졌어요! 불씨는 불덩이 세 개, 해일은 큰 파도, 천둥벼락은 하늘이 어두워지고 큰 번개가 쾅', '💥 센 기술일수록 더 크고 화려해요 · 맞는 순간 화면이 살짝 다가가요 · 🌟 별빛 필살기는 특별 연출', '⬆️ 힘내기 · 🛡️ 단단해지기 · ⬇️ 겁주기 · ➕ 회복하기도 모양이 보여요'] },
   { id: '1105zz6', d: '11월 16일', items: ['🧑‍🏫 하늘 섬 깃발전 팀 정하기: 학생마다 팀 칸 · 🔀 팀 섞기 · 💪 능력치로 고르게 (공성전과 같아요)'] },
@@ -23257,13 +23258,13 @@ function initHistAdmin() {
 
 
 /* ---------- 📊 내 능력치 — 과목 퀴즈를 잘 풀면 올라가요 (이 기기 가방에만 저장 · 순위 없음) ----------
-   🔤 영어력(영어 마을) · 🏛️ 사회력(역사 퀴즈·나라 창고) · 🧮 수학력(수학 광산) · 📚 독서력(독서 기록장)
+   🔤 영어력(영어 마을) · 🏛️ 사회력(역사 퀴즈·나라 창고) · 🧮 수학력(수학 광산) · 📚 국어력(독서 기록장)
    10점마다 1레벨(최대 10) · 3레벨마다 성 공방전 역할이 한 단계 강해져요: 병사←수학 · 대장장이←영어 · 의원←독서 · 책사←사회 */
 const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
   math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🚴 레일바이크 · 📘 학당 · 🧮 혼합 계산 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
-  read: { icon: '📚', name: '독서력', where: '광장 독서 책상 (선생님 확인 후) · 쪽수 × 책 모양', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
+  read: { icon: '📚', name: '국어력', where: '광장 독서 책상 (선생님 확인 후 · 쪽수 × 책 모양) · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 bag.stat ||= {};
 if (bag.statV !== 2) { bag.stat = {}; bag.statV = 2; saveBag(); } // 1017d 능력치 레벨 새로 시작 (누적 경험치 · 최고 Lv12)
@@ -23276,7 +23277,7 @@ const statLv = (k) => { if (isTeacher && (bag.tSgLv ?? -1) >= 0 && S.siege?.on &
 const statTier = (k) => Math.floor(statLv(k) / 3);
 const STAT_DAY_MAX = 200; /* 1104e 100 → 200 (만렙 1000점까지 5일) */ // 📅 능력치마다 하루에 오를 수 있는 기본 최대 (선생님 요청 · 랭킹 점수도 같이)
 const statMax = (k) => { const v = S.scap?.[k]; return Number.isInteger(v) && v >= 10 && v <= 500 ? v : STAT_DAY_MAX; }; // 📅 1020a: 선생님이 과목마다 정해요 (state/scap/{eng,math,soc,read})
-const READ_FEST_FIRST = Date.UTC(2026, 9, 17) / 86400000, READ_FEST_LAST = Date.UTC(2026, 9, 30) / 86400000; // 📚 독서 축제 10/17~10/30 (KST) — 독서력 하루 상한 없음
+const READ_FEST_FIRST = Date.UTC(2026, 9, 17) / 86400000, READ_FEST_LAST = Date.UTC(2026, 9, 30) / 86400000; // 📚 독서 축제 10/17~10/30 (KST) — 국어력 하루 상한 없음
 const readFestOn = () => dayNum() >= READ_FEST_FIRST && dayNum() <= READ_FEST_LAST;
 const statCap = (k) => (k === 'read' && readFestOn() ? Infinity : statMax(k));
 const statToday = (k) => (bag.statDay?.d === dayNum() ? bag.statDay[k] || 0 : 0);
@@ -23299,7 +23300,7 @@ function openStats() {
     box.textContent = ''; { const b = el2('button', 'btn', '🏆 이번 주 능력치 랭킹'); b.style.background = '#FFE066'; b.onclick = openRank; box.append(el2('div', 'row-center', null)); box.lastChild.append(b); }
     { const b = el2('button', 'btn', '❓ 점수 얻는 방법'); b.style.background = '#D7F0FF'; b.onclick = openStatGuide; box.lastChild.append(' ', b); }
     { const b = el2('button', 'btn', '🏷️ 내 칭호 고르기'); b.style.background = '#FFE9A8'; b.onclick = openTitles; box.lastChild.append(' ', b); }
-    if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중! 10월 30일까지 독서력은 하루 상한 없이 읽은 만큼 올라요 (D-${READ_FEST_LAST - dayNum()})`));
+    if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 중! 10월 30일까지 국어력은 하루 상한 없이 읽은 만큼 올라요 (D-${READ_FEST_LAST - dayNum()})`));
     box.append(el2('p', 'hint', `과목 퀴즈를 잘 풀면 능력치가 올라요. 능력치마다 하루에 오를 수 있는 점수가 정해져 있고(주간 랭킹 점수도 같아요), 다음 날 0시에 다시 채워요. 모은 점수가 쌓여 레벨이 올라요 (최고 Lv${LV_MAX} · 누적 ${lvAt(LV_MAX)}점). Lv3·6·9·12마다 성 공방전 역할이 한 단계 강해져요.`));
     for (const [k, S2] of Object.entries(STATS)) {
       const lv = statLv(k), e = statExp(k), row = el2('div', 'stat-row'), lo = lvAt(lv), hi = lv >= LV_MAX ? lo : lvAt(lv + 1);
@@ -23320,7 +23321,7 @@ function openStatGuide() {
   openLife('❓ 능력치 점수 얻는 방법', (box) => {
     box.textContent = '';
     box.append(el2('p', 'hint', `하루에 오를 수 있는 점수: ${Object.keys(STATS).map(k => `${STATS[k].icon}${statMax(k)}`).join(' · ')}점. 매일 0시에 다시 채울 수 있고, 주간 랭킹 점수도 똑같이 올라요. 한 과목이 꽉 차면 다른 과목을 공부해 보세요!`));
-    if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 (10월 30일까지): 독서력은 하루 상한 없이 읽은 만큼 올라요!`));
+    if (readFestOn()) box.append(el2('p', 'up-win', `📚🎉 독서 축제 (10월 30일까지): 국어력은 하루 상한 없이 읽은 만큼 올라요!`));
     for (const [k, S2] of Object.entries(STATS)) {
       const row = el2('div', 'stat-row'); row.append(el2('div', 'stat-head', null)); row.lastChild.append(el2('b', '', `${S2.icon} ${S2.name}`), el2('span', 'stat-lv', `오늘 ${statToday(k)}${statCap(k) === Infinity ? '점' : ` / ${statMax(k)}`}`));
       for (const [w, pts] of STAT_GUIDE[k] || []) { const r = el2('p', 'hint', ''); r.append(el2('b', '', w), ` — ${pts}`); row.append(r); }
@@ -23372,7 +23373,7 @@ const sgTnPick = () => { if (!sgTnPick0) { let v = null; try { v = localStorage.
 const sgTnKeys = () => (typeof S !== 'undefined' && ((S.siege?.set === 'time' && sgTnClean(S.siege.tn)) || (S.sgser?.on && S.sgser.set === 'time' && sgTnClean(S.sgser.tn)))) || sgTnPick();
 const sgTnCache = {};
 SIEGE_SETS.time = { name: '⏳ 시대를 넘은 대결', weap: 'bow', tm: 1, get nat() { const ks = sgTnKeys(), id = ks.join(','); return sgTnCache[id] ||= ks.map(k => ({ ...SG_TN[k], k })); }, get eras() { return [...new Set(this.nat.flatMap(N => N.eras))]; } };
-const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 독서력은 모든 직업을 함께 강하게 해요 (1022f: 의원·책사 → 장군·궁병)
+const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 국어력은 모든 직업을 함께 강하게 해요 (1022f: 의원·책사 → 장군·궁병)
   king: { icon: '👑', name: '왕', hp: 15, st: 'soc', tag: '우리 나라의 왕 · ❤️ 15 · 나라마다 1명', can: ['📣 왕의 함성(Q · 35초마다): 둘레 12걸음 우리 편 모두 피해 +1 · 발이 빨라져요', '🏰 우리 성문이 서 있으면 성 안에서는 맞지 않아요 · 🚩 거점을 2배로 빨리 차지해요', '⚠️ 쓰러지면 상대 나라 +30점 · 30초 동안 못 일어나요', '🗡️ 왕의 검(F) · 피해 2 · 🏛️ 사회력이 오를수록 함성이 길어져요'] },
   gen: { icon: '🎖️', name: '장군', hp: 12, st: 'math', tag: '🌀 큰 칼로 둘레를 휩쓸어요 · ❤️ 12 · 나라마다 2명까지', can: ['🗡️ 큰 칼 베기(F) · 피해 3 · 성문도 베어요', '🌀 회오리 베기(Q · 12초마다): 내 둘레 4걸음 상대 모두 피해', '🧮 수학력이 오를수록 더 세져요'] },
   sol: { icon: '⚔️', name: '보병', hp: 9, st: 'math', tag: '🗡️ 검으로 앞에서 싸워요 · ❤️ 9', can: ['🗡️ 가까이 가서 베기(F) · 피해 4 · 성문도 베어요', '⚡ 돌격(Q): 앞으로 확 달려가며 부딪힌 상대 +1 · 10초마다', '🧮 수학력이 오를수록 더 세져요 · 창고: ⛓️ 강철 검'] },
@@ -23382,8 +23383,8 @@ const SG_ROLES = { // hp 기본 체력 · st 강해지는 능력치 · 📚 독�
   med: { icon: '🌿', name: '의원', hp: 5, st: 'read', off: true, tag: '(체험장 전용)', can: [] }, // 체험장 이름표용 (공방전에서는 없어요)
   sch: { icon: '📜', name: '책사', hp: 5, st: 'soc', off: true, tag: '(체험장 전용)', can: [] },
 };
-const sgPow = (k) => statTier(k) + statTier('read'); // 📚 독서력은 모든 직업 능력을 함께 올려 줘요
-/* 💪 1027o 공부의 힘이 눈에 보여요: 무기 모양(나무→철→강철→황금) · 📚 독서력 파란 고리 · 피해 숫자 · 전쟁 끝 결과
+const sgPow = (k) => statTier(k) + statTier('read'); // 📚 국어력은 모든 직업 능력을 함께 올려 줘요
+/* 💪 1027o 공부의 힘이 눈에 보여요: 무기 모양(나무→철→강철→황금) · 📚 국어력 파란 고리 · 피해 숫자 · 전쟁 끝 결과
    친구 능력치 단계는 접속 정보 sp(수학·영어·사회·독서 4자리)로 알아요. ⚒️ 대장장이 갈기는 그 위에 🔥 불꽃(60초 +1) */
 const SG_TIER_I = { math: 0, eng: 1, soc: 2, read: 3 };
 const sgTierOf = (u, k) => { if (!k) return 0; if (u === backend?.uid) return Math.min(9, statTier(k)); const sp = String(remotes.get(u)?.target?.sp || ''); return +sp[SG_TIER_I[k]] || 0; };
@@ -23797,7 +23798,7 @@ function setSgLook(a, t, hurt, role, uid) { // 나라 조끼 + 머리 위 나라
   objs.push(makeLabel(a.g, [hurt ? '🤕' : `${N.icon}${U ? U.icon : SG_ROLES[role]?.icon || ''}`], 0.5, 0, a.tcode ? 4.35 : 3.75, 0, { stroke: false, pad: 4, font: 80 }));
   const bar = sgHpBar(); bar.position.set(0, a.tcode ? 3.6 : 3.2, 0); a.g.add(bar); objs.push(bar); a.sgBar = bar; a.sgBarKey = '';
   if (!hurt && ['sol', 'sch', 'smith', 'king', 'gen', 'arch'].includes(role)) { const it = sgHeldItem(a, role, gr); objs.push(it); a.sgHeld = it; a.sgGr = gr; }
-  if (!hurt && rd >= 1) { const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.62 + rd * 0.03, 32), new THREE.MeshBasicMaterial({ color: 0x5AB4FF, transparent: true, opacity: 0.22 + rd * 0.1, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); a.sgRd = ring; a.sgRdT = rd; } // 📚 독서력 파란 고리
+  if (!hurt && rd >= 1) { const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.62 + rd * 0.03, 32), new THREE.MeshBasicMaterial({ color: 0x5AB4FF, transparent: true, opacity: 0.22 + rd * 0.1, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; a.g.add(ring); objs.push(ring); a.sgRd = ring; a.sgRdT = rd; } // 📚 국어력 파란 고리
   if (role === 'king') { const cr = new THREE.Group(), o2 = { solid: false, surf: null, emissive: 0.35 }; cr.position.set(0, a.tcode ? 2.62 : 2.38, 0); a.g.add(cr); objs.push(cr); // 👑 왕관
     cyl(cr, 0.36, 0.16, 0xF2C230, 0, 0, 0, o2); for (let i = 0; i < 5; i++) { const an = i / 5 * Math.PI * 2; mesh(CONE, cr, 0.09, 0.22, 0.09, 0xF2C230, Math.cos(an) * 0.3, 0.17, Math.sin(an) * 0.3, o2); ball(cr, 0.045, i % 2 ? 0xE2584A : 0x3B82C4, Math.cos(an) * 0.33, 0.04, Math.sin(an) * 0.33, { solid: false, surf: null }); } } // ⚔️ 병사는 검 · 📜 책사는 부채 · ⚒️ 대장장이는 망치
   a.sgObjs = objs;
@@ -23920,7 +23921,7 @@ function sgShoot() {
   backend.sgShot({ x: +sx.toFixed(2), z: +sz.toFixed(2), dx: +dx.toFixed(3), dz: +dz.toFixed(3), v: +v.toFixed(2), a: +a.toFixed(3) });
 }
 /* ---------- 🏹 궁병 활 (1022f): F·버튼을 누르고 있으면 시위를 당기고, 놓으면 쏴요 ----------
-   0.3초보다 짧게 당기면 안 나가요 · 오래 당길수록 멀리(최대 30걸음) · 가득(1.1초) 당기면 피해 3(+영어력·독서력) · 성문 2배 */
+   0.3초보다 짧게 당기면 안 나가요 · 오래 당길수록 멀리(최대 30걸음) · 가득(1.1초) 당기면 피해 3(+영어력·국어력) · 성문 2배 */
 const sgDrawK = () => sgw.draw ? Math.min(1, (performance.now() - sgw.draw) / 1000 / (SG_DRAW.full * (sgSpcOf(backend?.uid)?.draw || 1))) : 0; /* 🌸 1105zw 화랑 */
 function sgDrawRelease() {
   if (!sgw.draw) return; const held = (performance.now() - sgw.draw) / 1000, k = sgDrawK(); sgw.draw = 0;
@@ -24427,7 +24428,7 @@ async function sgPlaceBar() {
 function openSgRole() {
   if (!S.siege?.on || !sgMine()) return;
   openLife('🎭 역할 고르기', (box) => {
-    box.textContent = ''; if (sgAnsi()) { const me = sgMine(), d = el2('div', ''); d.style.cssText = `background:${me === 1 ? '#FFE3DC' : '#FFF3C8'};border-radius:14px;padding:10px 12px;margin-bottom:8px;text-align:left`; d.append(el2('b', '', me === 1 ? '🏯 너는 고구려! 안시성을 지켜요' : '🐉 너는 당나라! 안시성을 함락해요'), el2('div', 'hint', '645년 당 태종의 대군이 고구려로 쳐들어왔어요 · ⚔️ 포위 4분 → ⛰️ 토산 4분 → ❄️ 겨울 3분')); const bb = el2('button', 'btn', '📜 브리핑 자세히 보기'); bb.style.cssText = 'font-size:14px;padding:4px 10px;margin-top:4px'; bb.onclick = openAnsiBrief; d.append(bb); box.append(d); } // 🏯 1029i box.append(el2('p', 'hint', `우리 나라를 위해 할 일을 하나 골라요. 다섯 역할(👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이)에 1명씩 먼저 채워요. 📚 독서력이 높으면 어떤 역할이든 더 강해져요.${sgRoleEmpty(sgMine(), backend.uid).length ? ` 지금 빈 역할: ${sgRoleEmpty(sgMine(), backend.uid).map(k => SG_ROLES[k].icon + SG_ROLES[k].name).join(' · ')}.` : ` 다섯 역할이 다 찼으니 보병·궁병·대장장이는 ${sgRoleCapAll(sgMine())}명까지 들어갈 수 있어요.`} 역할은 시작 뒤 25초 안과 🗺️ 작전 시간에 바꿀 수 있어요. 25초 안에 안 고르면 빈 자리로 정해져요.`));
+    box.textContent = ''; if (sgAnsi()) { const me = sgMine(), d = el2('div', ''); d.style.cssText = `background:${me === 1 ? '#FFE3DC' : '#FFF3C8'};border-radius:14px;padding:10px 12px;margin-bottom:8px;text-align:left`; d.append(el2('b', '', me === 1 ? '🏯 너는 고구려! 안시성을 지켜요' : '🐉 너는 당나라! 안시성을 함락해요'), el2('div', 'hint', '645년 당 태종의 대군이 고구려로 쳐들어왔어요 · ⚔️ 포위 4분 → ⛰️ 토산 4분 → ❄️ 겨울 3분')); const bb = el2('button', 'btn', '📜 브리핑 자세히 보기'); bb.style.cssText = 'font-size:14px;padding:4px 10px;margin-top:4px'; bb.onclick = openAnsiBrief; d.append(bb); box.append(d); } // 🏯 1029i box.append(el2('p', 'hint', `우리 나라를 위해 할 일을 하나 골라요. 다섯 역할(👑 왕·🎖️ 장군·⚔️ 보병·🏹 궁병·⚒️ 대장장이)에 1명씩 먼저 채워요. 📚 국어력이 높으면 어떤 역할이든 더 강해져요.${sgRoleEmpty(sgMine(), backend.uid).length ? ` 지금 빈 역할: ${sgRoleEmpty(sgMine(), backend.uid).map(k => SG_ROLES[k].icon + SG_ROLES[k].name).join(' · ')}.` : ` 다섯 역할이 다 찼으니 보병·궁병·대장장이는 ${sgRoleCapAll(sgMine())}명까지 들어갈 수 있어요.`} 역할은 시작 뒤 25초 안과 🗺️ 작전 시간에 바꿀 수 있어요. 25초 안에 안 고르면 빈 자리로 정해져요.`));
     if (sgMyRole() === 'pow' && sgHasRole(backend.uid)) box.append(el2('p', 'lp-big', '⛓️ 포로는 역할을 바꿀 수 없어요'));
     else if (!sgRoleOk()) box.append(el2('p', 'lp-big', '⏳ 지금은 역할을 바꿀 수 없어요. 🗺️ 작전 시간에 바꿔요'));
     const list = el2('div', 'sg-roles');
@@ -24445,7 +24446,7 @@ function openSgRole() {
       const b = el2('button', 'sg-role' + (on ? ' on' : '')); b.setAttribute('aria-pressed', String(on)); if (full) { b.disabled = true; b.style.opacity = '0.55'; }
       const txt = el2('span', 'sg-role-txt'); txt.append(el2('b', '', `${R.name}${k === 'king' ? ' · 🗡️ 왕의 검 · 📣 함성' : k === 'gen' ? ' · 🗡️ 큰 칼 · 🌀 회오리' : k === 'sol' ? ' · 🗡️ 검 · ⚡ 돌격' : k === 'arch' ? ' · 🏹 활 · 💨 구르기' : k === 'sch' ? ' · 🌬️ 부채 ✨' : k === 'smith' ? ' · 🔨 망치' : ` · ${sgWeap().icon} ${sgWeap().name}`}`), el2('span', 'sg-role-tag', R.tag));
       for (const c of R.can) txt.append(el2('span', 'sg-role-can', c));
-      if (R.st) txt.append(el2('span', 'sg-role-tag', `${STATS[R.st].icon} 내 ${STATS[R.st].name} Lv${statLv(R.st)} + 📚 독서력 Lv${statLv('read')} → 강화 +${sgPow(R.st)} · ${k === 'king' ? `📣 함성 고리 ${['작게', '보통', '크게', '아주 크게'][sgGrade(statTier(R.st))]}` : `${k === 'arch' ? '🏹 활' : k === 'smith' ? '🔨 망치' : '🗡️ 칼'} ${SG_GRADE.name[sgGrade(statTier(R.st))]}`}`));
+      if (R.st) txt.append(el2('span', 'sg-role-tag', `${STATS[R.st].icon} 내 ${STATS[R.st].name} Lv${statLv(R.st)} + 📚 국어력 Lv${statLv('read')} → 강화 +${sgPow(R.st)} · ${k === 'king' ? `📣 함성 고리 ${['작게', '보통', '크게', '아주 크게'][sgGrade(statTier(R.st))]}` : `${k === 'arch' ? '🏹 활' : k === 'smith' ? '🔨 망치' : '🗡️ 칼'} ${SG_GRADE.name[sgGrade(statTier(R.st))]}`}`));
       txt.append(el2('span', 'sg-role-can', (bag.trial?.[k] || (k === 'smith' && (bag.trial?.eng || bag.trial?.tur))) ? '🎯 체험장에서 연습해 봤어요 ✅' : '🎯 학교 앞 포털 → 역할 체험장에서 미리 연습할 수 있어요'));
       b.append(el2('span', 'sg-role-ic', R.icon), txt, el2('span', 'sg-role-n', on ? `✅ 지금 역할 (${n + 1}/${cap})` : full ? (n && sgRoleEmpty(sgMine(), backend.uid).length ? `빈 역할부터 (${n}/${cap})` : `자리 없음 (${n}/${cap})`) : n ? `빈 자리 ${cap - n} (${n}/${cap})` : `🙋 비어 있어요 (0/${cap})`));
       b.onclick = async () => { if (on) { closeLife(); return; } if ((sgMyRole() === 'pow' && sgHasRole(backend.uid)) || !sgRoleOk()) { toast(sgMyRole() === 'pow' ? '⛓️ 포로는 역할을 바꿀 수 없어요' : '⏳ 역할은 🗺️ 작전 시간에 바꿀 수 있어요', 'info'); return; } if (sgRoleCount(sgMine(), k, backend.uid) >= sgRoleCap(sgMine(), k, backend.uid)) { toast(sgRoleEmpty(sgMine(), backend.uid).length ? `😅 빈 역할부터 채워요: ${sgRoleEmpty(sgMine(), backend.uid).map(k2 => SG_ROLES[k2].icon + SG_ROLES[k2].name).join(' · ')}` : '😅 그 역할은 자리가 다 찼어요. 다른 역할을 골라요', 'warn'); refillLife(); return; } if (sgMyRole() === 'king' && sgHurt(backend.uid)) { toast('👑 쓰러진 왕은 일어난 뒤에 역할을 바꿀 수 있어요', 'info'); return; } if (S.siege?.spc?.[backend.uid]) backend.sgSpc(null); await backend.sgRole(k); playSfx('pick'); toast(`${R.icon} ${R.name}이(가) 됐어요!`, 'success'); closeLife(); renderSgBar(true); };
@@ -24466,7 +24467,7 @@ const SG_GUIDE = [
 
   ['🏳️', '성 함락과 포로', ['① 상대 <b>성문을 부숴요</b> (체력이 0이 되면 +15점 · 45초 뒤에 다시 서요)', '② 성 한가운데 <b>🚩 깃발 자리</b>에 들어가요', '③ 깃발 자리에 <b>지키는 친구보다 우리 편이 더 많으면</b> 차지가 올라가요. 100%가 되면 함락! (+50점)', '👑 <b>왕을 쓰러뜨리면</b> 30초 동안 그 성을 지키는 힘이 절반이 돼요. 왕을 먼저 잡고 쳐들어가요!', '🏰 성문이 서 있을 때 성 안의 왕은 맞지 않아요. 성문이 부서지면 왕도 맞아요.', '⛓️ 함락된 나라 친구들은 이긴 나라의 <b>포로</b>가 돼서 그 나라 편으로 싸워요 (❤️ 4 · 주먹만)', '🛡️ 지키는 법: 대장장이가 성문을 고치고, 모두 깃발 자리로 모여요. 성문이 부서진 나라는 6초 늦게 일어나요.']],
   ['🤕', '쓰러지면?', ['체력이 0이 되면 🤕 쓰러져요. 12초 뒤에 우리 성에서 다시 일어나요 (🌾 곡창이 있으면 7초 · 👑 왕은 30초).', '다시 일어난 뒤 3초 동안은 맞지 않아요.', '🏹 상대 대장장이의 자동 포탑은 7걸음 안에 들어오면 저절로 쏴요. 가까이 가서 E를 눌러 부수면 우리 나라 +3점!']],
-  ['💪', '공부의 힘', ['내 능력치가 높을수록 세져요: 🧮 수학 → 장군·보병 · 🔤 영어 → 궁병·대장장이 · 🏛️ 사회 → 왕', '📚 독서력은 모든 직업을 함께 세게 해 줘요.', '능력치가 오르면 무기 모양이 바뀌어요: 나무 → 철 → 강철 → 황금', '전쟁이 끝나면 「공부의 힘 결과」에서 내가 능력치로 더한 힘을 볼 수 있어요.']],
+  ['💪', '공부의 힘', ['내 능력치가 높을수록 세져요: 🧮 수학 → 장군·보병 · 🔤 영어 → 궁병·대장장이 · 🏛️ 사회 → 왕', '📚 국어력은 모든 직업을 함께 세게 해 줘요.', '능력치가 오르면 무기 모양이 바뀌어요: 나무 → 철 → 강철 → 황금', '전쟁이 끝나면 「공부의 힘 결과」에서 내가 능력치로 더한 힘을 볼 수 있어요.']],
   ['🎮', '조작법', ['<b>F</b> 공격 (궁병은 꾹 눌렀다 놓기) · <b>Q</b> 직업 스킬 · <b>R</b> 궁병 멀티샷 · <b>E</b> 친구 돕기·성문 고치기·나라 창고', '태블릿은 아래 띠의 버튼을 눌러요. 😊 이모티콘은 오른쪽 아래 버튼으로 써요.', '🎭 역할 버튼: 내 직업 보기·바꾸기 · 📖 안내: 이 창']],
 ];
 function openSgGuide(open) {
@@ -24542,7 +24543,7 @@ function openSgStore() {
       if (role === 'sch') acts.append(el2('p', 'hint', `📜 책사 스킬(📯 나팔 🍚8 · 🛡️ 방패진 🍚6 · 🔥 화공 ⛓️6🍚6)은 아래 띠의 버튼으로 써요. 사회력 Lv${statLv('soc')} → 스킬 +${statTier('soc')}단계`));
       if (role === 'smith') acts.append(el2('p', 'hint', `🪨 산성을 차지하면 산성 투석기를 쏠 수 있어요 (🪵8 ⛓️6 · 성문 -10 · 20초마다)`));
       if (role === 'smith') acts.append(el2('p', 'hint', `⚒️ 친구 곁 E: 갑옷 · 우리 성문 앞 E: 수리(+${Math.min(12, 4 + 2 * sgPow('eng'))}) · 아래 띠: 🪵 목책 · 🛡️ 내 갑옷`));
-      if (role === 'med') acts.append(el2('p', 'hint', `🌿 의원은 우리 친구 곁에서 E로 치료해요 (❤️ +${sgHealAmt()} · 독서력 Lv${statLv('read')})`));
+      if (role === 'med') acts.append(el2('p', 'hint', `🌿 의원은 우리 친구 곁에서 E로 치료해요 (❤️ +${sgHealAmt()} · 국어력 Lv${statLv('read')})`));
       box.append(acts);
       const lag = sgLagging() === me;
       box.append(el2('p', 'hint', `📜 문제를 맞히면 🪵+${role === 'sch' ? 6 : 3} ⛓️+${role === 'sch' ? 4 : 2} 🍚+${role === 'sch' ? 4 : 2} · 나라 +1점${lag ? ' (약소국 단결: 1.5배!)' : ''}`));
@@ -25421,7 +25422,7 @@ function trCare(i) {
     else { m.hp = Math.min(m.max, m.hp + 2 + statTier('read')); toast(`🩹 상처를 치료했어요! ❤️ ${m.hp}/${m.max}`, 'success'); }
     playAct(player.avatar, 'clap'); playSfx('right'); burst(m.a.g.position.clone().setY(1.6), [0x7FD36A, 0xFFFFFF], 18, 3, 1.4);
     m.bar.userData.draw(m.hp, m.max, 0);
-    if (trw.mates.filter(x => x.role === 'med').every(x => !x.down && x.hp >= x.max)) trDone('med', '모두 건강해졌어요! 의원은 독서력이 오를수록 더 많이 치료해요');
+    if (trw.mates.filter(x => x.role === 'med').every(x => !x.down && x.hp >= x.max)) trDone('med', '모두 건강해졌어요! 의원은 국어력이 오를수록 더 많이 치료해요');
   } else {
     if (m.arm >= 2) return; m.arm++; m.max += 2; m.hp += 2; m.bar.userData.draw(m.hp, m.max, m.arm); playAct(player.avatar, 'mine'); playSfx('build');
     toast(`⚒️ ${SG_ARM[m.arm].icon} ${SG_ARM[m.arm].name}! 체력이 ${m.max}이 됐어요 (실제 전쟁에서는 ⛓️ ${SG_ARM[m.arm].cost}이 들어요)`, 'success');
@@ -27248,7 +27249,7 @@ function openScript() {
     const btn = (t, bg, fn, on) => { const b = el2('button', 'btn', t); b.style.background = on ? '#FFD23C' : bg; b.style.margin = '3px'; b.onclick = fn; return b; };
     const row = (...bs) => { const r = el2('div', 'row-center', null); r.style.flexWrap = 'wrap'; r.append(...bs); return r; };
     const myN = scrPhrases().filter(x => x.mine).length;
-    box.append(el2('p', 'hint', `내 배역: ${isTeacher ? '🧑‍🏫 선생님 (전체 대사)' : scrIsLead() ? `🎭 ${scrLead()} (다함께 대사까지 전부!)` : `🎵 다함께${bag.scrAll ? ` + ${scrLead()} 대사도 연습` : ''}`} · 외울 구절 ${myN}개${bag.scr?.n === S.scr.n && bag.scr?.best ? ` · 내 최고 ${bag.scr.best}점` : ''} · 연습하면 📚 독서력이 올라요`));
+    box.append(el2('p', 'hint', `내 배역: ${isTeacher ? '🧑‍🏫 선생님 (전체 대사)' : scrIsLead() ? `🎭 ${scrLead()} (다함께 대사까지 전부!)` : `🎵 다함께${bag.scrAll ? ` + ${scrLead()} 대사도 연습` : ''}`} · 외울 구절 ${myN}개${bag.scr?.n === S.scr.n && bag.scr?.best ? ` · 내 최고 ${bag.scr.best}점` : ''} · 연습하면 📚 국어력이 올라요`));
     box.append(row(btn('📖 보기', '#fff', () => { scrW.view = 'read'; refillLife(); }, scrW.view === 'read'), btn('🫣 가리고 외우기', '#fff', () => { scrW.view = 'hide'; scrW.open = {}; refillLife(); }, scrW.view === 'hide'), btn('✏️ 빈칸 퀴즈', '#fff', () => scrQuiz('blank'), false), btn('🔢 다음 구절', '#fff', () => scrQuiz('next'), false), ...(isTeacher || scrIsLead() ? [] : [btn(bag.scrAll ? `🎵 다함께 대사만` : `📜 ${scrLead()} 대사도 연습`, '#fff', () => { bag.scrAll = !bag.scrAll; saveBag(); refillLife(); }, false)])));
     if (scrW.view === 'hide') box.append(row(btn(scrW.hint ? '💡 첫 글자 힌트 끄기' : '💡 첫 글자 힌트', '#FFF6D8', () => { scrW.hint = !scrW.hint; refillLife(); }, scrW.hint), btn('👀 모두 보기', '#fff', () => { scrW.open = { all: 1 }; refillLife(); }), btn('🫣 다시 가리기', '#fff', () => { scrW.open = {}; refillLife(); })), el2('p', 'hint', '내 구절을 눌러서 맞게 외웠는지 확인해요'));
     const list = el2('div', ''); list.style.cssText = 'text-align:left;max-height:58vh;overflow:auto;padding:4px 2px';
@@ -27274,7 +27275,7 @@ function scrQuiz(kind) {
   openLife(kind === 'blank' ? '✏️ 대본 빈칸 퀴즈' : '🔢 다음 구절 맞히기', (box) => {
     box.textContent = ''; if (scrW.q !== Q) return;
     if (Q.done) { const score = Math.round(Q.ok / Q.qs.length * 100), sh = Q.sh;
-      box.append(el2('p', 'lp-big', `${score >= 80 ? '🎉' : score >= 50 ? '👍' : '💪'} ${Q.ok}/${Q.qs.length} · ${score}점`), el2('p', 'hint', isTeacher ? '' : `📚 독서력 +${Math.max(1, Math.round(score / 10))}`), el2('p', 'hint', sh ? `🐚 +${sh}` : isTeacher ? '선생님은 연습만 해요' : bag.scrDay?.n > 3 ? '오늘 조개 보상 3판은 다 받았어요 (연습은 계속!)' : ''));
+      box.append(el2('p', 'lp-big', `${score >= 80 ? '🎉' : score >= 50 ? '👍' : '💪'} ${Q.ok}/${Q.qs.length} · ${score}점`), el2('p', 'hint', isTeacher ? '' : `📚 국어력 +${Math.max(1, Math.round(score / 10))}`), el2('p', 'hint', sh ? `🐚 +${sh}` : isTeacher ? '선생님은 연습만 해요' : bag.scrDay?.n > 3 ? '오늘 조개 보상 3판은 다 받았어요 (연습은 계속!)' : ''));
       const r = el2('div', 'row-center', null); for (const [t, fn] of [['🔁 한 번 더', () => scrQuiz(kind)], ['📖 대본으로', () => openScript()]]) { const b = el2('button', 'btn', t); b.style.margin = '3px'; b.onclick = fn; r.append(b); } box.append(r); return; }
     const q = Q.qs[Q.i]; box.append(el2('p', 'hint', `${Q.i + 1}/${Q.qs.length} · 맞힌 문제 ${Q.ok}`));
     if (kind === 'blank') { if (q.before) box.append(Object.assign(el2('p', '', `… ${q.before}`), { style: 'color:#8A8F99;font-size:14px' })); box.append(Object.assign(el2('p', 'lp-big', `${q.sp}: ${q.show}`), { style: 'font-size:20px' })); }
@@ -27322,7 +27323,7 @@ function scrTick() { // 🎤 꿈나무 무대 옆 대본 게시판 (무대가 �
   if (sp && !scrW.board) { const g = new THREE.Group(); g.position.set(5.9, 0, -2.2); sp.add(g); scrW.board = g; const o = { solid: false };
     for (const x of [-1.25, 1.25]) box(g, 0.14, 2.9, 0.14, 0x8A5A34, x, 1.45, 0, o); box(g, 2.8, 1.9, 0.1, 0x8E5AC8, 0, 2.0, 0.04, o);
     scrW.sign = signPlane(g, ['🎭 꿈끼 발표회 대본', '', '📜 대본 보기 · ✏️ 연습 게임', 'E 누르기'], 2.6, 1.7, 0, 2.0, -0.03, { font: 40, pad: 6, fg: '#3B2F2A', bg: '#FFF6EA', stroke: false });
-    const wp = sp.localToWorld(new V3(5.9, 1, -3.4)); scrW.it = addInteract({ pos: wp, r: 3, text: () => S.scr?.x ? ['🎭 대본 보기 · 연습 게임', `${S.scr.t || '꿈끼 발표회 대본'} · 📚 독서력`] : ['🎭 꿈끼 대본 게시판', '선생님이 대본을 올리면 열려요'], run: openScript }); }
+    const wp = sp.localToWorld(new V3(5.9, 1, -3.4)); scrW.it = addInteract({ pos: wp, r: 3, text: () => S.scr?.x ? ['🎭 대본 보기 · 연습 게임', `${S.scr.t || '꿈끼 발표회 대본'} · 📚 국어력`] : ['🎭 꿈끼 대본 게시판', '선생님이 대본을 올리면 열려요'], run: openScript }); }
   if (scrW.board) { const t = on ? S.scr.t || '' : '(곧 열려요)'; if (scrW.signT !== t) { scrW.signT = t; scrW.board.remove(scrW.sign); scrW.sign = signPlane(scrW.board, ['🎭 꿈끼 발표회 대본', t, '📜 대본 보기 · ✏️ 연습 게임', 'E 누르기'], 2.6, 1.7, 0, 2.0, -0.03, { font: 40, pad: 6, fg: '#3B2F2A', bg: '#FFF6EA', stroke: false }); } }
   if (isTeacher && !$('lifePanel').classList.contains('hidden') && $('lpTitle').textContent.startsWith('🎭 꿈끼 대본 연습실 (선생님)')) { const k = JSON.stringify(S.scrp || {}); if (k !== scrW.admK) { const first = scrW.admK == null; scrW.admK = k; if (!first && !lifeTyping()) refillLife(); } }
 }
@@ -28088,7 +28089,7 @@ function boardRemotes(dt) { // updateRemotes 다음: 배·함께 타는 탈것�
    · 성 공방전처럼 시대를 고르면 나라(2~4)가 정해져요. 바다에 오면 사람이 적은 나라로 자동 배정 (⚖️ 능력치로 고르게 나누기도)
    · 내 배 = 🛠️ 조선소에서 만든 배(뗏목·나룻배·돛단배·해적선): 배가 클수록 튼튼하고 빠르고, 친구를 더 태워요 (선장 + 최대 3명)
      자리: 🧭 선장(배 몰기) · 🔥 좌현 포수 · 🔥 우현 포수 · 🔨 수리공(Q 수리 · F 앞쪽 총통) — 빈 자리 총통은 선장이 쏴요
-   · 해전 능력: 🧮 수학력 → 포탄 위력 · 🔤 영어력 → 장전 속도 · 🏛️ 사회력 → 배 튼튼함 · 📚 독서력 → 위력 · ⛵ 배 가게 '⚔️ 해전 강화'(🛡️ 철판 · 💣 화포)
+   · 해전 능력: 🧮 수학력 → 포탄 위력 · 🔤 영어력 → 장전 속도 · 🏛️ 사회력 → 배 튼튼함 · 📚 국어력 → 위력 · ⛵ 배 가게 '⚔️ 해전 강화'(🛡️ 철판 · 💣 화포)
    · 섬: 💰 보물섬(2점 · 피해 +1) · 🌬️ 바람섬(빨라져요) · 🔨 나무섬(저절로 수리) · 🔭 등대섬(장전 빨라져요) — 우리 나라 배만 둘레에 있으면 차지해요 (3초마다 점수)
    · 상대 배를 가라앉히면 +10점 · 가라앉은 배는 12초 뒤 우리 부두에서 다시 띄워요
    · 선생님 기기(연습 모드는 내 기기)가 피해·섬·점수를 계산해요 → state/nv { on, r, ph lobby|play|end, t, end, set, n, team{기기: 나라}, sc{나라: 점수}, hl{선장: 부서짐}, ko{선장: 다시 띄울 시각}, own{섬: 나라}, ct{섬: 차지하는 나라}, cp{섬: %}, win }
@@ -28322,7 +28323,7 @@ function openNvEnd() {
     box.textContent = ''; const W2 = nvNat(s.win); box.append(el2('p', 'lp-big', W2 ? `🏆 ${W2.icon} ${W2.name} 수군 승리!` : '🏁 해전이 끝났어요'));
     rank.forEach((t, i) => { const N = nvNat(t); box.append(el2('p', '', `${['🥇', '🥈', '🥉', '4위'][i]} ${N.icon} ${N.name} · ${s.sc?.[t] | 0}점${t === me ? ' ← 우리 나라' : ''}`)); });
     if (rw) box.append(el2('p', 'hint', rw));
-    box.append(el2('p', 'hint', '💡 더 강해지려면: 🧮 수학력(포탄 위력) · 🔤 영어력(장전) · 🏛️ 사회력(배 튼튼함) · 📚 독서력(위력)을 올리고, 🛠️ 조선소에서 큰 배를 만들고, ⛵ 배 가게 "⚔️ 해전 강화"에서 철판·화포를 달아요'));
+    box.append(el2('p', 'hint', '💡 더 강해지려면: 🧮 수학력(포탄 위력) · 🔤 영어력(장전) · 🏛️ 사회력(배 튼튼함) · 📚 국어력(위력)을 올리고, 🛠️ 조선소에서 큰 배를 만들고, ⛵ 배 가게 "⚔️ 해전 강화"에서 철판·화포를 달아요'));
     const b = el2('button', 'btn', '🏠 마을로 돌아가기'); b.onclick = () => { closeLife(); if (nvRegion()) nvHome(); }; const rr = el2('div', 'row-center'); rr.append(b); box.append(rr);
   });
 }
@@ -29444,7 +29445,7 @@ function stgTick(dt) {
 // 따로 떨어진 마을(x 2830~2970 · z 180~310): 한옥 · 자음·모음 조형물 · 가운데 훈민정음 책
 // 📝 문장 공방(문장 성분·호응) · ✏️ 맞춤법 서당(맞춤법·띄어쓰기) · 🏮 속담 정자(속담·관용 표현) · 📖 이야기 도서관(읽기)
 // ✍️ 시 게시판(3줄 시 · 선생님이 ✅ 해야 걸려요 · state/kpoem/{기기}) · 🕵️ 정보 탐정단(모둠전 · 단서 8개 출처·믿음 판단 → 덜렁이는 내일 학교에 가야 할까?)
-// 보상: 곳마다 하루 5문제까지 맞힌 만큼 📚 독서력 +1 · 🐚 +2 (bag.kvDay) · 매체 탐정은 하루 한 번 🐚15 + 📚 +3
+// 보상: 곳마다 하루 5문제까지 맞힌 만큼 📚 국어력 +1 · 🐚 +2 (bag.kvDay) · 매체 탐정은 하루 한 번 🐚15 + 📚 +3
 const KV = { cx: 2900, cz: 245, x0: 2830, x1: 2970, z0: 180, z1: 310 };
 function kvRegion() { return joined && player.pos.x > KV.x0 - 8 && player.pos.x < KV.x1 + 8 && player.pos.z > KV.z0 - 8 && player.pos.z < KV.z1 + 8; }
 const inKV = (x, z) => x >= KV.x0 + 0.6 && x <= KV.x1 - 0.6 && z >= KV.z0 + 0.6 && z <= KV.z1 - 0.6;
@@ -29547,12 +29548,12 @@ function kvMake(k) { // → [{q, o, a, e}] 5문제
     for (const [sit, p] of kvPick(KV_PROV_SIT, 2)) out.push(mc(`${sit} 어울리는 속담은?`, p, kvPick(KV_PROV.filter(x => x[0] !== p && !x[0].includes('관용')), 3).map(x => x[0]))); return hShuffle(out); }
   return [];
 }
-function kvReward(k, ok) { if (isTeacher || !ok) return ''; if (bag.kvDay?.d !== dayNum()) bag.kvDay = { d: dayNum(), got: {} }; const left = Math.max(0, 5 - (bag.kvDay.got[k] | 0)), n = Math.min(left, ok); if (!n) return '오늘 이곳 보상은 다 받았어요 (연습은 계속 돼요)'; bag.kvDay.got[k] = (bag.kvDay.got[k] | 0) + n; addStat('read', n); const sh = giveShellCapped(n * 2); saveBag(); updateHUD(null); return `📚 독서력 +${n} · 🐚 +${sh}`; }
+function kvReward(k, ok) { if (isTeacher || !ok) return ''; if (bag.kvDay?.d !== dayNum()) bag.kvDay = { d: dayNum(), got: {} }; const left = Math.max(0, 5 - (bag.kvDay.got[k] | 0)), n = Math.min(left, ok); if (!n) return '오늘 이곳 보상은 다 받았어요 (연습은 계속 돼요)'; bag.kvDay.got[k] = (bag.kvDay.got[k] | 0) + n; addStat('read', n); const sh = giveShellCapped(n * 2); saveBag(); updateHUD(null); return `📚 국어력 +${n} · 🐚 +${sh}`; }
 function kvQuiz(k, title, qs, intro) { // 한 문제씩 · 풀이 보여 주기
   const st = { i: -1, ok: 0, pick: -1 };
   openLife(title, (box) => {
     box.textContent = '';
-    if (st.i < 0) { if (intro) intro(box); else box.append(el2('p', 'hint', `${qs.length}문제를 풀어요. 맞힌 만큼 📚 독서력이 올라요 (곳마다 하루 5문제까지).`)); const b = el2('button', 'btn', '▶ 시작'); b.style.background = '#FFD23C'; b.onclick = () => { st.i = 0; refillLife(); }; const r = el2('div', 'row-center'); r.append(b); box.append(r); return; }
+    if (st.i < 0) { if (intro) intro(box); else box.append(el2('p', 'hint', `${qs.length}문제를 풀어요. 맞힌 만큼 📚 국어력이 올라요 (곳마다 하루 5문제까지).`)); const b = el2('button', 'btn', '▶ 시작'); b.style.background = '#FFD23C'; b.onclick = () => { st.i = 0; refillLife(); }; const r = el2('div', 'row-center'); r.append(b); box.append(r); return; }
     if (st.i >= qs.length) { const rw = st.rw ?? (st.rw = kvReward(k, st.ok)); box.append(el2('p', 'lp-big', `${st.ok === qs.length ? '🎉' : '👍'} ${st.ok}/${qs.length} 맞혔어요!`)); if (rw) box.append(el2('p', 'hint', rw)); const row = el2('div', 'row-center wrap'), a = el2('button', 'btn', '🔁 새 문제로 다시'); a.style.background = '#FFD23C'; a.onclick = () => kvOpen(k); row.append(a); box.append(row); return; }
     const Q = qs[st.i]; box.append(el2('p', 'hint', `${st.i + 1} / ${qs.length}`)); if (Q.p) box.append(Object.assign(el2('p', ''), { style: 'background:#FFF6E6;border-radius:12px;padding:10px 12px;line-height:1.7;white-space:pre-line;text-align:left', textContent: Q.p }));
     box.append(Object.assign(el2('p', 'lp-big', Q.q), { style: 'font-size:19px;white-space:pre-line' }));
@@ -29719,7 +29720,7 @@ function kvPoem() {
   openLife('✍️ 한글 마을 시 게시판', (box) => {
     box.textContent = ''; const me = backend.uid, W = kvRhyme(), ch = [...W], mine0 = S.kpoem?.[me], mine = mine0 && (mine0.w || '') === W ? mine0 : null, V = kvVotes(), hung = kvHung(), myVote = S.kpoemv?.[me] || '';
     { const t = el2('div', ''); t.style.cssText = 'display:flex;gap:8px;justify-content:center;align-items:center;margin:4px 0 6px'; t.append(el2('b', '', '오늘의 운')); for (const c of ch) { const b = el2('span', '', c); b.style.cssText = 'display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#D2453A;color:#fff;font-size:26px;font-weight:800'; t.append(b); } box.append(t); }
-    box.append(el2('p', 'hint', `"${W}" 글자로 줄을 시작하는 ${kvPoemName(ch)}를 지어요. 선생님이 ✅ 걸면 📚 독서력 +3 · 🐚 10 (하루 한 번), 걸린 시에는 친구들이 👍 투표해요.`));
+    box.append(el2('p', 'hint', `"${W}" 글자로 줄을 시작하는 ${kvPoemName(ch)}를 지어요. 선생님이 ✅ 걸면 📚 국어력 +3 · 🐚 10 (하루 한 번), 걸린 시에는 친구들이 👍 투표해요.`));
     if (isTeacher) { const tr = el2('div', ''); tr.style.cssText = 'background:#EEF6FF;border-radius:12px;padding:8px;margin:4px 0'; tr.append(el2('b', '', '🧑‍🏫 운 띄우기 (2~4글자)')); const rr = el2('div', 'row-center wrap'), inp = el2('input', 'tinput'); inp.maxLength = 4; inp.value = W; inp.style.width = '110px'; inp.onkeydown = (e) => e.stopPropagation(); const go = (v) => { v = String(v).trim(); if (!/^[가-힣]{2,4}$/.test(v)) { toast('한글 2~4글자로 써요', 'warn'); return; } adminDo({ kpw: v, kpoemv: null }, `✍️ 새 운 "${v}"을 띄웠어요`).then(() => setTimeout(refillLife, 300)); };
       const b = el2('button', 'btn', '📢 운 띄우기'); b.style.background = '#FFD23C'; b.onclick = () => go(inp.value); rr.append(inp, b); tr.append(rr); const pr = el2('div', 'row-center wrap'); for (const k of KV_RHYMES) { const x = el2('button', 'btn', k); x.style.cssText = `font-size:13px;padding:4px 8px;background:${k === W ? '#FFD23C' : '#fff'}`; x.onclick = () => go(k); pr.append(x); } tr.append(pr);
       tr.append(el2('p', 'hint', '운을 바꾸면 투표가 새로 시작되고, 게시판에는 새 운의 시만 걸려요 (지난 시는 기록으로 남아요)')); box.append(tr); }
@@ -29742,7 +29743,7 @@ function kvPoem() {
 function kvPoemRwTick() { // ✅ 내 시가 걸리면 보상 (걸린 시마다 한 번 · 하루 한 번)
   if (isTeacher || !joined) return; const m = S.kpoem?.[backend.uid]; if (!m?.ok || !m.at) return; const R = bag.kvPoemRw || {}; if (R.at === m.at) return;
   if (R.d === dayNum()) { bag.kvPoemRw = { ...R, at: m.at }; saveBag(); toast('✅ 내 시가 게시판에 걸렸어요! (오늘 시 보상은 이미 받았어요)', 'success'); return; }
-  bag.kvPoemRw = { at: m.at, d: dayNum() }; addStat('read', 3); const sh = giveShellCapped(10); saveBag(); updateHUD(null); playSfx('fanfare'); showBanner('✍️ 내 시가 게시판에 걸렸어요!', `📚 독서력 +3 · 🐚 +${sh} · 친구들의 👍 투표를 받아 봐요`, 5000);
+  bag.kvPoemRw = { at: m.at, d: dayNum() }; addStat('read', 3); const sh = giveShellCapped(10); saveBag(); updateHUD(null); playSfx('fanfare'); showBanner('✍️ 내 시가 게시판에 걸렸어요!', `📚 국어력 +3 · 🐚 +${sh} · 친구들의 👍 투표를 받아 봐요`, 5000);
 }
 // ---------- 🕵️ 정보 탐정단 (모둠전) ----------
 // state/kdet {on, ph: play|rev, at} 선생님 · state/kdetp/{uid} {n, g 모둠 0~4, c '01..' 찾은 단서 8칸, r '0123..' 믿음 8칸, m 헷갈린 단서, f1, f2, at} · state/kdeta/{g} {u, n, a, k, w, at} 모둠 최종 답(한 번만)
@@ -29848,7 +29849,7 @@ function kvDetOpen() {
         inp('허위 정보는', 'f1', '피해를 줄 수 있다.'); inp('정보는 무조건 믿기보다', 'f2', '');
         const sb = el2('button', 'btn', me.f1 && me.f2 ? '💾 다시 저장' : '📮 되돌아보기 제출'); sb.style.background = '#FFD23C'; sb.onclick = async () => { if (!(st.f1 || '').trim() || !(st.f2 || '').trim()) { toast('✍️ 두 빈칸을 모두 채워요', 'warn'); return; } const r = await kdSave({ m: st.m | 0, f1: st.f1.trim().slice(0, 40), f2: st.f2.trim().slice(0, 40) }); if (!r?.ok) return;
           let rw = ''; if (bag.kvDetRw !== dayNum()) { bag.kvDetRw = dayNum(); addStat('read', 3); rw = ` 📚 +3 · 🐚 +${giveShellCapped(A.a === KV_DET.final.a ? 20 : 12)}`; saveBag(); updateHUD(null); burst(player.pos.clone().setY(2), [0xFFD23C, 0x5FBE5A, 0x3E8FE8], 50, 6, 3, 1.2, -4); }
-          playSfx('fanfare'); toast(`🕵️ 덜렁이의 개교기념일 탈출 성공!${rw}`, 'success'); refillLife(); }; const r = el2('div', 'row-center'); r.append(sb); box.append(r); box.append(el2('p', 'hint', '되돌아보기를 내면 하루 한 번 📚 독서력 +3 · 🐚 (통과 20 / 아니면 12)')); } }
+          playSfx('fanfare'); toast(`🕵️ 덜렁이의 개교기념일 탈출 성공!${rw}`, 'success'); refillLife(); }; const r = el2('div', 'row-center'); r.append(sb); box.append(r); box.append(el2('p', 'hint', '되돌아보기를 내면 하루 한 번 📚 국어력 +3 · 🐚 (통과 20 / 아니면 12)')); } }
   });
 }
 function kdBuild(g) { // 🕵️ 1101k 본부 안: 가운데 사건 게시판 + 벽을 따라 단서 8곳
