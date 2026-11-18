@@ -10715,7 +10715,7 @@ function rankAdd(k, n) {
 }
 function rankPush() {
   if (!joined || !backend?.rankSet || !bag.wkp || bag.wkp.w !== weekNum()) return;
-  const d = { n: cleanNick(myNick) || '친구' }; for (const k of Object.keys(rankCats())) { const v = Math.min(5000, Math.floor(bag.wkp[k] || 0)); if (v || k !== 'bdm') d[k] = v; }
+  const d = { n: cleanNick(myNick) || '친구', lk: [myAnimal, myShirt, myHair, myHairColor, myWearCode()].map(v => v | 0).join('.') }; /* 🏛️ 1106c 기념비 조각상 모습 */ for (const k of Object.keys(rankCats())) { const v = Math.min(5000, Math.floor(bag.wkp[k] || 0)); if (v || k !== 'bdm') d[k] = v; }
   const key = JSON.stringify(d); if (key === rankW.sent) return; rankW.sent = key; backend.rankSet(String(bag.wkp.w), d);
 }
 // 👥 같은 이름은 한 줄로 합쳐요: 랭킹은 기기마다 저장돼서 크롬북·태블릿을 바꿔 쓰거나 다시 접속하면 같은 학생이 두 번 나왔어요 → 이름이 같으면 점수를 더해 한 줄로 ('친구'처럼 이름이 없으면 기기별)
@@ -10732,7 +10732,7 @@ function rankTitle(uid) { // 지난주 1~3등 칭호 (이름표 옆 · 둘까지
 const rankNick = (u, e) => nickOf(u, e) || '친구';
 function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · (선생님) 오래된 주 지우기
   if (!joined || !stateLoaded || !backend) return;
-  const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn;
+  const tn = performance.now(); if (tn - (rankW.at || 0) < 2000) return; rankW.at = tn; try { monuTick(); } catch (e) { console.warn('monu', e); } /* 🏛️ 1106c */
   const me = backend.uid, tl = (cleanNick(myNick) || '') + warLvTag(me) + titleText(me) + praiseTag(me) + hpetTag(hpetCode());
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
   for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + warLvTag(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
@@ -18910,6 +18910,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106c', d: '11월 18일', items: ['🏛️ 광장에 능력치 1등 기념비가 생겼어요! 🔤 영어력 · 🏛️ 사회력 · 🧮 수학력 · 📚 국어력 · 👑 합계 (남쪽, 황금 용과 함께)', '🥇 지난주 1등의 모습 그대로 금빛 조각상이 서요 · 월요일마다 새 1등으로 바뀌어요 · 같은 점수면 나란히', '👏 기념비 앞에서 E → 축하 박수 · 지난주 1~3등과 이번 주 지금 1등을 볼 수 있어요'] },
   { id: '1106b', d: '11월 18일', items: ['🐠 선생님 기기에서도 아쿠아리움에 생물을 전시할 수 있어요 (전에는 버튼이 잠겨 있었어요)', '⚠️ 전시가 저장되지 않으면 바로 알려 줘요'] },
   { id: '1106a', d: '11월 18일', items: ['🏎️ 수학 레이싱! 광산 마을 동쪽 🏁 문 → 레이싱 경기장 · 광차는 저절로 달리고 ◀ ▶ 로 정답이 걸린 차선의 문을 지나요 (⚡ 정답 빨라짐 · 🐢 오답 · 🔥 3연속 불꽃)', '🏁 접수처에서 방 만들기 · 참가 (최대 15명) · 🤖 로봇과 연습 · 📣 선생님이 반 전체 레이스를 열면 어디서든 참가 버튼이 떠요', '🫙🐠 우리 집 가구에 곤충 채집통 · 곤충 사육장 · 큰 수조 · 바다 수조가 생겼어요 (어항도!) · 도감에 있는 생물을 골라 전시해요 (가방 생물은 그대로) · 친구가 놀러 오면 구경해요', '🍤 먹이 주기 (하루 한 번 🐚) · 🏅 전시 칭호: 🫙곤충수집가 · 🐠어항수집가 · 🏛️생물박사', '🐠 아쿠아센터가 우리 반 아쿠아리움으로! 🎁 내 생물 3마리 전시 · 🐟 민물 · 🌊 바다 · 🪼 원통 수조 · 🐞 곤충관 (수영장은 없어졌어요)'] },
   { id: '1105zz9', d: '11월 18일', items: ['📚 「독서력」 이름이 「국어력」으로 바뀌었어요 · 지금까지 모은 점수와 레벨은 그대로예요', '📚 국어력은 독서 기록장 · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈로 올라요'] },
@@ -23419,6 +23420,54 @@ const STATS = {
   math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🚴 레일바이크 · 📘 학당 · 🧮 혼합 계산 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
   read: { icon: '📚', name: '국어력', where: '광장 독서 책상 (선생님 확인 후 · 쪽수 × 책 모양) · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
+// ================= 🏛️ 1106c 능력치 1등 기념비 (광장 옛 🌼 꾸미기 구역 · 지난주 1등 · 월요일에 바뀌어요 · 겹쳐도 모두 그 학생) =================
+// 모습: 랭킹에 남긴 lk('동물.옷.머리.머리색.옷가게') → 없으면 지금 접속 중인 모습 → 없으면 기본 · 금빛으로 칠해요 · 같은 점수 1등은 나란히 (최대 3)
+const MONU = [['eng', 25, -25], ['math', -47, 19], ['soc', 47, 19], ['read', -12, -26], ['sum', 0, 49]]; // 📚 국어력 자리(옛 구역 -25,-25)는 🎲 보드게임 집이 있어 오른쪽 옆으로
+const MONU_INFO = (k) => k === 'sum' ? { icon: '👑', name: '능력치 합계', col: 0xFFD23C } : { ...STATS[k], col: { eng: 0x5AB4FF, soc: 0xE2584A, math: 0x5FBE5A, read: 0xB08AF0 }[k] };
+const monuW = { base: {}, st: {}, sig: {}, at: 0 }, MONU_GOLD = {};
+const monuGold = (lum) => { const k = Math.max(0, Math.min(6, Math.round(lum * 6))); return MONU_GOLD[k] ||= new THREE.MeshStandardMaterial({ color: new THREE.Color(0xFFD04A).multiplyScalar(0.55 + k / 6 * 0.6), metalness: 0.25, roughness: 0.4, emissive: new THREE.Color(0xB07800).multiplyScalar(0.35 + k / 6 * 0.4), emissiveIntensity: 0.6 }); };
+function goldify(o) { o.traverse(m => { if (!m.isMesh || m.userData.keep) return; const c = m.material?.color, lum = c ? 0.3 * c.r + 0.59 * c.g + 0.11 * c.b : 0.5; m.material = monuGold(lum); m.castShadow = false; }); }
+function monuLook(x) { // x = rankList 한 줄 [대표 기기, 점수, 기록, [기기들]]
+  for (const u of x[3] || [x[0]]) { const e = S.rank?.[String(weekNum() - 1)]?.[u], m = /^(\d+)\.(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(e?.lk || ''); if (m) return m.slice(1).map(Number); }
+  for (const u of x[3] || [x[0]]) { if (u === backend?.uid) return [myAnimal, myShirt, myHair, myHairColor, myWearCode()]; const r = remotes.get(u)?.target; if (r) return [r.a | 0, r.c | 0, r.h | 0, r.k | 0, r.w | 0]; }
+  return null; }
+const monuWeekText = (w) => { const d0 = w * 7 - 3, f = (d) => { const t = new Date(d * 86400000); return `${t.getUTCMonth() + 1}/${t.getUTCDate()}`; }; return `${f(d0)}~${f(d0 + 6)}`; };
+function monuBase(k, x, z) { // 받침대 · 꽃 · 등 (한 번만 · 부딪힘)
+  const g = new THREE.Group(), I = MONU_INFO(k), big = k === 'sum', R = big ? 2.4 : 1.8, H = big ? 1.6 : 1.3, o = { solid: false }, ry = Math.atan2(-x, -z); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+  cyl(g, R + 2.2, 0.08, 0xEDE4D0, 0, 0.04, 0, o); cyl(g, R + 0.7, 0.5, 0xF4EFE6, 0, 0.25, 0); cyl(g, R, H, 0xFFFFFF, 0, 0.5 + H / 2, 0); cyl(g, R + 0.05, 0.24, I.col, 0, 0.5 + H - 0.3, 0, o); cyl(g, R + 0.12, 0.12, 0xF2C230, 0, 0.5 + H, 0, { solid: false, emissive: 0.25 });
+  signPlane(g, [I.icon], 1.0, 1.0, 0, 0.5 + H * 0.45, R + 0.02, { font: 80, pad: 4, bg: 'rgba(0,0,0,0)', stroke: false }).rotation.y = 0;
+  for (const s of [-1, 1]) { const lx = s * (R + 1.6); cyl(g, 0.09, 2.2, 0x3B3F46, lx, 1.1, R * 0.4, o); ball(g, 0.28, 0xFFF4C8, lx, 2.3, R * 0.4, { solid: false, emissive: 0.8 }); for (let i = 0; i < 4; i++) ball(g, 0.22, [0xFF8AB8, 0xFFE066, 0xFFFFFF, 0xB08AF0][i], lx + (i - 1.5) * 0.35, 0.25, R + 1.2, o); }
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(big ? 1.9 : 1.4, 0.09, 8, 40, Math.PI * 1.4), M(0x4FA04F)); ring.position.set(0, 0.5 + H + (big ? 2.0 : 1.5), -0.7); ring.rotation.z = -Math.PI * 0.2 - Math.PI / 2 + Math.PI; g.add(ring);
+  for (let i = 0; i < 12; i++) { const a = Math.PI * 0.3 + i / 11 * Math.PI * 1.4 - Math.PI / 2 + Math.PI * 0.5, rr = big ? 1.9 : 1.4; mesh(SPH_LO, g, 0.18, 0.09, 0.07, 0x6CC85C, Math.cos(a) * rr, ring.position.y + Math.sin(a) * rr, -0.7, { solid: false, rz: a }); }
+  registerSolids(g, 'monu'); monuW.base[k] = g;
+  addInteract({ pos: new V3(x, 1, z).add(new V3(Math.sin(ry), 0, Math.cos(ry)).multiplyScalar(R + 1.6)), r: 2.6, text: () => { const t = rankList(weekNum() - 1, k).filter((x, i, a) => x[1] === a[0][1]).slice(0, 3); return [`👏 ${I.icon} ${I.name} 1등 기념비`, t.length ? `${t.map(x => rankNick(x[0], x[2])).join(' · ')} · 축하 박수!` : '지난주 1등을 기다려요']; }, run: () => monuCheer(k) });
+}
+function monuStatue(k) { // 지난주 1등 조각상 (점수가 같으면 나란히)
+  const [, x, z] = MONU.find(m => m[0] === k), base = monuW.base[k]; if (!base) return; const I = MONU_INFO(k), big = k === 'sum', H = 0.5 + (big ? 1.6 : 1.3), pw = weekNum() - 1;
+  const L = rankList(pw, k), tops = L.filter(x => x[1] === L[0]?.[1]).slice(0, 3), looks = tops.map(monuLook);
+  const sig = JSON.stringify([pw, tops.map(x => [x[0], x[1], rankNick(x[0], x[2])]), looks]); if (monuW.sig[k] === sig) return; monuW.sig[k] = sig;
+  if (monuW.st[k]) { base.remove(monuW.st[k]); monuW.st[k].traverse(m => { if (m.isSprite) m.material.map?.dispose(); }); }
+  const g = new THREE.Group(); g.position.y = H; base.add(g); monuW.st[k] = g;
+  if (!tops.length) { const q = makeLabel(g, ['❔'], 1.6, 0, 1.2, 0); q.userData.keep = 1; makeLabel(g, [`${I.icon} ${I.name} 1등`, '지난주 1등을 기다려요'], 0.6, 0, 3.0, 0); return; }
+  const sc = (big ? 1.7 : 1.5) * (tops.length > 1 ? 0.8 : 1), gap = tops.length > 1 ? (big ? 1.6 : 1.2) : 0;
+  tops.forEach((x, i) => { const lk = looks[i] || [0, 0, 0, 0, 0], a = makeAvatar(lk[0], lk[1], lk[2], lk[3], g); if (lk[4]) setWear(a, lk[4]); a.badge.visible = false; a.badge.parent?.remove(a.badge);
+    a.g.traverse(m => { if (m.geometry === SHADOW) m.visible = false; }); a.g.scale.setScalar(sc); a.g.position.set((i - (tops.length - 1) / 2) * gap, 0, 0); a.g.rotation.y = 0; goldify(a.g);
+    const tr = new THREE.Group(); tr.position.set(0.55, 0.95, 0.15); a.g.add(tr); cyl(tr, 0.12, 0.08, 0xF2C230, 0, 0, 0, { solid: false }); cyl(tr, 0.04, 0.18, 0xF2C230, 0, 0.12, 0, { solid: false }); mesh(CONE, tr, 0.16, 0.22, 0.16, 0xF2C230, 0, 0.32, 0, { solid: false, rx: Math.PI }); goldify(tr); });
+  if (big) { try { const d = mon3('r2', 3); d.scale.setScalar(1.7); d.position.set(0, 0.2, -1.6); d.rotation.y = Math.PI / 2; goldify(d); g.add(d); } catch (e) { /* 용이 없으면 사람만 */ } }
+  const names = tops.map(x => rankNick(x[0], x[2])).join(' · ');
+  makeLabel(g, [`${I.icon} ${I.name} 1등`, names], big ? 0.8 : 0.66, 0, (big ? 1.7 : 1.5) * 2.1 + 0.5, 0);
+  const pl = signPlane(g, [`${I.icon} ${I.name} 1등`, names.length > 14 ? names.slice(0, 13) + '…' : names, `${monuWeekText(pw)} · ${tops[0][1]}점`], big ? 3.2 : 2.6, big ? 1.3 : 1.1, 0, -H + 0.95, (big ? 2.4 : 1.8) + 0.75, { font: 46, pad: 10, fg: '#3B2F2A', bg: '#FFF8E8' }); pl.rotation.y = 0;
+}
+function monuTick() { if (!stateLoaded) return; const t = performance.now(); if (t - monuW.at < 3000) return; monuW.at = t; for (const [k] of MONU) monuStatue(k); }
+function monuCheer(k) { const [, x, z] = MONU.find(m => m[0] === k), I = MONU_INFO(k), L = rankList(weekNum() - 1, k), tops = L.filter(y => y[1] === L[0]?.[1]).slice(0, 3);
+  burst(new V3(x, 4, z), RAINBOW, 50, 6, 3); playSfx('cheer');
+  openLife(`🏛️ ${I.icon} ${I.name} 1등 기념비`, (box) => { box.textContent = '';
+    box.append(el2('p', 'hint', `지난주(${monuWeekText(weekNum() - 1)})에 퀴즈·공부로 ${I.name} 점수를 가장 많이 올린 친구예요. 월요일마다 새 1등으로 바뀌어요.`));
+    if (!tops.length) box.append(el2('p', 'lp-big', '❔ 아직 1등이 없어요. 이번 주 주인공은 나!'));
+    L.slice(0, 3).forEach((y, i) => box.append(el2('div', 'rank-row' + (rankHas(y, backend.uid) ? ' me' : ''), `${MEDAL[i]} ${rankNick(y[0], y[2])} · ${y[1]}점`)));
+    const now = rankList(weekNum(), k)[0]; box.append(el2('h3', 'lp-sec', '🔥 이번 주 지금 1등'), el2('p', 'hint', now ? `${rankNick(now[0], now[2])} · ${now[1]}점 — 다음 주 기념비 주인공에 도전!` : '아직 아무도 없어요. 첫 번째 주인공이 되어 봐요!')); });
+}
+for (const [k, x, z] of MONU) monuBase(k, x, z);
 bag.stat ||= {};
 if (bag.statV !== 2) { bag.stat = {}; bag.statV = 2; saveBag(); } // 1017d 능력치 레벨 새로 시작 (누적 경험치 · 최고 Lv12)
 const LV_MAX = 12, LV_DEF = [15, 25, 35, 45, 55, 65, 80, 95, 115, 135, 155, 180], LV_OLD = [30, 50, 70, 90, 110, 130, 160, 190, 230, 270, 310, 360]; // 레벨마다 필요한 경험치 (1102b 기본 합계 1000 · 예전 2000 · 선생님이 관리 화면에서 바꿔요: state/lvx)
