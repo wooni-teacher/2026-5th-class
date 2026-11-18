@@ -17998,6 +17998,8 @@ const ROOMS = {
   mus: { name: '역사 박물관', icon: '🏛️', cx: 1450, cz: -82, w: 30, d: 22, wall: 0xF6EFE2, floor: 0xC9A27A, site: null }, // 🏯 역사 마을
   pg4: { name: '4단계 펫 체육관', icon: '🏟️', cx: 1510, cz: 80, w: 22, d: 18, wall: 0xE8F0FA, floor: 0xC8B48E, site: null }, // 🗽 영어 마을
   pg5: { name: '5단계 펫 체육관', icon: '🏟️', cx: 1450, cz: 130, w: 22, d: 18, wall: 0xFFF2DC, floor: 0xD8C4A0, site: null }, // 🔤 한글 마을 (1105m)
+  pg6: { name: '6단계 숨겨진 체육관 · 바람 동굴', icon: '🌪️', cx: 1650, cz: -45, w: 22, d: 18, wall: 0x8A9AA8, floor: 0x7A8A8A, site: null }, // 🔍 1106e 뒷산 뒤편 바위 틈
+  pg7: { name: '7단계 숨겨진 체육관 · 전설의 동굴', icon: '👑', cx: 1650, cz: 45, w: 22, d: 18, wall: 0x4A3A7A, floor: 0x3A3060, site: null }, // 🔍 1106e 바닷가 남쪽 끝
   etr: { name: '영어 훈련소', icon: '🏋️', cx: 1510, cz: -40, w: 20, d: 16, wall: 0xE8F0FA, floor: 0xC8A878, site: 'ev:train' },
   bg1: { name: '끝말잇기 방', icon: '🔤', cx: 1515, cz: -86, w: 22, d: 18, wall: 0xFFF4C8, floor: 0xE8C890, site: null }, // 🎲 반월쉼터 (1021a)
   bg2: { name: '오목 방', icon: '⚫', cx: 1580, cz: -98, w: 26, d: 22, wall: 0xF3EBDD, floor: 0xC9A36A, site: null }, // ⚫ 1105zd 오목
@@ -18910,6 +18912,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106e', d: '11월 18일', items: ['⬆️ 펫 만렙이 Lv40 → Lv60!', '🔍 숨겨진 펫 체육관 2곳이 생겼어요! 🌪️ 6단계 바람 관장 (Lv38~40) · 👑 7단계 전설 관장 (희귀 펫 Lv48~50) · 어디 있는지는 관장 목록의 힌트를 보고 찾아봐요', '🏅 배지는 7개까지 · 6·7단계 배지는 🐚 600 · 1000'] },
   { id: '1106d', d: '11월 18일', items: ['🗽 기념비 조각상이 금빛 대신 1등 친구의 지난주 모습(옷·모자·머리) 그대로 서요', '🎉 능력치마다 특별 포즈: 👑 두 팔 번쩍 · 🧮 트로피 높이 · 🔤 손 흔들기 · 🏛️ 앞을 가리키는 탐험가 · 📚 책 읽기'] },
   { id: '1106c', d: '11월 18일', items: ['🏛️ 광장에 능력치 1등 기념비가 생겼어요! 🔤 영어력 · 🏛️ 사회력 · 🧮 수학력 · 📚 국어력 · 👑 합계 (남쪽, 황금 용과 함께)', '🥇 지난주 1등의 모습 그대로 금빛 조각상이 서요 · 월요일마다 새 1등으로 바뀌어요 · 같은 점수면 나란히', '👏 기념비 앞에서 E → 축하 박수 · 지난주 1~3등과 이번 주 지금 1등을 볼 수 있어요'] },
   { id: '1106b', d: '11월 18일', items: ['🐠 선생님 기기에서도 아쿠아리움에 생물을 전시할 수 있어요 (전에는 버튼이 잠겨 있었어요)', '⚠️ 전시가 저장되지 않으면 바로 알려 줘요'] },
@@ -21150,18 +21153,21 @@ const PMOVE = {
   tm12: { n: '별빛 필살기', t: 'normal', pw: 120, acc: 75, tm: { eng: 6, soc: 6, math: 6, read: 6 } },
 };
 const PTM = Object.keys(PMOVE).filter(k => PMOVE[k].tm), PTYPE_MV = { fire: ['f1', 'f2'], water: ['w1', 'w2'], grass: ['g1', 'g2'], elec: ['e1', 'e2'], wind: ['a1', 'a2'], earth: ['r1', 'r2'] };
-const PB_MAXLV = 40, PB_START = 5, PB_TEAM = 3; /* 1105m 만렙 30 → 40 */
+const PB_MAXLV = 60, PB_START = 5, PB_TEAM = 3; /* 1105m 만렙 30 → 40 · 1106e 40 → 60 */
 // 🏆 관장 4단계: 1 우리 마을(펫 체육관) · 2 수학 광산 마을 · 3 역사 마을 · 4 영어 마을 — 관장 속성은 선생님이 관리 화면에서 바꿔요 (state/pgym/{1~4})
-const PG_DEF = { 1: 'grass', 2: 'earth', 3: 'fire', 4: 'water', 5: 'elec' }, PG_N = 5; /* 1105m 5단계 한글 마을 */
-const PG_PLACE = ['우리 마을 펫 체육관', '수학 광산 마을 체육관', '역사 마을 체육관', '영어 마을 체육관', '한글 마을 체육관'], PG_ROOM = ['lib', 'pg2', 'pg3', 'pg4', 'pg5'];
-const PG_LV = [[5, 6, 6], [11, 12, 13], [17, 18, 19], [23, 24, 26], [31, 33, 35]], PG_SHELL = [60, 120, 200, 300, 400];
+const PG_DEF = { 1: 'grass', 2: 'earth', 3: 'fire', 4: 'water', 5: 'elec', 6: 'wind', 7: 'fire' }, PG_N = 7; /* 1105m 5단계 한글 마을 · 1106e 🔍 숨겨진 6·7단계 */
+const PG_HIDDEN = { 6: '⛰️ 뒷산 뒤편, 북쪽 울타리 가까운 바위 틈 어딘가…', 7: '🏖️ 바닷가 남쪽 끝, 파도 소리가 울리는 동굴…' }, pgFound = (n) => isTeacher || !PG_HIDDEN[n] || !!bag.pgFound?.[n];
+const PG_PLACE = ['우리 마을 펫 체육관', '수학 광산 마을 체육관', '역사 마을 체육관', '영어 마을 체육관', '한글 마을 체육관', '🔍 뒷산 바람 동굴 (숨겨진 체육관)', '🔍 바닷가 전설의 동굴 (숨겨진 체육관)'], PG_ROOM = ['lib', 'pg2', 'pg3', 'pg4', 'pg5', 'pg6', 'pg7'];
+const PG_LV = [[5, 6, 6], [11, 12, 13], [17, 18, 19], [23, 24, 26], [31, 33, 35], [38, 39, 40], [48, 49, 50]], PG_SHELL = [60, 120, 200, 300, 400, 600, 1000];
 const PG_WHO = { grass: ['새싹 관장 초록', '🌱 새싹 배지'], water: ['물결 관장 파랑', '💧 물결 배지'], fire: ['불꽃 관장 다홍', '🔥 불꽃 배지'], elec: ['번개 관장 노랑', '⚡ 번개 배지'], wind: ['바람 관장 하늘', '🌪️ 바람 배지'], earth: ['바위 관장 단단', '🪨 바위 배지'] };
 const pgType = (n) => PG_WHO[S.pgym?.[n]] ? S.pgym[n] : PG_DEF[n];
 function pbLeaders() {
-  return Array.from({ length: PG_N }, (_, i) => i + 1).map(n => { const t = pgType(n), [nm, badge] = PG_WHO[t], weak = Object.keys(PSTRONG).filter(a => PSTRONG[a].includes(t)).map(a => `${PT[a].i}${PT[a].n}`).join('·');
+  return Array.from({ length: PG_N }, (_, i) => i + 1).map(n => { if (n === 7) { const ids = PET_IDS.filter(id => isRare(id)).sort((a, b) => CRITTER[b].price - CRITTER[a].price || (a < b ? -1 : 1)).slice(0, 3); /* 👑 1106e 전설 관장: 희귀 펫 (모든 속성) */
+      return { n: '7단계 전설 관장 「반월」', icon: '👑', t: petType(ids[0]), badge: '👑 전설 배지', shell: PG_SHELL[6], team: ids.map((id, k) => [id, PG_LV[6][k]]), place: PG_PLACE[6], room: PG_ROOM[6], line: '나는 전설의 관장! 희귀 펫들과 겨뤄 볼 용기가 있니?', hidden: 1 }; }
+    const t = pgType(n), [nm, badge] = PG_WHO[t], weak = Object.keys(PSTRONG).filter(a => PSTRONG[a].includes(t)).map(a => `${PT[a].i}${PT[a].n}`).join('·');
     const ids = PET_IDS.filter(id => petType(id) === t && !isRare(id)).sort((a, b) => (CRITTER[a].price - CRITTER[b].price) * (n <= 2 ? 1 : -1)).slice(0, 3);
     const team = ids.map((id, k) => [id, PG_LV[n - 1][k]]);
-    return { n: `${n}단계 ${nm}`, icon: PT[t].i, t, badge, shell: PG_SHELL[n - 1], team, place: PG_PLACE[n - 1], room: PG_ROOM[n - 1], line: `나는 ${PT[t].n} 속성 관장! ${weak} 펫이 있으면 와 봐!` }; });
+    return { n: `${n}단계 ${nm}`, icon: PT[t].i, t, badge, shell: PG_SHELL[n - 1], team, place: PG_PLACE[n - 1], room: PG_ROOM[n - 1], line: `나는 ${PT[t].n} 속성 관장! ${weak} 펫이 있으면 와 봐!`, hidden: PG_HIDDEN[n] ? 1 : 0 }; });
 }
 bag.pets ||= {}; bag.pteam ||= []; bag.pbadge ||= 0;
 const petType = (id) => CRITTER[id]?.pet || 'normal';
@@ -22353,7 +22359,7 @@ function openLeaders(here = roomNow()) {
   if (!joined) return;
   openLife('🏆 펫 체육관 관장', (box) => {
     box.textContent = ''; const team = petSnap();
-    box.append(el2('p', 'hint', `관장 ${PG_N}명을 차례로 이기면 배지 ${PG_N}개! 관장은 마을마다 있는 체육관에 있어요 (🌀 포털로 가요). 상성이 맞는 펫으로 팀을 꾸려 봐요. 🏅 내 배지 ${bag.pbadge}/${PG_N}`));
+    box.append(el2('p', 'hint', `관장 ${PG_N}명을 차례로 이기면 배지 ${PG_N}개! 관장은 마을마다 있는 체육관에 있어요 (🌀 포털로 가요). 6·7단계는 🔍 숨겨진 체육관이라 직접 찾아야 해요. 상성이 맞는 펫으로 팀을 꾸려 봐요. 🏅 내 배지 ${bag.pbadge}/${PG_N}`));
     if (!team.length) box.append(el2('p', 'vempty', '🩺 펫 센터에서 펫을 데려와 팀을 정해요'));
     else box.append(el2('p', '', `내 팀: ${team.map(x => `${CRITTER[x.i].icon}${CRITTER[x.i].name} Lv${x.l}`).join(' · ')}`));
     { const n = PG_ROOM.indexOf(here) + 1; if (n > 0) { const me = backend.uid, b = pgBusy(n), q = pgQueue(n), mine = !!S.pgq?.[n]?.[me], pos = q.indexOf(me), wbox = el2('div', 'rk-sky');
@@ -22362,7 +22368,8 @@ function openLeaders(here = roomNow()) {
       if (mine) wbox.append(el2('span', 'hint', pos === 0 && !b ? '🏆 내 차례예요! 아래에서 도전!' : `⏳ 내 앞에 ${Math.max(0, pos) + (b && b.u !== me ? 1 : 0)}명 · 차례가 되면 알려 줄게요 (체육관 안에 있어야 해요)`));
       const qb = el2('button', 'btn', mine ? '줄에서 빠지기' : '🙋 줄 서기'); qb.style.background = mine ? '#fff' : '#FFE066'; qb.onclick = async () => { await backend.pgQueueSet(n, !mine); refillLife(); };
       if (!(b && b.u === me)) wbox.append(qb); box.append(wbox); } }
-    pbLeaders().forEach((L, i) => { const r = el2('div', 'ride-row' + (bag.pbadge > i ? ' on' : '')), tx = el2('span', 'ride-tx'), open = isTeacher || bag.pbadge >= i, inHere = here === L.room;
+    pbLeaders().forEach((L, i) => { if (!pgFound(i + 1)) { const r = el2('div', 'ride-row'), tx = el2('span', 'ride-tx'); tx.append(el2('b', '', `❔ ${i + 1}단계 숨겨진 체육관`), el2('span', 'hint', `🔍 힌트: ${PG_HIDDEN[i + 1]} · 관장 펫 Lv${PG_LV[i][0]}~${PG_LV[i][2]}`)); r.append(el2('span', 'ride-ic', '❔'), tx); box.append(r); return; } /* 🔍 1106e */
+      const r = el2('div', 'ride-row' + (bag.pbadge > i ? ' on' : '')), tx = el2('span', 'ride-tx'), open = isTeacher || bag.pbadge >= i, inHere = here === L.room;
       tx.append(el2('b', '', `${L.n} ${bag.pbadge > i ? '✅' : ''}`), el2('span', 'hint', `📍 ${L.place} · ${L.team.map(([id, l]) => `${CRITTER[id].icon}${PT[petType(id)].i} Lv${l}`).join(' ')} · ${L.badge} · 🐚${L.shell}`));
       const wait = inHere && open && !isTeacher && !pgCanStart(i + 1); const b = el2('button', 'btn', !open ? '🔒' : !inHere ? '📍 그 마을에서' : wait ? '⏳ 기다려요' : '도전!'); b.disabled = !open || !team.length || !inHere || wait; if (open && inHere && !wait) b.style.background = '#FFD23C'; b.onclick = () => pbStartNpc(i);
       r.append(el2('span', 'ride-ic', L.icon), tx, b); box.append(r); });
@@ -22370,12 +22377,12 @@ function openLeaders(here = roomNow()) {
 }
 // ---------- 🏟️ 마을 체육관 (2·3·4단계): 바깥 건물 + 안쪽 방 ----------
 /* 🏆 1105n 관장 모습: 1 우리 마을 선생님 · 2 수학자 · 3 장군 · 4 영어 마을 외국인 선생님 · 5 세종대왕 (크고 단단한 몸 · 뒤에 관장 무대 배경) */
-const PG_LOOK = { 1: 'teacher', 2: 'math', 3: 'general', 4: 'english', 5: 'sejong' };
+const PG_LOOK = { 1: 'teacher', 2: 'math', 3: 'general', 4: 'english', 5: 'sejong', 6: 'ranger', 7: 'legend' }; /* 1106e 🌪️ 바람의 수호자 · 👑 전설 관장 */
 function pgLeaderFig(par, x, y0, z, n) {
   const k = PG_LOOK[n] || 'teacher', g = new THREE.Group(); g.position.set(x, y0, z); par.add(g); const o = { solid: false }, S = 1.45;
   const f = new THREE.Group(); f.scale.setScalar(S); g.add(f); const b = (w, h, d, c, px, py, pz, e = {}) => box(f, w, h, d, c, px, py, pz, { solid: false, ...e });
   const skin = k === 'english' ? 0xF8DECB : 0xF0CDA6;
-  const C2 = { teacher: [0x2E3F66, 0x5A5F6A, 0x1E1E24], math: [0xF4F4F0, 0x4A4A55, 0x3B2F2A], general: [0x8E2B24, 0x3A2A22, 0x2A1E18], english: [0x3A6FB0, 0x2E3550, 0x6A4A2A], sejong: [0xC8232C, 0xC8232C, 0x1E1E24] }[k]; /* 옷 · 바지 · 신발 */
+  const C2 = { teacher: [0x2E3F66, 0x5A5F6A, 0x1E1E24], math: [0xF4F4F0, 0x4A4A55, 0x3B2F2A], general: [0x8E2B24, 0x3A2A22, 0x2A1E18], english: [0x3A6FB0, 0x2E3550, 0x6A4A2A], sejong: [0xC8232C, 0xC8232C, 0x1E1E24], ranger: [0x3E8A6A, 0x4A3A2A, 0x2A1E18], legend: [0x5A3A9A, 0x3A2A5A, 0x1E1E24] }[k]; /* 옷 · 바지 · 신발 */
   /* 다리 · 신발 */ if (k !== 'sejong') { for (const s of [-1, 1]) { b(0.3, 0.75, 0.32, C2[1], s * 0.18, 0.42, 0); b(0.34, 0.14, 0.44, C2[2], s * 0.18, 0.07, 0.05); } }
   else { b(0.95, 1.3, 0.62, 0xC8232C, 0, 0.65, 0); b(0.98, 0.1, 0.66, 0xE8B23A, 0, 0.08, 0); }
   /* 몸통 (넓은 어깨) */ b(1.0, 0.95, 0.55, C2[0], 0, 1.27, 0); b(1.16, 0.26, 0.6, C2[0], 0, 1.66, 0);
@@ -22408,6 +22415,15 @@ function pgLeaderFig(par, x, y0, z, n) {
     b(0.7, 0.32, 0.64, 0x1E1E24, 0, 2.62, 0); b(0.5, 0.2, 0.4, 0x1E1E24, 0, 2.86, -0.08); for (const s of [-1, 1]) { const wg = b(0.3, 0.26, 0.04, 0x1E1E24, s * 0.22, 2.9, -0.32); wg.rotation.z = s * 0.4; }
     b(0.42, 0.26, 0.06, 0x1E1E24, 0, 1.94, 0.3); b(0.36, 0.06, 0.04, 0x1E1E24, 0, 2.1, 0.32);
     const a1 = arm(-1, -0.8, 0.2, 0xC8232C), a2 = arm(1, -0.8, -0.2, 0xC8232C); const bk = new THREE.Group(); bk.position.set(0.32, 0.95, 0.5); bk.rotation.y = -0.25; f.add(bk); box(bk, 0.42, 0.56, 0.08, 0x2E4A7A, 0, 0, 0, o); signPlane(bk, ['훈민', '정음'], 0.34, 0.46, 0, 0, 0.06, { font: 60, pad: 2, fg: '#3B2F2A', bg: '#E8DDC0', stroke: false }); }
+  if (k === 'ranger') { /* 🌪️ 바람의 수호자 「솔바람」: 청록 망토 · 두건 · 깃털 · 바람 지팡이 · 흰 수염 */
+    b(1.3, 1.7, 0.08, 0x2E7A5A, 0, 1.05, -0.36); b(0.78, 0.5, 0.7, 0x2E7A5A, 0, 2.45, -0.05); b(0.7, 0.12, 0.66, 0x2E7A5A, 0, 2.72, -0.02); const fe = b(0.08, 0.6, 0.04, 0xFFFFFF, 0.32, 2.85, -0.2); fe.rotation.z = -0.4;
+    b(0.5, 0.3, 0.06, 0xEDEDED, 0, 1.98, 0.31); b(1.04, 0.1, 0.6, 0xC9A06A, 0, 1.0, 0);
+    arm(-1, -0.5, 0.25, 0x3E8A6A); const a = arm(1, -0.25, -0.15, 0x3E8A6A); cyl(a, 0.04, 2.6, 0x8A6A44, 0, -0.9, 0.1, o); for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(0.22 + i * 0.08, 0.025, 6, 20), MG(0x9AE8DA, 0.5)); t.rotation.x = Math.PI / 2; t.position.set(0, 0.35 + i * 0.12, 0.1); a.add(t); } }
+  if (k === 'legend') { /* 👑 전설 관장 「반월」: 보라 망토 · 금빛 왕관 · 반달 지팡이 · 빛나는 구슬 */
+    b(1.4, 1.9, 0.08, 0x3A2A6A, 0, 1.05, -0.38); b(1.08, 0.12, 0.62, C.gold, 0, 1.0, 0, { emissive: 0.3 }); b(0.3, 0.9, 0.02, C.gold, 0, 1.3, 0.29, { emissive: 0.3 });
+    b(0.74, 0.16, 0.66, C.gold, 0, 2.6, 0, { emissive: 0.35 }); for (let i = 0; i < 5; i++) mesh(CONE, f, 0.08, 0.26, 0.08, C.gold, -0.28 + i * 0.14, 2.8, 0.25, { solid: false, emissive: 0.35 }); ball(f, 0.07, 0x5AB4FF, 0, 2.62, 0.34, { solid: false, emissive: 0.8 });
+    b(0.42, 0.22, 0.06, 0xEDEDED, 0, 1.98, 0.31); arm(-1, -0.6, 0.3, 0x5A3A9A); const a = arm(1, -0.3, -0.15, 0x5A3A9A); cyl(a, 0.045, 2.8, C.gold, 0, -0.9, 0.1, { solid: false, emissive: 0.3 });
+    const mo = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.06, 8, 24, Math.PI * 1.3), MG(0xFFE066, 0.7)); mo.position.set(0, 0.6, 0.1); mo.rotation.z = 0.4; a.add(mo); ball(a, 0.14, 0xB08AF0, 0, 0.6, 0.1, { solid: false, emissive: 0.9 }); }
   /* 뒤 무대 배경 */
   const bg = new THREE.Group(); bg.position.set(0, 0, -1.3); g.add(bg);
   if (k === 'sejong') { box(bg, 4.2, 3.4, 0.12, 0x2E6E9E, 0, 1.9, 0, o); ball(bg, 0.42, 0xE2584A, -1.2, 2.9, 0.1, { solid: false, emissive: 0.4 }); ball(bg, 0.36, 0xFFFFFF, 1.2, 2.9, 0.1, { solid: false, emissive: 0.4 }); for (const [px, h] of [[-1.6, 1.0], [-0.8, 1.4], [0, 1.8], [0.8, 1.4], [1.6, 1.0]]) { const m = mesh(CONE, bg, 0.9, h, 0.2, 0x3E8E5A, px, 0.6 + h / 2, 0.08, o); } } /* 일월오봉도 */
@@ -22433,11 +22449,37 @@ function openPetGuide() {
     sec('🔥 4. 속성 상성 (2배로 세요)');
     li(Object.entries(PSTRONG).map(([a, bs]) => `${PT[a].i} ${PT[a].n} → ${bs.map(t => PT[t].i + ' ' + PT[t].n).join(', ')}`).concat(['반대로 맞으면 ½배 · 같은 속성 기술은 1.2배']));
     sec('🏅 5. 배지 모으기');
-    li(['우리 마을 → 수학 마을 → 역사 마을 → 영어 마을 → 한글 마을 순서로 관장 ' + PG_N + '명에게 도전해요', '관장은 점점 세져요. 상성이 좋은 펫으로 팀을 짜요!']);
+    li(['우리 마을 → 수학 마을 → 역사 마을 → 영어 마을 → 한글 마을 → 🔍 숨겨진 체육관 2곳 순서로 관장 ' + PG_N + '명에게 도전해요', '관장은 점점 세져요. 상성이 좋은 펫으로 팀을 짜요!']);
   });
 }
-const PG_SPOT = { 2: [1193.5, 35, Math.PI], 3: [553, -8], 4: [1732, -32], 5: [2922, 192] }; /* 5: 🔤 한글 마을 북쪽 (1105m) */ // 건물 가운데 (문은 +z 쪽 · 세 번째 값은 돌림: 1024b 수학 마을 체육관은 문이 북쪽 큰길을 봐요)
+const PG_SPOT = { 2: [1193.5, 35, Math.PI], 3: [553, -8], 4: [1732, -32], 5: [2922, 192], 6: [-44, -123.5, 0], 7: [68, 148.5, Math.PI] }; /* 6·7: 🔍 1106e 숨겨진 입구 */ /* 5: 🔤 한글 마을 북쪽 (1105m) */ // 건물 가운데 (문은 +z 쪽 · 세 번째 값은 돌림: 1024b 수학 마을 체육관은 문이 북쪽 큰길을 봐요)
 const pgw = { labels: {}, key: '' };
+const PG_DOD = new THREE.DodecahedronGeometry(1, 0);
+// ---------- 🔍 1106e 숨겨진 체육관 2곳 (6단계 뒷산 바람 동굴 · 7단계 바닷가 전설의 동굴) ----------
+function buildHiddenGyms() {
+  for (const n of [6, 7]) { const [x, z, rot] = PG_SPOT[n], y = terrainH(x, z), g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = rot; scene.add(g); const o = { solid: false };
+    const rc = n === 6 ? [0x8A8F99, 0x9A9AA0, 0x7A7F88] : [0x6A6A78, 0x5A5A6A, 0x7A7488];
+    for (let i = 0; i < 9; i++) { const a = Math.PI * (i / 8), r = 2.4; mesh(PG_DOD, g, 1.0 + (i % 3) * 0.25, 1.1 + (i % 2) * 0.3, 1.0, rc[i % 3], Math.cos(a) * r, Math.sin(a) * r * 1.1 + 0.3, -0.2, { solid: i === 0 || i === 8 }); }
+    for (const s of [-1, 1]) mesh(PG_DOD, g, 1.6, 1.8, 1.6, rc[1], s * 3.2, 0.8, -0.6);
+    box(g, 2.6, 2.6, 0.3, 0x14121A, 0, 1.3, -0.35, o); mesh(SPH_LO, g, 1.3, 1.3, 0.2, 0x14121A, 0, 2.5, -0.35, o);
+    if (n === 6) for (let i = 0; i < 3; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(0.5 + i * 0.25, 0.03, 6, 24), MG(0x9AE8DA, 0.6)); t.position.set(0, 1.3, 0.2 + i * 0.05); t.userData.spin = 1; g.add(t); }
+    else { for (const s of [-1, 1]) { mesh(CONE, g, 0.22, 0.7, 0.22, 0xB08AF0, s * 1.6, 0.4, 0.4, { solid: false, emissive: 0.6 }); mesh(CONE, g, 0.15, 0.45, 0.15, 0x5AB4FF, s * 1.95, 0.3, 0.2, { solid: false, emissive: 0.6 }); } ball(g, 0.18, 0xFFE066, 0, 3.5, 0.3, { solid: false, emissive: 0.9 }); }
+    const lb = makeLabel(g, [n === 6 ? '❔ 수상한 바위 틈' : '❔ 파도 소리가 울리는 동굴'], 0.7, 0, 4.4, 0); lb.visible = false; pgw.labels['h' + n] = lb;
+    registerSolids(g, 'static');
+    addInteract({ pos: new V3(x + Math.sin(rot) * 1.6, y + 1, z + Math.cos(rot) * 1.6), r: 2.4, text: () => roomNow() ? null : pgFound(n) ? ['들어가기 🚪', `🔍 ${n}단계 숨겨진 체육관`] : ['살펴보기 🔍', n === 6 ? '바람이 새어 나오는 바위 틈…' : '안쪽에서 빛이 반짝여요…'], run: () => pgHiddenEnter(n) });
+  }
+}
+function pgHiddenEnter(n) { if (!pgFound(n)) { (bag.pgFound ||= {})[n] = 1; saveBag(); playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 60, 5, 3); showBanner(`🔍 숨겨진 ${n}단계 체육관을 찾았어요!`, n === 6 ? '🌪️ 바람 동굴 · 관장 펫 Lv38~40' : '👑 전설의 동굴 · 희귀 펫 Lv48~50', 5000); }
+  enterRoom('pg' + n); }
+function pgHiddenTick() { // 가까이 와야 이름표가 보여요 (숨겨진 곳)
+  for (const n of [6, 7]) { const lb = pgw.labels['h' + n]; if (!lb) continue; const [x, z] = PG_SPOT[n]; lb.visible = Math.hypot(player.pos.x - x, player.pos.z - z) < 9; } }
+function pgHiddenRoomDeco(g, r, n) { // 동굴 안 꾸밈: 6 바위·바람 고리 · 7 보랏빛 수정·금 기둥
+  const { cx, cz, w, d } = r, o = { solid: false };
+  if (n === 6) { for (let i = 0; i < 10; i++) { const sx = i % 2 ? 1 : -1; mesh(PG_DOD, g, 0.9 + (i % 3) * 0.3, 1.2 + (i % 4) * 0.4, 0.9, [0x8A8F99, 0x9A9AA0, 0x6A707A][i % 3], cx + sx * (w / 2 - 1.2), 0.6, cz - d / 2 + 1.5 + Math.floor(i / 2) * 3.4, o); }
+    for (let i = 0; i < 4; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(1.2 + i * 0.4, 0.04, 6, 32), MG(0x9AE8DA, 0.5)); t.rotation.x = Math.PI / 2; t.position.set(cx + (i % 2 ? 7 : -7), 0.16, cz + 4); g.add(t); } } /* 바닥 바람 무늬 (카메라를 가리지 않게) */
+  else { for (let i = 0; i < 12; i++) { const sx = i % 2 ? 1 : -1; mesh(CONE, g, 0.3, 1.2 + (i % 3) * 0.5, 0.3, [0xB08AF0, 0x5AB4FF, 0xFF8AB8][i % 3], cx + sx * (w / 2 - 1.0), 0.7, cz - d / 2 + 1.2 + Math.floor(i / 2) * 2.8, { solid: false, emissive: 0.6 }); }
+    for (const sx of [-1, 1]) for (const zz of [-4, 2]) { cyl(g, 0.3, 3.0, C.gold, cx + sx * 4.5, 1.5, cz + zz, { solid: false, emissive: 0.25 }); ball(g, 0.35, 0xFFE066, cx + sx * 4.5, 3.2, cz + zz, { solid: false, emissive: 0.8 }); } }
+}
 function buildPetGyms() {
   const o = { solid: false };
   for (const n of [2, 3, 4, 5]) {
@@ -22450,7 +22492,7 @@ function buildPetGyms() {
     addInteract({ pos: new V3(x + Math.sin(rot) * 4.8, 1, z + Math.cos(rot) * 4.8), r: 2.6, text: () => roomNow() ? null : ['들어가기 🚪', `🏟️ ${n}단계 펫 체육관`], run: () => enterRoom('pg' + n) });
   }
   const g = new THREE.Group(); g.name = 'PetGymRooms'; scene.add(g);
-  for (const n of [2, 3, 4, 5]) { const r = ROOMS['pg' + n], { cx, cz, w, d } = r; roomShell(g, r);
+  for (const n of [2, 3, 4, 5, 6, 7]) { const r = ROOMS['pg' + n], { cx, cz, w, d } = r; roomShell(g, r); if (n >= 6) pgHiddenRoomDeco(g, r, n); /* 🔍 1106e */
     box(g, 13, 0.04, 8.5, 0x8FCB72, cx, 0.12, cz - 1, o); for (const [bw, bd, x, z] of [[13, 0.12, cx, cz - 5.25], [13, 0.12, cx, cz + 3.25], [0.12, 8.5, cx - 6.5, cz - 1], [0.12, 8.5, cx + 6.5, cz - 1], [0.12, 8.5, cx, cz - 1]]) box(g, bw, 0.05, bd, 0xFFFFFF, x, 0.15, z, o);
     const lz = cz - d / 2 + 1.8; box(g, 4.4, 0.5, 2.2, 0xE8C547, cx, 0.25, lz, { emissive: 0.2 });
     pgLeaderFig(g, cx, 0.5, lz, n); /* 🏆 1105n 수학자 · 장군 · 외국인 선생님 · 세종대왕 */
@@ -22461,6 +22503,7 @@ function buildPetGyms() {
     addInteract({ pos: new V3(cx, 1, lz + 1.8), r: 2.8, text: () => roomNow() === 'pg' + n ? [`관장에게 도전 🏆`, `${n}단계 · 🏅 내 배지 ${bag.pbadge}/${PG_N}`] : null, run: () => openLeaders('pg' + n) });
   }
   registerSolids(g, 'rooms');
+  buildHiddenGyms(); /* 🔍 1106e */
   pgSync();
 }
 function pgSync() { // 관장 속성이 바뀌면 이름표를 다시 써요
@@ -22494,7 +22537,7 @@ function fillLvxAdmin() { // ⭐ 레벨별 필요 경험치 (state/lvx/1..12)
 }
 function fillPgymAdmin() { fillLvxAdmin(); fillScapAdmin();
   const box = $('tpPgym'); if (!box) return; box.textContent = '';
-  for (let n = 1; n <= PG_N; n++) { const row = el2('div', 'sg-row'), sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `${n}단계 관장 속성`);
+  for (let n = 1; n <= 6; n++) { /* 7단계 전설 관장은 희귀 펫 고정 */ const row = el2('div', 'sg-row'), sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `${n}단계 관장 속성`);
     for (const t of Object.keys(PG_WHO)) { const op = document.createElement('option'); op.value = t; op.textContent = `${PT[t].i} ${PT[t].n}`; sel.append(op); } sel.value = pgType(n);
     sel.onchange = () => adminDo({ [`pgym/${n}`]: sel.value }, `🏟️ ${n}단계 관장을 ${PT[sel.value].i} ${PT[sel.value].n} 속성으로 바꿨어요`);
     row.append(el2('span', 'sg-name', `${n}단계 · ${PG_PLACE[n - 1]}`), sel); box.append(row); }
@@ -22523,6 +22566,7 @@ function openPvp() {
   });
 }
 function updatePb() { // ⏱️ 친구가 45초 동안 안 고르면 내가 이겨요 · ⏳ 관장 배틀 중 살아 있음 알림 · 내 차례 알림
+  if (joined) pgHiddenTick(); /* 🔍 1106e */
   if (pb.lockN && performance.now() - (pb.hbAt || 0) > 15000) { pb.hbAt = performance.now(); backend.pgLockHb(pb.lockN); }
   if (joined && backend && performance.now() - (pb.qAt || 0) > 1000) { pb.qAt = performance.now(); const me = backend.uid;
     for (let n = 1; n <= PG_N; n++) { const queued = !!S.pgq?.[n]?.[me], room = pgRoomOf(n);
