@@ -2355,7 +2355,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { sw: null, om: {}, qscope: null, chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, aq: {}, mrr: {}, potoff: 0, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {}, pbl: null }; }
+function emptyState() { return { sw: null, om: {}, qscope: null, chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, aq: {}, snw: {}, mrr: {}, potoff: 0, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {}, pbl: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2416,6 +2416,7 @@ function normalize(v) {
     kdeta: Object.fromEntries(Object.entries(plainObj(v.kdeta)).filter(([g, x]) => /^[1-4]$/.test(g) && x && typeof x === 'object').map(([g, x]) => [g, { u: String(x.u || ''), n: String(x.n || '').slice(0, 12), a: Math.max(0, Math.min(2, x.a | 0)), k: Math.max(1, Math.min(8, x.k | 0)), w: String(x.w || '').slice(0, 60), at: +x.at || 0 }])),
     esc: Object.fromEntries(['esm', 'ese', 'ess', 'esc'].map(k => [k, Object.fromEntries(Object.entries(plainObj(plainObj(v.esc)[k])).filter(([u, x]) => x && typeof x === 'object' && +x.t > 0).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), t: +x.t, s: Math.min(3, x.s | 0), at: +x.at || 0 }]))])), // 🔐 1101a
     potoff: +v.potoff || 0, // 🍄 1106f 선생님이 크기 물약 끈 시각
+    snw: Object.fromEntries(Object.entries(plainObj(v.snw)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && x.length <= 16).slice(0, 80)), // ⛄ 1106i 눈사람 눈덩이
     aq: Object.fromEntries(Object.entries(plainObj(v.aq)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string').slice(0, 80).map(([u, x]) => [u, x.slice(0, 20)])), // 🐠 1106a 아쿠아리움 전시
     mrr: Object.fromEntries(Object.entries(plainObj(v.mrr)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), n: String(x.n || '').slice(0, 12), at: +x.at || 0, ...(x.o === 1 ? { o: 1 } : {}), ...(x.c === 1 ? { c: 1 } : {}), u: /^(m[1-6]|mix)$/.test(x.u) ? x.u : 'mix', lv: Math.max(0, Math.min(4, x.lv | 0)), lp: Math.max(1, Math.min(3, x.lp | 0 || 2)), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ok: Math.max(0, x.ok | 0), bs: Math.max(0, x.bs | 0), ...(x.q === 1 ? { q: 1 } : {}) }])), // 🏎️ 1106a 수학 레이싱
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
@@ -2782,7 +2783,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3322,7 +3323,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async sspSet(sid, lv) { try { await D.set(R(`state/ssp/${uid}/${sid}`), lv); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🗓️ 1028n 시즌 단계
     async scrpSet(o) { try { await D.set(R(`state/scrp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1029c
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
-    async aqSet(v) { try { await D.set(R(`state/aq/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🐠 1106a 아쿠아리움 전시
+    async aqSet(v) { try { await D.set(R(`state/aq/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async snwSet(v) { try { await D.set(R(`state/snw/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, // ⛄ 1106i // 🐠 1106a 아쿠아리움 전시
     async mrrSet(o) { try { await D.set(R(`state/mrr/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏎️ 1106a 수학 레이싱
     async escSet(room, o) { try { await D.set(R(`state/esc/${room}/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🔐 1101a 방탈출 기록
     async kwsGet(s, k) { try { return (await D.get(R(`kws/${s}${k ? '/' + k : ''}`))).val(); } catch (e) { return undefined; } }, async kwsSet(s, k, o) { try { await D.set(R(`kws/${s}/${k}`), o || null); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 📖 1105zk 국어 학습지 (state 밖) */
@@ -3513,7 +3515,7 @@ const ML = (c) => { if (!flatCache.has(c)) flatCache.set(c, new THREE.MeshStanda
 // 물체 크기와 상관없이 '세상 좌표'로 무늬를 입혀요: 나무결·돌·기와·나뭇잎·나무껍질·흙길·포석·모래·흙·회벽·옷감
 // · 무늬 밝기는 색에 곱해지고, PC에서는 무늬로 빛이 오돌토돌하게 비치고(울퉁불퉁) 넓은 얼룩도 생겨요
 // · 크롬북·태블릿(LOW_GFX)은 무늬 한 장만 써서 가벼워요
-const surfQ = { value: LOW_GFX ? 0 : 1 }; // 화질 단계가 내려가면 0 (setGfxLevel)
+const surfQ = { value: LOW_GFX ? 0 : 1 }, SNOWU = { value: 0 }; /* ❄️ 1106i 겨울: 위를 보는 겉면(지붕·길·광장·탁자)에 눈이 쌓여요 (가운데 마을만) */ // 화질 단계가 내려가면 0 (setGfxLevel)
 const SURF = { // 종류: 한 장 크기(m) · 무늬 세기 · 울퉁불퉁 세기 · 거칠기
   plaster: { size: 3.2, amt: 0.7, bump: 0.45, rough: 0.92 },
   wood: { size: 1.8, amt: 0.85, bump: 0.6, rough: 0.8 },
@@ -3596,14 +3598,14 @@ function surfPatch(mat, kind) { // 겉면 무늬를 재질에 입혀요 (세상 
   const tri = ['leaf', 'bark', 'stone', 'soil', 'straw'].includes(kind); if (tri) mat.defines = { ...(mat.defines || {}), SURF_TRI: 1 }; // 둥근 물체는 세 방향을 섞어 이음새 없이
   mat.customProgramCacheKey = () => 'surf' + (tri ? 't' : '');
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uSurf = { value: tex }; sh.uniforms.uSurfQ = surfQ; sh.uniforms.uSurfK = { value: new THREE.Vector4(1 / S.size, S.amt, 1 / tex.userData.mean, S.bump * 3.0) };
+    sh.uniforms.uSurf = { value: tex }; sh.uniforms.uSurfQ = surfQ; sh.uniforms.uSnow = SNOWU; sh.uniforms.uSurfK = { value: new THREE.Vector4(1 / S.size, S.amt, 1 / tex.userData.mean, S.bump * 3.0) };
     sh.vertexShader = 'varying vec3 vSurfP; varying vec3 vSurfN;\n' + sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
   { vec4 sp = vec4(transformed, 1.0); vec3 sn = objectNormal;
   #ifdef USE_INSTANCING
     sp = instanceMatrix * sp; sn = mat3(instanceMatrix) * sn;
   #endif
     vSurfP = (modelMatrix * sp).xyz; vSurfN = mat3(modelMatrix) * sn; }`);
-    sh.fragmentShader = 'uniform sampler2D uSurf; uniform vec4 uSurfK; uniform float uSurfQ; varying vec3 vSurfP; varying vec3 vSurfN;\n' + sh.fragmentShader
+    sh.fragmentShader = 'uniform sampler2D uSurf; uniform vec4 uSurfK; uniform float uSurfQ; uniform float uSnow; varying vec3 vSurfP; varying vec3 vSurfN;\n' + sh.fragmentShader
       .replace('#include <color_fragment>', `#include <color_fragment>
   vec3 sAn = abs(normalize(vSurfN));
   #ifdef SURF_TRI
@@ -3619,7 +3621,8 @@ function surfPatch(mat, kind) { // 겉면 무늬를 재질에 입혀요 (세상 
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
   if (uSurfQ > 0.5) { vec3 sx = normalize(dFdx(-vViewPosition)), sy = normalize(dFdy(-vViewPosition)); vec2 dh = vec2(dFdx(sH), dFdy(sH)) * uSurfK.w * smoothstep(70.0, 12.0, length(vViewPosition));
     vec3 r1 = cross(sy, normal), r2 = cross(normal, sx); float det = dot(sx, r1);
-    normal = normalize(abs(det) * normal - sign(det) * (dh.x * r1 + dh.y * r2)); }`);
+    normal = normalize(abs(det) * normal - sign(det) * (dh.x * r1 + dh.y * r2)); }
+  if (uSnow > 0.01) { float sUp = dot(normal, normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz)) + (sH - 0.5) * 0.3, sIn = step(abs(vSurfP.x), 78.0) * step(abs(vSurfP.z - 8.0), 82.0) * step(vSurfP.y, 45.0); diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.94, 0.97, 1.0) * (0.94 + 0.08 * sH), uSnow * sIn * smoothstep(0.42, 0.78, sUp) * 0.92); }`);
   };
   return mat;
 }
@@ -3845,7 +3848,7 @@ function perfFreeze() {
 function perfLabels() {
   const now = performance.now(); if (now - perfW.lt < 400) return; perfW.lt = now; const cx = camera.position.x, cy = camera.position.y, cz = camera.position.z; let hid = 0, L = perfW.labels;
   for (let i = L.length - 1; i >= 0; i--) { const sp = L[i]; if (!sp.parent) { L[i] = L[L.length - 1]; L.pop(); continue; }
-    const e = sp.matrixWorld.elements, dx = e[12] - cx, dy = e[13] - cy, dz = e[14] - cz, lim = Math.max(60, Math.min(180, sp.scale.y * 90)), far = dx * dx + dy * dy + dz * dz > lim * lim;
+    const e = sp.matrixWorld.elements, dx = e[12] - cx, dy = e[13] - cy, dz = e[14] - cz, lim = Math.max(60, Math.min(180, sp.scale.y * 90)) * (self.__gfxU ? 0.55 : 1), far = dx * dx + dy * dy + dz * dz > lim * lim;
     if (far) hid++; if (far !== (sp.userData.pfFar === true)) { sp.userData.pfFar = far; sp.layers.set(far ? 5 : 0); } }
   perfW.hidLab = hid;
 }
@@ -3905,7 +3908,7 @@ function takePts(n) {
 }
 function burst(pos, colors, count = 30, speed = 5, up = 0, life = 1.2, gravity = -8) {
   const arr = Array.isArray(colors) ? colors : [colors];
-  count = Math.min(count, 256);
+  count = Math.min(count, 256); if (self.__gfxU) count = Math.ceil(count / 3); /* 🐢 1106i */
   const pts = takePts(count), p = pts.geometry.attributes.position.array, c = pts.geometry.attributes.color.array, v = pts.userData.v;
   const col = new THREE.Color();
   for (let i = 0; i < count; i++) {
@@ -8648,8 +8651,9 @@ function resetSpray(pos, i, spread) {
 // 화질 — 기기마다 고를 수 있어요 (sv-gfx: auto 자동 · light 가볍게 · normal 보통). 선생님이 '모두 가볍게'를 켜면 학생 기기는 가볍게.
 // 단계 0 보통(그림자) → 1 그림자 끔 → 2 풀·구름·물줄기 숨김 + 해상도 1 → 3 해상도 더 낮춤
 // 자동: 3초마다 속도를 재서 느리면 한 단계씩 가볍게, 한참 여유 있으면 한 단계 되돌려요 (그림자는 다시 켜지 않아요 — 켤 때 멈칫해서)
-const gfx = { mode: ['auto', 'light', 'normal'].includes(store.get('sv-gfx')) ? store.get('sv-gfx') : 'auto', level: 0, frames: 0, t0: 0, good: 0, told: false, dropped: false };
-const gfxWanted = () => (S.control?.lite && !isTeacher) ? 'light' : gfx.mode;
+const gfx = { mode: ['auto', 'light', 'normal', 'ultra'].includes(store.get('sv-gfx')) ? store.get('sv-gfx') : 'auto', level: 0, frames: 0, t0: 0, good: 0, told: false, dropped: false };
+const gfxWanted = () => (S.control?.lite && !isTeacher && gfx.mode !== 'ultra') ? 'light' : gfx.mode;
+const gfxUltra = () => gfx.mode === 'ultra'; self.__gfxU = gfxUltra(); /* 🐢 1106i 아주 가볍게: 가볍게 + 1초에 30장 · 가까운 곳만 그리기 · 반짝이 줄이기 · 먼 이름표 숨기기 */
 function setGfxLevel(lv) {
   lv = Math.max(0, Math.min(3, lv));
   if (lv === gfx.level && gfx.applied) return;
@@ -8668,17 +8672,17 @@ function setGfxLevel(lv) {
   if (Math.abs(renderer.getPixelRatio() - pr) > 0.01) { renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight); }
 }
 function setGfxMode(m) { // 도움말 창의 화질 버튼
-  gfx.mode = m; store.set('sv-gfx', m); gfx.t0 = 0; gfx.good = 0; gfx.dropped = false;
-  setGfxLevel(m === 'light' ? 2 : 0); renderGfxUI();
+  gfx.mode = m; self.__gfxU = m === 'ultra'; store.set('sv-gfx', m); gfx.t0 = 0; gfx.good = 0; gfx.dropped = false;
+  setGfxLevel(m === 'ultra' ? 3 : m === 'light' ? 2 : 0); renderGfxUI(); if (m !== 'ultra' && camera.far !== 400) { camera.far = 400; camera.updateProjectionMatrix(); pretty.sky?.scale.setScalar(1); applyEnv(true); }
 }
 function renderGfxUI() {
   const box = $('gfxOpts'); if (!box) return; box.textContent = ''; if ($('perfBtn') && !$('perfBtn').onclick) $('perfBtn').onclick = () => { perfToggle(); toast(perfW.on ? '🩺 왼쪽 아래에 성능이 보여요' : '🩺 성능 보기를 껐어요', 'info'); };
-  for (const [k, label] of [['auto', '⚙️ 자동'], ['light', '🪶 가볍게'], ['normal', '✨ 보통']]) {
+  for (const [k, label] of [['auto', '⚙️ 자동'], ['light', '🪶 가볍게'], ['ultra', '🐢 아주 가볍게'], ['normal', '✨ 보통']]) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'tl-chip'; b.textContent = label;
     b.setAttribute('aria-pressed', String(gfx.mode === k)); b.onclick = () => setGfxMode(k); box.appendChild(b);
   }
   const lite = S.control?.lite && !isTeacher;
-  $('gfxNote').textContent = lite ? '선생님이 모두 가볍게로 맞춰 두었어요' : gfx.mode === 'auto' ? '느려지면 저절로 가볍게 바꿔요' : gfx.mode === 'light' ? '그림자·풀·구름을 줄여 빠르게 움직여요' : '늘 가장 예쁘게 그려요 (느린 기기는 끊길 수 있어요)';
+  $('gfxNote').textContent = gfx.mode === 'ultra' ? '느린 태블릿용: 화면을 덜 자주 그리고 가까운 곳만 또렷하게 그려요 (멀리는 안개)' : lite ? '선생님이 모두 가볍게로 맞춰 두었어요' : gfx.mode === 'auto' ? '느려지면 저절로 가볍게 바꿔요' : gfx.mode === 'light' ? '그림자·풀·구름을 줄여 빠르게 움직여요' : '늘 가장 예쁘게 그려요 (느린 기기는 끊길 수 있어요)';
 }
 let lastWanted = '';
 function adaptGfx() {
@@ -8686,6 +8690,7 @@ function adaptGfx() {
   const want = gfxWanted();
   if (want !== lastWanted) { lastWanted = want; gfx.t0 = 0; gfx.good = 0; setGfxLevel(want === 'light' ? Math.max(2, gfx.level) : want === 'normal' ? 0 : gfx.level); if (want === 'normal') gfx.dropped = false; }
   if (want === 'normal') return;
+  if (want === 'ultra') { if (gfx.level !== 3) setGfxLevel(3); return; }
   const floor = want === 'light' ? 2 : gfx.dropped ? 1 : 0;
   const now = performance.now();
   if (!gfx.t0 || document.hidden) { gfx.t0 = now; gfx.frames = 0; return; }
@@ -8697,9 +8702,12 @@ function adaptGfx() {
     if (!gfx.told && want === 'auto') { gfx.told = true; toast('🖥️ 이 기기에 맞게 화면을 조금 가볍게 바꿨어요', 'info'); }
   } else if (fps > 52 && gfx.level > floor) { if (++gfx.good >= 3) { setGfxLevel(gfx.level - 1); gfx.good = 0; } }
   else gfx.good = 0;
+  if (gfx.level >= 3 && fps < 18 && want === 'auto' && !gfx.toldU) { gfx.toldU = true; toast('🐢 화면이 많이 느려요 · 오른쪽 위 ? 도움말 → 🖥️ 화질에서 「🐢 아주 가볍게」를 눌러 보세요', 'info'); }
 }
 function updatePretty(dt) {
   adaptGfx();
+  if (gfxUltra()) { /* 🐢 1106i 멀리는 안개로 덮고 그만큼만 그려요 */ if (scene.fog.far > 120) { scene.fog.far = 120; scene.fog.near = Math.min(scene.fog.near, 45); }
+    const f = Math.min(400, scene.fog.far + 8); if (Math.abs(camera.far - f) > 0.5) { camera.far = f; camera.updateProjectionMatrix(); pretty.sky?.scale.setScalar(Math.min(1, f * 0.9 / 320)); } }
   pretty.sky.position.copy(camera.position);
   for (const c of pretty.clouds) { c.position.x += dt * 1.2; if (c.position.x > 190) c.position.x = -190; }
   const pos = pretty.spray.geometry.attributes.position.array, v = pretty.sprayV;
@@ -9352,6 +9360,7 @@ const envView = { season: 'auto', time: 'auto' }; // 선생님 미리보기
 const env = { key: '', t: 0, stars: null, fall: null, fallV: null, leaf: null, glow: null };
 function seasonNow() {
   if (envView.season !== 'auto') return envView.season;
+  try { if (ssnNow()?.id === 's2') return 'wi'; } catch (e) { } /* ❄️ 1106i 시즌 2 「겨울 마을」(11/30~)부터 눈 내린 마을 */
   const m = new Date().getMonth() + 1;
   return m >= 3 && m <= 5 ? 'sp' : m >= 6 && m <= 8 ? 'su' : m >= 9 && m <= 11 ? 'au' : 'wi';
 }
@@ -9364,6 +9373,7 @@ const LEAF_KEYS = [0x4FA04F, 0x5DB85F, 0x46934A, 0x6BBF5A, 0x52A858, 0x3E8A45, 0
 const PINES = new Set([0x3E8A45, 0x46994D, 0x2F7D3B, 0x3A8A45, 0x52A858]);
 const AUTUMN = [0xE8913A, 0xD9662E, 0xF2B640, 0xC9542A, 0xE07A34];
 function applySeasonColors(season, night = false) {
+  SNOWU.value = season === 'wi' ? 1 : 0; /* ❄️ 1106i */
   LEAF_KEYS.forEach((k, i) => { for (const m of [ML(k), ...[...surfMatCache.values()].filter(x => x.userData.surfColor === k)]) {
     const base = new THREE.Color(k);
     if (season === 'au' && !PINES.has(k)) m.color.setHex(AUTUMN[i % AUTUMN.length]);
@@ -18925,6 +18935,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106i', d: '11월 19일', items: ['❄️ 시즌 2 「겨울 마을」(11월 30일)부터 지붕 · 길 · 광장에 하얀 눈이 쌓여요', '⛄ 겨울엔 광장 남쪽 눈 더미에서 눈덩이를 굴려요! 걸을수록 커지고, 친구 3명이 아래 몸 · 가운데 몸 · 머리를 하나씩 올리면 눈사람 완성 (🐚 +5 · 완성하면 🐚 +10 · 하루 동안 서 있어요)', '💪 오늘의 할 일에 내가 가장 덜 키운 능력치 미션이 꼭 하나 나와요', '🐢 화질에 「아주 가볍게」가 생겼어요 (오른쪽 위 ? → 🖥️ 화질) · 느린 태블릿에서 눌러 봐요'] },
   { id: '1106h', d: '11월 19일', items: ['🎤 꿈끼 발표회(11월 20일)가 다가와서 꿈나무 무대 · 대본 게시판 · 공연장 입구를 정리했어요. 모두 수고했어요! 👏', '📋 오늘의 할 일에서 🎭 꿈끼 대본 미션이 빠지고 다른 미션이 나와요'] },
   { id: '1106g', d: '11월 19일', items: ['🧢 꼬마가 거인 친구의 어깨 대신 머리 꼭대기 위에 올라타요 (거인이 걸으면 머리와 함께 흔들려요)'] },
   { id: '1106f', d: '11월 19일', items: ['🍄 거대 물약 · 🔬 꼬마 물약! 해변 🍭 물약 가게에서 🐚40 · 1분 동안 3배 / 1/3 (건물 안에서 거인은 2배)', '🍄 거인: 크게 쿵! 착지 · 🎁 지붕 위 선물 3곳에 손이 닿아요 (하루 한 번씩)', '🔬 꼬마: 광장의 🍄 버섯 집 작은 문 → 꼬마 비밀 방 (🎁 하루 한 번) · 🧗 거인 친구 가까이에서 E → 어깨에 올라타기', '⚔️ 대결·점프맵 중에는 크기가 안 바뀌어요'] },
@@ -27578,14 +27589,17 @@ const DQ_WRAP = { id: 'wrap', icon: '📝', t: '오늘 수업 마무리 퀴즈 �
 const dqW = { btn: null, key: '', t: 0, told: -1 };
 function dqList() { // 오늘 미션: 날짜 + 기기 번호로 정해요 (하루 동안 그대로)
   const u = String(backend?.uid || 'me'); let h = dayNum() * 31; for (const c of u) h = (h * 33 + c.charCodeAt(0)) >>> 0;
-  const st = [...DQ_STUDY], a = st.splice(h % st.length, 1)[0], b = dqScrMust() ? DQ_SCR3 : st[(h >>> 3) % st.length], FUN = DQ_FUN.filter(m => !m.from || dayNum() >= m.from), f = FUN[(h >>> 6) % FUN.length];
+  const st = [...DQ_STUDY], wk = bag.dq?.d === dayNum() ? st.findIndex(m => m.id === bag.dq.wk) : -1, a = st.splice(wk >= 0 ? wk : h % st.length, 1)[0], b = dqScrMust() ? DQ_SCR3 : st[(h >>> 3) % st.length], FUN = DQ_FUN.filter(m => !m.from || dayNum() >= m.from), f = FUN[(h >>> 6) % FUN.length];
   const L = [a, b, f]; const W = S.wrap; if (W?.n && Math.floor(((W.at || W.n * 1000) + 9 * 3600000) / 86400000) === dayNum()) L.push(DQ_WRAP); if (S.scr?.x && !dqScrMust() && !DQ_SCR_OFF) L.push(DQ_SCR); return L;
 }
 function dqCode() { if (bag.dq?.d !== dayNum()) return ''; return dqList().map(m => { const g = Math.max(1, Math.min(999, m.goal | 0)), c = bag.dq.done?.[m.id] ? g : Math.max(0, Math.min(g, m.cur() | 0)); return `${m.id}:${c}/${g}`; }).join(',').slice(0, 120); } // 📋 1102e 진행 정도까지 (id:지금/목표) // 📋 1028m 선생님 현황판으로 (earn/{uid}/q)
+function dqWeak() { /* 💪 1106i 하루를 시작할 때 가장 덜 키운 능력치(영어·수학·사회·국어) 미션을 꼭 하나 (같으면 기기마다 달라요) */
+  const u = String(backend?.uid || 'me'); let h = dayNum() * 17; for (const c of u) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const ks = ['eng', 'math', 'soc', 'read'], lo = Math.min(...ks.map(statExp)), c = ks.filter(k => statExp(k) - lo < 5); return c[h % c.length]; }
 const dqDone = (m) => Math.min(m.goal, m.cur() | 0) >= m.goal;
 function dqTick() {
   if (!joined || isTeacher || !stateLoaded) { dqBtn(false); return; }
-  const today = dayNum(); if (bag.dq?.d !== today) { bag.dq = { d: today, done: {}, all: 0 }; saveBag(); }
+  const today = dayNum(); if (bag.dq?.d !== today) { bag.dq = { d: today, done: {}, all: 0, wk: dqWeak() }; saveBag(); }
   if (bag.dqw?.w !== weekNum()) { bag.dqw = { w: weekNum(), s: 0, got: {} }; saveBag(); }
   if (dqW.told !== today) { dqW.told = today; setTimeout(() => toast('📋 오늘의 할 일 3개가 생겼어요! 왼쪽 📋 버튼을 눌러 봐요', 'info'), 4000); }
   const L = dqList(), base = L.filter(m => !m.bonus);
@@ -27609,7 +27623,7 @@ function openDailyQ() {
     for (const m of L) { const cur = Math.min(m.goal, m.cur() | 0), ok = !!bag.dq?.done?.[m.id] || cur >= m.goal, card = el2('div', '');
       card.style.cssText = `display:flex;gap:10px;align-items:center;background:${ok ? '#E5F7DF' : '#fff'};border-radius:12px;padding:10px 12px;margin:7px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)${m.bonus ? ';border:2px dashed #F2C230' : ''}`;
       const ic = el2('div', '', ok ? '✅' : m.icon); ic.style.fontSize = '30px'; const tx = el2('div', ''); tx.style.flex = '1';
-      tx.append(el2('b', '', `${m.bonus ? '⭐ 보너스 · ' : ''}${m.t}`), el2('div', 'hint', m.hint));
+      tx.append(el2('b', '', `${m.bonus ? '⭐ 보너스 · ' : ''}${m.t}`), el2('div', 'hint', m.hint)); if (m.id === bag.dq?.wk && !m.bonus) { const t = el2('div', '', `💪 내가 가장 덜 키운 ${STATS[m.id]?.name || '능력치'}이에요! 오늘 조금 더 키워 봐요`); t.style.cssText = 'font-size:13px;font-weight:800;color:#C2410C;margin-top:2px'; tx.append(t); }
       if (m.goal > 1) { const bg = el2('div', ''); bg.style.cssText = 'height:9px;border-radius:5px;background:#EEE;overflow:hidden;margin-top:4px'; const f = el2('div', ''); f.style.cssText = `height:100%;width:${Math.round(cur / m.goal * 100)}%;background:${ok ? '#7FD36A' : '#F2C230'}`; bg.append(f); tx.append(bg, el2('div', 'hint', `${cur} / ${m.goal}`)); }
       if (m.id === 'scr' && !ok) { const gb = el2('button', 'btn', '🎤 무대로 가기'); gb.style.cssText = 'background:#FFE1EC;font-size:14px;padding:6px 10px'; gb.onclick = goStage; card.append(ic, tx, gb); box.append(card); continue; } // 🎭 1029f
       card.append(ic, tx); box.append(card); }
@@ -27813,7 +27827,7 @@ async function openAcctCheck() { // 👤 1029g 같은 학생 이름으로 계정
 async function acctPurgeAsk(k, u, v, plots, keep) {
   const kp = keep.map(([, x]) => `"${x.n || '?'}" (🐚 ${x.h | 0})`).join(', ');
   if (!(await confirmAction({ title: `${k} · "${v.n || '?'}" 계정을 정리할까요?`, body: `지워져요: 🐚 ${v.h | 0} 가방 · 🏡 땅 ${plots.length}칸과 집 · 기록\n남아요: ${kp || '(없음)'}\n\n되돌릴 수 없어요. 학생이 이 닉네임 표기("${v.n || '?'}")로 다시 들어오면 빈 계정으로 시작해요.`, okText: '정리하기' }))) return;
-  const sp = [...plots.map(n => `plots/${n}`), `plotOwner/${u}`, `plotExtra/${u}`, `ssp/${u}`, `scrp/${u}`, `swm/${u}`, `wrapa/${u}`, `aq/${u}`, `mrr/${u}`];
+  const sp = [...plots.map(n => `plots/${n}`), `plotOwner/${u}`, `plotExtra/${u}`, `ssp/${u}`, `scrp/${u}`, `swm/${u}`, `wrapa/${u}`, `aq/${u}`, `mrr/${u}`, `snw/${u}`];
   const r = await backend.acctPurge?.(u, sp); if (!r?.ok) { toast('⚠️ 정리하지 못했어요. database.rules.json을 다시 게시해 주세요', 'warn'); return; }
   toast(r.bag ? `🗑️ "${v.n || '?'}" 계정을 정리했어요` : `🗑️ 기록·땅은 정리했어요 · 가방은 database.rules.json을 새로 게시한 뒤 다시 눌러야 지워져요`, r.bag ? 'success' : 'warn'); setTimeout(openAcctCheck, 400);
 }
@@ -29421,6 +29435,72 @@ let camShakeT = 0;
 function szRemote(r, dt) { const t = r.target, want = t?.sz === 3 ? (r.pos.x > 740 && roomAt(r.pos.x, r.pos.z) ? 2 : 3) : t?.sz === 1 ? 1 / 3 : 1; r.szc = (r.szc ?? 1) + (want - (r.szc ?? 1)) * Math.min(1, dt * 4); szApply(r.a, r.szc); }
 // ---------- 🤝 어깨 태우기 (꼬마가 거인 친구 가까이에서 E) ----------
 function szGiantNear() { let best = null, bd = 2.6; for (const [u, r] of remotes) { if (r.target?.sz !== 3 || !r.a.g.visible) continue; const d = Math.hypot(r.pos.x - player.pos.x, r.pos.z - player.pos.z); if (d < bd) { bd = d; best = u; } } return best; }
+// ================= ⛄ 1106i 겨울 눈사람 (❄️ 겨울에만 · 광장 남쪽 눈 더미에서 굴려요) =================
+// 학생마다 하루 눈덩이 1개 (state/snw/{기기} = '자리.층.크기cm.날짜') · 자리 5곳 × 아래 몸 · 가운데 몸 · 머리 = 친구 3명이 함께 한 눈사람 · 다음 날 새로
+const SNW_SPOT = [[-7, 23], [-3.5, 25.5], [0, 26.5], [3.5, 25.5], [7, 23]], SNW_PILE = [0, 19.5], SNW_MIN = [0.8, 0.5, 0.35], SNW_PART = ['아래 몸', '가운데 몸', '머리'];
+const snw = { roll: false, z: 0.3, ball: null, last: null, g: null, pile: null, sig: '', busy: false, okDay: -1 };
+const snwOn = () => seasonNow() === 'wi';
+const snwHere = () => snwOn() && inMainVillage() && !roomNow() && player.pos.y < 6;
+function snwParse(v) { const m = /^([0-4])\.([0-2])\.(\d{2,3})\.(\d{5})$/.exec(String(v || '')); return m ? { s: +m[1], p: +m[2], z: +m[3] / 100, d: +m[4] } : null; }
+function snwBoard() { // [자리][층] = { u, z } · 같은 칸에 둘이 놓으면 기기 번호 순서로 한 명만
+  const B = SNW_SPOT.map(() => [null, null, null]), t = dayNum();
+  for (const [u, x] of Object.entries(S.snw || {}).map(([u, v]) => [u, snwParse(v)]).filter(([, x]) => x && x.d === t).sort((a, b) => (a[0] < b[0] ? -1 : 1))) if (!B[x.s][x.p]) B[x.s][x.p] = { u, z: x.z };
+  return B;
+}
+const snwMine = () => { const x = snwParse(S.snw?.[backend?.uid]); return x && x.d === dayNum() ? x : null; };
+const snwNext = (col) => col.findIndex(b => !b);
+function snwBuild() {
+  const g = new THREE.Group(); g.name = 'Snowmen'; scene.add(g); snw.g = g;
+  const pile = new THREE.Group(); pile.position.set(SNW_PILE[0], 0, SNW_PILE[1]); scene.add(pile); snw.pile = pile;
+  const wm = M(0xF4F8FC), sg = new THREE.SphereGeometry(1, 16, 12);
+  for (const [x, z, r] of [[0, 0, 1.3], [1.1, 0.4, 0.8], [-1.0, 0.5, 0.7], [0.3, -0.9, 0.6]]) { const m = new THREE.Mesh(sg, wm); m.scale.set(r, r * 0.45, r); m.position.set(x, 0, z); pile.add(m); }
+  makeLabel(pile, ['⛄ 눈 더미', '눈덩이를 굴려 눈사람을 만들어요'], 1.0, 0, 2.6, 0);
+  addInteract({ pos: new V3(SNW_PILE[0], 1, SNW_PILE[1]), r: 3.2, text: () => { if (!snwHere()) return null; if (snw.roll) return ['🫳 눈덩이 내려놓기', `지금 ${Math.round(snw.z * 100)}cm · 눈사람 자리에 올리려면 남쪽 ⛄ 자리로`]; return snwMine() ? ['⛄ 오늘 눈덩이는 벌써 올렸어요', '내일 또 굴려요 · 친구 눈사람을 구경해요'] : ['⛄ 눈덩이 굴리기', '걸을수록 커져요 · 아래 몸은 80cm 넘게!']; },
+    run: () => { if (snw.roll) { snwStop('🫳 눈덩이를 내려놓았어요 (스르르 녹아요)'); return; } if (snwMine()) { toast('⛄ 눈덩이는 하루에 하나예요. 친구들과 나눠서 만들어요!', 'info'); return; } snwStart(); } });
+  SNW_SPOT.forEach(([x, z], i) => addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => { if (!snwHere() || !snw.roll) return null; const col = snwBoard()[i], k = snwNext(col); if (k < 0) return ['⛄ 다 만든 눈사람이에요', '다른 자리에 올려요'];
+      return [`⛄ ${SNW_PART[k]}으로 올리기`, `내 눈덩이 ${Math.round(snw.z * 100)}cm${snw.z < SNW_MIN[k] ? ` · ${Math.round(SNW_MIN[k] * 100)}cm는 넘어야 해요` : ''}`]; }, run: () => snwPlace(i) }));
+}
+function snwStart() {
+  if (!snw.ball) { snw.ball = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), M(0xF4F8FC)); const dot = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 5), M(0xD6E2EC)); dot.position.set(0.7, 0.5, 0.4); snw.ball.add(dot); scene.add(snw.ball); }
+  snw.roll = true; snw.z = 0.3; snw.last = player.pos.clone(); snw.ball.visible = true; playSfx('pick'); toast('⛄ 걸으면 눈덩이가 커져요! 광장 남쪽 ⛄ 자리로 가져가서 E', 'info');
+}
+function snwStop(msg) { snw.roll = false; if (snw.ball) snw.ball.visible = false; if (msg) toast(msg, 'info'); }
+async function snwPlace(i) {
+  if (!snw.roll || snw.busy) return; const col = snwBoard()[i], k = snwNext(col); if (k < 0) { toast('⛄ 이 눈사람은 다 만들었어요', 'info'); return; }
+  if (snw.z < SNW_MIN[k]) { toast(`⛄ ${SNW_PART[k]}은 ${Math.round(SNW_MIN[k] * 100)}cm는 넘어야 해요. 조금 더 굴려요! (지금 ${Math.round(snw.z * 100)}cm)`, 'info'); return; }
+  snw.busy = true; const r = await backend.snwSet?.(`${i}.${k}.${Math.round(Math.min(1.6, snw.z) * 100)}.${dayNum()}`); snw.busy = false;
+  if (!r?.ok) { toast('⛄ 저장이 안 됐어요. 잠시 뒤 다시 해 봐요', 'error'); return; }
+  snwStop(); playSfx('build'); burst(new V3(SNW_SPOT[i][0], 1.2, SNW_SPOT[i][1]), [0xFFFFFF, 0xDDEBF5], 30, 3, 2);
+  if (bag.snwPut !== dayNum()) { bag.snwPut = dayNum(); earnShell(5, 'm'); saveBag(); renderCoinChip(); }
+  toast(k === 2 ? '⛄ 머리를 올렸어요! 눈사람 완성! 🐚 +5' : `⛄ ${SNW_PART[k]}을 올렸어요! 🐚 +5 · 친구가 ${SNW_PART[k + 1]}을 올리면 이어져요`, 'success');
+}
+function snwRefresh(B) { // 눈사람 다시 그리기 (바뀔 때만)
+  const g = snw.g; g.clear(); const wm = M(0xF4F8FC), sg = new THREE.SphereGeometry(1, 16, 12);
+  B.forEach((col, i) => { const [x, z] = SNW_SPOT[i]; let y = 0, pr = 0, top = 0;
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.0, 0.06, 16), M(0xE6EEF4)); base.position.set(x, 0.03, z); g.add(base);
+    col.forEach((b, k) => { if (!b || (k && !col[k - 1]?.r)) return; const r = k ? Math.min(b.z / 2, pr * 0.82) : b.z / 2; y = k ? y + pr * 0.78 + r * 0.82 : r * 0.92; const m = new THREE.Mesh(sg, wm); m.scale.set(r, r * 0.96, r); m.position.set(x, y, z); g.add(m); top = y + r; pr = r; b.y = y; b.r = r; });
+    const done = col.every(b => b?.r);
+    if (col[1]?.r) { const c = col[1]; for (const sgn of [-1, 1]) { const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, c.r * 1.6, 5), M(0x6A4A2A)); arm.position.set(x + sgn * c.r * 1.25, c.y + c.r * 0.25, z); arm.rotation.z = sgn * 1.0; g.add(arm); } for (const yy of [0.35, 0, -0.35]) { const bt = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 5), M(0x2A2A30)); bt.position.set(x, c.y + yy * c.r, z + c.r * 0.97); g.add(bt); } }
+    if (done) { const h = col[2]; for (const sgn of [-1, 1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), M(0x1E1E24)); e.position.set(x + sgn * h.r * 0.32, h.y + h.r * 0.22, z + h.r * 0.9); g.add(e); }
+      const nose = new THREE.Mesh(new THREE.ConeGeometry(0.07, h.r * 0.9, 8), M(0xF07A1E)); nose.rotation.x = Math.PI / 2; nose.position.set(x, h.y, z + h.r + h.r * 0.4); g.add(nose);
+      const hat = new THREE.Group(); hat.position.set(x, h.y + h.r * 0.82, z); const hc = [0xC0392B, 0x2E86DE, 0x27AE60, 0x8E44AD, 0xF39C12][i]; const brim = new THREE.Mesh(new THREE.CylinderGeometry(h.r * 0.85, h.r * 0.85, 0.05, 14), M(0x2A2A30)); const crown = new THREE.Mesh(new THREE.CylinderGeometry(h.r * 0.55, h.r * 0.6, h.r * 0.8, 14), M(0x2A2A30)); crown.position.y = h.r * 0.4; const band = new THREE.Mesh(new THREE.CylinderGeometry(h.r * 0.61, h.r * 0.61, 0.08, 14), M(hc)); band.position.y = 0.1; hat.add(brim, crown, band); g.add(hat); top = h.y + h.r * 1.7;
+      const scarf = new THREE.Mesh(new THREE.TorusGeometry(h.r * 0.85, 0.07, 6, 16), M(hc)); scarf.rotation.x = Math.PI / 2; scarf.position.set(x, h.y - h.r * 0.85, z); g.add(scarf); }
+    const n = col.filter(Boolean).length; if (n) makeLabel(g, done ? ['⛄ 우리 반 눈사람!', col.map(b => nickOf(b.u) || '친구').join(' · ')] : [`⛄ ${n}/3 · 다음은 ${SNW_PART[n]}`], done ? 0.95 : 0.85, x, top + 0.9, z);
+  });
+}
+function snwTick(dt) {
+  if (!snw.g) { if (typeof stateLoaded !== 'undefined' && !stateLoaded) return; snwBuild(); }
+  const on = snwOn(); if (snw.g.visible !== on) { snw.g.visible = on; snw.pile.visible = on; }
+  if (!on) { if (snw.roll) snwStop(); return; }
+  const B = snwBoard(), sig = JSON.stringify(B); if (sig !== snw.sig) { snw.sig = sig; snwRefresh(B.map(c => c.map(b => b && { ...b }))); }
+  const me = snwMine(), u = backend?.uid; if (me && B[me.s][me.p]?.u !== u && !snw.busy) { backend.snwSet?.(null); toast('⛄ 친구가 같은 자리에 먼저 올렸어요! 눈덩이를 다시 굴려서 다른 자리에 올려요', 'info'); }
+  if (snw.okDay !== dayNum() && bag.snwOk !== dayNum() && B.some(col => col.every(Boolean) && col.some(b => b.u === u))) { snw.okDay = bag.snwOk = dayNum(); earnShell(10, 'm'); saveBag(); renderCoinChip(); playSfx('fanfare'); showBanner('⛄ 친구들과 눈사람 완성!', '🐚 +10 · 광장 남쪽에서 오늘 하루 서 있어요', 4500); }
+  if (!snw.roll) return;
+  if (!snwHere() || pb3.on || cart.on || sled.on || mrail.on || SZW?.ride) { snwStop('⛄ 눈덩이가 녹아 버렸어요 (마을 밖으로 나갔어요)'); return; }
+  const d = Math.hypot(player.pos.x - snw.last.x, player.pos.z - snw.last.z); snw.last.copy(player.pos);
+  if (d > 0 && d < 3 && player.onGround) { const z0 = snw.z; snw.z = Math.min(1.6, snw.z + d * 0.035); if (z0 < 1.6 && snw.z >= 1.6) toast('⛄ 눈덩이가 가장 커졌어요 (160cm)!', 'success'); snw.ball.rotateOnWorldAxis(new V3(Math.cos(player.heading), 0, -Math.sin(player.heading)), d / Math.max(0.15, snw.z / 2)); }
+  const r = snw.z / 2, f = r + 0.55; snw.ball.scale.setScalar(r); snw.ball.position.set(player.pos.x + Math.sin(player.heading) * f, player.pos.y + r, player.pos.z + Math.cos(player.heading) * f);
+}
 function szRideTick() { const r = remotes.get(SZW.ride); if (!r || r.target?.sz !== 3 || !isTiny() || jumpBuffer > 0) { if (jumpBuffer > 0) jumpBuffer = 0; szRideOff(); return; }
   const top = r.a?.head ? r.a.head.localToWorld((SZW.tmp ||= new V3()).set(0, 2.27, 0)) : new V3(r.pos.x, r.pos.y + 2.27 * (r.szc ?? 3), r.pos.z); player.pos.set(top.x, top.y, top.z); /* 🧢 1106g 머리 꼭대기 위에 (머리가 흔들리면 같이) */ player.vy = 0; player.onGround = true; player.heading = r.heading; const a = player.avatar; a.g.position.copy(player.pos); a.g.rotation.y = player.heading; }
 function szRideOff() { if (!SZW.ride) return; const r = remotes.get(SZW.ride); SZW.ride = null; if (r) player.pos.set(r.pos.x + Math.sin(r.heading + Math.PI / 2) * 1.2, r.pos.y + 0.2, r.pos.z + Math.cos(r.heading + Math.PI / 2) * 1.2); player.vy = 2; toast('🧢 머리 위에서 내렸어요', 'info'); }
@@ -31936,11 +32016,13 @@ startPreview();
 
 const clock = new THREE.Clock();
 let time = 0;
+let loopAt = 0;
 function loop() {
+  if (self.__gfxU && !pb3.on) { const n = performance.now(); if (n - loopAt < 30) { requestAnimationFrame(loop); return; } loopAt = n; } /* 🐢 1106i 1초에 30장까지만 */
   const dt = Math.min(clock.getDelta(), 0.05);
   time += dt;
   if (pb3.on) { if (!pb3.freeze) pb3Update(dt); if (joined) { updatePb(); sendPresence(time); } renderer.render(pb3.scene, pb3.cam); requestAnimationFrame(loop); return; } // 🎮 펫 배틀 중: 마을은 쉬고 배틀 무대만
-  if (joined) { updatePlayer(dt); try { szTick(dt); } catch (e) { console.warn('sz', e); } try { strTick(dt); strFollow(); } catch (e) { console.warn('str', e); } updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
+  if (joined) { updatePlayer(dt); try { szTick(dt); } catch (e) { console.warn('sz', e); } try { snwTick(dt); } catch (e) { console.warn('snw', e); } try { strTick(dt); strFollow(); } catch (e) { console.warn('str', e); } updateJumpMap(); updateStarGame(dt); updateHomeHint(); updateLots(dt); updateLife(dt); }
   updateBeach(); updateSeaFun(dt); updateCart(dt); updateMrail(dt); updateSand(dt); updateVilDecor(); updateBuddy(dt); updateHunt(dt); gwTick(dt); pollTick(dt); capsTick(dt); egTick(dt); try { clothTick(dt); clothHallTick(); } catch (e) { console.warn('cloth', e); } mrunTick(dt); titleTick(dt); hmTick(dt); emoTick(dt);
   updateMountain(dt); mtFunTick(dt);
   if (joined) updateHanok(dt);
