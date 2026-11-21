@@ -2359,7 +2359,7 @@ function sanitizeState(raw) {
 }
 
 
-function emptyState() { return { sw: null, om: {}, qscope: null, chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, aq: {}, snw: {}, mrr: {}, potoff: 0, evoff: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {}, pbl: null }; }
+function emptyState() { return { sw: null, om: {}, qscope: null, chatOff: false, scap: {}, roster: '', emo: {}, raid: null, hm: null, vname: null, sgive: {}, shgive: {}, mtev: {}, wrap: null, wrapa: {}, ssp: {}, swm: {}, aq: {}, snw: {}, sgb: {}, mrr: {}, potoff: 0, evoff: {}, scr: null, scrp: {}, kkw: {}, ssnc: '', gw: null, gwa: {}, gwc: null, caps: null, capsw: null, tgive: {}, pq: {}, pqo: {}, pqv: {}, eg: null, ega: {}, egc: null, egcnt: {}, mrun: null, mrunp: {}, mrunc: null, praise: {}, talk: null, lvx: {}, pgb: {}, pgq: {}, pgym: {}, pb: { o: {}, m: {} }, stage: null, evc: {}, sdUrl: null, attr: {}, attrq: {}, fest: null, festv: {}, festc: {}, festp: {}, rank: {}, rides: {}, picks: 0, built: {}, crates: {}, garden: {}, decoCount: 0, decos: {}, bell: 0, decor: {}, mission: null, missions: {}, unlocks: {}, vote: { round: '', open: true, proposals: {}, votes: {} }, activity: null, actDone: {}, actHistory: {}, thanks: {}, notice: null, rvote: null, jump: {}, areas: {}, starDone: {}, libDone: {}, gardenDone: {}, artDone: {}, plots: {}, plotOwner: {}, plotExtra: {}, coins: 0, dex: {}, control: {}, quiz: null, hv: { picks: 0, crates: {}, built: {}, kite: {} }, mural: {}, meeting: null, meetVotes: {}, meetLikes: {}, meetLog: {}, meetCfg: {}, ctf: null, econ: {}, fund: null, math: {}, sand: { c: {}, p: {}, ev: null, v: {} }, thx: {}, read: {}, art: {}, gym: {}, hide: null, pots: {}, pest: null, hist: { n: {}, b: {} }, histSrc: null, siege: null, nv: null, esc: {}, stg: null, kpoem: {}, kpw: '', kpoemv: {}, kb: null, kba: {}, evtk: {}, str: null, cal: { ev: {} }, cloth: {}, clothv: {}, clothshop: {}, kdet: null, kdetp: {}, kdeta: {}, wc: {}, atlg: {}, atlr: {}, atlx: 0, sgser: null, jmp: {}, lib: {}, pbl: null }; }
 function toObj(v) {
   if (!v) return {};
   if (Array.isArray(v)) { const o = {}; v.forEach((x, i) => { if (x != null) o[i] = x; }); return o; }
@@ -2423,6 +2423,7 @@ function normalize(v) {
     potoff: +v.potoff || 0, // 🍄 1106f 선생님이 크기 물약 끈 시각
     snw: Object.fromEntries(Object.entries(plainObj(v.snw)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && x.length <= 16).slice(0, 80)), // ⛄ 1106i 눈사람 눈덩이
     aq: Object.fromEntries(Object.entries(plainObj(v.aq)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string').slice(0, 80).map(([u, x]) => [u, x.slice(0, 20)])), // 🐠 1106a 아쿠아리움 전시
+    sgb: Object.fromEntries(Object.entries(plainObj(v.sgb)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), n: String(x.n || '').slice(0, 12), at: +x.at || 0, tm: x.tm === 1 ? 1 : 0, pc: Number.isInteger(x.pc) && x.pc >= 0 && x.pc < 36 ? x.pc : -1, ...(x.o === 1 ? { o: 1 } : {}), ...(x.q === 1 ? { q: 1 } : {}), lv: Math.max(0, Math.min(2, x.lv | 0)), bk: typeof x.bk === 'string' ? x.bk.slice(0, 24) : '', sh: typeof x.sh === 'string' ? x.sh.slice(0, 320) : '', ok: Math.max(0, Math.min(99, x.ok | 0)), t0: +x.t0 || 0 }])), // 🎯 1106k 바다 공방전
     mrr: Object.fromEntries(Object.entries(plainObj(v.mrr)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), n: String(x.n || '').slice(0, 12), at: +x.at || 0, ...(x.o === 1 ? { o: 1 } : {}), ...(x.c === 1 ? { c: 1 } : {}), u: /^(m[1-6]|mix)$/.test(x.u) ? x.u : 'mix', lv: Math.max(0, Math.min(4, x.lv | 0)), lp: Math.max(1, Math.min(3, x.lp | 0 || 2)), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ok: Math.max(0, x.ok | 0), bs: Math.max(0, x.bs | 0), ...(x.q === 1 ? { q: 1 } : {}) }])), // 🏎️ 1106a 수학 레이싱
     swm: Object.fromEntries(Object.entries(plainObj(v.swm)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), l: Math.min(3, Math.max(0, x.l | 0)), n: String(x.n || '').slice(0, 12), m: x.m === 'r' ? 'r' : 'i', d: [25, 50, 100].includes(x.d) ? x.d : 25, g: Math.min(9, Math.max(0, x.g | 0)), at: +x.at || 0, ...(x.o ? { o: 1 } : {}), ...(+x.t0 ? { t0: +x.t0 } : {}), ...(+x.fe ? { fe: +x.fe } : {}), ...(x.q ? { q: 1 } : {}) }])), // 🏊 1029a
     wrapa: Object.fromEntries(Object.entries(plainObj(v.wrapa)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object').map(([u, x]) => [u, { r: +x.r || 0, nm: String(x.nm || '').slice(0, 12), a: String(x.a || '').slice(0, 30) }])),
@@ -2788,7 +2789,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async sgbSet(o) { (st.sgb ||= {}); if (o) st.sgb.me = JSON.parse(JSON.stringify(o)); else delete st.sgb.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3330,7 +3331,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
     async aqSet(v) { try { await D.set(R(`state/aq/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async snwSet(v) { try { await D.set(R(`state/snw/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, // ⛄ 1106i // 🐠 1106a 아쿠아리움 전시
-    async mrrSet(o) { try { await D.set(R(`state/mrr/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏎️ 1106a 수학 레이싱
+    async mrrSet(o) { try { await D.set(R(`state/mrr/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async sgbSet(o) { try { await D.set(R(`state/sgb/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎯 1106k // 🏎️ 1106a 수학 레이싱
     async escSet(room, o) { try { await D.set(R(`state/esc/${room}/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🔐 1101a 방탈출 기록
     async kwsGet(s, k) { try { return (await D.get(R(`kws/${s}${k ? '/' + k : ''}`))).val(); } catch (e) { return undefined; } }, async kwsSet(s, k, o) { try { await D.set(R(`kws/${s}/${k}`), o || null); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 📖 1105zk 국어 학습지 (state 밖) */
     async kpoemSet(o) { try { await D.set(R(`state/kpoem/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // ✍️ 1101i 한글 마을 시
@@ -4720,7 +4722,7 @@ function updatePlayer(dt) {
   let iz = (keys.w || keys.arrowup ? 1 : 0) - (keys.s || keys.arrowdown ? 1 : 0) + joy.y;
   if (spec.on) { specPan(clamp(ix, -1, 1), clamp(iz, -1, 1), dt); ix = iz = 0; jumpBuffer = 0; } // 👁️ 관전: 화면만 날아다녀요
   if (attr.on && jumpBuffer > 0) { jumpBuffer = 0; attrExit(); } // 🎠 놀이기구: 점프하면 내려요
-  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || mrc.on || SZW.ride || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on || nvW?.on || strRiding() || swFrozenMe()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
+  if (isFrozen() || kite.active || hv.travel || hideBlind() || hideLocked() || sgFrozen() || attr.on || cart.on || mrail.on || mrc.on || sbt.on || SZW.ride || lift.on || bgOpen() || boardW.on || sgFerry.on || sled.on || swim.on || slideW.on || nvW?.on || strRiding() || swFrozenMe()) { ix = iz = 0; jumpBuffer = 0; } // ✋ 선생님 잠깐 멈춤 · 연날리기 · 배 타는 중
   const il = Math.hypot(ix, iz);
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
@@ -4749,7 +4751,7 @@ function updatePlayer(dt) {
       }
     }
   }
-  const g = sea.on || sail.on ? BOAT_Y : nvW?.on ? NV_DECK : groundAt(p); // 🚤⛵ 배는 물 위 · ⚓ 해전 배
+  const g = sea.on || sail.on ? BOAT_Y + (sail.on ? sail.dy || 0 : 0) : nvW?.on ? NV_DECK : groundAt(p); /* 🟡 1106k 잠수하면 내려가요 */ // 🚤⛵ 배는 물 위 · ⚓ 해전 배
   if (ny > g && player.onGround && player.vy <= 0 && ny - g < 0.7 && p.z < -60.4) ny = g; // 산비탈을 내려갈 때 땅에 붙어 걸어요
   if (ny <= g) { ny = g; player.vy = 0; player.onGround = true; } else player.onGround = false;
   p.y = ny;
@@ -4768,6 +4770,7 @@ function updatePlayer(dt) {
 }
 
 function updateCamera(dt) {
+  if (sbtCam(dt)) return; /* 🎯 1106k */
   if (!joined) { // 입장 전: 마을을 천천히 둘러보기
     camYaw += dt * 0.08;
     const t = new V3(0, 2, 0);
@@ -4800,6 +4803,7 @@ function updateCamera(dt) {
     t.z + Math.cos(camYaw) * Math.cos(cp) * cd,
   );
   want.y = Math.max(want.y, terrainH(want.x, want.z) + 0.9); // 산비탈 속으로 들어가지 않게
+  if (sail.on && sail.dive) want.y = Math.min(want.y, player.pos.y + 1.2); /* 🟡 1106k 잠수하면 카메라도 물속으로 */
   // 🎯 전쟁터·체험장에서 겨눌 때: 어깨 너머로 살짝 비켜서 봐요 (머리·이름표가 겨눈 곳을 가리지 않게, 쏘는 방향은 그대로)
   camShoulder += ((typeof sgw !== 'undefined' && (sgw.aimMark?.g.visible || sgw.fireMark?.visible) ? 1.5 : 0) - camShoulder) * Math.min(1, dt * 6);
   if (camShoulder > 0.01) { const fw = camShoulder * 1.1, rx = Math.cos(camYaw) * camShoulder - Math.sin(camYaw) * fw, rz = -Math.sin(camYaw) * camShoulder - Math.cos(camYaw) * fw; want.x += rx; want.z += rz; t.x += rx; t.z += rz; }
@@ -4951,7 +4955,7 @@ function sendPresence(time) {
   if (nvW?.on) d.nv = nvPresCode(); if (nvW?.reg && S.nv?.on && bag.nvJob != null) d.nj = nvJob(); // 🎽 1031i 해전 직업(정원 세기) { const nd = nvW ? nvHdCode() : ''; if (nd) d.nd = nd; } // ⚓ 1031g 해전 배 · 맞힌 배
   if (hide.prop) d.p = hide.prop; // 🙈 숨바꼭질 변신
   if (emoW.em) d.em = emoW.em.slice(0, 48); // 😀 내 이모티콘
-  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; } else if (cart.on || mrail.on || mrc.on) { d.v = CART_V; if (mrc.on) d.rc = Math.max(0, Math.min(2000, Math.round(mrc.s))); } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; if (v === RIDE_SKY_V) { const sq = skyQ(); if (sq) d.sq = sq; } } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
+  { const bq = boatPresQ(); if (bq >= 0) { d.v = BOAT_V; d.q = bq; if (sail.on) d.bk = boatLookStr(); } else if (cart.on || mrail.on || mrc.on) { d.v = CART_V; if (mrc.on) d.rc = Math.max(0, Math.min(2000, Math.round(mrc.s))); } else if (boardW.on) { d.bo = `${boardW.cap}:${boardW.seat}`.slice(0, 80); } else { const v = myRideV(); if (v) { d.v = v; const q = myRideQ(); if (q) d.q = q; if (v === RIDE_SKY_V) { const sq = skyQ(); if (sq) d.sq = sq; } } } } // ⛵ 배 · 🚲 타고 있는 탈것 (탈 수 있는 곳에서만) · 🎨 꾸미기
   { const e = hpetCode(); if (e) { d.e = e; const f = hpetOw(); if (f) d.f = f; } }
   { const bd = buddyCode(); if (bd) d.bd = bd; } if (bag.title) d.tt = String(bag.title).slice(0, 10); d.sp = sgMySp(); { const cf = clothMyCode(); if (cf) d.cf = cf; } /* 👕 1102c 입은 앞판 */ { const rl = myRoleLv(); if (rl != null) d.sl = rl; } { const t = bag.ssTrail | 0; if (t && ssOwn('t' + t)) d.sx = t; } // 👣 시즌 발자국 // 🏷️ 고른 칭호 · 💪 능력치 단계(공방전 무기 모양·팀 나누기) // 🐾 1024e 동료 펫 // 🐾 같이 산책하는 집 펫 · 👗 펫 옷
   { const z = szCode(); if (z) d.sz = z; } /* 🍄🔬 1106f 크기 */
@@ -7836,6 +7840,7 @@ function canStand(x, z) {
   if (sea.on || sail.on) return inWater(x, z); // 🚤⛵ 배를 타면 바다 위만 (섬·모래사장에는 못 올라가요)
   if (inKV(x, z)) return true; // 🔤 1101i 한글 마을
   if (inMrc(x, z)) return true; /* 🏎️ 1106a 수학 레이싱 경기장 */
+  if (inSbt(x, z)) return true; /* 🎯 1106k 바다 공방전 */
   if (Math.hypot(x - SW.cx, z - SW.cz) <= SW.R + 2) return true; /* ☁️ 1105zy 하늘 경기장 */
   /* 🗑️ 1105v 해전 바다 걷기 없음 */
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
@@ -11258,7 +11263,7 @@ function updateRides() {
   if (!backend) return;
   { const k0 = rideWant(player.avatar, backend.uid, player.pos, myRideV()); setRide(player.avatar, k0, k0 === 'sky' ? skyQ() : myRideQ()); }
   for (const [uid, r] of remotes) { const k1 = rideWant(r.a, uid, r.pos, r.target?.v); setRide(r.a, k1, k1 === 'sky' ? (r.target?.sq | 0) % 10000 : (r.target?.q | 0) % 110); } // 🐲 1102i 하늘 용 꾸미기는 sq
-  const b = $('rideBtn'), k = player.avatar.rideK, hide = !joined || sgInSG(player.pos) || trRegion() || swIn(player.pos) || roomNow() === 'reef';
+  const b = $('rideBtn'), k = player.avatar.rideK, hide = !joined || sgInSG(player.pos) || trRegion() || swIn(player.pos) || roomNow() === 'reef' || sbt.on;
   b.classList.toggle('hidden', hide); b.classList.toggle('on', !!bag.ride && rideOpen(bag.ride));
   const ic = bag.ride && rideOpen(bag.ride) ? RIDE_BY[bag.ride].icon : '🚲'; if (b.textContent !== ic) b.textContent = ic;
   { const f = $('flyBar'), on = joined && (k === 'sky' || k === 'strn' || (k === 'pegs' && swHere())); if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
@@ -11810,6 +11815,11 @@ function buildSeaFun() {
   makeLabel(g, ['⚓ 선착장', '내가 만든 배를 띄워요 · 🏝️ 보물섬은 배로만!'], 0.9, ISLE.dock[0], 3.6, ISLE.dock[1]);
   addInteract({ pos: new V3(ISLE.dock[0] + 0.6, 1, ISLE.dock[1]), r: 2.8, text: () => sail.on || sea.on || boardW.cand ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 띄우기`, '바다로 나가요 · 🏝️ 보물섬은 동쪽'] : ['⛵ 배가 없어요', '배 가게에서 재료를 사서 🛠️ 조선소에서 만들어요'], run: () => sailStart('beach') });
   addInteract({ pos: new V3(ISLE.dock[0] + 3, 1, ISLE.dock[1]), r: 3.2, text: () => sail.on || boardW.on ? ['⚓ 바닷가에 내리기', '선착장'] : null, run: sailLand });
+  { const bx = ISLE.dock[0] - 4.3, bz = ISLE.dock[1] - 3.2, k = new THREE.Group(); k.position.set(bx, 0, bz); g.add(k); /* 🎯 1106k 바다 공방전 접수처 */
+    box(k, 1.8, 1.0, 0.9, 0x2F5E9E, 0, 0.5, 0); box(k, 2.0, 0.1, 1.1, 0xFFFFFF, 0, 1.05, 0, o); for (const sx of [-0.85, 0.85]) box(k, 0.1, 1.6, 0.1, 0xFFFFFF, sx, 1.85, 0.4, o); box(k, 2.0, 0.5, 0.08, 0xE2584A, 0, 2.6, 0.4, o);
+    cyl(k, 0.04, 2.6, 0xFFFFFF, -1.0, 1.3, -0.4, o); box(k, 0.04, 0.4, 0.6, 0x4A9AE8, -1.0, 2.4, -0.1, o); cyl(k, 0.04, 2.6, 0xFFFFFF, 1.0, 1.3, -0.4, o); box(k, 0.04, 0.4, 0.6, 0xE2584A, 1.0, 2.4, -0.1, o);
+    makeLabel(k, ['🎯 바다 공방전', '좌표 포격 + 분수·소수 탄약 · 모둠 대 모둠'], 0.85, 0, 3.6, 0);
+    addInteract({ pos: new V3(bx, 1, bz), r: 2.6, text: () => sail.on || sbt.on ? null : ['🎯 바다 공방전 접수처', sbtOpenList().length ? `🎯 열린 방 ${sbtOpenList().length}개` : '방 만들기 · 🤖 로봇 연습'], run: openSbtMenu }); }
   addInteract({ pos: new V3(ISLE.cx - ISLE.r + 1.2, 1, ISLE.cz), r: 2.4, text: () => !inIsle(player.pos.x, player.pos.z) || sail.on ? null : boatCur() >= 0 ? [`⛵ ${BOAT_H[boatCur()].n} 타기`, '바닷가로 돌아가요'] : ['🛟 구조선 부르기', '배가 없으면 바닷가까지 데려다줘요'], run: () => boatCur() >= 0 ? sailStart('isle') : isleTravel(false) });
   addInteract({ pos: new V3(ISLE.cx - ISLE.r - 1.5, 1, ISLE.cz), r: 3.2, text: () => sail.on || boardW.on ? ['⚓ 보물섬에 내리기', '섬 부두'] : null, run: sailLand });
   buildShipyard(g); buildDrift(g);
@@ -11819,8 +11829,8 @@ function buildSeaFun() {
   hud.innerHTML = '<b id="seaTime">0.0초</b><span id="seaRing"></span><button class="btn" id="seaQuit" style="background:#fff;font-size:15px;padding:4px 10px">그만하기</button>'; document.body.append(hud); sea.hud = hud;
   $('seaQuit').onclick = () => seaEnd(false);
   const sh = document.createElement('div'); sh.id = 'sailHud'; sh.className = 'sticker hidden'; sh.style.cssText = hud.style.cssText;
-  sh.innerHTML = '<b id="sailName">⛵</b><span id="sailDir"></span><button class="btn" id="sailLandBtn" style="background:#FFE066;font-size:15px;padding:4px 10px">⚓ 내리기</button>'; document.body.append(sh); sail.hud = sh;
-  $('sailLandBtn').onclick = sailLand;
+  sh.innerHTML = '<b id="sailName">⛵</b><span id="sailDir"></span><button class="btn hidden" id="sailDiveBtn" style="background:#9FD8F0;font-size:15px;padding:4px 10px">🌊 잠수</button><button class="btn" id="sailLandBtn" style="background:#FFE066;font-size:15px;padding:4px 10px">⚓ 내리기</button>'; document.body.append(sh); sail.hud = sh;
+  $('sailLandBtn').onclick = sailLand; $('sailDiveBtn').onclick = () => subDive(!sail.dive);
 }
 function seaBoat(on, q = RACE_Q) {
   if (sea.boat) { sea.boat.parent?.remove(sea.boat); sea.boat = null; }
@@ -11947,23 +11957,36 @@ function isleChest() {
 const BOAT_V = 12, BOAT_Y = 0.3, RACE_Q = 30;
 const inWater = (x, z) => x >= 78.4 && x <= 205 && z >= -60 && z <= 158 && ISLES_ALL.every(I => Math.hypot(x - I.cx, z - I.cz) > I.r + 0.4);
 const sail = { on: false, g: null, hud: null, yard: null, drift: [], hintAt: 0, dt: 0 };
-const BOAT_PARTS = [{ k: 'plank', icon: '🪵', n: '나무판자', pr: 5 }, { k: 'rope', icon: '🪢', n: '밧줄', pr: 8 }, { k: 'cloth', icon: '🧵', n: '돛천', pr: 20 }, { k: 'anchor', icon: '⚓', n: '닻', pr: 30 }];
+const BOAT_PARTS = [{ k: 'plank', icon: '🪵', n: '나무판자', pr: 5 }, { k: 'rope', icon: '🪢', n: '밧줄', pr: 8 }, { k: 'cloth', icon: '🧵', n: '돛천', pr: 20 }, { k: 'anchor', icon: '⚓', n: '닻', pr: 30 }, { k: 'engine', icon: '⚙️', n: '엔진', pr: 40 }, { k: 'glass', icon: '🪟', n: '유리창', pr: 15 }]; // ⚙️🪟 1106k
 const BOAT_H = [
   { k: 'raft', icon: '🪵', n: '뗏목', mul: 1.3, need: { plank: 6, rope: 2 }, steps: 6, d: '통나무를 밧줄로 묶어요' },
   { k: 'row', icon: '🛶', n: '나룻배', mul: 1.5, need: { plank: 14, rope: 2 }, steps: 8, d: '노를 저어 가요' },
   { k: 'sail', icon: '⛵', n: '돛단배', mul: 1.7, need: { plank: 18, rope: 4, cloth: 2 }, steps: 10, d: '바람을 받아 슝' },
   { k: 'pirate', icon: '🏴‍☠️', n: '해적선', mul: 1.9, need: { plank: 30, rope: 6, cloth: 4, anchor: 1 }, steps: 12, d: '돛이 두 개 · 망루까지' },
+  // 🚢 1106k 새 배 (base = 해전·함께 타기 자리 계산에 쓰는 옛 배 번호 · r = 섬에 닿는 힘)
+  { k: 'duck', icon: '🦆', n: '오리배', mul: 1.6, need: { plank: 10, rope: 2, cloth: 1 }, steps: 7, d: '발로 굴러 가는 귀여운 배 · 지붕 있음', base: 1, r: 1 },
+  { k: 'speed', icon: '🚤', n: '쾌속정', mul: 2.3, need: { plank: 16, rope: 4, engine: 1 }, steps: 10, d: '엔진으로 가장 빨라요', base: 2, r: 2 },
+  { k: 'sub', icon: '🟡', n: '잠수함', mul: 1.8, need: { plank: 20, engine: 1, glass: 3 }, steps: 12, d: '🌊 잠수해서 바닷속 보물상자를 찾아요', base: 3, r: 3, sub: 1 },
+  { k: 'cruise', icon: '🛳️', n: '유람선', mul: 1.6, need: { plank: 36, rope: 8, cloth: 2, anchor: 1, glass: 2 }, steps: 14, d: '2층 선실 · 친구 5명까지 함께', base: 3, r: 3 },
 ];
-const BOAT_COLS = [{ n: '나무색', c: 0xB07C50 }, { n: '빨강', c: 0xE2584A }, { n: '파랑', c: 0x4A9AE8 }, { n: '노랑', c: 0xFFD23C }, { n: '분홍', c: 0xF29BB8 }];
-const BOAT_FLAGS = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '빨간 깃발', c: 0xE2584A }, { icon: '🏴‍☠️', n: '해적 깃발', c: 0x24262B }, { icon: '🌈', n: '무지개 깃발' }, { icon: '⭐', n: '별 깃발', c: 0x2F5E9E }];
+const boatBase = (h) => BOAT_H[h]?.base ?? Math.max(0, Math.min(3, h)), boatRank = (h = boatCur()) => BOAT_H[h]?.r ?? h;
+const BOAT_COLS = [{ n: '나무색', c: 0xB07C50 }, { n: '빨강', c: 0xE2584A }, { n: '파랑', c: 0x4A9AE8 }, { n: '노랑', c: 0xFFD23C }, { n: '분홍', c: 0xF29BB8 }, { n: '초록', c: 0x5FBE5A }, { n: '보라', c: 0xA07AE0 }, { n: '하양', c: 0xF4F4F0 }, { n: '검정', c: 0x2E3138 }, { n: '하늘', c: 0x8FD8F5 }, { n: '주황', c: 0xFF9A3C }]; // 1106k 6가지 더
+const BOAT_FLAGS = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '빨간 깃발', c: 0xE2584A }, { icon: '🏴‍☠️', n: '해적 깃발', c: 0x24262B }, { icon: '🌈', n: '무지개 깃발' }, { icon: '⭐', n: '별 깃발', c: 0x2F5E9E }, { icon: '🌸', n: '꽃 깃발', c: 0xF7B8D0 }, { icon: '➗', n: '수학 깃발', c: 0x2E9E7A }, { icon: '🐾', n: '발자국 깃발', c: 0xFFE38A }];
+// 🎨 1106k 배 꾸미기: 돛 색 · 장식 · 배 이름 (이름은 낱말 고르기 · 친구 화면에도 보여요)
+const BOAT_DECO = [{ icon: '·', n: '없음' }, { icon: '🌼', n: '꽃 화분', pr: 30 }, { icon: '🎈', n: '풍선 다발', pr: 30 }, { icon: '💡', n: '꼬마전구 줄', pr: 40 }, { icon: '🦆', n: '오리 인형', pr: 30 }, { icon: '🛟', n: '구명 튜브', pr: 20 }];
+const BOAT_NM1 = ['번개', '무지개', '반짝', '용감한', '푸른', '해님', '별빛', '바람', '씩씩한', '보물'], BOAT_NM2 = ['호', '돌고래호', '고래호', '거북호', '갈매기호', '별호', '파도호', '구름호'];
 const BOAT_COL_PR = 20, BOAT_FLAG_PR = 30;
 const partName = (k) => BOAT_PARTS.find(p => p.k === k);
-function boatBag() { const b = bag.boat ||= {}; b.h ||= {}; b.p ||= {}; b.cl ||= {}; b.fl ||= {}; if (b.cur == null) b.cur = -1; b.c |= 0; b.f |= 0; if (b.wip === undefined) b.wip = null; return b; }
+function boatBag() { const b = bag.boat ||= {}; b.h ||= {}; b.p ||= {}; b.cl ||= {}; b.fl ||= {}; b.dl ||= {}; if (b.cur == null) b.cur = -1; b.c |= 0; b.f |= 0; b.sc |= 0; b.dc |= 0; if (b.nm == null) b.nm = -1; if (b.wip === undefined) b.wip = null; return b; }
 const boatHave = (h) => isTeacher || !!boatBag().h[h]; // 🧑‍🏫 선생님은 모든 배
-const boatColHave = (i) => i === 0 || isTeacher || !!boatBag().cl[i], boatFlagHave = (i) => i === 0 || isTeacher || !!boatBag().fl[i];
-function boatCur() { const b = boatBag(); if (b.cur >= 0 && boatHave(b.cur)) return b.cur; for (let h = 3; h >= 0; h--) if (boatHave(h)) return h; return -1; }
-const boatQ = (h = boatCur()) => { const b = boatBag(); return Math.max(0, h) * 25 + (boatColHave(b.c) ? b.c : 0) * 5 + (boatFlagHave(b.f) ? b.f : 0); };
-const boatMul = () => BOAT_H[boatCur()]?.mul || 1.3;
+const boatColHave = (i) => i === 0 || isTeacher || !!boatBag().cl[i], boatFlagHave = (i) => i === 0 || isTeacher || !!boatBag().fl[i], boatDecoHave = (i) => i === 0 || isTeacher || !!boatBag().dl[i];
+function boatCur() { const b = boatBag(); if (b.cur >= 0 && boatHave(b.cur)) return b.cur; for (let h = 3; h >= 0; h--) if (boatHave(h)) return h; for (let h = BOAT_H.length - 1; h > 3; h--) if (boatHave(h)) return h; return -1; }
+const boatQ = (h = boatCur()) => { const b = boatBag(), c = boatColHave(b.c) ? b.c : 0, f = boatFlagHave(b.f) ? b.f : 0; return boatBase(Math.max(0, h)) * 25 + (c < 5 ? c : 0) * 5 + (f < 5 ? f : 0); }; // 옛 배 번호 (해전 · q ≤ 99)
+const boatLook = (h = boatCur()) => { const b = boatBag(); return { h: Math.max(0, h), c: boatColHave(b.c) ? b.c : 0, sc: b.sc && boatColHave(b.sc - 1) ? b.sc : 0, f: boatFlagHave(b.f) ? b.f : 0, dc: boatDecoHave(b.dc) ? b.dc : 0, nm: b.nm >= 0 && b.nm < 80 ? b.nm : -1, dv: sail.dive ? 1 : 0 }; };
+const boatLookStr = (L = boatLook()) => [L.h, L.c, L.sc, L.f, L.dc, L.nm + 1, L.dv | 0].join('.');
+const boatLookParse = (s) => { const a = String(s || '').split('.').map(Number); if (a.length < 6 || a.some(x => !(x >= 0 && x < 100))) return null; return { h: Math.min(BOAT_H.length - 1, a[0]), c: a[1] % BOAT_COLS.length, sc: a[2] % (BOAT_COLS.length + 1), f: a[3] % BOAT_FLAGS.length, dc: a[4] % BOAT_DECO.length, nm: a[5] - 1, dv: a[6] | 0 }; };
+const boatNameOf = (nm) => nm >= 0 ? `${BOAT_NM1[Math.floor(nm / 8) % BOAT_NM1.length]}${BOAT_NM2[nm % 8]}` : '';
+const boatMul = () => (BOAT_H[boatCur()]?.mul || 1.3) * (sail.dive ? 0.75 : 1);
 const boatPresQ = () => sea.on ? RACE_Q : sail.on ? boatQ() : -1;
 const partsOk = (h) => isTeacher || Object.entries(BOAT_H[h].need).every(([k, n]) => (boatBag().p[k] | 0) >= n);
 const BOAT_SEATS = [[[0, -0.95]], [[0, -1.0], [0, 1.05]], [[-0.45, -1.2], [0.45, -1.2], [0, 1.4]], [[-0.78, -1.25], [0.78, -1.25], [-0.78, 1.3], [0.78, 1.3], [0, 2.3]]]; // 👫 함께 타는 자리 (선장은 가운데)
@@ -11973,9 +11996,10 @@ function sailTri(g, base, hgt, c, x, y, z, back = true, dx = 0) { // 직각 삼�
   SAIL_TRI ||= new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)]));
   const m = new THREE.Mesh(SAIL_TRI, sailMat(c)); m.scale.set(base, hgt, 1); m.position.set(x + dx, y, z); m.rotation.y = back ? Math.PI / 2 : -Math.PI / 2; g.add(m); return m;
 }
-function boatModel(q) { // ⛵ 1021f: 속이 빈 예쁜 배 (선장·친구가 배 안에 서요) · 앞 = +z · 발 높이 = 0
-  q |= 0; const h = Math.min(3, Math.floor(q / 25)), ci = Math.floor(q / 5) % 5, fi = q % 5;
-  const g = new THREE.Group(), o = { solid: false }, col = BOAT_COLS[ci].c, wood = 0xC08A58, dk = 0x6B4226;
+function boatModel(q, lk) { // ⛵ 1021f: 속이 빈 예쁜 배 (선장·친구가 배 안에 서요) · 앞 = +z · 발 높이 = 0 · 🎨 1106k lk = boatLook (새 배 · 돛 색 · 장식 · 이름)
+  q |= 0; const h = lk ? lk.h : Math.min(3, Math.floor(q / 25)), ci = lk ? lk.c : Math.floor(q / 5) % 5, fi = lk ? lk.f : q % 5;
+  const g = new THREE.Group(), o = { solid: false }, col = (BOAT_COLS[ci] || BOAT_COLS[0]).c, wood = 0xC08A58, dk = 0x6B4226, SC = lk?.sc ? BOAT_COLS[lk.sc - 1]?.c ?? 0xFFFFFF : 0;
+  let deck = [0, 1.0]; /* 장식 놓을 자리 [높이, 앞쪽 z] */
   const hull = (w, l, wh, body, trim, floor = wood) => { // 바닥 · 옆벽 · 뾰족한 뱃머리 · 테두리 · 흰 물띠
     const bl = w * 0.62, Lb = Math.hypot(w / 2, bl), a = Math.atan2(w / 2, bl);
     box(g, w, 0.36, l, body, 0, -0.22, 0, o); mesh(BOX, g, w * 0.7071, 0.36, w * 0.7071, body, 0, -0.22, l / 2, { solid: false, ry: Math.PI / 4 });
@@ -11992,19 +12016,19 @@ function boatModel(q) { // ⛵ 1021f: 속이 빈 예쁜 배 (선장·친구가 �
     for (const z of [-1.0, 1.0]) box(g, 2.5, 0.08, 0.14, ci ? col : 0xD9C9A0, 0, 0.05, z, o);
     mesh(CYL, g, 0.04, 1.8, 0.04, 0x8A5A34, -0.75, 0.09, 0.5, { solid: false, rx: Math.PI / 2, rz: 0.15 }); box(g, 0.22, 0.05, 0.45, 0x8A5A34, -0.62, 0.09, 1.4, { solid: false, ry: 0.15 });
     box(g, 0.5, 0.4, 0.45, 0xA0784C, 0.65, 0.2, 1.1, o); box(g, 0.52, 0.06, 0.47, 0x7A5234, 0.65, 0.41, 1.1, o);
-    fa = [0.85, 0.05, -1.3, 1.5];
+    fa = [0.85, 0.05, -1.3, 1.5]; deck = [0.05, 0.9];
   } else if (h === 1) { // 🛶 나룻배: 속이 빈 배 · 노 두 개
     const tip = hull(1.5, 3.0, 0.42, col, 0xFFFFFF);
     for (const sd of [-1, 1]) { cyl(g, 0.05, 0.14, 0x3B3F46, sd * 0.75, 0.48, 0.15, o); mesh(CYL, g, 0.04, 1.9, 0.04, 0xB07C50, sd * 1.15, 0.25, 0.1, { solid: false, rz: sd * 1.25, rx: 0.12 }); box(g, 0.07, 0.36, 0.22, 0xB07C50, sd * 1.95, -0.08, 0.2, { solid: false, rz: sd * 1.25 }); }
     ball(g, 0.12, 0xE8C547, 0, 0.55, tip - 0.1, o);
-    fa = [0.55, 0.42, -1.45, 1.3];
+    fa = [0.55, 0.42, -1.45, 1.3]; deck = [0, tip - 0.7];
   } else if (h === 2) { // ⛵ 돛단배: 큰 삼각 돛 + 앞 돛 · 줄무늬
     const tip = hull(1.8, 3.6, 0.45, col, 0xFFFFFF);
     cyl(g, 0.06, 3.9, 0x7A5234, 0, 1.95, 0.55, o); mesh(CYL, g, 0.04, 1.95, 0.04, 0x7A5234, 0, 2.35, -0.42, { solid: false, rx: Math.PI / 2 });
-    sailTri(g, 1.9, 1.45, 0xFFFFFF, 0, 2.38, 0.55, true, 0.0); sailTri(g, 1.9, 0.45, ci ? col : 0x4A9AE8, 0, 2.38, 0.55, true, 0.012);
-    sailTri(g, tip - 0.75, 2.4, 0xFFF6E6, 0, 1.2, 0.55, false); box(g, 0.02, 0.02, Math.hypot(tip - 0.55, 2.6), 0xDDDDDD, 0, 2.5, (tip + 0.55) / 2, { solid: false, rx: -Math.atan2(2.6, tip - 0.55) });
+    sailTri(g, 1.9, 1.45, SC || 0xFFFFFF, 0, 2.38, 0.55, true, 0.0); sailTri(g, 1.9, 0.45, ci ? col : 0x4A9AE8, 0, 2.38, 0.55, true, 0.012);
+    sailTri(g, tip - 0.75, 2.4, SC || 0xFFF6E6, 0, 1.2, 0.55, false); deck = [0, tip - 0.9]; box(g, 0.02, 0.02, Math.hypot(tip - 0.55, 2.6), 0xDDDDDD, 0, 2.5, (tip + 0.55) / 2, { solid: false, rx: -Math.atan2(2.6, tip - 0.55) });
     fa = [0, 3.9, 0.55, 0];
-  } else { // 🏴‍☠️ 해적선: 짙은 나무 · 금테 · 난간 · 뒤쪽 높은 갑판 · 돛대 두 개 · 대포 · 뱃머리 장식
+  } else if (h === 3) { // 🏴‍☠️ 해적선: 짙은 나무 · 금테 · 난간 · 뒤쪽 높은 갑판 · 돛대 두 개 · 대포 · 뱃머리 장식
     const L = 4.6, W = 2.4, tip = hull(W, L, 0.6, dk, col, 0xA0784C);
     box(g, W + 0.05, 0.08, L + 0.04, 0xE8C547, 0, 0.28, 0, o);
     for (const sd of [-1, 1]) { for (let z = -L / 2 + 0.3; z <= L / 2 - 0.2; z += 0.55) box(g, 0.08, 0.35, 0.08, 0xE8C547, sd * (W / 2 - 0.05), 0.8, z, o); box(g, 0.1, 0.06, L, 0xE8C547, sd * (W / 2 - 0.05), 0.98, 0, o);
@@ -12012,19 +12036,101 @@ function boatModel(q) { // ⛵ 1021f: 속이 빈 예쁜 배 (선장·친구가 �
     box(g, W, 0.95, 1.0, dk, 0, 0.47, -L / 2 + 0.55); box(g, W + 0.06, 0.08, 1.06, col, 0, 0.97, -L / 2 + 0.55, o); for (const sx of [-0.6, 0, 0.6]) box(g, 0.32, 0.26, 0.03, 0xFFD966, sx, 0.55, -L / 2 + 0.03, { solid: false, emissive: 0.6 });
     cyl(g, 0.03, 0.4, 0x3B3F46, 0, 1.25, -L / 2 + 0.2, o); box(g, 0.2, 0.26, 0.2, 0xFFD966, 0, 1.55, -L / 2 + 0.2, { solid: false, emissive: 0.8 });
     for (const [mz, mh] of [[-1.0, 4.6], [1.0, 3.8]]) { cyl(g, 0.08, mh, 0x5A3A22, 0, mh / 2, mz, o);
-      for (const [y, sw, shh] of [[mh * 0.45, 2.0, 1.1], [mh * 0.75, 1.5, 0.8]]) { box(g, sw + 0.1, 0.07, 0.07, 0x5A3A22, 0, y + shh / 2, mz, o); box(g, sw, shh, 0.05, 0xF4EEDD, 0, y, mz + 0.08, o); box(g, sw + 0.01, 0.14, 0.06, ci ? col : 0xE2584A, 0, y - shh * 0.25, mz + 0.085, o); } }
+      for (const [y, sw, shh] of [[mh * 0.45, 2.0, 1.1], [mh * 0.75, 1.5, 0.8]]) { box(g, sw + 0.1, 0.07, 0.07, 0x5A3A22, 0, y + shh / 2, mz, o); box(g, sw, shh, 0.05, SC || 0xF4EEDD, 0, y, mz + 0.08, o); box(g, sw + 0.01, 0.14, 0.06, ci ? col : 0xE2584A, 0, y - shh * 0.25, mz + 0.085, o); } }
     ball(g, 0.18, 0xFFFFFF, 0, 4.6 * 0.45 + 0.15, -1.0 + 0.12, o); for (const sx of [-0.06, 0.06]) box(g, 0.05, 0.05, 0.02, 0x1E1E22, sx, 4.6 * 0.45 + 0.18, -1.0 + 0.3, o);
     cyl(g, 0.34, 0.28, 0x5A3A22, 0, 4.0, -1.0, o);
     mesh(CYL, g, 0.05, 1.4, 0.05, 0x5A3A22, 0, 0.9, tip + 0.3, { solid: false, rx: 1.1 }); ball(g, 0.2, 0xE8C547, 0, 0.5, tip, { solid: false, emissive: 0.3 });
-    fa = [0, 4.6, -1.0, 0];
+    fa = [0, 4.6, -1.0, 0]; deck = [0, 1.7];
+  } else if (h === 4) { // 🦆 오리배: 노란 오리 머리 · 지붕 (돛 색)
+    const bc = ci ? col : 0xFFFFFF, tip = hull(1.7, 2.6, 0.5, bc, 0xFFD23C);
+    mesh(CYL, g, 0.32, 0.9, 0.32, 0xFFD23C, 0, 0.75, tip - 0.35, { solid: false, rx: 0.25 }); ball(g, 0.42, 0xFFD23C, 0, 1.3, tip - 0.2, o);
+    mesh(BOX, g, 0.36, 0.12, 0.34, 0xFF8A1E, 0, 1.22, tip + 0.2, { solid: false }); for (const sx of [-0.2, 0.2]) { ball(g, 0.08, 0xFFFFFF, sx, 1.42, tip + 0.13, o); ball(g, 0.045, 0x1E1E22, sx * 1.05, 1.43, tip + 0.19, o); }
+    for (const sd of [-1, 1]) mesh(BOX, g, 0.08, 0.5, 0.9, 0xFFE58A, sd * 0.86, 0.35, -0.2, { solid: false, rz: sd * 0.3 }); /* 날개 */
+    for (const [x, z] of [[-0.7, -1.05], [0.7, -1.05], [-0.7, 0.55], [0.7, 0.55]]) cyl(g, 0.035, 1.6, 0xFFFFFF, x, 0.8, z, o);
+    box(g, 1.75, 0.1, 1.9, SC || 0x4A9AE8, 0, 1.62, -0.25, o); box(g, 1.8, 0.14, 0.1, 0xFFFFFF, 0, 1.55, 0.7, o);
+    fa = [0.7, 1.62, -1.05, 0.7]; deck = [0, 0.55];
+  } else if (h === 5) { // 🚤 쾌속정: 날렵한 몸 · 앞 유리 · 뒤 엔진 · 줄무늬 (돛 색)
+    const bc = ci ? col : 0xF4F4F0, tip = hull(1.45, 3.4, 0.36, bc, 0x2E3138);
+    for (const sd of [-1, 1]) box(g, 0.03, 0.12, 3.2, SC || 0xE2584A, sd * 0.74, 0.18, 0, o);
+    mesh(BOX, g, 1.3, 0.5, 0.06, C.glass, 0, 0.55, 0.85, { solid: false, rx: -0.5 }); box(g, 1.34, 0.05, 0.08, 0x2E3138, 0, 0.78, 0.74, o);
+    box(g, 0.5, 0.6, 0.45, 0x2E3138, 0, 0.2, -1.95, o); box(g, 0.14, 0.6, 0.14, 0x3B3F46, 0, -0.25, -2.0, o); box(g, 0.55, 0.06, 0.08, 0xBFC6CE, 0, -0.5, -2.08, o);
+    for (const sx of [-0.35, 0.35]) box(g, 0.45, 0.32, 0.5, 0x3B3F46, sx, 0.16, -0.8, o);
+    fa = [0, 0.5, -1.95, 1.0]; deck = [0, tip - 0.6];
+  } else if (h === 6) { // 🟡 잠수함: 둥근 몸통 · 망루(선장이 서요) · 잠망경 · 동그란 창 · 프로펠러
+    const bc = ci ? col : 0xFFD23C;
+    mesh(CYL, g, 0.95, 4.0, 0.95, bc, 0, -0.05, 0, { solid: false, rx: Math.PI / 2, flat: true }); ball(g, 0.95, bc, 0, -0.05, 2.0, o); ball(g, 0.95, bc, 0, -0.05, -2.0, o);
+    for (const z of [-1.2, 1.0]) for (const sd of [-1, 1]) { mesh(CYL, g, 0.2, 0.05, 0.2, 0x9FD8F0, sd * 0.9, 0.32, z, { solid: false, rz: Math.PI / 2 + sd * 0.35, emissive: 0.25 }); mesh(CYL, g, 0.25, 0.04, 0.25, 0xE8C547, sd * 0.89, 0.32, z, { solid: false, rz: Math.PI / 2 + sd * 0.35 }); }
+    for (const [x, zz, w, d] of [[0, -0.6, 1.2, 0.1], [0, 0.6, 1.2, 0.1], [-0.6, 0, 0.1, 1.2], [0.6, 0, 0.1, 1.2]]) box(g, w, 1.05, d, bc, x, 0.45, zz, o);
+    for (const [x, zz, w, d] of [[0, -0.62, 1.34, 0.14], [0, 0.62, 1.34, 0.14], [-0.62, 0, 0.14, 1.34], [0.62, 0, 0.14, 1.34]]) box(g, w, 0.08, d, SC || 0x3B3F46, x, 0.99, zz, o); /* 망루 테두리 (가운데는 뚫려 선장이 서요) */
+    cyl(g, 0.05, 1.1, 0x5A5F66, 0.35, 1.5, -0.3, o); box(g, 0.1, 0.1, 0.3, 0x5A5F66, 0.35, 2.05, -0.2, o);
+    mesh(CYL, g, 0.12, 0.3, 0.12, 0x5A5F66, 0, -0.05, -2.9, { solid: false, rx: Math.PI / 2 }); for (const a of [0, 2.1, 4.2]) mesh(BOX, g, 0.08, 0.6, 0.14, SC || 0xE2584A, 0, -0.05, -3.05, { solid: false, rz: a });
+    for (const sd of [-1, 1]) box(g, 0.9, 0.06, 0.5, SC || 0xE2584A, sd * 1.1, -0.05, -1.5, o); box(g, 0.06, 0.8, 0.5, SC || 0xE2584A, 0, 0.6, -2.4, o);
+    fa = [0.35, 1.0, -0.3, 1.5]; deck = [0.9, 1.4];
+  } else { // 🛳️ 유람선: 큰 몸 · 2층 선실 · 창문 · 굴뚝 (돛 색 띠) · 구명 튜브
+    const L = 5.2, W = 2.8, bc = ci ? col : 0xF4F4F0, tip = hull(W, L, 0.75, bc, 0x2E3138, 0xB59068);
+    box(g, W - 0.3, 1.2, 2.0, 0xFFFFFF, 0, 0.6, -1.4); for (let i = 0; i < 4; i++) for (const sd of [-1, 1]) box(g, 0.03, 0.35, 0.32, 0x7FC8EE, sd * (W / 2 - 0.14), 0.75, -2.15 + i * 0.5, { solid: false, emissive: 0.35 });
+    box(g, W - 0.7, 0.8, 1.3, 0xF4F4F0, 0, 1.6, -1.6); box(g, W - 0.6, 0.06, 1.4, SC || 0x4A9AE8, 0, 2.03, -1.6, o); for (const sx of [-0.6, -0.2, 0.2, 0.6]) box(g, 0.28, 0.25, 0.03, 0x7FC8EE, sx, 1.65, -0.94, { solid: false, emissive: 0.35 });
+    mesh(CYL, g, 0.3, 1.0, 0.3, 0xF4F4F0, 0, 2.5, -2.0, { solid: false }); mesh(CYL, g, 0.31, 0.25, 0.31, SC || 0xE2584A, 0, 2.85, -2.0, { solid: false }); mesh(CYL, g, 0.31, 0.1, 0.31, 0x2E3138, 0, 3.0, -2.0, { solid: false });
+    for (const sd of [-1, 1]) { mesh(new THREE.TorusGeometry(1, 0.35, 6, 14), g, 0.22, 0.22, 0.22, 0xFF5A4A, sd * (W / 2 + 0.02), 0.45, 0.4, { solid: false, ry: Math.PI / 2 }); for (let z = -0.2; z <= L / 2 - 0.1; z += 0.5) box(g, 0.05, 0.3, 0.05, 0xFFFFFF, sd * (W / 2 - 0.05), 0.9, z, o); box(g, 0.06, 0.05, L / 2 + 0.3, 0xFFFFFF, sd * (W / 2 - 0.05), 1.05, L / 4, o); }
+    fa = [0, 3.05, -2.0, 0.8]; deck = [0, tip - 1.0];
   }
   if (fi && fa) { const [x, y, z, pole] = fa, F = BOAT_FLAGS[fi], fy = y + pole - 0.22; if (pole) cyl(g, 0.03, pole, 0xFFFFFF, x, y + pole / 2, z, o);
     if (fi === 3) [0xFF5A5A, 0xFFE066, 0x6EC1EC].forEach((c, i) => box(g, 0.04, 0.14, 0.62, c, x, fy + 0.14 - i * 0.14, z - 0.32, o));
-    else { box(g, 0.04, 0.42, 0.62, F.c, x, fy, z - 0.32, o); if (fi === 2) ball(g, 0.11, 0xFFFFFF, x + 0.03, fy + 0.03, z - 0.32, o); if (fi === 4) ball(g, 0.11, 0xFFD23C, x + 0.03, fy, z - 0.32, o); } }
+    else { box(g, 0.04, 0.42, 0.62, F.c, x, fy, z - 0.32, o); if (fi === 2) ball(g, 0.11, 0xFFFFFF, x + 0.03, fy + 0.03, z - 0.32, o); if (fi === 4) ball(g, 0.11, 0xFFD23C, x + 0.03, fy, z - 0.32, o);
+      if (fi === 5) for (const [dy, dz] of [[0.08, -0.2], [-0.08, -0.42], [0.06, -0.5]]) ball(g, 0.06, 0xFFFFFF, x + 0.03, fy + dy, z + dz, o);
+      if (fi === 6) { box(g, 0.05, 0.04, 0.3, 0xFFFFFF, x + 0.02, fy, z - 0.32, o); ball(g, 0.04, 0xFFFFFF, x + 0.03, fy + 0.1, z - 0.32, o); ball(g, 0.04, 0xFFFFFF, x + 0.03, fy - 0.1, z - 0.32, o); }
+      if (fi === 7) for (const [dy, dz] of [[0.06, -0.22], [-0.06, -0.42]]) ball(g, 0.07, 0x8A5A34, x + 0.03, fy + dy, z + dz, o); } }
+  if (h === 4 || h === 6) g.traverse(m => { const c = m.material?.userData?.surfColor; if (m.isMesh && c != null && c !== 0xC08A58) m.material = M(c); }); /* 오리·잠수함은 매끈하게 (짚 무늬 X) */
+  const dc = lk?.dc | 0, [dy, dz] = deck; /* 🎨 1106k 장식 */
+  if (dc === 1) { cyl(g, 0.16, 0.28, 0xC0703A, 0.35, dy + 0.14, dz, o); for (const [a, c] of [[0, 0xFF7AA8], [2.1, 0xFFE066], [4.2, 0xFFFFFF]]) ball(g, 0.11, c, 0.35 + Math.cos(a) * 0.1, dy + 0.38, dz + Math.sin(a) * 0.1, o); ball(g, 0.06, 0xFFB020, 0.35, dy + 0.42, dz, o); }
+  else if (dc === 2) { for (const [x, zz, hh, c] of [[-0.15, 0, 1.3, 0xFF5A5A], [0.1, 0.12, 1.5, 0x4A9AE8], [0.15, -0.12, 1.15, 0xFFD23C]]) { cyl(g, 0.01, hh, 0xFFFFFF, x + 0.4, dy + hh / 2, dz + zz, o); ball(g, 0.2, c, x + 0.4, dy + hh + 0.15, dz + zz, { solid: false, emissive: 0.15 }); } }
+  else if (dc === 3) { const top = (fa?.[1] || 1) + (fa?.[3] || 0) * 0.9; for (let i = 0; i < 9; i++) { const t = i / 8; ball(g, 0.06, [0xFF5A5A, 0xFFE066, 0x5FBE5A, 0x4A9AE8][i % 4], 0, top + (dy - top) * t - Math.sin(t * Math.PI) * 0.25, (fa?.[2] || 0) + (dz + 0.3 - (fa?.[2] || 0)) * t, { solid: false, emissive: 0.9 }); } }
+  else if (dc === 4) { ball(g, 0.2, 0xFFD23C, -0.35, dy + 0.18, dz, o); ball(g, 0.13, 0xFFD23C, -0.35, dy + 0.44, dz + 0.08, o); box(g, 0.1, 0.05, 0.12, 0xFF8A1E, -0.35, dy + 0.42, dz + 0.22, o); }
+  else if (dc === 5) mesh(new THREE.TorusGeometry(1, 0.35, 6, 14), g, 0.24, 0.24, 0.24, 0xFF5A4A, -0.45, dy + 0.35, dz - 0.3, { solid: false, ry: 0.4 });
+  if (lk && lk.nm >= 0) signPlane(g, [boatNameOf(lk.nm)], 1.3, 0.32, 0, h === 6 ? 0.35 : 0.42, h === 6 ? -2.6 : -(h === 0 ? 1.55 : h === 7 ? 2.62 : h === 3 ? 2.32 : h === 5 ? 1.72 : h === 4 ? 1.32 : h === 2 ? 1.82 : 1.52), { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF2', stroke: false }).rotation.y = Math.PI;
   return g;
+}
+// ================= 🟡 1106k 잠수함: 🌊 잠수 → 바닷속 보물상자 (하루 한 번씩 · 바다 5곳) =================
+const SUB_CH = [[128, -18], [168, 4], [124, 62], [186, 96], [104, 122], [150, -50], [196, 40]];
+const subW = { g: null, ch: [], fx: null, fogOn: false };
+const subGot = (i) => bag.subCh?.d === dayNum() && !!(bag.subCh.g & (1 << i));
+const subChestLeft = () => subW.ch.filter(c => !subGot(c.i)).length;
+function subBuild() {
+  const g = new THREE.Group(); g.name = 'SubChests'; scene.add(g); subW.g = g; g.visible = false; const o = { solid: false };
+  SUB_CH.forEach(([x, z], i) => { if (!inWater(x, z)) return; const c = new THREE.Group(); c.position.set(x, -3.1, z); g.add(c);
+    mesh(SPH_LO, c, 2.4, 0.5, 2.4, 0xE6D3A3, 0, 0, 0, o); for (let k = 0; k < 5; k++) { const a = k * 1.3; mesh(CYL, c, 0.06, 1.2 + (k % 3) * 0.4, 0.06, 0x3FA36A, Math.cos(a) * 1.4, 0.7, Math.sin(a) * 1.4, { solid: false, rz: 0.2 * Math.sin(a) }); }
+    for (const [dx, dz, cc] of [[0.9, -0.8, 0xFF7A8A], [-1.1, 0.5, 0xFFB347]]) ball(c, 0.25, cc, dx, 0.35, dz, o);
+    box(c, 0.9, 0.5, 0.6, 0x8A5A34, 0, 0.55, 0, o); const lid = new THREE.Group(); lid.position.set(0, 0.8, -0.3); c.add(lid); box(lid, 0.92, 0.2, 0.62, 0xA0703F, 0, 0.1, 0.3, o); box(c, 0.95, 0.08, 0.08, 0xE8C547, 0, 0.55, 0.31, o);
+    const glow = ball(c, 0.12, 0xFFE680, 0, 0.75, 0.33, { solid: false, emissive: 1.2 });
+    subW.ch.push({ i, x, z, c, lid, glow });
+    addInteract({ pos: new V3(x, -1.6, z), r: 3.2, dy: 3, text: () => sail.on && sail.dive ? (subGot(i) ? ['🫧 열어 본 보물상자', '내일 또 열 수 있어요'] : ['🫧 바닷속 보물상자 열기', '🐚 조개돈 · 배 재료']) : null, run: () => subOpen(i) }); });
+  const fx = document.createElement('div'); fx.id = 'subFx'; fx.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity .6s;background:radial-gradient(ellipse at center, rgba(40,140,190,0.18) 30%, rgba(10,50,90,0.55) 100%)'; document.body.append(fx); subW.fx = fx;
+}
+function subDive(on, quiet) {
+  if (on && (!sail.on || !BOAT_H[boatCur()]?.sub)) return; if (!subW.g) subBuild();
+  sail.dive = !!on; $('sailDiveBtn') && ($('sailDiveBtn').textContent = on ? '🫧 떠오르기' : '🌊 잠수');
+  if (!quiet) { playSfx(on ? 'splash' : 'pick'); burst(player.pos.clone().setY(0.3), [0xFFFFFF, 0x9FE0FF], 30, 3, 2); toast(on ? '🌊 잠수! 바닷속에서 🫧 반짝이는 보물상자를 찾아요 (조금 느려요)' : '🫧 물 위로 떠올랐어요', 'info'); }
+  if (!on) { sail.dy = sail.dy || 0; if (subW.fogOn) { subW.fogOn = false; applyEnv(true); } if (subW.fx) subW.fx.style.opacity = '0'; }
+}
+function subTick(dt) {
+  const tgt = sail.dive ? -2.2 : 0; sail.dy = (sail.dy || 0) + (tgt - (sail.dy || 0)) * Math.min(1, dt * 1.6); if (Math.abs(sail.dy) < 0.01 && !sail.dive) sail.dy = 0;
+  if (!subW.g) { if (!sail.dive) return; subBuild(); }
+  subW.g.visible = sail.dive || sail.dy < -0.3;
+  const under = sail.dive && camera.position.y < 0.1;
+  if (under) { subW.fogOn = true; scene.fog.color.setHex(0x1E6E8E); scene.fog.near = 3; scene.fog.far = 34; if (subW.fx) subW.fx.style.opacity = '1'; }
+  else if (subW.fogOn) { subW.fogOn = false; applyEnv(true); if (subW.fx) subW.fx.style.opacity = '0'; }
+  if (sail.dive && (subW.bub = (subW.bub || 0) - dt) <= 0) { subW.bub = 0.35; burst(player.pos.clone().add(new V3(0, 1.2, 0)), [0xEAF8FF, 0xBFE8FF], 2, 1.2, 0.8, 0.4, 2); }
+  for (const c of subW.ch) { const got = subGot(c.i); c.lid.rotation.x += ((got ? -1.3 : 0) - c.lid.rotation.x) * Math.min(1, dt * 4); c.glow.visible = !got; if (!got) c.glow.scale.setScalar(0.12 * (1 + Math.sin(time * 4 + c.i) * 0.3)); }
+}
+function subOpen(i) {
+  if (!sail.dive || subGot(i)) return; if (bag.subCh?.d !== dayNum()) bag.subCh = { d: dayNum(), g: 0 }; bag.subCh.g |= 1 << i;
+  const b = boatBag(), part = ['plank', 'rope', 'cloth', 'glass', 'engine'][Math.floor(Math.random() * (Math.random() < 0.15 ? 5 : 4))], n = part === 'plank' ? 3 : 1; b.p[part] = (b.p[part] | 0) + n;
+  const sh = isTeacher ? 0 : giveShellCapped(12); saveBag(); updateHUD(null); playSfx('coin'); const c = subW.ch.find(c => c.i === i); if (c) burst(new V3(c.x, -2.2, c.z), [0xFFE066, 0xFFFFFF, 0x9FE0FF], 30, 3, 2);
+  showBanner('🫧 바닷속 보물!', `${sh ? `🐚 +${sh} · ` : ''}${partName(part).icon} ${partName(part).n} ${n}개 · 남은 상자 ${subChestLeft()}개`, 3500);
 }
 function boatQuiet() { // 다른 곳으로 옮겨졌을 때 조용히 배에서 내려요
   if (sea.on) { sea.on = false; seaBoat(false); sea.hud?.classList.add('hidden'); sea.ringLabel?.position.set(0, -99, 0); sea.rings.forEach(r => { r.material.emissive.setHex(0); r.material.color.setHex(0xFF9E3D); }); }
+  if (sail.dive) subDive(false, true);
   if (sail.on) { sail.on = false; sail.g?.parent?.remove(sail.g); sail.g = null; sail.hud?.classList.add('hidden'); }
 }
 function sailStart(from) {
@@ -12034,7 +12140,8 @@ function sailStart(from) {
   if (from === 'isle') from = ISLES_ALL[0];
   if (from && from.cx != null) { player.pos.set(from.cx - from.r - 2.4, BOAT_Y, from.cz); player.heading = -Math.PI / 2; camYaw = Math.PI / 2; }
   else { player.pos.set(ISLE.dock[0] + 3.8, BOAT_Y, ISLE.dock[1]); player.heading = Math.PI / 2; camYaw = -Math.PI / 2; }
-  player.vy = 0; camPitch = 0.4; sail.g = boatModel(boatQ()); player.avatar.g.add(sail.g); sail.q = boatQ();
+  player.vy = 0; camPitch = 0.4; sail.dive = false; sail.dy = 0; sail.g = boatModel(0, boatLook()); player.avatar.g.add(sail.g); sail.q = boatLookStr();
+  $('sailDiveBtn')?.classList.toggle('hidden', !BOAT_H[h].sub);
   $('sailName').textContent = `${BOAT_H[h].icon} ${BOAT_H[h].n}`; sail.hud.classList.remove('hidden'); playSfx('fanfare');
   burst(player.pos.clone().setY(0.4), [0xFFFFFF, 0x9FE0FF], 24, 3, 1.5);
   toast(from && from.cx != null ? '⛵ 바닷가는 서쪽이에요. 모래사장 가까이 가서 ⚓ 내리기!' : '⛵ 출발! 동쪽 바다에 🏝️ 보물섬 · 🧮 수학 섬 · 🔤 영어 섬 · 🏛️ 역사 섬이 있어요. 섬 가까이 가서 ⚓ 내리기!', 'info');
@@ -12042,9 +12149,9 @@ function sailStart(from) {
 function sailLand() {
   if (boardW.on) { boardLand(); return; }
   if (!sail.on) return; const p = player.pos, [N, nd] = isleNear(p); let to = null, isle = null;
-  if (nd < 4.5) { if (boatCur() < N.minH) { toast(`🌊 ${N.icon} ${N.n} 둘레는 파도가 세서 ${BOAT_H[N.minH].icon} ${BOAT_H[N.minH].n} 이상만 닿을 수 있어요 (🛠️ 조선소에서 만들어요)`, 'warn'); return; }
+  if (nd < 4.5) { if (sail.dive) { toast('🌊 먼저 떠올라야 내릴 수 있어요', 'warn'); return; } if (boatRank() < N.minH) { toast(`🌊 ${N.icon} ${N.n} 둘레는 파도가 세서 ${BOAT_H[N.minH].icon} ${BOAT_H[N.minH].n} 이상만 닿을 수 있어요 (🛠️ 조선소에서 만들어요)`, 'warn'); return; }
     const a = Math.atan2(p.z - N.cz, p.x - N.cx); to = [N.cx + Math.cos(a) * (N.r - 2.6), N.cz + Math.sin(a) * (N.r - 2.6)]; isle = N; }
-  else if (p.x < 84 && p.z > BEACH.z0 + 2 && p.z < BEACH.z1 - 2) to = [77.2, p.z];
+  else if (p.x < 84 && p.z > BEACH.z0 + 2 && p.z < BEACH.z1 - 2 && !sail.dive) to = [77.2, p.z];
   if (!to) { toast('⚓ 육지 가까이(모래사장이나 보물섬 옆) 가야 내릴 수 있어요', 'warn'); return; }
   boatQuiet(); p.set(to[0], 0.35, to[1]); player.vy = 0; playSfx('pick');
   toast(!isle ? '🏖️ 바닷가에 내렸어요' : isle.k === 'treasure' ? `🏝️ 보물섬에 내렸어요! 단서 4개를 풀어요 (지금 ${isleCount()}/4)` : `${isle.icon} ${isle.n}에 내렸어요! 단서 3개를 풀면 보물상자 (지금 ${sIsleCount(isle.k)}/3)`, isle ? 'success' : 'info');
@@ -12054,12 +12161,14 @@ function updateSail(dt) {
     sail.drift.forEach((d, i) => { d.g.visible = !driftGot(i); });
   }
   for (const [, r] of remotes) { const v = r.target?.v | 0, want = v === BOAT_V ? (r.target.q | 0) % 100 : v === CART_V ? 1000 : -1; // ⛵ 친구 배 · 🛒 친구 수레
-    if ((r.boatQ ?? -1) !== want) { r.boatG?.parent?.remove(r.boatG); r.boatG = want >= 1000 ? cartModel(0xE2584A) : want >= 0 ? boatModel(want) : null; if (r.boatG) r.a.g.add(r.boatG); r.boatQ = want; } }
+    const lk = v === BOAT_V && r.target.bk ? boatLookParse(r.target.bk) : null, key = lk ? 'bk' + r.target.bk : want; /* 🎨 1106k 친구가 꾸민 배 */
+    if ((r.boatQ ?? -1) !== key) { r.boatG?.parent?.remove(r.boatG); r.boatG = want >= 1000 ? cartModel(0xE2584A) : lk ? boatModel(0, lk) : want >= 0 ? boatModel(want) : null; if (r.boatG) r.a.g.add(r.boatG); r.boatQ = key; } }
   if (!sail.on) return;
-  if (sail.g && (sail.g.parent !== player.avatar.g || sail.q !== boatQ())) { sail.g.parent?.remove(sail.g); sail.g = boatModel(boatQ()); sail.q = boatQ(); player.avatar.g.add(sail.g); } // 옷을 바꿔도 배는 그대로
+  if (sail.g && (sail.g.parent !== player.avatar.g || sail.q !== boatLookStr())) { sail.g.parent?.remove(sail.g); sail.g = boatModel(0, boatLook()); sail.q = boatLookStr(); player.avatar.g.add(sail.g); } // 옷을 바꿔도 배는 그대로
+  subTick(dt); /* 🟡 1106k 잠수 */
   if (sail.g) sail.g.rotation.z = Math.sin(time * 1.8) * 0.035;
   const p = player.pos, [N, nd] = isleNear(p), nearIsle = nd < 4.5, nearBeach = p.x < 84;
-  const t = (nearIsle ? `${N.icon} ${N.n} 옆이에요!${boatCur() < N.minH ? ` (${BOAT_H[N.minH].n} 이상)` : ''}` : nearBeach ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`) + (boardW.crew ? ` · 👫 ${boardW.crew}명 함께` : '');
+  const t = sail.dive ? `🌊 잠수 중 · 🫧 바닷속 보물상자 ${subChestLeft()}개 남았어요` : (nearIsle ? `${N.icon} ${N.n} 옆이에요!${boatRank() < N.minH ? ` (${BOAT_H[N.minH].n} 이상)` : ''}` : nearBeach ? '🏖️ 모래사장 옆이에요' : `가까운 섬: ${N.icon} ${N.n} ${Math.round(nd)}m`) + (boardW.crew ? ` · 👫 ${boardW.crew}명 함께` : '');
   if ($('sailDir').textContent !== t) $('sailDir').textContent = t;
   $('sailLandBtn').style.opacity = nearIsle || nearBeach ? '1' : '0.55';
   if ((sail.splash = (sail.splash || 0) - dt) <= 0 && (keys.w || keys.a || keys.s || keys.d || joy.x || joy.y)) { sail.splash = 0.15; burst(p.clone().setY(0.2), [0xFFFFFF, 0x9FE0FF], 3, 1.5, 0.6, 0.5, -3); }
@@ -12081,7 +12190,7 @@ function buildShipyard(g) {
 function shipyardRefresh() {
   if (!sail.yard) return; sail.yard.clear(); const b = boatBag(), w = b.wip;
   if (!w && boatCur() < 0) { const o = { solid: false }, f = new THREE.Group(); box(f, 0.2, 0.2, 3.0, 0x8A5A34, 0, -0.3, 0, o); for (let k = -1; k <= 1; k++) for (const sd of [-1, 1]) box(f, 0.1, 0.7, 0.1, 0xB07C50, sd * 0.6, 0, k * 1.0, { solid: false, rz: -sd * 0.35 }); sail.yard.add(f); return; } // 빈 뼈대
-  const m = boatModel(boatQ(w ? w.h : boatCur()));
+  const m = boatModel(0, boatLook(w ? w.h : boatCur()));
   if (w) { const N = m.children.length, show = Math.max(1, Math.ceil(N * w.n / BOAT_H[w.h].steps)); m.children.forEach((c, i) => { c.visible = i < show; }); }
   sail.yard.add(m);
 }
@@ -12114,7 +12223,7 @@ function openShipyard() {
 function openBoatShop(tab = 'parts') {
   openLife('⛵ 배 가게', (box) => {
     box.textContent = ''; const b = boatBag(), tabs = el2('div', 'row-center wrap');
-    for (const [k, n] of [['parts', '🪵 배 재료'], ['deco', '🎨 배 색·깃발']]) { const t = el2('button', 'btn', n); t.style.background = tab === k ? '#FFE066' : '#fff'; t.onclick = () => openBoatShop(k); tabs.append(t); }
+    for (const [k, n] of [['parts', '🪵 배 재료'], ['deco', '🎨 내 배 꾸미기']]) { const t = el2('button', 'btn', n); t.style.background = tab === k ? '#FFE066' : '#fff'; t.onclick = () => openBoatShop(k); tabs.append(t); }
     box.append(tabs, el2('p', 'lp-big', `🐚 내 조개돈 ${bag.shell || 0}`));
     const buy = (pr, fn) => { if ((bag.shell || 0) < pr) { toast(`🐚 조개돈이 ${pr - (bag.shell || 0)} 모자라요`, 'warn'); return; } bag.shell -= pr; fn(); saveBag(); updateHUD(null); playSfx('coin'); refillLife(); };
     if (tab === 'war') { // ⚔️ 1031g 삼국 해전에서 내 배를 강하게 (한 번 사면 계속)
@@ -12133,16 +12242,23 @@ function openBoatShop(tab = 'parts') {
       box.append(grid, el2('h3', 'lp-sec', '📜 배 설계도'));
       for (const H of BOAT_H) box.append(el2('p', 'hint', `${H.icon} ${H.n} (빠르기 ×${H.mul}): ${Object.entries(H.need).map(([k, n]) => `${partName(k).icon}${partName(k).n} ${n}`).join(' · ')}${boatHave(BOAT_H.indexOf(H)) ? ' ✅' : ''}`));
     } else {
-      box.append(el2('p', 'hint', `색은 🐚${BOAT_COL_PR}, 깃발은 🐚${BOAT_FLAG_PR}로 한 번 사면 내 모든 배에 쓸 수 있어요. 바다에서 친구들에게도 보여요.`));
-      box.append(el2('h3', 'lp-sec', '🎨 배 색'));
-      const g1 = el2('div', 'row-center wrap');
-      BOAT_COLS.forEach((C0, i) => { const have = boatColHave(i), bt = el2('button', 'btn', b.c === i ? '✔' : have ? '' : '🔒'); bt.style.cssText = `width:52px;height:52px;padding:0;font-size:18px;background:${hexStr(C0.c)}`; bt.title = `${C0.n}${have ? '' : ` · 🐚${BOAT_COL_PR}`}`; bt.setAttribute('aria-label', bt.title);
-        bt.onclick = () => { if (have) { b.c = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(BOAT_COL_PR, () => { b.cl[i] = 1; b.c = i; shipyardRefresh(); toast(`🎨 ${C0.n} 배!`, 'success'); }); }; g1.append(bt); });
-      box.append(g1, el2('h3', 'lp-sec', '🚩 깃발'));
+      box.append(el2('p', 'hint', `물감(색)은 🐚${BOAT_COL_PR}, 깃발은 🐚${BOAT_FLAG_PR}, 장식은 표시된 값으로 한 번 사면 내 모든 배에 계속 써요. 산 물감은 배 몸통에도 돛에도 칠할 수 있어요. 꾸민 배는 바다와 🛠️ 조선소에서 친구들에게도 보여요.`));
+      const sw = (cur, set, withNone) => { const g1 = el2('div', 'row-center wrap'); if (withNone) { const bt = el2('button', 'btn', cur === 0 ? '✔ 기본' : '기본'); bt.style.cssText = 'height:52px;font-size:15px;background:#fff'; bt.onclick = () => { set(0); saveBag(); shipyardRefresh(); refillLife(); }; g1.append(bt); }
+        BOAT_COLS.forEach((C0, i) => { const have = boatColHave(i), on = cur === (withNone ? i + 1 : i), bt = el2('button', 'btn', on ? '✔' : have ? '' : '🔒'); bt.style.cssText = `width:52px;height:52px;padding:0;font-size:18px;background:${hexStr(C0.c)};color:${i === 8 ? '#fff' : '#3B2F2A'}`; bt.title = `${C0.n}${have ? '' : ` · 🐚${BOAT_COL_PR}`}`; bt.setAttribute('aria-label', C0.n);
+          bt.onclick = () => { if (have) { set(withNone ? i + 1 : i); saveBag(); shipyardRefresh(); refillLife(); } else buy(BOAT_COL_PR, () => { b.cl[i] = 1; set(withNone ? i + 1 : i); shipyardRefresh(); toast(`🎨 ${C0.n} 물감을 샀어요!`, 'success'); }); }; g1.append(bt); }); return g1; };
+      box.append(el2('h3', 'lp-sec', '🎨 배 몸통 색'), sw(b.c, v => b.c = v, false), el2('h3', 'lp-sec', '⛵ 돛·지붕·줄무늬 색'), sw(b.sc, v => b.sc = v, true), el2('h3', 'lp-sec', '🚩 깃발'));
       const g2 = el2('div', 'lp-grid');
       BOAT_FLAGS.forEach((F, i) => { const have = boatFlagHave(i), bt = el2('button', 'lp-card' + (b.f === i ? ' done' : ''), ''); bt.append(el2('div', 'lp-icon', F.icon), el2('div', 'lp-name', F.n), el2('div', 'hint', b.f === i ? '✔ 달았어요' : have ? '달기' : `🐚${BOAT_FLAG_PR}`));
         bt.onclick = () => { if (have) { b.f = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(BOAT_FLAG_PR, () => { b.fl[i] = 1; b.f = i; shipyardRefresh(); toast(`${F.icon} ${F.n}을(를) 달았어요`, 'success'); }); }; g2.append(bt); });
-      box.append(g2, el2('p', 'hint', '뗏목·나룻배는 뒤쪽 깃대에, 돛단배·해적선은 돛대 꼭대기에 깃발이 달려요.'));
+      box.append(g2, el2('h3', 'lp-sec', '🌼 갑판 장식'));
+      const g3 = el2('div', 'lp-grid');
+      BOAT_DECO.forEach((D, i) => { const have = boatDecoHave(i), bt = el2('button', 'lp-card' + (b.dc === i ? ' done' : ''), ''); bt.append(el2('div', 'lp-icon', D.icon), el2('div', 'lp-name', D.n), el2('div', 'hint', b.dc === i ? '✔ 올렸어요' : have ? '올리기' : `🐚${D.pr}`));
+        bt.onclick = () => { if (have) { b.dc = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(D.pr, () => { b.dl[i] = 1; b.dc = i; shipyardRefresh(); toast(`${D.icon} ${D.n}을(를) 올렸어요`, 'success'); }); }; g3.append(bt); });
+      box.append(g3, el2('h3', 'lp-sec', `🏷️ 배 이름 (무료) · 지금: ${boatNameOf(b.nm) || '없음'}`));
+      let a1 = b.nm >= 0 ? Math.floor(b.nm / 8) : 0, a2 = b.nm >= 0 ? b.nm % 8 : 0; const pick = (L, cur, f) => { const r = el2('div', 'row-center wrap'); L.forEach((w, i) => { const bt = el2('button', 'btn', w); bt.style.cssText = `font-size:15px;padding:5px 10px;margin:2px;background:${cur === i ? '#FFE066' : '#fff'}`; bt.onclick = () => f(i); r.append(bt); }); return r; };
+      box.append(pick(BOAT_NM1, a1, i => { b.nm = i * 8 + a2; saveBag(); shipyardRefresh(); refillLife(); }), pick(BOAT_NM2, a2, i => { b.nm = a1 * 8 + i; saveBag(); shipyardRefresh(); refillLife(); }));
+      { const bt = el2('button', 'btn', '이름 떼기'); bt.style.cssText = 'font-size:14px;background:#fff'; bt.onclick = () => { b.nm = -1; saveBag(); shipyardRefresh(); refillLife(); }; box.append(el2('div', 'row-center', null)); box.lastChild.append(bt); }
+      box.append(el2('p', 'hint', '이름은 배 뒤쪽 판에 적혀요. 꾸민 모습은 바로 옆 🛠️ 조선소의 내 배에서 확인해요.'));
     }
   });
 }
@@ -18946,6 +19062,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106k', d: '11월 21일', items: ['🎯 바다 공방전! ⚓ 선착장 옆 접수처에서 🔵 파랑 · 🔴 빨강 모둠 대결 (한 모둠 1~4명 · 방 여러 개 동시에)', '📍 6×6 요새에 포대를 숨기고, 상대 요새 칸 (가로, 세로)를 골라 쏴요 · 빗나가면 가장 가까운 포대까지 칸 수 힌트', '💣 탄약 카드 3장 (분수·소수의 곱셈) 중 하나를 골라 계산! 맞히면 그 위력 그대로, 틀리면 절반 · 🤖 로봇 모둠과 연습도 돼요', '🚢 새 배 4종: 🦆 오리배 · 🚤 쾌속정 · 🟡 잠수함 · 🛳️ 유람선 (새 재료 ⚙️ 엔진 · 🪟 유리창)', '🟡 잠수함은 🌊 잠수! 바닷속 보물상자 7개를 찾아요 (하루 한 번씩)', '🎨 배 가게 「내 배 꾸미기」: 몸통 색 · 돛 색 · 깃발 · 갑판 장식 · 배 이름 (친구 화면에도 보여요)'] },
   { id: '1106j', d: '11월 19일', items: ['⛸️ 겨울엔 광장 남쪽에 얼음 호수가 생겨요! 올라가면 쭉쭉 미끄러져요', '🧊 얼음 호수 구멍 3곳에서 얼음낚시 · 겨울에만 잡히는 산천어 · 곤들매기 (빙어도 나와요)', '❄️ 겨울 펫 2종: 산천어 → 🐟 눈송이 · 곤들매기 → 🐟 서리별 (잡아서 🩺 펫 센터에서 데려와요)', '🎭 꿈끼 발표회(11월 20일)에 나온 우리 반 모두에게 칭호 🎭꿈끼출연!', '🤿 바닷속에 잠수하면 탈것에서 내려요 (나오면 다시 타요)', '🎛️ 선생님 관리화면에 이벤트 켜고 끄기 스위치'] },
   { id: '1106i', d: '11월 19일', items: ['❄️ 시즌 2 「겨울 마을」(11월 30일)부터 지붕 · 길 · 광장에 하얀 눈이 쌓여요', '⛄ 겨울엔 광장 남쪽 눈 더미에서 눈덩이를 굴려요! 걸을수록 커지고, 친구 3명이 아래 몸 · 가운데 몸 · 머리를 하나씩 올리면 눈사람 완성 (🐚 +5 · 완성하면 🐚 +10 · 하루 동안 서 있어요)', '💪 오늘의 할 일에 내가 가장 덜 키운 능력치 미션이 꼭 하나 나와요', '🐢 화질에 「아주 가볍게」가 생겼어요 (오른쪽 위 ? → 🖥️ 화질) · 느린 태블릿에서 눌러 봐요'] },
   { id: '1106h', d: '11월 19일', items: ['🎤 꿈끼 발표회(11월 20일)가 다가와서 꿈나무 무대 · 대본 게시판 · 공연장 입구를 정리했어요. 모두 수고했어요! 👏', '📋 오늘의 할 일에서 🎭 꿈끼 대본 미션이 빠지고 다른 미션이 나와요'] },
@@ -25985,6 +26102,250 @@ function mrcSyncTick() { // state/mrr 를 보고 출발 · 끝 · 정리 (1초�
   if (mrcW.shown === v.h && mrcW.clearAt && performance.now() > mrcW.clearAt) { mrcW.clearAt = 0; mrcPut(null); }
 }
 buildMrcTrack(); buildMrcGate(); /* 🏎️ 1106a */
+// ================= 🎯 1106k 바다 공방전 (수학 포격전) =================
+// 모둠(파랑 🔵 · 빨강 🔴, 한 팀 1~4명) 대 모둠 · 선착장 🎯 접수처에서 방을 만들고 들어가요 (여러 방이 따로 동시에)
+// 1) 📍 좌표 포격: 6×6 바다 요새 칸에 팀마다 포대를 숨겨요 (한 사람이 한 칸) → 상대 요새 칸 (가로, 세로)를 골라 쏴요
+//    빗나가면 "가장 가까운 포대까지 ○칸" (가로 칸 수 + 세로 칸 수) 힌트
+// 2) 💣 분수·소수 탄약: 쏠 때마다 카드 3장 (예: 24 × 3/4, 0.6 × 40) → 하나 골라 계산한 값을 써요 · 맞히면 그 위력 그대로, 틀리면 절반
+//    포대 하나는 40만큼 맞으면 부서져요 · 상대 포대를 다 부수면 승리 · 6분이 지나면 남은 포대 힘이 많은 팀 승리
+// 저장: state/sgb/{기기} = { h 방장, n 이름, tm 팀 0/1, pc 포대 칸 0~35, bk 내 배 모습, sh '칸.위력_칸.위력…', ok 맞힌 계산 수, (방장) o:1 · lv 난이도 · t0 시작 시각, at }
+const SBT = { cx: 3600, cz: 0, cell: 2.2, fz: 15, bz: 6.5 }, SBT_N = 6, SBT_HP = 40, SBT_T = 360000, SBT_MAX = 50;
+const SBT_LV = [{ icon: '🌱', n: '쉬움', d: '자연수 × 분수 · 0.□ × 자연수' }, { icon: '🔥', n: '보통', d: '+ 대분수 × 자연수 · 1.□ × 자연수' }, { icon: '💎', n: '어려움', d: '+ 0.25·0.75 × 자연수 · 자연수 × 분수 × 분수' }];
+const SBT_TEAM = [{ n: '파랑', icon: '🔵', c: 0x4A9AE8, css: '#4A9AE8' }, { n: '빨강', icon: '🔴', c: 0xE2584A, css: '#E2584A' }];
+const sbt = { on: false, solo: false, h: '', me: -1, t0: 0, lv: 0, sel: -1, cards: null, card: -1, cd: 0, fin: 0 };
+const sbtW = { g: null, fort: [null, null], boats: new Map(), seen: {}, anim: [], marks: new Map(), hud: null, shown: '', clearAt: 0, cleanAt: 0, st: 0, solo: null, hk: '', boatSig: '' };
+const sbtAlive = (v) => v && typeof v === 'object' && v.h && backend && backend.now() - (+v.at || 0) < 900000;
+const sbtAll = () => Object.entries(S.sgb || {}).filter(([, v]) => sbtAlive(v));
+const sbtRecs = (h) => sbt.solo && sbtW.solo ? Object.entries(sbtW.solo) : sbtAll().filter(([, v]) => v.h === h);
+const sbtHost = (h) => sbtRecs(h).find(([u, v]) => v.o && u === h)?.[1] || null;
+const sbtMine = () => { const v = backend && S.sgb?.[backend.uid]; return sbtAlive(v) ? v : null; };
+const sbtOpenList = () => sbtAll().filter(([u, v]) => v.o && !v.t0 && u === v.h);
+const sbtTeams = (h) => { const T = [[], []]; for (const [u, v] of sbtRecs(h).sort((a, b) => (a[0] < b[0] ? -1 : 1))) T[v.tm ? 1 : 0].push([u, v]); return T; };
+async function sbtPut(o) { const r = await backend.sgbSet?.(o); if (!r?.ok) toast('⚠️ 공방전 정보를 저장하지 못했어요. 선생님께 규칙(database.rules.json) 게시를 부탁해요', 'warn'); return r?.ok; }
+const sbtXY = (c) => [c % SBT_N + 1, Math.floor(c / SBT_N) + 1]; // 칸 번호 → (가로, 세로) 1~6
+const sbtXYt = (c) => { const [x, y] = sbtXY(c); return `(${x}, ${y})`; };
+const sbtShots = (v) => String(v?.sh || '').split('_').filter(Boolean).map(t => { const [c, d] = t.split('.').map(Number); return { c, d }; }).filter(s => s.c >= 0 && s.c < 36 && s.d >= 0);
+function sbtState(h) { // 팀마다 포대 · 남은 힘 (모든 기기가 같은 기록으로 똑같이 계산해요)
+  const T = sbtTeams(h), F = [new Map(), new Map()];
+  T.forEach((L, t) => { for (const [u, v] of L) if (v.pc >= 0 && v.pc < 36 && !F[t].has(v.pc)) F[t].set(v.pc, { hp: SBT_HP, u, hits: 0 }); });
+  const shotsOn = [[], []]; // shotsOn[t] = t 요새에 떨어진 포탄
+  T.forEach((L, t) => { for (const [u, v] of L) for (const s of sbtShots(v)) { shotsOn[1 - t].push({ ...s, u }); const P = F[1 - t].get(s.c); if (P && P.hp > 0) { P.hp = Math.max(0, P.hp - s.d); P.hits++; } } });
+  const alive = F.map(M => [...M.values()].filter(P => P.hp > 0).length), hp = F.map(M => [...M.values()].reduce((a, P) => a + P.hp, 0)), tot = F.map(M => M.size * SBT_HP);
+  return { T, F, shotsOn, alive, hp, tot };
+}
+function sbtWinner(h, H, St) { // -1 아직 · 0/1 이긴 팀 · 2 비김
+  if (!H?.t0) return -1; const now = backend.now(); if (now < H.t0) return -1;
+  if (St.F[0].size && St.F[1].size) { if (!St.alive[1] && St.alive[0]) return 0; if (!St.alive[0] && St.alive[1]) return 1; if (!St.alive[0] && !St.alive[1]) return 2; }
+  if (now > H.t0 + SBT_T) { const r0 = St.tot[0] ? St.hp[0] / St.tot[0] : 0, r1 = St.tot[1] ? St.hp[1] / St.tot[1] : 0; return Math.abs(r0 - r1) < 0.001 ? 2 : r0 > r1 ? 0 : 1; }
+  return -1;
+}
+const sbtNear = (St, t, c) => { const [x, y] = sbtXY(c); let best = 99; for (const [pc, P] of St.F[t]) if (P.hp > 0) { const [a, b] = sbtXY(pc); best = Math.min(best, Math.abs(a - x) + Math.abs(b - y)); } return best; };
+// ---------- 💣 탄약 카드 ----------
+const sbtR = (a, b) => a + Math.floor(Math.random() * (b - a + 1)), sbtGcd = (a, b) => b ? sbtGcd(b, a % b) : a;
+function sbtCard(lv) {
+  const kinds = lv >= 2 ? ['nf', 'df', 'mx', 'dq', 'nff'] : lv >= 1 ? ['nf', 'df', 'mx', 'd1'] : ['nf', 'df'];
+  for (let tries = 0; tries < 40; tries++) { const k = kinds[sbtR(0, kinds.length - 1)];
+    if (k === 'nf') { const c = [2, 3, 4, 5, 6, 8, 10][sbtR(0, 6)], b = sbtR(1, c - 1); if (sbtGcd(b, c) > 1) continue; const m = sbtR(2, Math.max(2, Math.floor(38 / b))), v = m * b; if (v >= 4 && v <= 40) return { t: `${c * m} × ${b}/${c}`, v }; }
+    if (k === 'df') { const x = sbtR(1, 9), m = sbtR(1, 4), v = x * m; if (v >= 4 && v <= 40) return { t: `0.${x} × ${m * 10}`, v }; }
+    if (k === 'mx') { const c = [2, 3, 4, 5][sbtR(0, 3)], b = sbtR(1, c - 1); if (sbtGcd(b, c) > 1) continue; const a = sbtR(1, 3), m = sbtR(1, 3), v = (a * c + b) * m; if (v >= 4 && v <= 40) return { t: `${a}과 ${b}/${c} × ${c * m}`, v, mx: [a, b, c, c * m] }; }
+    if (k === 'd1') { const x = [2, 4, 5, 6, 8][sbtR(0, 4)], n = 10 / [2, 5, 2, 5, 5][[2, 4, 5, 6, 8].indexOf(x)] * sbtR(1, 4), v = Math.round((10 + x) * n / 10); if ((10 + x) * n % 10 === 0 && v >= 4 && v <= 40) return { t: `1.${x} × ${n}`, v }; }
+    if (k === 'dq') { const [q, f] = [[25, 4], [75, 4], [5, 2]][sbtR(0, 2)], n = f * sbtR(2, 12), v = q === 5 ? n / 2 : q * n / 100; if (Number.isInteger(v) && v >= 4 && v <= 40) return { t: `${q === 5 ? '0.5' : '0.' + q} × ${n}`, v }; }
+    if (k === 'nff') { const c = [2, 3, 4][sbtR(0, 2)], e = [2, 3, 5][sbtR(0, 2)], b = sbtR(1, c - 1), d = sbtR(1, e - 1); if (sbtGcd(b, c) > 1 || sbtGcd(d, e) > 1) continue; const m = sbtR(1, 3), v = m * b * d; if (v >= 4 && v <= 40) return { t: `${c * e * m} × ${b}/${c} × ${d}/${e}`, v }; }
+  }
+  return { t: '4 × 5', v: 20 };
+}
+function sbtDeal() { const L = []; let g = 0; while (L.length < 3 && g++ < 60) { const c = sbtCard(sbt.lv); if (!L.some(x => x.v === c.v)) L.push(c); } sbt.cards = L; sbt.card = -1; }
+const sbtCardHtml = (C) => C.mx ? `${C.mx[0]}<span class="sbt-fr"><i>${C.mx[1]}</i><i>${C.mx[2]}</i></span> × ${C.mx[3]}` : C.t.replace(/(\d+)\/(\d+)/g, '<span class="sbt-fr"><i>$1</i><i>$2</i></span>');
+// ---------- 🏝️ 경기장 ----------
+const inSbt = (x, z) => Math.abs(x - SBT.cx) < 40 && Math.abs(z - SBT.cz) < 34;
+const sbtFortZ = (t) => SBT.cz + (t ? SBT.fz : -SBT.fz);
+function sbtCellPos(t, c) { const [x, y] = sbtXY(c), i = x - 1, j = y - 1; return t ? new V3(SBT.cx + (i - 2.5) * SBT.cell, 0.9, sbtFortZ(1) + (j - 2.5) * SBT.cell) : new V3(SBT.cx - (i - 2.5) * SBT.cell, 0.9, sbtFortZ(0) - (j - 2.5) * SBT.cell); }
+function sbtSeat(t, k) { return new V3(SBT.cx + (k - 1.5) * 4.6, BOAT_Y, SBT.cz + (t ? SBT.bz : -SBT.bz)); }
+function sbtBuild() {
+  if (sbtW.g) return; const g = new THREE.Group(); g.name = 'MathSeaSiege'; scene.add(g); sbtW.g = g; const o = { solid: false };
+  const sea0 = new THREE.Mesh(new THREE.PlaneGeometry(120, 100), waterMatFor(C.water)); sea0.rotation.x = -Math.PI / 2; sea0.position.set(SBT.cx, 0.02, SBT.cz); g.add(sea0);
+  for (const t of [0, 1]) { const f = new THREE.Group(), z = sbtFortZ(t), W = SBT.cell * SBT_N; f.position.set(SBT.cx, 0, z); g.add(f); sbtW.fort[t] = f;
+    box(f, W + 1.6, 1.2, W + 1.6, 0x9AA3AD, 0, 0.3, 0, o); box(f, W + 0.4, 0.1, W + 0.4, 0xD9C9A0, 0, 0.92, 0, o);
+    for (let k = 0; k <= SBT_N; k++) { const q = (k - 3) * SBT.cell; box(f, 0.06, 0.04, W, 0x6B5A40, q, 0.98, 0, o); box(f, W, 0.04, 0.06, 0x6B5A40, 0, 0.98, q, o); }
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { box(f, 1.4, 2.6, 1.4, 0x8A929C, sx * (W / 2 + 0.6), 1.3, sz * (W / 2 + 0.6), o); box(f, 1.6, 0.3, 1.6, SBT_TEAM[t].c, sx * (W / 2 + 0.6), 2.7, sz * (W / 2 + 0.6), o); }
+    for (let k = 0; k < SBT_N; k++) { // 눈금 숫자 (상대 쪽에서 보이게: 가로는 앞쪽 가장자리, 세로는 왼쪽 가장자리)
+      const px = sbtCellPos(t, k), py = sbtCellPos(t, k * SBT_N), edgeZ = t ? -W / 2 - 0.5 : W / 2 + 0.5;
+      signPlane(f, [`${k + 1}`], 0.8, 0.8, px.x - SBT.cx, 1.2, edgeZ, { font: 80, pad: 2, fg: '#1F3A5A', bg: '#FFFFFF', stroke: false }).rotation.y = t ? Math.PI : 0;
+      const edgeX = t ? -W / 2 - 0.5 : W / 2 + 0.5; signPlane(f, [`${k + 1}`], 0.8, 0.8, edgeX, 1.2, py.z - z, { font: 80, pad: 2, fg: '#7A2A22', bg: '#FFF3D6', stroke: false }).rotation.y = t ? Math.PI : 0; }
+    makeLabel(f, [`${SBT_TEAM[t].icon} ${SBT_TEAM[t].n} 요새`], 1.0, 0, 4.2, t ? W / 2 + 1.2 : -W / 2 - 1.2); }
+  const isle = new THREE.Group(); isle.position.set(SBT.cx - 30, 0, SBT.cz); g.add(isle); ball(isle, 3, 0xE6D3A3, 0, -1.6, 0, o); cyl(isle, 0.15, 3, 0x8A5A34, 0, 1.2, 0, o); ball(isle, 1.2, 0x5FBE5A, 0, 2.9, 0, o);
+}
+function sbtMark(t, c, kind, n) { // 요새 칸 표시: miss(번호 부표) · hit(불) · dead(부서진 포대) · mine(우리 포대)
+  const key = `${t}.${c}`, old = sbtW.marks.get(key); if (old?.k === kind + n) return; if (old) old.g.parent?.remove(old.g);
+  const g = new THREE.Group(), p = sbtCellPos(t, c); g.position.copy(p); sbtW.g.add(g); const o = { solid: false };
+  if (kind === 'miss') { ball(g, 0.35, 0xFFFFFF, 0, 0.3, 0, o); makeLabel(g, [`${n}칸`], 0.6, 0, 1.2, 0); }
+  else if (kind === 'mine' || kind === 'hit') { box(g, 1.2, 0.5, 1.2, 0x5A5F66, 0, 0.25, 0, o); mesh(CYL, g, 0.22, 1.4, 0.22, 0x2E3138, 0, 0.75, t ? -0.3 : 0.3, { solid: false, rx: t ? -1.2 : 1.2 }); box(g, 1.3, 0.12, 1.3, SBT_TEAM[t].c, 0, 0.55, 0, o); if (kind === 'hit') ball(g, 0.45, 0xFF7A1A, 0.3, 1.0, 0, { solid: false, emissive: 1 }); if (n) makeLabel(g, [`❤️ ${n}`], 0.55, 0, 1.9, 0); }
+  else { for (let k = 0; k < 5; k++) box(g, rand(0.3, 0.6), rand(0.2, 0.4), rand(0.3, 0.6), k % 2 ? 0x5A5F66 : 0x3B3F46, rand(-0.5, 0.5), 0.15, rand(-0.5, 0.5), { solid: false, ry: rand(0, 3) }); ball(g, 0.5, 0x3B3F46, 0, 1.2, 0, { solid: false, emissive: 0 }); }
+  sbtW.marks.set(key, { g, k: kind + n });
+}
+function sbtClearArena() { for (const [, m] of sbtW.marks) m.g.parent?.remove(m.g); sbtW.marks.clear(); for (const [, b] of sbtW.boats) b.g.parent?.remove(b.g); sbtW.boats.clear(); sbtW.boatSig = ''; for (const a of sbtW.anim) a.m.parent?.remove(a.m); sbtW.anim = []; sbtW.seen = {}; }
+function sbtFireFx(fromT, fromK, t, c, hit) { // 포탄이 날아가요 (1.1초)
+  const a = sbtSeat(fromT, fromK).setY(2.2), b = sbtCellPos(t, c); const m = new THREE.Mesh(SPH_LO, M(0x24262B)); m.scale.setScalar(0.28); m.position.copy(a); sbtW.g.add(m);
+  sbtW.anim.push({ m, a, b, t: 0, hit }); playSfx('pick');
+}
+function sbtAnimTick(dt) {
+  for (let i = sbtW.anim.length - 1; i >= 0; i--) { const A = sbtW.anim[i]; A.t += dt / 1.1; const k = Math.min(1, A.t); A.m.position.lerpVectors(A.a, A.b, k); A.m.position.y += Math.sin(k * Math.PI) * 7;
+    if (k >= 1) { A.m.parent?.remove(A.m); sbtW.anim.splice(i, 1); if (A.hit) { burst(A.b.clone().setY(1.4), [0xFF7A1A, 0xFFD23C, 0x3B3F46], 30, 5, 2.2); playSfx('drop'); } else { burst(A.b.clone().setY(0.6), [0xFFFFFF, 0x9FE0FF], 22, 4, 2); playSfx('splash'); } } }
+}
+// ---------- 접수처 ----------
+function openSbtMenu() {
+  if (!joined) return; if (evOff('sbt') && !isTeacher) { toast('🎯 바다 공방전은 지금 쉬는 중이에요 (선생님이 꺼 두었어요)', 'info'); return; }
+  let lv = 0;
+  openLife('🎯 바다 공방전 (수학 포격)', (box) => {
+    const mine = sbtMine(), sig = JSON.stringify(sbtAll()) + lv + (mine ? JSON.stringify(sbtState(mine.h).T.map(L => L.map(([u, v]) => [u, v.pc]))) : ''); if (box.dataset.hk === sig) return; box.dataset.hk = sig; box.textContent = ''; const me = backend.uid, fb = backend.mode === 'firebase';
+    const btn = (t, bg, fn, dis) => { const b = el2('button', 'btn', t); b.style.background = bg; b.style.margin = '3px'; b.disabled = !!dis; b.onclick = fn; return b; };
+    const row = (...bs) => { const r = el2('div', 'row-center', null); r.style.flexWrap = 'wrap'; r.append(...bs); return r; };
+    box.append(el2('p', 'hint', '🔵 파랑 모둠과 🔴 빨강 모둠이 6×6 바다 요새에 포대를 숨겨요 (한 사람이 한 칸). 상대 요새의 칸 (가로, 세로)을 골라 쏘고, 💣 탄약 카드 3장 중 하나를 골라 계산해요! 맞히면 그 위력 그대로, 틀리면 절반. 포대는 40만큼 맞으면 부서져요. 빗나가면 "가장 가까운 포대까지 ○칸" 힌트가 나와요.'));
+    const sel = () => { const r = row(el2('b', '', '💣 탄약 난이도')); SBT_LV.forEach((L, i) => { const b = btn(`${L.icon} ${L.n}`, lv === i ? '#FFE066' : '#fff', () => { lv = i; delete box.dataset.hk; refillLife(); }); b.title = L.d; r.append(b); }); return r; };
+    if (mine) { const H = sbtHost(mine.h), St = sbtState(mine.h), myT = mine.tm ? 1 : 0;
+      box.append(el2('p', 'lp-big', `🎯 내가 들어간 방 · 👑 ${H?.n || '친구'} · ${SBT_LV[H?.lv | 0].icon} ${SBT_LV[H?.lv | 0].n}`));
+      St.T.forEach((L, t) => { const d = el2('div', 'rank-row', ''); d.style.borderLeft = `6px solid ${SBT_TEAM[t].css}`; d.append(el2('b', '', `${SBT_TEAM[t].icon} ${SBT_TEAM[t].n} 모둠 (${L.length}/4) · `), document.createTextNode(L.map(([u, v]) => `${v.o ? '👑' : ''}${v.n || '친구'}${u === me ? '(나)' : ''}${v.pc >= 0 ? ' ✅' : ' ⏳'}`).join(' · ') || '아직 없어요')); box.append(d); });
+      if (H && !H.t0) {
+        box.append(row(btn('🔵 파랑으로', myT === 0 ? '#BFDDF7' : '#fff', () => sbtPut({ ...mine, tm: 0, pc: -1, at: backend.now() }), myT === 0 || St.T[0].length >= 4), btn('🔴 빨강으로', myT === 1 ? '#F7C8C2' : '#fff', () => sbtPut({ ...mine, tm: 1, pc: -1, at: backend.now() }), myT === 1 || St.T[1].length >= 4)));
+        box.append(el2('h3', 'lp-sec', `📍 우리 ${SBT_TEAM[myT].n} 요새에 내 포대 숨기기 (가로, 세로)`), el2('p', 'hint', '한 칸을 골라요. ⭐ = 내 포대 · 🛡️ = 우리 모둠 친구 포대 (상대는 못 봐요)'));
+        const taken = new Map(St.T[myT].filter(([u, v]) => u !== me && v.pc >= 0).map(([u, v]) => [v.pc, v.n]));
+        box.append(sbtGridEl((c) => mine.pc === c ? '⭐' : taken.has(c) ? '🛡️' : '', (c) => { if (taken.has(c)) return toast('🛡️ 친구 포대가 있는 칸이에요', 'info'); sbtPut({ ...mine, pc: c, at: backend.now() }); playSfx('pick'); }, myT, mine.pc));
+        if (mine.o) { box.append(sel()); const ready = St.T[0].length && St.T[1].length && [...St.T[0], ...St.T[1]].every(([, v]) => v.pc >= 0);
+          box.append(row(btn(`🎯 시작! (${St.T[0].length} 대 ${St.T[1].length})`, '#FFB347', () => { sbtPut({ ...mine, lv, t0: backend.now() + 6000, at: backend.now() }); closeLife(); }, !ready), btn('❌ 방 닫기', '#fff', () => sbtPut(null))));
+          if (!ready) box.append(el2('p', 'hint', '두 모둠에 한 명 이상 있고, 모두 포대(✅)를 숨기면 시작할 수 있어요.')); }
+        else box.append(el2('p', 'hint', '👑 방장이 시작을 누를 때까지 기다려요'), row(btn('🚪 방에서 나가기', '#fff', () => sbtPut(null)))); }
+      else box.append(el2('p', 'hint', '🎯 공방전 중이에요!'));
+      return; }
+    box.append(el2('h3', 'lp-sec', '🤖 로봇 모둠과 연습 (혼자)'), sel(), row(btn('🤖 연습 시작 (나 + 로봇 2 대 로봇 3)', '#BDE8B0', () => { closeLife(); sbtSoloStart(lv); }, sbt.on)));
+    box.append(el2('h3', 'lp-sec', '👫 모둠 대 모둠'));
+    if (!fb) box.append(el2('p', 'hint', '🔌 혼자 연습 모드에서는 친구가 없어요. 반 코드로 들어오면 함께해요.'));
+    const open = sbtOpenList(); if (!open.length) box.append(el2('p', 'hint', '지금 열린 방이 없어요.'));
+    for (const [h, H] of open) { const T = sbtTeams(h); box.append(row(el2('span', '', `👑 ${H.n || '친구'} · 🔵${T[0].length} 대 🔴${T[1].length}`), btn('🔵 파랑으로', '#BFDDF7', () => sbtJoin(h, 0), T[0].length >= 4), btn('🔴 빨강으로', '#F7C8C2', () => sbtJoin(h, 1), T[1].length >= 4))); }
+    box.append(row(btn('🎯 방 만들기', '#FFE066', () => { sbtPut({ h: me, o: 1, n: mrcName(), tm: 0, pc: -1, lv, bk: boatLookStr(boatLook(Math.max(0, boatCur()))), at: backend.now() }); }, sbt.on)));
+  });
+}
+function sbtGridEl(label, onTap, t, sel) { // 6×6 칸 (위가 세로 6, 아래가 세로 1 · 왼쪽이 가로 1)
+  const g = el2('div', 'sbt-grid'); g.style.setProperty('--tc', SBT_TEAM[t].css);
+  for (let y = SBT_N; y >= 0; y--) for (let x = 0; x <= SBT_N; x++) {
+    if (x === 0 || y === 0) { g.append(el2('div', 'sbt-ax', x === 0 && y === 0 ? '' : x === 0 ? `${y}` : `${x}`)); continue; }
+    const c = (y - 1) * SBT_N + (x - 1), b = el2('button', 'sbt-c' + (c === sel ? ' on' : ''), label(c)); b.title = `(${x}, ${y})`; b.onclick = () => onTap(c); g.append(b); }
+  return g;
+}
+function sbtJoin(h, tm) { const H = sbtHost(h); if (!H || H.t0) return toast('🎯 벌써 시작했거나 닫힌 방이에요', 'info'); if (sbtTeams(h)[tm].length >= 4) return toast('🙅 그 모둠은 4명이 꽉 찼어요', 'warn');
+  sbtPut({ h, n: mrcName(), tm, pc: -1, bk: boatLookStr(boatLook(Math.max(0, boatCur()))), at: backend.now() }).then(ok => { if (ok) { playSfx('pick'); toast(`${SBT_TEAM[tm].icon} ${SBT_TEAM[tm].n} 모둠에 들어갔어요! 우리 요새에 포대를 숨겨요`, 'success'); refillLife(); } }); }
+// ---------- 🤖 혼자 연습 ----------
+function sbtSoloStart(lv) {
+  const me = backend.uid, pick = (n, not) => { const out = []; while (out.length < n) { const c = sbtR(0, 35); if (!out.includes(c) && !not.includes(c)) out.push(c); } return out; };
+  const mc = sbtR(0, 35), myBots = pick(2, [mc]), foe = pick(3, []), bk = boatLookStr(boatLook(Math.max(0, boatCur())));
+  sbtW.solo = { [me]: { h: me, o: 1, n: mrcName(), tm: 0, pc: mc, lv, bk, t0: backend.now() + 4000, sh: '', ok: 0, at: backend.now() } };
+  ['🤖 도우미 하나', '🤖 도우미 둘'].forEach((n, i) => { sbtW.solo['~a' + i] = { h: me, n, tm: 0, pc: myBots[i], bk: `${[1, 4][i]}.${[5, 3][i]}.0.${[1, 4][i]}.0.0.0`, sh: '', ok: 0, at: backend.now(), bot: 1 }; });
+  ['🤖 바다로봇 A', '🤖 바다로봇 B', '🤖 바다로봇 C'].forEach((n, i) => { sbtW.solo['~b' + i] = { h: me, n, tm: 1, pc: foe[i], bk: `${[3, 5, 2][i]}.${[8, 1, 2][i]}.0.2.0.0.0`, sh: '', ok: 0, at: backend.now(), bot: 1, nx: 6 + i * 2.2 }; });
+  sbt.solo = true; sbtBegin(me);
+}
+function sbtBotTick(dt) { // 로봇: 맞힌 곳 옆을 노리고, 아니면 아직 안 쏜 칸
+  if (!sbt.solo || !sbtW.solo || backend.now() < sbt.t0 || sbt.fin) return; const St = sbtState(sbt.h);
+  for (const [u, v] of Object.entries(sbtW.solo)) { if (!v.bot) continue; v.nx = (v.nx ?? 4) - dt; if (v.nx > 0) continue; v.nx = 2.2 * St.T[v.tm].length + rand(-1, 1.5);
+    const t = 1 - v.tm, shot = new Set(St.shotsOn[t].map(s => s.c)), hitAlive = [...St.F[t].entries()].filter(([c, P]) => P.hits && P.hp > 0).map(([c]) => c);
+    let c = hitAlive.length ? hitAlive[0] : -1; if (c < 0) { const free = [...Array(36).keys()].filter(k => !shot.has(k)); const near = free.filter(k => St.shotsOn[t].some(s => { const [a, b] = sbtXY(s.c), [x, y] = sbtXY(k); return !St.F[t].has(s.c) && Math.abs(a - x) + Math.abs(b - y) === sbtNear(St, t, s.c); })); const L = near.length && Math.random() < 0.6 ? near : free; c = L.length ? L[sbtR(0, L.length - 1)] : sbtR(0, 35); }
+    const C = sbtCard(sbt.lv), d = Math.random() < 0.75 ? C.v : Math.ceil(C.v / 2); v.sh = (v.sh ? v.sh + '_' : '') + `${c}.${d}`; }
+}
+// ---------- 🎯 경기 ----------
+function sbtHudEl() {
+  if (sbtW.hud) return sbtW.hud; const h = document.createElement('div'); h.id = 'sbtHud'; h.className = 'hidden';
+  h.innerHTML = '<div id="sbtInfo"></div><button class="btn" id="sbtQuit">🏳️ 그만</button><div id="sbtMain"><div id="sbtGridBox"></div><div id="sbtSide"><div id="sbtTarget"></div><div id="sbtCards"></div><div id="sbtAns"></div></div></div>';
+  document.body.append(h); sbtW.hud = h;
+  const st = document.createElement('style'); st.textContent = `#sbtHud{position:fixed;left:50%;bottom:calc(8px + var(--safe-bottom, 0px));transform:translateX(-50%);z-index:12;background:rgba(255,252,242,.95);border-radius:18px;padding:8px 10px;box-shadow:0 6px 22px rgba(0,0,0,.25);width:min(760px,96vw);font-size:15px}
+#sbtHud.hidden{display:none} #sbtInfo{font-weight:800;text-align:center;margin:0 60px 6px} #sbtQuit{position:absolute;right:8px;top:6px;font-size:13px;padding:3px 8px;background:#fff}
+#sbtMain{display:flex;gap:10px;align-items:flex-start;justify-content:center;flex-wrap:wrap} #sbtSide{flex:1;min-width:220px}
+.sbt-grid{display:grid;grid-template-columns:22px repeat(6,40px);gap:3px;border:3px solid var(--tc);border-radius:10px;padding:4px;background:#EAF6FF}
+.sbt-ax{font-weight:900;color:#3B2F2A;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sbt-c{height:40px;border:none;border-radius:7px;background:#BFE3F7;font-size:17px;font-weight:800;padding:0;color:#1F3A5A}
+.sbt-c.on{outline:3px solid #FFB020;background:#FFF1B8} .sbt-c.m{background:#E8F0F5} .sbt-c.h{background:#FFC9A8} .sbt-c.d{background:#5A5F66;color:#fff}
+.sbt-card{display:block;width:100%;margin:4px 0;padding:8px;border-radius:12px;border:2px solid #E0D4BC;background:#fff;font-size:20px;font-weight:800}
+.sbt-card.on{border-color:#FFB020;background:#FFF6D6} .sbt-fr{display:inline-flex;flex-direction:column;vertical-align:middle;font-size:.8em;line-height:1;margin:0 2px;text-align:center}
+.sbt-fr i{font-style:normal;padding:0 2px} .sbt-fr i:first-child{border-bottom:2px solid currentColor}
+#sbtAns input{font-size:22px;width:110px;text-align:center;border-radius:10px;border:2px solid #E0D4BC;padding:6px} body.in-sbt #joystick,body.in-sbt #jumpBtn{display:none}`;
+  document.head.append(st);
+  $('sbtQuit').onclick = () => { if (!sbt.solo) { const v = sbtMine(); if (v) sbtPut({ ...v, q: 1, at: backend.now() }); } sbtEnd(false); toast('🏳️ 공방전에서 나왔어요', 'info'); };
+  return h;
+}
+function sbtBegin(h) {
+  if (sbt.on) return; closeModals(); if (bag.ride) { bag.ride = ''; saveBag(); } boatQuiet(); sbtBuild(); sbtClearArena();
+  const H = sbtHost(h); Object.assign(sbt, { on: true, h, t0: H?.t0 || backend.now() + 4000, lv: H?.lv | 0, sel: -1, cards: null, card: -1, cd: 0, fin: 0, shots: 0, ok: 0, dmg: 0, endAt: 0 }); sbtDeal();
+  const T = sbtTeams(h); sbt.me = T[0].some(([u]) => u === backend.uid) ? 0 : 1; sbt.k = T[sbt.me].findIndex(([u]) => u === backend.uid);
+  sbtHudEl().classList.remove('hidden'); document.body.classList.add('in-sbt'); sbtSeatMe(); sbtDraw();
+  showBanner('🎯 바다 공방전!', `${SBT_TEAM[sbt.me].icon} 우리는 ${SBT_TEAM[sbt.me].n} 모둠 · 상대 요새 칸을 골라 쏴요!`, 3000);
+}
+function sbtSeatMe() { const p = sbtSeat(sbt.me, Math.max(0, sbt.k)); player.pos.copy(p); player.vy = 0; player.heading = sbt.me ? Math.PI : 0; player.avatar.g.position.copy(p); player.avatar.g.rotation.y = player.heading; }
+function sbtCam(dt) { if (!sbt.on) return false; const p = player.pos, dir = sbt.me ? -1 : 1, want = new V3(p.x * 0.6 + SBT.cx * 0.4, 9.5, p.z - dir * 9); camera.position.lerp(want, 1 - Math.exp(-dt * 4)); camera.lookAt(SBT.cx, 0, sbtFortZ(1 - sbt.me)); return true; }
+function sbtDraw() { // 화면 아래 판: 상대 요새 칸 · 고른 칸 · 탄약 카드 · 답
+  if (!sbt.on) return; const St = sbtState(sbt.h), foe = 1 - sbt.me, keep = $('sbtIn')?.value || '', foc = document.activeElement?.id === 'sbtIn';
+  const lab = (c) => { const P = St.F[foe].get(c); if (St.shotsOn[foe].some(s => s.c === c)) { if (P) return P.hp > 0 ? '🔥' : '💥'; return String(sbtNear(St, foe, c)); } return ''; };
+  const box = $('sbtGridBox'); box.textContent = ''; const G = sbtGridEl(lab, (c) => { sbt.sel = c; playSfx('pick'); sbtDraw(); }, foe, sbt.sel);
+  [...G.querySelectorAll('.sbt-c')].forEach(b => { const t = b.textContent; b.classList.toggle('d', t === '💥'); b.classList.toggle('h', t === '🔥'); b.classList.toggle('m', /^\d+$/.test(t)); });
+  box.append(el2('div', 'hint', `${SBT_TEAM[foe].icon} ${SBT_TEAM[foe].n} 요새 · 숫자 = 가장 가까운 포대까지 칸 수`), G);
+  const tg = $('sbtTarget'); tg.innerHTML = sbt.sel >= 0 ? `🎯 목표 <b style="font-size:22px">${sbtXYt(sbt.sel)}</b>` : '🎯 왼쪽 판에서 쏠 칸을 골라요';
+  const cs = $('sbtCards'); cs.textContent = ''; if (sbt.cards) { cs.append(el2('div', 'hint', '💣 탄약 카드를 골라요 (계산한 값 = 위력)')); sbt.cards.forEach((C, i) => { const b = el2('button', 'sbt-card' + (sbt.card === i ? ' on' : ''), ''); b.innerHTML = `💣 ${sbtCardHtml(C)}`; b.onclick = () => { sbt.card = i; playSfx('pick'); sbtDraw(); setTimeout(() => $('sbtIn')?.focus(), 30); }; cs.append(b); }); }
+  const an = $('sbtAns'); an.textContent = ''; if (sbt.card >= 0) { const inp = document.createElement('input'); inp.id = 'sbtIn'; inp.inputMode = 'numeric'; inp.placeholder = '위력은?'; inp.autocomplete = 'off'; const f = el2('button', 'btn', '🔥 발사!'); f.style.cssText = 'font-size:20px;background:#FFB347;margin-left:6px'; f.id = 'sbtFire'; f.onclick = sbtFire; inp.onkeydown = (e) => { if (e.key === 'Enter') sbtFire(); e.stopPropagation(); }; an.append(inp, f); if (keep) inp.value = keep; if (foc) inp.focus(); }
+}
+async function sbtFire() {
+  if (!sbt.on || sbt.fin || sbt.busy) return; const now = backend.now(); if (now < sbt.t0) return toast('⏱️ 아직 시작 전이에요', 'info'); if (sbt.cd > 0) return toast(`⏳ 장전 중 ${sbt.cd.toFixed(1)}초`, 'info');
+  if (sbt.sel < 0) return toast('🎯 먼저 쏠 칸을 골라요', 'warn'); const C = sbt.cards?.[sbt.card]; if (!C) return toast('💣 탄약 카드를 골라요', 'warn');
+  const raw = String($('sbtIn')?.value || '').trim(); if (!raw) return toast('✏️ 계산한 위력을 써요', 'warn'); const ok = Number(raw) === C.v, d = ok ? C.v : Math.ceil(C.v / 2);
+  const v = sbt.solo ? sbtW.solo[backend.uid] : sbtMine(); if (!v) return; if (sbtShots(v).length >= SBT_MAX) return toast('💣 포탄을 다 썼어요!', 'info');
+  const sh = (v.sh ? v.sh + '_' : '') + `${sbt.sel}.${d}`; sbt.busy = true;
+  if (sbt.solo) { v.sh = sh; v.ok = (v.ok | 0) + (ok ? 1 : 0); } else { const r = await sbtPut({ ...v, sh, ok: Math.min(99, (v.ok | 0) + (ok ? 1 : 0)), at: now }); if (!r) { sbt.busy = false; return; } }
+  sbt.busy = false; sbt.shots++; if (ok) sbt.ok++; sbt.dmg += d; if (ok) playSfx('right'); else playSfx('wrong');
+  toast(ok ? `✅ 정답 ${C.v}! 위력 ${d}으로 ${sbtXYt(sbt.sel)}에 발사!` : `❌ ${C.t.replace(/과 /, ' ')} = ${C.v} 이에요 · 절반 위력 ${d}만 날아가요`, ok ? 'success' : 'warn');
+  if (!isTeacher && ok) addStat('math', 1);
+  const St = sbtState(sbt.h); sbt.cd = Math.max(3, 2.2 * St.T[sbt.me].length); sbtDeal(); sbtDraw();
+}
+function sbtTick(dt) {
+  if (!sbt.on) return; sbtAnimTick(dt); sbtBotTick(dt); sbt.cd = Math.max(0, sbt.cd - dt); sbtSeatMe();
+  const H = sbtHost(sbt.h); if (!H) { sbtEnd(false); toast('🎯 방장이 방을 닫았어요', 'info'); return; }
+  const St = sbtState(sbt.h), now = backend.now();
+  // 배 (모둠 자리 순서대로) · 친구는 자기 자리에 서 있어요
+  const bsig = JSON.stringify(St.T.map(L => L.map(([u, v]) => [u, v.bk]))); if (bsig !== sbtW.boatSig) { sbtW.boatSig = bsig; for (const [, b] of sbtW.boats) b.g.parent?.remove(b.g); sbtW.boats.clear();
+    St.T.forEach((L, t) => L.forEach(([u, v], k) => { const lk = boatLookParse(v.bk) || { h: 1, c: t ? 1 : 2, sc: 0, f: 0, dc: 0, nm: -1 }; lk.dv = 0; const g = new THREE.Group(); g.add(boatModel(0, lk)); const p = sbtSeat(t, k); g.position.set(p.x, 0.3, p.z); g.rotation.y = t ? Math.PI : 0; sbtW.g.add(g);
+      if (u.startsWith('~')) { const a = makeAvatar(k + 2, (k * 3) % 8, k % 4, k % 4, g); a.g.position.set(0, 0, 0); a.badge?.userData.set?.([v.n]); }
+      sbtW.boats.set(u, { g, t, k }); })); }
+  // 새 포탄 → 날아가는 모습
+  St.T.forEach((L, t) => L.forEach(([u, v], k) => { const n = sbtShots(v).length, seen = sbtW.seen[u] ?? (sbtW.seen[u] = now < sbt.t0 + 1500 ? 0 : n); if (n > seen) { const S2 = sbtShots(v); for (let i = seen; i < n; i++) sbtFireFx(t, k, 1 - t, S2[i].c, St.F[1 - t].has(S2[i].c)); sbtW.seen[u] = n; if (t !== sbt.me) sbt.dirty = 1; } }));
+  // 요새 표시
+  for (const t of [0, 1]) { for (const [c, P] of St.F[t]) { if (t === sbt.me) sbtMark(t, c, P.hp > 0 ? (P.hits ? 'hit' : 'mine') : 'dead', P.hp > 0 ? P.hp : 0); else if (P.hits) sbtMark(t, c, P.hp > 0 ? 'hit' : 'dead', P.hp > 0 ? P.hp : 0); }
+    if (t !== sbt.me) for (const s of St.shotsOn[t]) if (!St.F[t].has(s.c)) sbtMark(t, s.c, 'miss', sbtNear(St, t, s.c)); }
+  const sig = JSON.stringify([St.shotsOn, St.alive]); if (sig !== sbtW.hk || sbt.dirty) { sbtW.hk = sig; sbt.dirty = 0; sbtDraw(); }
+  if ((sbt.ht = (sbt.ht || 0) - dt) <= 0) { sbt.ht = 0.25; const cd = Math.ceil((sbt.t0 - now) / 1000), left = Math.max(0, Math.ceil((sbt.t0 + SBT_T - now) / 1000)), my = sbt.me, fo = 1 - my;
+    $('sbtInfo').textContent = now < sbt.t0 ? `⏱️ ${cd}초 뒤 시작!` : `${SBT_TEAM[my].icon} 우리 포대 ${St.alive[my]}/${St.F[my].size} (❤️${St.hp[my]}) · ${SBT_TEAM[fo].icon} 상대 ${St.alive[fo]}/${St.F[fo].size} (❤️${St.hp[fo]}) · ⏱️ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}${sbt.cd > 0 ? ` · ⏳ 장전 ${sbt.cd.toFixed(0)}초` : ' · 💣 발사 준비!'}`;
+    if (now < sbt.t0 && cd !== sbt.lastCd && cd <= 3 && cd > 0) { sbt.lastCd = cd; playSfx('pick'); showBanner(`${cd}`, '', 800); } if (now >= sbt.t0 && sbt.lastCd !== 0) { sbt.lastCd = 0; playSfx('fanfare'); showBanner('🎯 포격 시작!', '', 900); }
+    const fb = $('sbtFire'); if (fb) fb.disabled = sbt.cd > 0 || now < sbt.t0; }
+  const w = sbtWinner(sbt.h, { t0: sbt.t0 }, St); if (w >= 0 && !sbt.fin) { sbt.fin = now; sbt.win = w; sbt.endAt = performance.now() + 2600; showBanner(w === 2 ? '🤝 비겼어요!' : w === sbt.me ? '🏆 우리 모둠 승리!' : '😢 상대 모둠 승리', '', 2500); playSfx(w === sbt.me ? 'fanfare' : 'pick'); }
+  if (sbt.fin && performance.now() > sbt.endAt) sbtEnd(true);
+}
+function sbtEnd(show) {
+  if (!sbt.on) return; const St = sbtState(sbt.h), w = sbt.fin ? sbt.win : -1, h = sbt.h, solo = sbt.solo;
+  sbt.on = false; sbtW.hud?.classList.add('hidden'); document.body.classList.remove('in-sbt'); sbtClearArena();
+  player.pos.set(ISLE.dock[0] - 2.2, 0.35, ISLE.dock[1] + 2.5); player.vy = 0; player.heading = -Math.PI / 2;
+  if (!show) { if (solo) { sbt.solo = false; sbtW.solo = null; } return; }
+  let sh = 0; if (!isTeacher) { if (bag.sbtDay?.d !== dayNum()) bag.sbtDay = { d: dayNum(), n: 0 }; if (bag.sbtDay.n < 5) { bag.sbtDay.n++; sh = giveShellCapped(Math.round((w === sbt.me ? 25 : w === 2 ? 15 : 10) * (solo ? 0.5 : 1) * (1 + sbt.lv * 0.2))); } saveBag(); updateHUD(null); }
+  const L = St.T.map((T, t) => T.map(([u, v]) => ({ u, t, n: v.n || '친구', s: sbtShots(v).length, ok: v.ok | 0, d: sbtShots(v).reduce((a, s) => a + s.d, 0) }))).flat();
+  if (solo) { sbt.solo = false; sbtW.solo = null; } else { sbtW.shown = h; sbtW.clearAt = performance.now() + 25000; }
+  openLife('🎯 공방전 결과', (box) => { box.textContent = '';
+    box.append(el2('p', 'lp-big', w === 2 ? '🤝 비겼어요!' : `${SBT_TEAM[w]?.icon || ''} ${SBT_TEAM[w]?.n || ''} 모둠 승리!${w === sbt.me ? ' 🏆' : ''}`), el2('p', 'hint', `${sh ? `🐚 +${sh} · ` : ''}내 포탄 ${sbt.shots}발 · ✅ 계산 정답 ${sbt.ok} · 💥 준 위력 ${sbt.dmg}`));
+    for (const t of [0, 1]) { box.append(el2('h3', 'lp-sec', `${SBT_TEAM[t].icon} ${SBT_TEAM[t].n} · 남은 포대 ${St.alive[t]}/${St.F[t].size}`)); for (const r of L.filter(r => r.t === t).sort((a, b) => b.d - a.d)) box.append(el2('div', 'rank-row', `${r.n}${r.u === backend.uid ? ' (나)' : ''} · 💣 ${r.s}발 · ✅ ${r.ok} · 💥 ${r.d}`)); }
+    const top = [...L].sort((a, b) => b.ok - a.ok)[0]; if (top) box.append(el2('p', 'hint', `🎖️ 계산왕: ${top.n} (✅ ${top.ok})`)); });
+}
+function sbtSyncTick() { // state/sgb 를 보고 시작 · 끝 · 정리
+  if (!backend || !joined) return; const me = backend.uid, now = backend.now();
+  if (isTeacher && backend.mode === 'firebase' && performance.now() - sbtW.cleanAt > 60000) { sbtW.cleanAt = performance.now(); const up = {}; for (const [u, v] of Object.entries(S.sgb || {})) if (!sbtAlive(v) || now - (+v.at || 0) > 1200000) up[`sgb/${u}`] = null; if (Object.keys(up).length) backend.adminUpdate(up); }
+  if (sbt.solo) return; const v = sbtMine(); if (!v) return; const H = sbtHost(v.h);
+  if (!H) { if (sbt.on) sbtEnd(false); if (sbtW.shown !== v.h) toast('🎯 방장이 공방전 방을 닫았어요', 'info'); sbtPut(null); return; }
+  if (!H.t0) { if (now - (+v.at || 0) > 60000) sbtPut({ ...v, at: now }); if ($('lpTitle')?.textContent?.includes('바다 공방전')) refillLifeSoft(); return; }
+  if (!sbt.on && !v.q && sbtW.shown !== v.h && now < H.t0 + SBT_T) { sbtBegin(v.h); return; }
+  if (sbt.on && now - (+v.at || 0) > 60000) sbtPut({ ...v, at: now });
+  if (sbtW.shown === v.h && sbtW.clearAt && performance.now() > sbtW.clearAt) { sbtW.clearAt = 0; sbtPut(null); }
+}
+
 // ================= 🛒 광산 수레 레이스 (1020b · 수학 광산 마을) =================
 // 타원 레일 한 바퀴 · 갈림길 5곳에서 수학 문제 → 맞히면 ⚡ 안쪽 금빛 레일(빠름) · 틀리면 🐢 바깥 레일(느림) · 🤖 로봇 수레 3대와 경주
 // 저장: 이 기기 bag.cartBest(ms) · bag.cartDay {d, n} (하루 3판까지 🐚) · 친구 화면: players/{uid}/v = 13 (수레)
@@ -27841,7 +28202,7 @@ async function openAcctCheck() { // 👤 1029g 같은 학생 이름으로 계정
 async function acctPurgeAsk(k, u, v, plots, keep) {
   const kp = keep.map(([, x]) => `"${x.n || '?'}" (🐚 ${x.h | 0})`).join(', ');
   if (!(await confirmAction({ title: `${k} · "${v.n || '?'}" 계정을 정리할까요?`, body: `지워져요: 🐚 ${v.h | 0} 가방 · 🏡 땅 ${plots.length}칸과 집 · 기록\n남아요: ${kp || '(없음)'}\n\n되돌릴 수 없어요. 학생이 이 닉네임 표기("${v.n || '?'}")로 다시 들어오면 빈 계정으로 시작해요.`, okText: '정리하기' }))) return;
-  const sp = [...plots.map(n => `plots/${n}`), `plotOwner/${u}`, `plotExtra/${u}`, `ssp/${u}`, `scrp/${u}`, `swm/${u}`, `wrapa/${u}`, `aq/${u}`, `mrr/${u}`, `snw/${u}`];
+  const sp = [...plots.map(n => `plots/${n}`), `plotOwner/${u}`, `plotExtra/${u}`, `ssp/${u}`, `scrp/${u}`, `swm/${u}`, `wrapa/${u}`, `aq/${u}`, `mrr/${u}`, `snw/${u}`, `sgb/${u}`];
   const r = await backend.acctPurge?.(u, sp); if (!r?.ok) { toast('⚠️ 정리하지 못했어요. database.rules.json을 다시 게시해 주세요', 'warn'); return; }
   toast(r.bag ? `🗑️ "${v.n || '?'}" 계정을 정리했어요` : `🗑️ 기록·땅은 정리했어요 · 가방은 database.rules.json을 새로 게시한 뒤 다시 눌러야 지워져요`, r.bag ? 'success' : 'warn'); setTimeout(openAcctCheck, 400);
 }
@@ -29521,7 +29882,7 @@ function snwTick(dt) {
 }
 // ================= 🎛️ 1106j 이벤트 켜고 끄기 (state/evoff/{키} = true · 선생님만) =================
 const evOff = (k) => !!S.evoff?.[k];
-const EV_SW = [['snow', '❄️ 눈 쌓인 마을', '겨울(시즌 2)에 지붕·길에 쌓이는 눈'], ['snw', '⛄ 눈사람 만들기', '광장 남쪽 눈 더미 · 눈사람 자리'], ['ice', '⛸️ 얼음 호수', '겨울 스케이트 · 🧊 얼음낚시'], ['pot', '🍄 거대·꼬마 물약', '가게에서 안 팔고 효과도 꺼져요'], ['mrc', '🏁 수학 레이싱', '레이싱 출발 문을 잠가요']];
+const EV_SW = [['snow', '❄️ 눈 쌓인 마을', '겨울(시즌 2)에 지붕·길에 쌓이는 눈'], ['snw', '⛄ 눈사람 만들기', '광장 남쪽 눈 더미 · 눈사람 자리'], ['ice', '⛸️ 얼음 호수', '겨울 스케이트 · 🧊 얼음낚시'], ['pot', '🍄 거대·꼬마 물약', '가게에서 안 팔고 효과도 꺼져요'], ['mrc', '🏁 수학 레이싱', '레이싱 출발 문을 잠가요'], ['sbt', '🎯 바다 공방전', '선착장 접수처를 잠가요']];
 const evW = { sig: '' };
 setInterval(() => { try { const box = $('tpEvOff'); if (!box || !isTeacher || $('teacherPanel').classList.contains('hidden')) return; const sig = JSON.stringify(S.evoff || {}); if (sig === evW.sig && box.childElementCount) return; evW.sig = sig; box.textContent = '';
   for (const [k, n, d] of EV_SW) { const off = evOff(k), b = el2('button', 'btn', `${off ? '⛔' : '✅'} ${n} · ${off ? '꺼짐' : '켜짐'}`); b.title = d; b.style.cssText = `font-size:15px;background:${off ? '#F3D6D6' : '#DDF3D2'}`;
@@ -32091,7 +32452,7 @@ function loop() {
   { const ip = joined && (bdm.on || !!ev.game || !!trw.role || (!!S.siege?.on && siegeRegion() && !!sgMine()) || !!nvW?.on); if (ip !== document.body.classList.contains('in-play')) document.body.classList.toggle('in-play', ip); if (!!ev.game !== document.body.classList.contains('ev-play')) document.body.classList.toggle('ev-play', !!ev.game); } // 놀이 중 화면 정리
   updateFund(dt);
   if (joined) updateHome(dt);
-  if (joined) { try { tankTick(dt); mrcTick(dt); if ((mrcW.st = (mrcW.st || 0) - dt) <= 0) { mrcW.st = 0.25; mrcSyncTick(); } } catch (e) { console.warn('mrc/tank', e); } } /* 🫙🐠🏎️ 1106a */
+  if (joined) { try { tankTick(dt); mrcTick(dt); if ((mrcW.st = (mrcW.st || 0) - dt) <= 0) { mrcW.st = 0.25; mrcSyncTick(); } sbtTick(dt); if ((sbtW.st = (sbtW.st || 0) - dt) <= 0) { sbtW.st = 0.25; sbtSyncTick(); } } catch (e) { console.warn('mrc/tank', e); } } /* 🫙🐠🏎️ 1106a */
   updateFx(dt); grassWind.value = time; waterTime.value = time;
   updateControl(); updateRest(dt); updateMap(dt); if (joined) renderGuide();
   updateCamera(dt);
