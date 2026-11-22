@@ -19106,6 +19106,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106y', d: '11월 22일', items: ['📰 쑥쑥 문해력 2-3·2-4 학습지 10장이 더 생겼어요 (모두 19장)', '📤 다 풀고 제출하면 자동으로 채점돼요! 점수와 문제마다 ✅/❌가 나와요 (쓰는 문제는 선생님이 확인)', '📚 처음 받은 점수의 절반만큼 국어력이 올라요 (최소 +5)', '🔑 선생님 화면에서만 정답을 볼 수 있어요'] },
   { id: '1106x', d: '11월 22일', items: ['✏️ 2회 십자말: 칸을 눌러 한 글자씩 직접 써요', '✍️ 9회 미로: 손가락으로 미로 위에 길을 그려요 (↩️ 한 획 지우기 · 🧽 모두 지우기)'] },
   { id: '1106w', d: '11월 22일', items: ['📄 문해력 학습지가 역사 학습지처럼 바뀌었어요: 종이 학습지 모양 · 지문과 문제마다 한 쪽씩 ‹ 이전 / 다음 › 으로 넘겨요', '🧩 1회 끝말잇기 말판: 보기 낱말을 손가락으로 끌어 번호 칸에 놓아요 (눌러 고른 뒤 칸을 눌러도 돼요)', '🔤 낱말 찾기(3회·8회): 글자를 눌러 색칠해요'] },
   { id: '1106v', d: '11월 22일', items: ['🔍 문해력 학습지 그림을 누르면 화면 안에서 크게 보여요 · ✖ 닫기(또는 바깥 누르기)로 닫아요 · 🔍 더 크게로 두 배'] },
@@ -30874,7 +30875,7 @@ function kwsEl() { let el = kws.el; if (el) return el;
 function kwsClose() { $('mhZoom')?.classList.add('hidden'); if (!kws.on) return; kws.on = false; if (kws.ro) { kws.ro = false; kws.d = null; kws.si = 0; kws.no = 0; kws.el?.classList.add('hidden'); return; } kws.el?.classList.add('hidden'); if (kws.dirty) kwsSave(); if (roomNow() === 'kst' && isSeated(player.avatar)) playAct(player.avatar, null); }
 function kwsHead(msg) { const H = kwsEl().querySelector('#kwsHead'); H.textContent = ''; const btn = (t, f, bg = '#fff') => { const b = el2('button', 'btn', t); b.style.cssText = `background:${bg};color:#3B2F2A;font-size:16px;padding:5px 12px`; b.onclick = f; H.append(b); return b; };
   const sh = kws.si ? kws.mh?.[kws.si - 1] : null; H.append(el2('b', '', kws.ro ? `👀 ${kws.no}번 · ${kws.si}회 ${sh?.t || ''} (보기만)` : sh && kws.d ? `📰 ${kws.si}회 · ${kws.no}번` : kws.no ? `📰 쑥쑥 문해력 · ${kws.no}번` : '📰 쑥쑥 문해력')); const s = el2('span', '', msg || ''); s.id = 'kwsStat'; s.style.cssText = 'color:#FFE9A8;font-size:15px'; H.append(s);
-  if (kws.ro) { btn('✖ 닫기', kwsClose); return; }
+  if (kws.ro) { if (isTeacher && mhAns()) btn(kws.showAns ? '🙈 정답 숨기기' : '🔑 정답 보기', () => { kws.showAns = !kws.showAns; kwsHead(''); kwsRender2(); }, kws.showAns ? '#FFD23C' : '#fff'); btn('✖ 닫기', kwsClose); return; }
   if (kws.no && kws.d) { btn('💾 저장', () => kwsSave(true), '#FFD23C'); btn('📚 학습지 목록', async () => { if (kws.dirty) await kwsSave(); kws.d = null; kws.si = 0; mhList(); }); }
   if (kws.no) btn('🔢 번호 바꾸기', async () => { if (kws.dirty) await kwsSave(); kws.d = null; kws.si = 0; kwsPickNo(); });
   btn('✖ 닫기', kwsClose); }
@@ -30889,19 +30890,19 @@ function kwsPickNo() { kws.no = 0; kws.si = 0; kws.d = null; kwsHead(''); const 
 // ---------- 📰 1106u 쑥쑥 문해력 학습지 (하루 한 장 · 정답 확인 없음 · 선생님과 함께 맞춰요) ----------
 // 글·그림: mh/sheets.json · mh/{회}/BIN*.png (선생님이 올린 HWP에서 뽑았어요) · 답: rooms/{반}/kws/mh{회}/{번호} { u, n, d: JSON {a:{문제:답}, done}, at }
 // 오늘의 학습지: kws/mhcfg/cfg (선생님만 써요) d: JSON {t: 회} → 1~t회까지 펴져요 · 정답은 앱 어디에도 넣지 않았어요
-const MH_URL = 'mh/', MH_SET = ['2-1', '2-1', '2-1', '2-1', '2-1', '2-2', '2-2', '2-2', '2-2'];
+const MH_URL = 'mh/', MH_SET = ['2-1', '2-1', '2-1', '2-1', '2-1', '2-2', '2-2', '2-2', '2-2', '2-3', '2-3', '2-3', '2-3', '2-3', '2-4', '2-4', '2-4', '2-4', '2-4'];
 async function mhLoad() { if (kws.mh) return kws.mh; try { const r = await fetch(MH_URL + 'sheets.json', { cache: 'no-cache' }); if (r.ok) kws.mh = await r.json(); } catch (e) { } return kws.mh || null; }
-async function mhCfg() { const v = await backend.kwsGet('mhcfg', 'cfg'); if (v === undefined) return kws.mt || 1; let o = null; try { o = JSON.parse(v?.d || 'null'); } catch (e) { } kws.mt = Math.max(0, Math.min(9, +o?.t || (v ? 0 : 1))); return kws.mt; }
+async function mhCfg() { const v = await backend.kwsGet('mhcfg', 'cfg'); if (v === undefined) return kws.mt || 1; let o = null; try { o = JSON.parse(v?.d || 'null'); } catch (e) { } kws.mt = Math.max(0, Math.min(MH_SET.length, +o?.t || (v ? 0 : 1))); return kws.mt; }
 const mhSid = (i) => 'mh' + i;
 function mhParse(v) { let o = null; try { o = JSON.parse(v?.d || 'null'); } catch (e) { } return { a: o && typeof o.a === 'object' && o.a ? o.a : {}, done: o?.done ? 1 : 0 }; }
 async function mhList() { const B = kwsEl().querySelector('#kwsBody'), no = kws.no; B.style.background = ''; B.style.color = ''; kws.si = 0; kws.d = null; kwsHead('⏳ 불러오는 중…'); B.textContent = ''; B.scrollTop = 0; B.append(el2('p', 'hint', '⏳ 학습지를 불러오는 중…'));
   const [M, t] = await Promise.all([mhLoad(), mhCfg()]); if (!kws.on || kws.no !== no || kws.si) return;
   if (!M) { B.textContent = ''; B.append(el2('p', '', '⚠️ 학습지를 불러오지 못했어요. 인터넷을 확인하고 다시 눌러요.')); const r = el2('button', 'btn', '🔄 다시 불러오기'); r.onclick = mhList; B.append(r); kwsHead('⚠️'); return; }
-  const mine = await Promise.all(M.map((_, i) => i < t ? backend.kwsGet(mhSid(i + 1), String(no)) : null)); if (!kws.on || kws.no !== no || kws.si) return;
-  kwsHead(''); B.textContent = ''; const h = el2('div', '', '📰 쑥쑥 문해력 · 하루 한 장'); h.style.cssText = 'font-size:24px;font-weight:800;text-align:center;margin:6px 0'; B.append(h, el2('p', 'hint', '선생님이 연 학습지만 펴져요. 정답은 바로 알려 주지 않아요 — 다 풀고 선생님과 함께 맞춰요!'));
+  const [mine, scs] = await Promise.all([Promise.all(M.map((_, i) => i < t ? backend.kwsGet(mhSid(i + 1), String(no)) : null)), Promise.all(M.map((_, i) => i < t ? backend.kwsGet(mhSid(i + 1), 's' + no) : null))]); if (!kws.on || kws.no !== no || kws.si) return; scs.forEach((x, k) => { if (x) mhReward(k + 1, x); });
+  kwsHead(''); B.textContent = ''; const h = el2('div', '', '📰 쑥쑥 문해력 · 하루 한 장'); h.style.cssText = 'font-size:24px;font-weight:800;text-align:center;margin:6px 0'; B.append(h, el2('p', 'hint', '선생님이 연 학습지만 펴져요. 다 풀고 📤 제출하면 자동으로 채점돼요 (선생님 기기가 켜져 있을 때) · 점수만큼 📚 국어력!'));
   M.forEach((S2, k) => { const i = k + 1, open = i <= t, d = mine[k] ? mhParse(mine[k]) : null, c = el2('button', 'btn', ''); c.style.cssText = `display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:14px;font-size:18px;background:${!open ? '#EEE' : i === t ? '#FFE27A' : '#FFF6E0'};color:#3B2F2A;opacity:${open ? 1 : .55}`;
-    c.innerHTML = `<b>${i === t ? '⭐ 오늘 · ' : ''}${MH_SET[k]} ${i}회 · ${S2.t}</b><br><span style="font-size:15px">${S2.sub} · ${!open ? '🔒 아직 안 열렸어요' : d?.done ? '✅ 다 했어요' : d && Object.keys(d.a).length ? `✏️ ${Object.keys(d.a).length}문제 썼어요` : '🆕 새 학습지'}</span>`;
-    c.disabled = !open; c.onclick = () => mhOpen(i, mine[k]); B.append(c); }); }
+    c.innerHTML = `<b>${i === t ? '⭐ 오늘 · ' : ''}${MH_SET[k]} ${i}회 · ${S2.t}</b><br><span style="font-size:15px">${S2.sub} · ${!open ? '🔒 아직 안 열렸어요' : mhScore(scs[k]) ? `💯 ${mhScore(scs[k]).sc}점${mhScore(scs[k]).redo ? ' · ↩️ 다시 풀기' : ''}` : d?.done ? '📤 제출함 · ⏳ 채점 기다리는 중' : d && Object.keys(d.a).length ? `✏️ ${Object.keys(d.a).length}문제 썼어요` : '🆕 새 학습지'}</span>`;
+    c.disabled = !open; c.onclick = () => { kws.sc = mhScore(scs[k]); mhOpen(i, mine[k]); }; B.append(c); }); }
 function mhOpen(i, v) { const go = () => { kws.si = i; kws.pg = 0; kws.d = mhParse(v); kws.dirty = false; kwsHead(v ? '✅ 저장된 답을 불러왔어요' : '🆕 새 학습지'); kwsRender(); };
   if (v && v.u && v.u !== backend.uid && !kws.okNo?.[kws.no]) { const B = kwsEl().querySelector('#kwsBody'); B.textContent = ''; const q = el2('div', '', `🤔 ${kws.no}번은 이미 다른 기기${v.n ? `(${v.n})` : ''}에서 쓰고 있어요.`); q.style.cssText = 'font-size:21px;font-weight:800;margin:10px 0'; B.append(q, el2('p', '', '정말 내 번호가 맞나요? 친구 번호라면 돌아가서 내 번호를 골라요.'));
     const r = el2('div', 'row-center wrap'), y = el2('button', 'btn', `✅ 네, 제가 ${kws.no}번이에요`), n = el2('button', 'btn', '↩️ 번호 다시 고르기'); y.style.background = '#FFD23C'; y.onclick = () => { (kws.okNo ||= {})[kws.no] = 1; go(); }; n.onclick = kwsPickNo; r.append(y, n); B.append(r); return; }
@@ -30917,7 +30918,7 @@ function mhPages(S2) { const P = []; let cur = null; for (const b of S2.b) { if 
 function mhPageName(pg, i) { const qs = pg.filter(b => b[0] === 'Q').map(b => b[1].n); if (qs.includes(0)) return '낱말 놀이'; const n = qs.filter(x => x > 0); return n.length ? `문제 ${n[0]}${n.length > 1 ? `~${n[n.length - 1]}` : ''}` : `${i + 1}쪽`; }
 function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S2 = kws.mh?.[kws.si - 1]; B.textContent = ''; B.scrollTop = 0; if (!D || !S2) return;
   B.style.background = MHC.wall; B.style.color = MHC.ink;
-  const A = D.a, ro = !!kws.ro, set = (k, v) => { A[k] = v; kwsTouch(); }, el = (tag, css, txt) => { const e = el2(tag, '', txt || ''); if (css) e.style.cssText = css; return e; };
+  const SC = kws.sc, lock = !kws.ro && !!D.done && !SC?.redo, ro = !!kws.ro || lock, AN = isTeacher ? mhAns()?.[String(kws.si)] : null, A = D.a, set = (k, v) => { A[k] = v; kwsTouch(); }, el = (tag, css, txt) => { const e = el2(tag, '', txt || ''); if (css) e.style.cssText = css; return e; };
   const pill = (t, on, f) => { const b = el2('button', 'btn', t); b.style.cssText = `font-size:17px;padding:6px 12px;margin:3px;border-radius:8px;box-shadow:none;background:${on ? MHC.ochre : '#fff'};color:${on ? '#fff' : MHC.ink};border:1.5px solid ${on ? MHC.ochre : MHC.line}`; b.disabled = ro; b.onclick = f; return b; };
   const inp = (val, wd, f, ph) => { const i = el2('input', ''); i.type = 'text'; i.maxLength = 60; i.value = val || ''; i.placeholder = ph || ''; i.disabled = ro; i.style.cssText = `width:${wd};max-width:100%;font:inherit;font-size:18px;padding:2px 8px;margin:2px 4px;border:none;border-bottom:2px solid ${MHC.ochre};background:${MHC.soft};border-radius:4px 4px 0 0;color:${MHC.ink};text-align:center`; i.oninput = () => f(i.value); return i; };
   const area = (val, f, ph, rows = 3) => { const t = el2('textarea', ''); t.maxLength = 500; t.value = val || ''; t.placeholder = ph || '여기에 써요'; t.rows = rows; t.disabled = ro; t.style.cssText = `width:100%;box-sizing:border-box;font:inherit;font-size:17px;padding:8px 10px;border:1.5px solid ${MHC.line};border-bottom:2px solid ${MHC.ochre};border-radius:6px;background:#fff;color:${MHC.ink};margin:4px 0`; t.oninput = () => f(t.value); return t; };
@@ -30928,7 +30929,7 @@ function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S
     const ti = el('div', 'text-align:center;min-width:0'); ti.append(el('div', 'font-size:clamp(19px,3.2vw,25px);font-weight:800', S2.t), el('div', `display:inline-block;margin-top:6px;padding-top:4px;border-top:2px solid ${MHC.ink};font-size:16px`, `쑥쑥 문해력 ${MH_SET[kws.si - 1]} · ${kws.si}회`)); hd.append(sj, ti); B.append(hd); }
   { const tb = el('div', `display:flex;flex-wrap:wrap;gap:6px;justify-content:center;background:${MHC.sheet};border:1.5px solid ${MHC.line};border-radius:6px;padding:8px;margin-bottom:10px`);
     P.forEach((pg, i) => { const b = el2('button', 'btn', `${i + 1}. ${mhPageName(pg, i)}`); b.style.cssText = `font-size:15px;padding:5px 12px;border-radius:999px;box-shadow:none;border:1.5px solid ${i === kws.pg ? MHC.ink : MHC.line};background:${i === kws.pg ? MHC.ink : '#fff'};color:${i === kws.pg ? '#fff' : MHC.ink}`; b.onclick = () => { kws.pg = i; kwsRender(); }; tb.append(b); });
-    B.append(tb, el('p', `font-size:14px;color:${MHC.muted};margin:0 0 6px;text-align:center`, ro ? (kws.no ? '👀 학생이 쓴 답을 보고 있어요 (고칠 수 없어요)' : '📖 빈 학습지예요 · 화면에 띄워 함께 읽고 풀어요') : '✏️ 답을 쓰면 저절로 저장돼요. 정답은 선생님과 함께 맞춰요!')); }
+    B.append(tb, el('p', `font-size:14px;color:${MHC.muted};margin:0 0 6px;text-align:center`, lock ? '📤 제출한 학습지예요 (답을 고칠 수 없어요)' : ro ? (kws.no ? '👀 학생이 쓴 답을 보고 있어요 (고칠 수 없어요)' : '📖 빈 학습지예요 · 화면에 띄워 함께 읽고 풀어요') : '✏️ 답을 쓰면 저절로 저장돼요. 정답은 선생님과 함께 맞춰요!')); }
   const sheet = el('div', `background:${MHC.sheet};border:1.5px solid ${MHC.line};border-radius:6px;padding:16px 18px 22px;line-height:1.8;font-size:17px`); B.append(sheet);
   let card = null; const pcard = () => card ||= (() => { const c = el('div', `background:#fff;border:1.5px solid ${MHC.line};border-left:5px solid ${MHC.ochre};border-radius:6px;padding:10px 14px;margin:8px 0`); sheet.append(c); return c; })();
   for (const [t, v] of P[kws.pg]) {
@@ -30937,7 +30938,8 @@ function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S
     if (t === 'P') { pcard().append(el('div', 'text-indent:.6em;margin:2px 0', v)); continue; }
     if (t === 'I') { card = null; sheet.append(img(v)); continue; }
     if (t !== 'Q') continue; card = null; const q = v, k = String(q.n), c = el('div', `border-top:1.5px dashed ${MHC.line};padding:12px 2px 6px;margin-top:12px`); sheet.append(c);
-    { const r = el('div', 'display:flex;gap:10px;align-items:flex-start;font-weight:800;font-size:18px'); r.append(el('span', `color:${MHC.ochre};font-size:24px;line-height:1.1;min-width:24px`, q.n ? String(q.n) : '✏️'), el('span', '', q.s)); c.append(r); }
+    { const r = el('div', 'display:flex;gap:10px;align-items:flex-start;font-weight:800;font-size:18px'); r.append(el('span', `color:${MHC.ochre};font-size:24px;line-height:1.1;min-width:24px`, q.n ? String(q.n) : '✏️'), el('span', '', q.s)); const mk = (kws.ro ? kws.vsc : SC)?.r?.[q.n]; if (mk != null && !(SC?.redo && !kws.ro)) r.append(el('span', `margin-left:auto;font-size:22px`, mk ? '✅' : '❌')); c.append(r); }
+    if (AN && kws.showAns) c.append(el('div', `background:#FFF4D6;border:1.5px dashed ${MHC.ochre};border-radius:6px;padding:4px 10px;margin:6px 0;font-size:15px;color:#7A4B00`, '🔑 정답: ' + mhAnsShow(q, AN[String(q.n)])));
     for (const x of q.img || []) c.append(img(x));
     const kd = q.k;
     if (kd === 'ch') { const w = el('div', 'margin-top:6px'); (q.o || []).forEach((o, j) => { const b = pill(`${'①②③④⑤'[j]} ${o}`, A[k] === j + 1, () => { set(k, A[k] === j + 1 ? 0 : j + 1); kwsRender2(); }); b.style.display = 'block'; b.style.textAlign = 'left'; b.style.width = '100%'; w.append(b); }); c.append(w); }
@@ -30950,7 +30952,8 @@ function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S
     else if (kd === 'ord') { const g = q.g || [], a = Array.isArray(A[k]) ? A[k] : []; for (const x of g) c.append(el('div', 'padding:2px 6px', x)); const r = el('div', 'margin-top:6px;line-height:2.4;text-align:center');
       g.forEach((_, j) => { if (j) r.append(document.createTextNode(' → ')); const b = el2('select', ''); b.disabled = ro; b.style.cssText = `font:inherit;font-size:19px;padding:3px 6px;border:none;border-bottom:2px solid ${MHC.ochre};border-radius:4px 4px 0 0;background:${MHC.soft};color:${MHC.ink}`; for (const o of ['', ...g.map(x => x[0])]) { const op = el2('option', '', o || '고르기'); op.value = o; b.append(op); } b.value = a[j] || ''; b.onchange = () => { const z = Array.isArray(A[k]) ? [...A[k]] : []; z[j] = b.value; set(k, z); }; r.append(b); }); c.append(r); } /* 탭으로 ㉠㉡ 고르기 */
     else if (kd === 'match') { const a = Array.isArray(A[k]) ? A[k] : []; (q.m || []).forEach((L, j) => { const r = el('div', `border-bottom:1px solid ${MHC.tint};padding:4px 2px;margin:2px 0`); r.append(el('b', '', L + '  →  ')); (q.r || []).forEach((R, z) => r.append(pill(R, a[j] === z + 1, () => { const b = [...a]; b[j] = a[j] === z + 1 ? 0 : z + 1; set(k, b); kwsRender2(); }))); c.append(r); }); }
-    else if (/^para\d$/.test(kd)) { const n = +kd.slice(4), a = Array.isArray(A[k]) ? A[k] : []; for (let j = 0; j < n; j++) { c.append(el('div', `display:inline-block;background:${MHC.ink};color:#fff;border-radius:6px;padding:0 8px;margin-top:6px;font-weight:800;font-size:15px`, `${j + 1}문단`)); c.append(area(a[j], (val) => { const b = Array.isArray(A[k]) ? [...A[k]] : []; b[j] = val; set(k, b); }, `${j + 1}문단의 중심 내용`, 2)); } }
+    else if (/^para\d$/.test(kd)) { const n = +kd.slice(4), a = Array.isArray(A[k]) ? A[k] : [], lb = (j) => q.lab?.[j] || `${j + 1}문단`; for (let j = 0; j < n; j++) { c.append(el('div', `display:inline-block;background:${MHC.ink};color:#fff;border-radius:6px;padding:0 8px;margin-top:6px;font-weight:800;font-size:15px`, lb(j))); c.append(area(a[j], (val) => { const b = Array.isArray(A[k]) ? [...A[k]] : []; b[j] = val; set(k, b); }, q.lab ? `${lb(j)}을 써요` : `${j + 1}문단의 중심 내용`, 2)); } }
+    else if (kd === 'multi') { const a = Array.isArray(A[k]) ? A[k] : [], w = el('div', 'margin-top:6px'); c.append(el('div', `font-size:14px;color:${MHC.muted}`, '알맞은 것을 모두 눌러 골라요')); (q.o || []).forEach((o, j) => { const on = a.includes(j + 1), b = pill(`${on ? '☑' : '☐'} ${o}`, on, () => { const z = new Set(a); z.has(j + 1) ? z.delete(j + 1) : z.add(j + 1); set(k, [...z].sort()); kwsRender2(); }); b.style.display = 'block'; b.style.textAlign = 'left'; b.style.width = '100%'; w.append(b); }); c.append(w); }
     else if (kd === 'chain') c.append(mhChain(q, k, A, ro, set));
     else if (kd === 'ws') c.append(mhWordSearch(q, k, A, ro, set));
     else if (kd === 'cw') c.append(mhCross(q, k, A, ro, set));
@@ -30961,9 +30964,11 @@ function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S
   { const pg = el('div', 'display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 4px'), nb = (t, on, f, main) => { const b = el2('button', 'btn', t); b.disabled = !on; b.style.cssText = `font-size:18px;padding:9px 18px;border-radius:8px;box-shadow:none;border:1.5px solid ${main ? MHC.ochre : MHC.line};background:${main ? MHC.ochre : '#fff'};color:${main ? '#fff' : MHC.ink};opacity:${on ? 1 : .4}`; b.onclick = f; return b; };
     const go = (d) => { kws.pg += d; kwsRender(); if (!ro && kws.dirty) kwsSave(); };
     pg.append(nb('‹ 이전', kws.pg > 0, () => go(-1)), el('span', `font-size:15px;color:${MHC.muted}`, `${kws.pg + 1} / ${P.length}쪽`), nb(kws.pg < P.length - 1 ? '다음 ›' : '✔ 마지막 쪽', kws.pg < P.length - 1, () => go(1), kws.pg < P.length - 1)); B.append(pg); }
-  if (!ro && kws.pg === P.length - 1) { const r = el('div', 'text-align:center;margin:10px 0 6px'), s = el2('button', 'btn', '💾 저장하기'), dn = el2('button', 'btn', D.done ? '✅ 다 했어요 (다시 고치기)' : '🙌 다 풀었어요'); s.style.cssText = `background:#fff;border:1.5px solid ${MHC.line};box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; s.onclick = () => kwsSave(true);
-    dn.style.cssText = `background:${D.done ? '#2F7A4B' : MHC.ochre};color:#fff;box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; dn.onclick = () => { D.done = D.done ? 0 : 1; kwsTouch(); kwsSave(true); kwsRender2(); }; r.append(s, dn); B.append(r);
-    B.append(el('p', `font-size:14px;color:${MHC.muted};text-align:center`, '정답은 여기서 알려 주지 않아요. 선생님과 함께 맞춰 봐요 🙂')); } }
+  { const sc = kws.ro ? kws.vsc : SC; if (sc && !(SC?.redo && !kws.ro)) { const bx = el('div', `background:${MHC.sheet};border:2px solid ${MHC.ink};border-radius:6px;padding:10px 14px;margin:10px 0;text-align:center`); bx.append(el('div', 'font-size:26px;font-weight:800', `💯 ${sc.sc}점`), el('div', `font-size:15px;color:${MHC.muted}`, `채점한 ${sc.mx}문제 중 ${sc.ok}문제 맞음 · 쓰는 문제(서술형)는 선생님이 확인해요`)); B.prepend(bx); }
+    else if (lock) { const bx = el('div', `background:${MHC.soft};border-radius:6px;padding:10px 14px;margin:10px 0;text-align:center;font-size:17px`, '📤 제출했어요! ⏳ 채점을 기다리는 중이에요 (선생님 기기가 켜져 있으면 곧 채점돼요)'); B.prepend(bx); } }
+  if (!ro && kws.pg === P.length - 1) { const r = el('div', 'text-align:center;margin:10px 0 6px'), s = el2('button', 'btn', '💾 저장하기'), dn = el2('button', 'btn', '📤 제출하기'); s.style.cssText = `background:#fff;border:1.5px solid ${MHC.line};box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; s.onclick = () => kwsSave(true);
+    dn.style.cssText = `background:${MHC.ochre};color:#fff;box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; let arm = false; dn.onclick = async () => { if (!arm) { arm = true; dn.textContent = '❗ 한 번 더 누르면 제출 (답을 고칠 수 없어요)'; dn.style.background = '#B3412E'; setTimeout(() => { if (dn.isConnected && arm) { arm = false; dn.textContent = '📤 제출하기'; dn.style.background = MHC.ochre; } }, 7000); return; } D.done = 1; kws.sc = null; kwsTouch(); await kwsSave(true); kws.pg = 0; kwsRender(); }; r.append(s, dn); B.append(r);
+    B.append(el('p', `font-size:14px;color:${MHC.muted};text-align:center`, '제출하면 점수와 문제마다 ✅/❌가 나와요. 정답은 선생님과 함께 맞춰요 🙂')); } }
 // 🧩 끝말잇기 말판: 보기 낱말을 끌어다(또는 눌러 고르고) 번호 칸에 놓아요 · 보기에 없는 낱말은 ✏️로 써요 · 답은 A['0'] = [1번 낱말, …]
 function mhChain(q, k, A, ro, set) { const a = Array.isArray(A[k]) ? [...A[k]] : [], N = q.clues.length, wrap = el2('div', ''), put = (j, w) => { const b = Array.isArray(A[k]) ? [...A[k]] : []; for (let z = 0; z < N; z++) if (w && b[z] === w && z !== j) b[z] = ''; b[j] = w; set(k, b); mhSel = ''; kwsRender2(); };
   const used = new Set(a.filter(Boolean)); wrap.style.cssText = 'margin-top:8px';
@@ -31039,7 +31044,7 @@ function mhZoom(src) { // 🔍 1106v 그림 크게 보기 (새 탭 대신 화면
 function mhZfit() { const z = $('mhZoom'), im = z?.querySelector('#mhZimg'), bx = z?.querySelector('#mhZbox'); if (!im || !bx) return; const W = bx.clientWidth - 4, H = bx.clientHeight - 4, w = im.naturalWidth || 1, h = im.naturalHeight || 1, k = Math.min(W / w, H / h) * (z.dataset.big === '1' ? 2 : 1);
   im.style.width = Math.round(w * k) + 'px'; im.style.height = Math.round(h * k) + 'px'; z.querySelector('#mhZin').textContent = z.dataset.big === '1' ? '↩️ 화면에 맞추기' : '🔍 더 크게'; }
 function kwsRender2() { const B = kws.el?.querySelector('#kwsBody'); const y = B?.scrollTop || 0; kwsRender(); if (B) B.scrollTop = y; } // 버튼을 눌러도 읽던 자리 그대로
-function kwsTick() { if (!kws.on || kws.ro) return; const t = performance.now(); if (t - kws.tick < 500) return; kws.tick = t; if (roomNow() !== 'kst' || !joined) { kwsClose(); return; } if (!isSeated(player.avatar)) { kws.on = false; kws.el?.classList.add('hidden'); if (kws.dirty) kwsSave(); } }
+function kwsTick() { if (!kws.on || kws.ro) return; const t = performance.now(); if (t - kws.tick < 500) return; kws.tick = t; if (kws.si && kws.d?.done && (!kws.sc || kws.sc.redo) && t - (kws.pollT || 0) > 8000) { kws.pollT = t; const si = kws.si, no = kws.no; backend.kwsGet(mhSid(si), 's' + no).then(x => { const sc = mhScore(x); if (!sc || kws.si !== si || kws.no !== no || sc.redo) return; kws.sc = sc; mhReward(si, x); kwsRender2(); }); } if (roomNow() !== 'kst' || !joined) { kwsClose(); return; } if (!isSeated(player.avatar)) { kws.on = false; kws.el?.classList.add('hidden'); if (kws.dirty) kwsSave(); } }
 // 🧑‍🏫 선생님: 오늘의 학습지 고르기 · 번호별 답 모아 보기 (정답 맞히기는 수업에서 함께)
 function mhAnsText(q, x) { const k = q.k; if (x == null || x === '' || (Array.isArray(x) && !x.some(v => v))) return '—';
   if (k === 'ch') return x ? '①②③④⑤'[x - 1] : '—'; if (k === 'ox') return x; if (k === 'mk') return (q.e || []).map((_, j) => `${'➊➋➌➍➎'[j]}${x[j] === 'O' ? '○' : x[j] === 'X' ? '✕' : '·'}`).join(' ');
@@ -31049,19 +31054,59 @@ function mhAnsText(q, x) { const k = q.k; if (x == null || x === '' || (Array.is
 function kwsTeacher() { kws.all = null; kws.tsi = kws.tsi || 0;
   const load = async () => { await Promise.all([mhLoad(), mhCfg()]); if (kws.tsi) { const a = await backend.kwsGet(mhSid(kws.tsi), ''); kws.all = a === undefined ? false : (a || {}); } else kws.all = {}; refillLife(); };
   openLife('🧑‍🏫 쑥쑥 문해력 학습지', (box) => { box.textContent = ''; const M = kws.mh; if (kws.all === null || !M) { box.append(el2('p', 'hint', '⏳ 불러오는 중…')); return; }
-    box.append(el2('p', 'hint', '⭐ 오늘의 학습지를 고르면 학생들은 1회부터 그 회까지 펼 수 있어요. 정답 확인은 없어요 — 학생 답을 모아 보고 함께 맞춰요.'));
+    box.append(el2('p', 'hint', '⭐ 오늘의 학습지를 고르면 학생들은 1회부터 그 회까지 펼 수 있어요. 학생이 📤 제출하면 이 기기가 자동으로 채점해요.'));
+    { const r = el2('div', 'row-center wrap'), AN = mhAns(), st = el2('p', AN ? 'up-win' : 'hint', AN ? `🔑 정답 파일 있음 (${Object.keys(AN).length}회) · 🤖 이 기기가 켜져 있으면 제출한 학습지를 12초마다 채점해요` : '🔑 정답 파일이 없어요 → 「📂 정답 파일 불러오기」로 mh_answers.json 을 골라요 (이 기기에만 저장 · 학생 기기에는 안 가요)');
+      const b = el2('button', 'btn', '📂 정답 파일 불러오기'); b.style.cssText = 'font-size:14px;background:#FFD23C'; b.onclick = mhAnsPick; r.append(b); if (AN) { const x = el2('button', 'btn', '🗑️ 정답 지우기'); x.style.cssText = 'font-size:14px;background:#fff'; x.onclick = () => { try { localStorage.removeItem(MH_ANS_KEY); } catch (e) { } kws.ans = null; refillLife(); }; r.append(x); } box.append(st, r); }
     { const r = el2('div', 'row-center wrap'); M.forEach((S2, k) => { const i = k + 1, b = el2('button', 'btn', `${i === kws.mt ? '⭐ ' : ''}${i}회 ${S2.t}`); b.style.cssText = `font-size:14px;margin:3px;background:${i === kws.mt ? '#FFD23C' : '#fff'}`;
         b.onclick = async () => { const r2 = await backend.kwsSet('mhcfg', 'cfg', { u: backend.uid, d: JSON.stringify({ t: i }), at: backend.now() }); if (r2?.ok) { kws.mt = i; toast(`⭐ 오늘의 학습지: ${i}회 「${S2.t}」`, 'success'); } else toast('⚠️ 저장하지 못했어요', 'warn'); refillLife(); }; r.append(b); }); box.append(el2('b', '', '⭐ 오늘의 학습지'), r); }
     { const r = el2('div', 'row-center wrap'); r.style.marginTop = '10px'; M.forEach((S2, k) => { const i = k + 1, b = el2('button', 'btn', `📋 ${i}회`); b.style.cssText = `font-size:14px;margin:3px;background:${i === kws.tsi ? '#7EC4F5' : '#fff'}`; b.onclick = () => { kws.tsi = i; kws.all = null; refillLife(); load(); }; r.append(b); });
       const pv = el2('button', 'btn', '📖 빈 학습지 펴 보기'); pv.style.cssText = 'font-size:14px;margin:3px'; pv.onclick = () => mhView(kws.tsi || kws.mt || 1, 0, null); r.append(pv); box.append(el2('b', '', '📋 답 모아 보기'), r); }
     if (!kws.tsi) return; if (kws.all === false) { box.append(el2('p', '', '⚠️ 불러오지 못했어요. 인터넷을 확인해요.')); return; }
-    const S2 = M[kws.tsi - 1], L = Object.entries(kws.all).filter(([k, v]) => /^[0-9]{1,2}$/.test(k) && v).map(([k, v]) => ({ no: +k, v, d: mhParse(v) })).sort((a, b) => a.no - b.no);
+    const S2 = M[kws.tsi - 1], AN = mhAns()?.[String(kws.tsi)], L = Object.entries(kws.all).filter(([k, v]) => /^[0-9]{1,2}$/.test(k) && v).map(([k, v]) => ({ no: +k, v, d: mhParse(v), sc: mhScore(kws.all['s' + k]) })).sort((a, b) => a.no - b.no);
     const rf = el2('button', 'btn', '🔄 새로 고침'); rf.onclick = () => { kws.all = null; refillLife(); load(); }; box.append(el2('p', 'hint', `${kws.tsi}회 「${S2.t}」 · 쓴 학생 ${L.length}명 · 다 했어요 ${L.filter(x => x.d.done).length}명`), rf);
-    { const g = el2('div', ''); g.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:6px 0'; for (const x of L) { const b = el2('button', 'btn', `${x.d.done ? '✅' : '✏️'} ${x.no}번`); b.style.cssText = 'font-size:14px;padding:4px 8px;background:#fff'; b.title = '이 학생 학습지 크게 보기'; b.onclick = () => mhView(kws.tsi, x.no, x.v); g.append(b); } box.append(g); }
+    { const g = el2('div', ''); g.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:6px 0'; for (const x of L) { const w = el2('span', ''); w.style.cssText = 'display:inline-flex;gap:2px'; const b = el2('button', 'btn', `${x.sc ? `💯${x.sc.sc}` : x.d.done ? '📤' : '✏️'} ${x.no}번`); b.style.cssText = 'font-size:14px;padding:4px 8px;background:#fff'; b.title = '이 학생 학습지 크게 보기'; b.onclick = () => mhView(kws.tsi, x.no, x.v, x.sc); w.append(b);
+      if (x.d.done && !x.sc?.redo) { const rd = el2('button', 'btn', '↩️'); rd.title = `${x.no}번 다시 풀게 하기`; rd.style.cssText = 'font-size:13px;padding:4px 6px;background:#fff'; rd.onclick = async () => { const r2 = await backend.kwsSet(mhSid(kws.tsi), 's' + x.no, { u: backend.uid, d: JSON.stringify({ ...(x.sc || {}), redo: 1, first: x.sc?.first ?? x.sc?.sc }), at: backend.now() }); toast(r2?.ok ? `↩️ ${x.no}번이 다시 풀 수 있어요` : '⚠️ 저장하지 못했어요', r2?.ok ? 'success' : 'warn'); kws.all = null; refillLife(); load(); }; w.append(rd); } g.append(w); } box.append(g); }
+    if (L.some(x => x.sc)) { const av = L.filter(x => x.sc && !x.sc.redo); if (av.length) box.append(el2('p', 'hint', `💯 평균 ${Math.round(av.reduce((s2, x) => s2 + x.sc.sc, 0) / av.length)}점 (${av.length}명 채점)`)); }
     for (const [t, q] of S2.b) { if (t !== 'Q') continue; const c = el2('div', ''); c.style.cssText = 'background:#F1F7FF;border-radius:12px;padding:8px 10px;margin:6px 0;text-align:left;font-size:14px;line-height:1.6';
-      c.append(el2('b', '', `${q.n || '✏️'}. ${q.s}`)); for (const x of L) { const e = el2('div', '', `${x.no}번: ${mhAnsText(q, x.d.a[String(q.n)])}`); e.style.whiteSpace = 'pre-wrap'; c.append(e); } box.append(c); } });
+      c.append(el2('b', '', `${q.n || '✏️'}. ${q.s}`)); if (AN) { const e = el2('div', '', '🔑 정답: ' + mhAnsShow(q, AN[String(q.n)])); e.style.cssText = 'color:#8A5A00;font-weight:700;white-space:pre-wrap'; c.append(e); } for (const x of L) { const g2 = x.sc?.r?.[q.n], e = el2('div', '', `${g2 == null ? '' : g2 ? '✅ ' : '❌ '}${x.no}번: ${mhAnsText(q, x.d.a[String(q.n)])}`); e.style.whiteSpace = 'pre-wrap'; c.append(e); } box.append(c); } });
   load(); }
-async function mhView(si, no, v) { await mhLoad(); if (!kws.mh) return; closeModals(); const el = kwsEl(); el.classList.remove('hidden'); kws.on = true; kws.ro = true; kws.no = no; kws.si = si; kws.pg = 0; kws.d = mhParse(v); kwsHead(''); if (!no) kws.el.querySelector('#kwsHead b').textContent = `📖 ${si}회 ${kws.mh[si - 1].t} (빈 학습지)`; kwsRender(); }
+// ---------- 🔑 1106y 정답 · 자동 채점 · 📚 국어력 ----------
+// 정답은 앱 코드에 없어요: 선생님이 「정답 파일(mh_answers.json)」을 선생님 기기에서 불러오면 그 기기 localStorage에만 있어요
+// 채점: 선생님 기기(앱이 켜져 있을 때)가 12초마다 「제출한」 학습지를 채점해 kws/mh{회}/s{번호} {u 선생님, d: JSON {sc 점수, ok, mx, r:{문제:1/0}, redo}, at} 에 써요
+// 학생은 점수와 문제마다 ✅/❌만 보고(정답은 안 보여요) · 처음 채점된 점수로 📚 국어력 한 번 (점수의 절반, 최소 5)
+const MH_ANS_KEY = 'sv-mhans';
+function mhAns() { if (kws.ans !== undefined) return kws.ans; try { const o = JSON.parse(localStorage.getItem(MH_ANS_KEY) || 'null'); kws.ans = o?.kind === 'mh-answers' ? o.a : null; } catch (e) { kws.ans = null; } return kws.ans; }
+function mhAnsPick() { const f = el2('input', ''); f.type = 'file'; f.accept = '.json,application/json'; f.onchange = async () => { const file = f.files?.[0]; if (!file) return; try { const o = JSON.parse(await file.text()); if (o?.kind !== 'mh-answers' || !o.a) throw 0; localStorage.setItem(MH_ANS_KEY, JSON.stringify(o)); kws.ans = o.a; toast(`🔑 정답 파일을 불러왔어요 (${Object.keys(o.a).length}회) · 이 기기에만 저장돼요`, 'success'); playSfx('pick'); refillLife(); } catch (e) { toast('⚠️ 정답 파일이 아니에요 (mh_answers.json 을 골라요)', 'warn'); } }; f.click(); }
+const mhNorm = (s) => String(s ?? '').toLowerCase().replace(/[\s.,·()'"‘’“”!?~\-\/:]/g, '');
+function mhGradeQ(q, a, v) { // 1 맞음 · 0 틀림 · null 선생님 확인(채점 안 함)
+  if (v == null || (typeof v === 'object' && !Array.isArray(v) && 'm' in v)) return v && v.kw ? (v.kw.every(w => mhNorm(a).includes(mhNorm(w))) ? 1 : 0) : null;
+  const k = q.k, arr = (x) => Array.isArray(x) ? x : [];
+  if (k === 'ch' || k === 'ox') return a === v ? 1 : 0;
+  if (k === 'multi') { const s = [...arr(a)].filter(Boolean).sort().join(','); return s === [...v].sort().join(',') ? 1 : 0; }
+  if (k === 'mk') return arr(a).some(Boolean) && v.every((o, j) => o === 'O' ? arr(a)[j] === 'O' : arr(a)[j] !== 'O') ? 1 : 0;
+  if (k === 'pick' || k === 'match') return v.every((o, j) => arr(a)[j] === o) ? 1 : 0;
+  if (k === 'ord') return v.every((o, j) => arr(a)[j] === o) ? 1 : 0;
+  if (k === 'fill' || k === 'chain') return v.every((alts, j) => alts.some(x => mhNorm(arr(a)[j]) === mhNorm(x) && mhNorm(x))) ? 1 : 0;
+  if (k === 'cw') { const o = a && typeof a === 'object' && !Array.isArray(a) ? a : {}; return Object.entries(v).every(([key, ch]) => mhNorm(o[key]) === mhNorm(ch)) ? 1 : 0; }
+  if (k === 'ws') return [...arr(a)].sort((x, y) => x - y).join(',') === v.join(',') ? 1 : 0;
+  return null; }
+function mhGradeSheet(S2, AN, d) { const r = {}; let ok = 0, mx = 0; for (const [t, q] of S2.b) { if (t !== 'Q') continue; const g = mhGradeQ(q, d.a[String(q.n)], AN[String(q.n)]); if (g === null) continue; r[q.n] = g; mx++; ok += g; } return { r, ok, mx, sc: mx ? Math.round(ok / mx * 100) : 0 }; }
+async function mhGradeTick() { // 🧑‍🏫 선생님 기기만
+  if (!isTeacher || !joined || !mhAns() || kws.gBusy) return; const t = performance.now(); if (t - (kws.gT || 0) < 12000) return; kws.gT = t; kws.gBusy = true;
+  try { const [M, top] = await Promise.all([mhLoad(), mhCfg()]); if (!M) return; const AN = mhAns();
+    for (let i = 1; i <= Math.min(top, M.length); i++) { if (!AN[String(i)]) continue; const all = await backend.kwsGet(mhSid(i), ''); if (!all) continue;
+      for (const [k, v] of Object.entries(all)) { if (!/^[0-9]{1,2}$/.test(k) || !v) continue; const d = mhParse(v); if (!d.done) continue; const s = all['s' + k]; let so = null; try { so = JSON.parse(s?.d || 'null'); } catch (e) { }
+        if (s && (s.at || 0) >= (v.at || 0)) continue; /* 채점 뒤 안 바뀌었거나, ↩️ 다시 풀기 뒤 아직 다시 안 냈어요 */
+        const g = mhGradeSheet(M[i - 1], AN[String(i)], d); await backend.kwsSet(mhSid(i), 's' + k, { u: backend.uid, d: JSON.stringify({ ...g, first: so?.first ?? g.sc }), at: backend.now() }); } } }
+  finally { kws.gBusy = false; } }
+function mhAnsShow(q, v) { if (v == null) return '—'; if (typeof v === 'object' && !Array.isArray(v) && 'm' in v) return `${v.m}${v.kw ? '' : ' (선생님 확인)'}`;
+  const k = q.k; if (k === 'fill' || k === 'chain') return v.map((x, j) => `${j + 1}) ${x[0]}${x.length > 1 ? ` (${x.slice(1, 3).join('·')} 도 정답)` : ''}`).join('  ');
+  if (k === 'ws') return (q.words || []).join(', '); if (k === 'cw') return '가로 ' + (q.ac || []).map(([n]) => n).join('·') + ' · 세로 ' + (q.dn || []).map(([n]) => n).join('·') + ' → ' + Object.values(v).join('');
+  if (k === 'multi') return v.map(j => '㉠㉡㉢㉣㉤'[j - 1]).join(', '); if (k === 'ch') return `${'①②③④⑤'[v - 1]} ${q.o?.[v - 1] || ''}`; return mhAnsText(q, v); }
+
+const mhScore = (x) => { try { const o = JSON.parse(x?.d || 'null'); return o && typeof o.sc === 'number' ? o : null; } catch (e) { return null; } };
+function mhReward(i, x) { const sc = mhScore(x); if (!sc || isTeacher) return; bag.mhRw ||= {}; if (bag.mhRw[i]) return; bag.mhRw[i] = 1; const base = sc.first ?? sc.sc, n = Math.max(5, Math.round(base / 2)); addStat('read', n); saveBag(); updateHUD(null); playSfx('fanfare'); showBanner(`💯 ${i}회 문해력 ${base}점!`, `📚 국어력 +${n}`, 4000); }
+async function mhView(si, no, v, sc) { await mhLoad(); if (!kws.mh) return; kws.vsc = sc || null; closeModals(); const el = kwsEl(); el.classList.remove('hidden'); kws.on = true; kws.ro = true; kws.no = no; kws.si = si; kws.pg = 0; kws.d = mhParse(v); kwsHead(''); if (!no) kws.el.querySelector('#kwsHead b').textContent = `📖 ${si}회 ${kws.mh[si - 1].t} (빈 학습지)`; kwsRender(); }
 // ---------- ✍️ 시 게시판 (1101l 운을 띄운 N행시 · 투표 · 걸리면 보상) ----------
 // state/kpw 운(2~4글자, 선생님) · state/kpoem/{uid} {n, w 운, t, at, ok} · state/kpoemv/{uid} 투표한 시의 기기
 const KV_RHYMES = ['한글날', '가을빛', '도서관', '우리반', '친구야', '단풍잎', '꿈나무', '반월초'];
@@ -32787,6 +32832,7 @@ function loop() {
   if (joined) { try { wcTick(); } catch (e) { console.warn('wc', e); } } /* 🔤 1102x 끝말잇기 */
   if (joined) { try { omTick(); } catch (e) { console.warn('om', e); } } /* ⚫ 1105zd 오목 */
   try { kwsTick(dt); } catch (e) { console.warn('kws', e); } /* 📖 1105zk */
+  if (isTeacher) mhGradeTick().catch(e => console.warn('mhGrade', e)); /* 🤖 1106y 문해력 자동 채점 */
   /* 🗑️ 1106n 하늘 섬 깃발전 지움 (swTick 멈춤) */
   if (joined && bldRegion()) { try { kdRoomTick(); } catch (e) { console.warn('kdr', e); } } else if (kdW.it) kdW.it.pos.set(0, -99, 0); // 🕵️ 1101k
   if (joined && esc.it) { try { escTick(); } catch (e) { console.warn('esc', e); } } // 🔐 1101a 방탈출
