@@ -1675,7 +1675,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpNvMe" checked> 🧑‍🏫 선생님도 한 팀으로 참여하기 (끄면 지켜보기)</label>
     <div class="field">해전 팀 정하기 (자동 = 바다에 오면 사람이 적은 팀으로)</div>
     <div id="tpNvList"></div>
-    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpNvOpen" type="button" style="background:#BFE0FF">⚓ 바다 열기</button><button class="btn" id="tpNvBal" type="button" style="background:#fff">⚖️ 능력치로 고르게 나누기</button><button class="btn" id="tpNvStart" type="button" style="background:#FFD23C">⚔️ 해전 시작</button><button class="btn" id="tpNvEnd" type="button" style="background:#fff">🏁 끝내기</button><button class="btn" id="tpNvClose" type="button" style="background:#fff">🧹 닫기</button><button class="btn" id="tpNvGo" type="button" style="background:#fff">🚢 바다로 가기</button></div>
+    <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpNvOpen" type="button" style="background:#BFE0FF">⚓ 해전 열기 (모두 바다로 출발)</button><button class="btn" id="tpNvBal" type="button" style="background:#fff">⚖️ 능력치로 고르게 나누기</button><button class="btn" id="tpNvStart" type="button" style="background:#FFD23C">⚔️ 해전 시작</button><button class="btn" id="tpNvEnd" type="button" style="background:#fff">🏁 끝내기</button><button class="btn" id="tpNvClose" type="button" style="background:#fff">🧹 닫기</button><button class="btn" id="tpNvGo" type="button" style="background:#fff">🚢 바다로 가기</button></div>
     <div hidden><!-- 🎤 1106h 꿈끼 발표회 끝 · 관리화면에서 숨겨요 -->
     <h3>🎤 꿈나무 무대 (꿈끼 발표회 연습)</h3>
     <p class="hint" id="tpStgNow"></p>
@@ -19104,6 +19104,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106q', d: '11월 22일', items: ['🧮 수학 해전: 선생님이 열면 모두 함께 바다로 출발해요 (공성전처럼)', '🎯 정답 부표가 한 줄로 7m씩 떨어져요 · 한 번 먹은 부표 무리는 멀리 갔다 와야 다시 먹어요 (여러 개 한꺼번에 먹지 않게)'] },
   { id: '1106p', d: '11월 22일', items: ['🧑‍🏫 관리화면 🎮 놀이 탭: ⚔️ 성 공방전 바로 아래에 🧮 수학 해전 · 🎛️ 이벤트 켜고 끄기도 보여요'] },
   { id: '1106o', d: '11월 22일', items: ['⚔️ 성 공방전 거점 자리를 나라마다 공평하게! 3나라면 세 성이 가운데에서 같은 거리 · 두 나라 사이마다 거점 하나(⛏️·🌾·⛵) → 나라마다 가까운 거점 2곳이 똑같은 거리예요', '2나라는 🔥 봉수대를 가운데 줄 옆으로(두 성에서 같은 거리) · 4나라는 모서리 거점을 정사각형으로 맞췄어요'] },
   { id: '1106n', d: '11월 22일', items: ['🏝️ 수학 해전 섬 자리를 팀마다 공평하게! 3팀이면 가운데 ✈️ 비행장은 세 부두에서 똑같은 거리, 팀마다 앞 섬 하나씩 (4팀이면 두 팀 사이마다 섬 하나 · ⭐ 별섬 추가)', '🧹 정리: 🎯 역할 체험장 · ☁️ 하늘 섬 깃발전 · 🤿 바닷속 산호초 · 🔱 심해 방탈출이 없어졌어요 (화면이 더 가벼워져요)'] },
@@ -29268,7 +29269,8 @@ function nvBuoySpots() { const out = []; for (const [r, n, off] of [[30, 6, 0.5]
 function nvBuoyBuild() {
   const g = new THREE.Group(); g.name = 'NvBuoys'; scene.add(g); const B = { g, cl: [] }, o = { solid: false };
   nvBuoySpots().forEach(([x, z], i) => { const c = { i, x: NV.cx + x, z: NV.cz + z, n: 0, opts: [], b: [] };
-    for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2 + i, dx = Math.sin(a) * 3.4, dz = Math.cos(a) * 3.4, bg = new THREE.Group(); bg.position.set(c.x + dx, 0, c.z + dz); g.add(bg);
+    const ca = Math.atan2(x, z), tx = Math.cos(ca), tz = -Math.sin(ca); /* 🧮 1106q 한 줄로 7m씩 (한 번에 여러 개 안 먹게) */
+    for (let k = 0; k < 5; k++) { const off = [0, -7, 7, -14, 14][k], dx = tx * off, dz = tz * off, bg = new THREE.Group(); bg.position.set(c.x + dx, 0, c.z + dz); g.add(bg);
       ball(bg, 0.75, 0xFF9A3C, 0, 0.35, 0, o); cyl(bg, 0.78, 0.22, 0xFFFFFF, 0, 0.45, 0, o); cyl(bg, 0.07, 1.4, 0x5A5F66, 0, 1.4, 0, o);
       const lab = makeLabel(bg, ['?'], 1.05, 0, 2.6, 0); c.b.push({ g: bg, dx, dz, lab }); }
     B.cl.push(c); });
@@ -29278,18 +29280,18 @@ function nvWrongs(v, k) { const c = [v + 1, v - 1, v + 2, v - 2, v + 3, v - 3, v
 function nvNewQ() {
   const q = sbtCard(Math.max(0, Math.min(2, S.nv?.lv | 0))), t = nvMine() || 1, [bx, bz] = nvBaseAt(t); nvW.qq = q;
   for (const c of nvW.buoys.cl) { const d = Math.hypot(c.x - bx, c.z - bz); c.n = d < 48 ? 2 : d < 98 ? 3 : 5; c.opts = [q.v, ...nvWrongs(q.v, c.n - 1)].sort(() => Math.random() - 0.5);
-    c.b.forEach((b, k) => { b.g.visible = k < c.n; if (k < c.n) b.lab.userData.set([String(c.opts[k])]); }); }
+    c.b.forEach((b, k) => { b.g.visible = k < c.n && !c.lock; if (k < c.n) b.lab.userData.set([String(c.opts[k])]); }); }
 }
 function nvBuoyHit(c, k) {
   const q = nvW.qq, ok = c.opts[k] === q.v, gain = c.n === 2 ? 2 : c.n === 3 ? 4 : 6, b = c.b[k], p = new V3(c.x + b.dx, 1, c.z + b.dz);
   if (ok) { nvW.ammo = Math.min(24, (nvW.ammo | 0) + gain); playSfx('right'); burst(p, [0xFFE066, 0xFFFFFF, 0x8FE08A], 24, 4, 2); toast(`✅ ${q.t.replace('과 ', ' ')} = ${q.v} 정답! 💣 +${gain} (지금 ${nvW.ammo}발)`, 'success'); if (!isTeacher) addStat('math', 1); }
   else { playSfx('wrong'); burst(p, [0xBFE4FF, 0xFFFFFF], 14, 3, 2); toast(`❌ ${q.t.replace('과 ', ' ')} = ${q.v} 이에요 · 다음 문제!`, 'warn'); }
-  nvW.qq = null; nvW.qWait = performance.now() + (ok ? 700 : 2000); for (const C of nvW.buoys.cl) C.b.forEach(x => { x.g.visible = false; });
+  nvW.qq = null; nvW.qWait = performance.now() + (ok ? 1200 : 2200); c.lock = true; for (const C of nvW.buoys.cl) C.b.forEach(x => { x.g.visible = false; }); /* 🧮 1106q 이 부표 무리에서 멀어져야 다시 먹어요 */
 }
 function nvBuoyTick(dt) {
   if (!nvW.reg || !S.nv?.on) { if (nvW.buoys) nvW.buoys.g.visible = false; return; } if (!nvW.buoys) nvBuoyBuild(); const B = nvW.buoys; B.g.visible = nvW.on; if (!nvW.on) return;
   if (!nvW.qq) { if (performance.now() > (nvW.qWait || 0)) nvNewQ(); return; }
-  for (const c of B.cl) { if (Math.hypot(player.pos.x - c.x, player.pos.z - c.z) > 30) continue; for (let k = 0; k < c.n; k++) { const b = c.b[k]; b.g.position.y = Math.sin(time * 2 + k + c.i) * 0.12; if (Math.hypot(player.pos.x - (c.x + b.dx), player.pos.z - (c.z + b.dz)) < 2.7) { nvBuoyHit(c, k); return; } } }
+  for (const c of B.cl) { const dc = Math.hypot(player.pos.x - c.x, player.pos.z - c.z); if (c.lock) { if (dc > 24) c.lock = false; else { c.b.forEach(x => { x.g.visible = false; }); continue; } } if (dc > 30) continue; for (let k = 0; k < c.n; k++) { const b = c.b[k]; b.g.position.y = Math.sin(time * 2 + k + c.i) * 0.12; if (Math.hypot(player.pos.x - (c.x + b.dx), player.pos.z - (c.z + b.dz)) < 2.4) { nvBuoyHit(c, k); return; } } }
 }
 function nvPlaneMesh(col) { const g = new THREE.Group(), o = { solid: false }; box(g, 0.8, 0.8, 4.2, col, 0, 0, 0, o); box(g, 6, 0.14, 1.1, col, 0, 0.05, 0.2, o); box(g, 2.2, 0.12, 0.7, col, 0, 0.1, -1.8, o); box(g, 0.12, 0.9, 0.7, col, 0, 0.5, -1.8, o);
   box(g, 0.6, 0.35, 0.9, 0x7FC8EE, 0, 0.5, 0.6, { solid: false, emissive: 0.3 }); box(g, 1.6, 0.14, 0.08, 0x2E3138, 0, 0, 2.15, o); mesh(CONE, g, 0.4, 0.5, 0.4, 0xE2584A, 0, 0, 2.3, { solid: false, rx: Math.PI / 2 }); return g; }
@@ -29401,6 +29403,7 @@ function nvTick(dt) {
   const reg = nvRegion(); if (reg !== nvW.reg) { nvW.reg = reg; if (reg) nvBuild(); applyEnv(true); document.body.classList.toggle('nv-here', reg); }
   if (!s?.on) { if (nvW.on) nvW.on = false; if (reg && !hv.travel && joined) { toast('⚓ 선생님이 해전 바다를 닫았어요', 'info'); travelTo('home'); } nvW.join?.classList.add('hidden'); nvW.hud?.classList.add('hidden'); nvW.actEl?.classList.add('hidden'); if (nvW.g) nvW.g.visible = false; for (const g of nvW.ships.values()) g.visible = false; return; }
   if (nvW.layoutN !== s.n) nvRelayout(s.n || 3); /* 🧮 1106n */
+  if (s.on && nvW.goR !== s.r && joined && !hv.travel && !pb3.on && !mrc.on && (!isTeacher || nvW.tMe)) { nvW.goR = s.r; if (!nvW.reg) { toast('🧮 수학 해전이 열렸어요! 모두 바다로 출발~', 'info'); nvGo(); } } /* 🧮 1106q 공성전처럼 열면 모두 함께 바다로 */
   if (nvW.lastR !== s.r) { nvW.lastR = s.r; nvW.hits = {}; nvW.hr = s.r; nvW.ammo = 8; nvW.qq = null; }
   if (nvW.lastPh !== s.ph) { const was = nvW.lastPh; nvW.lastPh = s.ph; if (was && reg) { if (s.ph === 'play') { showBanner('⚔️ 해전 시작!', '상대 배를 가라앉히면 +10점 · 섬을 차지하면 3초마다 점수', 6000); playSfx('fanfare'); } } if (!was && !reg && s.ph === 'lobby') toast('⚓ 수학 해전 바다가 열렸어요! 위쪽 "출전" 버튼을 눌러요', 'info'); if (s.ph === 'play' && !reg && was) showBanner('⚔️ 수학 해전이 시작됐어요!', '위쪽 "⚓ 수학 해전 출전!" 버튼으로 와요', 6000); }
   if (s.ph === 'play' && reg && nvMine()) nvW.fought = s.r;
