@@ -19106,6 +19106,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106x', d: '11월 22일', items: ['✏️ 2회 십자말: 칸을 눌러 한 글자씩 직접 써요', '✍️ 9회 미로: 손가락으로 미로 위에 길을 그려요 (↩️ 한 획 지우기 · 🧽 모두 지우기)'] },
   { id: '1106w', d: '11월 22일', items: ['📄 문해력 학습지가 역사 학습지처럼 바뀌었어요: 종이 학습지 모양 · 지문과 문제마다 한 쪽씩 ‹ 이전 / 다음 › 으로 넘겨요', '🧩 1회 끝말잇기 말판: 보기 낱말을 손가락으로 끌어 번호 칸에 놓아요 (눌러 고른 뒤 칸을 눌러도 돼요)', '🔤 낱말 찾기(3회·8회): 글자를 눌러 색칠해요'] },
   { id: '1106v', d: '11월 22일', items: ['🔍 문해력 학습지 그림을 누르면 화면 안에서 크게 보여요 · ✖ 닫기(또는 바깥 누르기)로 닫아요 · 🔍 더 크게로 두 배'] },
   { id: '1106u', d: '11월 22일', items: ['📰 국어 공부방 학습지가 「쑥쑥 문해력」으로 바뀌었어요! 방석에 앉아 내 번호를 고르면 선생님이 연 오늘의 학습지가 펴져요 (하루 한 장)', '✏️ 답은 저절로 저장돼요 · 정답은 바로 알려 주지 않고 선생님과 함께 맞춰요', '🔎 정보 탐정단 학습지는 국어 학습 본부에서 뺐어요'] },
@@ -30952,6 +30953,8 @@ function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S
     else if (/^para\d$/.test(kd)) { const n = +kd.slice(4), a = Array.isArray(A[k]) ? A[k] : []; for (let j = 0; j < n; j++) { c.append(el('div', `display:inline-block;background:${MHC.ink};color:#fff;border-radius:6px;padding:0 8px;margin-top:6px;font-weight:800;font-size:15px`, `${j + 1}문단`)); c.append(area(a[j], (val) => { const b = Array.isArray(A[k]) ? [...A[k]] : []; b[j] = val; set(k, b); }, `${j + 1}문단의 중심 내용`, 2)); } }
     else if (kd === 'chain') c.append(mhChain(q, k, A, ro, set));
     else if (kd === 'ws') c.append(mhWordSearch(q, k, A, ro, set));
+    else if (kd === 'cw') c.append(mhCross(q, k, A, ro, set));
+    else if (kd === 'draw') c.append(mhDraw(q, k, A, ro, set));
     else if (kd === 'pz10') { const a = Array.isArray(A[k]) ? A[k] : [], r = el('div', 'display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;margin-top:6px'); for (let j = 0; j < 10; j++) { const w = el('label', 'display:flex;align-items:center;gap:2px'); w.append(el('span', `font-weight:800;color:${MHC.ochre}`, `${j + 1}`), inp(a[j], '110px', (val) => { const b = Array.isArray(A[k]) ? [...A[k]] : []; b[j] = val; set(k, b); })); r.append(w); } c.append(r); }
     else c.append(area(A[k], (val) => set(k, val)));
   }
@@ -30984,6 +30987,34 @@ function mhChain(q, k, A, ro, set) { const a = Array.isArray(A[k]) ? [...A[k]] :
     list.append(r); }); wrap.append(list);
   if (!ro) wrap.append(Object.assign(el2('p', 'hint', '💡 보기 낱말을 손가락으로 끌어 번호 칸(아래 칸이나 말판)에 놓아요. 끌기가 어려우면 낱말을 눌러 고른 다음 번호 칸을 눌러요.'), { style: 'text-align:center;font-size:14px' }));
   return wrap; }
+// ✏️ 1106x 십자말: 흰 칸에 한 글자씩 · 답 A['0'] = {"r,c": 글자}
+function mhCross(q, k, A, ro, set) { const a = (A[k] && typeof A[k] === 'object' && !Array.isArray(A[k])) ? A[k] : {}, wrap = el2('div', ''), W = new Set(q.white.map(([r, c]) => r + ',' + c)), N = {}; for (const [r, c, n] of q.nums) N[r + ',' + c] = n;
+  const g = el2('div', ''); g.style.cssText = `display:grid;grid-template-columns:repeat(${q.C},1fr);gap:3px;max-width:430px;margin:10px auto;background:#9FD3F7;border-radius:8px;padding:5px`;
+  for (let r = 0; r < q.R; r++) for (let c = 0; c < q.C; c++) { const key = r + ',' + c, b = el2('div', ''); b.style.cssText = `aspect-ratio:1;border-radius:4px;position:relative;background:${W.has(key) ? '#fff' : '#5BB8F0'}`;
+    if (W.has(key)) { const i = el2('input', ''); i.type = 'text'; i.maxLength = 2; i.value = a[key] || ''; i.disabled = ro; i.setAttribute('aria-label', `${r + 1}행 ${c + 1}열`); i.style.cssText = `width:100%;height:100%;box-sizing:border-box;border:none;background:transparent;text-align:center;font:inherit;font-size:clamp(18px,4vw,26px);font-weight:800;color:${MHC.ink};padding:0`;
+      i.onkeydown = (e) => e.stopPropagation(); i.oninput = () => { const o = { ...(A[k] && typeof A[k] === 'object' && !Array.isArray(A[k]) ? A[k] : {}) }; const v = i.value.trim(); if (v) o[key] = v.slice(-2); else delete o[key]; set(k, o); }; b.append(i);
+      if (N[key]) { const s = el2('span', '', String(N[key])); s.style.cssText = 'position:absolute;left:2px;top:0;font-size:11px;color:#fff;background:#2F7DE1;border-radius:50%;width:15px;height:15px;line-height:15px;text-align:center;pointer-events:none'; b.append(s); } }
+    g.append(b); }
+  wrap.append(g);
+  const cl = el2('div', ''); cl.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;font-size:15px;line-height:1.55';
+  for (const [nm, L] of [['가로', q.ac], ['세로', q.dn]]) { const box = el2('div', ''); box.append(Object.assign(el2('b', '', nm), { style: `display:inline-block;background:${MHC.ink};color:#fff;border-radius:6px;padding:0 10px;margin-bottom:4px` }));
+    for (const [n, t, ex] of L) { const d = el2('div', ''); d.style.margin = '4px 0'; d.append(Object.assign(el2('b', '', `${n} `), { style: `color:${MHC.ochre}` }), document.createTextNode(t)); const e2 = el2('div', '', ex); e2.style.cssText = `color:#3B7BC0;font-size:14px;padding-left:16px`; d.append(e2); box.append(d); } cl.append(box); }
+  wrap.append(cl); return wrap; }
+// ✍️ 미로 길 그리기: 그림 위에 손가락으로 선 · 답 A['0'] = "x,y x,y|…" (0~999)
+function mhDraw(q, k, A, ro, set) { const wrap = el2('div', ''), [f, w, h] = q.bg, box = el2('div', ''); box.style.cssText = `position:relative;max-width:620px;margin:10px auto;touch-action:${ro ? 'auto' : 'none'}`;
+  const im = el2('img', ''); im.src = `${MH_URL}${kws.si}/${f}`; im.alt = '미로'; im.width = w; im.height = h; im.style.cssText = 'display:block;width:100%;height:auto;border-radius:8px;background:#fff;user-select:none;-webkit-user-drag:none'; im.draggable = false;
+  const cv = el2('canvas', ''); cv.width = 1000; cv.height = Math.round(1000 * h / w); cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%'; box.append(im, cv);
+  const parse = () => String(A[k] || '').split('|').filter(Boolean).map(s => s.split(' ').map(p => p.split(',').map(Number))), ctx = cv.getContext('2d');
+  let S = parse(); const draw = () => { ctx.clearRect(0, 0, cv.width, cv.height); ctx.lineCap = ctx.lineJoin = 'round'; ctx.lineWidth = 12; ctx.strokeStyle = 'rgba(230,60,40,.85)'; for (const st of S) { ctx.beginPath(); st.forEach(([x, y], i) => { const Y = y * cv.height / 1000; i ? ctx.lineTo(x, Y) : ctx.moveTo(x, Y); }); if (st.length === 1) ctx.lineTo(st[0][0] + .1, st[0][1] * cv.height / 1000); ctx.stroke(); } };
+  const save = () => { const s = S.map(st => st.map(([x, y]) => `${x},${y}`).join(' ')).join('|'); set(k, s.length > 7000 ? s.slice(0, 7000).replace(/[ |][^ |]*$/, '') : s); };
+  if (!ro) { let cur = null; const pt = (e) => { const R = cv.getBoundingClientRect(); return [Math.max(0, Math.min(999, Math.round((e.clientX - R.left) / R.width * 1000))), Math.max(0, Math.min(999, Math.round((e.clientY - R.top) / R.height * 1000)))]; };
+    cv.onpointerdown = (e) => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (er) { } cur = [pt(e)]; S.push(cur); draw(); };
+    cv.onpointermove = (e) => { if (!cur) return; const p = pt(e), l = cur[cur.length - 1]; if (Math.hypot(p[0] - l[0], p[1] - l[1]) < 8) return; cur.push(p); draw(); };
+    cv.onpointerup = cv.onpointercancel = () => { if (!cur) return; cur = null; save(); }; }
+  draw(); wrap.append(box);
+  if (!ro) { const r = el2('div', 'row-center wrap'), b1 = el2('button', 'btn', '↩️ 한 획 지우기'), b2 = el2('button', 'btn', '🧽 모두 지우기'); for (const b of [b1, b2]) b.style.cssText = `font-size:16px;background:#fff;border:1.5px solid ${MHC.line};box-shadow:none;margin:3px`;
+    b1.onclick = () => { S.pop(); draw(); save(); }; b2.onclick = () => { S = []; draw(); save(); }; r.append(b1, b2); wrap.append(r); }
+  return wrap; }
 let mhSel = '';
 function inputLike(val, done) { const i = el2('input', ''); i.type = 'text'; i.maxLength = 8; i.value = val; i.style.cssText = 'flex:1;font:inherit;font-size:18px;padding:2px 6px;border:none;border-bottom:2px solid #B7791F;background:#F4E6C8'; let fin = false; const f = () => { if (fin) return; fin = true; done(i.value); }; i.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') f(); }; i.onblur = f; return i; }
 function mhDragStart(e, w, drop) { if (e.button > 0) return; const sx = e.clientX, sy = e.clientY; let ghost = null, over = null; const tgt = e.currentTarget; try { tgt.setPointerCapture(e.pointerId); } catch (er) { }
@@ -31014,7 +31045,7 @@ function mhAnsText(q, x) { const k = q.k; if (x == null || x === '' || (Array.is
   if (k === 'ch') return x ? '①②③④⑤'[x - 1] : '—'; if (k === 'ox') return x; if (k === 'mk') return (q.e || []).map((_, j) => `${'➊➋➌➍➎'[j]}${x[j] === 'O' ? '○' : x[j] === 'X' ? '✕' : '·'}`).join(' ');
   if (k === 'pick') return (q.e || []).map(([, s], j) => { const m = s.match(/\(\s*([^()]+?)\s*[\/,]\s*([^()]+?)\s*\)/); return `${'➊➋➌➍➎'[j]}${x[j] && m ? m[x[j]] : '·'}`; }).join(' ');
   if (k === 'match') return (q.m || []).map((L, j) => `${L}→${x[j] ? q.r[x[j] - 1] : '·'}`).join(', ');
-  if (k === 'ord') return x.map(v => v || '·').join(' → '); if (k === 'ws') return `색칠 ${x.length}칸`; if (k === 'chain') return x.map((v, j) => `${j + 1})${v || '·'}`).join(' '); return Array.isArray(x) ? x.map((v, j) => `${j + 1})${v || '·'}`).join(' ') : String(x); }
+  if (k === 'ord') return x.map(v => v || '·').join(' → '); if (k === 'ws') return `색칠 ${x.length}칸`; if (k === 'cw') return `${Object.keys(x).length}칸 씀 · 크게 보기로 확인`; if (k === 'draw') return `길 그림 ${String(x).split('|').length}획 · 크게 보기로 확인`; if (k === 'chain') return x.map((v, j) => `${j + 1})${v || '·'}`).join(' '); return Array.isArray(x) ? x.map((v, j) => `${j + 1})${v || '·'}`).join(' ') : String(x); }
 function kwsTeacher() { kws.all = null; kws.tsi = kws.tsi || 0;
   const load = async () => { await Promise.all([mhLoad(), mhCfg()]); if (kws.tsi) { const a = await backend.kwsGet(mhSid(kws.tsi), ''); kws.all = a === undefined ? false : (a || {}); } else kws.all = {}; refillLife(); };
   openLife('🧑‍🏫 쑥쑥 문해력 학습지', (box) => { box.textContent = ''; const M = kws.mh; if (kws.all === null || !M) { box.append(el2('p', 'hint', '⏳ 불러오는 중…')); return; }
