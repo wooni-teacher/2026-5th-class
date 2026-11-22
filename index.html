@@ -2240,7 +2240,7 @@ function sanitizeState(raw) {
     out.plots[n] = { o: pl.o, a: pl.a, c: pl.c, items: {} };
     if (pl.h != null && ok(isInt(pl.h.s, 0, 6) && isInt(pl.h.c, 0, 9))) { out.plots[n].h = { s: pl.h.s, c: pl.h.c }; if (isInt(pl.h.lv, 1, 3)) out.plots[n].h.lv = pl.h.lv; if (typeof pl.h.n === 'string' && pl.h.n.length <= 8) out.plots[n].h.n = pl.h.n; }
     if (pl.in != null) { const inn = plainObj(pl.in), o = {}; if (isInt(inn.w, 0, 5)) o.w = inn.w; if (isInt(inn.f, 0, 5)) o.f = inn.f; // 집 안
-      { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 5) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '', ...(isInt(pt.o, 1, 15) ? { o: pt.o } : {}), ...(pt.w === 1 ? { w: 1 } : {}) }; } // 🐾 집 펫
+      { const pt = plainObj(inn.pet); if (isInt(pt.k, 0, 7) && isInt(pt.a, 0, 3) && isInt(pt.l, 0, 10)) o.pet = { k: pt.k, a: pt.a, l: pt.l, n: typeof pt.n === 'string' ? pt.n.slice(0, 6) : '', ...(isInt(pt.o, 1, 15) ? { o: pt.o } : {}), ...(pt.w === 1 ? { w: 1 } : {}) }; } // 🐾 집 펫
       for (const L of ['c', 'g', 'u']) for (const [cell, d] of Object.entries(plainObj(inn[L]))) if (ok(/^[0-5]_[0-4]$/.test(cell) && d && isInt(d.t, 0, 27) && isInt(d.r, 0, 3))) (o[L] ||= {})[cell] = { t: d.t, r: d.r, ...(isInt(d.k, 1, 11) ? { k: d.k } : {}) }; // 🎨 1105zh 색 · 🛋️ c 가구 · g 바닥(러그) · u 위에 올린 작은 장식
       for (const [k, mi] of Object.entries(plainObj(inn.p))) if (ok(/^[0-3]$/.test(k) && (isInt(mi, 0, 29) || (typeof mi === 'string' && /^[A-Za-z0-9_-]{3,60}$/.test(mi))))) (o.p ||= {})[k] = mi; // 벽화 액자 · 내 그림
       if (Object.keys(o).length) out.plots[n].in = o; }
@@ -11154,13 +11154,14 @@ const RIDES = [
 ];
 /* 🐾 1105zx 내 펫 타기: 집에서 키우는 펫(bag.hpet.pets)이 커져서 탈것이 돼요 · 사지 않아요(내 펫이면 무료) · 번호 30~36 */
 const PET_RIDES = [['dog', '🐶', '강아지'], ['cat', '🐱', '고양이'], ['rabbit', '🐰', '토끼'], ['ham', '🐹', '햄스터'], ['chick', '🐥', '병아리'], ['fox', '🦊', '아기 여우'], ['gecko', '🦎', '히로']].map(([pet, icon, name], i) => ({ k: 'hp_' + pet, pet, icon, name, mul: pet === 'gecko' ? 1.35 : 1.25, v: 30 + i }));
+const RIDE_SLED = { k: 'sled', icon: '🛷', name: '눈썰매', mul: 1.5, v: 25, ss: '❄️ 시즌 2 패스 8단계', desc: '쓩~ 눈 위를 미끄러져요 · 빠르기 +50%' }; /* 🛷 1106z 시즌 2 보상 */
 const rideV = (R0, i) => R0.v || i + 1; // 탈것 번호 (players/{uid}/v)
-const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
+const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_SLED].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
 const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; // 👑 공성전 왕만 (사지 않아요)
 const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || !!bag.skyOwn || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🥚 1102i 알에서 부화하면 계속 // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
-const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY].map(r => [r.k, r])); RIDE_BY.strn = { k: 'strn', icon: '🚂', name: '하늘 기차', mul: 1.6 }; RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
-const rideOpen = (k) => k === 'sky' ? skyHave() : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
+const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY, RIDE_SLED].map(r => [r.k, r])); RIDE_BY.strn = { k: 'strn', icon: '🚂', name: '하늘 기차', mul: 1.6 }; RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
+const rideOpen = (k) => k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
 // 🎨 탈것 꾸미기: 색·장식은 🐚로 한 번 열면 모든 탈것에 쓸 수 있어요 (⭐표는 주간 랭킹 보상으로만) · 친구 화면엔 players/{uid}/q = 색×10 + 장식
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
 const RIDE_ACC = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '깃발' }, { icon: '🎈', n: '풍선' }, { icon: '🌸', n: '꽃 화환' }, { icon: '🔔', n: '방울' }, { icon: '⭐', n: '별 반짝이', star: 1 }, { icon: '👑', n: '왕관', star: 1 }, { icon: '🌈', n: '무지개 꼬리', star: 1 }, { icon: '💎', n: '보석 장식', gem: 2 }, { icon: '💫', n: '오로라 고리', star: 1 }];
@@ -11302,7 +11303,7 @@ function rideWant(a, uid, pos, v) { // 이 친구가 지금 탈 것
   if (uid === backend?.uid && trRegion()) return trw.role === 'king' ? 'royal' : '';
   if ((v | 0) === RIDE_SKY_V) return uid === backend?.uid ? (skyHave() ? 'sky' : '') : 'sky'; // 🐲 친구 화면에도 날아요
   { const D = duoSeatOf(uid); if (D) return 'pass_' + D.k; } // 👫 친구 탈것 뒷자리
-  const R0 = RIDE_BY_VN[v | 0] || ((v | 0) >= 1 && (v | 0) <= 10 ? RIDES[(v | 0) - 1] : null), k = R0?.k; return k && (R0.pet && uid !== backend?.uid ? true : rideOpen(k)) ? k : ''; /* 🐾 친구의 펫 탈것은 그대로 보여요 */ // 11 하늘 용 · 12 배 · 13 수레는 여기서 안 읽어요
+  const R0 = RIDE_BY_VN[v | 0] || ((v | 0) >= 1 && (v | 0) <= 10 ? RIDES[(v | 0) - 1] : null), k = R0?.k; return k && ((R0.pet || R0.ss) && uid !== backend?.uid ? true : rideOpen(k)) ? k : ''; /* 🐾 친구의 펫 탈것은 그대로 보여요 */ // 11 하늘 용 · 12 배 · 13 수레는 여기서 안 읽어요
 }
 function updateRides() {
   if (!backend) return;
@@ -11339,6 +11340,8 @@ function openRides() {
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · 🥚 시즌 패스 ${SKY_EGG_LV}단계를 채우면 알을 받아 계속 탈 수 있어요`));
       b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#BFE6FF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sky'); refillLife(); };
       row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); skyShopRow(box); } // 🥚 1102i
+    { const R0 = RIDE_SLED, have = rideOpen('sled'), on = have && bag.ride === 'sled', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🛷 1106z */
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `${R0.ss} 보상 · 받으면 계속 타요`)); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#D6ECFF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sled'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { box.append(el2('p', 'lp-big', '🐾 내 펫 타기')); box.append(el2('p', 'hint', '집에서 키우는 펫이 커져서 탈것이 돼요! 반 동전은 안 써요. 펫은 바닷가 🐾 펫 가게에서 데려와요 (🦎 히로는 누구나 무료).')); /* 🐾 1105zx */
       for (const R0 of PET_RIDES) { const open = rideOpen(R0.k), on = open && bag.ride === R0.k, row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn');
         tx.append(el2('b', '', `${R0.name}${open ? ' ✅' : ' 🔒'}`), el2('span', 'hint', open ? `내 ${R0.name}을(를) 타요 · 빠르기 +${Math.round((R0.mul - 1) * 100)}%` : '아직 우리 집에 없는 펫이에요'));
@@ -11451,6 +11454,11 @@ function rideBuild(a, k) {
     B(g, 0.46, 0.38, 0.75, 0xF29BB8, 0, 0.52, -0.3); B(g, 0.4, 0.1, 0.65, 0x3B3B46, 0, 0.75, -0.3); B(g, 0.36, 0.12, 0.5, 0xF29BB8, 0, 0.3, 0.2);
     B(g, 0.4, 0.9, 0.16, 0xF29BB8, 0, 0.7, 0.5, { rx: 0.2 }); B(g, 0.7, 0.07, 0.07, 0xC9CED6, 0, 1.18, 0.6); O(g, 0.08, 0xFFF6B0, 0, 1.0, 0.62);
     seat = 0.8; pose = 'sit'; arms = -1.2;
+  } else if (k === 'sled') { /* 🛷 1106z 눈썰매: 나무 판 · 빨간 앞 곡선 · 쇠 날 두 줄 · 끈 */
+    for (const x of [-0.42, 0.42]) { B(g, 0.07, 0.05, 1.7, 0xB8C4CE, x, 0.05, 0); B(g, 0.07, 0.3, 0.07, 0xB8C4CE, x, 0.2, 0.9, { rx: -0.6 }); for (const z of [-0.5, 0.1, 0.6]) B(g, 0.05, 0.2, 0.05, 0x8A5A34, x, 0.17, z); }
+    for (const z of [-0.55, -0.2, 0.15, 0.5]) B(g, 1.0, 0.06, 0.28, 0xC0703A, 0, 0.3, z); B(g, 1.0, 0.36, 0.08, 0xD62E2E, 0, 0.48, 0.78, { rx: -0.35 }); B(g, 1.04, 0.06, 0.1, 0xFFFFFF, 0, 0.66, 0.84, { rx: -0.35 });
+    for (const x of [-0.45, 0.45]) B(g, 0.03, 0.03, 0.7, 0xF2B640, x, 0.55, 1.05, { rx: 0.5 }); B(g, 0.9, 0.03, 0.03, 0xF2B640, 0, 0.72, 1.36);
+    seat = 0.36; pose = 'sit'; arms = -1.0; sh = 1.3;
   } else if (k === 'car') {
     for (const [x, z] of [[-0.48, -0.55], [0.48, -0.55], [-0.48, 0.55], [0.48, 0.55]]) wheel(g, 0.24, 0.16, x, 0.24, z);
     B(g, 1.0, 0.42, 1.65, 0xE2584A, 0, 0.5, 0); B(g, 0.9, 0.22, 0.5, 0xE2584A, 0, 0.82, 0.55); B(g, 0.9, 0.24, 0.42, 0xE2584A, 0, 0.82, -0.62);
@@ -12017,13 +12025,13 @@ const boatBase = (h) => BOAT_H[h]?.base ?? Math.max(0, Math.min(3, h)), boatRank
 const BOAT_COLS = [{ n: '나무색', c: 0xB07C50 }, { n: '빨강', c: 0xE2584A }, { n: '파랑', c: 0x4A9AE8 }, { n: '노랑', c: 0xFFD23C }, { n: '분홍', c: 0xF29BB8 }, { n: '초록', c: 0x5FBE5A }, { n: '보라', c: 0xA07AE0 }, { n: '하양', c: 0xF4F4F0 }, { n: '검정', c: 0x2E3138 }, { n: '하늘', c: 0x8FD8F5 }, { n: '주황', c: 0xFF9A3C }]; // 1106k 6가지 더
 const BOAT_FLAGS = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '빨간 깃발', c: 0xE2584A }, { icon: '🏴‍☠️', n: '해적 깃발', c: 0x24262B }, { icon: '🌈', n: '무지개 깃발' }, { icon: '⭐', n: '별 깃발', c: 0x2F5E9E }, { icon: '🌸', n: '꽃 깃발', c: 0xF7B8D0 }, { icon: '➗', n: '수학 깃발', c: 0x2E9E7A }, { icon: '🐾', n: '발자국 깃발', c: 0xFFE38A }];
 // 🎨 1106k 배 꾸미기: 돛 색 · 장식 · 배 이름 (이름은 낱말 고르기 · 친구 화면에도 보여요)
-const BOAT_DECO = [{ icon: '·', n: '없음' }, { icon: '🌼', n: '꽃 화분', pr: 30 }, { icon: '🎈', n: '풍선 다발', pr: 30 }, { icon: '💡', n: '꼬마전구 줄', pr: 40 }, { icon: '🦆', n: '오리 인형', pr: 30 }, { icon: '🛟', n: '구명 튜브', pr: 20 }];
+const BOAT_DECO = [{ icon: '·', n: '없음' }, { icon: '🌼', n: '꽃 화분', pr: 30 }, { icon: '🎈', n: '풍선 다발', pr: 30 }, { icon: '💡', n: '꼬마전구 줄', pr: 40 }, { icon: '🦆', n: '오리 인형', pr: 30 }, { icon: '🛟', n: '구명 튜브', pr: 20 }, { icon: '❄️', n: '겨울 장식', ss: '❄️ 시즌 2 패스 6단계' }]; /* ❄️ 1106z */
 const BOAT_NM1 = ['번개', '무지개', '반짝', '용감한', '푸른', '해님', '별빛', '바람', '씩씩한', '보물'], BOAT_NM2 = ['호', '돌고래호', '고래호', '거북호', '갈매기호', '별호', '파도호', '구름호'];
 const BOAT_COL_PR = 20, BOAT_FLAG_PR = 30;
 const partName = (k) => BOAT_PARTS.find(p => p.k === k);
 function boatBag() { const b = bag.boat ||= {}; b.h ||= {}; b.p ||= {}; b.cl ||= {}; b.fl ||= {}; b.dl ||= {}; if (b.cur == null) b.cur = -1; b.c |= 0; b.f |= 0; b.sc |= 0; b.dc |= 0; if (b.nm == null) b.nm = -1; if (b.wip === undefined) b.wip = null; return b; }
 const boatHave = (h) => isTeacher || !!boatBag().h[h]; // 🧑‍🏫 선생님은 모든 배
-const boatColHave = (i) => i === 0 || isTeacher || !!boatBag().cl[i], boatFlagHave = (i) => i === 0 || isTeacher || !!boatBag().fl[i], boatDecoHave = (i) => i === 0 || isTeacher || !!boatBag().dl[i];
+const boatColHave = (i) => i === 0 || isTeacher || !!boatBag().cl[i], boatFlagHave = (i) => i === 0 || isTeacher || !!boatBag().fl[i], boatDecoHave = (i) => i === 0 || isTeacher || (BOAT_DECO[i]?.ss ? !!bag.ssOwn?.bdwin : !!boatBag().dl[i]);
 function boatCur() { const b = boatBag(); if (b.cur >= 0 && boatHave(b.cur)) return b.cur; for (let h = 3; h >= 0; h--) if (boatHave(h)) return h; for (let h = BOAT_H.length - 1; h > 3; h--) if (boatHave(h)) return h; return -1; }
 const boatQ = (h = boatCur()) => { const b = boatBag(), c = boatColHave(b.c) ? b.c : 0, f = boatFlagHave(b.f) ? b.f : 0; return boatBase(Math.max(0, h)) * 25 + (c < 5 ? c : 0) * 5 + (f < 5 ? f : 0); }; // 옛 배 번호 (해전 · q ≤ 99)
 const boatLook = (h = boatCur()) => { const b = boatBag(); return { h: Math.max(0, h), c: boatColHave(b.c) ? b.c : 0, sc: b.sc && boatColHave(b.sc - 1) ? b.sc : 0, f: boatFlagHave(b.f) ? b.f : 0, dc: boatDecoHave(b.dc) ? b.dc : 0, nm: b.nm >= 0 && b.nm < 80 ? b.nm : -1, dv: sail.dive ? 1 : 0 }; };
@@ -12131,6 +12139,8 @@ function boatModel(q, lk) { // ⛵ 1021f: 속이 빈 예쁜 배 (선장·친구�
   else if (dc === 3) { const top = (fa?.[1] || 1) + (fa?.[3] || 0) * 0.9; for (let i = 0; i < 9; i++) { const t = i / 8; ball(g, 0.06, [0xFF5A5A, 0xFFE066, 0x5FBE5A, 0x4A9AE8][i % 4], 0, top + (dy - top) * t - Math.sin(t * Math.PI) * 0.25, (fa?.[2] || 0) + (dz + 0.3 - (fa?.[2] || 0)) * t, { solid: false, emissive: 0.9 }); } }
   else if (dc === 4) { ball(g, 0.2, 0xFFD23C, -0.35, dy + 0.18, dz, o); ball(g, 0.13, 0xFFD23C, -0.35, dy + 0.44, dz + 0.08, o); box(g, 0.1, 0.05, 0.12, 0xFF8A1E, -0.35, dy + 0.42, dz + 0.22, o); }
   else if (dc === 5) mesh(new THREE.TorusGeometry(1, 0.35, 6, 14), g, 0.24, 0.24, 0.24, 0xFF5A4A, -0.45, dy + 0.35, dz - 0.3, { solid: false, ry: 0.4 });
+  else if (dc === 6) { /* ❄️ 1106z 겨울 장식: 갑판 눈 · 꼬마 눈사람 · 고드름 */ box(g, 0.9, 0.05, 1.1, 0xF4F8FC, 0, dy + 0.03, dz, o); ball(g, 0.2, 0xFFFFFF, 0.35, dy + 0.2, dz, o); ball(g, 0.14, 0xFFFFFF, 0.35, dy + 0.48, dz, o); mesh(WEAR_CONE, g, 0.03, 0.1, 0.03, 0xF07A1E, 0.35, dy + 0.48, dz + 0.16, { solid: false, rx: Math.PI / 2 }); box(g, 0.2, 0.04, 0.2, 0x2A2A30, 0.35, dy + 0.6, dz, o);
+    for (let i = 0; i < 6; i++) for (const sx of [-1, 1]) mesh(WEAR_CONE, g, 0.035, 0.18, 0.035, 0xCFE8FF, sx * 0.52, dy - 0.12, dz - 0.6 + i * 0.24, { solid: false, rx: Math.PI }); }
   if (lk && lk.nm >= 0) signPlane(g, [boatNameOf(lk.nm)], 1.3, 0.32, 0, h === 6 ? 0.35 : 0.42, h === 6 ? -2.6 : -(h === 0 ? 1.55 : h === 7 ? 2.62 : h === 3 ? 2.32 : h === 5 ? 1.72 : h === 4 ? 1.32 : h === 2 ? 1.82 : 1.52), { font: 44, pad: 4, fg: '#3B2F2A', bg: '#FFFCF2', stroke: false }).rotation.y = Math.PI;
   return g;
 }
@@ -12296,8 +12306,8 @@ function openBoatShop(tab = 'parts') {
         bt.onclick = () => { if (have) { b.f = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(BOAT_FLAG_PR, () => { b.fl[i] = 1; b.f = i; shipyardRefresh(); toast(`${F.icon} ${F.n}을(를) 달았어요`, 'success'); }); }; g2.append(bt); });
       box.append(g2, el2('h3', 'lp-sec', '🌼 갑판 장식'));
       const g3 = el2('div', 'lp-grid');
-      BOAT_DECO.forEach((D, i) => { const have = boatDecoHave(i), bt = el2('button', 'lp-card' + (b.dc === i ? ' done' : ''), ''); bt.append(el2('div', 'lp-icon', D.icon), el2('div', 'lp-name', D.n), el2('div', 'hint', b.dc === i ? '✔ 올렸어요' : have ? '올리기' : `🐚${D.pr}`));
-        bt.onclick = () => { if (have) { b.dc = i; saveBag(); shipyardRefresh(); refillLife(); } else buy(D.pr, () => { b.dl[i] = 1; b.dc = i; shipyardRefresh(); toast(`${D.icon} ${D.n}을(를) 올렸어요`, 'success'); }); }; g3.append(bt); });
+      BOAT_DECO.forEach((D, i) => { const have = boatDecoHave(i), bt = el2('button', 'lp-card' + (b.dc === i ? ' done' : ''), ''); bt.append(el2('div', 'lp-icon', D.icon), el2('div', 'lp-name', D.n), el2('div', 'hint', b.dc === i ? '✔ 올렸어요' : have ? '올리기' : D.ss ? `🔒 ${D.ss}` : `🐚${D.pr}`));
+        bt.onclick = () => { if (have) { b.dc = i; saveBag(); shipyardRefresh(); refillLife(); } else if (D.ss) toast(`🔒 ${D.ss} 보상이에요`, 'info'); else buy(D.pr, () => { b.dl[i] = 1; b.dc = i; shipyardRefresh(); toast(`${D.icon} ${D.n}을(를) 올렸어요`, 'success'); }); }; g3.append(bt); });
       box.append(g3, el2('h3', 'lp-sec', `🏷️ 배 이름 (무료) · 지금: ${boatNameOf(b.nm) || '없음'}`));
       let a1 = b.nm >= 0 ? Math.floor(b.nm / 8) : 0, a2 = b.nm >= 0 ? b.nm % 8 : 0; const pick = (L, cur, f) => { const r = el2('div', 'row-center wrap'); L.forEach((w, i) => { const bt = el2('button', 'btn', w); bt.style.cssText = `font-size:15px;padding:5px 10px;margin:2px;background:${cur === i ? '#FFE066' : '#fff'}`; bt.onclick = () => f(i); r.append(bt); }); return r; };
       box.append(pick(BOAT_NM1, a1, i => { b.nm = i * 8 + a2; saveBag(); shipyardRefresh(); refillLife(); }), pick(BOAT_NM2, a2, i => { b.nm = a1 * 8 + i; saveBag(); shipyardRefresh(); refillLife(); }));
@@ -15351,6 +15361,7 @@ WEAR.b[11] = { icon: '🌊', name: '파랑 래쉬가드', price: 400, rash: [0x2
 WEAR.b[13] = { icon: '🍋', name: '줄무늬 래쉬가드', price: 600, rash: [0xFFD23C, 0xFFFFFF, 0x2B4A7A], stripe: 1 }; WEAR.b[14] = { icon: '🦈', name: '상어 래쉬가드', price: 900, rash: [0x6B7F96, 0xEAF2F8, 0x2E3A48], fin: 1 }; WEAR.b[15] = { icon: '🐬', name: '돌고래 래쉬가드', price: 1200, rash: [0x3FC1C9, 0xFFFFFF, 0x1E5A7A], stripe: 2 };
 /* 🎭 1029d 꿈끼왕 칭호로 열리는 안중근 꾸미기 (살 수 없어요) */
 WEAR.h[14] = { icon: '🇰🇷', name: '태극 머리띠', kk: 1 }; WEAR.h[15] = { icon: '🐻', name: '곰돌이 탈', price: 600 }; WEAR.h[16] = { icon: '🐸', name: '개구리 탈', price: 600 }; WEAR.h[17] = { icon: '🦁', name: '사자 탈', price: 900 }; WEAR.h[18] = { icon: '🦖', name: '공룡 탈', price: 1200 }; /* 🎭 1102n 얼굴을 감싸는 탈 */ WEAR.f[9] = { icon: '🥸', name: '안중근 콧수염', kk: 1 }; WEAR.b[16] = { icon: '🧥', name: '안중근 코트', kk: 1, rash: [0x262A33, 0xF4F1EA, 0x262A33], coat: 1 };
+WEAR.h[19] = { icon: '🎧', name: '털 귀마개', ss: '❄️ 시즌 2 · 3단계' }; WEAR.h[20] = { icon: '🧶', name: '방울 털모자', ss: '❄️ 시즌 2 · 6단계' }; WEAR.b[17] = { icon: '🧥', name: '하얀 눈꽃 망토', ss: '❄️ 시즌 2 · 9단계' }; /* ❄️ 1106z 시즌 2 보상 */
 const WEAR_SLOT = { h: '모자', f: '얼굴', b: '등·옷' };
 const wearOwn = (slot, i) => !!bag.own[slot + i] || (!!WEAR[slot][i]?.kk && (isTeacher || kkHas(backend?.uid) || !!tgOf(backend?.uid)?.kkw)) || (isTeacher && !!(WEAR[slot][i]?.star || WEAR[slot][i]?.badge || WEAR[slot][i]?.ss)); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 · 🏅 배지 옷을 모두 입어 봐요
 bag.own ||= {}; bag.wear ||= { h: 0, f: 0, b: 0 }; bag.seen ||= {}; bag.badges ||= {};
@@ -15390,6 +15401,8 @@ function setWear(a, code) {
         for (let k = 0; k < 6; k++) { mesh(WEAR_CONE, g, 0.05, 0.1, 0.03, 0xFFFFFF, -0.33 + k * 0.132, 1.94, 0.54, { solid: false, rz: Math.PI }); mesh(WEAR_CONE, g, 0.05, 0.1, 0.03, 0xFFFFFF, -0.33 + k * 0.132, 1.46, 0.54, o); }
         for (const s2 of [-1, 1]) { ball(g, 0.07, 0x1E1E24, s2 * 0.42, 2.3, 0.5, o); mesh(WEAR_CONE, g, 0.1, 0.4, 0.26, 0x55697F, s2 * 0.68, 1.55, -0.1, { solid: false, rz: s2 * 1.9 }); }
         mesh(WEAR_CONE, g, 0.12, 0.44, 0.34, 0x55697F, 0, 2.7, -0.2, o); mesh(WEAR_CONE, g, 0.16, 0.42, 0.06, 0x55697F, 0, 1.9, -0.78, { solid: false, rx: -Math.PI / 2 }); }
+      else if (h === 19) { box(g, 1.1, 0.06, 0.12, 0x8EC8F2, 0, 2.38, 0, o); for (const s2 of [-1, 1]) { box(g, 0.06, 0.4, 0.12, 0x8EC8F2, s2 * 0.55, 2.16, 0, o); ball(g, 0.2, 0xF4F8FC, s2 * 0.58, 1.82, 0, o); ball(g, 0.11, 0xCFE8FF, s2 * 0.7, 1.82, 0, o); } } // 🎧 털 귀마개 (시즌 2)
+      else if (h === 20) { crown(0x4A8FE0, 2.42); for (const y of [2.2, 2.32]) box(g, 1.08, 0.04, 1.08, 0xFFFFFF, 0, y, 0, o); box(g, 1.11, 0.18, 1.11, 0xF4F8FC, 0, 2.06, 0, o); ball(g, 0.22, 0xFFFFFF, 0, 2.62, 0, o); for (const s2 of [-1, 1]) { box(g, 0.14, 0.34, 0.08, 0x4A8FE0, s2 * 0.5, 1.78, 0.1, o); ball(g, 0.08, 0xFFFFFF, s2 * 0.5, 1.56, 0.1, o); } } // 🧶 방울 털모자 (시즌 2)
       else if (h >= 11 && h <= 12) { const col = [0x2F7FD8, 0xF27BA8][h - 11]; crown(col, 2.32, 1.04, 1.95); ball(g, 0.08, 0xFFFFFF, 0.36, 2.2, 0.53, o); } // 🏊 수영모
       else if (h === 15) { tal(0x9A6233, 0xE8C9A0); for (const s2 of [-1, 1]) { ball(g, 0.2, 0x9A6233, s2 * 0.46, 2.55, 0, o); ball(g, 0.11, 0xF2B8B0, s2 * 0.46, 2.55, 0.12, o); } } // 🐻 곰돌이 탈
       else if (h === 16) { tal(0x5FBE5A, 0x8FD86A); for (const s2 of [-1, 1]) { ball(g, 0.2, 0xFFFFFF, s2 * 0.3, 2.56, 0.18, o); ball(g, 0.1, 0x1E1E24, s2 * 0.3, 2.58, 0.36, o); } box(g, 0.5, 0.05, 0.03, 0xE2584A, 0, 1.36, 0.535, o); } // 🐸 개구리 탈
@@ -15441,6 +15454,7 @@ function setWear(a, code) {
       for (const s of [-1, 1]) { const w = new THREE.Group(); w.position.set(s * 0.2, 1.2, -0.05); g.add(w); cols.forEach((c, i) => mesh(SPH_LO, w, 0.46 - i * 0.06, 0.2, 0.05, c, s * (0.32 + i * 0.13), 0.12 - i * 0.13, 0, { solid: false, emissive: 0.45, rz: s * (0.35 + i * 0.12) })); w.userData.flap = s; (a.wearSpin ||= []).push(w); }
       a.wearFx = 8;
     }
+    else if (bk === 17) { box(g, 0.94, 1.08, 0.05, 0xF4F8FC, 0, 0.71, -0.02, o); box(g, 0.98, 0.1, 0.07, 0xCFE8FF, 0, 1.22, -0.02, o); for (const [x, y] of [[-0.24, 0.95], [0.22, 0.62], [0, 0.32], [0.26, 1.05], [-0.2, 0.45]]) for (const r of [0, 1.05, 2.1]) box(g, 0.16, 0.025, 0.02, 0x6FB8EE, x, y, -0.06, { solid: false, rz: r }); } // 🧥 하얀 눈꽃 망토 (시즌 2)
     else if (bk === 10) { box(g, 0.92, 1.05, 0.05, 0xD9701A, 0, 0.72, -0.02, o); for (const [x, y, c] of [[-0.25, 0.95, 0xC0392B], [0.22, 0.6, 0xF2B640], [0, 0.35, 0xE8913A], [0.28, 1.1, 0xC0392B]]) mesh(CONE, g, 0.12, 0.16, 0.03, c, x, y, -0.06, { solid: false, rz: x * 3 }); } // 🍁 단풍 망토 (시즌 1)
     else if (bk === 9) { // 🌌 은하 오라 (⭐): 몸 둘레를 도는 별 고리 두 개
       g.position.set(0, 0, 0);
@@ -15450,7 +15464,7 @@ function setWear(a, code) {
       a.wearFx = 9;
     }
   });
-  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; a.wearCover = [1, 2, 4, 6, 11, 12].includes(h); a.wearTal = h === 10 || h === 13 || h >= 15; /* 🎩 1102m 머리를 감싸는 모자면 윗머리를 숨겨요 */ if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
+  a.wearObjs = objs; a.wearHatG = h ? objs[0] : null; a.wearCover = [1, 2, 4, 6, 11, 12, 20].includes(h); a.wearTal = h === 10 || h === 13 || h >= 15; /* 🎩 1102m 머리를 감싸는 모자면 윗머리를 숨겨요 */ if (a.ttHead && a.wearHatG) a.wearHatG.visible = false; // 🏅 칭호 머리 장식을 달면 옷장 모자는 잠깐 벗어요
 }
 function openWardrobe() {
   openLife('👕 옷가게 · 내 옷장', (box) => {
@@ -16088,6 +16102,7 @@ const HPETS = [
   { k: 'chick', icon: '🐥', n: '병아리', col: 0xFFD23C, ear: 'none', tail: 'none', dark: 0xF5902A, bird: true },
   { k: 'fox', icon: '🦊', n: '아기 여우', col: 0xE8743A, ear: 'point', tail: 'bush', dark: 0xFFFFFF },
   { k: 'gecko', icon: '🦎', n: '히로', col: 0xD9A35A, dark: 0x4A2E1E, gecko: true, free: true }, // 🦎 1024i 우리 반 크레스티드 게코 (누구나 무료)
+  { k: 'peng', icon: '🐧', n: '아기 펭귄', col: 0x2E3440, dark: 0xFFA51E, bird: true, peng: true, ss: '❄️ 시즌 2 패스 10단계' }, // 🐧 1106z 시즌 2 보상 (받으면 무료)
 ];
 const HPET_LV = [0, 10, 25, 45, 70, 100, 140, 190, 250, 320, 400]; // ❤️ 친밀도 단계별 누적 점수 (최고 Lv10)
 const HPET_CARE = { snack: { icon: '🍪', n: '간식 주기', pt: 3, max: 3, sh: 10 }, pat: { icon: '🤚', n: '쓰다듬기', pt: 1, max: 5 }, play: { icon: '🎾', n: '공놀이', pt: 4, max: 3 }, bath: { icon: '🛁', n: '목욕', pt: 5, max: 1 } };
@@ -16106,6 +16121,7 @@ const PET_OUTFITS = [null,
   { k: 'pirate', icon: '🏴‍☠️', n: '해적 모자', pr: 100, theme: '⛵ 배를 한 척 만들면', ok: () => boatCur() >= 0, hat: true },
   { k: 'maple', icon: '🍁', n: '단풍 스카프', ss: '🍂 시즌 1 패스 1단계' }, // 🗓️ 1028n 시즌 보상 (살 수 없어요)
   { k: 'scare', icon: '🌾', n: '허수아비 모자', ss: '🍂 시즌 1 패스 5단계', hat: true },
+  { k: 'wmuff', icon: '🧣', n: '눈꽃 털목도리', ss: '❄️ 시즌 2 패스 1단계' }, { k: 'rudolph', icon: '🦌', n: '루돌프 뿔', ss: '❄️ 시즌 2 패스 5단계', hat: true }, // ❄️ 1106z
 ];
 const petMonth = () => new Date((backend?.now ? backend.now() : Date.now()) + 9 * 3600000).getUTCMonth() + 1;
 const petOwOwn = (i) => isTeacher || !!bag.hpet?.own?.[i] || (PET_OUTFITS[i]?.ss && !!bag.ssOwn?.[PET_OUTFITS[i].k]);
@@ -16129,6 +16145,7 @@ function hpetTag(e) { const d = hpDecode(e); if (!d || !d.tag) return ''; return
 function hpetModel(ki, acc = 0, spark = false, ow = 0) { // 🐾 네모네모 귀여운 동물 (앞 = +z) · ow: 👗 펫 옷
   const H = HPETS[ki] || HPETS[0], g = new THREE.Group(), o = { solid: false }, b = new THREE.Group(); g.add(b); g.userData.body = b;
   const c = H.col, d = H.dark;
+  if (H.peng) { box(b, 0.3, 0.32, 0.04, 0xFFFFFF, 0, 0.32, 0.22, o); box(b, 0.26, 0.18, 0.04, 0xFFFFFF, 0, 0.66, 0.225, o); } // 🐧 흰 배 · 흰 얼굴
   if (H.gecko) heroGecko(b, g);
   else if (H.bird) { box(b, 0.42, 0.42, 0.42, c, 0, 0.32, 0, o); box(b, 0.34, 0.3, 0.32, c, 0, 0.66, 0.06, o); box(b, 0.1, 0.06, 0.12, d, 0, 0.64, 0.27, o); for (const s of [-1, 1]) box(b, 0.06, 0.2, 0.26, shade(c, 0.9), s * 0.23, 0.36, 0, o); for (const s of [-1, 1]) box(b, 0.05, 0.12, 0.05, d, s * 0.09, 0.06, 0.02, o); }
   else if (H.round) { box(b, 0.5, 0.42, 0.55, c, 0, 0.28, 0, o); box(b, 0.36, 0.2, 0.3, d, 0, 0.24, 0.15, o); for (const s of [-1, 1]) box(b, 0.1, 0.1, 0.06, shade(c, 0.85), s * 0.16, 0.52, 0.18, o); }
@@ -16193,6 +16210,8 @@ function hpetModel(ki, acc = 0, spark = false, ow = 0) { // 🐾 네모네모 �
       else { const ey2 = FT.ey, ez2 = FT.ez + 0.016, hw = H.round ? 0.25 : H.bird ? 0.17 : 0.2; for (const s2 of [-1, 1]) { box(b, 0.12, 0.09, 0.025, 0x1E1E24, s2 * 0.1, ey2, ez2, q); box(b, 0.035, 0.015, 0.005, 0xFFFFFF, s2 * 0.1 - 0.025, ey2 + 0.025, ez2 + 0.014, q); box(b, 0.015, 0.018, 0.2, 0x1E1E24, s2 * (hw + 0.008), ey2 + 0.02, ez2 - 0.1, q); box(b, 0.05, 0.018, 0.018, 0x1E1E24, s2 * (hw - 0.015), ey2 + 0.02, ez2 - 0.004, q); } box(b, 0.1, 0.025, 0.025, 0x1E1E24, 0, ey2 + 0.02, ez2, q); } }
     if (k === 'maple') { const [ex, ey, ez] = collar(0xE8913A, 0.085, 0xC0392B); for (const [dx, c] of [[-0.05, 0xC0392B], [0.05, 0xF2B640]]) mesh(CONE, b, 0.06, 0.1, 0.02, c, ex + dx, ey - 0.07, ez + 0.01, { solid: false, surf: null, rz: dx * 8 }); } // 🍁 시즌 1
     if (k === 'scare') { cyl(hg, 0.32, 0.03, 0xE9C77B, 0, 0.02, 0, q); cyl(hg, 0.17, 0.14, 0xE9C77B, 0, 0.1, 0, q); cyl(hg, 0.175, 0.04, 0xC0392B, 0, 0.06, 0, q); for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; box(hg, 0.02, 0.07, 0.02, 0xD9B860, Math.cos(t) * 0.31, -0.01, Math.sin(t) * 0.31, q); } } // 🌾 시즌 1
+    if (k === 'wmuff') { const [ex, ey, ez] = collar(0xF4F8FC, 0.1, 0x8EC8F2); box(b, 0.09, 0.22, 0.045, 0xF4F8FC, ex + 0.06, ey - 0.07, ez, q); for (const dx of [-0.07, 0.07]) mesh(CONE, b, 0.035, 0.06, 0.02, 0x6FB8EE, ex + dx, ey, ez + 0.03, { solid: false, surf: null }); } // ❄️ 시즌 2
+    if (k === 'rudolph') { for (const s2 of [-1, 1]) { cyl(hg, 0.025, 0.24, 0x8A5A34, s2 * 0.12, 0.12, 0, { solid: false, rz: s2 * -0.35 }); cyl(hg, 0.02, 0.12, 0x8A5A34, s2 * 0.2, 0.2, 0, { solid: false, rz: s2 * -1.1 }); cyl(hg, 0.02, 0.1, 0x8A5A34, s2 * 0.15, 0.26, 0, { solid: false, rz: s2 * 0.4 }); } box(hg, 0.3, 0.03, 0.05, 0xC0392B, 0, 0.0, 0, q); ball(hg, 0.05, 0xFFD23C, 0, 0.02, 0.04, q); } // 🦌 시즌 2
     if (k === 'gat') { cyl(hg, 0.3, 0.025, 0x1E1E22, 0, 0.02, 0, q); cyl(hg, 0.12, 0.18, 0x2A2A30, 0, 0.11, 0, q); }
     if (k === 'miner') { mesh(SPH_MID, hg, 0.22, 0.14, 0.22, 0xFFD23C, 0, -0.02, 0, q); box(hg, 0.32, 0.03, 0.08, 0xF5B82A, 0, -0.02, 0.17, q); box(hg, 0.08, 0.07, 0.04, 0xFFF6C8, 0, 0.06, 0.2, { solid: false, surf: null, emissive: 0.8 }); }
     if (k === 'liberty') { cyl(hg, 0.16, 0.06, 0x6FBFA0, 0, 0.02, 0, q); for (let i = 0; i < 5; i++) { const t = -Math.PI / 2 + (i - 2) * 0.45; mesh(PYR, hg, 0.05, 0.16, 0.05, 0x6FBFA0, Math.sin(t + Math.PI / 2) * 0.13, 0.1, -Math.cos(t + Math.PI / 2) * 0.13, q); } }
@@ -16280,7 +16299,7 @@ function openHomePet() {
     box.textContent = ''; const k = hpCur();
     if (!k) { // 처음 입양
       box.append(el2('p', 'hint', '함께 살 펫을 골라요! 첫 펫은 무료예요. 밖에 나가면 졸졸 따라오고, 매일 돌봐 주면 친밀도가 올라 선물도 물어와요.'));
-      const gd = el2('div', 'lp-grid'); HPETS.forEach(H => { const c = el2('div', 'lp-card'); c.append(el2('div', 'lp-icon', H.icon), el2('div', 'lp-name', H.n), H.free ? el2('div', 'lp-sub', '🆓 우리 반 도마뱀') : ''); const b = el2('button', 'btn lp-btn', '데려오기'); b.onclick = () => hpetAdopt(H.k); c.append(b); gd.append(c); }); box.append(gd); return;
+      const gd = el2('div', 'lp-grid'); HPETS.forEach(H => { const lockd = H.ss && !ssOwn(H.k); const c = el2('div', 'lp-card'); c.append(el2('div', 'lp-icon', H.icon), el2('div', 'lp-name', H.n), H.free ? el2('div', 'lp-sub', '🆓 우리 반 도마뱀') : H.ss ? el2('div', 'lp-sub', lockd ? `🔒 ${H.ss}` : '🆓 시즌 보상') : ''); const b = el2('button', 'btn lp-btn', lockd ? '🔒' : '데려오기'); b.disabled = lockd; b.onclick = () => hpetAdopt(H.k); c.append(b); gd.append(c); }); box.append(gd); return;
     }
     const p = bag.hpet.pets[k], H = HPETS[hpIdx(k)], lv = hpLv(p.a), nx = HPET_LV[lv + 1], day = hpDay(p), [mi, mt] = hpMood(p);
     box.append(el2('p', 'lp-big', `${H.icon} ${p.n || H.n} · ❤️ 친밀도 Lv${lv} · ${mi} ${mt}`));
@@ -16296,13 +16315,14 @@ function openHomePet() {
     for (const [l, t] of HPET_REWARD) box.append(el2('div', 'ride-row' + (lv >= l ? ' on' : ''), `${lv >= l ? '✅' : '🔒'} Lv${l} · ${t}`));
     box.append(el2('h3', 'lp-sec', '🐾 다른 펫'));
     const gd = el2('div', 'lp-grid'); HPETS.forEach(H2 => { const own = bag.hpet.pets[H2.k], c = el2('div', 'lp-card' + (H2.k === k ? ' done' : '')); c.append(el2('div', 'lp-icon', H2.icon), el2('div', 'lp-name', own ? `${own.n || H2.n} ❤️${hpLv(own.a)}` : H2.n));
-      const b = el2('button', 'btn lp-btn', H2.k === k ? '함께 사는 중' : own ? '집에 데려오기' : `🐚 ${HPET_NEW}`); b.disabled = H2.k === k || (!own && (bag.shell || 0) < HPET_NEW); b.onclick = () => own ? (bag.hpet.cur = H2.k, saveBag(), hpetSync(), refillLife()) : hpetAdopt(H2.k); c.append(b); gd.append(c); });
+      const lk2 = H2.ss && !ssOwn(H2.k), fr2 = H2.free || H2.ss; const b = el2('button', 'btn lp-btn', H2.k === k ? '함께 사는 중' : own ? '집에 데려오기' : lk2 ? `🔒 ${H2.ss}` : fr2 ? '🆓 데려오기' : `🐚 ${HPET_NEW}`); b.disabled = H2.k === k || (!own && (lk2 || (!fr2 && (bag.shell || 0) < HPET_NEW))); b.onclick = () => own ? (bag.hpet.cur = H2.k, saveBag(), hpetSync(), refillLife()) : hpetAdopt(H2.k); c.append(b); gd.append(c); });
     box.append(gd, el2('p', 'hint', '돌보지 않아도 친밀도는 줄지 않아요. 며칠 못 보면 조금 시무룩할 뿐이에요.'));
   });
 }
 function hpetAdopt(k) {
   const first = !Object.keys(bag.hpet.pets).length; if (bag.hpet.pets[k]) return;
-  if (!first && !HPETS[hpIdx(k)].free) { if ((bag.shell || 0) < HPET_NEW) { toast(`🐚 입양비 ${HPET_NEW}이 모자라요`, 'warn'); return; } bag.shell -= HPET_NEW; }
+  { const H0 = HPETS[hpIdx(k)]; if (H0?.ss && !ssOwn(k)) { toast(`🔒 ${H0.ss} 보상이에요`, 'info'); return; } }
+  if (!first && !HPETS[hpIdx(k)].free && !HPETS[hpIdx(k)].ss) { if ((bag.shell || 0) < HPET_NEW) { toast(`🐚 입양비 ${HPET_NEW}이 모자라요`, 'warn'); return; } bag.shell -= HPET_NEW; }
   bag.hpet.pets[k] = { n: '', a: 0, acc: 0, last: dayNum() }; bag.hpet.cur = k; saveBag(); updateHUD(null); hpetSync(); playSfx('fanfare');
   showBanner(`${HPETS[hpIdx(k)].icon} ${HPETS[hpIdx(k)].n}이(가) 우리 집에 왔어요!`, k === 'gecko' ? '우리 반 도마뱀 히로와 함께 산책해요 · 가끔 혀로 눈을 핥아요 👅' : '간식·쓰다듬기·공놀이·목욕으로 친해져요', 5000); refillLife();
 }
@@ -19106,6 +19126,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106z', d: '11월 23일', items: ['❄️ 시즌 2 「겨울 마을」(11/30~) 패스 보상이 생겼어요! 🧣 펫 털목도리 · ❄️눈송이 칭호 · 🎧 귀마개 · ❄️ 눈송이 발자국 · 🦌 루돌프 뿔 + ⛄ 눈사람 꾸미기 · 🧶 방울 털모자 + 🚢 배 겨울 장식 · ⛄눈사람장인 · 🛷 눈썰매 + 🌌 오로라 발자국 · 🧥 눈꽃 망토 · 🐧 아기 펭귄 펫 + 👑겨울왕', '📰 시즌 2에는 문해력 학습지를 제출하면 ⭐1 · 80점 넘으면 ⭐1 더!'] },
   { id: '1106y', d: '11월 22일', items: ['📰 쑥쑥 문해력 2-3·2-4 학습지 10장이 더 생겼어요 (모두 19장)', '📤 다 풀고 제출하면 자동으로 채점돼요! 점수와 문제마다 ✅/❌가 나와요 (쓰는 문제는 선생님이 확인)', '📚 처음 받은 점수의 절반만큼 국어력이 올라요 (최소 +5)', '🔑 선생님 화면에서만 정답을 볼 수 있어요'] },
   { id: '1106x', d: '11월 22일', items: ['✏️ 2회 십자말: 칸을 눌러 한 글자씩 직접 써요', '✍️ 9회 미로: 손가락으로 미로 위에 길을 그려요 (↩️ 한 획 지우기 · 🧽 모두 지우기)'] },
   { id: '1106w', d: '11월 22일', items: ['📄 문해력 학습지가 역사 학습지처럼 바뀌었어요: 종이 학습지 모양 · 지문과 문제마다 한 쪽씩 ‹ 이전 / 다음 › 으로 넘겨요', '🧩 1회 끝말잇기 말판: 보기 낱말을 손가락으로 끌어 번호 칸에 놓아요 (눌러 고른 뒤 칸을 눌러도 돼요)', '🔤 낱말 찾기(3회·8회): 글자를 눌러 색칠해요'] },
@@ -28319,25 +28340,27 @@ const SSN_STARS = [3, 6, 10, 15, 20, 26, 32, 40, 48, 56]; // 단계마다 필요
 const SSN_REW = { // [종류, 키, 아이콘, 이름] · wear: 'h10' = 모자 10번 · pet: 펫 옷 키 · title: 칭호 키 · trail: 발자국 번호
   s1: [['pet', 'maple', '🍁', '펫 단풍 스카프'], ['title', 'ssa', '🍂', '칭호 🍂수확꾼'], ['wear', 'f8', '🎤', '무대 헤드셋 마이크'], ['trail', 't1', '🍂', '단풍잎 발자국'], ['pet', 'scare', '🌾', '펫 허수아비 모자'],
     ['wear', 'h10', '🎃', '호박 모자'], ['title', 'ssb', '🎭', '칭호 🎭꿈끼스타'], ['trail', 't2', '✨', '무대 별빛 발자국'], ['wear', 'b10', '🍁', '단풍 망토'], ['title', 'ssc', '👑', '칭호 👑수확제왕']],
-  s2: [], // ❄️ 시즌 2 보상은 11월 말에 넣어요
+  s2: [['pet', 'wmuff', '🧣', '펫 눈꽃 털목도리'], ['title', 'ssd', '❄️', '칭호 ❄️눈송이'], ['wear', 'h19', '🎧', '털 귀마개'], ['trail', 't3', '❄️', '눈송이 발자국'],
+    ['pet', 'rudolph', '🦌', '펫 루돌프 뿔', [['snow', 'snwdeco', '⛄', '눈사람 꾸미기 (내가 함께 만든 눈사람에 장식)']]], ['wear', 'h20', '🧶', '방울 털모자', [['boat', 'bdwin', '🚢', '배 겨울 장식']]],
+    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
 };
-const SSN_TRAIL = [null, { icon: '🍂', n: '단풍잎 발자국', cols: [0xE8913A, 0xF2B640, 0xC0392B] }, { icon: '✨', n: '무대 별빛 발자국', cols: [0xFFE066, 0xFFFFFF, 0xB58CF0] }];
+const SSN_TRAIL = [null, { icon: '🍂', n: '단풍잎 발자국', cols: [0xE8913A, 0xF2B640, 0xC0392B] }, { icon: '✨', n: '무대 별빛 발자국', cols: [0xFFE066, 0xFFFFFF, 0xB58CF0] }, { icon: '❄️', n: '눈송이 발자국', cols: [0xFFFFFF, 0xCFE8FF, 0x9FD0F5] }, { icon: '🌌', n: '오로라 발자국', cols: [0x5FE3A1, 0x7AB8FF, 0xC48CFF] }];
 const ssnById = (id) => SSNS.find(x => x.id === id);
 function ssnNow() { const o = S.ssnc; if (o && o !== 'auto' && ssnById(o)) return ssnById(o); const d = dayNum(); return SSNS.find(x => d >= x.from && d <= x.to) || null; }
 const ssnLeft = (Z) => Math.max(0, Z.to - dayNum());
 const ssnMD = (d) => { const t = new Date(d * 864e5); return `${t.getUTCMonth() + 1}/${t.getUTCDate()}`; };
 const sspLv = (u, sid) => u === backend?.uid && bag.ssn?.id === sid ? bag.ssn.lv | 0 : +S.ssp?.[u]?.[sid] || 0;
 const ssOwn = (k) => isTeacher || !!bag.ssOwn?.[k];
-const SSN_TITLE = { ssa: ['🍂수확꾼', 's1', 2], ssb: ['🎭꿈끼스타', 's1', 7], ssc: ['👑수확제왕', 's1', 10] }; // 키: [글, 시즌, 단계]
+const SSN_TITLE = { ssa: ['🍂수확꾼', 's1', 2], ssb: ['🎭꿈끼스타', 's1', 7], ssc: ['👑수확제왕', 's1', 10], ssd: ['❄️눈송이', 's2', 2], sse: ['⛄눈사람장인', 's2', 7], ssf: ['👑겨울왕', 's2', 10] }; // 키: [글, 시즌, 단계]
 const ssnTitles = (u) => Object.entries(SSN_TITLE).filter(([, [, sid, lv]]) => sspLv(u, sid) >= lv).map(([k, [t]]) => [k, t, '']).reverse();
 function ssnStar(n = 1) { // ⭐ 시즌 별 (시즌이 열려 있을 때만 · 마무리 축제 때는 안 모아요)
   const Z = ssnNow(); if (!Z || Z.finale || isTeacher) return;
   if (bag.ssn?.id !== Z.id) bag.ssn = { id: Z.id, s: 0, lv: 0 };
   bag.ssn.s += n; const R = SSN_REW[Z.id] || []; let up = 0;
-  while (bag.ssn.lv < SSN_STARS.length && bag.ssn.s >= SSN_STARS[bag.ssn.lv] && R[bag.ssn.lv]) { const [kind, key, ic, nm] = R[bag.ssn.lv]; bag.ssn.lv++; up = bag.ssn.lv; ssnGive(kind, key); setTimeout(() => { playSfx('fanfare'); burst(player.pos.clone().setY(2.4), RAINBOW, 60, 6, 3); showBanner(`${Z.icon} 시즌 패스 ${up}단계!`, `${ic} ${nm}을(를) 받았어요! ${ssnHow(kind)}`, 6500); }, 900); }
+  while (bag.ssn.lv < SSN_STARS.length && bag.ssn.s >= SSN_STARS[bag.ssn.lv] && R[bag.ssn.lv]) { const [kind, key, ic, nm, also] = R[bag.ssn.lv]; bag.ssn.lv++; up = bag.ssn.lv; ssnGive(kind, key); for (const [k2, key2] of also || []) ssnGive(k2, key2); setTimeout(() => { playSfx('fanfare'); burst(player.pos.clone().setY(2.4), RAINBOW, 60, 6, 3); showBanner(`${Z.icon} 시즌 패스 ${up}단계!`, `${ic} ${nm}${(also || []).map(x => ` + ${x[2]} ${x[3]}`).join('')}을(를) 받았어요! ${ssnHow(kind)}`, 6500); }, 900); }
   saveBag(); if (up) backend.sspSet?.(Z.id, bag.ssn.lv);
 }
-const ssnHow = (kind) => kind === 'wear' ? '👕 옷가게에서 입어요' : kind === 'pet' ? '🐾 펫 가게에서 입혀요' : kind === 'title' ? '📊 → 🏷️ 내 칭호에서 달아요' : '🍂 시즌 창에서 골라요';
+const ssnHow = (kind) => kind === 'wear' ? '👕 옷가게에서 입어요' : kind === 'pet' ? '🐾 펫 가게에서 입혀요' : kind === 'title' ? '📊 → 🏷️ 내 칭호에서 달아요' : kind === 'ride' ? '🚲 탈것 가게에서 타요' : kind === 'hpet' ? '🐾 펫 가게에서 데려와요 (무료)' : kind === 'boat' ? '⛵ 조선소에서 배에 올려요' : kind === 'snow' ? '⛄ 광장 눈사람에 저절로 달려요' : '👣 시즌 창에서 골라요';
 function ssnGive(kind, key) {
   bag.ssOwn ||= {}; bag.ssOwn[key] = 1;
   if (kind === 'wear') bag.own[key] = true;
@@ -28357,9 +28380,9 @@ function openSeason() {
     if (Z.finale) { box.append(el2('p', 'hint', '🎓 마무리 축제 주간이에요! 시상식과 나의 성장 기록장이 곧 열려요.')); return; }
     const me = bag.ssn?.id === Z.id ? bag.ssn : { s: 0, lv: 0 }, R = SSN_REW[Z.id] || [], next = SSN_STARS[me.lv];
     box.append(el2('p', 'lp-big', isTeacher ? '🧑‍🏫 선생님은 모든 보상을 가지고 있어요' : `⭐ 시즌 별 ${me.s}개 · ${me.lv}단계${next != null && R[me.lv] ? ` (다음 단계까지 ⭐${next - me.s})` : ' · 🎉 모두 받았어요!'}`));
-    box.append(el2('p', 'hint', '📋 오늘의 할 일 미션 하나 ⭐1 · 3개 모두 하면 ⭐1 더 · 받은 보상은 시즌이 끝나도 계속 가져요'));
+    box.append(el2('p', 'hint', `📋 오늘의 할 일 미션 하나 ⭐1 · 3개 모두 하면 ⭐1 더${Z.id === 's2' ? ' · 📰 문해력 학습지 제출 ⭐1 (채점 80점 넘으면 ⭐1 더)' : ''} · 받은 보상은 시즌이 끝나도 계속 가져요`));
     if (!R.length) box.append(el2('p', 'hint', '이번 시즌 보상을 준비하고 있어요!'));
-    R.forEach(([kind, key, ic, nm], i) => { const got = isTeacher || me.lv > i, card = el2('div', ''); card.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 10px;margin:5px 0;border-radius:12px;background:${got ? '#E5F7DF' : '#fff'};box-shadow:0 1px 3px rgba(0,0,0,.07)`;
+    R.forEach(([kind, key, ic, nm, also], i) => { if (also) nm += also.map(x => ` + ${x[2]} ${x[3]}`).join(''); const got = isTeacher || me.lv > i, card = el2('div', ''); card.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 10px;margin:5px 0;border-radius:12px;background:${got ? '#E5F7DF' : '#fff'};box-shadow:0 1px 3px rgba(0,0,0,.07)`;
       const lv = el2('b', '', `${i + 1}단계`); lv.style.minWidth = '52px'; const icn = el2('span', '', got ? ic : '🔒'); icn.style.fontSize = '26px';
       const tx = el2('div', ''); tx.style.flex = '1'; tx.append(el2('b', '', nm), el2('div', 'hint', got ? `✅ 받았어요 · ${ssnHow(kind)}` : `⭐ ${SSN_STARS[i]}개 모으면`));
       card.append(lv, icn, tx); box.append(card); });
@@ -30098,7 +30121,10 @@ function snwRefresh(B) { // 눈사람 다시 그리기 (바뀔 때만)
     if (done) { const h = col[2]; for (const sgn of [-1, 1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), M(0x1E1E24)); e.position.set(x + sgn * h.r * 0.32, h.y + h.r * 0.22, z + h.r * 0.9); g.add(e); }
       const nose = new THREE.Mesh(new THREE.ConeGeometry(0.07, h.r * 0.9, 8), M(0xF07A1E)); nose.rotation.x = Math.PI / 2; nose.position.set(x, h.y, z + h.r + h.r * 0.4); g.add(nose);
       const hat = new THREE.Group(); hat.position.set(x, h.y + h.r * 0.82, z); const hc = [0xC0392B, 0x2E86DE, 0x27AE60, 0x8E44AD, 0xF39C12][i]; const brim = new THREE.Mesh(new THREE.CylinderGeometry(h.r * 0.85, h.r * 0.85, 0.05, 14), M(0x2A2A30)); const crown = new THREE.Mesh(new THREE.CylinderGeometry(h.r * 0.55, h.r * 0.6, h.r * 0.8, 14), M(0x2A2A30)); crown.position.y = h.r * 0.4; const band = new THREE.Mesh(new THREE.CylinderGeometry(h.r * 0.61, h.r * 0.61, 0.08, 14), M(hc)); band.position.y = 0.1; hat.add(brim, crown, band); g.add(hat); top = h.y + h.r * 1.7;
-      const scarf = new THREE.Mesh(new THREE.TorusGeometry(h.r * 0.85, 0.07, 6, 16), M(hc)); scarf.rotation.x = Math.PI / 2; scarf.position.set(x, h.y - h.r * 0.85, z); g.add(scarf); }
+      const scarf = new THREE.Mesh(new THREE.TorusGeometry(h.r * 0.85, 0.07, 6, 16), M(hc)); scarf.rotation.x = Math.PI / 2; scarf.position.set(x, h.y - h.r * 0.85, z); g.add(scarf);
+      if (col.some(b => sspLv(b.u, 's2') >= 5)) { /* ⛄ 1106z 시즌 2 「눈사람 꾸미기」를 받은 친구가 함께 만들면: 호랑가시 · 장갑 · 반짝이 */ const c = col[1]; for (const sgn of [-1, 1]) { const mt = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), M(hc)); mt.position.set(x + sgn * c.r * 1.95, c.y + c.r * 0.72, z); g.add(mt); }
+        for (const [dx, cc] of [[-0.12, 0x2E8B3A], [0.12, 0x2E8B3A]]) { const lf = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 4), M(cc)); lf.rotation.z = dx * 10; lf.position.set(x + h.r * 0.35 + dx, h.y + h.r * 1.05, z + h.r * 0.45); g.add(lf); } for (const dx of [-0.04, 0.04]) { const be = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 5), M(0xD62E2E)); be.position.set(x + h.r * 0.35 + dx, h.y + h.r * 1.05, z + h.r * 0.52); g.add(be); }
+        for (let k = 0; k < 6; k++) { const t = k / 6 * Math.PI * 2, sp = new THREE.Mesh(new THREE.OctahedronGeometry(0.07), new THREE.MeshBasicMaterial({ color: 0xBFE6FF })); sp.position.set(x + Math.cos(t) * 1.1, 0.5 + (k % 3) * 0.5, z + Math.sin(t) * 1.1); g.add(sp); } } }
     const n = col.filter(Boolean).length; if (n) makeLabel(g, done ? ['⛄ 우리 반 눈사람!', col.map(b => nickOf(b.u) || '친구').join(' · ')] : [`⛄ ${n}/3 · 다음은 ${SNW_PART[n]}`], done ? 0.95 : 0.85, x, top + 0.9, z);
   });
 }
@@ -30967,7 +30993,7 @@ function kwsRender() { const B = kwsEl().querySelector('#kwsBody'), D = kws.d, S
   { const sc = kws.ro ? kws.vsc : SC; if (sc && !(SC?.redo && !kws.ro)) { const bx = el('div', `background:${MHC.sheet};border:2px solid ${MHC.ink};border-radius:6px;padding:10px 14px;margin:10px 0;text-align:center`); bx.append(el('div', 'font-size:26px;font-weight:800', `💯 ${sc.sc}점`), el('div', `font-size:15px;color:${MHC.muted}`, `채점한 ${sc.mx}문제 중 ${sc.ok}문제 맞음 · 쓰는 문제(서술형)는 선생님이 확인해요`)); B.prepend(bx); }
     else if (lock) { const bx = el('div', `background:${MHC.soft};border-radius:6px;padding:10px 14px;margin:10px 0;text-align:center;font-size:17px`, '📤 제출했어요! ⏳ 채점을 기다리는 중이에요 (선생님 기기가 켜져 있으면 곧 채점돼요)'); B.prepend(bx); } }
   if (!ro && kws.pg === P.length - 1) { const r = el('div', 'text-align:center;margin:10px 0 6px'), s = el2('button', 'btn', '💾 저장하기'), dn = el2('button', 'btn', '📤 제출하기'); s.style.cssText = `background:#fff;border:1.5px solid ${MHC.line};box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; s.onclick = () => kwsSave(true);
-    dn.style.cssText = `background:${MHC.ochre};color:#fff;box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; let arm = false; dn.onclick = async () => { if (!arm) { arm = true; dn.textContent = '❗ 한 번 더 누르면 제출 (답을 고칠 수 없어요)'; dn.style.background = '#B3412E'; setTimeout(() => { if (dn.isConnected && arm) { arm = false; dn.textContent = '📤 제출하기'; dn.style.background = MHC.ochre; } }, 7000); return; } D.done = 1; kws.sc = null; kwsTouch(); await kwsSave(true); kws.pg = 0; kwsRender(); }; r.append(s, dn); B.append(r);
+    dn.style.cssText = `background:${MHC.ochre};color:#fff;box-shadow:none;font-size:18px;padding:9px 20px;margin:4px`; let arm = false; dn.onclick = async () => { if (!arm) { arm = true; dn.textContent = '❗ 한 번 더 누르면 제출 (답을 고칠 수 없어요)'; dn.style.background = '#B3412E'; setTimeout(() => { if (dn.isConnected && arm) { arm = false; dn.textContent = '📤 제출하기'; dn.style.background = MHC.ochre; } }, 7000); return; } D.done = 1; kws.sc = null; kwsTouch(); await kwsSave(true); if (!isTeacher) { bag.mhStar ||= {}; if (!bag.mhStar[kws.si]) { bag.mhStar[kws.si] = 1; saveBag(); ssnStar(1); toast('⭐ 시즌 별 +1 (문해력 제출)', 'success'); } } /* ❄️ 1106z */ kws.pg = 0; kwsRender(); }; r.append(s, dn); B.append(r);
     B.append(el('p', `font-size:14px;color:${MHC.muted};text-align:center`, '제출하면 점수와 문제마다 ✅/❌가 나와요. 정답은 선생님과 함께 맞춰요 🙂')); } }
 // 🧩 끝말잇기 말판: 보기 낱말을 끌어다(또는 눌러 고르고) 번호 칸에 놓아요 · 보기에 없는 낱말은 ✏️로 써요 · 답은 A['0'] = [1번 낱말, …]
 function mhChain(q, k, A, ro, set) { const a = Array.isArray(A[k]) ? [...A[k]] : [], N = q.clues.length, wrap = el2('div', ''), put = (j, w) => { const b = Array.isArray(A[k]) ? [...A[k]] : []; for (let z = 0; z < N; z++) if (w && b[z] === w && z !== j) b[z] = ''; b[j] = w; set(k, b); mhSel = ''; kwsRender2(); };
@@ -31105,7 +31131,7 @@ function mhAnsShow(q, v) { if (v == null) return '—'; if (typeof v === 'object
   if (k === 'multi') return v.map(j => '㉠㉡㉢㉣㉤'[j - 1]).join(', '); if (k === 'ch') return `${'①②③④⑤'[v - 1]} ${q.o?.[v - 1] || ''}`; return mhAnsText(q, v); }
 
 const mhScore = (x) => { try { const o = JSON.parse(x?.d || 'null'); return o && typeof o.sc === 'number' ? o : null; } catch (e) { return null; } };
-function mhReward(i, x) { const sc = mhScore(x); if (!sc || isTeacher) return; bag.mhRw ||= {}; if (bag.mhRw[i]) return; bag.mhRw[i] = 1; const base = sc.first ?? sc.sc, n = Math.max(5, Math.round(base / 2)); addStat('read', n); saveBag(); updateHUD(null); playSfx('fanfare'); showBanner(`💯 ${i}회 문해력 ${base}점!`, `📚 국어력 +${n}`, 4000); }
+function mhReward(i, x) { const sc = mhScore(x); if (!sc || isTeacher) return; bag.mhRw ||= {}; if (bag.mhRw[i]) return; bag.mhRw[i] = 1; const base = sc.first ?? sc.sc, n = Math.max(5, Math.round(base / 2)); addStat('read', n); if (base >= 80) ssnStar(1); /* ❄️ 1106z 80점 넘으면 ⭐ 하나 더 */ saveBag(); updateHUD(null); playSfx('fanfare'); showBanner(`💯 ${i}회 문해력 ${base}점!`, `📚 국어력 +${n}${base >= 80 && ssnNow() && !ssnNow().finale ? ' · ⭐ 시즌 별 +1' : ''}`, 4000); }
 async function mhView(si, no, v, sc) { await mhLoad(); if (!kws.mh) return; kws.vsc = sc || null; closeModals(); const el = kwsEl(); el.classList.remove('hidden'); kws.on = true; kws.ro = true; kws.no = no; kws.si = si; kws.pg = 0; kws.d = mhParse(v); kwsHead(''); if (!no) kws.el.querySelector('#kwsHead b').textContent = `📖 ${si}회 ${kws.mh[si - 1].t} (빈 학습지)`; kwsRender(); }
 // ---------- ✍️ 시 게시판 (1101l 운을 띄운 N행시 · 투표 · 걸리면 보상) ----------
 // state/kpw 운(2~4글자, 선생님) · state/kpoem/{uid} {n, w 운, t, at, ok} · state/kpoemv/{uid} 투표한 시의 기기
