@@ -734,6 +734,7 @@
   #nvHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(270px, 48vw); z-index: 3; font-size: 14px; line-height: 1.45; }
   #stgCard { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(96px + var(--safe-bottom, 0px)); width: min(420px, 92vw); padding: 8px 10px; z-index: 8; } /* 🎤 1101d 연습 플레이어 */
   .sbt-fr { display: inline-flex; flex-direction: column; vertical-align: middle; font-size: .8em; line-height: 1; margin: 0 2px; text-align: center; } .sbt-fr i { font-style: normal; padding: 0 2px; } .sbt-fr i:first-child { border-bottom: 2px solid currentColor; } /* 🧮 분수 */
+  #nvFireBtn.nv-ready { background: #FF5A3C !important; color: #fff !important; box-shadow: 0 0 0 4px rgba(255,90,60,.35), 0 0 18px rgba(255,90,60,.8); animation: nvPulse 0.9s ease-in-out infinite; } @keyframes nvPulse { 50% { transform: scale(1.08); } } /* 🎯 1106r 쏘면 맞아요 */
   #nvMap { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); top: calc(76px + var(--safe-top)); width: 176px; height: 160px; z-index: 3; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,.25); background: #3E8FD6; } /* 🗺️ 1106m 점령 지도 */
   body.nv-here #miniBtn, body.nv-here #guideChip { display: none !important; }
   body.nv-here #rideBtn, body.nv-here #controls, body.nv-here #praiseBtn { display: none !important; } /* 1031h 해전 버튼과 겹치지 않게 */
@@ -19104,6 +19105,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106r', d: '11월 22일', items: ['🎯 수학 해전 사격이 쉬워졌어요! 🔥 버튼(F)을 누르면 사거리 안 가장 가까운 적 배로 자동 조준', '🔴 쏘면 맞는 적 배 위에 빨간 과녁 · 내 배 둘레 흰 원 = 사거리 · 🔥 버튼이 빨갛게 빛나면 발사!'] },
   { id: '1106q', d: '11월 22일', items: ['🧮 수학 해전: 선생님이 열면 모두 함께 바다로 출발해요 (공성전처럼)', '🎯 정답 부표가 한 줄로 7m씩 떨어져요 · 한 번 먹은 부표 무리는 멀리 갔다 와야 다시 먹어요 (여러 개 한꺼번에 먹지 않게)'] },
   { id: '1106p', d: '11월 22일', items: ['🧑‍🏫 관리화면 🎮 놀이 탭: ⚔️ 성 공방전 바로 아래에 🧮 수학 해전 · 🎛️ 이벤트 켜고 끄기도 보여요'] },
   { id: '1106o', d: '11월 22일', items: ['⚔️ 성 공방전 거점 자리를 나라마다 공평하게! 3나라면 세 성이 가운데에서 같은 거리 · 두 나라 사이마다 거점 하나(⛏️·🌾·⛵) → 나라마다 가까운 거점 2곳이 똑같은 거리예요', '2나라는 🔥 봉수대를 가운데 줄 옆으로(두 성에서 같은 거리) · 4나라는 모서리 거점을 정사각형으로 맞췄어요'] },
@@ -29028,7 +29030,7 @@ const NV_SETS = {
 };
 const NV_JOB = [ // 🎽 1031h 역할 (Q 기술) · 🧮 1106l 역할마다 배가 달라요 (s 배 · hull 튼튼함 · spd 빠르기)
   { k: 'nav', icon: '🧭', n: '항해사', d: '🚤 쾌속정 · 가장 빠르고 잘 돌아요 (대신 약해요)', q: '💨 돌진: 2.5초 동안 아주 빠르게 (15초마다)', cd: 15000, s: 5, hull: 13, spd: 8.4 },
-  { k: 'gun', icon: '💣', n: '포격수', d: '🏴‍☠️ 해적선 · 포탄 위력 +2 · 사거리 +4', q: '💥 일제 사격: 왼쪽·오른쪽·앞으로 한꺼번에 (포탄 안 써요 · 15초마다)', cd: 15000, s: 3, hull: 18, spd: 6.4 },
+  { k: 'gun', icon: '💣', n: '포격수', d: '🏴‍☠️ 해적선 · 포탄 위력 +2 · 사거리 +4', q: '💥 일제 사격: 사거리 안 적 배 3척까지 한꺼번에 (포탄 안 써요 · 15초마다)', cd: 15000, s: 3, hull: 18, spd: 6.4 },
   { k: 'wright', icon: '🔨', n: '조선공', d: '🛳️ 유람선 · 가장 튼튼해요 (조금 느려요)', q: '🔧 긴급 수리: 내 배 +6 (12초마다)', cd: 12000, s: 7, hull: 24, spd: 6.0 },
   { k: 'scout', icon: '🔭', n: '척후병', d: '🟡 잠수함 · 장전 25% 빨라요 · 섬을 1.6배 빨리 차지해요', q: '🎯 정밀 조준: 다음 한 발이 멀리·잘 맞아요 (10초마다)', cd: 10000, s: 6, hull: 15, spd: 7.2 },
   { k: 'pilot', icon: '✈️', n: '비행사', d: '⛵ 돛단배 · 팀에 1명만! 우리 팀이 가운데 ✈️ 비행장을 차지하면 비행기로 폭격해요', q: '✈️ 폭격: 적 배가 가장 많이 모인 곳에 폭탄 (비행장을 차지했을 때 · 40초마다)', cd: 40000, s: 2, hull: 16, spd: 7.0, cap: 1 },
@@ -29175,17 +29177,32 @@ function nvMySides() {
 }
 const nvDir = (h, sd) => sd === 'L' ? [Math.cos(h), -Math.sin(h)] : sd === 'R' ? [-Math.cos(h), Math.sin(h)] : [Math.sin(h), Math.cos(h)];
 const nvReload = () => Math.max(1100, 2100 - nvDig(sgMySp(), 1) * 120) * (nvOwns(nvMine(), 'lamp') ? 0.8 : 1) * (NV_JOB[nvJob()].k === 'scout' ? 0.75 : 1); // 🔤 영어력 · 🔭 등대섬 · 척후병
-function nvFire(volley) {
-  if (!nvW?.on || !S.nv?.on) return; const now = performance.now(); if (now < nvW.cd && !volley) return; const S2 = nvMyShip(); if (!S2) return;
+function nvAimRange() { const jk = NV_JOB[nvJob()].k; return NV_RANGE + (jk === 'gun' ? 4 : 0) + (nvW.aim ? 8 : 0); }
+function nvTargets(S2, RG) { // 🎯 1106r 사거리 안 적 배 (가까운 순)
+  const me = nvMine(), out = []; for (const E of nvShips()) { if (E.u === S2.u || (E.t && E.t === me) || nvKo(E.u)) continue; const d = Math.hypot(E.x - S2.x, E.z - S2.z), r = (1.5 + E.hh * 0.3) * NV_SC * 0.8; if (d <= RG + r) out.push({ E, d }); }
+  return out.sort((a, b) => a.d - b.d);
+}
+function nvFire(volley) { // 🎯 1106r 자동 조준: 사거리 안 가장 가까운 적 배로 (배 방향 상관없이)
+  volley = volley === true; if (!nvW?.on || !S.nv?.on) return; const now = performance.now(); if (now < nvW.cd && !volley) return; const S2 = nvMyShip(); if (!S2) return;
+  const aim = nvW.aim && !volley, RG = nvAimRange(), T = nvTargets(S2, RG);
+  if (!volley && !T.length) { if (now > (nvW.noTgtT || 0)) { nvW.noTgtT = now + 2000; toast('🎯 사거리 안에 적 배가 없어요 · 빨간 과녁이 뜰 때까지 더 가까이!', 'info'); } return; }
   if (!volley) { if ((nvW.ammo | 0) <= 0) { if (now > (nvW.noAmmoT || 0)) { nvW.noAmmoT = now + 2500; toast('💣 포탄이 없어요! 🧮 정답 부표를 지나가서 채워요', 'warn'); playSfx('oops'); } return; } nvW.ammo--; } /* 🧮 1106l 포탄 = 정답 부표 */
-  const sides = volley ? ['L', 'R', 'F'] : nvMySides(), jk = NV_JOB[nvJob()].k, aim = nvW.aim && !volley, RG = NV_RANGE + (jk === 'gun' ? 4 : 0) + (aim ? 8 : 0); if (aim) nvW.aim = false; if (!sides.length) { toast('🧭 선장은 배를 몰아요! 포수 친구들이 총통을 쏴요', 'info'); nvW.cd = now + 800; return; }
-  if (!volley) nvW.cd = now + nvReload(); nvW.f++; playSfx('drop'); const real = S.nv.ph === 'play', me = nvMine();
-  for (const sd of sides) {
-    const [dx, dz] = nvDir(S2.h, sd), ox = S2.x + dx * 2.2, oz = S2.z + dz * 2.2; let best = null, bt = RG + 4;
-    for (const E of nvShips()) { if (E.u === S2.u || (E.t && E.t === me) || nvKo(E.u)) continue; const rx = E.x - ox, rz = E.z - oz, t = rx * dx + rz * dz, r = (1.5 + E.hh * 0.3) * NV_SC * 0.8; if (t < 0 || t > RG + r) continue; const pd = Math.hypot(rx - dx * t, rz - dz * t); if (pd < r + (aim ? 2.4 : 0.9) && t < bt) { bt = t; best = E.u; } }
-    nvBall(ox, oz, dx, dz, best ? bt : RG, !!best, best ? () => { if (real && S.nv?.r === nvW.hr) nvW.hits[best] = (nvW.hits[best] || 0) + 1; } : null);
-  }
+  if (aim) nvW.aim = false; if (!volley) nvW.cd = now + nvReload(); nvW.f++; playSfx('drop'); const real = S.nv.ph === 'play';
+  const list = volley ? T.slice(0, 3) : T.slice(0, 1);
+  if (volley && !list.length) for (const sd of ['L', 'R', 'F']) { const [dx, dz] = nvDir(S2.h, sd); nvBall(S2.x + dx * 2.2, S2.z + dz * 2.2, dx, dz, RG, false, null); }
+  for (const { E, d } of list) { const dx = (E.x - S2.x) / (d || 1), dz = (E.z - S2.z) / (d || 1), u = E.u;
+    nvBall(S2.x + dx * 2.2, S2.z + dz * 2.2, dx, dz, Math.max(1, d - 2.2), true, () => { if (real && S.nv?.r === nvW.hr) nvW.hits[u] = (nvW.hits[u] || 0) + 1; }); }
   if (!real && nvW.tipT < now) { nvW.tipT = now + 8000; toast('🎯 연습 사격이에요 (선생님이 시작하면 진짜로 맞아요)', 'info'); }
+}
+function nvAimTick() { // 🔴 1106r 과녁 표시 · 사거리 원 · 🔥 버튼 빛나기
+  if (!nvW.aimG) { const g = new THREE.Group(), o = { solid: false }; const ring = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.22, 6, 28), new THREE.MeshBasicMaterial({ color: 0xFF3B30, transparent: true, opacity: 0.9, depthTest: false })); ring.rotation.x = Math.PI / 2; ring.renderOrder = 5; g.add(ring);
+    const cone = new THREE.Mesh(CONE, new THREE.MeshBasicMaterial({ color: 0xFF3B30, depthTest: false })); cone.scale.set(0.9, 1.4, 0.9); cone.rotation.x = Math.PI; cone.renderOrder = 5; g.add(cone); nvW.aimCone = cone; scene.add(g); nvW.aimG = g;
+    const rr = new THREE.Mesh(new THREE.RingGeometry(0.97, 1, 64), new THREE.MeshBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false })); rr.rotation.x = -Math.PI / 2; scene.add(rr); nvW.rangeG = rr; }
+  const S2 = nvW.on && S.nv?.on ? nvMyShip() : null, T = S2 ? nvTargets(S2, nvAimRange()) : [], t = T[0]?.E;
+  nvW.aimG.visible = !!t; nvW.rangeG.visible = !!S2;
+  if (S2) { const R = nvAimRange(); nvW.rangeG.position.set(S2.x, 0.35, S2.z); nvW.rangeG.scale.setScalar(R); }
+  if (t) { nvW.aimG.position.set(t.x, 0.6, t.z); nvW.aimG.rotation.y += 0.04; nvW.aimCone.position.y = 7 + Math.sin(time * 5) * 0.4; }
+  const ready = !!t && (nvW.ammo | 0) > 0 && performance.now() >= nvW.cd, b = $('nvFireBtn'); if (b) b.classList.toggle('nv-ready', ready);
 }
 function nvBall(ox, oz, dx, dz, dist, hit, done) {
   const m = nvW.pool.pop() || new THREE.Mesh(SPH_LO, new THREE.MeshStandardMaterial({ color: 0x1E1A16, roughness: 0.5 })); m.scale.setScalar(0.26); m.position.set(ox, 1.2, oz); m.visible = true; if (!m.parent) scene.add(m);
@@ -29346,7 +29363,7 @@ function nvUiInit() {
   const hud = document.createElement('div'); hud.id = 'nvHud'; hud.className = 'sticker hidden'; hud.setAttribute('role', 'status'); document.body.append(hud); nvW.hud = hud;
   const act = document.createElement('div'); act.id = 'nvAct'; act.className = 'hidden';
   act.innerHTML = '<button class="btn" id="nvFireBtn" aria-label="총통 쏘기 (F)">🔥<small>F 발사</small></button><button class="btn" id="nvRepBtn" aria-label="역할 기술 (Q)">🎽<small>Q 기술</small></button><button class="btn" id="nvJobBtn" style="font-size:13px">🎽 역할</button><button class="btn" id="nvDockBtn" style="font-size:13px">⚓ 부두로</button><button class="btn" id="nvHomeBtn" style="font-size:13px">🏠 마을로</button>';
-  document.body.append(act); nvW.actEl = act; $('nvFireBtn').onclick = nvFire; $('nvRepBtn').onclick = nvSkill; $('nvJobBtn').onclick = () => openNvJob(); $('nvDockBtn').onclick = () => nvToDock('⚓ 우리 부두로 돌아왔어요'); $('nvHomeBtn').onclick = nvHome;
+  document.body.append(act); nvW.actEl = act; $('nvFireBtn').onclick = () => nvFire(); $('nvRepBtn').onclick = nvSkill; $('nvJobBtn').onclick = () => openNvJob(); $('nvDockBtn').onclick = () => nvToDock('⚓ 우리 부두로 돌아왔어요'); $('nvHomeBtn').onclick = nvHome;
   const mp = document.createElement('canvas'); mp.id = 'nvMap'; mp.width = 352; mp.height = 320; mp.className = 'hidden'; mp.setAttribute('aria-label', '점령 지도'); document.body.append(mp); nvW.map = mp;
   const jb = document.createElement('button'); jb.id = 'nvJoin'; jb.className = 'btn hidden'; jb.textContent = '⚓ 수학 해전 출전!'; jb.onclick = nvGo; document.body.append(jb); nvW.join = jb;
 }
@@ -29360,9 +29377,9 @@ function nvHudTick() {
   html += `</div><div class="hint" style="margin:2px 0">${NV_ISL.map(I => { const o = s.own?.[I.k] | 0, ct = s.ct?.[I.k] | 0; return `${I.icon}${o ? nvNat(o).icon : '·'}${ct ? `(${nvNat(ct).icon}${s.cp?.[I.k] | 0}%)` : ''}`; }).join(' ')}</div>`;
   { const J = NV_JOB[nvJob()], cd = Math.max(0, nvW.skT - performance.now()); html += `<div>${N ? `${N.icon} 너는 ${N.name}` : isTeacher && !nvW.tMe ? '👀 선생님은 지켜보기' : '⏳ 팀을 정하는 중…'}${nvJobSet() ? ` · ${J.icon} ${J.n}${nvW.on ? ` · Q ${cd ? Math.ceil(cd / 1000) + '초' : '준비!'}` : ''}` : ' · 🎽 역할을 골라요'}</div>`; }
   if (nvW.on) { const S2 = nvMyShip(); if (S2) { const mx = nvMaxHull(S2), hl = Math.min(mx, s.hl?.[S2.u] | 0), k = Math.round((mx - hl) / mx * 8); html += `<div>${BOAT_H[NV_JOB[S2.job]?.s ?? 1].icon} ${BOAT_H[NV_JOB[S2.job]?.s ?? 1].n} · 🛡️ ${'■'.repeat(k)}${'□'.repeat(8 - k)} ${mx - hl}/${mx} · <b>💣 ${nvW.ammo | 0}</b></div>${nvW.qq ? `<div style="font-size:17px;font-weight:900;color:#2F5E9E">🧮 ${sbtCardHtml(nvW.qq)} = ?</div><div class="hint">정답 부표로! 부두 근처 💣+2 · 가운데 💣+6</div>` : ''}`;
-      const sides = nvMySides(), bf = [nvW.dash > performance.now() && '💨돌진', nvW.aim && '🎯조준', nvOwns(me, 'air') && '✈️비행장', nvOwns(me, 'wind') && '🌬️빠름', nvOwns(me, 'wood') && '🔨수리', nvOwns(me, 'lamp') && '🔭장전'].filter(Boolean); html += `<div>${sides.length ? `🔥 ${sides.map(x => ({ L: '왼쪽', R: '오른쪽', F: '앞' })[x]).join('·')}` : '🧭 배를 몰아요'}${bf.length ? ` · ${bf.join(' ')}` : ''}</div>`; } }
+      const sides = nvMySides(), bf = [nvW.dash > performance.now() && '💨돌진', nvW.aim && '🎯조준', nvOwns(me, 'air') && '✈️비행장', nvOwns(me, 'wind') && '🌬️빠름', nvOwns(me, 'wood') && '🔨수리', nvOwns(me, 'lamp') && '🔭장전'].filter(Boolean); html += `<div>${nvW.aimG?.visible ? '🔴 과녁! 🔥 F로 발사' : '🎯 적 배에 다가가면 빨간 과녁이 떠요'}${bf.length ? ` · ${bf.join(' ')}` : ''}</div>`; } }
   else if (nvKo(backend.uid)) html += `<div>🔧 배를 고치는 중 ${Math.ceil((s.ko[backend.uid] - now) / 1000)}초</div>`;
-  else html += '<div class="hint">부두 끝에서 E: ⛵ 내 배 띄우기 · 친구 배 옆에서 E: 타기</div>';
+  else html += '<div class="hint">부두 끝에서 E: ⛵ 내 배 띄우기</div>';
   if (html !== nvW.hudHtml) { nvW.hudHtml = html; nvW.hud.innerHTML = html; }
   const sides = nvW.on ? nvMySides() : []; $('nvFireBtn').classList.toggle('hidden', !nvW.on || !sides.length); $('nvRepBtn').classList.toggle('hidden', !nvW.on || !nvJobSet()); $('nvDockBtn').classList.toggle('hidden', !nvW.on); $('nvJobBtn').classList.toggle('hidden', nvW.on);
   { const J = NV_JOB[nvJob()], t = `${J.icon}<small>Q ${J.n}</small>`; if (nvW.skIc !== t) { nvW.skIc = t; $('nvRepBtn').innerHTML = t; } $('nvRepBtn').style.opacity = nvW.skT > performance.now() ? '0.55' : '1'; }
@@ -29396,6 +29413,7 @@ function nvFillAdmin() { // 🏳️ 1031k 관리화면: 학생마다 해전 팀 
   box.append(el2('p', 'hint', '💪 팀별 능력치 힘: ' + set.nat.slice(0, n).map((N, k) => `${N.icon}${N.name} ${sum[k + 1] || 0} (${cnt[k + 1] || 0}명)`).join(' · ')));
 }
 function nvTick(dt) {
+  if (nvW?.aimG && !S.nv?.on) nvW.aimG.visible = nvW.rangeG.visible = false; /* 🎯 1106r */
   if (!nvW) return; const s = S.nv, now = backend.now();
   if (s?.on) nvBotView(dt);
   if (nvHost()) nvHostTick(dt);
@@ -29413,10 +29431,10 @@ function nvTick(dt) {
   if (s.ph === 'end' && nvW.endShown !== s.r && (reg || nvW.fought === s.r)) { nvW.endShown = s.r; setTimeout(openNvEnd, 2500); }
   if (!nvW.fxReady) { nvW.fxReady = true; nvW.fxSeen = s.fx || ''; } /* 🧮 1106l 처음 본 것만 건너뛰어요 */
   if (s.fx && s.fx !== nvW.fxSeen) { const was = true; nvW.fxSeen = s.fx; const [, t, v] = s.fx.split('|'); if (was && reg) { const N = nvNat(+t); if (String(v).startsWith('air:')) { const [ax, az] = v.slice(4).split(',').map(Number); nvPlaneFx(+t, NV.cx + ax, NV.cz + az); if (N) toast(`✈️ ${N.icon} ${N.name} 비행기 폭격!`, +t === nvMine() ? 'success' : 'warn'); } else if (String(v).startsWith('isl:')) { const I = NV_ISL.find(i => i.k === v.slice(4)); if (I && N) toast(`${N.icon} ${N.name}이(가) ${I.icon} ${I.n}을(를) 차지했어요! (${I.d})`, +t === nvMine() ? 'success' : 'info'); } else { const V = nvNat(+v); if (N && V) toast(`💥 ${N.icon} ${N.name}이(가) ${V.icon} ${V.name} 배를 가라앉혔어요! +10`, +t === nvMine() ? 'success' : 'info'); } } }
-  if (nvW.g) nvW.g.visible = reg; if (!reg) { for (const g of nvW.ships.values()) g.visible = false; nvHudTick(); return; }
+  if (nvW.g) nvW.g.visible = reg; if (!reg) { for (const g of nvW.ships.values()) g.visible = false; if (nvW.aimG) nvW.aimG.visible = nvW.rangeG.visible = false; nvHudTick(); return; }
   nvBuild();
   if (nvW.on) nvSelf(dt, now);
-  nvBuoyTick(dt); nvPlaneTick(dt); /* 🧮 1106l */
+  nvBuoyTick(dt); nvPlaneTick(dt); /* 🧮 1106l */ nvAimTick(); /* 🎯 1106r */
   // 🏳️ 부두 · 섬 깃발 색
   nvW.docks.forEach((d, i) => { const t = i + 1, on = t <= s.n, N = on ? nvNat(t) : null; d.pole.visible = on; d.lab.visible = on; if (on && d.k !== N.name) { d.k = N.name; d.cloth.material = d.cloth.material.clone(); d.cloth.material.color.setHex(N.col); d.lab.userData.set([`${N.icon} ${N.name} 부두`]); } });
   for (const I of NV_ISL) { const o = s.own?.[I.k] | 0, X = nvW.isl[I.k]; const col = o ? nvNat(o).col : 0xFFFFFF; if (X.col !== col) { X.col = col; X.cl.material = X.cl.material.clone(); X.cl.material.color.setHex(col); X.ring.material.color.setHex(col); } X.ring.material.opacity = (s.ct?.[I.k] ? 0.45 + Math.sin(time * 6) * 0.3 : 0.55); X.fl.children[1].rotation.y = Math.sin(time * 3) * 0.3; }
