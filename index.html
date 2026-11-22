@@ -13003,7 +13003,7 @@ function drawSgMapBase() { // ⚔️ 전쟁터 지도
   for (const [k, dx, dz, r] of SG_COVER) { c.fillStyle = k === 'wood' ? '#3E7A3E' : '#8E8678'; c.beginPath(); c.arc(mapX(SG.cx + dx), mapZ(SG.cz + dz), r * s * (k === 'wood' ? 0.9 : 0.8), 0, Math.PI * 2); c.fill(); }
   if (S.siege) { for (let t = 1; t <= S.siege.n; t++) { const ca = castleAt(t); if (ca) rect(ca.x - 6, ca.z - 6, ca.x + 6, ca.z + 6, '#' + new THREE.Color(sgSet().nat[t - 1].col).getHexString(), '#3B2F2A'); }
     c.strokeStyle = '#3E8FD6'; c.lineWidth = 2 * s; c.beginPath(); c.arc(mapX(SG.cx), mapZ(SG.cz), 11.2 * s, 0, Math.PI * 2); c.stroke();
-    for (const st of SG_SITES) { const o = S.siege.own?.[st.k] || 0; c.fillStyle = o ? '#' + new THREE.Color(sgSet().nat[o - 1].col).getHexString() : 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(mapX(st.x), mapZ(st.z), SG_ZONE * s, 0, Math.PI * 2); c.fill(); } }
+    for (const st of SG_SITES) { if (st.off) continue; const o = S.siege.own?.[st.k] || 0; c.fillStyle = o ? '#' + new THREE.Color(sgSet().nat[o - 1].col).getHexString() : 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(mapX(st.x), mapZ(st.z), SG_ZONE * s, 0, Math.PI * 2); c.fill(); } }
   mapUI.key = mapKey();
 }
 function drawMini() {
@@ -19104,6 +19104,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106o', d: '11월 22일', items: ['⚔️ 성 공방전 거점 자리를 나라마다 공평하게! 3나라면 세 성이 가운데에서 같은 거리 · 두 나라 사이마다 거점 하나(⛏️·🌾·⛵) → 나라마다 가까운 거점 2곳이 똑같은 거리예요', '2나라는 🔥 봉수대를 가운데 줄 옆으로(두 성에서 같은 거리) · 4나라는 모서리 거점을 정사각형으로 맞췄어요'] },
   { id: '1106n', d: '11월 22일', items: ['🏝️ 수학 해전 섬 자리를 팀마다 공평하게! 3팀이면 가운데 ✈️ 비행장은 세 부두에서 똑같은 거리, 팀마다 앞 섬 하나씩 (4팀이면 두 팀 사이마다 섬 하나 · ⭐ 별섬 추가)', '🧹 정리: 🎯 역할 체험장 · ☁️ 하늘 섬 깃발전 · 🤿 바닷속 산호초 · 🔱 심해 방탈출이 없어졌어요 (화면이 더 가벼워져요)'] },
   { id: '1106m', d: '11월 22일', items: ['🗺️ 수학 해전에 점령 지도! 왼쪽 위에서 섬 주인 색 · 차지 중 % · 우리 팀 배를 한눈에', '🏘️ 우리 집 마을의 빈 들판이 모두 「우리 반 공동 부지」가 됐어요! 친구 땅이 아닌 곳에서 🌼 꾸미기로 함께 마을을 꾸며요 (한 사람 40개까지)', '🧹 정리: 공동 미션 · 시 짓기 · 덜렁이의 개교기념일 · 거인·꼬마 물약 · 모래성이 없어졌어요 (화면이 더 가벼워져요)'] },
   { id: '1106l', d: '11월 22일', items: ['🧮 바다 공방전이 「수학 해전」으로 바뀌었어요! 선생님이 바다를 열면 반 전체가 🔵 🔴 🟢 3팀으로 나뉘어 섬을 차지하는 점령전', '🎽 역할마다 배가 달라요: 🧭 항해사 🚤 쾌속정 · 💣 포격수 🏴‍☠️ 해적선 · 🔨 조선공 🛳️ 유람선 · 🔭 척후병 🟡 잠수함 · ✈️ 비행사 ⛵ (팀에 1명)', '💣 포탄은 🧮 정답 부표를 지나가야 채워져요 · 부두 근처는 답 2개(+2) · 바다 가운데로 갈수록 답 5개(+6)', '✈️ 가운데는 비행장! 우리 팀이 차지하면 비행사가 Q로 적 배가 모인 곳에 폭격', '🧮 수학력이 높을수록 포탄이 세져요'] },
@@ -23920,7 +23921,7 @@ const SGK = 1.8, sgP = (x, z) => [2100 + (x - 520) * SGK, (z - 98) * SGK];
 const SG = { cx: 2100, cz: 0, x0: 2100 - 46 * SGK, x1: 2100 + 46 * SGK, z0: -46 * SGK, z1: 46 * SGK };
 const SG_LAYOUT = { // 성 자리: [x, z, 성문 방향]
   2: [[...sgP(520, 62), 0], [...sgP(520, 134), Math.PI]],
-  3: [[...sgP(520, 62), 0], [...sgP(556, 110), -Math.PI / 2], [...sgP(484, 110), Math.PI / 2]],
+  3: [[...sgP(520, 62), 0], [SG.cx + 56.1, SG.cz + 32.4, -Math.PI / 2], [SG.cx - 56.1, SG.cz + 32.4, Math.PI / 2]], /* 🏯 1106o 세 성을 가운데에서 같은 거리 · 120°씩 */
   4: [[...sgP(520, 62), 0], [...sgP(556, 98), -Math.PI / 2], [...sgP(520, 134), Math.PI], [...sgP(484, 98), Math.PI / 2]],
 };
 const SG_SITES = [
@@ -23938,6 +23939,23 @@ const SG_COVER = [
   ['wood', -20, -68, 5], ['wood', 20, 68, 5], ['rock', 64, -60, 3], ['rock', -64, 60, 3], ['rock', 64, 60, 3], ['rock', -64, -60, 3],
 ];
 const SG_SITE = Object.fromEntries(SG_SITES.map(s => [s.k, s]));
+for (const s of SG_SITES) { s.ox = s.x; s.oz = s.z; }
+// 🏯 1106o 나라 수마다 거점 자리를 공평하게 (가운데 기준 [x, z] · null = 이번 판에는 없어요)
+//  2나라: 원래 네 모서리(나라마다 2곳 · 50m) + 🔥 봉수대는 가운데 줄 옆(두 성에서 같은 거리)
+//  3나라: 두 나라 사이마다 한 곳(⛏️ 철광산① · 🌾 곡창 · ⛵ 나루터 · 나라마다 2곳 · 57m) · 철광산②·봉수대는 쉬어요
+//  4나라: 모서리를 정사각형으로(나라마다 2곳 · 48m) · 봉수대는 쉬어요
+const SG_SITE_LAY = {
+  2: { mine: [43.2, -39.6], farm: [-43.2, -39.6], mine2: [-43.2, 39.6], ferry: [43.2, 39.6], beacon: [-58, 0] },
+  3: { mine: [0, 40], farm: [34.6, -20], ferry: [-34.6, -20], mine2: null, beacon: null },
+  4: { mine: [41.4, -41.4], farm: [-41.4, -41.4], mine2: [-41.4, 41.4], ferry: [41.4, 41.4], beacon: null },
+};
+function sgSiteLayout(n) {
+  const L = SG_SITE_LAY[n] || SG_SITE_LAY[2];
+  for (const st of SG_SITES) { if (st.k === 'fort') continue; const v = L[st.k]; st.off = v === null; st.x = v ? SG.cx + v[0] : v === null ? SG.cx + 5000 : st.ox; st.z = v ? SG.cz + v[1] : v === null ? SG.cz : st.oz;
+    const G = sgw.siteG?.[st.k]; if (G) { removeColliders('sgsite:' + st.k); G.position.set(st.x - st.ox, 0, st.z - st.oz); G.visible = !st.off; G.updateMatrixWorld(true); if (!st.off) registerSolids(G, 'sgsite:' + st.k); }
+    const V = sgw.sites?.[st.k]; if (V) { V.ring.position.x = st.x; V.ring.position.z = st.z; V.pole.position.x = st.x; V.pole.position.z = st.z; V.flag.position.x = st.x; V.flag.position.z = st.z; V.label.position.x = st.x; V.label.position.z = st.z; for (const o of [V.ring, V.pole, V.flag, V.label]) o.visible = !st.off; } }
+  sgw.layN = n;
+}
 const SG_ZONE = 5.5, SG_HURT = 12000, SG_HURT_FAST = 7000, SG_SAFE = 3000, SG_DOWN = 45000, /* 🚩 1103b 부서진 성문 다시 서기 25 → 45초 */ SG_CAT_CD = 20000, SG_FINAL = 60000;
 const SG_LV_HP = (max, lv) => max + (lv - 1) * 25;
 const SG_WALL_COST = { 1: { w: 20, i: 5 }, 2: { w: 30, i: 15 } }; /* 🧱 1103g 성벽 강화 비용 (목책 → 토성 → 석성) */
@@ -24069,19 +24087,20 @@ function buildSiegeField() {
       box(g, along ? 3.4 : 2.6, 0.18, along ? 2.6 : 3.4, 0x9C6A3E, bx, 0.18, bz, o); for (const s of [-1, 1]) box(g, along ? 3.4 : 0.12, 0.6, along ? 0.12 : 3.4, 0x7A5436, bx + (along ? 0 : s * 1.3), 0.55, bz + (along ? s * 1.3 : 0), o); }
   }
   // ⛏️ 철광산: 바위 언덕 + 굴 + 광석 더미 + 수레
-  for (const s of [SG_SITE.mine, SG_SITE.mine2]) { const f = s.flip ? -1 : 1; for (const [dx, dz, r] of [[0, -3.6, 3.2], [-2.8, -2.6, 2.2], [2.9, -2.8, 2.4], [1.2, -4.8, 2]]) mesh(SPH_MID, g, r, r * 0.8, r * 0.9, 0x8A8274, s.x + dx, r * 0.35, s.z + dz * f, { solid: false, flat: true });
+  const fieldG = g; sgw.siteG = {}; const siteG = (k) => { const q = new THREE.Group(); q.name = 'sgSite_' + k; fieldG.add(q); sgw.siteG[k] = q; return q; }; /* 🏯 1106o 거점 꾸밈은 거점마다 따로 (나라 수에 따라 옮겨요) */
+  for (const s of [SG_SITE.mine, SG_SITE.mine2]) { const g = siteG(s.k), f = s.flip ? -1 : 1; for (const [dx, dz, r] of [[0, -3.6, 3.2], [-2.8, -2.6, 2.2], [2.9, -2.8, 2.4], [1.2, -4.8, 2]]) mesh(SPH_MID, g, r, r * 0.8, r * 0.9, 0x8A8274, s.x + dx, r * 0.35, s.z + dz * f, { solid: false, flat: true });
     box(g, 7, 2.6, 3.6, 0x8A8274, s.x, 1.3, s.z - 4 * f).visible = false; mesh(SPH_MID, g, 1.1, 1.3, 0.5, 0x1E1915, s.x, 0.7, s.z - 2.2 * f, { solid: false });
     for (let k = 0; k < 7; k++) mesh(SPH_LO, g, 0.3, 0.25, 0.3, k % 2 ? 0x5A6878 : 0x9AA8B8, s.x + 2.5 + (k % 3) * 0.4, 0.2 + Math.floor(k / 3) * 0.2, s.z + (0.5 + (k % 2) * 0.4) * f, { solid: false, flat: true });
     box(g, 1.2, 0.6, 0.8, 0x7A5436, s.x - 2.6, 0.55, s.z + 0.6 * f, o); for (const dz of [0.2, 1]) cyl(g, 0.25, 0.12, 0x3B3530, s.x - 2.6, 0.25, s.z + dz * f, { solid: false, rx: 0, rz: Math.PI / 2 }); }
   // 🌾 곡창: 논 + 높은 곳간
-  { const s = SG_SITE.farm; for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { const px = s.x - 3.5 + c * 7, pz = s.z - 4 + r * 3; if (Math.hypot(px - s.x, pz - s.z) < 3) continue; box(g, 3, 0.05, 2.4, 0x6AA0C0, px, 0.04, pz, { solid: false, surf: null }); for (let k = 0; k < 18; k++) mesh(CONE, g, 0.07, 0.5, 0.07, 0x9AC050, px - 1.2 + (k % 6) * 0.48, 0.28, pz - 0.8 + Math.floor(k / 6) * 0.8, o); }
+  { const s = SG_SITE.farm, g = siteG('farm'); for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) { const px = s.x - 3.5 + c * 7, pz = s.z - 4 + r * 3; if (Math.hypot(px - s.x, pz - s.z) < 3) continue; box(g, 3, 0.05, 2.4, 0x6AA0C0, px, 0.04, pz, { solid: false, surf: null }); for (let k = 0; k < 18; k++) mesh(CONE, g, 0.07, 0.5, 0.07, 0x9AC050, px - 1.2 + (k % 6) * 0.48, 0.28, pz - 0.8 + Math.floor(k / 6) * 0.8, o); }
     const gx = s.x, gz = s.z - 4.5; for (const [dx, dz] of [[-1.2, -0.9], [1.2, -0.9], [-1.2, 0.9], [1.2, 0.9]]) box(g, 0.25, 1.2, 0.25, 0x7A5436, gx + dx, 0.6, gz + dz); box(g, 3, 1.6, 2.2, 0xC8A878, gx, 2.0, gz, { surf: 'wood' }); mesh(SPH, g, 2.2, 1.0, 1.7, HANOK.thatch, gx, 2.8, gz, { solid: false, surf: 'straw' }); }
   // ⛵ 나루터: 짧은 강 + 나루 + 배
-  { const s = SG_SITE.ferry, w = new THREE.Mesh(new THREE.PlaneGeometry(12, 4), waterize(new THREE.MeshStandardMaterial({ color: 0x3E8FD6 }))); w.rotation.x = -Math.PI / 2; w.position.set(s.x + 1, 0.06, s.z + 5.5); g.add(w);
+  { const s = SG_SITE.ferry, g = siteG('ferry'), w = new THREE.Mesh(new THREE.PlaneGeometry(12, 4), waterize(new THREE.MeshStandardMaterial({ color: 0x3E8FD6 }))); w.rotation.x = -Math.PI / 2; w.position.set(s.x + 1, 0.06, s.z + 5.5); g.add(w);
     box(g, 12, 1, 4, 0x3E8FD6, s.x + 1, 0.5, s.z + 5.5).visible = false; box(g, 2.2, 0.2, 3, 0x9C6A3E, s.x - 1, 0.25, s.z + 4.6, { surf: 'wood' });
     { const b = new THREE.Group(); b.position.set(s.x + 3, 0.1, s.z + 5.6); b.rotation.y = 0.3; g.add(b); mesh(SPH_LO, b, 0.9, 0.35, 2.4, 0x8A5A34, 0, 0.1, 0, { solid: false }); box(b, 1.4, 0.08, 4, 0x6B4A30, 0, 0.35, 0, o); cyl(b, 0.05, 2.2, 0x8A5A34, 0, 1.4, 0.4, o); } }
   // 🔥 봉수대: 돌탑 + 불 그릇
-  { const s = SG_SITE.beacon, bx = s.x - 3, bz = s.z + 3; cyl(g, 1.3, 1.2, 0xA8A294, bx, 0.6, bz); cyl(g, 1.0, 1.2, 0xB0AA9C, bx, 1.8, bz); cyl(g, 0.8, 0.5, 0x6E6A60, bx, 2.65, bz, o);
+  { const s = SG_SITE.beacon, g = siteG('beacon'), bx = s.x - 3, bz = s.z + 3; cyl(g, 1.3, 1.2, 0xA8A294, bx, 0.6, bz); cyl(g, 1.0, 1.2, 0xB0AA9C, bx, 1.8, bz); cyl(g, 0.8, 0.5, 0x6E6A60, bx, 2.65, bz, o);
     const f = flame(g, bx, 2.9, bz, 1.2); f.visible = false; sgw.beaconFire = f; }
   // 🌲 숲·🪨 바위 (몸과 돌·화살을 막아요)
   for (const [k, dx, dz, r] of SG_COVER) {
@@ -24090,7 +24109,7 @@ function buildSiegeField() {
     else { mesh(SPH_MID, g, r, r * 0.75, r * 0.9, 0x8E8678, x, r * 0.25, z, { solid: false, flat: true }); mesh(SPH_LO, g, r * 0.6, r * 0.5, r * 0.55, 0x9A9286, x + r * 0.7, r * 0.15, z - r * 0.3, { solid: false, flat: true }); box(g, r * 1.6, r * 0.9, r * 1.5, 0x8E8678, x, r * 0.45, z).visible = false; sgw.cover.push(new THREE.Box3(new V3(x - r * 0.8, 0, z - r * 0.75), new V3(x + r * 0.8, r * 0.9, z + r * 0.75))); }
   }
   for (let i = 0; i < 70; i++) { const x = SG.x0 + 4 + Math.random() * (SG.x1 - SG.x0 - 8), z = SG.z0 + 4 + Math.random() * (SG.z1 - SG.z0 - 8); if (Math.hypot(x - SG.cx, z - SG.cz) < 16) continue; mesh(SPH_LO, g, 0.5, 0.35, 0.5, [0x5E9E4A, 0x6DAF55, 0x4E8A3E][i % 3], x, 0.15, z, { solid: false, flat: true }); } // 풀숲 (보기만)
-  registerSolids(g, 'siegeField'); batchStatic(g);
+  for (const q of Object.values(sgw.siteG)) g.remove(q); registerSolids(g, 'siegeField'); batchStatic(g); for (const q of Object.values(sgw.siteG)) { g.add(q); batchStatic(q); registerSolids(q, 'sgsite:' + q.name.slice(7)); }
   // 산성 투석기 (주인 나라만 써요)
   { const c = catapultModel(scene, null); c.g.position.set(SG.cx + 2.6, 0.84, SG.cz - 1.5); c.g.rotation.y = 0; sgw.catObjs.fort = c; registerSolids(c.g, 'siegeField'); }
   // 거점 깃발 + 동그라미 + 이름
@@ -25014,6 +25033,7 @@ function openSgStore() {
 function updateSiege(dt) {
   try { sgSerTick(); } catch (e) { console.warn('sgser', e); }
   if (!sgw.field) return;
+  { const n = S.siege?.n || 2; if (sgw.layN !== n) sgSiteLayout(n); } /* 🏯 1106o */
   const near = siegeRegion() || (camera.position.x > SG.x0 - 10 && camera.position.x < SG.x1 + 10 && camera.position.z > SG.z0 - 10);
   const s = S.siege, show = near && !!s, set = sgSet();
   sgw.field.visible = show;
@@ -25211,7 +25231,7 @@ function sgBotThink(b) { // 1초마다 할 일 고르기
   b.aim = null;
   if (b.role === 'smith') { b.aim = null; const [gx, gz] = castleLocal(b.t, (b.id.charCodeAt(2) % 3 - 1) * 2, 7); b.tx = gx; b.tz = gz; b.goal = 'guard'; return; }
   // 거점: 우리 것이 아닌 가장 가까운 곳 (같은 나라 컴퓨터끼리 조금 나눠 가요)
-  const sites = SG_SITES.filter(st => !sgOwns(b.t, st.k)).map(st => [st, Math.hypot(st.x - b.x, st.z - b.z) + (b.id.charCodeAt(2) % 2) * 25 * (st.k === 'fort' ? 0 : 1)]).sort((a, z) => a[1] - z[1]);
+  const sites = SG_SITES.filter(st => !st.off && !sgOwns(b.t, st.k)).map(st => [st, Math.hypot(st.x - b.x, st.z - b.z) + (b.id.charCodeAt(2) % 2) * 25 * (st.k === 'fort' ? 0 : 1)]).sort((a, z) => a[1] - z[1]);
   if (sites.length) { const st = sites[0][0], a = (b.id.charCodeAt(2) * 1.7) % (Math.PI * 2); b.tx = st.x + Math.cos(a) * 2; b.tz = st.z + Math.sin(a) * 2; b.goal = 'cap'; return; }
   // 다 차지했으면 가장 가까운 상대 성문으로
   let best = 0, bd = 1e9; for (let t = 1; t <= s.n; t++) { if (t === b.t || sgHp(t) <= 0 || sgFallen(t)) continue; const k = castleAt(t), d = Math.hypot(k.x - b.x, k.z - b.z); if (d < bd) { bd = d; best = t; } }
