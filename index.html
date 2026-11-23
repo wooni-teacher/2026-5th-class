@@ -19126,6 +19126,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1106z3', d: '11월 23일', items: ['🏛️ 성 공방전: 고용한 역사 인물 병사가 성 안에서 끼지 않게 해자 건너 성문 앞에서 나와요 (쓰러졌다 다시 나올 때도)'] },
   { id: '1106z2', d: '11월 23일', items: ['❄️ 시즌 2 「겨울 마을」이 오늘(11월 23일)부터 시작해요! 눈 쌓인 마을 · ⛄ 눈사람 · 새 시즌 패스 보상 (🛷 눈썰매 · 🐧 펭귄 펫 …)', '🍂 시즌 1에서 받은 보상은 계속 가져요'] },
   { id: '1106z', d: '11월 23일', items: ['❄️ 시즌 2 「겨울 마을」(11/30~) 패스 보상이 생겼어요! 🧣 펫 털목도리 · ❄️눈송이 칭호 · 🎧 귀마개 · ❄️ 눈송이 발자국 · 🦌 루돌프 뿔 + ⛄ 눈사람 꾸미기 · 🧶 방울 털모자 + 🚢 배 겨울 장식 · ⛄눈사람장인 · 🛷 눈썰매 + 🌌 오로라 발자국 · 🧥 눈꽃 망토 · 🐧 아기 펭귄 펫 + 👑겨울왕', '📰 시즌 2에는 문해력 학습지를 제출하면 ⭐1 · 80점 넘으면 ⭐1 더!'] },
   { id: '1106y', d: '11월 22일', items: ['📰 쑥쑥 문해력 2-3·2-4 학습지 10장이 더 생겼어요 (모두 19장)', '📤 다 풀고 제출하면 자동으로 채점돼요! 점수와 문제마다 ✅/❌가 나와요 (쓰는 문제는 선생님이 확인)', '📚 처음 받은 점수의 절반만큼 국어력이 올라요 (최소 +5)', '🔑 선생님 화면에서만 정답을 볼 수 있어요'] },
@@ -25271,17 +25272,18 @@ function sgBotThink(b) { // 1초마다 할 일 고르기
   let best = 0, bd = 1e9; for (let t = 1; t <= s.n; t++) { if (t === b.t || sgHp(t) <= 0 || sgFallen(t)) continue; const k = castleAt(t), d = Math.hypot(k.x - b.x, k.z - b.z); if (d < bd) { bd = d; best = t; } }
   if (best) { const [lx, lz] = sgToLocal(best, b.x, b.z), d = SG_DIRS[sgSideOf(lx, lz)], off = (b.id.charCodeAt(2) % 3 - 1) * 1.1, r = b.role === 'arch' ? SG_MOAT[1] + 1.6 : 6.9, [gx, gz] = castleLocal(best, d[0] * r - d[1] * off, d[1] * r + d[0] * off); b.tx = gx; b.tz = gz; b.goal = 'gate'; b.gateT = best; }
 }
+const sgHeroOut = (t, sl) => castleLocal(t, sl === 'a' ? -2.2 : 2.2, SG_DOCK_OUT + 2.5); /* 🏛️ 1106z3 인물 병사는 성 바깥(해자 건너 성문 앞)에서 나와요 (성 안에서 끼던 문제) */
 function sgHeroBots() { /* ⚔️ 1103i 고용한 인물이 인물 병사로 나와요: b{나라}8 (전반) · b{나라}9 (후반) · 체력 20 · 피해 +1 */
   const s = S.siege; for (const [t, o] of Object.entries(s.hero || {})) for (const [sl, k] of Object.entries(o || {})) { const H = SG_HERO[k], tt = +t, id = `b${tt}${sl === 'a' ? 8 : 9}`; if (!H || sgFallen(tt) || sgb.sim[id]) continue;
-    const [x, z] = castleLocal(tt, sl === 'a' ? -1.6 : 1.6, 1.5); sgb.sim[id] = { id, t: tt, role: H.r, hero: k, x, z, hp: SG_HERO_HP, mx: SG_HERO_HP, down: 0, cool: 1, think: 0, tx: x, tz: z, aim: null, s: null, fixT: 0 }; } }
+    const [x, z] = sgHeroOut(tt, sl); sgb.sim[id] = { id, t: tt, role: H.r, hero: k, x, z, hp: SG_HERO_HP, mx: SG_HERO_HP, down: 0, cool: 1, think: 0, tx: x, tz: z, aim: null, s: null, fixT: 0 }; } }
 function sgBotsHost(dt) {
   const s = S.siege; if (!s?.on || !sgStarted() || sgWinner()) return;
   sgHeroBots();
-  const brk = sgBreak(); if (brk && sgb.breakR !== s.r) { sgb.breakR = s.r; for (const b of Object.values(sgb.sim)) { const [x, z] = castleLocal(b.t, (Math.random() - 0.5) * 4, -1.2); Object.assign(b, { x, z, hp: b.mx, down: 0, ferry: null, aim: null, think: 0 }); } } // 🗺️ 작전 시간: 🤖도 성으로
+  const brk = sgBreak(); if (brk && sgb.breakR !== s.r) { sgb.breakR = s.r; for (const b of Object.values(sgb.sim)) { const [x, z] = b.hero ? sgHeroOut(b.t, b.id.endsWith('8') ? 'a' : 'b') : castleLocal(b.t, (Math.random() - 0.5) * 4, -1.2); Object.assign(b, { x, z, hp: b.mx, down: 0, ferry: null, aim: null, think: 0 }); } } // 🗺️ 작전 시간: 🤖도 성으로
   for (const b of Object.values(sgb.sim)) {
     if (sgFallen(b.t)) { delete sgb.sim[b.id]; continue; } // 🏳️ 함락된 나라 🤖는 사라져요
     if (brk) continue;
-    if (b.down) { if (backend.now() - b.down > sgHurtDur('') + 1000) { const [x, z] = castleLocal(b.t, (Math.random() - 0.5) * 4, -1.2); Object.assign(b, { x, z, hp: b.mx, down: 0, think: 0, ferry: null }); } continue; }
+    if (b.down) { if (backend.now() - b.down > sgHurtDur('') + 1000) { const [x, z] = b.hero ? sgHeroOut(b.t, b.id.endsWith('8') ? 'a' : 'b') : castleLocal(b.t, (Math.random() - 0.5) * 4, -1.2); Object.assign(b, { x, z, hp: b.mx, down: 0, think: 0, ferry: null }); } continue; }
     b.think -= dt; b.cool -= dt; b.dash = Math.max(0, (b.dash || 0) - dt); if (b.think <= 0) { b.think = 0.8 + Math.random() * 0.5; sgBotThink(b); }
     if ((b.role === 'sol' || b.role === 'gen' || b.role === 'pow' || b.role === 'smith') && b.aim) { const e = b.aim, cur = e[2] === 'b' ? sgb.sim[e[3]] : e[3] === backend.uid ? player.pos : remotes.get(e[3])?.pos; if (cur && !(e[2] === 'b' && cur.down)) { const d = Math.hypot(cur.x - b.x, cur.z - b.z) || 1; b.tx = cur.x - (cur.x - b.x) / d * 1.3; b.tz = cur.z - (cur.z - b.z) / d * 1.3;
       if (b.role === 'sol' && d > 4.5 && d < 9 && !b.dash && backend.now() > (b.dashCd || 0)) { b.dash = 0.35; b.dashCd = backend.now() + SG_DASH_CD; const ux = (cur.x - b.x) / d, uz = (cur.z - b.z) / d; b.s = { t: backend.now(), x: +b.x.toFixed(2), z: +b.z.toFixed(2), dx: +ux.toFixed(3), dz: +uz.toFixed(3), m: 3 }; playAct(sgb.av[b.id], 'dash'); sgMeleeFx(b.x, b.z, ux, uz, 3); } } }
