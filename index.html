@@ -1331,6 +1331,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
       <li><span class="em">💌</span>광장 오른쪽 감사 게시판에 오늘 고마웠던 일을 적으면 하루 한 번 🐚 보상을 받아요</li>
       <li><span class="em">⛵</span>바닷가 부두 끝에서 배를 타면 역사 마을에 가요. 북쪽 🏛️ 역사의 길에서 시대 퀴즈를 풀어 시대 건축물을 함께 지어요</li>
       <li><span class="em">🏊</span>수영장·배드민턴장(광장 동쪽): 북쪽 반은 수영장(헤엄치기 · 🏁 출발대 옆 E 수영 경주 · 🌊 워터슬라이드), 남쪽 반은 🏸 배드민턴 코트(코트 옆 E · 친구나 🤖와 단식·복식)</li>
+      <li><span class="em">🛠️</span>메이커 공방(🌀 포털): 🧰 작업대에서 블록을 톡톡 놓아 도전 맵을 만들고(내가 먼저 깨야 올려요), 📋 게시판에서 친구 맵에 도전해요 · 👍와 🥇 기록</li>
       <li><span class="em">⛄</span>눈싸움 공방전: 선생님이 열면 모두 팀 눈 요새로! F(❄️)를 꾹 눌렀다 놓아 던져요 · 광장 눈사람 옆 「⛄ 눈싸움 AI 연습」에서 혼자 연습</li>
       <li><span class="em">🏎️</span>수학 레이싱: 광산 마을 동쪽 🏁 문 → 경기장 접수처에서 방 만들기 · 참가 · 🤖 연습 (◀ ▶로 정답 차선!)</li>
       <li><span class="em">📊</span>위쪽 📊 버튼으로 내 능력치를 봐요. 영어 마을·역사 퀴즈·수학 광산·독서 기록장을 하면 오르고, 성 공방전 역할이 강해져요</li>
@@ -2430,7 +2431,11 @@ function normalize(v) {
     esc: Object.fromEntries(['esm', 'ese', 'ess', 'esc'].map(k => [k, Object.fromEntries(Object.entries(plainObj(plainObj(v.esc)[k])).filter(([u, x]) => x && typeof x === 'object' && +x.t > 0).map(([u, x]) => [u, { n: String(x.n || '').slice(0, 12), t: +x.t, s: Math.min(3, x.s | 0), at: +x.at || 0 }]))])), // 🔐 1101a
     evoff: Object.fromEntries(Object.entries(plainObj(v.evoff)).filter(([k, x]) => /^[a-z]{2,6}$/.test(k) && x === true).slice(0, 30)), // 🎛️ 1106j 선생님이 끈 이벤트
     potoff: +v.potoff || 0, // 🍄 1106f 선생님이 크기 물약 끈 시각
-    snw: Object.fromEntries(Object.entries(plainObj(v.snw)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && x.length <= 22).slice(0, 80)), snwb: Object.fromEntries(Object.entries(plainObj(v.snwb)).filter(([k, x]) => /^[0-4]$/.test(k) && Number.isFinite(+x)).map(([k, x]) => [k, +x])), /* 💥 1107f 부순 때 */ // ⛄ 1106i 눈사람 눈덩이
+    snw: Object.fromEntries(Object.entries(plainObj(v.snw)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && x.length <= 22).slice(0, 80)), snwb: Object.fromEntries(Object.entries(plainObj(v.snwb)).filter(([k, x]) => /^[0-4]$/.test(k) && Number.isFinite(+x)).map(([k, x]) => [k, +x])), /* 💥 1107f 부순 때 */
+    mk: Object.fromEntries(Object.entries(plainObj(v.mk)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && /^[0-5][0-4][0-2]\|[0-9a-z]{1,9}\|[.WLIJXHSGOQABKD]{144}$/.test(x)).slice(0, 80)), /* 🛠️ 1107g 메이커 맵 */
+    mkc: Object.fromEntries(Object.entries(plainObj(v.mkc)).filter(([m]) => ANON_ID.test(m)).slice(0, 80).map(([m, o]) => [m, Object.fromEntries(Object.entries(plainObj(o)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && /^[0-9a-z]{1,9}\.[0-9]{1,7}$/.test(x)).slice(0, 80))])),
+    mkl: Object.fromEntries(Object.entries(plainObj(v.mkl)).filter(([m]) => ANON_ID.test(m)).slice(0, 80).map(([m, o]) => [m, Object.fromEntries(Object.entries(plainObj(o)).filter(([u, x]) => ANON_ID.test(u) && x === true).slice(0, 80))])),
+    mkh: Object.fromEntries(Object.entries(plainObj(v.mkh)).filter(([m, x]) => ANON_ID.test(m) && x === true)), // ⛄ 1106i 눈사람 눈덩이
     aq: Object.fromEntries(Object.entries(plainObj(v.aq)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string').slice(0, 80).map(([u, x]) => [u, x.slice(0, 20)])), // 🐠 1106a 아쿠아리움 전시
     vt: Object.fromEntries(Object.entries(plainObj(v.vt)).filter(([k, x]) => /^\d{1,3}_\d{2,3}$/.test(k) && x && Number.isInteger(x.t) && x.t >= 0 && x.t <= 19 && typeof x.u === 'string').slice(0, 1500).map(([k, x]) => [k, { t: x.t, r: (x.r | 0) % 4, u: x.u.slice(0, 40) }])), // 🏘️ 1106m 공동 부지
     sgb: Object.fromEntries(Object.entries(plainObj(v.sgb)).filter(([u, x]) => ANON_ID.test(u) && x && typeof x === 'object' && typeof x.h === 'string').map(([u, x]) => [u, { h: x.h.slice(0, 40), n: String(x.n || '').slice(0, 12), at: +x.at || 0, tm: x.tm === 1 ? 1 : 0, pc: Number.isInteger(x.pc) && x.pc >= 0 && x.pc < 36 ? x.pc : -1, ...(x.o === 1 ? { o: 1 } : {}), ...(x.q === 1 ? { q: 1 } : {}), lv: Math.max(0, Math.min(2, x.lv | 0)), bk: typeof x.bk === 'string' ? x.bk.slice(0, 24) : '', sh: typeof x.sh === 'string' ? x.sh.slice(0, 320) : '', ok: Math.max(0, Math.min(99, x.ok | 0)), t0: +x.t0 || 0 }])), // 🎯 1106k 바다 공방전
@@ -2799,7 +2804,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwBreak(i, v) { (st.snwb ||= {})[i] = v; emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async vtSet(k, v) { (st.vt ||= {}); if (v) { if (st.vt[k]) return { ok: false }; st.vt[k] = v; } else delete st.vt[k]; emit(); return { ok: true }; }, async sgbSet(o) { (st.sgb ||= {}); if (o) st.sgb.me = JSON.parse(JSON.stringify(o)); else delete st.sgb.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwBreak(i, v) { (st.snwb ||= {})[i] = v; emit(); return { ok: true }; }, async mkSet(v) { (st.mk ||= {}); if (v) st.mk.me = v; else delete st.mk.me; emit(); return { ok: true }; }, async mkClear(m, v) { ((st.mkc ||= {})[m] ||= {}).me = v; emit(); return { ok: true }; }, async mkLike(m, on) { const o = ((st.mkl ||= {})[m] ||= {}); if (on) o.me = true; else delete o.me; emit(); return { ok: true }; }, async mkAdmin(path, v) { const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (v == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async vtSet(k, v) { (st.vt ||= {}); if (v) { if (st.vt[k]) return { ok: false }; st.vt[k] = v; } else delete st.vt[k]; emit(); return { ok: true }; }, async sgbSet(o) { (st.sgb ||= {}); if (o) st.sgb.me = JSON.parse(JSON.stringify(o)); else delete st.sgb.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3340,7 +3345,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async scrpSet(o) { try { await D.set(R(`state/scrp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1029c
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
     async aqSet(v) { try { await D.set(R(`state/aq/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } },
-    async snwSet(v) { try { await D.set(R(`state/snw/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, async snwBreak(i, v) { try { await D.set(R(`state/snwb/${i}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 💥 1107f */ // ⛄ 1106i // 🐠 1106a 아쿠아리움 전시
+    async snwSet(v) { try { await D.set(R(`state/snw/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, async snwBreak(i, v) { try { await D.set(R(`state/snwb/${i}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 💥 1107f */
+    async mkSet(v) { try { await D.set(R(`state/mk/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, async mkClear(m, v) { try { await D.set(R(`state/mkc/${m}/${uid}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, async mkLike(m, on) { try { await D.set(R(`state/mkl/${m}/${uid}`), on ? true : null); return { ok: true }; } catch (e) { return { ok: false }; } }, async mkAdmin(path, v) { if (!/^mk[h]?\/[A-Za-z0-9_-]{1,64}$/.test(path)) return { ok: false }; try { await D.set(R(`state/${path}`), v ?? null); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🛠️ 1107g */ // ⛄ 1106i // 🐠 1106a 아쿠아리움 전시
     async mrrSet(o) { try { await D.set(R(`state/mrr/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } },
     async vtSet(k, v) { try { await D.set(R(`state/vt/${k}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏘️ 1106m
     async sgbSet(o) { try { await D.set(R(`state/sgb/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎯 1106k // 🏎️ 1106a 수학 레이싱
@@ -4714,6 +4720,7 @@ function resolveHorizontal(p) {
   }
 }
 function groundAt(p) {
+  if (mkW?.play) { const mg = mkGround(p); if (mg != null) return mg; } /* 🕳️ 1107g 메이커 구멍 */
   if (p.x > 2030 && p.x < 2170 && Math.hypot(p.x - 2100, p.z - 290) < 62) return swGround(p);
   if (p.x > 2310 && p.x < 2490 && p.z > -45 && p.z < 45) return 0.06; /* 🏎️ 1106a 레이싱 경기장 (평평) */ /* 🪽 1105zz2 하늘 경기장 (SW 와 같은 자리 · 숫자로 써서 SW 가 정해지기 전에도 안전) */
   let g = terrainH(p.x, p.z); // 산에서는 땅 높이부터
@@ -4738,8 +4745,8 @@ function updatePlayer(dt) {
   if (il > 1) { ix /= il; iz /= il; }
   const fx = -Math.sin(camYaw), fz = -Math.cos(camYaw), rx = Math.cos(camYaw), rz = -Math.sin(camYaw);
   const mx = fx * iz + rx * ix, mz = fz * iz + rz * ix;
-  const moving = Math.min(1, Math.hypot(mx, mz)), skate = typeof iceW !== 'undefined' && iceW.on; /* ⛸️ 1106j 얼음 위에서는 미끄러져요 */
-  if (skate) { const v = iceW.v, k = 1 - Math.exp(-dt * (moving > 0.05 ? 1.4 : 0.35)), tx = moving > 0.05 ? mx * SPEED * 1.25 : 0, tz = moving > 0.05 ? mz * SPEED * 1.25 : 0; v.x += (tx - v.x) * k; v.z += (tz - v.z) * k; p.x += v.x * dt; p.z += v.z * dt; }
+  const moving = Math.min(1, Math.hypot(mx, mz)), skate = (typeof iceW !== 'undefined' && iceW.on) || mkIceOn(); /* 🧊 1107g 메이커 얼음 칸 */ /* ⛸️ 1106j 얼음 위에서는 미끄러져요 */
+  if (skate) { const v = mkW?.ice ? mkW.v : iceW.v, k = 1 - Math.exp(-dt * (moving > 0.05 ? 1.4 : 0.35)), tx = moving > 0.05 ? mx * SPEED * 1.25 : 0, tz = moving > 0.05 ? mz * SPEED * 1.25 : 0; v.x += (tx - v.x) * k; v.z += (tz - v.z) * k; p.x += v.x * dt; p.z += v.z * dt; }
   if (moving > 0.05) {
     const spd = skate ? 0 : SPEED * sgSpeedMul() * swSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * szSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : inReef(p.x, p.z) ? 0.75 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt; /* 🏊 물속은 천천히 */
     const target = Math.atan2(mx, mz);
@@ -7872,6 +7879,7 @@ function canStand(x, z) {
   if (inMrc(x, z)) return true; /* 🏎️ 1106a 수학 레이싱 경기장 */
   if (inSbt(x, z)) return true; /* 🎯 1106k 바다 공방전 */
   if (Math.hypot(x - SW.cx, z - SW.cz) <= SW.R + 2) return true; /* ☁️ 1105zy 하늘 경기장 */
+  if (inMk(x, z)) return true; /* 🛠️ 1107g 메이커 공방 */
   if (nvInWalk(x, z)) return true; /* 🧮 1106l 수학 해전 바다 · 부두 */
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inMineCave(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
@@ -19120,6 +19128,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107g', d: '11월 23일', items: ['🛠️ 새 장소 「메이커 공방」 (🌀 포털)! 🧰 작업대에서 12×12 칸에 블록을 톡톡 놓아 내 도전 맵을 만들어요', '🧱 벽 · 📦 낮은 벽 · 🧊 얼음 · ⏫ 점프대 · 🔺 가시 · 🕳️ 구멍 · ⭐ 별 · ❓ 문제 블록 · 🌀 순간이동 · 🔑 열쇠와 🔒 문', '🧪 내가 먼저 깨야 📤 올릴 수 있어요 → 📋 게시판에서 친구 맵에 도전 · 👍 · 🥇 기록', '🐚 친구 맵 처음 깨기 +5 · 친구가 내 맵을 깨면 +3'] },
   { id: '1107f', d: '11월 23일', items: ['💥 광장 남쪽 눈사람: 다 만든 눈사람 앞에서 E를 두 번 누르면 와르르 부서져요 → 누구나 그 자리에 다시 만들 수 있어요 (내 눈덩이가 들어간 눈사람이 부서지면 나도 다시 굴려요 · 🐚는 하루 한 번)'] },
   { id: '1107e', d: '11월 23일', items: ['👥 성 공방전 · 눈싸움에서 팀이 한눈에! ⭕ 발밑에 팀 색 원 · 머리 위 팀 색 표(⚔️ 적 / 💙 우리 팀 + ●▲■★ 팀 모양) · 🔻 적 머리 위 빨간 화살표', '🦺 눈싸움에서도 팀 색 조끼를 입어요'] },
   { id: '1107d', d: '11월 23일', items: ['⛄ 눈덩이가 더 잘 맞아요! 🎯 낮고 빠르게 날아가서 가는 길에 있는 친구도 맞고, 💥 떨어진 곳 둘레 2m(단단한 눈덩이 2.5m)도 맞아요'] },
@@ -19569,11 +19578,12 @@ function openPortal() {
     box.textContent = ''; box.append(el2('p', 'hint', '어느 마을로 갈까요? 마을에 있는 🌀 광장 포털을 타면 우리 마을 광장으로 돌아와요.'));
     const list = el2('div', 'sg-roles');
     const dests = [['🏯', '역사 마을', '시대 퀴즈 · 서당 · 역사의 길', 'hv'], ['⛏️', '수학 광산 마을', '수학 문제로 광석 캐기', 'math'], ['🗽', '영어 마을', 'Lesson 7~12 영어 놀이 · 훈련소', 'ev'], ['🔤', '한글 마을 (국어)', '문장 · 맞춤법 · 속담 · 읽기 · 시 · 🕵️ 매체 탐정', 'kv']]; // 1101i
+    dests.push(['🛠️', '메이커 공방', '친구가 만든 맵 도전 · 내 맵 만들기', 'mk']); /* 1107g */
     dests.push(['🏆', '반월몬스터즈 경기장', S.pbl?.on ? `🟢 ${S.pbl.s || '챔피언스리그'} 진행 중 · 친구와 펫 대전` : '챔피언스리그 · 친구와 펫 대전', 'pml']); /* 1105m */
     if (S.siege?.on) dests.unshift(['⚔️', '전쟁터', '성 공방전 중! 우리 성으로 가요', 'sg']);
     for (const [ic, name, sub, d] of dests) {
       const b = el2('button', 'sg-role'), t = el2('span', 'sg-role-txt'); t.append(el2('b', '', name), el2('span', 'sg-role-tag', sub));
-      b.append(el2('span', 'sg-role-ic', ic), t); b.onclick = () => { closeLife(); setTimeout(() => d === 'sg' ? sgSpawn() : d === 'pml' ? enterRoom('pml') : travelTo(d, true), 150); }; list.append(b);
+      b.append(el2('span', 'sg-role-ic', ic), t); b.onclick = () => { closeLife(); setTimeout(() => d === 'mk' ? mkGo() : d === 'sg' ? sgSpawn() : d === 'pml' ? enterRoom('pml') : travelTo(d, true), 150); }; list.append(b);
     }
     box.append(list);
   });
@@ -29609,6 +29619,220 @@ function nvBotView(dt) { // 모든 기기: 컴퓨터 친구 자리 · 던지는 
     const pf = nvW.botF[b.id]; if (pf != null && pf !== b.f && nvW.reg && !nvKo(b.id)) { const tx = m.x + Math.sin(m.h) * 14, tz = m.z + Math.cos(m.h) * 14; nvBallLaunch(m.x + Math.sin(m.h) * 0.7, m.z + Math.cos(m.h) * 0.7, tx, tz, false, false, false); const g = nvW.ships.get(b.id); if (g?.userData.av) playAct(g.userData.av, 'cast'); } nvW.botF[b.id] = b.f; }
   nvW.botView = out;
 }
+/* ================= 🛠️ 1107g 메이커 공방 (🌀 포털 → 메이커 공방) =================
+   · 학생이 12×12 칸에 블록을 톡톡 놓아 도전 맵을 만들어요 (글자 없이 · 이름도 고르기) → 🧪 내가 먼저 깨야 📤 올릴 수 있어요
+   · 친구는 게시판에서 골라 도전해요: 내 기기에서만 3D로 만들어져요 (사람마다 다른 자리라 서로 겹치지 않아요)
+   · 블록: 🧱 벽 · 📦 낮은 벽(점프) · 🧊 얼음(미끄럼) · ⏫ 점프대 · 🔺 가시(처음으로) · 🕳️ 구멍(떨어지면 처음으로) · ⭐ 별(모두 모아야 🏁) · ❓ 문제 블록(맞히면 열려요)
+            🌀/💫 순간이동 한 쌍 · 🔑 열쇠 → 🔒 잠긴 문 · 🚩 출발 · 🏁 도착
+   · 저장: state/mk/{기기} = "이름3|올린번호|칸144" · state/mkc/{만든이}/{기기} = "올린번호.기록ms" · state/mkl/{만든이}/{기기} = true(👍) · state/mkh/{만든이} = true(선생님 숨김)
+   · 보상: 친구 맵 처음 깨기 🐚+5 (하루 20) · 친구가 내 맵을 깨면 🐚+3 (하루 30) · ❓ 정답 수학력 */
+var mkW = null;
+const MKH = { x: 3300, z: 150, w: 44, d: 30 }, MK_N = 12, MK_C = 3, MK_HALF = MK_N * MK_C / 2;
+const MK_T = { // 칸 글자 → [이모지, 이름, 설명]
+  '.': ['', '바닥', '지우개 (빈 바닥)'], W: ['🧱', '벽', '못 지나가요'], L: ['📦', '낮은 벽', '점프로 넘어요'], I: ['🧊', '얼음', '미끄러져요'], J: ['⏫', '점프대', '높이 뛰어올라요'],
+  X: ['🔺', '가시', '밟으면 출발점으로'], H: ['🕳️', '구멍', '떨어지면 출발점으로'], O: ['⭐', '별', '모두 모아야 도착할 수 있어요'], Q: ['❓', '문제 블록', '수학 문제를 맞히면 열려요'],
+  A: ['🌀', '순간이동 1', '💫와 한 쌍'], B: ['💫', '순간이동 2', '🌀와 한 쌍'], K: ['🔑', '열쇠', '🔒 문을 모두 열어요'], D: ['🔒', '잠긴 문', '🔑가 있어야 열려요'], S: ['🚩', '출발', '한 개'], G: ['🏁', '도착', '한 개'],
+};
+const MK_PAL = ['.', 'W', 'L', 'I', 'J', 'X', 'H', 'O', 'Q', 'A', 'B', 'K', 'D', 'S', 'G'];
+const MK_TH = [['❄️', '눈'], ['🌋', '용암'], ['🌳', '숲'], ['🏰', '성'], ['🌊', '바다'], ['🚀', '우주']], MK_TY = [['🏃', '달리기'], ['🧭', '미로'], ['🧠', '문제'], ['🎢', '점프'], ['🌀', '순간이동']], MK_DF = [['😊', '쉬움'], ['😐', '보통'], ['😈', '어려움']];
+const MK_COL = [[0xEAF3FB, 0xD5E6F5], [0x5A3A30, 0x4A2E26], [0x8CC870, 0x7BB862], [0xCDBFA8, 0xBBAE96], [0x9FD3E8, 0x8AC4DD], [0x3A3F66, 0x2F3458]]; // 테마마다 바닥 두 색
+const MK_RE = /^[0-5][0-4][0-2]\|[0-9a-z]{1,9}\|[.WLIJXHSGOQABKD]{144}$/;
+const mkParse = (v) => { const s = String(v || ''); if (!MK_RE.test(s)) return null; const [n, st, g] = s.split('|'); return { n, st, g }; };
+const mkName = (n) => `${MK_TH[+n[0]]?.[0] || ''} ${MK_TH[+n[0]]?.[1] || ''} ${MK_TY[+n[1]]?.[0] || ''} ${MK_TY[+n[1]]?.[1] || ''} · ${MK_DF[+n[2]]?.[0] || ''} ${MK_DF[+n[2]]?.[1] || ''}`;
+const mkCnt = (g, ch) => g.split('').filter(c => c === ch).length;
+function mkCheck(g) { // 올리기 전에 확인
+  if (mkCnt(g, 'S') !== 1) return '🚩 출발을 한 개 놓아요'; if (mkCnt(g, 'G') !== 1) return '🏁 도착을 한 개 놓아요';
+  if (mkCnt(g, 'A') !== mkCnt(g, 'B') || mkCnt(g, 'A') > 1) return '🌀 순간이동은 🌀 한 개 + 💫 한 개를 함께 놓아요';
+  if (mkCnt(g, 'D') && !mkCnt(g, 'K')) return '🔒 잠긴 문이 있으면 🔑 열쇠도 놓아요';
+  if (mkCnt(g, 'Q') > 8) return '❓ 문제 블록은 8개까지예요'; if (mkCnt(g, 'O') > 10) return '⭐ 별은 10개까지예요'; return '';
+}
+const mkSlot = (u) => { let h = 7; for (const ch of String(u)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 24; };
+const mkFieldAt = (u) => { const s = mkSlot(u); return { x: 3240 + (s % 6) * 48, z: 222 + Math.floor(s / 6) * 48 }; };
+const inMkHub = (x, z) => Math.abs(x - MKH.x) < MKH.w / 2 && Math.abs(z - MKH.z) < MKH.d / 2;
+function inMk(x, z) { if (inMkHub(x, z)) return true; const P = mkW?.play; return !!P && Math.abs(x - P.F.x) < MK_HALF && Math.abs(z - P.F.z) < MK_HALF; }
+const mkRegion = () => joined && inMk(player.pos.x, player.pos.z);
+const mkCellIdx = (x, z) => { const P = mkW?.play; if (!P) return -1; const c = Math.floor((x - P.F.x + MK_HALF) / MK_C), r = Math.floor((z - P.F.z + MK_HALF) / MK_C); return c < 0 || r < 0 || c >= MK_N || r >= MK_N ? -1 : r * MK_N + c; };
+const mkCellXZ = (i) => { const P = mkW.play; return [P.F.x - MK_HALF + (i % MK_N + 0.5) * MK_C, P.F.z - MK_HALF + (Math.floor(i / MK_N) + 0.5) * MK_C]; };
+function mkGround(p) { const i = mkCellIdx(p.x, p.z); return i >= 0 && mkW.play.g[i] === 'H' ? -50 : null; } // 🕳️ 구멍은 바닥이 없어요
+function mkIceOn() { // 🧊 얼음 칸: 미끄러져요 (updatePlayer가 불러요)
+  if (!mkW?.play) { if (mkW) mkW.ice = false; return false; } const i = mkCellIdx(player.pos.x, player.pos.z), on = i >= 0 && mkW.play.g[i] === 'I' && player.pos.y < 0.4;
+  if (on && !mkW.ice) { mkW.v.x = Math.sin(player.heading) * SPEED; mkW.v.z = Math.cos(player.heading) * SPEED; } mkW.ice = on; return on;
+}
+const mkDraftGet = () => { try { const d = JSON.parse(localStorage.getItem('sv-mkdraft') || 'null'); if (d && /^[0-5][0-4][0-2]$/.test(d.n) && /^[.WLIJXHSGOQABKD]{144}$/.test(d.g)) return d; } catch (e) { } const g = Array(144).fill('.'); g[11 * 12] = 'S'; g[11] = 'G'; return { n: '000', g: g.join(''), ok: '' }; };
+const mkDraftPut = (d) => { try { localStorage.setItem('sv-mkdraft', JSON.stringify(d)); } catch (e) { } };
+const mkClears = (m, st) => Object.entries(S.mkc?.[m] || {}).map(([u, v]) => { const [a, b] = String(v).split('.'); return a === st ? [u, +b] : null; }).filter(x => x && x[1] > 0);
+const mkLikes = (m) => Object.keys(S.mkl?.[m] || {}).length;
+const mkSec = (ms) => (ms / 1000).toFixed(1) + '초';
+
+/* ---------- 🏗️ 공방 광장 ---------- */
+function mkBuildHub() {
+  const g = new THREE.Group(); g.name = 'MakerHub'; scene.add(g); const o = { solid: false }, { x, z, w, d } = MKH;
+  box(g, w, 0.3, d, 0xE9DCC6, x, -0.15, z, o); box(g, w - 2, 0.05, d - 2, 0xF4EBDD, x, 0.02, z, o);
+  for (let k = -3; k <= 3; k++) box(g, 0.08, 0.06, d - 2, 0xDCCDB4, x + k * 5.5, 0.05, z, o);
+  for (const [px, pz, pw, pd] of [[x, z - d / 2, w, 0.6], [x, z + d / 2, w, 0.6], [x - w / 2, z, 0.6, d], [x + w / 2, z, 0.6, d]]) box(g, pw, 1.1, pd, 0x9A6B43, px, 0.55, pz, { solid: true });
+  // 📋 게시판
+  { const bx = x - 9, bz = z - 9; box(g, 6, 3.4, 0.3, 0x8A5A34, bx, 2.2, bz, { solid: true }); box(g, 5.4, 2.8, 0.05, 0xFFF6E0, bx, 2.3, bz + 0.18, o); for (const sx of [-2.7, 2.7]) cyl(g, 0.12, 4, 0x6A4424, bx + sx, 2, bz, o);
+    signPlane(g, ['🛠️ 친구 맵 게시판', '골라서 도전해요!'], 5, 1.4, bx, 3.0, bz + 0.22, { font: 52, fg: '#3B2F2A', bg: '#FFF6E0', stroke: false }).rotation.y = 0;
+    addInteract({ pos: new V3(bx, 1, bz + 1.8), r: 3, text: () => mkRegion() ? ['📋 친구 맵 게시판', `맵 ${mkMaps().length}개 · 골라서 도전`] : null, run: openMkBoard }); }
+  // 🧰 작업대
+  { const bx = x + 9, bz = z - 9; box(g, 5, 1.0, 2.4, 0xB07A48, bx, 0.5, bz, { solid: true }); box(g, 5.2, 0.12, 2.6, 0x8A5A34, bx, 1.06, bz, o);
+    for (let k = 0; k < 6; k++) box(g, 0.6, 0.4, 0.6, [0xC0392B, 0x2E86DE, 0x27AE60, 0xF1C40F, 0x8E44AD, 0xBFE6FF][k], bx - 1.8 + (k % 3) * 1.2, 1.32, bz - 0.4 + Math.floor(k / 3) * 0.8, o);
+    makeLabel(g, ['🧰 맵 만들기 작업대', '블록을 톡톡 놓아요'], 1.0, bx, 3.2, bz);
+    addInteract({ pos: new V3(bx, 1, bz + 2), r: 3, text: () => mkRegion() ? ['🧰 맵 만들기', '내 도전 맵을 만들어 친구에게 내요'] : null, run: openMkEdit }); }
+  // 🌀 광장으로
+  { const bx = x + 16, bz = z + 9; const ring = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.22, 10, 32), new THREE.MeshStandardMaterial({ color: 0x3FB6A8, emissive: 0x3FB6A8, emissiveIntensity: 0.5 })); ring.position.set(bx, 1.9, bz); ring.rotation.y = Math.PI / 2; g.add(ring);
+    makeLabel(g, ['🌀 우리 마을 광장으로'], 0.9, bx, 4.0, bz); addInteract({ pos: new V3(bx, 1, bz), r: 2.6, text: () => mkRegion() ? ['🌀 광장으로 돌아가기', '우리 마을 광장'] : null, run: () => travelTo('home', true) }); }
+  makeLabel(g, ['🛠️ 메이커 공방', '친구가 만든 맵에 도전하고 · 내 맵을 만들어요'], 1.5, x, 6.5, z - 13);
+  for (const [lx, lz] of [[-18, -11], [18, -11], [-18, 11], [18, 11]]) { cyl(g, 0.12, 3.2, 0x5A4030, x + lx, 1.6, z + lz, o); ball(g, 0.4, 0xFFE9A8, x + lx, 3.4, z + lz, { solid: false, emissive: 0.6 }); }
+  g.updateMatrixWorld(true); registerSolids(g, 'mkhub'); mkW.hub = g;
+}
+
+/* ---------- 🚶 가기 · 도전 ---------- */
+async function mkGo() { // 🌀 포털 → 공방
+  if (hv.travel || !joined) return; if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
+  if (sail.on || sea.on) boatQuiet(); if (bag.ride) { bag.ride = ''; saveBag(); }
+  hv.travel = true; closeModals(); const fx = document.querySelector('#travelFx .tv-boat'); if (fx) fx.textContent = '🌀'; $('travelText').textContent = '🌀 포털을 지나 메이커 공방으로 가는 중…'; $('travelFx').classList.remove('hidden'); playSfx('cast');
+  if (!mkW.hub) mkBuildHub(); await sleep(1000); mkEnd(true); player.pos.set(MKH.x, 0.2, MKH.z + 6); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.35; camera.position.set(MKH.x, 5, MKH.z + 16);
+  await sleep(600); $('travelFx').classList.add('hidden'); playSfx('plop'); if (fx) setTimeout(() => { fx.textContent = '⛵'; }, 300); hv.travel = false;
+  if (!mkW.seen) { mkW.seen = true; showBanner('🛠️ 메이커 공방', '📋 게시판에서 친구 맵에 도전하고 · 🧰 작업대에서 내 맵을 만들어요', 5000); }
+}
+function mkPlay(m) { // m = { g, n, st, maker, test }
+  if (!mkW.hub) mkBuildHub(); mkEnd(true); closeModals(); if (bag.ride) { bag.ride = ''; saveBag(); }
+  const F = mkFieldAt(backend.uid), P = mkW.play = { ...m, F, stars: 0, need: mkCnt(m.g, 'O'), key: false, got: new Set(), open: new Set(), qCd: {}, t0: 0, tp: 0, falls: 0 };
+  mkBuildField(P); mkRespawn(true); P.t0 = performance.now(); playSfx('fanfare');
+  showBanner(m.test ? '🧪 시험 플레이' : '🛠️ 도전 시작!', `${mkName(m.n)}${P.need ? ` · ⭐ ${P.need}개를 모아 🏁` : ' · 🏁까지 가요'}`, 3500);
+}
+function mkRespawn(first) { const P = mkW.play, i = P.g.indexOf('S'), j = P.g.indexOf('G'), [x, z] = mkCellXZ(i), [gx, gz] = mkCellXZ(j); player.pos.set(x, 0.3, z); player.vy = 0; player.heading = Math.atan2(gx - x, gz - z); camYaw = player.heading + Math.PI; if (first) camera.position.set(x - Math.sin(player.heading) * 10, 6, z - Math.cos(player.heading) * 10); if (!first) { P.falls++; playSfx('oops'); } }
+function mkEnd(silent) { // 판 치우기
+  const P = mkW?.play; if (!P) return; mkW.play = null; mkW.ice = false; scene.remove(P.grp); P.grp.traverse(o => { if (o.userData.own) { o.geometry?.dispose(); } }); removeColliders('mk'); removeColliders('mkd'); for (let k = 0; k < 144; k++) removeColliders('mkq' + k);
+  mkW.hud?.classList.add('hidden'); if (!silent) { player.pos.set(MKH.x, 0.2, MKH.z + 2); player.vy = 0; }
+}
+function mkBuildField(P) {
+  const grp = new THREE.Group(); grp.name = 'MakerField'; scene.add(grp); P.grp = grp; const th = +P.n[0], [c1, c2] = MK_COL[th] || MK_COL[0], o = { solid: false }, G = P.g;
+  box(grp, MK_N * MK_C + 40, 0.2, MK_N * MK_C + 40, 0x1E2230, P.F.x, -9, P.F.z, o); // 🕳️ 깊은 바닥
+  for (const [x, z, w, d] of [[P.F.x, P.F.z - MK_HALF - 0.3, MK_N * MK_C + 1.2, 0.6], [P.F.x, P.F.z + MK_HALF + 0.3, MK_N * MK_C + 1.2, 0.6], [P.F.x - MK_HALF - 0.3, P.F.z, 0.6, MK_N * MK_C], [P.F.x + MK_HALF + 0.3, P.F.z, 0.6, MK_N * MK_C]]) box(grp, w, 1.6, d, 0xFFFFFF, x, 0.8, z, { solid: false, emissive: 0.15 });
+  const sol = new THREE.Group(), dor = new THREE.Group(); grp.add(sol, dor); P.items = []; P.qs = [];
+  for (let i = 0; i < 144; i++) { const ch = G[i], [x, z] = mkCellXZ(i), r = Math.floor(i / MK_N), c = i % MK_N, fl = (r + c) % 2 ? c2 : c1;
+    if (ch !== 'H') box(grp, MK_C, 0.4, MK_C, ch === 'I' ? 0xBFE6FF : ch === 'J' ? 0xFFD23C : ch === 'S' ? 0x7AD67A : ch === 'G' ? 0xFFFFFF : fl, x, -0.2, z, o);
+    if (ch === 'W') box(sol, MK_C, 3, MK_C, th === 3 ? 0x9A9A9A : th === 5 ? 0x6A70A8 : 0xC0703A, x, 1.5, z, { solid: true });
+    else if (ch === 'L') box(sol, MK_C, 1.0, MK_C, 0xE0A050, x, 0.5, z, { solid: true });
+    else if (ch === 'D') box(dor, MK_C * 0.96, 3, MK_C * 0.96, 0x7A4A2A, x, 1.5, z, { solid: true });
+    else if (ch === 'Q') { const q = new THREE.Group(); grp.add(q); box(q, MK_C * 0.96, 3, MK_C * 0.96, 0x9B6BE0, x, 1.5, z, { solid: true, emissive: 0.15 }); makeLabel(q, ['❓'], 1.4, x, 3.8, z, { stroke: false }); q.updateMatrixWorld(true); registerSolids(q, 'mkq' + i); P.qs.push({ i, g: q, x, z }); }
+    else if (ch === 'X') for (const [dx, dz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7], [0, 0]]) mesh(CONE, grp, 0.35, 0.8, 0.35, 0xE23B3B, x + dx, 0.4, z + dz, o);
+    else if (ch === 'J') { mesh(CONE, grp, 0.6, 0.6, 0.6, 0xFF8A1E, x, 0.35, z, o); box(grp, 2.2, 0.12, 2.2, 0xFF8A1E, x, 0.06, z, o); }
+    else if (ch === 'O') { const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.55), new THREE.MeshStandardMaterial({ color: 0xFFD23C, emissive: 0xFFB000, emissiveIntensity: 0.6 })); m.userData.own = true; m.position.set(x, 1.3, z); grp.add(m); P.items.push({ i, k: 'O', m, x, z }); }
+    else if (ch === 'K') { const m = new THREE.Group(); m.position.set(x, 1.3, z); grp.add(m); box(m, 0.18, 0.9, 0.18, 0xF2C230, 0, 0, 0, { solid: false, emissive: 0.4 }); cyl(m, 0.32, 0.12, 0xF2C230, 0, 0.55, 0, { solid: false, rx: Math.PI / 2, emissive: 0.4 }); box(m, 0.35, 0.14, 0.14, 0xF2C230, 0.2, -0.3, 0, { solid: false, emissive: 0.4 }); P.items.push({ i, k: 'K', m, x, z }); }
+    else if (ch === 'A' || ch === 'B') { const m = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.16, 8, 28), new THREE.MeshStandardMaterial({ color: ch === 'A' ? 0x8E5BE8 : 0x3FB6A8, emissive: ch === 'A' ? 0x8E5BE8 : 0x3FB6A8, emissiveIntensity: 0.7 })); m.userData.own = true; m.rotation.x = -Math.PI / 2; m.position.set(x, 0.1, z); grp.add(m); P.items.push({ i, k: ch, m, x, z }); }
+    else if (ch === 'G') { cyl(grp, 0.1, 4, 0xEEEEEE, x, 2, z, o); box(grp, 1.6, 1.0, 0.06, 0x222222, x + 0.82, 3.4, z, o); box(grp, 0.4, 0.5, 0.07, 0xFFFFFF, x + 0.42, 3.65, z, o); box(grp, 0.4, 0.5, 0.07, 0xFFFFFF, x + 1.22, 3.15, z, o); makeLabel(grp, ['🏁 도착'], 1.0, x, 5, z); }
+    else if (ch === 'S') makeLabel(grp, ['🚩 출발'], 0.9, x, 2.6, z); }
+  makeLabel(grp, [mkName(P.n), P.test ? '🧪 시험 플레이' : `만든 친구: ${P.maker === backend.uid ? '나' : (nickOf(P.maker) || '친구')}`], 1.3, P.F.x, 7, P.F.z - MK_HALF - 2);
+  grp.updateMatrixWorld(true); registerSolids(sol, 'mk'); registerSolids(dor, 'mkd'); P.dor = dor;
+}
+function mkWin() {
+  const P = mkW.play, ms = Math.round(performance.now() - P.t0); playSfx('fanfare'); burst(player.pos.clone().setY(2), RAINBOW, 70, 7, 4);
+  if (P.test) { const d = mkDraftGet(); if (d.g === P.g && d.n === P.n) { d.ok = d.n + d.g; mkDraftPut(d); } showBanner('✅ 내가 깼어요!', `⏱️ ${mkSec(ms)} · 이제 📤 올릴 수 있어요`, 4000); mkEnd(); setTimeout(openMkEdit, 600); return; }
+  const mine = mkClears(P.maker, P.st).find(([u]) => u === backend.uid), first = !mine, best = !mine || ms < mine[1]; let rw = '';
+  if (first && P.maker !== backend.uid && !isTeacher) { const D = bag.mkCDay?.d === dayNum() ? bag.mkCDay : { d: dayNum(), s: 0 }; const add = Math.min(5, 20 - D.s); if (add > 0) { D.s += add; bag.mkCDay = D; earnShell(add, 'm'); saveBag(); renderCoinChip(); rw = ` · 🐚 +${add}`; } }
+  if (best) backend.mkClear?.(P.maker, `${P.st}.${Math.min(9999999, ms)}`);
+  showBanner('🏁 도착! 맵을 깼어요', `⏱️ ${mkSec(ms)}${best && mine ? ' · 🆕 내 최고 기록!' : ''}${rw}`, 4500);
+  const back = { maker: P.maker }; mkEnd(); setTimeout(() => openMkAfter(back.maker), 700);
+}
+function openMkAfter(m) { // 깬 뒤: 👍 누르기
+  const M2 = mkParse(S.mk?.[m]); if (!M2 || m === backend.uid) { openMkBoard(); return; }
+  openLife('🏁 맵을 깼어요!', (box) => { box.textContent = ''; box.append(el2('p', 'lp-big', mkName(M2.n)), el2('p', 'hint', `만든 친구: ${nickOf(m) || '친구'} · 재밌었다면 👍를 눌러 줘요!`));
+    const liked = !!S.mkl?.[m]?.[backend.uid], r = el2('div', 'row-center wrap'), b = el2('button', 'btn', liked ? '👍 눌렀어요' : '👍 재밌어요!'); b.style.cssText = 'font-size:20px;background:#FFD23C';
+    b.onclick = async () => { if (liked) return; await backend.mkLike?.(m, true); playSfx('pick'); toast('👍 친구에게 힘이 됐어요!', 'success'); refillLife(); };
+    const again = el2('button', 'btn', '🔁 다시 도전'), list = el2('button', 'btn', '📋 게시판'); again.onclick = () => mkPlay({ ...M2, maker: m }); list.onclick = openMkBoard; r.append(b, again, list); box.append(r); });
+}
+
+/* ---------- 📋 게시판 ---------- */
+function mkMaps() { return Object.entries(S.mk || {}).map(([u, v]) => [u, mkParse(v)]).filter(([u, M2]) => M2 && (isTeacher || !S.mkh?.[u] || u === backend.uid)); }
+function openMkBoard() {
+  openLife('📋 친구 맵 게시판', (box) => {
+    box.textContent = ''; const L = mkMaps().map(([u, M2]) => { const cl = mkClears(u, M2.st).filter(([v]) => v !== u); return { u, M2, cl, lk: mkLikes(u), best: cl.length ? cl.reduce((a, b) => b[1] < a[1] ? b : a) : null, me: cl.find(([v]) => v === backend.uid) }; }).sort((a, b) => b.lk - a.lk || b.cl.length - a.cl.length);
+    box.append(el2('p', 'hint', '👍가 많은 맵이 위에 와요 · 처음 깨면 🐚 +5 · 내 맵을 친구가 깨면 나도 🐚 +3'));
+    { const r = el2('div', 'row-center'), b = el2('button', 'btn', '🧰 내 맵 만들기'); b.style.background = '#BFE0FF'; b.onclick = openMkEdit; r.append(b); box.append(r); }
+    if (!L.length) { box.append(el2('p', 'vempty', '아직 올라온 맵이 없어요. 🧰 작업대에서 첫 맵을 만들어 봐요!')); return; }
+    L.forEach((X, k) => { const c = el2('div', ''); c.style.cssText = `background:${X.u === backend.uid ? '#FFF6D8' : '#F3EEFF'};border-radius:14px;padding:10px 12px;margin:8px 0;text-align:left`;
+      c.append(el2('b', '', `${k === 0 && X.lk ? '🏆 ' : ''}${mkName(X.M2.n)}${S.mkh?.[X.u] ? ' (🙈 숨김)' : ''}`), el2('div', 'hint', `🛠️ ${X.u === backend.uid ? '나' : (nickOf(X.u) || '친구')} · 🏁 깬 친구 ${X.cl.length}명 · 👍 ${X.lk}${X.best ? ` · 🥇 ${nickOf(X.best[0]) || '친구'} ${mkSec(X.best[1])}` : ''}${X.me ? ` · ✅ 내 기록 ${mkSec(X.me[1])}` : ''}`),
+        el2('div', 'hint', `⭐ ${mkCnt(X.M2.g, 'O')} · ❓ ${mkCnt(X.M2.g, 'Q')} · 🔑 ${mkCnt(X.M2.g, 'K')} · 🕳️ ${mkCnt(X.M2.g, 'H')} · 🔺 ${mkCnt(X.M2.g, 'X')}`));
+      const r = el2('div', 'row-center wrap'), go = el2('button', 'btn', '▶ 도전'); go.style.background = '#FFD23C'; go.onclick = () => mkPlay({ ...X.M2, maker: X.u }); r.append(go);
+      if (isTeacher) { const h = el2('button', 'btn', S.mkh?.[X.u] ? '👀 다시 보이기' : '🙈 숨기기'); h.onclick = async () => { await backend.mkAdmin?.(`mkh/${X.u}`, S.mkh?.[X.u] ? null : true); refillLife(); }; const d = el2('button', 'btn', '🗑️ 지우기'); d.onclick = async () => { if (!d.dataset.arm) { d.dataset.arm = 1; d.textContent = '🗑️ 한 번 더 누르면 지워요'; setTimeout(() => { delete d.dataset.arm; d.textContent = '🗑️ 지우기'; }, 5000); return; } await backend.mkAdmin?.(`mk/${X.u}`, null); refillLife(); }; r.append(h, d); }
+      c.append(r); box.append(c); });
+  });
+}
+
+/* ---------- 🧰 맵 만들기 ---------- */
+function openMkEdit() {
+  const d = mkDraftGet(); let pen = 'W';
+  openLife('🧰 내 맵 만들기', (box) => {
+    box.textContent = ''; box.append(el2('p', 'hint', '블록을 고르고 칸을 톡톡 (끌어도 돼요). 🧪 내가 먼저 깨야 📤 올릴 수 있어요. 내가 올린 맵은 한 개예요 (다시 올리면 바뀌어요).'));
+    const names = el2('div', ''); const nameRow = (lab, arr, pos) => { const r = el2('div', 'row-center wrap'); r.style.gap = '4px'; r.append(el2('b', '', lab)); arr.forEach(([ic, t], k) => { const b = el2('button', 'btn', `${ic} ${t}`); b.style.cssText = `font-size:14px;padding:4px 8px;background:${+d.n[pos] === k ? '#FFD23C' : '#fff'}`; b.onclick = () => { d.n = d.n.slice(0, pos) + k + d.n.slice(pos + 1); mkDraftPut(d); draw(); }; r.append(b); }); return r; };
+    const pal = el2('div', 'row-center wrap'), grid = el2('div', ''), msg = el2('p', 'hint', ''), acts = el2('div', 'row-center wrap');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(12,1fr);gap:2px;width:min(94vw,470px);margin:6px auto;touch-action:none;user-select:none;-webkit-user-select:none';
+    let down = false; const cells = [];
+    const paint = (i) => { const g = d.g.split(''); if (pen === 'S' || pen === 'G' || pen === 'A' || pen === 'B') for (let k = 0; k < 144; k++) if (g[k] === pen) g[k] = '.'; g[i] = pen; d.g = g.join(''); mkDraftPut(d); cell(i); stat(); };
+    const cell = (i) => { const ch = d.g[i], b = cells[i], r = Math.floor(i / 12), c = i % 12; b.textContent = MK_T[ch][0]; b.style.background = ch === '.' ? ((r + c) % 2 ? '#EDE6DA' : '#F7F2EA') : ch === 'W' ? '#E2B48A' : ch === 'H' ? '#3A3F50' : ch === 'I' ? '#D6EEFF' : '#FFF'; };
+    for (let i = 0; i < 144; i++) { const b = el2('div', ''); b.style.cssText = 'aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(12px,3.6vw,22px);border-radius:4px;cursor:pointer'; b.dataset.i = i; cells.push(b); grid.append(b); }
+    grid.addEventListener('pointerdown', (e) => { const t = e.target.closest('[data-i]'); if (!t) return; e.preventDefault(); down = true; paint(+t.dataset.i); });
+    grid.addEventListener('pointermove', (e) => { if (!down) return; const t = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('[data-i]'); if (t && grid.contains(t) && d.g[+t.dataset.i] !== pen) paint(+t.dataset.i); });
+    const up = () => { down = false; }; grid.addEventListener('pointerup', up); grid.addEventListener('pointerleave', up); grid.addEventListener('pointercancel', up);
+    const palBtns = {}; for (const k of MK_PAL) { const b = el2('button', 'btn', `${MK_T[k][0] || '⬜'} ${MK_T[k][1]}`); b.title = MK_T[k][2]; b.style.cssText = 'font-size:13px;padding:4px 7px'; b.onclick = () => { pen = k; for (const [kk, bb] of Object.entries(palBtns)) bb.style.background = kk === pen ? '#FFD23C' : '#fff'; msg.textContent = `${MK_T[k][0] || '⬜'} ${MK_T[k][1]}: ${MK_T[k][2]}`; }; palBtns[k] = b; pal.append(b); }
+    const test = el2('button', 'btn', '🧪 내가 먼저 깨기'), upl = el2('button', 'btn', '📤 올리기'), clr = el2('button', 'btn', '🧹 모두 지우기'), mine = el2('button', 'btn', '📂 내가 올린 맵 불러오기');
+    test.style.background = '#BFE0FF'; upl.style.background = '#FFD23C';
+    test.onclick = () => { const e = mkCheck(d.g); if (e) { toast(e, 'warn'); return; } closeLife(); mkPlay({ g: d.g, n: d.n, st: '', maker: backend.uid, test: true }); };
+    upl.onclick = async () => { const e = mkCheck(d.g); if (e) { toast(e, 'warn'); return; } if (d.ok !== d.n + d.g) { toast('🧪 지금 모양 그대로 내가 먼저 깨야 올릴 수 있어요', 'warn'); return; } const st = Date.now().toString(36).slice(-7), r = await backend.mkSet?.(`${d.n}|${st}|${d.g}`);
+      if (!r?.ok) { toast('⚠️ 올리지 못했어요 (database.rules.json의 mk를 게시했는지 확인해요)', 'warn'); return; } playSfx('fanfare'); toast('📤 맵을 올렸어요! 친구들이 게시판에서 도전해요', 'success'); bag.mkPaid = { [st]: 0 }; saveBag(); openMkBoard(); };
+    clr.onclick = () => { if (!clr.dataset.arm) { clr.dataset.arm = 1; clr.textContent = '🧹 한 번 더 누르면 지워요'; setTimeout(() => { delete clr.dataset.arm; clr.textContent = '🧹 모두 지우기'; }, 4000); return; } const g = Array(144).fill('.'); g[132] = 'S'; g[11] = 'G'; d.g = g.join(''); d.ok = ''; mkDraftPut(d); draw(); };
+    mine.onclick = () => { const M2 = mkParse(S.mk?.[backend.uid]); if (!M2) { toast('아직 올린 맵이 없어요', 'info'); return; } d.n = M2.n; d.g = M2.g; d.ok = M2.n + M2.g; mkDraftPut(d); draw(); toast('📂 내가 올린 맵을 불러왔어요', 'info'); };
+    acts.append(test, upl, clr, mine);
+    const stat = () => { const e = mkCheck(d.g); msg.textContent = e ? `⚠️ ${e}` : d.ok === d.n + d.g ? '✅ 깼어요! 📤 올릴 수 있어요' : '🧪 다 만들었으면 내가 먼저 깨 봐요'; upl.style.opacity = !e && d.ok === d.n + d.g ? '1' : '0.5'; };
+    const draw = () => { names.textContent = ''; names.append(nameRow('테마', MK_TH, 0), nameRow('종류', MK_TY, 1), nameRow('난이도', MK_DF, 2)); for (let i = 0; i < 144; i++) cell(i); stat(); };
+    box.append(el2('h3', 'lp-sec', '🏷️ 맵 이름 고르기'), names, el2('h3', 'lp-sec', '🧱 블록'), pal, grid, msg, acts);
+    palBtns[pen].click(); draw();
+  });
+}
+
+/* ---------- 🔁 매 프레임 ---------- */
+function openMkQ(Q) { // ❓ 문제 블록
+  const P = mkW.play; if (!P) return; const q = sbtCard(Math.min(2, +P.n[2])), opts = [q.v, ...nvWrongs(q.v, 3)].sort(() => Math.random() - 0.5); mkW.qOpen = Q.i;
+  openLife('❓ 문제 블록', (box) => { box.textContent = ''; const h = el2('p', 'lp-big', ''); h.innerHTML = `🧮 ${sbtCardHtml(q)} = ?`; box.append(h, el2('p', 'hint', '맞히면 블록이 열려요!'));
+    const r = el2('div', 'row-center wrap'); for (const v of opts) { const b = el2('button', 'btn', String(v)); b.style.cssText = 'font-size:22px;min-width:84px;background:#fff'; b.onclick = () => { mkW.qOpen = -1; closeLife(); if (!mkW.play) return;
+      if (v === q.v) { P.open.add(Q.i); removeColliders('mkq' + Q.i); Q.g.visible = false; playSfx('right'); burst(new V3(Q.x, 1.5, Q.z), [0x9B6BE0, 0xFFFFFF, 0xFFD23C], 30, 4, 3); toast(`✅ 정답! ${q.v} · 블록이 열렸어요`, 'success'); if (!P.test && !isTeacher) addStat('math', 1); }
+      else { P.qCd[Q.i] = performance.now() + 3000; playSfx('wrong'); toast(`❌ 정답은 ${q.v} · 3초 뒤에 다른 문제를 풀어요`, 'warn'); } }; r.append(b); } box.append(r); });
+}
+function mkHudTick() {
+  const P = mkW.play; mkW.hud.classList.toggle('hidden', !P); if (!P) return; const t = (performance.now() - P.t0) / 1000;
+  const html = `<b>🛠️ ${mkName(P.n)}${P.test ? ' · 🧪 시험' : ''}</b><div>⏱️ ${t.toFixed(1)}초${P.need ? ` · ⭐ ${P.stars}/${P.need}` : ''}${mkCnt(P.g, 'K') ? ` · 🔑 ${P.key ? '있어요' : '없어요'}` : ''}${P.falls ? ` · 😵 ${P.falls}` : ''}</div>`;
+  if (html !== mkW.hudHtml) { mkW.hudHtml = html; mkW.hudTxt.innerHTML = html; }
+}
+function mkTick(dt) {
+  if (!mkW) return;
+  if (performance.now() - (mkW.payT || 0) > 4000) { mkW.payT = performance.now(); const M2 = mkParse(S.mk?.[backend.uid]); // 🐚 친구가 내 맵을 깼어요
+    if (M2 && !isTeacher) { const n = mkClears(backend.uid, M2.st).filter(([u]) => u !== backend.uid).length, paid = bag.mkPaid?.[M2.st] ?? null;
+      if (paid == null) { bag.mkPaid = { [M2.st]: n }; saveBag(); } else if (n > paid) { const D = bag.mkMDay?.d === dayNum() ? bag.mkMDay : { d: dayNum(), s: 0 }, add = Math.min(3 * (n - paid), 30 - D.s); bag.mkPaid = { [M2.st]: n }; if (add > 0) { D.s += add; bag.mkMDay = D; earnShell(add, 'm'); renderCoinChip(); } saveBag(); toast(`🛠️ 친구 ${n - paid}명이 내 맵을 깼어요!${add > 0 ? ` 🐚 +${add}` : ''}`, 'success'); } } }
+  const P = mkW.play; if (!P) { if (mkW.hud && !mkW.hud.classList.contains('hidden')) mkW.hud.classList.add('hidden'); return; }
+  if (!inMk(player.pos.x, player.pos.z) && !hv.travel) { mkEnd(true); return; } // 포털 등으로 떠났어요
+  mkHudTick(); const p = player.pos, i = mkCellIdx(p.x, p.z), ch = i >= 0 ? P.g[i] : '', now = performance.now();
+  if (p.y < -4) { mkRespawn(); toast('🕳️ 앗, 떨어졌어요! 출발점에서 다시', 'info'); return; }
+  if (ch === 'X' && p.y < 0.6) { burst(p.clone().setY(0.8), [0xE23B3B, 0xFFFFFF], 16, 3, 2); mkRespawn(); toast('🔺 가시! 출발점에서 다시', 'info'); return; }
+  if (ch === 'J' && player.onGround && p.y < 0.3) { player.vy = 14.5; player.onGround = false; playSfx('jump'); burst(p.clone().setY(0.4), [0xFF8A1E, 0xFFD23C], 10, 3, 2); }
+  for (const it of P.items) { if (P.got.has(it.i)) continue; if (it.k === 'O' || it.k === 'K') it.m.rotation.y += dt * 2.5; const d = Math.hypot(p.x - it.x, p.z - it.z);
+    if ((it.k === 'O' || it.k === 'K') && d < 1.3 && p.y < 2.5) { P.got.add(it.i); it.m.visible = false; playSfx('pick'); burst(new V3(it.x, 1.3, it.z), [0xFFD23C, 0xFFFFFF], 16, 3, 2);
+      if (it.k === 'O') { P.stars++; toast(`⭐ ${P.stars}/${P.need}`, 'success'); } else if (!P.key) { P.key = true; removeColliders('mkd'); P.dor.visible = false; toast('🔑 열쇠! 🔒 문이 모두 열렸어요', 'success'); } } }
+  { const onTp = ch === 'A' || ch === 'B'; if (onTp && !P.tpLock && p.y < 0.5) { const j = P.g.indexOf(ch === 'A' ? 'B' : 'A'); if (j >= 0) { const [x, z] = mkCellXZ(j); p.set(x, 0.3, z); player.vy = 0; P.tpLock = true; playSfx('cast'); burst(new V3(x, 1, z), [0x8E5BE8, 0x3FB6A8, 0xFFFFFF], 24, 3, 2); } } else if (!onTp) P.tpLock = false; }
+  if (mkW.qOpen < 0) for (const Q of P.qs) { if (P.open.has(Q.i) || now < (P.qCd[Q.i] || 0)) continue; if (Math.hypot(p.x - Q.x, p.z - Q.z) < MK_C / 2 + 1.0 && $('lifePanel').classList.contains('hidden')) { openMkQ(Q); break; } }
+  if (ch === 'G' && p.y < 1.5) { if (P.stars >= P.need) mkWin(); else if (now > (P.gTip || 0)) { P.gTip = now + 2500; toast(`⭐ 별을 ${P.need - P.stars}개 더 모아야 도착해요!`, 'warn'); } }
+}
+function mkInit() {
+  mkW = { play: null, hub: null, v: { x: 0, z: 0 }, ice: false, qOpen: -1, hudHtml: '', seen: false };
+  const hud = document.createElement('div'); hud.id = 'mkHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;top:118px;left:50%;transform:translateX(-50%);z-index:5;padding:8px 14px;text-align:center;font-size:15px;max-width:92vw';
+  const txt = document.createElement('div'), row = document.createElement('div'); row.className = 'row-center'; row.style.marginTop = '4px';
+  const re = el2('button', 'btn', '🔄 처음부터'), ex = el2('button', 'btn', '🚪 나가기'); re.style.fontSize = ex.style.fontSize = '14px';
+  re.onclick = () => { const P = mkW.play; if (!P) return; const m = { g: P.g, n: P.n, st: P.st, maker: P.maker, test: P.test }; mkPlay(m); };
+  ex.onclick = () => { const t = mkW.play?.test; mkEnd(); if (t) setTimeout(openMkEdit, 300); };
+  row.append(re, ex); hud.append(txt, row); document.body.append(hud); mkW.hud = hud; mkW.hudTxt = txt;
+}
 
 /* ================= 🔱 1104a 심해 방탈출 「아틀란티스를 찾아서」 =================
    🤿 바닷속 산호초 북쪽 「아틀란티스의 입구」 → 모둠 문 4개(1~4모둠) → 모둠 방(ROOMS.atl1~atl4)
@@ -32302,7 +32526,7 @@ buildStarGame();
 initStarHud();
 initMemGame();
 initDropGame();
-initPlotAdmin(); initFestAdmin(); nvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
+initPlotAdmin(); initFestAdmin(); nvInit(); mkInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
 $('tpGateOn')?.addEventListener('click', async () => { const pw = $('tpGatePw').value.trim(); if (pw.length < 4) { toast('🔐 반 비밀번호는 4글자 이상으로 적어요', 'warn'); return; } if (!(await confirmAction({ title: '🔐 반 비밀번호 켜기', body: '지금 접속한 학생들은 새로고침하고 이 비밀번호를 적어야 다시 들어올 수 있어요. 켤까요?', okText: '켜기' }))) return; const r = await backend.gateSet(pw); toast(r.ok ? '🔐 반 비밀번호를 켰어요. 학생들에게 알려 주세요' : '⚠️ 켜지 못했어요. database.rules.json을 먼저 게시해 주세요', r.ok ? 'success' : 'warn'); if (r.ok) $('tpGatePw').value = ''; gateNowFill(); }); /* 🔐 1105k */
 $('tpGateOff')?.addEventListener('click', async () => { if (!(await confirmAction({ title: '반 비밀번호 끄기', body: '반 코드만 알면 누구나 다시 들어올 수 있어요. 끌까요?', okText: '끄기' }))) return; const r = await backend.gateSet(''); toast(r.ok ? '반 비밀번호를 껐어요' : '⚠️ 끄지 못했어요', r.ok ? 'info' : 'warn'); gateNowFill(); });
 /* 🔁 1105r 실명 → 닉네임 바꾸기 (선생님 기기에서 서버 자료를 훑어 실명을 닉네임으로) */
@@ -32871,6 +33095,7 @@ function loop() {
   if (joined) updateClassroom(dt);
   if (joined) updateCtf(dt);
   if (joined) { try { nvTick(dt); } catch (e) { console.warn('nv', e); } } /* ⛄ 1107a 눈싸움 공방전 */
+  if (joined) { try { mkTick(dt); } catch (e) { console.warn('mk', e); } } /* 🛠️ 1107g 메이커 공방 */
   if (joined) { try { stgTick(dt); } catch (e) { console.warn('stg', e); } } // 🎤 1101d
   if (joined) { try { kvTick(); } catch (e) { console.warn('kv', e); } } // 🔤 1101i
   /* 🗑️ 1106m 시 짓기 지움 (kvPoemRwTick 멈춤) */
