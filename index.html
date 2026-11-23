@@ -1675,7 +1675,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
       <label class="sr-only" for="tpNvBots">컴퓨터 친구</label><select id="tpNvBots" class="tinput" style="width:auto" title="팀마다 컴퓨터(🤖) 친구 수"><option value="0">🤖 없음</option><option value="1" selected>🤖 팀마다 1명</option><option value="2">🤖 팀마다 2명</option><option value="3">🤖 팀마다 3명</option></select>
     </div>
     <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpNvMe" checked> 🧑‍🏫 선생님도 한 팀으로 참여하기 (끄면 지켜보기)</label>
-    <div class="field">눈싸움 팀 정하기 (자동 = 들판에 오면 사람이 적은 팀으로)</div>
+    <div class="field">눈싸움 팀 정하기 (열기 전에 먼저 정해도 돼요 · 자동 = 사람이 적은 팀으로)</div>
     <div id="tpNvList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpNvOpen" type="button" style="background:#BFE0FF">⛄ 눈싸움 열기 (모두 눈 들판으로 출발)</button><button class="btn" id="tpNvBal" type="button" style="background:#fff">⚖️ 능력치로 고르게 나누기</button><button class="btn" id="tpNvStart" type="button" style="background:#FFD23C">⚔️ 눈싸움 시작</button><button class="btn" id="tpNvEnd" type="button" style="background:#fff">🏁 끝내기</button><button class="btn" id="tpNvClose" type="button" style="background:#fff">🧹 닫기</button><button class="btn" id="tpNvGo" type="button" style="background:#fff">⛄ 들판으로 가기</button></div>
     <div hidden><!-- 🎤 1106h 꿈끼 발표회 끝 · 관리화면에서 숨겨요 -->
@@ -19120,6 +19120,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107b', d: '11월 23일', items: ['🧑‍🏫 눈싸움 공방전: 열기 전에 학생마다 팀을 먼저 정해요 (⚖️ 고르게 나누기 · 💪 능력치로 고르게 · 칸마다 직접) → ⛄ 눈싸움 열기를 누르면 그대로 나뉘어 출발'] },
   { id: '1107a', d: '11월 23일', items: ['⛄ 수학 해전이 「눈싸움 공방전」으로 바뀌었어요! 선생님이 열면 팀마다 🏰 눈 요새에서 출발 · 언덕 차지 · 요새 무너뜨리고 차지하기', '🔥 던지기는 성 공방전 궁수처럼: F(❄️ 버튼)를 꾹 누르면 🎯 떨어질 곳이 멀어지고, 놓으면 던져요 (자동 조준 없음)', '❄️ 눈 더미 위에 서 있으면 눈덩이가 모여요 · 🧊 단단한 눈 더미(수학 문제)의 정답 얼음을 밟으면 2배로 센 눈덩이 3개', '🎽 역할: 🎯 투척수 · 🧱 눈벽 기술자 · 🛷 썰매꾼 · ☕ 코코아 당번 · 🎩 대장(⛄ 거대 눈사람을 차지하면 Q 눈사태)', '🧑‍🏫 선생님도 한 팀으로 참여 · 🤖 광장 「⛄ 눈싸움 AI 연습」에서 혼자 컴퓨터 친구들과 연습 (내 기기에서만 · 보상 없음)', '🏊🏸 광장 동쪽 건물이 다시 「수영장·배드민턴장」! 북쪽 반은 수영장(수영 경주 · 워터슬라이드) · 남쪽 반은 배드민턴 코트'] },
   { id: '1106z3', d: '11월 23일', items: ['🏛️ 성 공방전: 고용한 역사 인물 병사가 성 안에서 끼지 않게 해자 건너 성문 앞에서 나와요 (쓰러졌다 다시 나올 때도)'] },
   { id: '1106z2', d: '11월 23일', items: ['❄️ 시즌 2 「겨울 마을」이 오늘(11월 23일)부터 시작해요! 눈 쌓인 마을 · ⛄ 눈사람 · 새 시즌 패스 보상 (🛷 눈썰매 · 🐧 펭귄 펫 …)', '🍂 시즌 1에서 받은 보상은 계속 가져요'] },
@@ -29309,11 +29310,15 @@ function nvHostTick(dt) {
 }
 function nvPresAll() { const out = []; const mine = nvW.solo || !nvMine() ? null : nvParse(nvPresCode()); if (mine) out.push([backend.uid, mine]); else if (nvW.solo && nvMine()) out.push([backend.uid, { job: nvJob(), sk: nvW.sk % 1000 }]); if (!nvW.solo) for (const [u, r] of remotes) { const p = nvParse(r.target?.nv); if (p) out.push([u, p]); } return out; }
 function nvHdAll() { const out = []; const mine = nvParseHd(nvHdCode()); if (mine.r) out.push([backend.uid, mine]); if (!nvW.solo) for (const [u, r] of remotes) { const h = nvParseHd(r.target?.nd); if (h.r) out.push([u, h]); } return out; }
+function nvOpenTeam(n) { // 👥 열 때: 미리 정한 팀 + 자동 칸은 사람이 적은 팀으로
+  const team = {}, cnt = {}, list = nvPlanList(); for (const [u, t] of Object.entries(nvW.pre || {})) if (t >= 1 && t <= n) { team[u] = t; cnt[t] = (cnt[t] || 0) + 1; }
+  for (const [u] of hShuffle([...list])) if (!team[u]) { let best = 1; for (let t = 2; t <= n; t++) if ((cnt[t] || 0) < (cnt[best] || 0)) best = t; team[u] = best; cnt[best] = (cnt[best] || 0) + 1; } return team; }
 async function nvAdmin(act) {
   const now = backend.now(), up = {}; if (nvW.solo) { nvW.solo = null; nvW.H = { r: null }; }
-  if (act === 'open') { const set = $('tpNvSet')?.value || 'snow3', n = (NV_SETS[set] || NV_SETS.snow3).nat.length; up.nv = { lv: +($('tpNvLv')?.value || 0), on: 1, r: 'n' + now.toString(36).slice(-7), ph: 'lobby', t: now, end: 0, set, n, nb: +($('tpNvBots')?.value || 0), team: S.nv?.on && S.nv.set === set ? (S.nv.team || {}) : {}, sc: {}, hl: {}, ko: {}, own: {}, ct: {}, cp: {}, win: 0 }; }
-  else if (!S.nv?.on) { toast('⛄ 먼저 "눈싸움 열기"를 눌러요', 'warn'); return; }
+  if (act === 'open') { const set = $('tpNvSet')?.value || 'snow3', n = (NV_SETS[set] || NV_SETS.snow3).nat.length; up.nv = { lv: +($('tpNvLv')?.value || 0), on: 1, r: 'n' + now.toString(36).slice(-7), ph: 'lobby', t: now, end: 0, set, n, nb: +($('tpNvBots')?.value || 0), team: nvOpenTeam(n), sc: {}, hl: {}, ko: {}, own: {}, ct: {}, cp: {}, win: 0 }; }
+  else if (!S.nv?.on && act !== 'balance') { toast('⛄ 먼저 "눈싸움 열기"를 눌러요', 'warn'); return; }
   else if (act === 'start') { const min = +($('tpNvMin')?.value || 7); Object.assign(up, { 'nv/lv': +($('tpNvLv')?.value || 0), 'nv/nb': +($('tpNvBots')?.value || 0), 'nv/r': 'n' + now.toString(36).slice(-7), 'nv/ph': 'play', 'nv/t': now, 'nv/end': now + min * 60000, 'nv/sc': {}, 'nv/hl': {}, 'nv/ko': {}, 'nv/own': {}, 'nv/ct': {}, 'nv/cp': {}, 'nv/win': 0 }); toast(`⛄ 눈싸움 시작! ${min}분`, 'success'); }
+  else if (act === 'balance' && !S.nv?.on) { nvPlan(true); return; }
   else if (act === 'balance') { const L = Object.keys(S.nv.team || {}).map(u => [u, sgPowerOf(u, u === backend.uid ? { me: 1 } : remotes.get(u)?.target) ?? 0]).sort((a, b) => b[1] - a[1]), sum = {}, cnt = {}; for (let t = 1; t <= S.nv.n; t++) { sum[t] = 0; cnt[t] = 0; } const tm = {}; for (const [u, p] of L) { let b = 1; for (let t = 2; t <= S.nv.n; t++) if (cnt[t] < cnt[b] || (cnt[t] === cnt[b] && sum[t] < sum[b])) b = t; tm[u] = b; cnt[b]++; sum[b] += p; } up['nv/team'] = tm; toast('⚖️ 능력치가 비슷하게 팀을 다시 나눴어요', 'success'); }
   else if (act === 'end') { let w = 0, b = -1; for (let t = 1; t <= S.nv.n; t++) if ((S.nv.sc?.[t] | 0) > b) { b = S.nv.sc?.[t] | 0; w = t; } Object.assign(up, { 'nv/ph': 'end', 'nv/t': now, 'nv/win': w }); }
   else if (act === 'close') up.nv = null;
@@ -29471,9 +29476,9 @@ function nvHudTick() {
 
 /* ---------- 🔁 매 프레임 ---------- */
 function nvInit() {
-  nvW = { ammo: 4, hard: 0, qq: null, buoys: null, piles: null, planes: [], on: false, cd: 0, f: 0, hits: {}, hr: '', built: false, ships: new Map(), ice: new Map(), walls: new Map(), balls: [], pool: [], isl: {}, H: { r: null }, reg: false, act: null, tipT: 0, hudHtml: '', endShown: '', lastPh: '', lastR: '', fireSeen: new Map(), fxSeen: '', sk: 0, skT: 0, dash: 0, draw: 0, tMe: true, botView: [], botT: {}, botM: {}, botF: {}, solo: null, last: null, wall: null };
+  nvW = { ammo: 4, hard: 0, qq: null, buoys: null, piles: null, planes: [], on: false, cd: 0, f: 0, hits: {}, hr: '', built: false, ships: new Map(), ice: new Map(), walls: new Map(), balls: [], pool: [], isl: {}, H: { r: null }, reg: false, act: null, tipT: 0, hudHtml: '', endShown: '', lastPh: '', lastR: '', fireSeen: new Map(), fxSeen: '', sk: 0, skT: 0, dash: 0, draw: 0, tMe: true, botView: [], botT: {}, botM: {}, botF: {}, solo: null, last: null, wall: null, pre: {} };
   nvUiInit();
-  const sel = $('tpNvSet'); if (sel) { for (const [k, v] of Object.entries(NV_SETS)) sel.append(new Option(`${v.name} (${v.nat.map(N => N.icon).join('')})`, k)); sel.value = 'snow3'; }
+  const sel = $('tpNvSet'); if (sel) { for (const [k, v] of Object.entries(NV_SETS)) sel.append(new Option(`${v.name} (${v.nat.map(N => N.icon).join('')})`, k)); sel.value = 'snow3'; sel.addEventListener('change', () => { const n = (NV_SETS[sel.value] || NV_SETS.snow3).nat.length; for (const u of Object.keys(nvW.pre)) if (nvW.pre[u] > n) delete nvW.pre[u]; nvW.listKey = ''; nvFillAdmin(); }); }
   { const c = $('tpNvMe'); if (c) { c.checked = store.get('sv-nvme') !== '0'; nvW.tMe = c.checked; c.onchange = () => { nvW.tMe = c.checked; store.set('sv-nvme', c.checked ? '1' : '0'); }; } }
   $('tpNvOpen')?.addEventListener('click', () => nvAdmin('open')); $('tpNvStart')?.addEventListener('click', () => nvAdmin('start')); $('tpNvBal')?.addEventListener('click', () => nvAdmin('balance'));
   $('tpNvEnd')?.addEventListener('click', () => nvAdmin('end')); $('tpNvClose')?.addEventListener('click', () => nvAdmin('close')); $('tpNvGo')?.addEventListener('click', () => { closeModals(); if (!S.nv?.on) { toast('⛄ 먼저 "눈싸움 열기"를 눌러요', 'warn'); return; } nvGo(); });
@@ -29482,19 +29487,27 @@ function nvInit() {
 }
 function nvFillAdmin() { // 🏳️ 관리화면: 학생마다 눈싸움 팀 고르기
   const box = $('tpNvList'); if (!box || $('teacherPanel')?.classList.contains('hidden')) return; const s = S.nv, list = sgStudents();
-  const key = [s?.on ? s.set + s.n : 'off', list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?')).join(','), JSON.stringify(s?.team || {})].join('|'); if (key === nvW.listKey || box.contains(document.activeElement)) return; nvW.listKey = key; box.textContent = '';
-  if (!s?.on) { box.append(el2('p', 'vempty', '⛄ 눈싸움을 열면 학생마다 팀을 정할 수 있어요')); return; }
+  const on = !!s?.on, set = on ? (NV_SETS[s.set] || NV_SETS.snow3) : (NV_SETS[$('tpNvSet')?.value] || NV_SETS.snow3), n = on ? s.n : set.nat.length, cur = on ? (s.team || {}) : nvW.pre; /* 👥 1107b 열기 전에도 팀 먼저 정하기 */
+  const key = [on ? s.set + s.n : 'off' + n, list.map(([u, tg]) => u + (sgPowerOf(u, tg) ?? '?')).join(','), JSON.stringify(cur)].join('|'); if (key === nvW.listKey || box.contains(document.activeElement)) return; nvW.listKey = key; box.textContent = '';
   if (!list.length) { box.append(el2('p', 'vempty', '접속한 학생이 없어요')); return; }
-  const set = NV_SETS[s.set] || NV_SETS.snow3, n = s.n;
   list.forEach(([u, tg], i) => { const row = el2('div', 'sg-row'), dot = el2('span', 'sg-dot'); dot.style.background = '#' + new THREE.Color(CFG.SHIRTS[tg.c | 0] ?? 0xFFFFFF).getHexString();
     row.append(dot, el2('span', 'sg-name', tg.teach ? '🧑‍🏫 선생님 (나)' : tg.me ? `나 (${myNick || '연습'})` : (nickOf(u, tg) || `학생 ${i + 1}`)));
     { const pw = sgPowerOf(u, tg), b = el2('span', 'hint', pw == null ? '💪?' : `💪${pw}`); b.style.cssText = 'margin:0 4px;font-weight:800;white-space:nowrap'; row.append(b); }
     const sel = document.createElement('select'); sel.className = 'tinput'; sel.style.width = 'auto'; sel.setAttribute('aria-label', `학생 ${i + 1} 눈싸움 팀`);
-    sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1)))); sel.value = String(s.team?.[u] || 0);
-    sel.onchange = () => { const v = +sel.value; backend.adminUpdate({ [`nv/team/${u}`]: v || null }); toast(v ? `${set.nat[v - 1].icon} ${set.nat[v - 1].name}(으)로 정했어요` : '자동으로 바꿨어요', 'info'); };
+    sel.append(new Option('자동', '0')); set.nat.slice(0, n).forEach((N, k) => sel.append(new Option(`${N.icon} ${N.name}`, String(k + 1)))); { const v0 = cur[u] | 0; sel.value = String(v0 >= 1 && v0 <= n ? v0 : 0); }
+    sel.onchange = () => { const v = +sel.value; if (on) backend.adminUpdate({ [`nv/team/${u}`]: v || null }); else { if (v) nvW.pre[u] = v; else delete nvW.pre[u]; nvW.listKey = ''; nvFillAdmin(); } toast(v ? `${set.nat[v - 1].icon} ${set.nat[v - 1].name}(으)로 정했어요` : '자동으로 바꿨어요', 'info'); };
     const find = el2('button', 'btn', '📍'); find.title = '이 학생 위에 빛기둥 보이기'; find.onclick = () => sgBeam(u); row.append(sel, find); box.append(row); });
-  const sum = {}, cnt = {}; for (const [u, tg] of list) { const t = s.team?.[u]; if (!t) continue; sum[t] = (sum[t] || 0) + (sgPowerOf(u, tg) ?? 0); cnt[t] = (cnt[t] || 0) + 1; }
-  box.append(el2('p', 'hint', '💪 팀별 능력치 힘: ' + set.nat.slice(0, n).map((N, k) => `${N.icon}${N.name} ${sum[k + 1] || 0} (${cnt[k + 1] || 0}명)`).join(' · ')));
+  const sum = {}, cnt = {}; for (const [u, tg] of list) { const t = cur[u]; if (!(t >= 1 && t <= n)) continue; sum[t] = (sum[t] || 0) + (sgPowerOf(u, tg) ?? 0); cnt[t] = (cnt[t] || 0) + 1; }
+  box.append(el2('p', 'hint', '💪 팀별 능력치 힘: ' + set.nat.slice(0, n).map((N, k) => `${N.icon}${N.name} ${sum[k + 1] || 0} (${cnt[k + 1] || 0}명)`).join(' · ') + (on ? ' (진행 중 · 칸을 바꾸면 바로 옮겨요)' : ' (자동 칸은 열 때 사람이 적은 팀으로)')));
+  const rr = el2('div', 'row-center wrap'); for (const [lab, st] of [['⚖️ 고르게 나누기', false], ['💪 능력치로 고르게', true]]) { const b = el2('button', 'btn', lab); b.type = 'button'; b.style.background = '#fff'; b.onclick = () => nvPlan(st); rr.append(b); }
+  if (!on) { const c = el2('button', 'btn', '↩️ 모두 자동'); c.type = 'button'; c.style.background = '#fff'; c.onclick = () => { nvW.pre = {}; nvW.listKey = ''; nvFillAdmin(); }; rr.append(c); } box.append(rr);
+}
+function nvPlanList() { return sgStudents().filter(([, tg]) => !tg.teach || nvW.tMe); } // 🧑‍🏫 지켜보기면 선생님은 빼요
+function nvPlan(byStat) { // 👥 1107b 팀 나누기 (열기 전: 미리 정하기 · 진행 중: 바로 옮기기)
+  const on = !!S.nv?.on, n = on ? S.nv.n : (NV_SETS[$('tpNvSet')?.value] || NV_SETS.snow3).nat.length, list = nvPlanList(); if (!list.length) { toast('접속한 학생이 없어요', 'warn'); return; }
+  const cnt = {}, sum = {}, tm = {}, L = hShuffle([...list]).map(([u, tg]) => [u, byStat ? (sgPowerOf(u, tg) ?? 0) : 0]); if (byStat) L.sort((a, b) => b[1] - a[1]);
+  for (const [u, pw] of L) { let best = 1; for (let t = 2; t <= n; t++) { const c = cnt[t] || 0, cb = cnt[best] || 0; if (c < cb || (c === cb && byStat && (sum[t] || 0) < (sum[best] || 0))) best = t; } tm[u] = best; cnt[best] = (cnt[best] || 0) + 1; sum[best] = (sum[best] || 0) + pw; }
+  if (on) backend.adminUpdate({ 'nv/team': tm }); else nvW.pre = tm; nvW.listKey = ''; nvFillAdmin(); playSfx('pick'); toast(byStat ? '💪 능력치가 팀마다 비슷하게 나눴어요' : '⚖️ 사람 수가 고르게 팀을 나눴어요', 'success');
 }
 function nvTick(dt) {
   if (!nvW) return; if (nvW.solo && S.nv?.on) { nvW.solo = null; toast('⛄ 반 전체 눈싸움이 열려서 연습을 끝냈어요', 'info'); }
