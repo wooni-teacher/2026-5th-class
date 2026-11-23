@@ -19120,6 +19120,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107e', d: '11월 23일', items: ['👥 성 공방전 · 눈싸움에서 팀이 한눈에! ⭕ 발밑에 팀 색 원 · 머리 위 팀 색 표(⚔️ 적 / 💙 우리 팀 + ●▲■★ 팀 모양) · 🔻 적 머리 위 빨간 화살표', '🦺 눈싸움에서도 팀 색 조끼를 입어요'] },
   { id: '1107d', d: '11월 23일', items: ['⛄ 눈덩이가 더 잘 맞아요! 🎯 낮고 빠르게 날아가서 가는 길에 있는 친구도 맞고, 💥 떨어진 곳 둘레 2m(단단한 눈덩이 2.5m)도 맞아요'] },
   { id: '1107c', d: '11월 23일', items: ['🗑️ 「덜렁이의 개교기념일」 방탈출을 지웠어요 (선생님 관리화면 모둠전 버튼까지)'] },
   { id: '1107b', d: '11월 23일', items: ['🧑‍🏫 눈싸움 공방전: 열기 전에 학생마다 팀을 먼저 정해요 (⚖️ 고르게 나누기 · 💪 능력치로 고르게 · 칸마다 직접) → ⛄ 눈싸움 열기를 누르면 그대로 나뉘어 출발'] },
@@ -24302,6 +24303,20 @@ function sgHpBar() { // ❤️ 머리 위 체력 막대 (캔버스 한 장)
     c.fillStyle = '#fff'; c.font = `800 18px ${CANVAS_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(`${arm ? '🛡️' : '❤️'} ${cur}/${max}`, 80, 18); tex.needsUpdate = true; };
   return sp;
 }
+const TM_SHAPE = ['', '●', '▲', '■', '★'];
+function setTeamMark(a, ns, t, col, me, self, vest) { /* 👥 1107e 팀 구분: ⭕ 발밑 팀 색 원 · 머리 위 팀 색 표(⚔️ 적 / 💙 우리 + 팀 모양) · 🔻 적에게 빨간 화살표 · (눈싸움) 🦺 조끼 */
+  if (!a?.g) return; const K = 'tm_' + ns, key = t ? `${t}|${col}|${me | 0}|${self ? 1 : 0}|${vest ? 1 : 0}` : '', cur = a[K];
+  if ((cur?.key || '') === key) return;
+  if (cur) for (const x of cur.objs) { x.parent?.remove(x); if (x.isSprite) { x.material.map?.dispose(); x.material.dispose(); } else if (x.userData.own) { x.geometry.dispose(); x.material.dispose(); } }
+  a[K] = null; if (!t) return;
+  const objs = [], foe = !!me && t !== me, hex = '#' + (col >>> 0).toString(16).padStart(6, '0').slice(-6);
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(1.05, 32), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.42, depthWrite: false })); disc.userData.own = true; disc.rotation.x = -Math.PI / 2; disc.position.y = 0.07; a.g.add(disc); objs.push(disc);
+  const edge = new THREE.Mesh(new THREE.RingGeometry(0.92, 1.12, 32), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide })); edge.userData.own = true; edge.rotation.x = -Math.PI / 2; edge.position.y = 0.08; a.g.add(edge); objs.push(edge);
+  if (vest && a.rig) { const v = new THREE.Group(); a.rig.add(v); objs.push(v); box(v, 0.84, 0.5, 0.54, col, 0, 0.98, 0, { solid: false }); box(v, 0.86, 0.1, 0.56, 0xFFFFFF, 0, 1.2, 0, { solid: false }); }
+  if (!self) { const y = (ns === 'sg' ? 4.5 : 3.8) + (a.tcode ? 0.6 : 0); objs.push(makeLabel(a.g, [`${me ? (foe ? '⚔️ ' : '💙 ') : ''}${TM_SHAPE[t] || ''}`], 0.55, 0, y, 0, { bg: hex, fg: '#FFFFFF', stroke: false, pad: 8, font: 72 }));
+    if (foe) { const c = new THREE.Mesh(CONE, new THREE.MeshBasicMaterial({ color: 0xFF2A2A })); c.scale.set(0.32, 0.5, 0.32); c.rotation.x = Math.PI; c.position.y = y + 0.7; a.g.add(c); objs.push(c); } }
+  a[K] = { key, objs };
+}
 function setSgLook(a, t, hurt, role, uid) { // 나라 조끼 + 머리 위 나라·역할 (쓰러지면 🤕) · 💪 무기 모양은 능력치 단계
   const gr = uid ? sgGradeOf(uid, role) : 0, rd = uid ? Math.min(4, sgTierOf(uid, 'read')) : 0;
   const U = uid && t ? sgSpcOf(uid) : null, key = t ? `${S.siege?.set}|${t}|${hurt ? 1 : 0}|${role}|${gr}|${rd}|${U?.k || ''}` : ''; /* ⭐ 1105zu */
@@ -25096,8 +25111,8 @@ function updateSiege(dt) {
   if (sgw.beaconFire) sgw.beaconFire.visible = show && !!s?.own?.beacon;
   // 나라 표시·쓰러진 모습
   const lie = (a, on) => { a.g.rotation.z = on ? 1.45 : 0; };
-  if (player.avatar) { const h = !!s && sgMine() && sgHurt(backend.uid); setSgLook(player.avatar, s ? sgMine() : 0, h, sgMyRole(), backend.uid); lie(player.avatar, h); }
-  for (const [uid, r] of remotes) { const t = s ? sgTeamOf(uid) : 0, h = !!t && sgHurt(uid); setSgLook(r.a, t, h, sgRoleOf(uid), uid); lie(r.a, h); }
+  if (player.avatar) { const h = !!s && sgMine() && sgHurt(backend.uid); setSgLook(player.avatar, s ? sgMine() : 0, h, sgMyRole(), backend.uid); lie(player.avatar, h); { const t = s && !h ? sgMine() : 0; setTeamMark(player.avatar, 'sg', t, sgSet().nat[t - 1]?.col ?? 0xFFFFFF, sgMine(), true, false); } }
+  for (const [uid, r] of remotes) { const t = s ? sgTeamOf(uid) : 0, h = !!t && sgHurt(uid); setSgLook(r.a, t, h, sgRoleOf(uid), uid); lie(r.a, h); setTeamMark(r.a, 'sg', h ? 0 : t, sgSet().nat[t - 1]?.col ?? 0xFFFFFF, s ? sgMine() : 0, false, false); }
   if (s) { const upd = (a, u) => { if (!a?.sgBar) return; const cur = sgHurt(u) ? 0 : sgCurHp(u), mx = sgMaxHp(u), k = `${cur}/${mx}/${sgArm(u)}`; if (a.sgBarKey !== k) { a.sgBarKey = k; a.sgBar.userData.draw(cur, mx, sgArm(u)); } };
     upd(player.avatar, backend.uid); for (const [uid, r] of remotes) upd(r.a, uid); }
   if (s) for (let t = 1; t <= s.n; t++) {
@@ -25333,7 +25348,7 @@ function updateSgBots(dt) {
     const host = sgBotHost(), sim = host ? sgb.sim[id] : null, tx = sim ? sim.x : b.x, tz = sim ? sim.z : b.z, down = sim ? !!sim.down : !!b.down;
     const px = a.g.position.x, pz = a.g.position.z; a.g.position.x += (tx - px) * Math.min(1, dt * (host ? 30 : 6)); a.g.position.z += (tz - pz) * Math.min(1, dt * (host ? 30 : 6));
     const mv = Math.hypot(a.g.position.x - px, a.g.position.z - pz) / Math.max(dt, 1e-3); a.g.rotation.y = sim ? (sim.h || 0) : (b.h || 0);
-    setSgLook(a, b.t, down, b.role); a.g.rotation.z = down ? 1.45 : 0; animateAvatar(a, down ? 0 : Math.min(1, mv / 5), dt, true, false);
+    setSgLook(a, b.t, down, b.role); setTeamMark(a, 'sg', down ? 0 : b.t, sgSet().nat[b.t - 1]?.col ?? 0xFFFFFF, S.siege?.on ? sgMine() : 0, false, false); a.g.rotation.z = down ? 1.45 : 0; animateAvatar(a, down ? 0 : Math.min(1, mv / 5), dt, true, false);
     const hp = down ? 0 : (sim ? sim.hp : b.hp), mx = sim ? sim.mx : b.mx, k = `${hp}/${mx}`; if (a.sgBar && a.sgBarKey !== k) { a.sgBarKey = k; a.sgBar.userData.draw(hp, mx, 0); }
     if (!host && b.s && sgb.shotSeen[id] !== b.s.t) { sgb.shotSeen[id] = b.s.t; if (b.s.m) { playAct(a, b.s.m === 3 ? 'dash' : 'slash'); sgMeleeFx(b.s.x, b.s.z, b.s.dx, b.s.dz, b.s.m); } else sgLaunch(b.s.x, b.s.z, b.s.dx, b.s.dz, b.s.v, b.s.a, false, b.t, 0); }
   }
@@ -29513,6 +29528,7 @@ function nvPlan(byStat) { // 👥 1107b 팀 나누기 (열기 전: 미리 정하
   for (const [u, pw] of L) { let best = 1; for (let t = 2; t <= n; t++) { const c = cnt[t] || 0, cb = cnt[best] || 0; if (c < cb || (c === cb && byStat && (sum[t] || 0) < (sum[best] || 0))) best = t; } tm[u] = best; cnt[best] = (cnt[best] || 0) + 1; sum[best] = (sum[best] || 0) + pw; }
   if (on) backend.adminUpdate({ 'nv/team': tm }); else nvW.pre = tm; nvW.listKey = ''; nvFillAdmin(); playSfx('pick'); toast(byStat ? '💪 능력치가 팀마다 비슷하게 나눴어요' : '⚖️ 사람 수가 고르게 팀을 나눴어요', 'success');
 }
+function nvMarksOff() { if (player.avatar?.tm_nv) setTeamMark(player.avatar, 'nv', 0); for (const [, r] of remotes) if (r.a?.tm_nv) setTeamMark(r.a, 'nv', 0); }
 function nvTick(dt) {
   if (!nvW) return; if (nvW.solo && S.nv?.on) { nvW.solo = null; toast('⛄ 반 전체 눈싸움이 열려서 연습을 끝냈어요', 'info'); }
   if (nvW.soloSign) nvW.soloSign.visible = (typeof ssnNow === 'function' && ssnNow()?.id === 's2') || isTeacher;
@@ -29521,7 +29537,7 @@ function nvTick(dt) {
   if (nvHost() && s?.on) nvHostTick(dt);
   { const tn = $('tpNvNow'); if (tn && performance.now() - (nvW.tnT || 0) > 1000) { nvW.tnT = performance.now(); const z = S.nv, t = !z?.on ? '지금: 닫혀 있어요' : `지금: ${z.ph === 'play' ? '⛄ 눈싸움 중' : z.ph === 'end' ? '🏁 끝' : '🏰 준비'} · ${(NV_SETS[z.set] || NV_SETS.snow3).name} · ` + Array.from({ length: z.n }, (_, i) => { const N = (NV_SETS[z.set] || NV_SETS.snow3).nat[i]; return `${N.icon}${N.name} ${Object.values(z.team || {}).filter(v => v === i + 1).length}명 ${z.sc?.[i + 1] | 0}점`; }).join(' · '); if (tn.textContent !== t) tn.textContent = t; nvFillAdmin(); } }
   const reg = nvRegion(); if (reg !== nvW.reg) { nvW.reg = reg; if (reg) nvBuild(); applyEnv(true); document.body.classList.toggle('nv-here', reg); if (!reg) nvW.draw = 0; }
-  if (!s?.on) { if (reg && joined) nvGoPlaza(); nvW.join?.classList.add('hidden'); nvW.hud?.classList.add('hidden'); nvW.actEl?.classList.add('hidden'); nvW.map?.classList.add('hidden'); if (nvW.g) nvW.g.visible = false; if (nvW.piles) nvW.piles.g.visible = false; if (nvW.aimG) { nvW.aimG.visible = false; nvW.aimDots.forEach(d => { d.visible = false; }); } for (const g of nvW.ships.values()) g.visible = false; for (const g of nvW.ice.values()) g.visible = false; return; }
+  if (!s?.on) { nvMarksOff(); if (reg && joined) nvGoPlaza(); nvW.join?.classList.add('hidden'); nvW.hud?.classList.add('hidden'); nvW.actEl?.classList.add('hidden'); nvW.map?.classList.add('hidden'); if (nvW.g) nvW.g.visible = false; if (nvW.piles) nvW.piles.g.visible = false; if (nvW.aimG) { nvW.aimG.visible = false; nvW.aimDots.forEach(d => { d.visible = false; }); } for (const g of nvW.ships.values()) g.visible = false; for (const g of nvW.ice.values()) g.visible = false; return; }
   if (nvW.layoutN !== s.n) nvRelayout(s.n || 3);
   if (!nvW.solo && s.on && nvW.goR !== s.r && joined && !hv.travel && !pb3.on && !mrc.on && (!isTeacher || nvW.tMe)) { nvW.goR = s.r; if (!nvW.reg) { toast('⛄ 눈싸움이 열렸어요! 모두 눈 들판으로 출발~', 'info'); nvGo(); } }
   if (nvW.lastR !== s.r) { nvW.lastR = s.r; nvW.hits = {}; nvW.hr = s.r; nvW.ammo = 4; nvW.hard = 0; nvW.qq = null; nvW.wall = null; }
@@ -29532,7 +29548,7 @@ function nvTick(dt) {
   if (s.ph === 'end' && nvW.endShown !== s.r && (reg || nvW.fought === s.r)) { nvW.endShown = s.r; setTimeout(openNvEnd, 2500); }
   if (!nvW.fxReady) { nvW.fxReady = true; nvW.fxSeen = s.fx || ''; }
   if (s.fx && s.fx !== nvW.fxSeen) { nvW.fxSeen = s.fx; const [, t, v] = s.fx.split('|'); if (reg) { const N = nvNat(+t); if (String(v).startsWith('cap:')) { const bt = +v.slice(4), B2 = nvNat(bt), P = nvTowerAt(bt); burst(new V3(P.x, 5, P.z), [N?.col || 0xFFFFFF, 0xFFFFFF, 0xFFD23C], 60, 9, 5); playSfx('fanfare'); toast(`🚩 ${N?.icon || ''} ${N?.name || ''}이(가) ${B2?.icon || ''} ${B2?.name || ''} 요새를 차지했어요! +50`, bt === nvMine() ? 'warn' : 'success'); } else if (String(v).startsWith('base:')) { const bt = +v.slice(5), B2 = nvNat(bt), P = nvTowerAt(bt); burst(new V3(P.x, 4, P.z), [0xFFFFFF, 0xBFE6FF, 0x9AA4AE], 50, 9, 4); playSfx('drop'); toast(`🏰 ${N?.icon || ''} ${N?.name || ''}이(가) ${B2?.icon || ''} ${B2?.name || ''} 요새를 무너뜨렸어요! +30 · 30초 안에 들어가면 차지해요 🚩`, bt === nvMine() ? 'warn' : 'success'); } else if (String(v).startsWith('air:')) { const [ax, az] = v.slice(4).split(',').map(Number); nvAvalancheFx(+t, NV.cx + ax, NV.cz + az); if (N) toast(`🏔️ ${N.icon} ${N.name} 눈사태!`, +t === nvMine() ? 'success' : 'warn'); } else if (String(v).startsWith('isl:')) { const I = NV_ISL.find(i => i.k === v.slice(4)); if (I && N) toast(`${N.icon} ${N.name}이(가) ${I.icon} ${I.n}을(를) 차지했어요! (${I.d})`, +t === nvMine() ? 'success' : 'info'); } } }
-  if (nvW.g) nvW.g.visible = reg; if (!reg) { for (const g of nvW.ships.values()) g.visible = false; for (const g of nvW.ice.values()) g.visible = false; if (nvW.piles) nvW.piles.g.visible = false; if (nvW.aimG) { nvW.aimG.visible = false; nvW.aimDots.forEach(d => { d.visible = false; }); } nvHudTick(); return; }
+  if (nvW.g) nvW.g.visible = reg; if (!reg) { nvMarksOff(); for (const g of nvW.ships.values()) g.visible = false; for (const g of nvW.ice.values()) g.visible = false; if (nvW.piles) nvW.piles.g.visible = false; if (nvW.aimG) { nvW.aimG.visible = false; nvW.aimDots.forEach(d => { d.visible = false; }); } nvHudTick(); return; }
   nvBuild();
   // ❄️ 꽁꽁: 처음 얼면 우리 요새로
   { const ko = nvKo(backend.uid); if (ko && !nvW.wasKo) { nvW.draw = 0; nvToDock(''); playSfx('oops'); showBanner('❄️ 꽁꽁 얼었어요!', `${Math.ceil((s.ko[backend.uid] - now) / 1000)}초 뒤에 다시 움직여요`, 3000); } nvW.wasKo = ko; }
@@ -29549,6 +29565,8 @@ function nvTick(dt) {
       const mx = NV_BOT_HP, hl = Math.min(mx, s.hl?.[S2.u] | 0), lab = `${S2.nm} ${'❤'.repeat(Math.max(0, mx - hl))}`; if (g.userData.lt !== lab) { g.userData.lt = lab; g.userData.label.userData.set([lab]); } }
     let ice = nvW.ice.get(S2.u); if (ko && !ice) { ice = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.4, 1.3), new THREE.MeshStandardMaterial({ color: 0xBFE6FF, transparent: true, opacity: 0.55, roughness: 0.2 })); scene.add(ice); nvW.ice.set(S2.u, ice); } if (ice) { ice.visible = ko; if (ko) ice.position.set(S2.x, 1.2, S2.z); } }
   for (const [u, g] of nvW.ships) if (!seen.has(u)) { scene.remove(g); nvW.ships.delete(u); }
+  { const me = nvMine(), done = new Set(); for (const S2 of ships) { const a = S2.me ? player.avatar : S2.bot ? nvW.ships.get(S2.u)?.userData.av : S2.r?.a; if (!a || nvKo(S2.u)) continue; done.add(a); setTeamMark(a, 'nv', S2.t, nvNat(S2.t)?.col ?? 0xFFFFFF, me, !!S2.me, !S2.bot); } /* 👥 1107e 팀 구분 */
+    if (player.avatar && !done.has(player.avatar)) setTeamMark(player.avatar, 'nv', 0); for (const [, r] of remotes) if (!done.has(r.a)) setTeamMark(r.a, 'nv', 0); }
   for (const [u, g] of nvW.ice) if (!ships.some(x => x.u === u)) g.visible = false;
   // 🧱 눈벽 그리기 (기술자)
   { const want = new Map(); for (const W of nvWallsAll()) if (W.k !== 'fix') want.set(W.k, W); for (const [k, m] of nvW.walls) { const W = want.get(k); if (!W || m.userData.key !== `${W.x},${W.z},${W.t}`) { scene.remove(m); nvW.walls.delete(k); } }
