@@ -732,18 +732,20 @@
   .hq-opt.no { background: #F3D6D2; text-decoration: line-through; opacity: .7; }
   #sgHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(250px, 46vw); z-index: 3; font-size: 14px; } /* 1029j 오른쪽으로 */
   /* ⛄ 1107a 눈싸움 공방전 (예전 해전 자리) */
-  #nvHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(270px, 48vw); z-index: 3; font-size: 14px; line-height: 1.45; }
+  #nvHud { position: fixed; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(86px + var(--safe-top)); padding: 8px 10px; text-align: left; width: min(250px, 46vw); z-index: 3; font-size: 14px; line-height: 1.45; }
   #stgCard { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(96px + var(--safe-bottom, 0px)); width: min(420px, 92vw); padding: 8px 10px; z-index: 8; } /* 🎤 1101d 연습 플레이어 */
   .sbt-fr { display: inline-flex; flex-direction: column; vertical-align: middle; font-size: .8em; line-height: 1; margin: 0 2px; text-align: center; } .sbt-fr i { font-style: normal; padding: 0 2px; } .sbt-fr i:first-child { border-bottom: 2px solid currentColor; } /* 🧮 분수 */
   #nvFireBtn.nv-ready { background: #FF5A3C !important; color: #fff !important; box-shadow: 0 0 0 4px rgba(255,90,60,.35), 0 0 18px rgba(255,90,60,.8); animation: nvPulse2 0.9s ease-in-out infinite; } @keyframes nvPulse2 { 50% { transform: scale(1.08); } } /* 🎯 꾹 누르는 중 */
   #nvMap { position: fixed; left: calc(12px + env(safe-area-inset-left, 0px)); top: calc(76px + var(--safe-top)); width: 176px; height: 160px; z-index: 3; border-radius: 14px; box-shadow: 0 3px 12px rgba(0,0,0,.25); background: #DCEAF7; } /* 🗺️ 점령 지도 */
   body.nv-here #miniBtn, body.nv-here #guideChip { display: none !important; }
   body.nv-here #rideBtn, body.nv-here #controls, body.nv-here #praiseBtn { display: none !important; } /* 1031h 해전 버튼과 겹치지 않게 */
-  #nvAct { position: fixed; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(150px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: row-reverse; gap: 8px; align-items: flex-end; z-index: 4; }
-  body.touch #nvAct { bottom: calc(282px + var(--safe-bottom)); }
-  #nvAct #nvFireBtn, #nvAct #nvRepBtn { touch-action: none; user-select: none; -webkit-user-select: none; width: 76px; height: 76px; border-radius: 50%; font-size: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0; background: #FFD23C; }
+  /* 🖥️ 1107q 눈싸움 화면을 역사 공방전처럼: 위 오른쪽은 팀 점수만 작게 · 아래 가운데 #nvBar에 내 상태와 버튼 */
+  #nvBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 300px; max-width: 94vw; z-index: 4; font-size: 15px; line-height: 1.45; }
+  #nvAct { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 6px; }
+  #nvAct .btn { font-size: 17px; }
+  #nvAct #nvFireBtn, #nvAct #nvRepBtn { touch-action: none; user-select: none; -webkit-user-select: none; background: #FFD23C; font-size: 19px; padding: 10px 18px; }
   #nvAct #nvRepBtn { background: #FFB4A0; }
-  #nvAct small { font-size: 11px; font-weight: 800; }
+  #nvAct small { font-size: 13px; font-weight: 800; margin-left: 4px; }
   @keyframes nvPulse { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
   #nvAct #nvRepBtn { background: #9FE0A0; }
   #nvJoin { position: fixed; left: 50%; transform: translateX(-50%); top: calc(122px + var(--safe-top)); z-index: 5; background: #2F4E7E; color: #fff; font-size: 17px; box-shadow: 0 4px 0 #1A2E50; animation: nvPulse 1.6s ease-in-out infinite; }
@@ -19166,6 +19168,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107q', d: '11월 24일', items: ['⛄ 눈싸움 화면이 역사 공방전처럼 바뀌었어요! 오른쪽 위에는 팀 점수만 작게, 아래 가운데에 내 하트·눈덩이·요새와 ❄️ 던지기·🎽 기술 버튼이 크게 보여요'] },
   { id: '1107p', d: '11월 24일', items: ['🚁 드론을 학생도 탈 수 있어요! 🏆 지난주 능력치 합계 1등은 한 주 동안 빌려 타요 · ❄️ 시즌 2 패스 10단계를 채우면 드론을 받아 계속 타요'] },
   { id: '1107o', d: '11월 24일', items: ['🚁 새 탈것 「드론」! 드론 손잡이에 매달려 하늘을 날아요 (스페이스·⬆️ 오르기 · Shift·⬇️ 내리기) · 지금은 선생님만 탈 수 있어요'] },
   { id: '1107n', d: '11월 24일', items: ['🏡 새 놀이 「우리 반 집 구경」! 🚚 이사 도우미 트럭(영어 훈련소 앞) → 🏡 내 집 꾸미기', '🛋️ 방(kitchen·bedroom·bathroom·living room·garden)마다 분홍 ⭕에서 가구를 골라 놓아요 · 내 방을 영어 문장으로 들어 봐요', '❤️ 📋 친구 집 목록에서 놀러 가서 「What\'s in ○○\'s bedroom?」 문제 3개를 맞히면 ❤️ (🐚 +3) · 내 집이 ❤️를 받으면 🐚 +2'] },
@@ -29645,9 +29648,10 @@ function openNvEnd() {
 /* ---------- 🖥️ 화면 ---------- */
 function nvUiInit() {
   const hud = document.createElement('div'); hud.id = 'nvHud'; hud.className = 'sticker hidden'; hud.setAttribute('role', 'status'); document.body.append(hud); nvW.hud = hud;
-  const act = document.createElement('div'); act.id = 'nvAct'; act.className = 'hidden';
-  act.innerHTML = '<button class="btn" id="nvFireBtn" aria-label="눈덩이 던지기 (F 꾹 눌렀다 놓기)">❄️<small>꾹·놓기</small></button><button class="btn" id="nvRepBtn" aria-label="역할 기술 (Q)">🎽<small>Q 기술</small></button><button class="btn" id="nvJobBtn" style="font-size:13px">🎽 역할</button><button class="btn" id="nvHomeBtn" style="font-size:13px">🏠 마을로</button>';
-  document.body.append(act); nvW.actEl = act; const fb = $('nvFireBtn');
+  const bar = document.createElement('div'); bar.id = 'nvBar'; bar.className = 'sticker hidden'; bar.setAttribute('role', 'status'); const me = document.createElement('div'); me.id = 'nvMe'; bar.append(me); document.body.append(bar); nvW.bar = bar; nvW.meEl = me; /* 🖥️ 1107q */
+  const act = document.createElement('div'); act.id = 'nvAct';
+  act.innerHTML = '<button class="btn" id="nvFireBtn" aria-label="눈덩이 던지기 (F 꾹 눌렀다 놓기)">❄️ 던지기<small>(F 꾹·놓기)</small></button><button class="btn" id="nvRepBtn" aria-label="역할 기술 (Q)">🎽<small>Q 기술</small></button><button class="btn" id="nvJobBtn" style="background:#fff">🎽 역할</button><button class="btn" id="nvHomeBtn" style="background:#fff">🏠 마을로</button>';
+  bar.append(act); nvW.actEl = act; const fb = $('nvFireBtn');
   fb.addEventListener('pointerdown', (e) => { e.preventDefault(); try { fb.setPointerCapture(e.pointerId); } catch (er) { } nvDrawStart(); }); const rel = (e) => { e.preventDefault(); nvDrawEnd(); }; fb.addEventListener('pointerup', rel); fb.addEventListener('pointercancel', rel); fb.addEventListener('contextmenu', (e) => e.preventDefault());
   $('nvRepBtn').onclick = nvSkill; $('nvJobBtn').onclick = () => openNvJob(); $('nvHomeBtn').onclick = () => { if (nvW.solo) { nvW.solo = null; } nvHome(); };
   const mp = document.createElement('canvas'); mp.id = 'nvMap'; mp.width = 352; mp.height = 320; mp.className = 'hidden'; mp.setAttribute('aria-label', '점령 지도'); document.body.append(mp); nvW.map = mp;
@@ -29658,23 +29662,24 @@ function nvUiInit() {
 }
 function nvHudTick() {
   const s = nvS(), reg = nvW.reg, now = backend.now(); nvW.join.classList.toggle('hidden', !(S.nv?.on && !nvW.solo && joined && !reg && S.nv.ph !== 'end' && !hv.travel));
-  nvW.hud.classList.toggle('hidden', !(reg && s?.on)); nvW.actEl.classList.toggle('hidden', !(reg && s?.on)); nvW.map?.classList.toggle('hidden', !(reg && s?.on)); if (!(reg && s?.on)) return;
+  nvW.hud.classList.toggle('hidden', !(reg && s?.on)); nvW.bar.classList.toggle('hidden', !(reg && s?.on)); nvW.map?.classList.toggle('hidden', !(reg && s?.on)); if (!(reg && s?.on)) return;
   if (performance.now() - (nvW.mapT || 0) > 300) { nvW.mapT = performance.now(); try { nvDrawMap(); } catch (e) { } }
   const me = nvMine(), N = nvNat(me), left = s.ph === 'play' ? Math.max(0, s.end - now) : 0;
   let html = `<b>⛄ ${nvW.solo ? '🤖 AI 연습' : '눈싸움'} · ${s.ph === 'play' ? `⏱️ ${Math.floor(left / 60000)}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}` : s.ph === 'end' ? '🏁 끝' : '준비 (연습 던지기)'}</b><div>`;
   for (let t = 1; t <= s.n; t++) { const M2 = nvNat(t); html += `<span style="display:inline-block;margin-right:8px;${t === me ? 'font-weight:900;text-decoration:underline' : ''}">${M2.icon}${s.sc?.[t] | 0}</span>`; }
   html += `</div><div class="hint" style="margin:2px 0">${NV_ISL.map(I => { const o = s.own?.[I.k] | 0, ct = s.ct?.[I.k] | 0; return `${I.icon}${o ? nvNat(o).icon : '·'}${ct ? `(${nvNat(ct).icon}${s.cp?.[I.k] | 0}%)` : ''}`; }).join(' ')}</div>`;
   const J = NV_JOB[nvJob()], cd = Math.max(0, nvW.skT - performance.now());
-  html += `<div>${N ? `${N.icon} 너는 ${N.name}` : isTeacher && !nvW.tMe ? '👀 선생님은 지켜보기' : '⏳ 팀을 정하는 중…'}${nvJobSet() ? ` · ${J.icon} ${J.n} · Q ${cd ? Math.ceil(cd / 1000) + '초' : '준비!'}` : ' · 🎽 역할을 골라요'}</div>`;
+  let mh = `<div style="font-weight:800">${N ? `${N.icon} 너는 ${N.name}` : isTeacher && !nvW.tMe ? '👀 선생님은 지켜보기' : '⏳ 팀을 정하는 중…'}${nvJobSet() ? ` · ${J.icon} ${J.n} · Q ${cd ? Math.ceil(cd / 1000) + '초' : '준비!'}` : ' · 🎽 역할을 골라요'}</div>`; /* 🖥️ 1107q 아래 가운데 */
   if (me) { const mx = nvMaxHull({ u: backend.uid, job: nvJob() }), hl = Math.min(mx, s.hl?.[backend.uid] | 0);
-    if (nvKo(backend.uid)) html += `<div style="font-size:17px;font-weight:900;color:#2F7DE1">❄️ 꽁꽁 얼었어요! ${Math.ceil((s.ko[backend.uid] - now) / 1000)}초 뒤에 움직여요</div>`;
-    else html += `<div>❤️ ${'♥'.repeat(mx - hl)}${'♡'.repeat(hl)} · <b>❄️ ${nvW.ammo | 0}/${nvAmmoMax()}</b>${nvW.hard ? ` · <b>🧊 ${nvW.hard}</b>` : ''}</div>`;
-    html += nvW.qq ? `<div style="font-size:17px;font-weight:900;color:#2F5E9E">🧮 ${sbtCardHtml(nvW.qq)} = ?</div><div class="hint">🧊 정답 얼음 덩이를 밟으면 단단한 눈덩이 +3</div>` : '';
+    if (nvKo(backend.uid)) mh += `<div style="font-size:17px;font-weight:900;color:#2F7DE1">❄️ 꽁꽁 얼었어요! ${Math.ceil((s.ko[backend.uid] - now) / 1000)}초 뒤에 움직여요</div>`;
+    else mh += `<div style="font-size:17px">❤️ ${'♥'.repeat(mx - hl)}${'♡'.repeat(hl)} · <b>❄️ ${nvW.ammo | 0}/${nvAmmoMax()}</b>${nvW.hard ? ` · <b>🧊 ${nvW.hard}</b>` : ''}</div>`;
+    mh += nvW.qq ? `<div style="font-size:17px;font-weight:900;color:#2F5E9E">🧮 ${sbtCardHtml(nvW.qq)} = ? <span class="hint" style="font-weight:600">정답 🧊 밟으면 +3</span></div>` : '';
     const bf = [nvW.dash > performance.now() && '💨질주', nvOwns(me, 'big') && '⛄눈사태', nvOwns(me, 'wind') && '🛷빠름', nvOwns(me, 'wood') && '☕회복', nvOwns(me, 'lamp') && '🧊빠른 던지기'].filter(Boolean);
-    html += `<div>🏰 우리 요새 ${nvBaseOwn(me) !== me ? `🏳️ ${nvNat(nvBaseOwn(me))?.icon || ''} 팀에게 빼앗겼어요! 부수고 들어가 되찾아요` : nvKo('B' + me) ? `💥 무너졌어요! 요새로 와서 지켜요${s.ct?.['B' + me] ? ` (🚩${s.cp?.['B' + me] | 0}%)` : ''}` : `❤️ ${NV_BASE_HP - (s.hl?.['B' + me] | 0)}/${NV_BASE_HP}`}</div><div class="hint">🔥 F(❄️ 버튼)를 꾹 → 🎯가 멀어져요 → 놓으면 던져요${bf.length ? ` · ${bf.join(' ')}` : ''}</div>`; }
+    mh += `<div class="hint" style="margin-top:2px">🏰 우리 요새 ${nvBaseOwn(me) !== me ? `🏳️ ${nvNat(nvBaseOwn(me))?.icon || ''} 팀에게 빼앗겼어요! 부수고 들어가 되찾아요` : nvKo('B' + me) ? `💥 무너졌어요! 요새로 와서 지켜요${s.ct?.['B' + me] ? ` (🚩${s.cp?.['B' + me] | 0}%)` : ''}` : `❤️ ${NV_BASE_HP - (s.hl?.['B' + me] | 0)}/${NV_BASE_HP}`}${bf.length ? ` · ${bf.join(' ')}` : ''}</div>`; }
   if (html !== nvW.hudHtml) { nvW.hudHtml = html; nvW.hud.innerHTML = html; }
+  if (mh !== nvW.meHtml) { nvW.meHtml = mh; nvW.meEl.innerHTML = mh; }
   const can = nvCanThrow(); $('nvFireBtn').classList.toggle('hidden', !me || (isTeacher && !nvW.tMe && !nvW.solo)); $('nvFireBtn').style.opacity = can && ((nvW.ammo | 0) + (nvW.hard | 0)) > 0 ? '1' : '0.5'; $('nvRepBtn').classList.toggle('hidden', !me || !nvJobSet());
-  { const t = `${J.icon}<small>Q ${J.n}</small>`; if (nvW.skIc !== t) { nvW.skIc = t; $('nvRepBtn').innerHTML = t; } $('nvRepBtn').style.opacity = nvW.skT > performance.now() ? '0.55' : '1'; }
+  { const t = `${J.icon} ${J.n}<small>(Q)</small>`; if (nvW.skIc !== t) { nvW.skIc = t; $('nvRepBtn').innerHTML = t; } $('nvRepBtn').style.opacity = nvW.skT > performance.now() ? '0.55' : '1'; }
 }
 
 /* ---------- 🔁 매 프레임 ---------- */
@@ -29721,7 +29726,7 @@ function nvTick(dt) {
   if (nvHost() && s?.on) nvHostTick(dt);
   { const tn = $('tpNvNow'); if (tn && performance.now() - (nvW.tnT || 0) > 1000) { nvW.tnT = performance.now(); const z = S.nv, t = !z?.on ? '지금: 닫혀 있어요' : `지금: ${z.ph === 'play' ? '⛄ 눈싸움 중' : z.ph === 'end' ? '🏁 끝' : '🏰 준비'} · ${(NV_SETS[z.set] || NV_SETS.snow3).name} · ` + Array.from({ length: z.n }, (_, i) => { const N = (NV_SETS[z.set] || NV_SETS.snow3).nat[i]; return `${N.icon}${N.name} ${Object.values(z.team || {}).filter(v => v === i + 1).length}명 ${z.sc?.[i + 1] | 0}점`; }).join(' · '); if (tn.textContent !== t) tn.textContent = t; nvFillAdmin(); } }
   const reg = nvRegion(); if (reg !== nvW.reg) { nvW.reg = reg; if (reg) nvBuild(); applyEnv(true); document.body.classList.toggle('nv-here', reg); if (!reg) nvW.draw = 0; }
-  if (!s?.on) { nvMarksOff(); if (reg && joined) nvGoPlaza(); nvW.join?.classList.add('hidden'); nvW.hud?.classList.add('hidden'); nvW.actEl?.classList.add('hidden'); nvW.map?.classList.add('hidden'); if (nvW.g) nvW.g.visible = false; if (nvW.piles) nvW.piles.g.visible = false; if (nvW.aimG) { nvW.aimG.visible = false; nvW.aimDots.forEach(d => { d.visible = false; }); } for (const g of nvW.ships.values()) g.visible = false; for (const g of nvW.ice.values()) g.visible = false; return; }
+  if (!s?.on) { nvMarksOff(); if (reg && joined) nvGoPlaza(); nvW.join?.classList.add('hidden'); nvW.hud?.classList.add('hidden'); nvW.bar?.classList.add('hidden'); nvW.map?.classList.add('hidden'); if (nvW.g) nvW.g.visible = false; if (nvW.piles) nvW.piles.g.visible = false; if (nvW.aimG) { nvW.aimG.visible = false; nvW.aimDots.forEach(d => { d.visible = false; }); } for (const g of nvW.ships.values()) g.visible = false; for (const g of nvW.ice.values()) g.visible = false; return; }
   if (nvW.layoutN !== s.n) nvRelayout(s.n || 3);
   if (!nvW.solo && s.on && nvW.goR !== s.r && joined && !hv.travel && !pb3.on && !mrc.on && (!isTeacher || nvW.tMe)) { nvW.goR = s.r; if (!nvW.reg) { toast('⛄ 눈싸움이 열렸어요! 모두 눈 들판으로 출발~', 'info'); nvGo(); } }
   if (nvW.lastR !== s.r) { nvW.lastR = s.r; nvW.hits = {}; nvW.hr = s.r; nvW.ammo = 4; nvW.hard = 0; nvW.qq = null; nvW.wall = null; }
