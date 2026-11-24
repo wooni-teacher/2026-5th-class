@@ -768,7 +768,7 @@
   #sgUltBtn { background: linear-gradient(90deg, #FFE066 var(--u, 0%), #EDE6D8 var(--u, 0%)); font-weight: 800; }
   #sgUltBtn.sg-ult-full { background: #FFD23C; box-shadow: 0 0 0 3px #FF8A24, 0 0 14px #FFC83D; animation: sgUltPulse 0.9s ease-in-out infinite; }
   @keyframes sgUltPulse { 50% { transform: scale(1.08); } }
-  body.mv-here #rideBtn { display: none !important; }
+  body.mv-here #rideBtn, body.mh-here #rideBtn { display: none !important; }
   #sgBar { position: fixed; left: 50%; bottom: calc(96px + var(--safe-bottom, 0px)); transform: translateX(-50%); padding: 8px 14px; text-align: center; min-width: 280px; z-index: 3; }
   #sgFill { height: 100%; width: 0; background: linear-gradient(90deg, #D9C49A, #8A6A44, #5A3A22); }
   #sgThrow { background: #8A6A44; color: #fff; font-size: 18px; touch-action: none; user-select: none; }
@@ -2437,6 +2437,7 @@ function normalize(v) {
     evoff: Object.fromEntries(Object.entries(plainObj(v.evoff)).filter(([k, x]) => /^[a-z]{2,6}$/.test(k) && x === true).slice(0, 30)), // 🎛️ 1106j 선생님이 끈 이벤트
     potoff: +v.potoff || 0, // 🍄 1106f 선생님이 크기 물약 끈 시각
     snw: Object.fromEntries(Object.entries(plainObj(v.snw)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && x.length <= 22).slice(0, 80)), snwb: Object.fromEntries(Object.entries(plainObj(v.snwb)).filter(([k, x]) => /^[0-4]$/.test(k) && Number.isFinite(+x)).map(([k, x]) => [k, +x])), /* 💥 1107f 부순 때 */
+    myh: Object.fromEntries(Object.entries(plainObj(v.myh)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && /^[0-3]{45}$/.test(x)).slice(0, 80)), myhl: Object.fromEntries(Object.entries(plainObj(v.myhl)).filter(([m]) => ANON_ID.test(m)).slice(0, 80).map(([m, o]) => [m, Object.fromEntries(Object.entries(plainObj(o)).filter(([u, x]) => ANON_ID.test(u) && x === true).slice(0, 80))])), /* 🏡 1107n */
     mv: v.mv && typeof v.mv === 'object' && v.mv.on ? { on: 1, r: String(v.mv.r || ''), n: Math.max(1, Math.min(4, v.mv.n | 0)), lv: Math.max(0, Math.min(2, v.mv.lv | 0)), at: +v.mv.at || 0, end: +v.mv.end || 0, rot: Math.max(20, +v.mv.rot || 60), team: toObj(v.mv.team), sc: toObj(v.mv.sc), bx: Object.fromEntries(Object.entries(plainObj(v.mv.bx)).map(([t, o]) => [t, Object.fromEntries(Object.entries(plainObj(o)).filter(([, x]) => typeof x === 'string').slice(0, 40))])), cr: Object.fromEntries(Object.entries(plainObj(v.mv.cr)).map(([t, o]) => [t, Object.fromEntries(Object.entries(plainObj(o)).filter(([, x]) => typeof x === 'string'))])), pt: Object.fromEntries(Object.entries(plainObj(v.mv.pt)).map(([t, o]) => [t, Object.fromEntries(Object.entries(plainObj(o)).map(([k, q]) => [k, toObj(q)]))])) } : null, /* 🚚 1107l */
     mk: Object.fromEntries(Object.entries(plainObj(v.mk)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && /^[0-5][0-4][0-2]\|[0-9a-z]{1,9}\|[.WLIJXHSGOQABKD]{144}$/.test(x)).slice(0, 80)), /* 🛠️ 1107g 메이커 맵 */
     mkc: Object.fromEntries(Object.entries(plainObj(v.mkc)).filter(([m]) => ANON_ID.test(m)).slice(0, 80).map(([m, o]) => [m, Object.fromEntries(Object.entries(plainObj(o)).filter(([u, x]) => ANON_ID.test(u) && typeof x === 'string' && /^[0-9a-z]{1,9}\.[0-9]{1,7}$/.test(x)).slice(0, 80))])),
@@ -2810,7 +2811,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
     async raidHit(d, nm) { const R0 = st.raid; if (!R0 || !(R0.hp > 0)) return { ok: false }; R0.hp = Math.max(0, R0.hp - d); (R0.by ||= {}).me = (R0.by.me || 0) + d; (R0.nm ||= {}).me = nm; if (!R0.hp && !R0.last) R0.last = nm; emit(); return { ok: true, hp: R0.hp }; },
     async hmGot(k, nm) { if (!st.hm?.on?.[k]) return { ok: false }; ((st.hm.got ||= {})[k] ||= {}).me = nm; emit(); return { ok: true }; },
     async vnameSet(kind, val) { const V = st.vname; if (!V || V.ph !== (kind === 'c' ? 'collect' : 'vote')) return { ok: false }; (V[kind] ||= {}).me = val; emit(); return { ok: true }; },
-    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwBreak(i, v) { (st.snwb ||= {})[i] = v; emit(); return { ok: true }; }, async mvJoin(t) { if (!st.mv?.on) return { ok: false }; (st.mv.team ||= {}).me = t; emit(); return { ok: true }; }, async mvBox(t, add) { if (!st.mv?.on) return { ok: false }; Object.assign(((st.mv.bx ||= {})[t] ||= {}), add); emit(); return { ok: true }; }, async mvScore(t, n) { if (!st.mv?.on) return { ok: false }; (st.mv.sc ||= {})[t] = (st.mv.sc[t] || 0) + n; emit(); return { ok: true }; }, async mvClaim(t, id, v) { const c = st.mv?.cr?.[t]?.[id]; if (!st.mv?.on || (c && Date.now() - parseInt(String(c).split('.')[1] || '0', 36) < 60000)) return { ok: false }; ((st.mv.cr ||= {})[t] ||= {})[id] = v; emit(); return { ok: true }; }, async mvUnclaim(t, id) { delete st.mv?.cr?.[t]?.[id]; emit(); return { ok: true }; }, async mvDone(t, id, rm, it, pts) { const m = st.mv; if (!m?.on || !m.bx?.[t]?.[id]) return { ok: false }; delete m.bx[t][id]; delete m.cr?.[t]?.[id]; (m.sc ||= {})[t] = (m.sc[t] || 0) + pts; (((m.pt ||= {})[t] ||= {})[rm] ||= {})[it] = (m.pt[t][rm][it] || 0) + 1; emit(); return { ok: true }; }, /* 🚚 1107l */ async mkSet(v) { (st.mk ||= {}); if (v) st.mk.me = v; else delete st.mk.me; emit(); return { ok: true }; }, async mkClear(m, v) { ((st.mkc ||= {})[m] ||= {}).me = v; emit(); return { ok: true }; }, async mkLike(m, on) { const o = ((st.mkl ||= {})[m] ||= {}); if (on) o.me = true; else delete o.me; emit(); return { ok: true }; }, async mkAdmin(path, v) { const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (v == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async vtSet(k, v) { (st.vt ||= {}); if (v) { if (st.vt[k]) return { ok: false }; st.vt[k] = v; } else delete st.vt[k]; emit(); return { ok: true }; }, async sgbSet(o) { (st.sgb ||= {}); if (o) st.sgb.me = JSON.parse(JSON.stringify(o)); else delete st.sgb.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
+    async gwAnswer(o) { if (!st.gw?.open || st.gw.ph !== 'q') return { ok: false }; (st.gwa ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async scrpSet(o) { (st.scrp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async snwBreak(i, v) { (st.snwb ||= {})[i] = v; emit(); return { ok: true }; }, async mvJoin(t) { if (!st.mv?.on) return { ok: false }; (st.mv.team ||= {}).me = t; emit(); return { ok: true }; }, async mvBox(t, add) { if (!st.mv?.on) return { ok: false }; Object.assign(((st.mv.bx ||= {})[t] ||= {}), add); emit(); return { ok: true }; }, async mvScore(t, n) { if (!st.mv?.on) return { ok: false }; (st.mv.sc ||= {})[t] = (st.mv.sc[t] || 0) + n; emit(); return { ok: true }; }, async mvClaim(t, id, v) { const c = st.mv?.cr?.[t]?.[id]; if (!st.mv?.on || (c && Date.now() - parseInt(String(c).split('.')[1] || '0', 36) < 60000)) return { ok: false }; ((st.mv.cr ||= {})[t] ||= {})[id] = v; emit(); return { ok: true }; }, async mvUnclaim(t, id) { delete st.mv?.cr?.[t]?.[id]; emit(); return { ok: true }; }, async mvDone(t, id, rm, it, pts) { const m = st.mv; if (!m?.on || !m.bx?.[t]?.[id]) return { ok: false }; delete m.bx[t][id]; delete m.cr?.[t]?.[id]; (m.sc ||= {})[t] = (m.sc[t] || 0) + pts; (((m.pt ||= {})[t] ||= {})[rm] ||= {})[it] = (m.pt[t][rm][it] || 0) + 1; emit(); return { ok: true }; }, /* 🚚 1107l */ async myhSet(v) { (st.myh ||= {}).me = v; emit(); return { ok: true }; }, async myhLike(m) { ((st.myhl ||= {})[m] ||= {}).me = true; emit(); return { ok: true }; }, /* 🏡 1107n */ async mkSet(v) { (st.mk ||= {}); if (v) st.mk.me = v; else delete st.mk.me; emit(); return { ok: true }; }, async mkClear(m, v) { ((st.mkc ||= {})[m] ||= {}).me = v; emit(); return { ok: true }; }, async mkLike(m, on) { const o = ((st.mkl ||= {})[m] ||= {}); if (on) o.me = true; else delete o.me; emit(); return { ok: true }; }, async mkAdmin(path, v) { const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (v == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; emit(); return { ok: true }; }, async snwSet(v) { (st.snw ||= {}); if (v) st.snw.me = v; else delete st.snw.me; emit(); return { ok: true }; }, async aqSet(v) { (st.aq ||= {}); if (v) st.aq.me = v; else delete st.aq.me; emit(); return { ok: true }; }, async vtSet(k, v) { (st.vt ||= {}); if (v) { if (st.vt[k]) return { ok: false }; st.vt[k] = v; } else delete st.vt[k]; emit(); return { ok: true }; }, async sgbSet(o) { (st.sgb ||= {}); if (o) st.sgb.me = JSON.parse(JSON.stringify(o)); else delete st.sgb.me; emit(); return { ok: true }; }, async mrrSet(o) { (st.mrr ||= {}); if (o) st.mrr.me = JSON.parse(JSON.stringify(o)); else delete st.mrr.me; emit(); return { ok: true }; }, async swmSet(o) { (st.swm ||= {}); if (o) st.swm.me = JSON.parse(JSON.stringify(o)); else delete st.swm.me; emit(); return { ok: true }; }, async escSet(room, o) { ((st.esc ||= {})[room] ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemSet(o) { (st.kpoem ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kpoemvSet(t) { st.kpoemv ||= {}; if (t) st.kpoemv.me = t; else delete st.kpoemv.me; emit(); return { ok: true }; }, async kdetpSet(o) { (st.kdetp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kdetaSet(g, o) { if ((st.kdeta ||= {})[g]) return { ok: false }; st.kdeta[g] = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async sspSet(sid, lv) { (st.ssp ||= {}).me ||= {}; st.ssp.me[sid] = Math.max(st.ssp.me[sid] | 0, lv); emit(); return { ok: true }; }, async wrapAnswer(o) { if (!st.wrap || st.wrap.ph !== 'q' || o.r !== st.wrap.n) return { ok: false }; (st.wrapa ||= {}).me = o; emit(); return { ok: true }; }, async egAnswer(o) { if (!st.eg?.open || st.eg.ph !== 'q') return { ok: false }; (st.ega ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async kbAnswer(o) { if (!st.kb?.open || st.kb.ph !== 'q') return { ok: false }; (st.kba ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async evtkJoin(pid, s, nm) { const w = ((st.evtk ||= {})[pid] ||= {}); if (w[s] && w[s] !== 'me') return { ok: false }; w[s] = 'me'; w[s + 'n'] = nm; emit(); return { ok: true }; }, async atlgTx(g, fn) { st.atlg ||= {}; const o = fn(st.atlg[g] ? JSON.parse(JSON.stringify(st.atlg[g])) : null); if (o === undefined) return { ok: false }; st.atlg[g] = o; emit(); return { ok: true }; }, async atlrSet(o) { (st.atlr ||= {}).me = o; emit(); return { ok: true }; }, async jmpRec(o) { (st.jmp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async pblRec(o) { ((st.pbl ||= {}).p ||= {}).me = { ...o }; emit(); return { ok: true }; }, async wcJoin(t, nm) { const o = wcJoinNext(st.wc?.[t], 'me', nm); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcTimeout(t) { const o = wcTimeoutNext(st.wc?.[t], Date.now()); if (o.err) return { ok: false }; st.wc[t] = o; emit(); return { ok: true }; }, async wcLeave(t) { const o = wcLeaveNext(st.wc?.[t], 'me', Date.now()); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcAdd(t, w, nm) { const o = wcNext(st.wc?.[t], w, 'me', nm, Date.now()); if (o.err) return { ok: false, err: o.err }; (st.wc ||= {})[t] = o; emit(); return { ok: true }; }, async wcUndo(t, tch) { const o = wcUndoNext(st.wc?.[t], 'me', tch); if (o.err) return { ok: false, err: o.err }; st.wc[t] = o; emit(); return { ok: true }; }, async wcReset(t) { if (st.wc) delete st.wc[t]; emit(); return { ok: true }; }, async evtkSet(pid, patch) { st.evtk ||= {}; if (patch === null) { delete st.evtk[pid]; emit(); return { ok: true }; } const w = (st.evtk[pid] ||= {}); for (const [k, v] of Object.entries(patch)) { const ks = k.split('/'); let o = w; for (const x of ks.slice(0, -1)) o = (o[x] ||= {}); if (v === null) delete o[ks.at(-1)]; else o[ks.at(-1)] = v; } emit(); return { ok: true }; }, async clothSet(o) { (st.cloth ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async clothvSet(t) { st.clothv ||= {}; if (t) st.clothv.me = t; else delete st.clothv.me; emit(); return { ok: true }; }, async capsGive(amt) { const c = st.caps || { n: 0 }, g = c.g || 20000, add = Math.max(0, Math.min(amt, g - (c.n | 0))); if (!add) return { ok: false }; const d = dayNum(); st.caps = { ...c, n: (c.n | 0) + add, log: { ...(c.log || {}), [d]: ((c.log || {})[d] | 0) + add } }; emit(); return { ok: true, add }; }, async pollSet(path, val) { if (!/^(pq|pqo|pqv)\//.test(path)) return { ok: false }; const ks = path.split('/'); let o = st; for (const k of ks.slice(0, -1)) o = (o[k] ||= {}); if (val == null) delete o[ks.at(-1)]; else o[ks.at(-1)] = JSON.parse(JSON.stringify(val)); emit(); return { ok: true }; }, async mrunStep(o) { if (!st.mrun?.open || st.mrun.ph !== 'run') return { ok: false }; (st.mrunp ||= {}).me = JSON.parse(JSON.stringify(o)); emit(); return { ok: true }; }, async earnGet() { return st._earn || {}; }, async earnClear() { st._earn = {}; return { ok: true }; }, async acctPurge(u) { if (st._earn) delete st._earn[u]; return { ok: true, bag: true }; },
     async chatDel() {}, async chatClear() { return { ok: true }; },
     async homeSet(n, upd) { const pl = st.plots[n]; if (!pl || pl.o !== 'me') return { ok: false }; pl.in ||= {}; for (const [k, v] of Object.entries(upd)) { const [a, b] = k.split('/'); if (b) { pl.in[a] ||= {}; if (v === null) delete pl.in[a][b]; else pl.in[a][b] = typeof v === 'object' ? { ...v } : v; } else pl.in[a] = v; } emit(); return { ok: true }; },
     async plotPlace(n, cell, t, r) {
@@ -3352,6 +3353,8 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
     async aqSet(v) { try { await D.set(R(`state/aq/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } },
     async snwSet(v) { try { await D.set(R(`state/snw/${uid}`), v || null); return { ok: true }; } catch (e) { return { ok: false }; } }, async snwBreak(i, v) { try { await D.set(R(`state/snwb/${i}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 💥 1107f */
+    async myhSet(v) { try { await D.set(R(`state/myh/${uid}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🏡 1107n */
+    async myhLike(m) { try { await D.set(R(`state/myhl/${m}/${uid}`), true); return { ok: true }; } catch (e) { return { ok: false }; } },
     async mvJoin(t) { try { await D.set(R(`state/mv/team/${uid}`), t); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🚚 1107l 이사 도우미 */
     async mvBox(t, add) { try { await D.update(R(`state/mv/bx/${t}`), add); return { ok: true }; } catch (e) { return { ok: false }; } },
     async mvScore(t, n) { try { const r = await D.runTransaction(R(`state/mv/sc/${t}`), c => Math.min(9999, (c || 0) + n)); return { ok: r.committed }; } catch (e) { return { ok: false }; } },
@@ -7893,6 +7896,7 @@ function canStand(x, z) {
   if (Math.hypot(x - SW.cx, z - SW.cz) <= SW.R + 2) return true; /* ☁️ 1105zy 하늘 경기장 */
   if (inMk(x, z)) return true; /* 🛠️ 1107g 메이커 공방 */
   if (inMv(x, z)) return true; /* 🚚 1107l 이사 도우미 */
+  if (inMyh(x, z)) return true; /* 🏡 1107n 우리 반 집 구경 */
   if (nvInWalk(x, z)) return true; /* 🧮 1106l 수학 해전 바다 · 부두 */
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inMineCave(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
@@ -11302,7 +11306,7 @@ function rideDecorate(a, R0, k, q) { // 색 바꾸고 장식 달기 (rideBuild �
 const rideBoughtToday = () => bag.rideBuy === dayNum(); // 한 기기는 하루 1번만 탈것을 열 수 있어요 (선생님은 상관없어요)
 const rideIndoor = (x, z) => (x > 600 && x < 700) || (x > 740 && x < 1000) || (x > 1410 && x < 1610); // 교실·경기장·집 안·학교 건물(체육관)에서는 내려요
 const sgInSG = (p) => !!p && p.x > SG.x0 - 5 && p.x < SG.x1 + 5 && p.z > SG.z0 - 4;
-function playZoneHere(p = player.pos) { /* 🎮 1107l 놀이 구역: 공방전·체험장·눈싸움·메이커 공방·이사 도우미 → 탈것·따라오는 펫 없이 */ try { return sgInSG(p) || trRegion() || (p.x > NV.x0 - 12 && p.x < NV.x1 + 12 && p.z > NV.z0 - 12 && p.z < NV.z1 + 12) || inMk(p.x, p.z) || inMv(p.x, p.z); } catch (e) { return false; } }
+function playZoneHere(p = player.pos) { /* 🎮 1107l 놀이 구역: 공방전·체험장·눈싸움·메이커 공방·이사 도우미 → 탈것·따라오는 펫 없이 */ try { return sgInSG(p) || trRegion() || (p.x > NV.x0 - 12 && p.x < NV.x1 + 12 && p.z > NV.z0 - 12 && p.z < NV.z1 + 12) || inMk(p.x, p.z) || inMv(p.x, p.z) || inMyh(p.x, p.z); } catch (e) { return false; } }
 function rideBlockMe() { // 지금 내가 탈 수 없는 까닭 (없으면 '')
   const p = player.pos;
   if (strRiding()) return '🚂 하늘 기차에 타는 중이에요';
@@ -19144,6 +19148,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107n', d: '11월 24일', items: ['🏡 새 놀이 「우리 반 집 구경」! 🚚 이사 도우미 트럭(영어 훈련소 앞) → 🏡 내 집 꾸미기', '🛋️ 방(kitchen·bedroom·bathroom·living room·garden)마다 분홍 ⭕에서 가구를 골라 놓아요 · 내 방을 영어 문장으로 들어 봐요', '❤️ 📋 친구 집 목록에서 놀러 가서 「What\'s in ○○\'s bedroom?」 문제 3개를 맞히면 ❤️ (🐚 +3) · 내 집이 ❤️를 받으면 🐚 +2'] },
   { id: '1107m', d: '11월 24일', items: ['🛋️ 이사 도우미: 배달한 물건이 진짜 가구처럼 3D로 방에 놓여요! 의자·냄비(조리대)·앨범(탁자)·칫솔(세면대)·꽃병·괘종시계·헤어드라이어(화장대)·책(책장)·꽃 화분', '✨ 새로 놓이면 뿅! 하고 나타나요'] },
   { id: '1107l', d: '11월 24일', items: ['🚚 새 놀이 「이사 도우미」! 🗽 영어 마을 🏋️ 훈련소 앞 트럭에서 가요 (Lesson 11 · There is / There are)', '📖 읽기 담당은 트럭 주문서를 읽고 물건·개수·방을 골라 상자에 담고, 📦 배달 담당은 상자에 적힌 방(kitchen·bedroom·bathroom·living room·garden)을 찾아 날라요 · 역할은 1분마다 바뀌어요', '📈 1단계 문장+그림 · 2단계 문장만 · 3단계 🔊 듣기만 · 🧪 혼자 연습도 돼요', '🎮 공방전·눈싸움·메이커 공방·이사 도우미에서는 탈것과 따라오는 펫이 쉬어요'] },
   { id: '1107k', d: '11월 24일', items: ['🛠️ 메이커 공방(작업장·도전 맵) 안에서는 탈것을 탈 수 없어요 · 맵은 내 발로 깨요!'] },
@@ -30068,6 +30073,7 @@ function mvBuild() {
   { const bx = MVY.x1 - 6, bz = MVY.z1 - 4; const ring = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.22, 10, 32), new THREE.MeshStandardMaterial({ color: 0x3FB6A8, emissive: 0x3FB6A8, emissiveIntensity: 0.5 })); ring.position.set(bx, 1.9, bz); g.add(ring);
     g.add(mvLabel(['🌀 영어 훈련소로'], 0.9, bx, 4.0, bz)); addInteract({ pos: new V3(bx, 1, bz), r: 2.6, text: () => mvRegion() ? ['🌀 영어 훈련소로 돌아가기', '영어 마을'] : null, run: () => mvBack() }); }
   g.add(mvLabel(['🚚 이사 도우미', '📖 읽고 → 📦 날라요!'], 1.6, MVY.cx, 7.5, mvHZ - 9));
+  { const bx = MVY.x0 + 7, bz = MVY.z1 - 4; box(g, 3.2, 2.2, 0.25, 0xFF8AA8, bx, 1.6, bz, { solid: true }); g.add(mvLabel(['🏡 우리 반 집 구경', '내 집 꾸미기 · 친구 집 놀러 가기'], 0.9, bx, 3.6, bz)); addInteract({ pos: new V3(bx, 1, bz - 1.6), r: 2.6, text: () => mvRegion() ? ['🏡 우리 반 집 구경', '내 집 꾸미기 · 친구 집 놀러 가기'] : null, run: () => { mhW.view = null; mhGo(backend.uid); } }); } /* 🏡 1107n */
   g.updateMatrixWorld(true); registerSolids(g, 'mv'); mvW.g = g;
 }
 function mvEntrance() { // 🏋️ 영어 훈련소 앞 작은 트럭
@@ -30076,7 +30082,7 @@ function mvEntrance() { // 🏋️ 영어 훈련소 앞 작은 트럭
   for (const wx of [-1.7, 1.4]) for (const wz of [-0.9, 0.9]) cyl(g, 0.35, 0.3, 0x2A2A30, x + wx, 0.35, z + wz, { solid: false, rx: Math.PI / 2 });
   for (let k = 0; k < 3; k++) box(g, 0.7, 0.6, 0.7, 0xC9A06A, x + 2.9, 0.3 + (k === 2 ? 0.6 : 0), z - 1.2 + (k % 2) * 0.8, o);
   g.add(mvLabel(['🚚 이사 도우미', 'Lesson 11 · There is / There are'], 0.95, x, 3.6, z));
-  addInteract({ pos: new V3(x, 1, z - 1.9), r: 2.6, text: () => evRegion() ? ['🚚 이사 도우미', mvS()?.on ? '이삿짐 마당으로 가요!' : (isTeacher ? '열기 · 혼자 연습' : '혼자 연습하기')] : null, run: openMvGate });
+  addInteract({ pos: new V3(x, 1, z - 1.9), r: 2.6, text: () => evRegion() ? ['🚚 이사 도우미', mvS()?.on ? '이삿짐 마당으로 가요!' : (isTeacher ? '열기 · 혼자 연습 · 🏡 내 집' : '혼자 연습 · 🏡 내 집 꾸미기')] : null, run: openMvGate });
   g.updateMatrixWorld(true); registerSolids(g, 'mvgate');
 }
 /* ---------- 🚶 가기 · 돌아가기 ---------- */
@@ -30119,6 +30125,7 @@ function openMvGate() {
       B('▶ 열기 (25초 뒤 시작)', '#FFD23C', () => mvOpen(cfg));
     }
     B('🧪 혼자 연습 (3분)', '#DDF3D2', () => { closeLife(); mvSoloStart(); });
+    B('🏡 내 집 꾸미기 · 친구 집', '#FFD2E0', () => { closeLife(); mhGo(backend.uid); }); /* 🏡 1107n */
     box.append(el2('p', 'hint', isTeacher ? '열면 학생들에게 「바로 가기」 안내가 떠요 · 늦게 온 학생은 사람이 적은 팀으로 들어가요' : '선생님이 열면 반 친구들과 팀 대결을 해요'));
   });
 }
@@ -30271,6 +30278,131 @@ function mvInit() {
   const hud = document.createElement('div'); hud.id = 'mvHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;top:118px;left:50%;transform:translateX(-50%);z-index:5;padding:8px 14px;text-align:center;font-size:15px;max-width:92vw';
   const txt = document.createElement('div'); hud.append(txt); document.body.append(hud); mvW.hud = hud; mvW.hudTxt = txt;
   try { mvEntrance(); } catch (e) { console.warn('mv gate', e); }
+}
+
+/* ================= 🏡 1107n 내 집 꾸미기 · 친구 집 놀러 가기 (영어 Lesson 11) =================
+   · 이삿짐 마당 남쪽 「우리 반 집 구경」: 집 한 채를 기기마다 따로 그려요 (내 집 · 고른 친구 집)
+   · 내 집: 방 ⭕에서 「꾸미기」 → 물건 9가지를 방마다 0~3개 (방마다 8개까지) · 바로 3D 가구로 놓여요
+   · 친구 집: 둘러보고 ❓ 문제 3개 (What's in ○○'s bedroom? → There is a clock. / There are two chairs.) 를 맞히면 ❤️
+   · 저장: state/myh/{기기} = 숫자 45자리 (방 5 × 물건 9, 0~3) · state/myhl/{집주인}/{기기} = true (❤️)
+   · 보상: 친구 집 ❤️ 주기 🐚+3 (하루 15) · 내 집이 ❤️를 받으면 🐚+2 (하루 20) · 문제 맞히기 영어력 */
+var mhW = null;
+const MHY = { x: 3300, z: -130, x0: 3278, x1: 3322, z0: -150, z1: -106 }, MH_RMK = ['kitchen', 'bedroom', 'bathroom', 'living', 'garden'], MH_ITK = Object.keys(MV_IT), MH_MAX = 8;
+const inMyh = (x, z) => x > MHY.x0 && x < MHY.x1 && z > MHY.z0 && z < MHY.z1;
+const mhRegion = () => joined && inMyh(player.pos.x, player.pos.z);
+const mhHX = MHY.x, mhHZ = MHY.z - 6;
+const mhStr = (u) => { const v = String((u === backend?.uid && mhW?.draft) || S.myh?.[u] || ''); return /^[0-3]{45}$/.test(v) ? v : '0'.repeat(45); };
+const mhCnt = (str, r, i) => +str[r * 9 + i] || 0;
+const mhRoomSum = (str, r) => { let n = 0; for (let i = 0; i < 9; i++) n += mhCnt(str, r, i); return n; };
+const mhHearts = (u) => Object.keys(S.myhl?.[u] || {}).length;
+const mhOwners = () => Object.keys(S.myh || {}).filter(u => /[1-3]/.test(String(S.myh[u])));
+function mhBuild() {
+  const g = new THREE.Group(); g.name = 'MyHouse'; scene.add(g); const o = { solid: false }, s1 = { solid: true }, hx = mhHX, hz = mhHZ;
+  box(g, MHY.x1 - MHY.x0, 0.3, MHY.z1 - MHY.z0, 0xB9D89A, MHY.x, -0.15, (MHY.z0 + MHY.z1) / 2, o);
+  for (const [px, pz, pw, pd] of [[MHY.x, MHY.z0, MHY.x1 - MHY.x0, 0.5], [MHY.x, MHY.z1, MHY.x1 - MHY.x0, 0.5], [MHY.x0, (MHY.z0 + MHY.z1) / 2, 0.5, MHY.z1 - MHY.z0], [MHY.x1, (MHY.z0 + MHY.z1) / 2, 0.5, MHY.z1 - MHY.z0]]) box(g, pw, 1.1, pd, 0x9A6B43, px, 0.55, pz, s1);
+  for (const [k, R] of Object.entries(MV_RM)) { if (k === 'garden') continue; box(g, 9.8, 0.06, 6.8, R[5], hx + R[3], 0.04, hz + R[4], o); }
+  box(g, 20, 0.06, 6, 0x8CC870, hx, 0.03, hz + 10, o);
+  const wc = 0xFFF4E0, wh = 1.5, wallX = (x1, x2, z) => box(g, Math.abs(x2 - x1), wh, 0.3, wc, hx + (x1 + x2) / 2, wh / 2, hz + z, s1), wallZ = (z1, z2, x) => box(g, 0.3, wh, Math.abs(z2 - z1), wc, hx + x, wh / 2, hz + (z1 + z2) / 2, s1);
+  wallX(-10, 10, -7); wallZ(-7, 7, -10); wallZ(-7, 7, 10); wallX(-10, -6.6, 7); wallX(-3.4, 10, 7); wallX(-10, -6.6, 0); wallX(-3.4, 3.4, 0); wallX(6.6, 10, 0); wallZ(-7, -5, 0); wallZ(-2, 2, 0); wallZ(5, 7, 0);
+  for (const [x1, x2] of [[-10, -2], [2, 10]]) box(g, x2 - x1, 0.6, 0.2, 0xC9A06A, hx + (x1 + x2) / 2, 0.3, hz + 13, s1); for (const sx of [-10, 10]) box(g, 0.2, 0.6, 6, 0xC9A06A, hx + sx, 0.3, hz + 10, s1);
+  box(g, 20.6, 0.35, 0.6, 0xFF8AA8, hx, wh + 0.17, hz - 7, o);
+  mhW.title = mvLabel(['🏡'], 1.3, hx, 4.8, hz - 7); g.add(mhW.title);
+  MH_RMK.forEach((k, r) => { const R = MV_RM[k], x = hx + R[3], z = hz + R[4]; g.add(mvLabel([R[1]], 1.0, x, 4.0, z, { bg: '#FFFFFF', fg: '#2B2B2B' }));
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.09, 8, 28), new THREE.MeshBasicMaterial({ color: 0xFF8AA8 })); ring.rotation.x = -Math.PI / 2; ring.position.set(x, 0.1, z); g.add(ring);
+    addInteract({ pos: new V3(x, 1, z), r: 2.8, text: () => mhRegion() && mhW.view === backend.uid ? [`🛋️ ${R[1]} 꾸미기`, `물건 ${mhRoomSum(mhStr(backend.uid), r)}/${MH_MAX}`] : null, run: () => openMhEdit(r) }); });
+  // 📋 집 목록 · 🌀 돌아가기
+  { const bx = hx - 7, bz = MHY.z1 - 6; box(g, 4.4, 2.6, 0.25, 0x8A5A34, bx, 1.9, bz, s1); g.add(mvLabel(['📋 친구 집 목록'], 0.8, bx, 3.7, bz));
+    addInteract({ pos: new V3(bx, 1, bz + 1.6), r: 2.8, text: () => mhRegion() ? ['📋 친구 집 목록', '골라서 놀러 가요 · 🏠 내 집'] : null, run: openMhList }); }
+  { const bx = hx + 7, bz = MHY.z1 - 5; const ring = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.2, 10, 32), new THREE.MeshStandardMaterial({ color: 0x3FB6A8, emissive: 0x3FB6A8, emissiveIntensity: 0.5 })); ring.position.set(bx, 1.8, bz); g.add(ring); g.add(mvLabel(['🌀 이삿짐 마당으로'], 0.8, bx, 3.8, bz));
+    addInteract({ pos: new V3(bx, 1, bz), r: 2.6, text: () => mhRegion() ? ['🌀 이삿짐 마당으로', '🚚 이사 도우미'] : null, run: () => { mhW.view = null; mvGo(); } }); }
+  mhW.items = new THREE.Group(); g.add(mhW.items);
+  g.updateMatrixWorld(true); registerSolids(g, 'myh'); mhW.g = g;
+}
+function mhRender() { // 보고 있는 집의 가구
+  const u = mhW.view, str = u ? mhStr(u) : '', sig = u + '|' + str; if (sig === mhW.sig) return; const first = !mhW.sig || mhW.sig.split('|')[0] !== u; mhW.sig = sig;
+  mvDispose(mhW.items); mhW.items.clear(); if (!u) return; const fresh = [];
+  MH_RMK.forEach((k, r) => { const R = MV_RM[k], SL = k === 'garden' ? MV_SLOT_G : MV_SLOT; let n = 0;
+    MH_ITK.forEach((it, i) => { for (let q = 0; q < mhCnt(str, r, i) && n < SL.length; q++, n++) { const [ox, oz] = SL[n], m = mvModel(it, q + n); m.position.set(mhHX + R[3] + ox, 0.05, mhHZ + R[4] + oz); m.rotation.y = Math.atan2(-ox, -oz); mhW.items.add(m); const key = `${r}.${i}.${q}`; if (!first && !mhW.seen?.has(key)) fresh.push(m); } }); });
+  mhW.seen = new Set(); MH_RMK.forEach((k, r) => MH_ITK.forEach((it, i) => { for (let q = 0; q < mhCnt(str, r, i); q++) mhW.seen.add(`${r}.${i}.${q}`); }));
+  for (const m of fresh) { const t0 = performance.now(), sc0 = m.scale.x; m.scale.setScalar(0.01); const pop = () => { const v = Math.min(1, (performance.now() - t0) / 380); m.scale.setScalar(sc0 * (v < 0.7 ? v / 0.7 * 1.15 : 1.15 - (v - 0.7) / 0.3 * 0.15)); if (v < 1) requestAnimationFrame(pop); }; requestAnimationFrame(pop); burst(m.position.clone().setY(1), [0xFFD23C, 0xFFFFFF], 14, 2.2, 1.4); }
+  const nm = u === backend.uid ? '내 집' : `${nickOf(u) || '친구'}의 집`; const t = mvLabel([`🏡 ${nm}`, `❤️ ${mhHearts(u)}`], 1.3, mhHX, 4.8, mhHZ - 7); mhW.g.remove(mhW.title); mvDispose(mhW.title); mhW.title = t; mhW.g.add(t);
+}
+async function mhGo(u) {
+  if (!mhW.g) mhBuild(); mhW.view = u || backend.uid; mhW.quiz = null; mhW.sig = '';
+  await mvTravel(u && u !== backend.uid ? '🏡 친구 집으로 놀러 가는 중…' : '🏡 우리 집으로 가는 중…', () => { player.pos.set(mhHX - 5, 0.2, MHY.z1 - 9); player.heading = Math.PI; camYaw = 0; camPitch = 0.45; camera.position.set(mhHX - 5, 8, MHY.z1); });
+  if (mhW.view === backend.uid && !/[1-3]/.test(mhStr(backend.uid))) showBanner('🏡 내 집 꾸미기', '방마다 분홍 ⭕에 서서 E(누르기) → 물건을 골라 놓아요 · 친구들이 놀러 와서 영어 문제를 풀고 ❤️를 줘요', 6000);
+  else if (mhW.view !== backend.uid) showBanner(`🏡 ${nickOf(mhW.view) || '친구'}의 집`, '방마다 무엇이 있는지 둘러보고 ❓ 문제를 풀면 ❤️를 줄 수 있어요', 5000);
+}
+/* ---------- 🛋️ 꾸미기 ---------- */
+function openMhEdit(r) {
+  if (mhW.view !== backend.uid) return; const R = MV_RM[MH_RMK[r]];
+  openLife(`🛋️ ${R[1]} 꾸미기`, (box) => { box.textContent = ''; const str = mhStr(backend.uid), sum = mhRoomSum(str, r);
+    box.append(el2('p', 'hint', `${R[0]} ${R[1]} (${R[2]}) · 물건 ${sum}/${MH_MAX} · 누를 때마다 하나씩 놓아요 (같은 물건 3개까지)`));
+    const grid = el2('div', 'row-center wrap'); MH_ITK.forEach((it, i) => { const n = mhCnt(str, r, i), I = MV_IT[it], c = el2('div', 'sticker'); c.style.cssText = 'padding:6px 8px;margin:4px;text-align:center;min-width:118px;background:' + (n ? '#FFF1C8' : '#fff');
+      const top = el2('div', '', `${I[0]} ${it}`); top.style.cssText = 'font-size:19px;font-weight:800'; const sub = el2('div', 'hint', `${I[2]} · ${n}개`);
+      const row = el2('div', 'row-center'); const add = el2('button', 'btn', '➕'), rm = el2('button', 'btn', '➖'); for (const b of [add, rm]) b.style.cssText = 'font-size:16px;padding:4px 12px;background:#fff';
+      add.disabled = n >= 3 || sum >= MH_MAX; rm.disabled = !n; add.onclick = () => mhSetCnt(r, i, n + 1); rm.onclick = () => mhSetCnt(r, i, n - 1); row.append(rm, add); c.append(top, sub, row); grid.append(c); });
+    box.append(grid);
+    const say = el2('p', 'lp-big', ''); say.style.fontSize = '18px'; const L = MH_ITK.map((it, i) => [it, mhCnt(str, r, i)]).filter(([, n]) => n);
+    say.textContent = L.length ? L.map(([it, n]) => n === 1 ? `There is ${it === 'album' ? 'an' : 'a'} ${it} in the ${R[1]}.` : `There are ${MV_NUM[n]} ${MV_IT[it][1]} in the ${R[1]}.`).join('\n') : `The ${R[1]} is empty.`; say.style.whiteSpace = 'pre-line'; box.append(say);
+    const sp = el2('button', 'btn', '🔊 내 방 영어로 듣기'); sp.style.background = '#DDEBFF'; sp.onclick = () => sayEn(say.textContent); box.append(sp);
+  });
+}
+function mhSetCnt(r, i, n) {
+  const a = mhStr(backend.uid).split(''); a[r * 9 + i] = String(Math.max(0, Math.min(3, n))); if (mhRoomSum(a.join(''), r) > MH_MAX) return; mhW.draft = a.join(''); playSfx('pick'); refillLife();
+  clearTimeout(mhW.saveT); mhW.saveT = setTimeout(async () => { const v = mhW.draft; const res = await backend.myhSet?.(v); if (!res?.ok) toast('⚠️ 저장하지 못했어요 (선생님이 database.rules.json을 게시했는지 확인해요)', 'warn'); else if (mhW.draft === v && S.myh?.[backend.uid] === v) mhW.draft = null; }, 700);
+}
+/* ---------- 📋 집 목록 ---------- */
+function openMhList() {
+  openLife('📋 우리 반 집 구경', (box) => { box.textContent = ''; const me = backend.uid;
+    const mine = el2('button', 'btn', `🏠 내 집 (❤️ ${mhHearts(me)})`); mine.style.cssText = 'font-size:18px;background:#FFE9A8;margin-bottom:8px'; mine.onclick = () => { closeLife(); mhGo(me); }; box.append(mine);
+    const L = mhOwners().filter(u => u !== me).sort((a, b) => mhHearts(b) - mhHearts(a)); if (!L.length) box.append(el2('p', 'hint', '아직 꾸민 친구 집이 없어요'));
+    const grid = el2('div', 'row-center wrap'); for (const u of L) { const done = !!S.myhl?.[u]?.[me], b = el2('button', 'btn', `${done ? '✅' : '🏡'} ${nickOf(u) || '친구'} · ❤️ ${mhHearts(u)}`); b.style.cssText = `font-size:16px;background:${done ? '#DDF3D2' : '#fff'}`; b.onclick = () => { closeLife(); mhGo(u); }; grid.append(b); } box.append(grid);
+    box.append(el2('p', 'hint', '친구 집에서 ❓ 문제 3개를 맞히면 ❤️를 줄 수 있어요 (🐚 +3)'));
+  });
+}
+/* ---------- ❓ 친구 집 문제 ---------- */
+function mhMakeQuiz(u) {
+  const str = mhStr(u), nm = nickOf(u) || 'my friend', rooms = MH_RMK.map((k, r) => r).filter(r => mhRoomSum(str, r) > 0).sort(() => Math.random() - 0.5), qs = [];
+  for (let k = 0; k < 3 && rooms.length; k++) { const r = rooms[k % rooms.length], R = MV_RM[MH_RMK[r]], have = MH_ITK.map((it, i) => [it, mhCnt(str, r, i)]).filter(([, n]) => n);
+    const [it, n] = have[Math.floor(Math.random() * have.length)], sen = (i2, n2) => n2 === 1 ? `There is ${i2 === 'album' ? 'an' : 'a'} ${i2}.` : `There are ${MV_NUM[n2]} ${MV_IT[i2][1]}.`;
+    const missing = MH_ITK.filter((i2, j) => !mhCnt(str, r, j)), w1 = missing[Math.floor(Math.random() * missing.length)] || MH_ITK.find(x => x !== it), wn = [1, 2, 3].filter(x => x !== n)[Math.floor(Math.random() * 2)];
+    const opts = [[sen(it, n), true], [sen(w1, n), false], [sen(it, wn), false]].sort(() => Math.random() - 0.5);
+    if (qs.some(q => q.ans === sen(it, n))) continue; qs.push({ q: `What's in ${nm}'s ${R[1]}?`, r, ans: sen(it, n), opts }); }
+  return { u, qs, i: 0, right: 0 };
+}
+function openMhQuiz() {
+  const u = mhW.view; if (!u || u === backend.uid) return; if (S.myhl?.[u]?.[backend.uid]) { toast('✅ 이 친구 집에는 벌써 ❤️를 줬어요', 'info'); return; }
+  if (!mhW.quiz || mhW.quiz.u !== u || mhW.quiz.i >= mhW.quiz.qs.length) mhW.quiz = mhMakeQuiz(u); const Q = mhW.quiz; if (!Q.qs.length) { toast('🏡 아직 아무것도 놓지 않은 집이에요', 'info'); return; }
+  const cur = Q.qs[Q.i], R = MV_RM[MH_RMK[cur.r]];
+  openLife(`❓ ${Q.i + 1} / ${Q.qs.length}`, (box) => { box.textContent = ''; const h = el2('p', 'lp-big', cur.q); h.style.fontSize = '22px'; box.append(h);
+    const sp = el2('button', 'btn', '🔊'); sp.style.background = '#DDEBFF'; sp.onclick = () => sayEn(cur.q); box.append(sp, el2('p', 'hint', `모르겠으면 창을 닫고 ${R[0]} ${R[1]}에 가서 보고 와요!`));
+    const col = el2('div', ''); col.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-top:8px'; for (const [t, ok] of cur.opts) { const b = el2('button', 'btn', t); b.style.cssText = 'font-size:20px;background:#fff'; b.onclick = () => mhAnswer(ok); col.append(b); } box.append(col); });
+}
+async function mhAnswer(ok) {
+  const Q = mhW.quiz; if (!Q) return; const cur = Q.qs[Q.i];
+  if (!ok) { playSfx('wrong'); toast(`❌ 다시 봐요! ${MV_RM[MH_RMK[cur.r]][0]} ${MV_RM[MH_RMK[cur.r]][1]}에 가서 둘러보고 와요`, 'warn'); closeLife(); return; }
+  playSfx('right'); Q.right++; Q.i++; if (!isTeacher) addStat('eng', 1);
+  if (Q.i < Q.qs.length) { toast(`✅ 맞아요! ${cur.ans}`, 'success'); refillLife(); openMhQuiz(); return; }
+  closeLife(); const r = await backend.myhLike?.(Q.u); if (!r?.ok) { toast('⚠️ ❤️를 보내지 못했어요 (선생님이 database.rules.json을 게시했는지 확인해요)', 'warn'); return; }
+  const D = bag.mhDay?.d === dayNum() ? bag.mhDay : { d: dayNum(), s: 0 }, add = isTeacher ? 0 : Math.min(3, 15 - D.s); if (add > 0) { D.s += add; bag.mhDay = D; giveShellCapped(add); } saveBag();
+  burst(player.pos.clone().setY(2.2), [0xFF5A8A, 0xFFB3C7, 0xFFFFFF], 40, 4, 3); playSfx('fanfare'); showBanner(`❤️ ${nickOf(Q.u) || '친구'}의 집에 ❤️를 줬어요!`, add > 0 ? `🐚 +${add} · 영어 문제 ${Q.qs.length}개 모두 정답!` : '영어 문제 모두 정답!', 4000);
+}
+/* ---------- 🔁 매 프레임 ---------- */
+function mhTick() {
+  if (!mhW) return; const reg = mhRegion();
+  if (performance.now() - (mhW.payT || 0) > 5000) { mhW.payT = performance.now(); const n = mhHearts(backend.uid); if (bag.mhPaid == null) { bag.mhPaid = n; saveBag(); } else if (n > bag.mhPaid && !isTeacher) { const D = bag.mhGot?.d === dayNum() ? bag.mhGot : { d: dayNum(), s: 0 }, add = Math.min(2 * (n - bag.mhPaid), 20 - D.s); bag.mhPaid = n; if (add > 0) { D.s += add; bag.mhGot = D; giveShellCapped(add); } saveBag(); toast(`❤️ 친구가 우리 집에 놀러 와서 ❤️를 줬어요!${add > 0 ? ` 🐚 +${add}` : ''}`, 'success'); } }
+  if (!mhW.g) { if (reg) mhBuild(); else return; }
+  if (reg && !mhW.view) mhW.view = backend.uid; mhRender();
+  mhW.hud.classList.toggle('hidden', !reg); document.body.classList.toggle('mh-here', reg); if (!reg) return;
+  const u = mhW.view, mine = u === backend.uid, done = !mine && !!S.myhl?.[u]?.[backend.uid], key = [u, mine, done, mhHearts(u), mhW.quiz?.i || 0].join('|');
+  if (key !== mhW.hudKey) { mhW.hudKey = key; mhW.hudTxt.innerHTML = mine ? `<b>🏡 내 집</b> · ❤️ ${mhHearts(u)}<div>분홍 ⭕에서 방을 꾸며요</div>` : `<b>🏡 ${nickOf(u) || '친구'}의 집</b> · ❤️ ${mhHearts(u)}<div>${done ? '✅ ❤️를 줬어요' : '둘러보고 문제를 풀어요'}</div>`; mhW.qBtn.classList.toggle('hidden', mine || done); }
+}
+function mhInit() {
+  mhW = { g: null, view: null, sig: '', draft: null, quiz: null };
+  const hud = document.createElement('div'); hud.id = 'mhHud'; hud.className = 'sticker hidden'; hud.style.cssText = 'position:fixed;top:118px;left:50%;transform:translateX(-50%);z-index:5;padding:8px 14px;text-align:center;font-size:15px;max-width:92vw';
+  const txt = document.createElement('div'), row = el2('div', 'row-center'); const qb = el2('button', 'btn', '❓ 문제 풀고 ❤️ 주기'), lb = el2('button', 'btn', '📋 집 목록'); qb.style.cssText = 'font-size:15px;background:#FFD2E0'; lb.style.cssText = 'font-size:15px;background:#fff';
+  qb.onclick = openMhQuiz; lb.onclick = openMhList; row.append(qb, lb); row.style.marginTop = '4px'; hud.append(txt, row); document.body.append(hud); mhW.hud = hud; mhW.hudTxt = txt; mhW.qBtn = qb;
 }
 
 /* ================= 🔱 1104a 심해 방탈출 「아틀란티스를 찾아서」 =================
@@ -32965,7 +33097,7 @@ buildStarGame();
 initStarHud();
 initMemGame();
 initDropGame();
-initPlotAdmin(); initFestAdmin(); nvInit(); mkInit(); mvInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
+initPlotAdmin(); initFestAdmin(); nvInit(); mkInit(); mvInit(); mhInit(); stgInit(); $('tpAtl')?.addEventListener('click', () => { closeModals(); openAtlAdmin(); }); $('tpLib')?.addEventListener('click', () => { closeModals(); openLib(); });
 $('tpGateOn')?.addEventListener('click', async () => { const pw = $('tpGatePw').value.trim(); if (pw.length < 4) { toast('🔐 반 비밀번호는 4글자 이상으로 적어요', 'warn'); return; } if (!(await confirmAction({ title: '🔐 반 비밀번호 켜기', body: '지금 접속한 학생들은 새로고침하고 이 비밀번호를 적어야 다시 들어올 수 있어요. 켤까요?', okText: '켜기' }))) return; const r = await backend.gateSet(pw); toast(r.ok ? '🔐 반 비밀번호를 켰어요. 학생들에게 알려 주세요' : '⚠️ 켜지 못했어요. database.rules.json을 먼저 게시해 주세요', r.ok ? 'success' : 'warn'); if (r.ok) $('tpGatePw').value = ''; gateNowFill(); }); /* 🔐 1105k */
 $('tpGateOff')?.addEventListener('click', async () => { if (!(await confirmAction({ title: '반 비밀번호 끄기', body: '반 코드만 알면 누구나 다시 들어올 수 있어요. 끌까요?', okText: '끄기' }))) return; const r = await backend.gateSet(''); toast(r.ok ? '반 비밀번호를 껐어요' : '⚠️ 끄지 못했어요', r.ok ? 'info' : 'warn'); gateNowFill(); });
 /* 🔁 1105r 실명 → 닉네임 바꾸기 (선생님 기기에서 서버 자료를 훑어 실명을 닉네임으로) */
@@ -33536,6 +33668,7 @@ function loop() {
   if (joined) { try { nvTick(dt); } catch (e) { console.warn('nv', e); } } /* ⛄ 1107a 눈싸움 공방전 */
   if (joined) { try { mkTick(dt); } catch (e) { console.warn('mk', e); } } /* 🛠️ 1107g 메이커 공방 */
   if (joined) { try { mvTick(dt); } catch (e) { console.warn('mv', e); } } /* 🚚 1107l 이사 도우미 */
+  if (joined) { try { mhTick(dt); } catch (e) { console.warn('mh', e); } } /* 🏡 1107n 내 집 꾸미기 */
   if (joined) { try { stgTick(dt); } catch (e) { console.warn('stg', e); } } // 🎤 1101d
   if (joined) { try { kvTick(); } catch (e) { console.warn('kv', e); } } // 🔤 1101i
   /* 🗑️ 1106m 시 짓기 지움 (kvPoemRwTick 멈춤) */
