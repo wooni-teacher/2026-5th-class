@@ -19144,6 +19144,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107m', d: '11월 24일', items: ['🛋️ 이사 도우미: 배달한 물건이 진짜 가구처럼 3D로 방에 놓여요! 의자·냄비(조리대)·앨범(탁자)·칫솔(세면대)·꽃병·괘종시계·헤어드라이어(화장대)·책(책장)·꽃 화분', '✨ 새로 놓이면 뿅! 하고 나타나요'] },
   { id: '1107l', d: '11월 24일', items: ['🚚 새 놀이 「이사 도우미」! 🗽 영어 마을 🏋️ 훈련소 앞 트럭에서 가요 (Lesson 11 · There is / There are)', '📖 읽기 담당은 트럭 주문서를 읽고 물건·개수·방을 골라 상자에 담고, 📦 배달 담당은 상자에 적힌 방(kitchen·bedroom·bathroom·living room·garden)을 찾아 날라요 · 역할은 1분마다 바뀌어요', '📈 1단계 문장+그림 · 2단계 문장만 · 3단계 🔊 듣기만 · 🧪 혼자 연습도 돼요', '🎮 공방전·눈싸움·메이커 공방·이사 도우미에서는 탈것과 따라오는 펫이 쉬어요'] },
   { id: '1107k', d: '11월 24일', items: ['🛠️ 메이커 공방(작업장·도전 맵) 안에서는 탈것을 탈 수 없어요 · 맵은 내 발로 깨요!'] },
   { id: '1107j', d: '11월 24일', items: ['⭐ 역사 공방전에 직업별 필살기! ⭐ 게이지가 다 차면 ⭐ 버튼(G)', '👑 왕 천하 호령 · 🎖️ 장군 대지 가르기 · ⚔️ 보병 돌격 연타 · 🏹 궁병 화살비 · ⚒️ 대장장이 투석기 일제 사격 · ⛓️ 포로 탈출 돌격', '📈 게이지는 상대를 맞히고 쓰러뜨리고, 🏛️ 창고 보급 문제를 맞히면(+25) 빨리 차요'] },
@@ -30050,7 +30051,7 @@ function mvBuild() {
     for (const sx of [-10, 10]) box(H, 0.2, 0.6, 6, 0xC9A06A, hx + sx, 0.3, hz + 10, s1);
     box(H, 20.6, 0.35, 0.6, col, hx, wh + 0.17, hz - 7, o); // 팀 색 띠
     H.add(mvLabel([`${MV_TC[t - 1][0]} ${MV_TC[t - 1][1]} 팀 집`], 1.2, hx, 4.6, hz - 7));
-    for (const [k, R] of Object.entries(MV_RM)) { const x = hx + R[3], z = hz + R[4]; H.add(mvLabel([R[1]], 1.15, x, 3.0, z, { bg: '#FFFFFF', fg: '#2B2B2B' }));
+    for (const [k, R] of Object.entries(MV_RM)) { const x = hx + R[3], z = hz + R[4]; H.add(mvLabel([R[1]], 1.15, x, 4.2, z, { bg: '#FFFFFF', fg: '#2B2B2B' }));
       const ring = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.09, 8, 28), new THREE.MeshBasicMaterial({ color: 0xFF8A24 })); ring.rotation.x = -Math.PI / 2; ring.position.set(x, 0.1, z); H.add(ring);
       addInteract({ pos: new V3(x, 1, z), r: 2.8, text: () => mvW.hold && mvRegion() && mvMine() === t ? ['⭕ 여기에 내려놓기', R[1]] : null, run: () => mvDrop(t, k) }); }
     // 🚚 트럭
@@ -30189,6 +30190,34 @@ async function mvDrop(t, rm) {
   toast(pts > 1 ? `✅ 배달 완료! There are… 상자를 모두 날랐어요 (+${pts})` : `✅ 배달 완료! ${MV_IT[H.it][0]} → ${MV_RM[rm][1]} (+1)`, 'success');
 }
 function mvHoldClear(unclaim) { const H = mvW?.hold; if (!H) return; mvW.hold = null; if (unclaim) mvOp('Unclaim', H.t, H.id); }
+/* ---------- 🪑 1107m 배달한 물건은 3D 가구로 방에 놓여요 (모양은 직접 만든 단순 모형) ---------- */
+function mvModel(it, k = 0) { // 바닥 가운데가 (0,0,0) · 앞은 +z
+  const g = new THREE.Group(), o = { solid: false }, P = (a) => a[k % a.length];
+  const legs = (w, d, h, c) => { for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(g, 0.08, h, 0.08, c, sx * (w / 2 - 0.06), h / 2, sz * (d / 2 - 0.06), o); };
+  if (it === 'chair') { const c = P([0xB5773F, 0xE2584A, 0x3E8AD8, 0x3FA060, 0xF2C14E]); legs(0.9, 0.9, 0.55, 0x6A4424); box(g, 0.95, 0.12, 0.95, c, 0, 0.6, 0, o); box(g, 0.95, 1.0, 0.12, c, 0, 1.15, -0.42, o); box(g, 0.75, 0.08, 0.04, 0xFFFFFF, 0, 1.4, -0.35, o); }
+  else if (it === 'pot') { box(g, 1.2, 0.85, 0.9, 0xEDE6DA, 0, 0.42, 0, o); box(g, 1.24, 0.06, 0.94, 0x6E7682, 0, 0.88, 0, o); for (const sx of [-0.3, 0.3]) cyl(g, 0.16, 0.02, 0x2A2A30, sx, 0.92, 0.12, o);
+    const c = P([0xC0453A, 0x5A6470, 0xE0A81C, 0x3E8AD8]); cyl(g, 0.34, 0.38, c, 0, 1.12, 0, o); cyl(g, 0.36, 0.05, 0xDDE3EA, 0, 1.33, 0, o); ball(g, 0.07, 0x2A2A30, 0, 1.39, 0, o); for (const sx of [-0.4, 0.4]) box(g, 0.14, 0.06, 0.08, 0x2A2A30, sx, 1.2, 0, o); }
+  else if (it === 'album') { box(g, 1.1, 0.06, 0.8, 0xB5773F, 0, 0.72, 0, o); legs(1.1, 0.8, 0.7, 0x8A5A34); const c = P([0x8E44AD, 0xE2584A, 0x27AE60, 0x2E86DE]);
+    box(g, 0.7, 0.12, 0.52, c, 0, 0.81, 0, o); box(g, 0.5, 0.02, 0.34, 0xFFF6E0, 0, 0.88, 0, o); box(g, 0.22, 0.03, 0.16, 0x9FD3E8, -0.08, 0.9, -0.04, o); box(g, 0.7, 0.13, 0.04, 0xF2D25C, 0, 0.81, 0.24, o); }
+  else if (it === 'toothbrush') { box(g, 0.9, 0.85, 0.6, 0xFFFFFF, 0, 0.42, 0, o); box(g, 0.94, 0.05, 0.64, 0x9FD3E8, 0, 0.87, 0, o); cyl(g, 0.16, 0.32, P([0x9FD3E8, 0xFFB3C7, 0xC9F0B0]), 0, 1.05, 0, o);
+    const n = 1 + k % 3; for (let q = 0; q < 3; q++) { const c = [0xE2584A, 0x3E8AD8, 0x3FA060][(q + k) % 3]; const b = new THREE.Group(); b.position.set((q - 1) * 0.08, 1.05, 0); b.rotation.z = (q - 1) * 0.25; box(b, 0.05, 0.62, 0.05, c, 0, 0.3, 0, o); box(b, 0.07, 0.14, 0.1, 0xFFFFFF, 0, 0.62, 0.03, o); g.add(b); if (q + 1 >= n + 1) break; }
+    box(g, 0.7, 0.55, 0.04, C.glass, 0, 1.55, -0.28, o); }
+  else if (it === 'vase') { const c = P([0x3E6AC8, 0xD9B87A, 0x8FC8B0, 0xE2584A]); mesh(SPH_MID, g, 0.36, 0.46, 0.36, c, 0, 0.46, 0, o); cyl(g, 0.13, 0.32, c, 0, 0.98, 0, o); cyl(g, 0.17, 0.05, c, 0, 1.15, 0, o);
+    for (let q = 0; q < 3; q++) { const a = q * 2.1; cyl(g, 0.02, 0.5, 0x3FA060, Math.sin(a) * 0.08, 1.38, Math.cos(a) * 0.08, o); ball(g, 0.11, [0xFF7AA8, 0xFFD23C, 0xFFFFFF][q], Math.sin(a) * 0.12, 1.66, Math.cos(a) * 0.12, o); } }
+  else if (it === 'clock') { const c = P([0x8A5A34, 0x5A3A22, 0xB5773F]); box(g, 0.75, 2.1, 0.45, c, 0, 1.05, 0, o); box(g, 0.85, 0.12, 0.52, 0x4A2E1A, 0, 2.15, 0, o);
+    cyl(g, 0.27, 0.05, 0xFFF6E0, 0, 1.65, 0.24, { solid: false, rx: Math.PI / 2 }); box(g, 0.03, 0.2, 0.02, 0x2A2A30, 0, 1.73, 0.27, o); box(g, 0.14, 0.03, 0.02, 0x2A2A30, 0.06, 1.65, 0.27, o);
+    box(g, 0.45, 0.8, 0.02, C.glass, 0, 0.85, 0.235, o); cyl(g, 0.01, 0.5, 0xE0B84A, 0, 0.95, 0.2, o); ball(g, 0.09, 0xE0B84A, 0, 0.68, 0.2, o); }
+  else if (it === 'hairdryer') { box(g, 1.0, 0.8, 0.55, 0xF4EEE2, 0, 0.4, 0, o); box(g, 1.04, 0.05, 0.59, 0xD8CDB8, 0, 0.82, 0, o); box(g, 0.8, 0.9, 0.04, C.glass, 0, 1.45, -0.26, o); box(g, 0.9, 1.0, 0.03, 0xE8DCC0, 0, 1.45, -0.29, o);
+    const c = P([0xFF7AA8, 0x3E8AD8, 0x2A2A30, 0xF2C14E]); cyl(g, 0.13, 0.5, c, 0, 1.08, 0.05, { solid: false, rz: Math.PI / 2 }); cyl(g, 0.15, 0.06, 0x2A2A30, 0.27, 1.08, 0.05, { solid: false, rz: Math.PI / 2 }); box(g, 0.1, 0.28, 0.12, c, -0.1, 0.92, 0.05, o); }
+  else if (it === 'book') { const c = P([0x8A5A34, 0xB5773F, 0xF4EEE2]); box(g, 1.3, 1.7, 0.05, c, 0, 0.85, -0.2, o); for (const sx of [-0.63, 0.63]) box(g, 0.06, 1.7, 0.42, c, sx, 0.85, 0, o); for (const y of [0.04, 0.6, 1.15, 1.68]) box(g, 1.3, 0.05, 0.42, c, 0, y, 0, o);
+    for (const y of [0.07, 0.63, 1.18]) { let x = -0.55; let q = k; while (x < 0.5) { const w = 0.08 + ((q * 7) % 4) * 0.02, h = 0.32 + ((q * 5) % 3) * 0.06; box(g, w, h, 0.3, [0xE2584A, 0x3E8AD8, 0x3FA060, 0xF2C14E, 0x8E44AD, 0xFF8A24][q % 6], x + w / 2, y + h / 2, 0.02, o); x += w + 0.015; q++; } } }
+  else if (it === 'flower') { cyl(g, 0.26, 0.36, 0xC8643C, 0, 0.18, 0, o); cyl(g, 0.28, 0.06, 0xA8502E, 0, 0.36, 0, o); cyl(g, 0.24, 0.02, 0x5A3A22, 0, 0.38, 0, o); const c = P([0xFF5A8A, 0xFFD23C, 0xFF8A24, 0xB57AE8, 0xFFFFFF]);
+    for (let q = 0; q < 3; q++) { const a = q * 2.1 + k, x = Math.sin(a) * 0.1, z = Math.cos(a) * 0.1, h = 0.55 + q * 0.12; cyl(g, 0.025, h, 0x3FA060, x, 0.38 + h / 2, z, o); for (let pp = 0; pp < 5; pp++) { const b = pp / 5 * Math.PI * 2; ball(g, 0.08, c, x + Math.sin(b) * 0.09, 0.4 + h, z + Math.cos(b) * 0.09, o); } ball(g, 0.06, 0xFFE066, x, 0.42 + h, z, o); mesh(SPH_LO, g, 0.14, 0.03, 0.07, 0x4FB35A, x + 0.1, 0.55 + q * 0.05, z, o); } }
+  else box(g, 0.6, 0.5, 0.6, 0xC9A06A, 0, 0.25, 0, o);
+  g.scale.setScalar(1.25); return g;
+}
+const MV_SLOT = [[-3.7, -2.5], [-1.9, -2.5], [1.9, -2.5], [3.7, -2.5], [-4.1, -0.9], [4.1, -0.9], [-4.1, 0.9], [4.1, 0.9], [-3.7, 2.5], [3.7, 2.5], [-2.0, 2.5], [2.0, 2.5]]; // 방 둘레 자리 (가운데 ⭕는 비워요)
+const MV_SLOT_G = [[-8.5, -1.5], [-6.5, -1.5], [6.5, -1.5], [8.5, -1.5], [-8.5, 1.5], [8.5, 1.5], [-5, 1.6], [5, 1.6], [-4, -1.6], [4, -1.6], [-7, 0], [7, 0]]; // 🌳 정원 자리
 /* ---------- 🏁 결과 ---------- */
 function mvResult(s) {
   const n = s.n, rank = Array.from({ length: n }, (_, i) => [i + 1, s.sc?.[i + 1] || 0]).sort((a, b) => b[1] - a[1]), t = mvTeam(backend.uid), win = n > 1 && rank[0][1] > (rank[1]?.[1] ?? -1) ? rank[0][0] : 0;
@@ -30217,7 +30246,7 @@ function mvTick(dt) {
   mvW.hud.classList.toggle('hidden', !reg); document.body.classList.toggle('mv-here', reg);
   const ph = mvPhase(), now = backend.now(), me = backend.uid;
   for (let t = 1; t <= 4; t++) { const Hs = mvW.houses[t]; if (!Hs) continue; const on = !!s?.on && t <= s.n; Hs.g.visible = on || !s?.on;
-    const sig = on ? JSON.stringify(s.pt?.[t] || {}) : ''; if (sig !== Hs.sig) { Hs.sig = sig; mvDispose(Hs.items); Hs.items.clear(); if (on) { const hx = mvHX(t); for (const [k, R] of Object.entries(MV_RM)) { const list = []; for (const [i, v] of Object.entries(s.pt?.[t]?.[k] || {})) for (let q = 0; q < Math.min(6, v); q++) list.push(i); list.slice(0, 12).forEach((i, q) => { const ang = q / 12 * Math.PI * 2, rr = 2.0 + (q % 2) * 0.6; Hs.items.add(mvLabel([MV_IT[i]?.[0] || '📦'], 0.8, hx + R[3] + Math.cos(ang) * rr, 0.6, mvHZ + R[4] + Math.sin(ang) * rr * 0.8)); }); } } }
+    const sig = on ? JSON.stringify(s.pt?.[t] || {}) : ''; if (sig !== Hs.sig) { Hs.sig = sig; mvDispose(Hs.items); Hs.items.clear(); if (on) { const hx = mvHX(t), fresh = []; for (const [k, R] of Object.entries(MV_RM)) { const list = []; for (const [i, v] of Object.entries(s.pt?.[t]?.[k] || {})) for (let q = 0; q < Math.min(6, v); q++) list.push([i, q]); const SL = k === 'garden' ? MV_SLOT_G : MV_SLOT; list.slice(0, SL.length).forEach(([i, q], n) => { const [ox, oz] = SL[n], m = mvModel(i, q + n); m.position.set(hx + R[3] + ox, 0.05, mvHZ + R[4] + oz); m.rotation.y = Math.atan2(-ox, -oz); Hs.items.add(m); const key = `${k}.${i}.${q}`; if (Hs.seen && !Hs.seen.has(key)) fresh.push(m); (Hs.seen ||= new Set()).add(key); }); } for (const m of fresh) { const t0 = performance.now(), sc0 = m.scale.x; m.scale.setScalar(0.01); const pop = () => { const u = Math.min(1, (performance.now() - t0) / 380); m.scale.setScalar(sc0 * (u < 0.7 ? u / 0.7 * 1.15 : 1.15 - (u - 0.7) / 0.3 * 0.15)); if (u < 1) requestAnimationFrame(pop); }; requestAnimationFrame(pop); burst(m.position.clone().setY(1), [0xFFD23C, 0xFFFFFF], 18, 2.5, 1.5); } } else Hs.seen = null; }
     const n = on ? Math.min(MV_SHELF, mvBoxes(t).length) : 0; if (n !== Hs.crates.length) { for (const c of Hs.crates) Hs.shelf.remove(c); Hs.crates = []; for (let q = 0; q < n; q++) Hs.crates.push(box(Hs.shelf, 0.55, 0.45, 0.55, 0xC9A06A, mvHX(t) + 3.2 - 1.05 + (q % 4) * 0.7, 1.3 + Math.floor(q / 4) * 0.5, mvHZ + 19 - 2.3, { solid: false })); } }
   // 📦 들고 있는 모습 (나 · 친구)
   { const carrying = new Map(); if (s?.on) for (const [t, o] of Object.entries(s.cr || {})) for (const [id] of Object.entries(o || {})) { const u = mvClaimOf(+t, id); if (!u) continue; const v = s.bx?.[t]?.[id]; if (v) carrying.set(u, [String(v).split('.')[0], id]); }
