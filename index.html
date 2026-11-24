@@ -19129,6 +19129,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107i', d: '11월 24일', items: ['🏛️ 역사 공방전 인물이 나라마다 7개로 같아졌어요! 고조선(환인·환웅·웅녀…) · 고구려(을지문덕·양만춘…) · 백제(무령왕·성왕…) · 신라(선덕 여왕·김유신·문무왕…) · 가야(김수로왕·우륵…) · 발해(무왕·문왕…) · 후고구려 · 후백제', '📘 학습지에 잘 안 나오는 인물은 그 나라 사회 학습지 문제를 풀어서 등용해요'] },
   { id: '1107h2', d: '11월 24일', items: ['📜 역사 공방전 ⏳ 시대를 넘은 대결에 「조선」이 들어왔어요! 문제는 사회 학습지 4단원(조선)에서 나와요', '🏛️ 조선 인물: 이성계 · 세종대왕 · 장영실 · 이순신 · 곽재우 · 남한산성 · 경국대전', '⭐ 조선 특수 병력 🧑‍🌾 의병: 보병 ❤️+3 · 우리 편과 함께 있으면 피해 +2', '⛄ 눈사람 부수기: 다 만들지 않은 눈사람도 부술 수 있어요 · 두 번째 누르기까지 8초 · 기기 시계가 달라도 잘 부서져요'] },
   { id: '1107h', d: '11월 24일', items: ['🐲 태블릿에서 하늘을 날 때 ⬆️⬇️ 버튼이 오른쪽 버튼(🙋·🐲)과 겹치지 않게 점프 버튼 왼쪽으로 옮겼어요'] },
   { id: '1107g', d: '11월 23일', items: ['🛠️ 새 장소 「메이커 공방」 (🌀 포털)! 🧰 작업대에서 12×12 칸에 블록을 톡톡 놓아 내 도전 맵을 만들어요', '🧱 벽 · 📦 낮은 벽 · 🧊 얼음 · ⏫ 점프대 · 🔺 가시 · 🕳️ 구멍 · ⭐ 별 · ❓ 문제 블록 · 🌀 순간이동 · 🔑 열쇠와 🔒 문', '🧪 내가 먼저 깨야 📤 올릴 수 있어요 → 📋 게시판에서 친구 맵에 도전 · 👍 · 🥇 기록', '🐚 친구 맵 처음 깨기 +5 · 친구가 내 맵을 깨면 +3'] },
@@ -23944,7 +23945,49 @@ const SG_HERO = {
   baekseong: { n: '처인성·충주성 백성', icon: '🧑‍🌾', nat: ['고려'], sh: 'n3-4', kw: ['처인성', '충주성', '노비', '승려'], fx: 'dae', d: '신분을 넘어 함께 싸웠어요: 우리 편 체력 +1 · 포로가 된 친구도 체력 9', era: 1 },
   byeokran: { n: '벽란도 상인', icon: '⛵', nat: ['고려'], sh: 'n3-4', kw: ['벽란도'], fx: 'haedong', d: '국제 무역항 벽란도: 보급과 거점 자원 1.3배', era: 1 },
 };
-SG_HERO.wanggeon.nat = ['후고구려', '고려'];
+SG_HERO.wanggeon.nat = ['후고구려', '고려']; SG_HERO.baekseong.nat = []; /* ⚖️ 1107i 고려도 7개 (처인성 이야기는 ⭐ 승병·김윤후로) */
+/* ⚖️ 1107i 나라마다 인물 7개로 맞춰요 · 학습지에 잘 안 나오는 인물(kw 대신 나라 이름)은 그 시대 나라 문제로 등용해요 */
+Object.assign(SG_HERO, {
+  hwanin: { n: '환인', icon: '☀️', nat: ['고조선'], sh: 'n1-4', kw: ['환인'], fx: 'gungye', d: '단군 신화 하늘의 신: 왕의 함성 범위·시간 2배' },
+  hwanung: { n: '환웅', icon: '☁️', nat: ['고조선'], sh: 'n1-4', kw: ['환웅'], fx: 'gwang', d: '하늘에서 내려와 세상을 다스렸어요: 거점을 1.5배 빨리 차지해요' },
+  ungnyeo: { n: '웅녀', icon: '🐻', nat: ['고조선'], sh: 'n1-4', kw: ['웅녀', '곰'], fx: 'gyebaek', d: '곰 부족과 하늘 부족이 힘을 합쳤어요: 우리 편 모두 체력 +2' },
+  pungbaek: { n: '풍백·우사·운사', icon: '🌧️', nat: ['고조선'], sh: 'n1-4', kw: ['바람', '구름'], fx: 'onjo', d: '바람·비·구름을 다스린 신하들 (발달한 농사 기술): 곡창 효과 2배' },
+  bipa: { n: '비파형 동검', icon: '🗡️', nat: ['고조선'], sh: 'n1-4', kw: ['비파형', '동검'], fx: 'jinheung', d: '고조선의 대표 청동 검: 상대 성문 피해 +1', era: 1 },
+  euljimun: { n: '을지문덕', icon: '🌊', nat: ['고구려'], sh: 'n2-1', kw: ['고구려'], fx: 'gyebaek', d: '살수 대첩으로 수나라 대군을 물리쳤어요: 우리 편 모두 체력 +2' },
+  yangman: { n: '양만춘', icon: '🏯', nat: ['고구려'], sh: 'n2-1', kw: ['고구려'], fx: 'hojok', d: '안시성을 끝까지 지킨 성주: 우리 성문 체력 +5 · 수리 +2' },
+  gwangbi: { n: '광개토대왕릉비', icon: '🪨', nat: ['고구려'], sh: 'n2-1', kw: ['광개토대왕릉비', '광개토 대왕릉비', '광개토대왕비'], fx: 'gungye', d: '장수왕이 아버지의 업적을 새긴 큰 비석: 왕의 함성 범위·시간 2배', era: 1 },
+  gungnae: { n: '국내성', icon: '🏰', nat: ['고구려'], sh: 'n2-1', kw: ['국내성', '졸본'], fx: 'onjo', d: '졸본에서 옮긴 고구려의 수도: 곡창 효과 2배', era: 1 },
+  chilji: { n: '칠지도', icon: '🗡️', nat: ['백제'], sh: 'n2-1', kw: ['칠지도'], fx: 'jinheung', d: '백제가 왜에 보낸 칼: 상대 성문 피해 +1', era: 1 },
+  pungnap: { n: '풍납동 토성', icon: '🧱', nat: ['백제'], sh: 'n2-1', kw: ['풍납'], fx: 'jangsu', d: '한강 가에 쌓은 백제의 흙 성: 우리 성문 체력 +10', era: 1 },
+  muryeong: { n: '무령왕', icon: '⛵', nat: ['백제'], sh: 'n2-1', kw: ['백제'], fx: 'chunchu', d: '바다 건너 여러 나라와 교류한 왕: 봉수대·나루터 효과 2배' },
+  seongwang: { n: '성왕', icon: '🏛️', nat: ['백제'], sh: 'n2-1', kw: ['백제'], fx: 'hyeok', d: '수도를 사비로 옮겨 백제를 다시 일으켰어요: 쓰러져도 40% 빨리 일어나요' },
+  hwarang: { n: '화랑도', icon: '🌸', nat: ['신라'], sh: 'n2-1', kw: ['화랑'], fx: 'gyebaek', d: '진흥왕 때 인재를 길렀어요: 우리 편 모두 체력 +2', era: 1 },
+  seondeok: { n: '선덕 여왕', icon: '🔭', nat: ['신라'], sh: 'n2-1', kw: ['신라'], fx: 'gungye', d: '첨성대를 세운 신라의 여왕: 왕의 함성 범위·시간 2배' },
+  yusin: { n: '김유신', icon: '⚔️', nat: ['신라', '통일 신라'], sh: 'n2-3', kw: ['통일', '백제', '고구려'], fx: 'wanggeon', d: '삼국 통일을 이끈 장군: 성 함락 속도 2배' },
+  munmu: { n: '문무왕', icon: '🌊', nat: ['신라', '통일 신라'], sh: 'n2-3', kw: ['당', '통일'], fx: 'jangsu', d: '당을 몰아내고 삼국 통일을 이뤘어요: 우리 성문 체력 +10' },
+  bulguk: { n: '불국사·석굴암', icon: '🛕', nat: ['통일 신라'], sh: 'n2-3', kw: ['불국사', '석굴암', '석가탑'], fx: 'geun', d: '불교문화가 꽃피었어요: 보급과 거점 자원 1.5배', era: 1 },
+  chollak: { n: '신라 촌락 문서', icon: '📄', nat: ['통일 신라'], sh: 'n2-3', kw: ['촌락'], fx: 'onjo', d: '마을 사람·땅·가축 수를 꼼꼼히 적었어요: 곡창 효과 2배', era: 1 },
+  suro: { n: '김수로왕', icon: '🥚', nat: ['가야'], sh: ['n2-1', 'n2-2'], kw: ['가야', '금관'], fx: 'hyeok', d: '금관가야를 세운 왕: 쓰러져도 40% 빨리 일어나요' },
+  geumgwan: { n: '금관가야', icon: '👑', nat: ['가야'], sh: ['n2-1', 'n2-2'], kw: ['금관', '가야'], fx: 'gwang', d: '초기 가야 연맹을 이끈 나라: 거점을 1.5배 빨리 차지해요', era: 1 },
+  daegaya: { n: '대가야', icon: '🏔️', nat: ['가야'], sh: ['n2-1', 'n2-2'], kw: ['가야'], fx: 'jangsu', d: '나중에 가야 연맹을 이끈 나라: 우리 성문 체력 +10', era: 1 },
+  ureuk: { n: '우륵', icon: '🎵', nat: ['가야'], sh: ['n2-1', 'n2-2'], kw: ['가야'], fx: 'gungye', d: '가야금을 만든 음악가: 왕의 함성 범위·시간 2배' },
+  gayato: { n: '가야 토기', icon: '🏺', nat: ['가야'], sh: 'n2-2', kw: ['토기', '가야'], fx: 'onjo', d: '여러 모양의 토기로 살림을 꾸렸어요: 곡창 효과 2배', era: 1 },
+  muwang: { n: '무왕', icon: '⚓', nat: ['발해'], sh: 'n2-4', kw: ['발해'], fx: 'chunchu', d: '바다 건너 당을 공격한 발해의 왕: 봉수대·나루터 효과 2배' },
+  munwang: { n: '문왕', icon: '🏛️', nat: ['발해'], sh: 'n2-4', kw: ['발해'], fx: 'jangsu', d: '나라 제도를 정비한 발해의 왕: 우리 성문 체력 +10' },
+  malgal: { n: '고구려 유민·말갈', icon: '🤝', nat: ['발해'], sh: 'n2-4', kw: ['말갈', '유민'], fx: 'gyebaek', d: '대조영과 함께 발해를 세웠어요: 우리 편 모두 체력 +2', era: 1 },
+  dongmo: { n: '동모산', icon: '⛰️', nat: ['발해'], sh: 'n2-4', kw: ['동모산'], fx: 'hyeok', d: '발해를 처음 세운 곳: 쓰러져도 40% 빨리 일어나요', era: 1 },
+  sanggyeong: { n: '상경성 석등', icon: '🏮', nat: ['발해'], sh: 'n2-4', kw: ['상경성', '석등'], fx: 'onjo', d: '발해 수도에 남은 거대한 석등: 곡창 효과 2배', era: 1 },
+  singyeom: { n: '신숭겸', icon: '🛡️', nat: ['후고구려'], sh: 'n3-1', kw: ['후고구려', '궁예', '왕건'], fx: 'gyebaek', d: '목숨을 걸고 왕건을 지킨 장수: 우리 편 모두 체력 +2' },
+  cheorwon: { n: '철원', icon: '🏰', nat: ['후고구려'], sh: 'n3-1', kw: ['후고구려', '궁예'], fx: 'jangsu', d: '궁예가 옮긴 수도: 우리 성문 체력 +10', era: 1 },
+  songak: { n: '송악', icon: '🌲', nat: ['후고구려'], sh: 'n3-1', kw: ['후고구려', '왕건'], fx: 'geun', d: '왕건 집안의 터전(오늘날 개성): 보급과 거점 자원 1.5배', era: 1 },
+  taebong: { n: '태봉', icon: '🚩', nat: ['후고구려'], sh: 'n3-1', kw: ['후고구려', '궁예'], fx: 'gwang', d: '궁예가 바꾼 나라 이름: 거점을 1.5배 빨리 차지해요', era: 1 },
+  mireuk: { n: '미륵 신앙', icon: '🙏', nat: ['후고구려'], sh: 'n3-1', kw: ['후고구려', '궁예'], fx: 'hyeok', d: '궁예는 스스로를 미륵이라 했어요: 쓰러져도 40% 빨리 일어나요', era: 1 },
+  wansan: { n: '완산주', icon: '🏰', nat: ['후백제'], sh: 'n3-1', kw: ['후백제', '견훤'], fx: 'jangsu', d: '견훤이 도읍한 곳(오늘날 전주): 우리 성문 체력 +10', era: 1 },
+  mujin: { n: '무진주', icon: '🚩', nat: ['후백제'], sh: 'n3-1', kw: ['후백제', '견훤'], fx: 'gwang', d: '견훤이 처음 일어난 곳(오늘날 광주): 거점을 1.5배 빨리 차지해요', era: 1 },
+  hbsugun: { n: '후백제 수군', icon: '⛵', nat: ['후백제'], sh: 'n3-1', kw: ['후백제', '견훤'], fx: 'chunchu', d: '바다로 다른 나라와 교류했어요: 봉수대·나루터 효과 2배', era: 1 },
+  baekgye: { n: '백제 계승', icon: '🪷', nat: ['후백제'], sh: 'n3-1', kw: ['후백제', '견훤'], fx: 'gyebaek', d: '옛 백제를 잇는다는 뜻으로 힘을 모았어요: 우리 편 모두 체력 +2', era: 1 },
+  singeom: { n: '신검', icon: '⚔️', nat: ['후백제'], sh: 'n3-1', kw: ['후백제', '견훤'], fx: 'jinheung', d: '견훤의 아들 장수: 상대 성문 피해 +1' },
+});
 /* 📜 1107h 조선 인물 (사회 학습지 4단원 · fx = 같은 효과를 쓰는 인물) */
 Object.assign(SG_HERO, {
   yiseonggye: { n: '이성계', icon: '🏹', nat: ['조선'], sh: 'n4-1', kw: ['이성계', '신진', '한양'], fx: 'wanggeon', d: '새 나라 조선을 세웠어요: 성 함락 속도 2배' },
@@ -23979,7 +24022,7 @@ const sgIron = (c) => sgSpcOf(backend?.uid)?.iron ? Math.ceil(c / 2) : c; /* ⚒
 const sgWhirlR = () => +(SG_WHIRL.r * (sgSpcOf(backend?.uid)?.whirl || 1)).toFixed(1); /* 🙏 1105zw 승병 */
 const sgSpcCount = (t, but) => Object.keys(S.siege?.spc || {}).filter(u => u !== but && sgTeamOf(u) === t && sgSpcOf(u)).length;
 const SG_HERO_COST = { w: 10, i: 10, f: 10 };
-{ const RR = { yunhu: 'arch', baekseong: 'sol', byeokran: 'sol', cheolli: 'sol', beop8: 'sol', jumong: 'arch', haedong: 'arch', gaya1: 'smith', onjo: 'sol', gyebaek: 'sol', hyeok: 'sol', chunchu: 'sol', gyeon: 'sol', hojok: 'sol', gaya2: 'sol', yiseonggye: 'arch', sejong: 'sol', jangyeong: 'smith', namhan: 'sol', gyeongguk: 'sol' }; for (const [k, H] of Object.entries(SG_HERO)) H.r = RR[k] || 'gen'; } /* ⚔️ 1103i 인물 병사로 나가 싸울 때 무기 */
+{ const RR = { yunhu: 'arch', baekseong: 'sol', byeokran: 'sol', cheolli: 'sol', beop8: 'sol', jumong: 'arch', haedong: 'arch', gaya1: 'smith', onjo: 'sol', gyebaek: 'sol', hyeok: 'sol', chunchu: 'sol', gyeon: 'sol', hojok: 'sol', gaya2: 'sol', yiseonggye: 'arch', sejong: 'sol', jangyeong: 'smith', namhan: 'sol', gyeongguk: 'sol', hwanin: 'sol', ungnyeo: 'sol', pungbaek: 'sol', bipa: 'sol', yangman: 'arch', gwangbi: 'sol', gungnae: 'sol', chilji: 'sol', pungnap: 'sol', muryeong: 'arch', hwarang: 'arch', seondeok: 'arch', bulguk: 'sol', chollak: 'sol', geumgwan: 'sol', daegaya: 'sol', ureuk: 'sol', gayato: 'smith', muwang: 'arch', malgal: 'sol', dongmo: 'sol', sanggyeong: 'sol', cheorwon: 'sol', songak: 'sol', taebong: 'sol', mireuk: 'sol', wansan: 'sol', mujin: 'sol', hbsugun: 'arch', baekgye: 'sol' }; for (const [k, H] of Object.entries(SG_HERO)) H.r = RR[k] || 'gen'; } /* ⚔️ 1103i 인물 병사로 나가 싸울 때 무기 */
 const SG_HERO_HP = 20; /* 인물 병사 체력 (보통 🤖의 2~3배) */
 const sgHero = (t, k) => !!t && Object.values(S.siege?.hero?.[t] || {}).some(h => h === k || SG_HERO[h]?.fx === k); /* ⏳ 1105zu fx: 같은 효과를 쓰는 인물 */
 const sgHeroB = (k) => sgHero(sgMine(), k) ? 1 : 0;
@@ -25043,7 +25086,7 @@ function openSgGuide(open) {
   }); }
 /* 🏛️ 1103g 인물 고용 창 */
 const sgHeroSlot = () => { const s = S.siege; if (!s) return 'a'; const mid = s.half ? s.half.b : (s.at + s.end) / 2; return backend.now() < mid ? 'a' : 'b'; };
-function sgHeroQ(k) { const H = SG_HERO[k], all = histBank()._all || [], inSh = all.filter(it => it.id.startsWith(H.sh + ':')); const hit = inSh.filter(it => H.kw.some(w => (it.q + ' ' + it.ctx + ' ' + it.a).includes(w))); const L = hit.length ? hit : inSh; return L.length ? L[Math.floor(Math.random() * L.length)] : null; }
+function sgHeroQ(k) { const H = SG_HERO[k], all = histBank()._all || [], inSh = all.filter(it => [].concat(H.sh).some(h => it.id.startsWith(h + ':'))); /* 1107i 여러 학습지 */ const hit = inSh.filter(it => H.kw.some(w => (it.q + ' ' + it.ctx + ' ' + it.a).includes(w))); const L = hit.length ? hit : inSh; return L.length ? L[Math.floor(Math.random() * L.length)] : null; }
 function openSgHero() {
   const me = sgMine(); if (!S.siege?.on || !me) return;
   openLife('🏛️ 역사 인물 고용', (box) => {
