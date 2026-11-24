@@ -19129,6 +19129,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107h2', d: '11월 24일', items: ['📜 역사 공방전 ⏳ 시대를 넘은 대결에 「조선」이 들어왔어요! 문제는 사회 학습지 4단원(조선)에서 나와요', '🏛️ 조선 인물: 이성계 · 세종대왕 · 장영실 · 이순신 · 곽재우 · 남한산성 · 경국대전', '⭐ 조선 특수 병력 🧑‍🌾 의병: 보병 ❤️+3 · 우리 편과 함께 있으면 피해 +2', '⛄ 눈사람 부수기: 다 만들지 않은 눈사람도 부술 수 있어요 · 두 번째 누르기까지 8초 · 기기 시계가 달라도 잘 부서져요'] },
   { id: '1107h', d: '11월 24일', items: ['🐲 태블릿에서 하늘을 날 때 ⬆️⬇️ 버튼이 오른쪽 버튼(🙋·🐲)과 겹치지 않게 점프 버튼 왼쪽으로 옮겼어요'] },
   { id: '1107g', d: '11월 23일', items: ['🛠️ 새 장소 「메이커 공방」 (🌀 포털)! 🧰 작업대에서 12×12 칸에 블록을 톡톡 놓아 내 도전 맵을 만들어요', '🧱 벽 · 📦 낮은 벽 · 🧊 얼음 · ⏫ 점프대 · 🔺 가시 · 🕳️ 구멍 · ⭐ 별 · ❓ 문제 블록 · 🌀 순간이동 · 🔑 열쇠와 🔒 문', '🧪 내가 먼저 깨야 📤 올릴 수 있어요 → 📋 게시판에서 친구 맵에 도전 · 👍 · 🥇 기록', '🐚 친구 맵 처음 깨기 +5 · 친구가 내 맵을 깨면 +3'] },
   { id: '1107f', d: '11월 23일', items: ['💥 광장 남쪽 눈사람: 다 만든 눈사람 앞에서 E를 두 번 누르면 와르르 부서져요 → 누구나 그 자리에 다시 만들 수 있어요 (내 눈덩이가 들어간 눈사람이 부서지면 나도 다시 굴려요 · 🐚는 하루 한 번)'] },
@@ -23880,6 +23881,7 @@ const SG_TN = {
   tsil: { name: '통일 신라', icon: '🛕', col: 0x2FA3B0, eras: ['nb'], era: '남북국' },
   bal: { name: '발해', icon: '🐎', col: 0x8A4FC8, eras: ['nb'], era: '남북국' },
   gor: { name: '고려', icon: '🏺', col: 0x6E8A3A, eras: ['goryeo'], era: '고려' },
+  jos: { name: '조선', icon: '📜', col: 0xC8508A, eras: ['joseon'], era: '조선' }, /* 📜 1107h */
 };
 const sgTnClean = (v) => { const a = [...new Set(String(v || '').split(',').filter(k => SG_TN[k]))]; return a.length >= 2 && a.length <= 4 ? a : null; };
 let sgTnPick0 = null;
@@ -23943,6 +23945,16 @@ const SG_HERO = {
   byeokran: { n: '벽란도 상인', icon: '⛵', nat: ['고려'], sh: 'n3-4', kw: ['벽란도'], fx: 'haedong', d: '국제 무역항 벽란도: 보급과 거점 자원 1.3배', era: 1 },
 };
 SG_HERO.wanggeon.nat = ['후고구려', '고려'];
+/* 📜 1107h 조선 인물 (사회 학습지 4단원 · fx = 같은 효과를 쓰는 인물) */
+Object.assign(SG_HERO, {
+  yiseonggye: { n: '이성계', icon: '🏹', nat: ['조선'], sh: 'n4-1', kw: ['이성계', '신진', '한양'], fx: 'wanggeon', d: '새 나라 조선을 세웠어요: 성 함락 속도 2배' },
+  sejong: { n: '세종대왕', icon: '📖', nat: ['조선'], sh: 'n4-5', kw: ['세종', '훈민정음', '농사직설'], fx: 'geun', d: '농사직설·훈민정음으로 백성 살림이 넉넉: 보급과 거점 자원 1.5배' },
+  jangyeong: { n: '장영실', icon: '⏱️', nat: ['조선'], sh: 'n4-5', kw: ['측우기', '자격루', '앙부일구', '혼천의'], fx: 'gyeon', d: '측우기·자격루 같은 과학 기구를 만들었어요: 곡창·철광산 자원 2배' },
+  yisunsin: { n: '이순신', icon: '⚓', nat: ['조선'], sh: 'n4-6', kw: ['이순신', '수군'], fx: 'chunchu', d: '임진왜란 때 수군을 이끌고 바다를 지켰어요: 봉수대·나루터 효과 2배' },
+  gwakjaeu: { n: '곽재우', icon: '🔴', nat: ['조선'], sh: 'n4-6', kw: ['곽재우', '의병'], fx: 'gyebaek', d: '임진왜란 때 의병을 일으켰어요: 우리 편 모두 체력 +2' },
+  namhan: { n: '남한산성', icon: '🏯', nat: ['조선'], sh: 'n4-6', kw: ['남한산성', '병자', '인조'], fx: 'jangsu', d: '병자호란 때 인조가 피신한 산성: 우리 성문 체력 +10', era: 1 },
+  gyeongguk: { n: '경국대전', icon: '📕', nat: ['조선'], sh: 'n4-3', kw: ['경국대전', '법전'], fx: 'hojok', d: '유교 정신에 따른 법전으로 나라를 다스려요: 우리 성문 체력 +5 · 수리 +2', era: 1 },
+});
 /* ⭐ 1105zu 특수 병력: 나라마다 하나 · 2명까지 · 바탕 직업(base)의 무기·스킬을 그대로 쓰고 체력·빠르기·피해가 더해져요 · state/siege/spc/{uid} */
 const SG_SPC = {
   bp: { n: '청동검 전사', icon: '🗡️', nat: ['고조선'], base: 'sol', hp: 2, pack: 2, d: '비파형 동검을 든 고조선 전사 · 보병 ❤️+2 · 🤝 함께 싸우는 부족: 4걸음 안에 우리 편이 2명 이상 있으면 피해 +2' },
@@ -23952,6 +23964,7 @@ const SG_SPC = {
   cg: { n: '철기 장인', icon: '⚒️', nat: ['가야'], base: 'smith', hp: 3, iron: 1, d: '철의 나라 가야의 대장장이 · 대장장이 ❤️+3 · ⛓️ 갑옷 입혀 주기·무기 갈아 주기에 드는 철이 절반' },
   bm: { n: '기마 궁수', icon: '🏇', nat: ['발해'], base: 'arch', hp: 2, ride: 'bhh', d: '말 위에서 활을 쏘는 발해 기병 · 궁병 ❤️+2 · 말을 타서 빠르기 +30%' },
   sb: { n: '승병', icon: '🙏', nat: ['고려'], base: 'gen', hp: 2, whirl: 1.4, d: '처인성에서 몽골군에 맞선 승려들 · 장군 ❤️+2 · 🌀 회오리 베기 범위 1.4배 (약 6걸음)' },
+  ub: { n: '의병', icon: '🧑‍🌾', nat: ['조선'], base: 'sol', hp: 3, pack: 2, d: '나라를 지키려고 백성이 스스로 일어난 조선의 의병 · 보병 ❤️+3 · 🤝 함께 싸워요: 4걸음 안에 우리 편이 2명 이상 있으면 피해 +2' }, /* 📜 1107h */
 };
 for (const [k, U] of Object.entries(SG_SPC)) U.k = k;
 const SG_SPC_CAP = 2;
@@ -23966,7 +23979,7 @@ const sgIron = (c) => sgSpcOf(backend?.uid)?.iron ? Math.ceil(c / 2) : c; /* ⚒
 const sgWhirlR = () => +(SG_WHIRL.r * (sgSpcOf(backend?.uid)?.whirl || 1)).toFixed(1); /* 🙏 1105zw 승병 */
 const sgSpcCount = (t, but) => Object.keys(S.siege?.spc || {}).filter(u => u !== but && sgTeamOf(u) === t && sgSpcOf(u)).length;
 const SG_HERO_COST = { w: 10, i: 10, f: 10 };
-{ const RR = { yunhu: 'arch', baekseong: 'sol', byeokran: 'sol', cheolli: 'sol', beop8: 'sol', jumong: 'arch', haedong: 'arch', gaya1: 'smith', onjo: 'sol', gyebaek: 'sol', hyeok: 'sol', chunchu: 'sol', gyeon: 'sol', hojok: 'sol', gaya2: 'sol' }; for (const [k, H] of Object.entries(SG_HERO)) H.r = RR[k] || 'gen'; } /* ⚔️ 1103i 인물 병사로 나가 싸울 때 무기 */
+{ const RR = { yunhu: 'arch', baekseong: 'sol', byeokran: 'sol', cheolli: 'sol', beop8: 'sol', jumong: 'arch', haedong: 'arch', gaya1: 'smith', onjo: 'sol', gyebaek: 'sol', hyeok: 'sol', chunchu: 'sol', gyeon: 'sol', hojok: 'sol', gaya2: 'sol', yiseonggye: 'arch', sejong: 'sol', jangyeong: 'smith', namhan: 'sol', gyeongguk: 'sol' }; for (const [k, H] of Object.entries(SG_HERO)) H.r = RR[k] || 'gen'; } /* ⚔️ 1103i 인물 병사로 나가 싸울 때 무기 */
 const SG_HERO_HP = 20; /* 인물 병사 체력 (보통 🤖의 2~3배) */
 const sgHero = (t, k) => !!t && Object.values(S.siege?.hero?.[t] || {}).some(h => h === k || SG_HERO[h]?.fx === k); /* ⏳ 1105zu fx: 같은 효과를 쓰는 인물 */
 const sgHeroB = (k) => sgHero(sgMine(), k) ? 1 : 0;
@@ -30334,11 +30347,11 @@ function snwBuild() {
     run: () => { if (snw.roll) { snwStop('🫳 눈덩이를 내려놓았어요 (스르르 녹아요)'); return; } if (snwMine()) { toast('⛄ 눈덩이는 하루에 하나예요. 친구들과 나눠서 만들어요!', 'info'); return; } snwStart(); } });
   SNW_SPOT.forEach(([x, z], i) => addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => { if (!snwHere() || !snw.roll) return null; const col = snwBoard()[i], k = snwNext(col); if (k < 0) return ['⛄ 다 만든 눈사람이에요', '다른 자리에 올려요'];
       return [`⛄ ${SNW_PART[k]}으로 올리기`, `내 눈덩이 ${Math.round(snw.z * 100)}cm${snw.z < SNW_MIN[k] ? ` · ${Math.round(SNW_MIN[k] * 100)}cm는 넘어야 해요` : ''}`]; }, run: () => snwPlace(i) }));
-  SNW_SPOT.forEach(([x, z], i) => addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => { if (!snwHere() || snw.roll || !snwBoard()[i].every(Boolean)) return null; return snw.brk === i && performance.now() < snw.brkT ? ['💥 한 번 더 누르면 부서져요!', '부수면 누구나 다시 만들 수 있어요'] : ['💥 눈사람 부수기', '다 만든 눈사람을 부수고 새로 만들어요']; }, run: () => snwBreak(i) })); /* 💥 1107f 다 만든 눈사람 부수기 */
+  SNW_SPOT.forEach(([x, z], i) => addInteract({ pos: new V3(x, 1, z), r: 2.2, text: () => { if (!snwHere() || snw.roll || !snwBoard()[i].some(Boolean)) return null; return snw.brk === i && performance.now() < snw.brkT ? ['💥 한 번 더 누르면 부서져요!', '부수면 누구나 다시 만들 수 있어요'] : ['💥 눈사람 부수기', '눈사람을 부수고 새로 만들어요 (두 번 눌러요)']; }, run: () => snwBreak(i) })); /* 💥 1107f 다 만든 눈사람 부수기 */
 }
 async function snwBreak(i) { // 💥 1107f 두 번 눌러 부수기 → 그 자리 눈덩이는 모두 사라지고, 올렸던 친구들도 다시 굴릴 수 있어요 (🐚는 하루 한 번 그대로)
-  if (!snwBoard()[i].every(Boolean) || snw.busy) return; if (snw.brk !== i || performance.now() > snw.brkT) { snw.brk = i; snw.brkT = performance.now() + 4000; playSfx('pick'); toast('💥 한 번 더 누르면 눈사람이 부서져요', 'info'); return; }
-  snw.brk = -1; snw.busy = true; const r = await backend.snwBreak?.(String(i), snwStamp()); snw.busy = false;
+  const col = snwBoard()[i]; if (!col.some(Boolean) || snw.busy) return; if (snw.brk !== i || performance.now() > snw.brkT) { snw.brk = i; snw.brkT = performance.now() + 8000; playSfx('pick'); toast('💥 한 번 더 누르면 눈사람이 부서져요', 'info'); return; }
+  snw.brk = -1; snw.busy = true; const top = Math.max(snwStamp(), ...Object.values(S.snw || {}).map(snwParse).filter(x => x && x.s === i && x.d === dayNum()).map(x => x.st + 1)); /* 1107h 기기 시계가 달라도 지금 있는 눈덩이는 모두 부서지게 */ const r = await backend.snwBreak?.(String(i), top); snw.busy = false;
   if (!r?.ok) { toast('⛄ 부수지 못했어요 (database.rules.json의 snwb를 게시했는지 확인해요)', 'warn'); return; }
   const [x, z] = SNW_SPOT[i]; burst(new V3(x, 1.5, z), [0xFFFFFF, 0xDDEBF5, 0xBFE6FF], 60, 6, 4); playSfx('drop'); toast('💥 와르르! 눈사람이 부서졌어요. 이제 누구나 다시 만들 수 있어요', 'success');
 }
@@ -30350,7 +30363,7 @@ function snwStop(msg) { snw.roll = false; if (snw.ball) snw.ball.visible = false
 async function snwPlace(i) {
   if (!snw.roll || snw.busy) return; const col = snwBoard()[i], k = snwNext(col); if (k < 0) { toast('⛄ 이 눈사람은 다 만들었어요', 'info'); return; }
   if (snw.z < SNW_MIN[k]) { toast(`⛄ ${SNW_PART[k]}은 ${Math.round(SNW_MIN[k] * 100)}cm는 넘어야 해요. 조금 더 굴려요! (지금 ${Math.round(snw.z * 100)}cm)`, 'info'); return; }
-  snw.busy = true; const r = await backend.snwSet?.(`${i}.${k}.${Math.round(Math.min(1.6, snw.z) * 100)}.${dayNum()}.${snwStamp() % 100000}`); snw.busy = false;
+  snw.busy = true; const r = await backend.snwSet?.(`${i}.${k}.${Math.round(Math.min(1.6, snw.z) * 100)}.${dayNum()}.${Math.min(99999, Math.max(snwStamp(), (+S.snwb?.[i] || 0) + 1) - dayNum() * 100000)}`); /* 1107h 부순 뒤 올린 눈덩이는 늘 보이게 */ snw.busy = false;
   if (!r?.ok) { toast('⛄ 저장이 안 됐어요. 잠시 뒤 다시 해 봐요', 'error'); return; }
   snwStop(); playSfx('build'); burst(new V3(SNW_SPOT[i][0], 1.2, SNW_SPOT[i][1]), [0xFFFFFF, 0xDDEBF5], 30, 3, 2);
   if (bag.snwPut !== dayNum()) { bag.snwPut = dayNum(); earnShell(5, 'm'); saveBag(); renderCoinChip(); }
