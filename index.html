@@ -10841,11 +10841,13 @@ function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · 
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
   for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + warLvTag(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
+  if (bag.ssn?.id === 's2' && (bag.ssn.lv | 0) >= 10 && !bag.ssOwn?.drone) { (bag.ssOwn ||= {}).drone = 1; saveBag(); } /* 🚁 1107p 이미 10단계면 드론도 */
+  if (bag.ride === 'drone' && !droneHave()) { bag.ride = ''; saveBag(); toast('🚁 드론을 빌린 한 주가 끝났어요. 이번 주 합계 1등이나 시즌 패스 10단계에 도전해요!', 'info'); }
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
     bag.rwk = pw; const got = [];
     for (const k of Object.keys(rankCats())) { const i = rankList(pw, k).slice(0, 3).findIndex(x => rankHas(x, me)); if (i >= 0) got.push([k, i]); }
-    { const top = rankList(pw, 'sum')[0]; if (top && rankHas(top, me) && bag.rx?.sky !== weekNum()) { (bag.rx ||= {}).sky = weekNum(); saveBag(); setTimeout(() => { showBanner('🐲 하늘을 나는 용을 받았어요!', '지난주 능력치 합계 1등! 이번 한 주(일요일까지) 탈 수 있어요 · 🚲 탈것 버튼에서 타고 스페이스(⬆️)로 하늘을 날아요', 8000); playSfx('fanfare'); }, got.length ? 7500 : 300); } } // 🐲 합계 1등 보상
+    { const top = rankList(pw, 'sum')[0]; if (top && rankHas(top, me) && bag.rx?.drone !== weekNum()) { (bag.rx ||= {}).drone = weekNum(); saveBag(); setTimeout(() => { showBanner('🚁 드론도 빌려줘요!', '지난주 능력치 합계 1등! 이번 한 주(일요일까지) 드론에 매달려 날 수 있어요 · 🚲 탈것 버튼에서 골라요', 7000); playSfx('fanfare'); }, got.length ? 16000 : 8800); } /* 🚁 1107p */ if (top && rankHas(top, me) && bag.rx?.sky !== weekNum()) { (bag.rx ||= {}).sky = weekNum(); saveBag(); setTimeout(() => { showBanner('🐲 하늘을 나는 용을 받았어요!', '지난주 능력치 합계 1등! 이번 한 주(일요일까지) 탈 수 있어요 · 🚲 탈것 버튼에서 타고 스페이스(⬆️)로 하늘을 날아요', 8000); playSfx('fanfare'); }, got.length ? 7500 : 300); } } // 🐲 합계 1등 보상
     if (got.length) {
       let shell = 0; const items = []; bag.rx ||= {};
       for (const [, i] of got) { shell += RANK_SHELL[i]; for (let n = 0; n < (i === 0 ? 2 : 1); n++) { const it = rkPick(); if (it) { rkGive(it); const f = rkInfo(it); items.push(`${f.icon} ${f.n}`); } } }
@@ -11179,7 +11181,7 @@ const RIDES = [
 ];
 /* 🐾 1105zx 내 펫 타기: 집에서 키우는 펫(bag.hpet.pets)이 커져서 탈것이 돼요 · 사지 않아요(내 펫이면 무료) · 번호 30~36 */
 const PET_RIDES = [['dog', '🐶', '강아지'], ['cat', '🐱', '고양이'], ['rabbit', '🐰', '토끼'], ['ham', '🐹', '햄스터'], ['chick', '🐥', '병아리'], ['fox', '🦊', '아기 여우'], ['gecko', '🦎', '히로']].map(([pet, icon, name], i) => ({ k: 'hp_' + pet, pet, icon, name, mul: pet === 'gecko' ? 1.35 : 1.25, v: 30 + i }));
-const RIDE_DRONE = { k: 'drone', icon: '🚁', name: '드론', mul: 1.6, v: 26, tOnly: 1, desc: '드론에 매달려 하늘을 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +60%' }; /* 🚁 1107o 지금은 선생님만 */
+const RIDE_DRONE = { k: 'drone', icon: '🚁', name: '드론', mul: 1.6, v: 26, tOnly: 1, desc: '드론에 매달려 하늘을 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +60%' }; /* 🚁 1107o · 1107p 합계 1등(한 주) · 시즌 2 패스 10단계(계속) */
 const RIDE_SLED = { k: 'sled', icon: '🛷', name: '눈썰매', mul: 1.5, v: 25, ss: '❄️ 시즌 2 패스 8단계', desc: '쓩~ 눈 위를 미끄러져요 · 빠르기 +50%' }; /* 🛷 1106z 시즌 2 보상 */
 const rideV = (R0, i) => R0.v || i + 1; // 탈것 번호 (players/{uid}/v)
 const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_SLED, RIDE_DRONE].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
@@ -11187,7 +11189,8 @@ const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; /
 const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || !!bag.skyOwn || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🥚 1102i 알에서 부화하면 계속 // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
 const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY, RIDE_SLED, RIDE_DRONE].map(r => [r.k, r])); RIDE_BY.strn = { k: 'strn', icon: '🚂', name: '하늘 기차', mul: 1.6 }; RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
-const rideOpen = (k) => k === 'drone' ? isTeacher : k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
+const droneHave = () => isTeacher || !!bag.ssOwn?.drone || bag.rx?.drone === weekNum(); /* 🚁 1107p 시즌 2 패스 10단계(계속) · 능력치 합계 1등(그 주) */
+const rideOpen = (k) => k === 'drone' ? droneHave() : k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
 // 🎨 탈것 꾸미기: 색·장식은 🐚로 한 번 열면 모든 탈것에 쓸 수 있어요 (⭐표는 주간 랭킹 보상으로만) · 친구 화면엔 players/{uid}/q = 색×10 + 장식
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
 const RIDE_ACC = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '깃발' }, { icon: '🎈', n: '풍선' }, { icon: '🌸', n: '꽃 화환' }, { icon: '🔔', n: '방울' }, { icon: '⭐', n: '별 반짝이', star: 1 }, { icon: '👑', n: '왕관', star: 1 }, { icon: '🌈', n: '무지개 꼬리', star: 1 }, { icon: '💎', n: '보석 장식', gem: 2 }, { icon: '💫', n: '오로라 고리', star: 1 }];
@@ -11369,8 +11372,8 @@ function openRides() {
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · 🥚 시즌 패스 ${SKY_EGG_LV}단계를 채우면 알을 받아 계속 탈 수 있어요`));
       b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#BFE6FF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sky'); refillLife(); };
       row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); skyShopRow(box); } // 🥚 1102i
-    if (isTeacher) { const R0 = RIDE_DRONE, on = bag.ride === 'drone', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🚁 1107o 선생님만 */
-      tx.append(el2('b', '', `${R0.name} 🧑‍🏫`), el2('span', 'hint', R0.desc + ' · 지금은 선생님만 타요')); b.textContent = on ? '내리기' : '타기'; if (!on) b.style.background = '#DDE6EE'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('drone'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+    { const R0 = RIDE_DRONE, have = droneHave(), on = have && bag.ride === 'drone', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🚁 1107p */
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc + (!isTeacher && !bag.ssOwn?.drone ? ' · 이번 주(일요일까지)' : '') : '🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · ❄️ 시즌 2 패스 10단계를 채우면 계속 타요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#DDE6EE'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('drone'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { const R0 = RIDE_SLED, have = rideOpen('sled'), on = have && bag.ride === 'sled', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🛷 1106z */
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `${R0.ss} 보상 · 받으면 계속 타요`)); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#D6ECFF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sled'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { box.append(el2('p', 'lp-big', '🐾 내 펫 타기')); box.append(el2('p', 'hint', '집에서 키우는 펫이 커져서 탈것이 돼요! 반 동전은 안 써요. 펫은 바닷가 🐾 펫 가게에서 데려와요 (🦎 히로는 누구나 무료).')); /* 🐾 1105zx */
@@ -19163,6 +19166,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107p', d: '11월 24일', items: ['🚁 드론을 학생도 탈 수 있어요! 🏆 지난주 능력치 합계 1등은 한 주 동안 빌려 타요 · ❄️ 시즌 2 패스 10단계를 채우면 드론을 받아 계속 타요'] },
   { id: '1107o', d: '11월 24일', items: ['🚁 새 탈것 「드론」! 드론 손잡이에 매달려 하늘을 날아요 (스페이스·⬆️ 오르기 · Shift·⬇️ 내리기) · 지금은 선생님만 탈 수 있어요'] },
   { id: '1107n', d: '11월 24일', items: ['🏡 새 놀이 「우리 반 집 구경」! 🚚 이사 도우미 트럭(영어 훈련소 앞) → 🏡 내 집 꾸미기', '🛋️ 방(kitchen·bedroom·bathroom·living room·garden)마다 분홍 ⭕에서 가구를 골라 놓아요 · 내 방을 영어 문장으로 들어 봐요', '❤️ 📋 친구 집 목록에서 놀러 가서 「What\'s in ○○\'s bedroom?」 문제 3개를 맞히면 ❤️ (🐚 +3) · 내 집이 ❤️를 받으면 🐚 +2'] },
   { id: '1107m', d: '11월 24일', items: ['🛋️ 이사 도우미: 배달한 물건이 진짜 가구처럼 3D로 방에 놓여요! 의자·냄비(조리대)·앨범(탁자)·칫솔(세면대)·꽃병·괘종시계·헤어드라이어(화장대)·책(책장)·꽃 화분', '✨ 새로 놓이면 뿅! 하고 나타나요'] },
@@ -28549,7 +28553,7 @@ const SSN_REW = { // [종류, 키, 아이콘, 이름] · wear: 'h10' = 모자 10
     ['wear', 'h10', '🎃', '호박 모자'], ['title', 'ssb', '🎭', '칭호 🎭꿈끼스타'], ['trail', 't2', '✨', '무대 별빛 발자국'], ['wear', 'b10', '🍁', '단풍 망토'], ['title', 'ssc', '👑', '칭호 👑수확제왕']],
   s2: [['pet', 'wmuff', '🧣', '펫 눈꽃 털목도리'], ['title', 'ssd', '❄️', '칭호 ❄️눈송이'], ['wear', 'h19', '🎧', '털 귀마개'], ['trail', 't3', '❄️', '눈송이 발자국'],
     ['pet', 'rudolph', '🦌', '펫 루돌프 뿔', [['snow', 'snwdeco', '⛄', '눈사람 꾸미기 (내가 함께 만든 눈사람에 장식)']]], ['wear', 'h20', '🧶', '방울 털모자', [['boat', 'bdwin', '🚢', '배 겨울 장식']]],
-    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
+    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕'], ['ride', 'drone', '🚁', '드론 탈것']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
 };
 const SSN_TRAIL = [null, { icon: '🍂', n: '단풍잎 발자국', cols: [0xE8913A, 0xF2B640, 0xC0392B] }, { icon: '✨', n: '무대 별빛 발자국', cols: [0xFFE066, 0xFFFFFF, 0xB58CF0] }, { icon: '❄️', n: '눈송이 발자국', cols: [0xFFFFFF, 0xCFE8FF, 0x9FD0F5] }, { icon: '🌌', n: '오로라 발자국', cols: [0x5FE3A1, 0x7AB8FF, 0xC48CFF] }];
 const ssnById = (id) => SSNS.find(x => x.id === id);
