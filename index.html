@@ -19159,6 +19159,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107v', d: '11월 25일', items: ['🏃 수학 달리기장 그래픽 고침: 옆 🏆 반월몬스터즈 경기장의 둘레 설산이 달리기장 벽을 뚫고 보이던 문제 · 설산은 이제 경기장 안에서만 보여요'] },
   { id: '1107u', d: '11월 25일', items: ['🎧 털 귀마개를 써도 머리 모양이 그대로예요! 머리 위로 낙타색 띠가 지나가고 크림색 털 귀덮개가 귀를 감싸요', '🧶 방울 털모자도 앞머리·옆머리는 그대로 보여요'] },
   { id: '1107t', d: '11월 25일', items: ['🗽 영어 마을도 수학 광산처럼 선생님이 레슨을 열고 닫아요! 닫힌 레슨은 거리 놀이 · 🏋️ 훈련소 · 🎤 말하기 · 🎧 듣기 부스에서 🔒로 잠겨요'] },
   { id: '1107s', d: '11월 25일', items: ['🏋️ 영어 훈련소 Lesson 11에 핵심 문장 4개가 더해졌어요: What\'s in the bedroom? · There is a bed. · What\'s in the bathroom? · There is a hairdryer.', '🛏️ 단어에 bed(침대)도 들어왔어요 · 🗣️ 대화 연습에도 새 대화가 생겼어요'] },
@@ -30747,11 +30748,12 @@ function pmlShell(g, R) { /* ⛰️ 1105s 구름 위 산꼭대기: 돌 바닥 ·
     makeLabel(g, ['👑 챔피언의 자리'], 0.7, cx, 4.6, bz - 0.7); for (const s of [-1, 1]) fire(cx + s * 5, 0.4, bz + 0.3, 1.3); }
   { const sx = cx, sz = cz + d / 2 + 0.2; for (const s of [-1, 1]) { cyl(g, 0.6, 7.5, 0xB4AEA2, sx + s * 2.2, 3.75, sz, o); fire(sx + s * 2.2, 7.5, sz, 1.1); } box(g, 5.6, 0.9, 0.9, 0x8E8A80, sx, 7.4, sz, o); /* 입구 돌문 */
     signPlane(g, ['⛰️ 챔피언의 산'], 4.2, 0.8, sx, 7.4, sz - 0.5, { font: 60, pad: 4, fg: '#FFE08A', bg: '#2A2238', stroke: false }).rotation.y = Math.PI; }
+  const scen = new THREE.Group(); scen.name = 'pmlScenery'; g.add(scen); scen.visible = false; plw.scen = scen; /* 🏔️ 1107v 둘레 설산·구름은 경기장 안에서만 보여요 (옆 🏃 수학 달리기장을 뚫고 나와 그래픽이 깨졌어요) */
   for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2 + 0.2, r = 62 + (k % 3) * 14, hgt = 34 + ((k * 37) % 5) * 7, x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r, y0 = -26; /* 둘레 설산 */
-    mesh(CONE, g, 16 + (k % 4) * 3, hgt, 16 + (k % 4) * 3, [0x6F7F99, 0x7C8AA3, 0x66748C][k % 3], x, y0 + hgt / 2, z, { solid: false, flat: true });
-    mesh(CONE, g, (16 + (k % 4) * 3) * 0.34, hgt * 0.34, (16 + (k % 4) * 3) * 0.34, 0xF4F7FB, x, y0 + hgt - hgt * 0.17 + 0.05, z, { solid: false, flat: true }); }
+    mesh(CONE, scen, 16 + (k % 4) * 3, hgt, 16 + (k % 4) * 3, [0x6F7F99, 0x7C8AA3, 0x66748C][k % 3], x, y0 + hgt / 2, z, { solid: false, flat: true });
+    mesh(CONE, scen, (16 + (k % 4) * 3) * 0.34, hgt * 0.34, (16 + (k % 4) * 3) * 0.34, 0xF4F7FB, x, y0 + hgt - hgt * 0.17 + 0.05, z, { solid: false, flat: true }); }
   for (let k = 0; k < 22; k++) { const a = k / 22 * Math.PI * 2, r = 26 + (k % 4) * 6, x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r, y = -2.5 + (k % 3) * 1.4; /* 구름 바다 */
-    for (let j = 0; j < 3; j++) mesh(SPH_LO, g, 4 + j, 1.4 + (j % 2) * 0.5, 3 + j * 0.7, 0xFBFCFF, x + (j - 1) * 3, y, z + (j - 1) * 1.2, { solid: false, emissive: 0.35 }); }
+    for (let j = 0; j < 3; j++) mesh(SPH_LO, scen, 4 + j, 1.4 + (j % 2) * 0.5, 3 + j * 0.7, 0xFBFCFF, x + (j - 1) * 3, y, z + (j - 1) * 1.2, { solid: false, emissive: 0.35 }); }
 }
 function buildMonArena() {
   const R = ROOMS.pml, { cx, cz, w, d } = R, g = new THREE.Group(); g.name = 'Arena'; scene.add(g); const o = { solid: false };
@@ -30774,6 +30776,7 @@ function buildMonArena() {
   registerSolids(g, 'pml'); plw.g = g; plw.key = '';
 }
 function arenaTick(dt) {
+  if (plw.scen) plw.scen.visible = roomNow() === 'pml'; /* 🏔️ 1107v */
   { const t = performance.now() / 1000; pmlGateFires.forEach((f, i) => { const k = 1 + Math.sin(t * 9 + i * 2.3) * 0.12; f.scale.set(1 / Math.sqrt(k), k, 1 / Math.sqrt(k)); }); }
   if (plw.ball && roomNow() === 'pml') { plw.ball.rotation.y += dt * 0.8; const t = performance.now() / 1000; (plw.fires || []).forEach((f, i) => { const k = 1 + Math.sin(t * 9 + i * 1.7) * 0.12 + Math.sin(t * 13 + i) * 0.06; f.scale.set(1 / Math.sqrt(k), k, 1 / Math.sqrt(k)); }); } /* 🔥 1105s */
   const rows = pblRows(), key = JSON.stringify([S.pbl?.on, S.pbl?.s, S.pbl?.champ?.at, rows.slice(0, 5).map(r => [r.n, r.pt, r.w, r.l])]);
