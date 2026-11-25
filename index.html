@@ -1626,6 +1626,8 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <h3>📚 문제 범위 (진도)</h3>
     <p class="hint">배운 단원만 고르면 🐾 펫 배틀(체육관·친구 대전) · 🏊 수영 경주 · 🐹 두더지 · 🏝️ 보물섬 문제가 그 안에서만 나와요. 하나도 고르지 않은 과목은 예전처럼 나와요 (영어 7~12과 · 수학은 오늘 열린 광산 · 사회 모든 시대).</p>
     <div id="tpQs"></div>
+    <h3>🗽 영어 마을 레슨 열기</h3>
+    <div id="tpEngOpen"></div>
     <h3>⛏️ 수학 광산 마을</h3>
     <p class="hint" id="tpMathNow"></p>
     <div id="tpMineOpen"></div>
@@ -2404,6 +2406,7 @@ function normalize(v) {
     ...(() => { const m = migrateLots(v.plots, v.plotOwner); return { plots: Object.fromEntries(Object.entries(m.plots).map(([n, pl]) => [n, { ...pl, items: pl.items || {} }])), plotOwner: m.owner }; })(),
     plotExtra: v.plotExtra || {},
     math: v.math || {},
+    evo: typeof v.evo === 'string' && /^(all|none|(7|8|9|10|11|12)(,(7|8|9|10|11|12)){0,5})$/.test(v.evo) ? v.evo : '', /* 🗽 1107t 영어 마을 열린 레슨 */
     sand: { c: plainObj(v.sand?.c), p: plainObj(v.sand?.p), ev: v.sand?.ev && typeof v.sand.ev === 'object' && v.sand.ev.r ? { r: String(v.sand.ev.r), t1: +v.sand.ev.t1 || 0, t2: +v.sand.ev.t2 || 0 } : null, v: plainObj(v.sand?.v) }, // 🏰 1024e 모래성
     thx: v.thx || {},
     read: v.read || {}, art: v.art || {}, gym: v.gym || {},
@@ -18114,7 +18117,7 @@ function initMineUI() {
 }
 function fillMathAdmin() {
   $('tpMathNow').textContent = `⛏️ 함께 캔 광석 ${MINES.reduce((a, m) => a + mineCount(m.id), 0)}개 · 광산 단계 ${mineLvSum()} / ${MINES.length * MINE_MAX} (${MINES.map(m => `${m.icon}${mineCount(m.id)}`).join(' ')})`;
-  fillMineOpenAdmin(); try { fillQsAdmin(); } catch (e) { console.warn('qs', e); } /* 📚 1105u */
+  fillMineOpenAdmin(); try { fillEngOpenAdmin(); } catch (e) { console.warn('evo', e); } try { fillQsAdmin(); } catch (e) { console.warn('qs', e); } /* 📚 1105u */
 }
 
 
@@ -19155,6 +19158,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107t', d: '11월 25일', items: ['🗽 영어 마을도 수학 광산처럼 선생님이 레슨을 열고 닫아요! 닫힌 레슨은 거리 놀이 · 🏋️ 훈련소 · 🎤 말하기 · 🎧 듣기 부스에서 🔒로 잠겨요'] },
   { id: '1107s', d: '11월 25일', items: ['🏋️ 영어 훈련소 Lesson 11에 핵심 문장 4개가 더해졌어요: What\'s in the bedroom? · There is a bed. · What\'s in the bathroom? · There is a hairdryer.', '🛏️ 단어에 bed(침대)도 들어왔어요 · 🗣️ 대화 연습에도 새 대화가 생겼어요'] },
   { id: '1107r', d: '11월 25일', items: ['🐾 역사 공방전·체험장·눈싸움·메이커 공방에서는 산책 펫과 🩺 동료 펫(배틀 펫)이 모두 쉬어요 (친구 화면에서도 안 보여요)', '🚚 이사 도우미 · 🏡 우리 반 집 구경은 더 좋은 모습으로 다시 만들려고 잠깐 뺐어요'] },
   { id: '1107q', d: '11월 24일', items: ['⛄ 눈싸움 화면이 역사 공방전처럼 바뀌었어요! 오른쪽 위에는 팀 점수만 작게, 아래 가운데에 내 하트·눈덩이·요새와 ❄️ 던지기·🎽 기술 버튼이 크게 보여요'] },
@@ -19646,6 +19650,21 @@ const EV_Z = [
   { n: 12, key: 'camp', name: 'Camping Ground', ko: '캠핑장', icon: '⛺', title: 'What Do You Want to Do?', x: 1786, z: 28, npc: [1786, 15.5], who: 'Ranger Sam', shirt: 3, hair: 0, hc: 0, col: 0x2E9E6A, how: '하고 싶은 일 듣고 고르기 · 제안에 대답하기' },
 ];
 const evZone = (n) => EV_Z.find(z => z.n === n);
+/* 🗽 1107t 수학 광산처럼 선생님이 레슨을 열고 닫아요 · state/evo = 'all'(또는 없음) · 'none' · '7,11' · 닫힌 레슨은 거리 놀이·훈련소·말하기·듣기 부스에서 🔒 */
+const evOpenIds = () => { const v = S.evo || 'all'; return v === 'all' ? EV_Z.map(z => z.n) : v === 'none' ? [] : v.split(',').map(Number).filter(n => evZone(n)); };
+const evOpenL = (n) => isTeacher || evOpenIds().includes(n);
+const evOpenText = () => { const L = evOpenIds(); return L.length === EV_Z.length ? '모든 레슨' : L.length ? L.map(n => `L${n}`).join(' · ') : '없음'; };
+function evLocked(n) { if (evOpenL(n)) return false; playSfx('wrong'); toast(`🔒 Lesson ${n}은(는) 지금 닫혀 있어요 · 열린 레슨: ${evOpenText()}`, 'info'); return true; }
+function evLockBtn(b, n) { if (evOpenL(n)) return b; b.textContent = '🔒 ' + b.textContent; b.style.opacity = '0.5'; b.style.background = '#EEE'; return b; }
+function fillEngOpenAdmin() {
+  const box = $('tpEngOpen'); if (!box) return; box.textContent = ''; const ids = evOpenIds();
+  const put = (v, msg) => adminDo({ evo: v }, msg).then(() => setTimeout(fillEngOpenAdmin, 400));
+  box.append(el2('p', 'hint', `열린 레슨: ${evOpenText()} · 눌러서 열고 닫아요 (닫힌 레슨은 🗽 거리 놀이 · 🏋️ 훈련소 · 🎤 말하기 · 🎧 듣기 부스에서 잠겨요)`));
+  const row = el2('div', 'row-center wrap'); row.style.gap = '6px';
+  for (const Z of EV_Z) { const on = ids.includes(Z.n), b = el2('button', 'btn', `${on ? '🔓' : '🔒'} ${Z.icon} L${Z.n}`); b.style.background = on ? '#FFE066' : '#fff';
+    b.onclick = () => { const next = on ? ids.filter(x => x !== Z.n) : [...ids, Z.n].sort((a, b2) => a - b2); put(next.length === EV_Z.length ? null : next.length ? next.join(',') : 'none', `🗽 열린 레슨: ${next.length ? next.map(x => 'L' + x).join(', ') : '없음'}`); }; row.append(b); }
+  const all = el2('button', 'btn', '🔓 모두 열기'); all.style.background = '#D8F5D0'; all.onclick = () => put(null, '🗽 모든 레슨이 열려요'); row.append(all); box.append(row);
+}
 const ev = { group: null, dyn: null, signs: {}, flags: {}, npcs: [], manq: [], bld: [], q: null, game: null, seen: false, starT: 0, key: '' };
 // ---- 말하기 (기기 목소리) ----
 function sayEn(t) {
@@ -19958,7 +19977,7 @@ function evQuestions(n) {
 }
 // ---- 문제 창 ----
 function openEvZone(n) {
-  if (!evRegion()) return;
+  if (!evRegion() || evLocked(n)) return;
   const Z = evZone(n);
   if (n === 8) return startEvFind();
   if (n === 9) return startEvDir();
@@ -20037,11 +20056,12 @@ function etrSit(x, z) { // 🏋️ 훈련소 책상에 앉기 → 학습지
   player.pos.set(x, 0.12, z); player.vy = 0; player.heading = Math.PI; player.avatar.g.position.copy(player.pos); player.avatar.g.rotation.y = Math.PI;
   camYaw = 0; camPitch = 0.55; playAct(player.avatar, 'sit'); playSfx('pick'); openTraining();
 }
-function openTraining(n = ev.trainN || 7) {
-  if (!evRegion() && roomNow() !== 'etr') return; ev.trainN = n;
+function openTraining(n = ev.trainN || evOpenIds()[0] || 7) {
+  if (!evRegion() && roomNow() !== 'etr') return; if (!evOpenL(n) && evOpenIds().length) n = evOpenIds()[0]; ev.trainN = n;
   openLife('🏋️ 영어 훈련소', (box) => {
     box.textContent = '';
-    const tabs = el2('div', 'ev-tabs'); for (const Z of EV_Z) { const b = el2('button', 'btn ev-tab' + (Z.n === n ? ' on' : ''), `L${Z.n} ${Z.icon}`); b.onclick = () => openTraining(Z.n); tabs.append(b); } box.append(tabs);
+    const tabs = el2('div', 'ev-tabs'); for (const Z of EV_Z) { const b = evLockBtn(el2('button', 'btn ev-tab' + (Z.n === n ? ' on' : ''), `L${Z.n} ${Z.icon}`), Z.n); b.onclick = () => { if (!evLocked(Z.n)) openTraining(Z.n); }; tabs.append(b); } box.append(tabs);
+    if (!evOpenL(n)) { box.append(el2('p', 'lp-big', '🔒 지금은 선생님이 모든 레슨을 닫아 두었어요')); return; }
     const Z = evZone(n); box.append(el2('p', 'lp-big', `Lesson ${n} · ${Z.title}`));
     const acts = el2('div', 'row-center wrap'), w = el2('button', 'btn', '✍️ 단어 쓰기 연습 (5문제)'), o = el2('button', 'btn', '🧩 문장 만들기 연습 (4문제)');
     w.style.background = '#FFD23C'; o.style.background = '#DDEBFF'; w.onclick = () => startTrain(n, 'word'); o.onclick = () => startTrain(n, 'sent'); acts.append(w, o);
@@ -20063,6 +20083,7 @@ function openTraining(n = ev.trainN || 7) {
   });
 }
 function startTrain(n, kind) {
+  if (evLocked(n)) return;
   closeModals(); stopEvGame();
   ev.q = { n, qs: evTrainQs(n, kind), i: 0, right: 0, wr: 0, done: false, answered: false, train: true, kind }; ev.q.pass = ev.q.qs.length - (/^test/.test(kind) ? 3 : kind === 'num' ? 2 : 1);
   $('evTitle').textContent = `🏋️ 영어 훈련소 · Lesson ${n} · ${kind === 'word' ? '단어 쓰기' : kind === 'test' ? '📝 단원평가 연습' : kind === 'test2' ? '📝 단원평가 연습 2' : kind === 'test3' ? '📝 단원평가 연습 3' : kind === 'num' ? '🔢 숫자·가격 연습' : '문장 만들기'}`; $('evPanel').classList.remove('hidden'); renderEvQ();
@@ -20297,7 +20318,7 @@ function spkListen() {
   try { r.start(); } catch (e) { spkW.busy = false; toast('🎤 다시 눌러 주세요', 'warn'); refillLife(); }
 }
 function spkReward() { if (isTeacher) return; if (bag.spkDay?.d !== dayNum()) bag.spkDay = { d: dayNum(), n: 0 }; if (bag.spkDay.n >= SPK.day) return; bag.spkDay.n++; addStat('eng', 2); giveShellCapped(1); saveBag(); updateHUD(null); }
-function spkStart(lv, mode) { spkW.lv = lv; spkW.mode = mode; spkW.list = evShuffle(spkPool(lv, mode)).slice(0, SPK.per).map(x => [...x]); spkW.i = 0; spkW.res = null; spkW.ok = 0; spkOpen(); }
+function spkStart(lv, mode) { if (evLocked(lv)) return; spkW.lv = lv; spkW.mode = mode; spkW.list = evShuffle(spkPool(lv, mode)).slice(0, SPK.per).map(x => [...x]); spkW.i = 0; spkW.res = null; spkW.ok = 0; spkOpen(); }
 function spkOpen() {
   openLife('🎤 말하기 부스 · 발음 연습', (box) => {
     box.textContent = '';
@@ -20306,7 +20327,7 @@ function spkOpen() {
       box.append(el2('p', 'hint', '🔊 원어민 발음을 듣고 🎤 따라 말해요. 컴퓨터가 알아들은 말과 비교해서 맞은 단어는 초록, 놓친 단어는 빨강으로 보여 줘요. 또박또박, 조금 천천히! (목소리는 저장하지 않아요)'));
       box.append(el2('p', 'hint', `오늘 보상: ${bag.spkDay?.d === dayNum() ? bag.spkDay.n : 0}/${SPK.day}문장 · 통과(⭐⭐ 이상)할 때마다 🔤 영어력 +2 · 🐚 +1`));
       { const r0 = el2('div', 'row-center'), lb = el2('button', 'btn', '🎧 옆 부스: 듣기·쓰기'); lb.style.background = '#E5F7DF'; lb.onclick = () => { lwW.list = []; lwOpen(); }; r0.append(lb); box.append(r0); } // 🎧 1102r
-      for (const [mode, lab] of [['s', '📝 문장 말하기'], ['w', '🔤 단어 말하기']]) { box.append(el2('h3', 'lp-sec', lab)); const r = el2('div', 'row-center wrap'); for (const Z of EV_Z) { const b = el2('button', 'btn', `${Z.icon} Lesson ${Z.n}`); b.style.background = mode === 's' ? '#FFE9A8' : '#E3F0FF'; b.onclick = () => spkStart(Z.n, mode); r.append(b); } box.append(r); }
+      for (const [mode, lab] of [['s', '📝 문장 말하기'], ['w', '🔤 단어 말하기']]) { box.append(el2('h3', 'lp-sec', lab)); const r = el2('div', 'row-center wrap'); for (const Z of EV_Z) { const b = el2('button', 'btn', `${Z.icon} Lesson ${Z.n}`); b.style.background = mode === 's' ? '#FFE9A8' : '#E3F0FF'; evLockBtn(b, Z.n); b.onclick = () => spkStart(Z.n, mode); r.append(b); } box.append(r); }
       return; }
     const L = spkW.list, it = L[spkW.i], Z = evZone(spkW.lv);
     if (!it) { box.append(el2('p', 'lp-big', `🎉 ${spkW.ok}/${L.length} 통과!`), el2('p', 'hint', `${Z?.icon || ''} Lesson ${spkW.lv} · 오늘 보상 ${bag.spkDay?.d === dayNum() ? bag.spkDay.n : 0}/${SPK.day}`)); const r = el2('div', 'row-center wrap'), a = el2('button', 'btn', '🔁 다시 하기'), b = el2('button', 'btn', '📚 다른 단원'); a.style.background = '#FFD23C'; b.style.background = '#fff'; a.onclick = () => spkStart(spkW.lv, spkW.mode); b.onclick = () => { spkW.list = []; spkOpen(); }; r.append(a, b); box.append(r); return; }
@@ -20354,13 +20375,13 @@ function lwGrade(it, typed) { // → {ok, sc, view: [[글자/단어, 맞음]]}
   const a = it.ans.toLowerCase(), t = String(typed).trim().toLowerCase().replace(/[^a-z']/g, ''), n = Math.max(a.length, t.length); const view = [...Array(n)].map((_, i) => [t[i] || '_', t[i] === a[i]]); return { ok: t === a, sc: t === a ? 1 : [...a].filter((c, i) => t[i] === c).length / a.length, view, word: false }; // 내가 쓴 글자를 맞음/틀림으로 (정답은 마지막에)
 }
 function lwReward() { if (isTeacher) return; if (bag.lwDay?.d !== dayNum()) bag.lwDay = { d: dayNum(), n: 0 }; if (bag.lwDay.n >= LW.day) return; bag.lwDay.n++; addStat('eng', 3); giveShellCapped(1); saveBag(); updateHUD(null); }
-function lwStart(lv, mode) { lwW.lv = lv; lwW.mode = mode; lwW.list = lwMake(lv, mode); lwW.i = 0; lwW.tries = 0; lwW.res = null; lwW.ok = 0; lwW.typed = ''; lwW.hint = 0; lwOpen(); const f = lwW.list[0]; if (f) setTimeout(() => sayEn(f.say), 350); }
+function lwStart(lv, mode) { if (evLocked(lv)) return; lwW.lv = lv; lwW.mode = mode; lwW.list = lwMake(lv, mode); lwW.i = 0; lwW.tries = 0; lwW.res = null; lwW.ok = 0; lwW.typed = ''; lwW.hint = 0; lwOpen(); const f = lwW.list[0]; if (f) setTimeout(() => sayEn(f.say), 350); }
 function lwOpen() {
   openLife('🎧 듣기·쓰기 부스', (box) => {
     box.textContent = '';
     if (!lwW.list.length) {
       box.append(el2('p', 'hint', '🔊 잘 듣고 영어로 써요. 틀린 글자·단어는 빨갛게 보여 줘요. 문제마다 두 번까지 쓸 수 있어요.'), el2('p', 'hint', `오늘 보상: ${bag.lwDay?.d === dayNum() ? bag.lwDay.n : 0}/${LW.day}문제 · 맞힐 때마다 🔤 영어력 +3 · 🐚 +1`));
-      for (const [mode, lab, bg] of [['w', '🎧 단어 받아쓰기', '#E3F0FF'], ['s', '🎧 문장 받아쓰기', '#FFE9A8'], ['b', '✏️ 빈칸 채우기 (듣고 빠진 단어 쓰기)', '#E5F7DF']]) { box.append(el2('h3', 'lp-sec', lab)); const r = el2('div', 'row-center wrap'); for (const Z of EV_Z) { const b = el2('button', 'btn', `${Z.icon} Lesson ${Z.n}`); b.style.background = bg; b.onclick = () => lwStart(Z.n, mode); r.append(b); } box.append(r); }
+      for (const [mode, lab, bg] of [['w', '🎧 단어 받아쓰기', '#E3F0FF'], ['s', '🎧 문장 받아쓰기', '#FFE9A8'], ['b', '✏️ 빈칸 채우기 (듣고 빠진 단어 쓰기)', '#E5F7DF']]) { box.append(el2('h3', 'lp-sec', lab)); const r = el2('div', 'row-center wrap'); for (const Z of EV_Z) { const b = el2('button', 'btn', `${Z.icon} Lesson ${Z.n}`); b.style.background = bg; evLockBtn(b, Z.n); b.onclick = () => lwStart(Z.n, mode); r.append(b); } box.append(r); }
       const r2 = el2('div', 'row-center'), sb = el2('button', 'btn', '🎤 말하기 부스로'); sb.style.background = '#fff'; sb.onclick = () => { spkW.list = []; spkOpen(); }; r2.append(sb); box.append(r2);
       return; }
     const L = lwW.list, it = L[lwW.i], Z = evZone(lwW.lv);
@@ -20632,7 +20653,7 @@ function buildEnglishVillage() {
   for (const Z of EV_Z) {
     const a = makeAvatar(0, Z.shirt, Z.hair, Z.hc, dyn); a.g.position.set(Z.npc[0], 0.12, Z.npc[1]); a.g.rotation.y = Z.z < 0 ? 0 : Math.PI; a.badge.userData.set([`${Z.icon} ${Z.who}`]);
     ev.npcs.push(a);
-    addInteract({ pos: new V3(Z.npc[0], 1, Z.npc[1] + (Z.z < 0 ? 1.2 : -1.2)), r: 2.4, text: () => evRegion() ? (ev.game?.n === Z.n ? ['다시 듣기 🔊', Z.ko] : [`${Z.icon} ${Z.name} 놀이 ▶`, Z.how]) : null, run: () => { if (ev.game?.n === Z.n) evSayAgain(); else openEvZone(Z.n); } });
+    addInteract({ pos: new V3(Z.npc[0], 1, Z.npc[1] + (Z.z < 0 ? 1.2 : -1.2)), r: 2.4, text: () => evRegion() ? (ev.game?.n === Z.n ? ['다시 듣기 🔊', Z.ko] : evOpenL(Z.n) ? [`${Z.icon} ${Z.name} 놀이 ▶`, Z.how] : [`🔒 ${Z.icon} ${Z.name}`, `Lesson ${Z.n} · 지금은 닫혀 있어요`]) : null, run: () => { if (ev.game?.n === Z.n) evSayAgain(); else openEvZone(Z.n); } });
   }
   { const a = makeAvatar(0, 4, 4, 0, dyn); a.g.position.set(1797.5, 0.12, 2.6); a.g.rotation.y = -Math.PI / 2; a.badge.userData.set(['🏋️ Coach Kim']); ev.npcs.push(a);
     addInteract({ pos: new V3(1797.5, 1, 1.2), r: 2.6, text: () => evRegion() ? ['영어 훈련소 📒', '학습지 보기 · 단어 쓰기 · 문장 만들기'] : null, run: () => openTraining() });
