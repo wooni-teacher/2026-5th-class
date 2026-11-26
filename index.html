@@ -4767,6 +4767,7 @@ function updatePlayer(dt) {
   jumpBuffer -= dt;
   const flying = (player.avatar.rideK === 'sky' || player.avatar.rideK === 'drone' || player.avatar.rideK === 'balloon' || (player.avatar.rideK === 'pegs' && swHere() && !sww.down)) && !isFrozen() && !sgFrozen(); /* 🪽 1105zz2 페가수스로 하늘 섬을 날아요 */ /* 🚂 1102j 기관차도 날아요 */ // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
   if (flying) { const up = keys[' '] || fly.up ? 1 : 0, dn = keys.shift || keys.c || fly.dn ? 1 : 0; player.vy = (up - dn) * FLY_VY; jumpBuffer = 0; }
+  else if (boardW.on && boardW.duo) player.vy = 0; /* 🐲 1107z 친구 탈것 뒷자리: 떨어지지 않아요 (하늘에서 화면이 덜컹이던 문제) */
   else { if (jumpBuffer > 0 && player.onGround && !sea.on && !sail.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
   let ny = p.y + player.vy * dt; if (flying && ny > FLY_MAX) ny = FLY_MAX;
   if (player.vy > 0) { // 머리 부딪힘
@@ -4922,6 +4923,7 @@ function remoteSample(r, out) { // 지금 보여 줄 위치·방향
   const b = r.buf, rt = performance.now() - REMOTE_DELAY;
   if (!b.length) return false;
   if (rt <= b[0].t || b.length === 1) { const q = rt <= b[0].t ? b[0] : b[b.length - 1]; out.set(q.x, q.y, q.z); return q.r; }
+  { const q1 = b[b.length - 1], q0 = b[b.length - 2]; if (rt > q1.t && q0 && r.carry) { const span = Math.max(80, q1.t - q0.t), u = Math.min(rt - q1.t, 450) / span; out.set(q1.x + (q1.x - q0.x) * u, q1.y + (q1.y - q0.y) * u, q1.z + (q1.z - q0.z) * u); return q1.r; } } /* 🐲 1107z 내가 타고 있는 친구 용: 다음 위치가 늦게 와도 같은 빠르기로 잠깐 더 가요 (멈칫 끊김 줄이기) */
   for (let i = b.length - 1; i > 0; i--) {
     const q0 = b[i - 1], q1 = b[i];
     if (rt >= q0.t) {
@@ -4971,7 +4973,7 @@ let presSweepAt = 0;
 function presSweep() { if (!isTeacher || !backend?.dropPres || performance.now() - presSweepAt < 30000) return; presSweepAt = performance.now(); const us = [...remotes.entries()].filter(([, r]) => presGhost(r)).map(([u]) => u); if (us.length) backend.dropPres(us); }
 for (const ev of ['keydown', 'pointerdown', 'touchstart', 'wheel']) addEventListener(ev, () => { lastInputAt = Date.now(); }, { capture: true, passive: true }); // 💤 잠수 판단: 마지막으로 누른 때
 function sendPresence(time) {
-  if (!joined || kicked || time - lastSentAt < PRESENCE_INTERVAL) return; // Firebase 사용량 줄이기: 최소 0.5초 간격
+  if (!joined || kicked || time - lastSentAt < (boardW.crew > 0 && myRideV() === RIDE_SKY_V ? 0.2 : PRESENCE_INTERVAL)) return; // Firebase 사용량 줄이기: 최소 0.5초 간격 · 🐲 1107z 용 뒤에 친구가 타면 0.2초 (뒤 친구 화면이 끊기지 않게)
   const p = player.pos;
   const d = { x: r2(p.x), y: r2(p.y), z: r2(p.z), r: r2(Math.atan2(Math.sin(player.heading), Math.cos(player.heading))), n: myNick, a: myAnimal, c: myShirt, h: myHair, k: myHairColor, b: Math.round(myBookUntil), m: myAct };
   if (myWearCode()) d.w = myWearCode(); // 옷가게 꾸미기 (산 옷만)
@@ -19162,6 +19164,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107z', d: '11월 26일', items: ['🐲 용 뒤에 탔을 때 화면이 끊기던 문제를 줄였어요: 용 주인이 위치를 더 자주 보내고, 늦게 와도 같은 빠르기로 부드럽게 따라가요'] },
   { id: '1107y', d: '11월 26일', items: ['🚂 하늘 기차(선생님 기관사 모드)를 지웠어요 · 마을이 조금 더 가벼워졌어요'] },
   { id: '1107x', d: '11월 26일', items: ['💪 능력치 최고 레벨이 Lv15로! (Lv13 210 · Lv14 240 · Lv15 270점 더) · Lv15에서 성 공방전 역할이 한 번 더 강해져요', '🐲 하늘을 나는 용에 친구 1명이 뒤에 같이 타요 (친구 용 곁에서 E)', '🎈 새 탈것 열기구! ❄️ 시즌 2 패스 8단계에서 🚁 드론과 🎈 열기구 중 하나를 골라 받아요', '🛠️ 메이커 공방: 흰 테두리 벽을 뚫고 나가 도착하던 문제 고침 · 맵 밖으로 나가면 출발점에서 다시'] },
   { id: '1107w', d: '11월 25일', items: ['🛠️ 메이커 공방: 이제 맵을 한 사람이 2개까지 올려요! 📤 올리기에서 1번 칸·2번 칸을 골라요 · 📂 내 맵 불러오기는 누를 때마다 칸이 바뀌어요'] },
@@ -29237,7 +29240,7 @@ function boardJoin() {
   toast(D ? `${D.icon} ${nm}의 ${D.name}에 탔어요! 친구가 가는 곳으로 같이 가요` : `⛵ ${nm}의 배에 탔어요! 선장이 가는 곳으로 같이 가요 (섬·모래사장 옆에서 ⚓ 내리기)`, 'success');
 }
 function boardEnd(msg, to) {
-  boardW.on = false; boardW.hud?.classList.add('hidden'); boardW.last = null; boardW.duo = ''; boardW.dv = 0;
+  boardW.on = false; boardW.hud?.classList.add('hidden'); boardW.last = null; boardW.duo = ''; boardW.dv = 0; for (const r of remotes.values()) r.carry = false; /* 🐲 1107z */
   if (to) { player.pos.set(to[0], 0.35, to[1]); player.vy = 0; } if (msg) toast(msg, 'info');
 }
 function duoOff() { // 함께 타는 탈것에서 옆으로 내려요
@@ -29273,6 +29276,7 @@ function boardRemotes(dt) { // updateRemotes 다음: 배·함께 타는 탈것�
   }
   if (!rc) { boardEnd(duo ? '🚶 친구가 마을을 나가서 내렸어요' : '🛟 선장이 마을을 나가서 바닷가로 돌아왔어요', duo ? duoOff() : [ISLE.dock[0] - 2.5, ISLE.dock[1]]); return; }
   if ((rc.target?.v | 0) !== (duo ? boardW.dv : BOAT_V)) { const cp = rc.a.g.position; boardEnd(duo ? '🚶 친구가 내려서 같이 내렸어요' : '⚓ 선장이 내려서 같이 내렸어요', duo ? duoOff() : canStand(cp.x + 1.2, cp.z) ? [cp.x + 1.2, cp.z] : [cp.x, cp.z]); return; }
+  rc.carry = duo && boardW.dv === RIDE_SKY_V; for (const [u2, r2x] of remotes) if (u2 !== boardW.cap && r2x.carry) r2x.carry = false;
   const ss = boardSeatsV(boardW.dv, rc.target.q), s = ss[boardW.seat] || ss[0], [x, z, h] = boardPos(rc.a.g, s);
   if (duo) { p.set(x, rc.pos.y, z); player.avatar.g.position.set(x, rc.pos.y + (player.avatar.rideLift || 0), z); } else { p.set(x, rc.a.g.position.y, z); player.avatar.g.position.copy(p); }
   player.vy = 0; player.heading = h; player.avatar.g.rotation.y = h; boardW.last = [x, z];
