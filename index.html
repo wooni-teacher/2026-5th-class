@@ -1612,7 +1612,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
       <label class="sr-only" for="tpSgBots">컴퓨터 병사</label><select id="tpSgBots" class="tinput" style="width:auto" title="나라마다 컴퓨터(🤖) 병사 수"><option value="0" selected>🤖 없음</option><option value="1">🤖 나라마다 1</option><option value="2">🤖 나라마다 2</option><option value="3">🤖 나라마다 3</option><option value="4">🤖 나라마다 4</option></select>
     </div>
     <label class="row-center" style="gap:6px;margin:6px 0;font-weight:700;cursor:pointer"><input type="checkbox" id="tpSgMe"> 🧑‍🏫 선생님도 한 나라로 참여하기 (학생·🤖와 함께 싸워요)</label>
-    <div class="row-center" style="gap:6px;margin:0 0 6px"><label for="tpSgTLv" class="hint" style="margin:0">🧑‍🏫 공방전에서 선생님 능력치</label><select id="tpSgTLv" class="tinput" style="width:auto"><option value="-1">내 실제 능력치</option><option value="0">모두 Lv0 (가장 약하게)</option><option value="3">모두 Lv3</option><option value="6">모두 Lv6</option><option value="9">모두 Lv9</option><option value="12">모두 Lv12 (가장 세게)</option></select></div>
+    <div class="row-center" style="gap:6px;margin:0 0 6px"><label for="tpSgTLv" class="hint" style="margin:0">🧑‍🏫 공방전에서 선생님 능력치</label><select id="tpSgTLv" class="tinput" style="width:auto"><option value="-1">내 실제 능력치</option><option value="0">모두 Lv0 (가장 약하게)</option><option value="3">모두 Lv3</option><option value="6">모두 Lv6</option><option value="9">모두 Lv9</option><option value="12">모두 Lv12</option><option value="15">모두 Lv15 (가장 세게)</option></select></div>
     <div class="field">나라 정하기 (자동 = 사람이 적은 나라로)</div>
     <div id="tpSgList"></div>
     <div class="row-center wrap" style="margin-top:6px"><button class="btn" id="tpSgAuto" style="background:#fff">⚖️ 고르게 나누기</button><button class="btn" id="tpSgStat" style="background:#fff" title="능력치(영어·수학·사회 + 독서×2)가 나라마다 비슷하게">💪 능력치로 고르게</button><button class="btn" id="tpSgStart" style="background:var(--leaf);color:#fff">⚔️ 시작</button></div>
@@ -1654,7 +1654,7 @@ body.atl-siren::after{content:'🎵 세이렌의 노래에 홀렸어요…';posi
     <div id="tpScap"></div>
 
     <h3>⭐ 능력치 레벨 경험치</h3>
-    <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv12). 능력치는 하루 상한(위에서 정해요)까지 오르니, 기본 합계 1000점이에요 (하루 상한까지 매일 꾸준히 하면 약 2~3주). Lv3·6·9·12마다 성 공방전 역할이 강해져요.</p>
+    <p class="hint">레벨마다 필요한 경험치를 정해요 (최고 Lv15 · 1107x). 능력치는 하루 상한(위에서 정해요)까지 오르니, 기본 합계 Lv12까지 1000점 · Lv15까지 1720점이에요 (하루 상한까지 매일 꾸준히 하면 약 2~3주). Lv3·6·9·12·15마다 성 공방전 역할이 강해져요.</p>
     <div id="tpLvx"></div>
 
     <h3>🔐 개인정보 보호 · 반 비밀번호</h3>
@@ -4767,7 +4767,7 @@ function updatePlayer(dt) {
   keepInWorld(p, x0, z0); // 기존 마을 + (열렸으면) 숲속 캠프
 
   jumpBuffer -= dt;
-  const flying = (player.avatar.rideK === 'sky' || player.avatar.rideK === 'drone' || player.avatar.rideK === 'strn' || (player.avatar.rideK === 'pegs' && swHere() && !sww.down)) && !isFrozen() && !sgFrozen(); /* 🪽 1105zz2 페가수스로 하늘 섬을 날아요 */ /* 🚂 1102j 기관차도 날아요 */ // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
+  const flying = (player.avatar.rideK === 'sky' || player.avatar.rideK === 'drone' || player.avatar.rideK === 'balloon' || player.avatar.rideK === 'strn' || (player.avatar.rideK === 'pegs' && swHere() && !sww.down)) && !isFrozen() && !sgFrozen(); /* 🪽 1105zz2 페가수스로 하늘 섬을 날아요 */ /* 🚂 1102j 기관차도 날아요 */ // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
   if (flying) { const up = keys[' '] || fly.up ? 1 : 0, dn = keys.shift || keys.c || fly.dn ? 1 : 0; player.vy = (up - dn) * FLY_VY; jumpBuffer = 0; }
   else { if (jumpBuffer > 0 && player.onGround && !sea.on && !sail.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
   let ny = p.y + player.vy * dt; if (flying && ny > FLY_MAX) ny = FLY_MAX;
@@ -10833,7 +10833,7 @@ function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · 
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
   for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + warLvTag(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
-  if (bag.ssn?.id === 's2' && (bag.ssn.lv | 0) >= 10 && !bag.ssOwn?.drone) { (bag.ssOwn ||= {}).drone = 1; saveBag(); } /* 🚁 1107p 이미 10단계면 드론도 */
+  if (bag.ssn?.id === 's2' && (bag.ssn.lv | 0) >= 8 && !bag.ssOwn?.drone && !bag.ssOwn?.balloon && !isTeacher) setTimeout(() => { if (!bag.ssOwn?.drone && !bag.ssOwn?.balloon) openSsnAirPick(); }, 9000); /* 🎁 1107x 8단계를 이미 넘긴 친구도 골라요 */
   if (bag.ride === 'drone' && !droneHave()) { bag.ride = ''; saveBag(); toast('🚁 드론을 빌린 한 주가 끝났어요. 이번 주 합계 1등이나 시즌 패스 10단계에 도전해요!', 'info'); }
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -11174,15 +11174,18 @@ const RIDES = [
 /* 🐾 1105zx 내 펫 타기: 집에서 키우는 펫(bag.hpet.pets)이 커져서 탈것이 돼요 · 사지 않아요(내 펫이면 무료) · 번호 30~36 */
 const PET_RIDES = [['dog', '🐶', '강아지'], ['cat', '🐱', '고양이'], ['rabbit', '🐰', '토끼'], ['ham', '🐹', '햄스터'], ['chick', '🐥', '병아리'], ['fox', '🦊', '아기 여우'], ['gecko', '🦎', '히로']].map(([pet, icon, name], i) => ({ k: 'hp_' + pet, pet, icon, name, mul: pet === 'gecko' ? 1.35 : 1.25, v: 30 + i }));
 const RIDE_DRONE = { k: 'drone', icon: '🚁', name: '드론', mul: 1.6, v: 26, tOnly: 1, desc: '드론에 매달려 하늘을 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +60%' }; /* 🚁 1107o · 1107p 합계 1등(한 주) · 시즌 2 패스 10단계(계속) */
+const RIDE_BALLOON = { k: 'balloon', icon: '🎈', name: '열기구', mul: 1.35, v: 27, tOnly: 1, desc: '알록달록 열기구 바구니에 타고 둥실둥실 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +35%' }; /* 🎈 1107x 시즌 2 패스 8단계에서 드론과 둘 중 하나 */
 const RIDE_SLED = { k: 'sled', icon: '🛷', name: '눈썰매', mul: 1.5, v: 25, ss: '❄️ 시즌 2 패스 8단계', desc: '쓩~ 눈 위를 미끄러져요 · 빠르기 +50%' }; /* 🛷 1106z 시즌 2 보상 */
 const rideV = (R0, i) => R0.v || i + 1; // 탈것 번호 (players/{uid}/v)
-const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_SLED, RIDE_DRONE].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
+const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_SLED, RIDE_DRONE, RIDE_BALLOON].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
 const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; // 👑 공성전 왕만 (사지 않아요)
-const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
+const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, v: 11, duo: { seats: [[0, -1.75]], pseat: 2.32, ppose: 'straddle' } /* 👫 1107x 친구 1명이 뒤에 타요 */, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
+DUO_BY_V[11] = RIDE_SKY; /* 👫 1107x 용 뒷자리 */
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || !!bag.skyOwn || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🥚 1102i 알에서 부화하면 계속 // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
-const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY, RIDE_SLED, RIDE_DRONE].map(r => [r.k, r])); RIDE_BY.strn = { k: 'strn', icon: '🚂', name: '하늘 기차', mul: 1.6 }; RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
-const droneHave = () => isTeacher || !!bag.ssOwn?.drone || bag.rx?.drone === weekNum(); /* 🚁 1107p 시즌 2 패스 10단계(계속) · 능력치 합계 1등(그 주) */
-const rideOpen = (k) => k === 'drone' ? droneHave() : k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
+const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY, RIDE_SLED, RIDE_DRONE, RIDE_BALLOON].map(r => [r.k, r])); RIDE_BY.strn = { k: 'strn', icon: '🚂', name: '하늘 기차', mul: 1.6 }; RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
+const droneHave = () => isTeacher || !!bag.ssOwn?.drone || bag.rx?.drone === weekNum(); /* 🚁 1107p 능력치 합계 1등(그 주) · 1107x 시즌 2 패스 8단계에서 고르면 계속 */
+const balloonHave = () => isTeacher || !!bag.ssOwn?.balloon; /* 🎈 1107x */
+const rideOpen = (k) => k === 'balloon' ? balloonHave() : k === 'drone' ? droneHave() : k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
 // 🎨 탈것 꾸미기: 색·장식은 🐚로 한 번 열면 모든 탈것에 쓸 수 있어요 (⭐표는 주간 랭킹 보상으로만) · 친구 화면엔 players/{uid}/q = 색×10 + 장식
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
 const RIDE_ACC = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '깃발' }, { icon: '🎈', n: '풍선' }, { icon: '🌸', n: '꽃 화환' }, { icon: '🔔', n: '방울' }, { icon: '⭐', n: '별 반짝이', star: 1 }, { icon: '👑', n: '왕관', star: 1 }, { icon: '🌈', n: '무지개 꼬리', star: 1 }, { icon: '💎', n: '보석 장식', gem: 2 }, { icon: '💫', n: '오로라 고리', star: 1 }];
@@ -11336,7 +11339,7 @@ function updateRides() {
   const b = $('rideBtn'), k = player.avatar.rideK, hide = !joined || sgInSG(player.pos) || trRegion() || swIn(player.pos) || roomNow() === 'reef' || sbt.on;
   b.classList.toggle('hidden', hide); b.classList.toggle('on', !!bag.ride && rideOpen(bag.ride));
   const ic = bag.ride && rideOpen(bag.ride) ? RIDE_BY[bag.ride].icon : '🚲'; if (b.textContent !== ic) b.textContent = ic;
-  { const f = $('flyBar'), on = joined && (k === 'sky' || k === 'drone' || k === 'strn' || (k === 'pegs' && swHere())); if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
+  { const f = $('flyBar'), on = joined && (k === 'sky' || k === 'drone' || k === 'balloon' || k === 'strn' || (k === 'pegs' && swHere())); if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
   if (k && k !== 'royal' && k !== rideW.lastK) playSfx('pick');
   rideW.lastK = k;
 }
@@ -11365,7 +11368,9 @@ function openRides() {
       b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#BFE6FF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sky'); refillLife(); };
       row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); skyShopRow(box); } // 🥚 1102i
     { const R0 = RIDE_DRONE, have = droneHave(), on = have && bag.ride === 'drone', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🚁 1107p */
-      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc + (!isTeacher && !bag.ssOwn?.drone ? ' · 이번 주(일요일까지)' : '') : '🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · ❄️ 시즌 2 패스 10단계를 채우면 계속 타요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#DDE6EE'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('drone'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc + (!isTeacher && !bag.ssOwn?.drone ? ' · 이번 주(일요일까지)' : '') : '🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · ❄️ 시즌 2 패스 8단계에서 🎈 열기구와 둘 중 하나를 골라 계속 타요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#DDE6EE'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('drone'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+    { const R0 = RIDE_BALLOON, have = balloonHave(), on = have && bag.ride === 'balloon', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🎈 1107x */
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론과 🎈 열기구 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#FFE3C2'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('balloon'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { const R0 = RIDE_SLED, have = rideOpen('sled'), on = have && bag.ride === 'sled', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🛷 1106z */
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `${R0.ss} 보상 · 받으면 계속 타요`)); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#D6ECFF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sled'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { box.append(el2('p', 'lp-big', '🐾 내 펫 타기')); box.append(el2('p', 'hint', '집에서 키우는 펫이 커져서 탈것이 돼요! 반 동전은 안 써요. 펫은 바닷가 🐾 펫 가게에서 데려와요 (🦎 히로는 누구나 무료).')); /* 🐾 1105zx */
@@ -11580,6 +11585,16 @@ function rideBuild(a, k) {
     g.userData.props = props; g.userData.drone = d;
     for (const x of [-0.82, 0.82]) { Y(g, 0.018, 2.35, 0x3B3F46, x, 2.9, 0); B(g, 0.14, 0.22, 0.14, 0xFFD23C, x, 1.76, 0); } B(d, 0.9, 0.04, 0.04, 0x3B3F46, 0, -0.14, 0); /* 줄 두 개 → 두 손 손잡이 */
     seat = 0.6; pose = 'hang'; arms = -3.0; hover = 0.9; sh = 1.6;
+  } else if (k === 'balloon') { /* 🎈 1107x 열기구: 줄무늬 풍선(빨강·노랑·주황·하늘) + 노란 치마 + 줄 + 버너 불꽃 + 고리버들 바구니 (사진을 참고한 단순 모형) */
+    const bk = 0xB07A3C, bk2 = 0x8A5A2A; B(g, 1.5, 0.12, 1.5, bk2, 0, 0.19, 0); for (const [x, z, w, d] of [[0, 0.72, 1.5, 0.1], [0, -0.72, 1.5, 0.1], [0.72, 0, 0.1, 1.5], [-0.72, 0, 0.1, 1.5]]) { B(g, w, 0.85, d, bk, x, 0.62, z); B(g, w + 0.04, 0.1, d + 0.04, bk2, x, 1.06, z); B(g, w + 0.02, 0.06, d + 0.02, bk2, x, 0.4, z); }
+    for (const [x, z] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) { const top = new V3(x * 0.72, 4.05, z * 0.72), bot = new V3(x, 1.1, z), mid = top.clone().add(bot).multiplyScalar(0.5), len = top.distanceTo(bot), rope = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 6), M(0xE8E2D6)); rope.scale.set(0.02, len, 0.02); rope.position.copy(mid); rope.lookAt(top); rope.rotateX(Math.PI / 2); g.add(rope); }
+    B(g, 0.36, 0.22, 0.36, 0x3B3F46, 0, 3.0, 0); for (const sx of [-1, 1]) B(g, 0.04, 0.9, 0.04, 0x5A6068, sx * 0.16, 3.4, 0); const fl = new THREE.Group(); fl.position.set(0, 3.15, 0); g.add(fl); mesh(CONE, fl, 0.22, 0.55, 0.22, 0xFF7A1A, 0, 0.27, 0, { solid: false, emissive: 0.9 }); mesh(CONE, fl, 0.12, 0.35, 0.12, 0xFFE066, 0, 0.2, 0, { solid: false, emissive: 1 }); g.userData.flame = fl;
+    { const sk = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 0.75, 0.8, 16, 1, true), new THREE.MeshStandardMaterial({ color: 0xF6B21C, side: THREE.DoubleSide, roughness: 0.7 })); sk.position.y = 4.4; g.add(sk); }
+    const cols = [0xE2342B, 0xFFD23C, 0xFF8A1E, 0x4FC3F0], N = 10, env = new THREE.Group(); env.position.y = 6.7; env.scale.set(2.5, 2.75, 2.5); g.add(env);
+    for (let i = 0; i < N; i++) { const geo = new THREE.SphereGeometry(1, 3, 22, i / N * Math.PI * 2, Math.PI * 2 / N, 0, Math.PI * 0.86), pos = geo.attributes.position, cl = new Float32Array(pos.count * 3), c = new THREE.Color();
+      for (let v = 0; v < pos.count; v++) { const band = Math.floor((1 - pos.getY(v)) / 0.36); c.setHex(cols[(band + i * 3) % 4]); c.convertSRGBToLinear?.(); cl[v * 3] = c.r; cl[v * 3 + 1] = c.g; cl[v * 3 + 2] = c.b; }
+      geo.setAttribute('color', new THREE.BufferAttribute(cl, 3)); const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, flatShading: true })); env.add(m); }
+    g.userData.balloon = env; seat = 0.85; pose = 'stand'; arms = -0.6; hover = 0.6; sh = 2.6;
   }
   return { g, legs, wheels, wings, tails, seat, pose, arms, hover, sh };
 }
@@ -11612,6 +11627,7 @@ function poseRide(a, moving, dt) { // 탈것 위 자세 + 탈것 움직임 (anim
   for (const [q, r] of R0.wheels) q.rotation.x += dt * moving * SPEED * 1.4 / Math.max(0.05, r) * 0.6;
   for (const [q, sd] of R0.wings) q.rotation.z = sd * (0.25 + Math.sin(ph * 0.7) * (0.35 + 0.25 * mv));
   for (const t of R0.tails) t.rotation.y = Math.sin(ph * 0.6) * 0.25;
+  if (R0.g.userData.balloon) { const fl = R0.g.userData.flame, t = a.idle; if (fl) { const k = 0.85 + Math.abs(Math.sin(t * 11)) * 0.35 + Math.sin(t * 17) * 0.08; fl.scale.set(1, k, 1); } R0.g.userData.balloon.rotation.y += dt * 0.15; R0.g.userData.balloon.parent.rotation.z = Math.sin(t * 0.9) * 0.02; } /* 🎈 불꽃 · 천천히 빙글 */
   if (R0.g.userData.props) { for (const q of R0.g.userData.props) q.rotation.y += dt * 38; R0.g.userData.drone.rotation.x = 0.1 * mv; R0.g.userData.drone.rotation.z = Math.sin(a.idle * 1.3) * 0.03; } /* 🚁 프로펠러 */
   if (R0.flag) R0.flag.rotation.y = Math.sin(a.idle * 6) * 0.25 * (0.4 + mv);
   if (R0.balloon) R0.balloon.position.x = Math.sin(a.idle * 1.7) * 0.12;
@@ -19159,6 +19175,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1107x', d: '11월 26일', items: ['💪 능력치 최고 레벨이 Lv15로! (Lv13 210 · Lv14 240 · Lv15 270점 더) · Lv15에서 성 공방전 역할이 한 번 더 강해져요', '🐲 하늘을 나는 용에 친구 1명이 뒤에 같이 타요 (친구 용 곁에서 E)', '🎈 새 탈것 열기구! ❄️ 시즌 2 패스 8단계에서 🚁 드론과 🎈 열기구 중 하나를 골라 받아요', '🛠️ 메이커 공방: 흰 테두리 벽을 뚫고 나가 도착하던 문제 고침 · 맵 밖으로 나가면 출발점에서 다시'] },
   { id: '1107w', d: '11월 25일', items: ['🛠️ 메이커 공방: 이제 맵을 한 사람이 2개까지 올려요! 📤 올리기에서 1번 칸·2번 칸을 골라요 · 📂 내 맵 불러오기는 누를 때마다 칸이 바뀌어요'] },
   { id: '1107v', d: '11월 25일', items: ['🏃 수학 달리기장 그래픽 고침: 옆 🏆 반월몬스터즈 경기장의 둘레 설산이 달리기장 벽을 뚫고 보이던 문제 · 설산은 이제 경기장 안에서만 보여요'] },
   { id: '1107u', d: '11월 25일', items: ['🎧 털 귀마개를 써도 머리 모양이 그대로예요! 머리 위로 낙타색 띠가 지나가고 크림색 털 귀덮개가 귀를 감싸요', '🧶 방울 털모자도 앞머리·옆머리는 그대로 보여요'] },
@@ -23845,9 +23862,9 @@ function monuCheer(k) { const [, x, z] = MONU.find(m => m[0] === k), I = MONU_IN
 for (const [k, x, z] of MONU) monuBase(k, x, z);
 bag.stat ||= {};
 if (bag.statV !== 2) { bag.stat = {}; bag.statV = 2; saveBag(); } // 1017d 능력치 레벨 새로 시작 (누적 경험치 · 최고 Lv12)
-const LV_MAX = 12, LV_DEF = [15, 25, 35, 45, 55, 65, 80, 95, 115, 135, 155, 180], LV_OLD = [30, 50, 70, 90, 110, 130, 160, 190, 230, 270, 310, 360]; // 레벨마다 필요한 경험치 (1102b 기본 합계 1000 · 예전 2000 · 선생님이 관리 화면에서 바꿔요: state/lvx)
+const LV_MAX = 15, LV_DEF = [15, 25, 35, 45, 55, 65, 80, 95, 115, 135, 155, 180, 210, 240, 270], /* 💪 1107x 최고 15레벨 (13~15: 210·240·270) */ LV_OLD = [30, 50, 70, 90, 110, 130, 160, 190, 230, 270, 310, 360]; // 레벨마다 필요한 경험치 (1102b 기본 합계 1000 · 예전 2000 · 선생님이 관리 화면에서 바꿔요: state/lvx)
 const lvxOld = () => { const L = S.lvx || {}; return Object.keys(L).length > 0 && LV_OLD.every((x, j) => +L[j + 1] === x); }; // 예전 기본값(2000)을 저장해 둔 반은 새 기본값으로
-const lvNeed = (i) => { if (lvxOld()) return LV_DEF[i - 1]; const v = +S.lvx?.[i]; return v >= 1 && v <= 5000 ? Math.round(v) : LV_DEF[i - 1]; }; // i = 1..12
+const lvNeed = (i) => { if (lvxOld() && i <= 12) return LV_DEF[i - 1]; const v = +S.lvx?.[i]; return v >= 1 && v <= 5000 ? Math.round(v) : LV_DEF[i - 1]; }; // i = 1..12
 const lvAt = (i) => { let t = 0; for (let j = 1; j <= i; j++) t += lvNeed(j); return t; }; // Lv i까지 누적 경험치
 const statExp = (k) => bag.stat?.[k] || 0;
 const statLv = (k) => { if (isTeacher && (bag.tSgLv ?? -1) >= 0 && S.siege?.on && S.siege.team?.[backend?.uid]) return Math.min(LV_MAX, bag.tSgLv | 0); /* 🧑‍🏫 1103g 공방전에 참여한 선생님 능력치 */ const e = statExp(k); let lv = 0; while (lv < LV_MAX && e >= lvAt(lv + 1)) lv++; return lv; };
@@ -28570,7 +28587,7 @@ const SSN_REW = { // [종류, 키, 아이콘, 이름] · wear: 'h10' = 모자 10
     ['wear', 'h10', '🎃', '호박 모자'], ['title', 'ssb', '🎭', '칭호 🎭꿈끼스타'], ['trail', 't2', '✨', '무대 별빛 발자국'], ['wear', 'b10', '🍁', '단풍 망토'], ['title', 'ssc', '👑', '칭호 👑수확제왕']],
   s2: [['pet', 'wmuff', '🧣', '펫 눈꽃 털목도리'], ['title', 'ssd', '❄️', '칭호 ❄️눈송이'], ['wear', 'h19', '🎧', '털 귀마개'], ['trail', 't3', '❄️', '눈송이 발자국'],
     ['pet', 'rudolph', '🦌', '펫 루돌프 뿔', [['snow', 'snwdeco', '⛄', '눈사람 꾸미기 (내가 함께 만든 눈사람에 장식)']]], ['wear', 'h20', '🧶', '방울 털모자', [['boat', 'bdwin', '🚢', '배 겨울 장식']]],
-    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕'], ['ride', 'drone', '🚁', '드론 탈것']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
+    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국'], ['pick', 'air', '🎁', '🚁 드론 또는 🎈 열기구 (하나 골라요)']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
 };
 const SSN_TRAIL = [null, { icon: '🍂', n: '단풍잎 발자국', cols: [0xE8913A, 0xF2B640, 0xC0392B] }, { icon: '✨', n: '무대 별빛 발자국', cols: [0xFFE066, 0xFFFFFF, 0xB58CF0] }, { icon: '❄️', n: '눈송이 발자국', cols: [0xFFFFFF, 0xCFE8FF, 0x9FD0F5] }, { icon: '🌌', n: '오로라 발자국', cols: [0x5FE3A1, 0x7AB8FF, 0xC48CFF] }];
 const ssnById = (id) => SSNS.find(x => x.id === id);
@@ -28589,7 +28606,16 @@ function ssnStar(n = 1) { // ⭐ 시즌 별 (시즌이 열려 있을 때만 · �
   saveBag(); if (up) backend.sspSet?.(Z.id, bag.ssn.lv);
 }
 const ssnHow = (kind) => kind === 'wear' ? '👕 옷가게에서 입어요' : kind === 'pet' ? '🐾 펫 가게에서 입혀요' : kind === 'title' ? '📊 → 🏷️ 내 칭호에서 달아요' : kind === 'ride' ? '🚲 탈것 가게에서 타요' : kind === 'hpet' ? '🐾 펫 가게에서 데려와요 (무료)' : kind === 'boat' ? '⛵ 조선소에서 배에 올려요' : kind === 'snow' ? '⛄ 광장 눈사람에 저절로 달려요' : '👣 시즌 창에서 골라요';
+function openSsnAirPick() { /* 🎁 1107x 시즌 2 패스 8단계: 🚁 드론 또는 🎈 열기구 하나 (한 번 고르면 바꿀 수 없어요) */
+  if (bag.ssOwn?.drone || bag.ssOwn?.balloon || isTeacher) return;
+  openLife('🎁 하늘 탈것 고르기', (box) => { box.textContent = ''; box.append(el2('p', 'lp-big', '시즌 패스 8단계 보상!'), el2('p', 'hint', '둘 중 하나를 골라요 · 한 번 고르면 바꿀 수 없어요'));
+    const row = el2('div', 'row-center wrap'); for (const R0 of [RIDE_DRONE, RIDE_BALLOON]) { const c = el2('button', 'btn', ''); c.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;min-width:150px;background:#F2FAFF';
+      const ic = el2('span', '', R0.icon); ic.style.fontSize = '44px'; c.append(ic, el2('b', '', R0.name), el2('span', 'hint', R0.desc.split(' · ')[0]));
+      c.onclick = () => { if (!c.dataset.arm) { c.dataset.arm = 1; c.querySelector('b').textContent = `${R0.name} · 한 번 더 누르면 골라요`; return; } (bag.ssOwn ||= {})[R0.k] = 1; bag.ride = R0.k; saveBag(); closeLife(); playSfx('fanfare'); burst(player.pos.clone().setY(2.4), RAINBOW, 60, 6, 3); showBanner(`${R0.icon} ${R0.name}을(를) 받았어요!`, '🚲 탈것 버튼에서 언제든 타요 · 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기', 6000); }; row.append(c); }
+    box.append(row); });
+}
 function ssnGive(kind, key) {
+  if (kind === 'pick') { if (key === 'air') setTimeout(openSsnAirPick, 6500); return; }
   bag.ssOwn ||= {}; bag.ssOwn[key] = 1;
   if (kind === 'wear') bag.own[key] = true;
   if (kind === 'pet') { const i = PET_OUTFITS.findIndex(o => o?.k === key); if (i > 0) { (bag.hpet.own ||= {})[i] = 1; } }
@@ -28613,6 +28639,7 @@ function openSeason() {
     R.forEach(([kind, key, ic, nm, also], i) => { if (also) nm += also.map(x => ` + ${x[2]} ${x[3]}`).join(''); const got = isTeacher || me.lv > i, card = el2('div', ''); card.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 10px;margin:5px 0;border-radius:12px;background:${got ? '#E5F7DF' : '#fff'};box-shadow:0 1px 3px rgba(0,0,0,.07)`;
       const lv = el2('b', '', `${i + 1}단계`); lv.style.minWidth = '52px'; const icn = el2('span', '', got ? ic : '🔒'); icn.style.fontSize = '26px';
       const tx = el2('div', ''); tx.style.flex = '1'; tx.append(el2('b', '', nm), el2('div', 'hint', got ? `✅ 받았어요 · ${ssnHow(kind)}` : `⭐ ${SSN_STARS[i]}개 모으면`));
+      if (got && !isTeacher && also?.some(x => x[0] === 'pick') && !bag.ssOwn?.drone && !bag.ssOwn?.balloon) { const pk = el2('button', 'btn', '🎁 고르기'); pk.style.background = '#FFD23C'; pk.onclick = openSsnAirPick; tx.append(pk); } /* 🎁 1107x */
       card.append(lv, icn, tx); box.append(card); });
     { const got = isTeacher || !!bag.skyOwn || !!bag.dEgg, c2 = el2('div', ''); c2.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 10px;margin:5px 0;border-radius:12px;border:2px dashed #6EC1EC;background:${got ? '#E5F7DF' : '#F2FAFF'}`; const tx2 = el2('div', ''); tx2.style.flex = '1'; tx2.append(el2('b', '', `🎁 ${SKY_EGG_LV}단계 보너스: 🥚 하늘 용 알`), el2('div', 'hint', got ? (bag.skyOwn || isTeacher ? '✅ 🐲 하늘 용이 태어났어요 · 🚲 탈것 가게에서 타고 꾸며요' : `✅ 받았어요 · 🚲 탈것 가게에서 품어 줘요 (${bag.dEgg.n | 0}/${SKY_EGG_DAYS})`) : `${SKY_EGG_LV}단계가 되면 받아요 · 3일 품으면 계속 타는 🐲 하늘을 나는 용`)); c2.append(el2('span', '', got ? '🥚' : '🔒'), tx2); c2.firstChild.style.fontSize = '26px'; box.append(c2); } // 🐲 1102i
     const own = SSN_TRAIL.map((T, i) => [T, i]).filter(([T, i]) => T && ssOwn('t' + i));
@@ -29210,7 +29237,7 @@ function initBoard() {
 }
 function boardFind() { // 가까운 친구 배 · 함께 타는 탈것 (매 프레임 가볍게)
   boardW.cand = null; if (!joined || sail.on || sea.on || boardW.on || cart.on || hv.travel) { boardW.it.pos.set(0, -99, 0); return; }
-  let best = null, bd = 4.6; for (const [u, r] of remotes) { const v = r.target?.v | 0; if (v !== BOAT_V && !DUO_BY_V[v]) continue; if (DUO_BY_V[v] && !rideOpen(DUO_BY_V[v].k)) continue; const d = Math.hypot(r.a.g.position.x - player.pos.x, r.a.g.position.z - player.pos.z); if (d < bd) { bd = d; best = [u, r]; } }
+  let best = null, bd = 4.6; for (const [u, r] of remotes) { const v = r.target?.v | 0; if (v !== BOAT_V && !DUO_BY_V[v]) continue; if (DUO_BY_V[v] && DUO_BY_V[v].k !== 'sky' && !rideOpen(DUO_BY_V[v].k)) continue; /* 🐲 용은 친구 것이라 내가 없어도 같이 타요 */ const d = Math.hypot(r.a.g.position.x - player.pos.x, r.a.g.position.z - player.pos.z); if (d < bd) { bd = d; best = [u, r]; } }
   boardW.cand = best; if (best) boardW.it.pos.set(best[1].a.g.position.x, 1, best[1].a.g.position.z); else boardW.it.pos.set(0, -99, 0);
 }
 function boardJoin() {
@@ -29841,7 +29868,7 @@ function mkCheck(g) { // 올리기 전에 확인
 const mkSlot = (u) => { let h = 7; for (const ch of String(u)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 24; };
 const mkFieldAt = (u) => { const s = mkSlot(u); return { x: 3240 + (s % 6) * 48, z: 222 + Math.floor(s / 6) * 48 }; };
 const inMkHub = (x, z) => Math.abs(x - MKH.x) < MKH.w / 2 && Math.abs(z - MKH.z) < MKH.d / 2;
-function inMk(x, z) { if (inMkHub(x, z)) return true; const P = mkW?.play; return !!P && Math.abs(x - P.F.x) < MK_HALF && Math.abs(z - P.F.z) < MK_HALF; }
+function inMk(x, z) { if (inMkHub(x, z)) return true; const P = mkW?.play; return !!P && Math.abs(x - P.F.x) < MK_HALF + 6 && Math.abs(z - P.F.z) < MK_HALF + 6; } /* 🧱 1107x 테두리 둘레도 공방 안 (밖으로 나가면 마을로 튕기지 않고 출발점으로) */
 const mkRegion = () => joined && inMk(player.pos.x, player.pos.z);
 const mkCellIdx = (x, z) => { const P = mkW?.play; if (!P) return -1; const c = Math.floor((x - P.F.x + MK_HALF) / MK_C), r = Math.floor((z - P.F.z + MK_HALF) / MK_C); return c < 0 || r < 0 || c >= MK_N || r >= MK_N ? -1 : r * MK_N + c; };
 const mkCellXZ = (i) => { const P = mkW.play; return [P.F.x - MK_HALF + (i % MK_N + 0.5) * MK_C, P.F.z - MK_HALF + (Math.floor(i / MK_N) + 0.5) * MK_C]; };
@@ -29904,8 +29931,9 @@ function mkEnd(silent) { // 판 치우기
 function mkBuildField(P) {
   const grp = new THREE.Group(); grp.name = 'MakerField'; scene.add(grp); P.grp = grp; const th = +P.n[0], [c1, c2] = MK_COL[th] || MK_COL[0], o = { solid: false }, G = P.g;
   box(grp, MK_N * MK_C + 40, 0.2, MK_N * MK_C + 40, 0x1E2230, P.F.x, -9, P.F.z, o); // 🕳️ 깊은 바닥
-  for (const [x, z, w, d] of [[P.F.x, P.F.z - MK_HALF - 0.3, MK_N * MK_C + 1.2, 0.6], [P.F.x, P.F.z + MK_HALF + 0.3, MK_N * MK_C + 1.2, 0.6], [P.F.x - MK_HALF - 0.3, P.F.z, 0.6, MK_N * MK_C], [P.F.x + MK_HALF + 0.3, P.F.z, 0.6, MK_N * MK_C]]) box(grp, w, 1.6, d, 0xFFFFFF, x, 0.8, z, { solid: false, emissive: 0.15 });
-  const sol = new THREE.Group(), dor = new THREE.Group(); grp.add(sol, dor); P.items = []; P.qs = [];
+  const sol = new THREE.Group(), dor = new THREE.Group(); grp.add(sol, dor);
+  for (const [x, z, w, d] of [[P.F.x, P.F.z - MK_HALF - 0.3, MK_N * MK_C + 1.2, 0.6], [P.F.x, P.F.z + MK_HALF + 0.3, MK_N * MK_C + 1.2, 0.6], [P.F.x - MK_HALF - 0.3, P.F.z, 0.6, MK_N * MK_C], [P.F.x + MK_HALF + 0.3, P.F.z, 0.6, MK_N * MK_C]]) box(sol, w, 3.2, d, 0xFFFFFF, x, 1.6, z, { solid: true, emissive: 0.15 }); /* 🧱 1107x 흰 테두리 벽도 부딪혀요 (예전엔 뚫고 나가 맵을 돌아 도착할 수 있었어요) */
+  P.items = []; P.qs = [];
   for (let i = 0; i < 144; i++) { const ch = G[i], [x, z] = mkCellXZ(i), r = Math.floor(i / MK_N), c = i % MK_N, fl = (r + c) % 2 ? c2 : c1;
     if (ch !== 'H') box(grp, MK_C, 0.4, MK_C, ch === 'I' ? 0xBFE6FF : ch === 'J' ? 0xFFD23C : ch === 'S' ? 0x7AD67A : ch === 'G' ? 0xFFFFFF : fl, x, -0.2, z, o);
     if (ch === 'W') box(sol, MK_C, 3, MK_C, th === 3 ? 0x9A9A9A : th === 5 ? 0x6A70A8 : 0xC0703A, x, 1.5, z, { solid: true });
@@ -30011,6 +30039,7 @@ function mkTick(dt) {
     for (const key of [mkSlotKey(1), mkSlotKey(2)]) { const M2 = mkParse(S.mk?.[key]); if (!M2 || isTeacher) continue; const n = mkClears(key, M2.st).filter(([u]) => u !== backend.uid).length, paid = bag.mkPaid?.[key]?.[M2.st] ?? null;
       if (paid == null) { (bag.mkPaid ||= {})[key] = { [M2.st]: n }; saveBag(); } else if (n > paid) { const D = bag.mkMDay?.d === dayNum() ? bag.mkMDay : { d: dayNum(), s: 0 }, add = Math.min(3 * (n - paid), 30 - D.s); bag.mkPaid[key] = { [M2.st]: n }; if (add > 0) { D.s += add; bag.mkMDay = D; earnShell(add, 'm'); renderCoinChip(); } saveBag(); toast(`🛠️ 친구 ${n - paid}명이 내 맵 「${mkName(M2.n)}」을 깼어요!${add > 0 ? ` 🐚 +${add}` : ''}`, 'success'); } } }
   const P = mkW.play; if (!P) { if (mkW.hud && !mkW.hud.classList.contains('hidden')) mkW.hud.classList.add('hidden'); return; }
+  if (!hv.travel && mkCellIdx(player.pos.x, player.pos.z) < 0 && Math.abs(player.pos.x - P.F.x) < MK_HALF + 14 && Math.abs(player.pos.z - P.F.z) < MK_HALF + 14) { mkRespawn(); toast('🚧 맵 밖으로 나가면 출발점에서 다시 해요', 'warn'); return; } /* 🧱 1107x 벽을 넘거나 뚫어도 놀이는 그대로 (예전엔 공방 밖으로 튕겨 나갔어요) */
   if (!inMk(player.pos.x, player.pos.z) && !hv.travel) { mkEnd(true); return; } // 포털 등으로 떠났어요
   mkHudTick(); const p = player.pos, i = mkCellIdx(p.x, p.z), ch = i >= 0 ? P.g[i] : '', now = performance.now();
   if (p.y < -4) { mkRespawn(); toast('🕳️ 앗, 떨어졌어요! 출발점에서 다시', 'info'); return; }
