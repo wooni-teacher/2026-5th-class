@@ -11193,7 +11193,7 @@ const rideOpen = (k) => k === 'plane' ? planeHave() : k === 'balloon' ? balloonH
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
 const RIDE_ACC = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '깃발' }, { icon: '🎈', n: '풍선' }, { icon: '🌸', n: '꽃 화환' }, { icon: '🔔', n: '방울' }, { icon: '⭐', n: '별 반짝이', star: 1 }, { icon: '👑', n: '왕관', star: 1 }, { icon: '🌈', n: '무지개 꼬리', star: 1 }, { icon: '💎', n: '보석 장식', gem: 2 }, { icon: '💫', n: '오로라 고리', star: 1 }];
 const RIDE_COLOR_PRICE = 40, RIDE_ACC_PRICE = 80;
-const RIDE_MAIN = { skate: 0xE2584A, kick: 0x4A9AE8, turtle: 0x4E8B3A, bike: 0x2FA36B, pony: 0x9A6233, scoot: 0xF29BB8, car: 0xE2584A, cloud: 0xFFFFFF, dino: 0x5BAF4A, dragon: 0x7A4BC2, puffer: 0xF5C83C, dolph: 0x6EA8D8, shark: 0x7E8A96, whale: 0x3E6EB8, frog: 0x5FBE5A, bear: 0x8A5A34, eleph: 0x9AA3AD };
+const RIDE_MAIN = { plane: 0xEDEDEA, /* ✈️ 1108b 색 바꾸기 */ skate: 0xE2584A, kick: 0x4A9AE8, turtle: 0x4E8B3A, bike: 0x2FA36B, pony: 0x9A6233, scoot: 0xF29BB8, car: 0xE2584A, cloud: 0xFFFFFF, dino: 0x5BAF4A, dragon: 0x7A4BC2, puffer: 0xF5C83C, dolph: 0x6EA8D8, shark: 0x7E8A96, whale: 0x3E6EB8, frog: 0x5FBE5A, bear: 0x8A5A34, eleph: 0x9AA3AD };
 const RIDE_ANCHOR = { skate: [0.15, 0.22, -0.55], kick: [0.36, 1.38, 0.52], turtle: [0.2, 0.8, -0.55], bike: [0.15, 0.95, -0.6], pony: [0.18, 1.35, -0.65], scoot: [0.2, 0.8, -0.65], car: [0.35, 0.95, -0.7], cloud: [0.3, 0.55, -0.55], dino: [0.25, 2.1, -0.85], dragon: [0.22, 1.4, -0.85], puffer: [0.3, 1.5, -0.55], dolph: [0.22, 1.3, -0.8], shark: [0.22, 1.35, -0.85], whale: [0.3, 2.1, -1.0], frog: [0.25, 1.0, -0.6], bear: [0.3, 1.75, -0.9], eleph: [0.45, 2.55, -1.1] };
 const rideItemHave = (kind, i) => i === 0 || !!bag.rdh?.[kind + i] || (kind === 'c' ? RIDE_COLORS[i]?.star : RIDE_ACC[i]?.star) && (isTeacher || !!bag.rx?.[kind + i]); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 꾸미기를 모두 써요
 const rideDecoOf = (k) => { const d = bag.rdeco?.[k] || [0, 0]; return [rideItemHave('c', d[0]) ? d[0] : 0, rideItemHave('a', d[1]) ? d[1] : 0]; };
@@ -11373,7 +11373,7 @@ function openRides() {
     { const R0 = RIDE_BALLOON, have = balloonHave(), on = have && bag.ride === 'balloon', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🎈 1107x */
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#FFE3C2'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('balloon'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { const R0 = RIDE_PLANE, have = planeHave(), on = have && bag.ride === 'plane', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* ✈️ 1108a */
-      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#EEF2F6'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('plane'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#EEF2F6'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('plane'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); if (have) { const dc = el2('button', 'btn', '🎨'); dc.title = '색 바꾸기'; dc.setAttribute('aria-label', '종이 비행기 색 바꾸기'); dc.onclick = () => openRideDeco('plane'); row.append(dc); } box.append(row); }
     { const R0 = RIDE_SLED, have = rideOpen('sled'), on = have && bag.ride === 'sled', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🛷 1106z */
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `${R0.ss} 보상 · 받으면 계속 타요`)); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#D6ECFF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sled'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { box.append(el2('p', 'lp-big', '🐾 내 펫 타기')); box.append(el2('p', 'hint', '집에서 키우는 펫이 커져서 탈것이 돼요! 반 동전은 안 써요. 펫은 바닷가 🐾 펫 가게에서 데려와요 (🦎 히로는 누구나 무료).')); /* 🐾 1105zx */
@@ -11592,11 +11592,11 @@ function rideBuild(a, k) {
     g.userData.balloon = env; seat = 0.85; pose = 'stand'; arms = -0.6; hover = 0.6; sh = 2.6;
   } else if (k === 'plane') { /* ✈️ 1108a 종이 비행기: 흰 종이를 접은 다트 모양 (날개 두 장 + 가운데 접힌 용골) · 사진을 참고한 단순 모형 */
     const pl = new THREE.Group(); pl.position.y = 0.55; pl.scale.setScalar(1.45); g.add(pl);
-    const V = (x, y, z) => new V3(x, y, z), tri = (pts, col) => { const geo = new THREE.BufferGeometry().setFromPoints(pts); geo.computeVertexNormals(); const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, side: THREE.DoubleSide, flatShading: true, roughness: 0.9 })); m.castShadow = true; pl.add(m); };
+    const V = (x, y, z) => new V3(x, y, z), tri = (pts, col) => { for (const P of [pts, [pts[0], pts[2], pts[1]]]) { const geo = new THREE.BufferGeometry().setFromPoints(P); geo.computeVertexNormals(); const m = new THREE.Mesh(geo, M(col)); m.castShadow = true; pl.add(m); } }; /* 1108b 앞뒤 두 장 → 🎨 색 바꾸기(같은 회색 계열 모두)도 돼요 */
     const nose = V(0, 0.05, 2.3), lt = V(-1.75, 0.32, -1.45), rt = V(1.75, 0.32, -1.45), cl = V(-0.12, 0.12, -1.45), cr = V(0.12, 0.12, -1.45), keel = V(0, -0.42, -1.3), mid = V(0, 0.0, -1.45);
-    tri([nose, cl, lt], 0xF7F7F5); tri([nose, rt, cr], 0xF0F0EE); tri([nose, mid, cl], 0xDADAD6); tri([nose, cr, mid], 0xD2D2CE); tri([nose, keel, mid], 0xC4C4C0); tri([nose, mid, keel], 0xBDBDB8);
+    tri([nose, cl, lt], 0xEDEDEA); tri([nose, rt, cr], 0xE6E6E3); tri([nose, mid, cl], 0xD6D6D2); tri([nose, cr, mid], 0xCECECA); tri([nose, keel, mid], 0xC2C2BE);
     B(pl, 0.02, 0.01, 3.6, 0xB8B8B4, 0, 0.11, 0.42, { rx: 0.03 }); for (const sx of [-1, 1]) B(pl, 0.015, 0.01, 2.9, 0xD8D8D4, sx * 0.8, 0.22, -0.2, { ry: -sx * 0.5 });
-    g.userData.plane = pl; seat = 1.15; pose = 'straddle'; arms = -0.9; hover = 0.8; sh = 2.4;
+    g.userData.plane = pl; seat = 0.9; pose = 'sit'; arms = -0.9; hover = 0.8; sh = 2.4; /* 1108b 다리를 앞으로 뻗고 앉아요 (날개를 뚫지 않게) */
   }
   return { g, legs, wheels, wings, tails, seat, pose, arms, hover, sh };
 }
@@ -19177,6 +19177,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1108b', d: '11월 26일', items: ['✈️ 종이 비행기: 다리를 앞으로 뻗고 앉아서 날개를 뚫고 보이지 않아요', '🎨 종이 비행기 색을 바꿀 수 있어요! 탈것 창에서 ✈️ 옆 🎨 (다른 탈것과 같은 색을 써요)'] },
   { id: '1108a', d: '11월 26일', items: ['✈️ 새 탈것 종이 비행기! 커다란 종이 비행기에 올라타 하늘을 날아요', '🎁 시즌 2 패스 8단계 보상에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라요'] },
   { id: '1107z', d: '11월 26일', items: ['🐲 용 뒤에 탔을 때 화면이 끊기던 문제를 줄였어요: 용 주인이 위치를 더 자주 보내고, 늦게 와도 같은 빠르기로 부드럽게 따라가요'] },
   { id: '1107y', d: '11월 26일', items: ['🚂 하늘 기차(선생님 기관사 모드)를 지웠어요 · 마을이 조금 더 가벼워졌어요'] },
