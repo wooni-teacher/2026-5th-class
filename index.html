@@ -4765,7 +4765,7 @@ function updatePlayer(dt) {
   keepInWorld(p, x0, z0); // 기존 마을 + (열렸으면) 숲속 캠프
 
   jumpBuffer -= dt;
-  const flying = (player.avatar.rideK === 'sky' || player.avatar.rideK === 'drone' || player.avatar.rideK === 'balloon' || (player.avatar.rideK === 'pegs' && swHere() && !sww.down)) && !isFrozen() && !sgFrozen(); /* 🪽 1105zz2 페가수스로 하늘 섬을 날아요 */ /* 🚂 1102j 기관차도 날아요 */ // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
+  const flying = (player.avatar.rideK === 'sky' || player.avatar.rideK === 'drone' || player.avatar.rideK === 'balloon' || player.avatar.rideK === 'plane' || (player.avatar.rideK === 'pegs' && swHere() && !sww.down)) && !isFrozen() && !sgFrozen(); /* 🪽 1105zz2 페가수스로 하늘 섬을 날아요 */ /* 🚂 1102j 기관차도 날아요 */ // 🐲 하늘을 나는 용: 스페이스·⬆️ 오르기 · Shift·C·⬇️ 내려가기 · 손을 떼면 그 높이에 떠 있어요
   if (flying) { const up = keys[' '] || fly.up ? 1 : 0, dn = keys.shift || keys.c || fly.dn ? 1 : 0; player.vy = (up - dn) * FLY_VY; jumpBuffer = 0; }
   else if (boardW.on && boardW.duo) player.vy = 0; /* 🐲 1107z 친구 탈것 뒷자리: 떨어지지 않아요 (하늘에서 화면이 덜컹이던 문제) */
   else { if (jumpBuffer > 0 && player.onGround && !sea.on && !sail.on) { player.vy = JUMP * buffJump(); player.onGround = false; jumpBuffer = 0; playSfx('jump'); } player.vy -= GRAVITY * dt; }
@@ -10833,7 +10833,7 @@ function updateRank(dt) { // 내 이름표 칭호 · 지난주 보상 받기 · 
   if (player.avatar && rankW.myTag !== tl) { rankW.myTag = tl; player.avatar.badge.userData.set([tl]); }
   for (const [u, r] of remotes) { if (!r.target) continue; const nm = nickOf(u, r.target) + warLvTag(u, r.target) + titleText(u, r.target) + praiseTag(u, r.target) + hpetTag(r.target.e | 0); if (r.nm !== nm) { r.nm = nm; r.a.badge.userData.set([nm]); } } // 🎤 칭찬 표시도 2초마다
   const pw = weekNum() - 1;
-  if (bag.ssn?.id === 's2' && (bag.ssn.lv | 0) >= 8 && !bag.ssOwn?.drone && !bag.ssOwn?.balloon && !isTeacher) setTimeout(() => { if (!bag.ssOwn?.drone && !bag.ssOwn?.balloon) openSsnAirPick(); }, 9000); /* 🎁 1107x 8단계를 이미 넘긴 친구도 골라요 */
+  if (bag.ssn?.id === 's2' && (bag.ssn.lv | 0) >= 8 && !airPicked() && !isTeacher) setTimeout(() => { if (!airPicked()) openSsnAirPick(); }, 9000); /* 🎁 1107x 8단계를 이미 넘긴 친구도 골라요 */
   if (bag.ride === 'drone' && !droneHave()) { bag.ride = ''; saveBag(); toast('🚁 드론을 빌린 한 주가 끝났어요. 이번 주 합계 1등이나 시즌 패스 10단계에 도전해요!', 'info'); }
   if (bag.ride === 'sky' && !skyHave()) { bag.ride = ''; saveBag(); toast('🐲 하늘을 나는 용을 타는 한 주가 끝났어요. 이번 주 합계 1등에 도전해요!', 'info'); }
   if (bag.rwk !== pw && !isTeacher) {
@@ -11175,17 +11175,20 @@ const RIDES = [
 const PET_RIDES = [['dog', '🐶', '강아지'], ['cat', '🐱', '고양이'], ['rabbit', '🐰', '토끼'], ['ham', '🐹', '햄스터'], ['chick', '🐥', '병아리'], ['fox', '🦊', '아기 여우'], ['gecko', '🦎', '히로']].map(([pet, icon, name], i) => ({ k: 'hp_' + pet, pet, icon, name, mul: pet === 'gecko' ? 1.35 : 1.25, v: 30 + i }));
 const RIDE_DRONE = { k: 'drone', icon: '🚁', name: '드론', mul: 1.6, v: 26, tOnly: 1, desc: '드론에 매달려 하늘을 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +60%' }; /* 🚁 1107o · 1107p 합계 1등(한 주) · 시즌 2 패스 10단계(계속) */
 const RIDE_BALLOON = { k: 'balloon', icon: '🎈', name: '열기구', mul: 1.35, v: 27, tOnly: 1, desc: '알록달록 열기구 바구니에 타고 둥실둥실 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +35%' }; /* 🎈 1107x 시즌 2 패스 8단계에서 드론과 둘 중 하나 */
+const RIDE_PLANE = { k: 'plane', icon: '✈️', name: '종이 비행기', mul: 1.6, v: 28, tOnly: 1, desc: '커다란 종이 비행기에 올라타 하늘을 미끄러지듯 날아요! 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기 · 빠르기 +60%' }; /* ✈️ 1108a 시즌 2 패스 8단계에서 고르기 */
 const RIDE_SLED = { k: 'sled', icon: '🛷', name: '눈썰매', mul: 1.5, v: 25, ss: '❄️ 시즌 2 패스 8단계', desc: '쓩~ 눈 위를 미끄러져요 · 빠르기 +50%' }; /* 🛷 1106z 시즌 2 보상 */
 const rideV = (R0, i) => R0.v || i + 1; // 탈것 번호 (players/{uid}/v)
-const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_SLED, RIDE_DRONE, RIDE_BALLOON].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
+const DUO_BY_V = Object.fromEntries(RIDES.filter(r => r.duo).map(r => [r.v, r])), RIDE_BY_VN = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_SLED, RIDE_DRONE, RIDE_BALLOON, RIDE_PLANE].filter(r => r.v).map(r => [r.v, r])); /* 🐟 1103e 번호가 있는 탈것 모두 */
 const RIDE_ROYAL = { k: 'royal', icon: '🐎', name: '왕의 말', mul: 1.3 }; // 👑 공성전 왕만 (사지 않아요)
 const RIDE_SKY = { k: 'sky', icon: '🐲', name: '하늘을 나는 용', mul: 1.7, v: 11, duo: { seats: [[0, -1.75]], pseat: 2.32, ppose: 'straddle' } /* 👫 1107x 친구 1명이 뒤에 타요 */, desc: '하늘을 훨훨! 스페이스·⬆️로 오르고 Shift·⬇️로 내려요 · 빠르기 +70%' }; // 🐲 지난주 능력치 합계 1등 보상 (이 기기 · 선생님은 늘)
 DUO_BY_V[11] = RIDE_SKY; /* 👫 1107x 용 뒷자리 */
 const RIDE_SKY_V = 11, skyHave = () => isTeacher || !!bag.skyOwn || bag.rx?.sky === weekNum() || bag.skyDay === dayNum(); // 🥚 1102i 알에서 부화하면 계속 // 🐲 + 반 기부함 선물: 받은 날 하루 // 🐲 받은 주(월~일)에만 · 다음 월요일에 초기화 (예전에 1로 받은 것도 끝나요)
-const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY, RIDE_SLED, RIDE_DRONE, RIDE_BALLOON].map(r => [r.k, r]));  RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
+const RIDE_K = RIDES.map(r => r.k), RIDE_BY = Object.fromEntries([...RIDES, ...PET_RIDES, RIDE_ROYAL, RIDE_SKY, RIDE_SLED, RIDE_DRONE, RIDE_BALLOON, RIDE_PLANE].map(r => [r.k, r]));  RIDE_BY.pegs = { k: 'pegs', icon: '🪽', name: '페가수스', mul: 1.15 }; RIDE_BY.gmh = { k: 'gmh', icon: '🐎', name: '철갑 말', mul: 1.3 }; RIDE_BY.bhh = { k: 'bhh', icon: '🐎', name: '발해 말', mul: 1.3 }; /* 🐎 1105zu 특수 병력 말 */ /* 🚂 1102j 기관사(선생님) */
 const droneHave = () => isTeacher || !!bag.ssOwn?.drone || bag.rx?.drone === weekNum(); /* 🚁 1107p 능력치 합계 1등(그 주) · 1107x 시즌 2 패스 8단계에서 고르면 계속 */
 const balloonHave = () => isTeacher || !!bag.ssOwn?.balloon; /* 🎈 1107x */
-const rideOpen = (k) => k === 'balloon' ? balloonHave() : k === 'drone' ? droneHave() : k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
+const planeHave = () => isTeacher || !!bag.ssOwn?.plane; /* ✈️ 1108a */
+const airPicked = () => !!(bag.ssOwn?.drone || bag.ssOwn?.balloon || bag.ssOwn?.plane);
+const rideOpen = (k) => k === 'plane' ? planeHave() : k === 'balloon' ? balloonHave() : k === 'drone' ? droneHave() : k === 'sky' ? skyHave() : k === 'sled' ? (isTeacher || !!bag.ssOwn?.sled) : RIDE_BY[k]?.pet ? (isTeacher || !!bag.hpet?.pets?.[RIDE_BY[k].pet]) : !!S.rides?.[k];
 // 🎨 탈것 꾸미기: 색·장식은 🐚로 한 번 열면 모든 탈것에 쓸 수 있어요 (⭐표는 주간 랭킹 보상으로만) · 친구 화면엔 players/{uid}/q = 색×10 + 장식
 const RIDE_COLORS = [{ n: '기본' }, { n: '빨강', c: 0xE2584A }, { n: '주황', c: 0xF08A24 }, { n: '노랑', c: 0xFFD23C }, { n: '초록', c: 0x5FBE5A }, { n: '파랑', c: 0x4A9AE8 }, { n: '보라', c: 0x9A5AD8 }, { n: '분홍', c: 0xF29BB8 }, { n: '검정', c: 0x3B3F46 }, { n: '하양', c: 0xF7F4EE }, { n: '금색', c: 0xE8C547, star: 1 }];
 const RIDE_ACC = [{ icon: '·', n: '없음' }, { icon: '🚩', n: '깃발' }, { icon: '🎈', n: '풍선' }, { icon: '🌸', n: '꽃 화환' }, { icon: '🔔', n: '방울' }, { icon: '⭐', n: '별 반짝이', star: 1 }, { icon: '👑', n: '왕관', star: 1 }, { icon: '🌈', n: '무지개 꼬리', star: 1 }, { icon: '💎', n: '보석 장식', gem: 2 }, { icon: '💫', n: '오로라 고리', star: 1 }];
@@ -11337,7 +11340,7 @@ function updateRides() {
   const b = $('rideBtn'), k = player.avatar.rideK, hide = !joined || sgInSG(player.pos) || trRegion() || swIn(player.pos) || roomNow() === 'reef' || sbt.on;
   b.classList.toggle('hidden', hide); b.classList.toggle('on', !!bag.ride && rideOpen(bag.ride));
   const ic = bag.ride && rideOpen(bag.ride) ? RIDE_BY[bag.ride].icon : '🚲'; if (b.textContent !== ic) b.textContent = ic;
-  { const f = $('flyBar'), on = joined && (k === 'sky' || k === 'drone' || k === 'balloon' || (k === 'pegs' && swHere())); if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
+  { const f = $('flyBar'), on = joined && (k === 'sky' || k === 'drone' || k === 'balloon' || k === 'plane' || (k === 'pegs' && swHere())); if (f.classList.contains('hidden') === on) f.classList.toggle('hidden', !on); if (!on) fly.up = fly.dn = false; } // 🐲 화면 오르기·내리기 버튼
   if (k && k !== 'royal' && k !== rideW.lastK) playSfx('pick');
   rideW.lastK = k;
 }
@@ -11366,9 +11369,11 @@ function openRides() {
       b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#BFE6FF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sky'); refillLife(); };
       row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); skyShopRow(box); } // 🥚 1102i
     { const R0 = RIDE_DRONE, have = droneHave(), on = have && bag.ride === 'drone', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🚁 1107p */
-      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc + (!isTeacher && !bag.ssOwn?.drone ? ' · 이번 주(일요일까지)' : '') : '🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · ❄️ 시즌 2 패스 8단계에서 🎈 열기구와 둘 중 하나를 골라 계속 타요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#DDE6EE'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('drone'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc + (!isTeacher && !bag.ssOwn?.drone ? ' · 이번 주(일요일까지)' : '') : '🏆 지난주 능력치 합계 1등이 한 주 동안 타요 · ❄️ 시즌 2 패스 8단계에서 🎈 열기구 · ✈️ 종이 비행기와 함께 셋 중 하나를 골라 계속 타요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#DDE6EE'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('drone'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { const R0 = RIDE_BALLOON, have = balloonHave(), on = have && bag.ride === 'balloon', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🎈 1107x */
-      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론과 🎈 열기구 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#FFE3C2'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('balloon'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#FFE3C2'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('balloon'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
+    { const R0 = RIDE_PLANE, have = planeHave(), on = have && bag.ride === 'plane', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* ✈️ 1108a */
+      tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : '❄️ 시즌 2 패스 8단계에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라 받아요')); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#EEF2F6'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('plane'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { const R0 = RIDE_SLED, have = rideOpen('sled'), on = have && bag.ride === 'sled', row = el2('div', 'ride-row' + (on ? ' on' : '')), tx = el2('span', 'ride-tx'), b = el2('button', 'btn'); /* 🛷 1106z */
       tx.append(el2('b', '', `${R0.name} ${have ? '✅' : '🔒'}`), el2('span', 'hint', have ? R0.desc : `${R0.ss} 보상 · 받으면 계속 타요`)); b.textContent = on ? '내리기' : '타기'; b.disabled = !have; if (have && !on) b.style.background = '#D6ECFF'; b.onclick = () => { if (on) { bag.ride = ''; saveBag(); } else rideMount('sled'); refillLife(); }; row.append(el2('span', 'ride-ic', R0.icon), tx, b); box.append(row); }
     { box.append(el2('p', 'lp-big', '🐾 내 펫 타기')); box.append(el2('p', 'hint', '집에서 키우는 펫이 커져서 탈것이 돼요! 반 동전은 안 써요. 펫은 바닷가 🐾 펫 가게에서 데려와요 (🦎 히로는 누구나 무료).')); /* 🐾 1105zx */
@@ -11585,6 +11590,13 @@ function rideBuild(a, k) {
       for (let v = 0; v < pos.count; v++) { const band = Math.floor((1 - pos.getY(v)) / 0.36); c.setHex(cols[(band + i * 3) % 4]); c.convertSRGBToLinear?.(); cl[v * 3] = c.r; cl[v * 3 + 1] = c.g; cl[v * 3 + 2] = c.b; }
       geo.setAttribute('color', new THREE.BufferAttribute(cl, 3)); const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, flatShading: true })); env.add(m); }
     g.userData.balloon = env; seat = 0.85; pose = 'stand'; arms = -0.6; hover = 0.6; sh = 2.6;
+  } else if (k === 'plane') { /* ✈️ 1108a 종이 비행기: 흰 종이를 접은 다트 모양 (날개 두 장 + 가운데 접힌 용골) · 사진을 참고한 단순 모형 */
+    const pl = new THREE.Group(); pl.position.y = 0.55; pl.scale.setScalar(1.45); g.add(pl);
+    const V = (x, y, z) => new V3(x, y, z), tri = (pts, col) => { const geo = new THREE.BufferGeometry().setFromPoints(pts); geo.computeVertexNormals(); const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, side: THREE.DoubleSide, flatShading: true, roughness: 0.9 })); m.castShadow = true; pl.add(m); };
+    const nose = V(0, 0.05, 2.3), lt = V(-1.75, 0.32, -1.45), rt = V(1.75, 0.32, -1.45), cl = V(-0.12, 0.12, -1.45), cr = V(0.12, 0.12, -1.45), keel = V(0, -0.42, -1.3), mid = V(0, 0.0, -1.45);
+    tri([nose, cl, lt], 0xF7F7F5); tri([nose, rt, cr], 0xF0F0EE); tri([nose, mid, cl], 0xDADAD6); tri([nose, cr, mid], 0xD2D2CE); tri([nose, keel, mid], 0xC4C4C0); tri([nose, mid, keel], 0xBDBDB8);
+    B(pl, 0.02, 0.01, 3.6, 0xB8B8B4, 0, 0.11, 0.42, { rx: 0.03 }); for (const sx of [-1, 1]) B(pl, 0.015, 0.01, 2.9, 0xD8D8D4, sx * 0.8, 0.22, -0.2, { ry: -sx * 0.5 });
+    g.userData.plane = pl; seat = 1.15; pose = 'straddle'; arms = -0.9; hover = 0.8; sh = 2.4;
   }
   return { g, legs, wheels, wings, tails, seat, pose, arms, hover, sh };
 }
@@ -11617,6 +11629,7 @@ function poseRide(a, moving, dt) { // 탈것 위 자세 + 탈것 움직임 (anim
   for (const [q, r] of R0.wheels) q.rotation.x += dt * moving * SPEED * 1.4 / Math.max(0.05, r) * 0.6;
   for (const [q, sd] of R0.wings) q.rotation.z = sd * (0.25 + Math.sin(ph * 0.7) * (0.35 + 0.25 * mv));
   for (const t of R0.tails) t.rotation.y = Math.sin(ph * 0.6) * 0.25;
+  if (R0.g.userData.plane) { const pl = R0.g.userData.plane, t = a.idle; pl.rotation.z = Math.sin(t * 1.1) * 0.06; pl.rotation.x = -0.06 * mv + Math.sin(t * 1.7) * 0.02; } /* ✈️ 살랑살랑 */
   if (R0.g.userData.balloon) { const fl = R0.g.userData.flame, t = a.idle; if (fl) { const k = 0.85 + Math.abs(Math.sin(t * 11)) * 0.35 + Math.sin(t * 17) * 0.08; fl.scale.set(1, k, 1); } R0.g.userData.balloon.rotation.y += dt * 0.15; R0.g.userData.balloon.parent.rotation.z = Math.sin(t * 0.9) * 0.02; } /* 🎈 불꽃 · 천천히 빙글 */
   if (R0.g.userData.props) { for (const q of R0.g.userData.props) q.rotation.y += dt * 38; R0.g.userData.drone.rotation.x = 0.1 * mv; R0.g.userData.drone.rotation.z = Math.sin(a.idle * 1.3) * 0.03; } /* 🚁 프로펠러 */
   if (R0.flag) R0.flag.rotation.y = Math.sin(a.idle * 6) * 0.25 * (0.4 + mv);
@@ -19164,6 +19177,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1108a', d: '11월 26일', items: ['✈️ 새 탈것 종이 비행기! 커다란 종이 비행기에 올라타 하늘을 날아요', '🎁 시즌 2 패스 8단계 보상에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라요'] },
   { id: '1107z', d: '11월 26일', items: ['🐲 용 뒤에 탔을 때 화면이 끊기던 문제를 줄였어요: 용 주인이 위치를 더 자주 보내고, 늦게 와도 같은 빠르기로 부드럽게 따라가요'] },
   { id: '1107y', d: '11월 26일', items: ['🚂 하늘 기차(선생님 기관사 모드)를 지웠어요 · 마을이 조금 더 가벼워졌어요'] },
   { id: '1107x', d: '11월 26일', items: ['💪 능력치 최고 레벨이 Lv15로! (Lv13 210 · Lv14 240 · Lv15 270점 더) · Lv15에서 성 공방전 역할이 한 번 더 강해져요', '🐲 하늘을 나는 용에 친구 1명이 뒤에 같이 타요 (친구 용 곁에서 E)', '🎈 새 탈것 열기구! ❄️ 시즌 2 패스 8단계에서 🚁 드론과 🎈 열기구 중 하나를 골라 받아요', '🛠️ 메이커 공방: 흰 테두리 벽을 뚫고 나가 도착하던 문제 고침 · 맵 밖으로 나가면 출발점에서 다시'] },
@@ -28578,7 +28592,7 @@ const SSN_REW = { // [종류, 키, 아이콘, 이름] · wear: 'h10' = 모자 10
     ['wear', 'h10', '🎃', '호박 모자'], ['title', 'ssb', '🎭', '칭호 🎭꿈끼스타'], ['trail', 't2', '✨', '무대 별빛 발자국'], ['wear', 'b10', '🍁', '단풍 망토'], ['title', 'ssc', '👑', '칭호 👑수확제왕']],
   s2: [['pet', 'wmuff', '🧣', '펫 눈꽃 털목도리'], ['title', 'ssd', '❄️', '칭호 ❄️눈송이'], ['wear', 'h19', '🎧', '털 귀마개'], ['trail', 't3', '❄️', '눈송이 발자국'],
     ['pet', 'rudolph', '🦌', '펫 루돌프 뿔', [['snow', 'snwdeco', '⛄', '눈사람 꾸미기 (내가 함께 만든 눈사람에 장식)']]], ['wear', 'h20', '🧶', '방울 털모자', [['boat', 'bdwin', '🚢', '배 겨울 장식']]],
-    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국'], ['pick', 'air', '🎁', '🚁 드론 또는 🎈 열기구 (하나 골라요)']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
+    ['title', 'sse', '⛄', '칭호 ⛄눈사람장인'], ['ride', 'sled', '🛷', '눈썰매 탈것', [['trail', 't4', '🌌', '오로라 발자국'], ['pick', 'air', '🎁', '🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 (하나 골라요)']]], ['wear', 'b17', '🧥', '하얀 눈꽃 망토'], ['hpet', 'peng', '🐧', '아기 펭귄 펫', [['title', 'ssf', '👑', '칭호 👑겨울왕']]]], // ❄️ 1106z 시즌 2 (5번째 칸 = 같이 받는 보상)
 };
 const SSN_TRAIL = [null, { icon: '🍂', n: '단풍잎 발자국', cols: [0xE8913A, 0xF2B640, 0xC0392B] }, { icon: '✨', n: '무대 별빛 발자국', cols: [0xFFE066, 0xFFFFFF, 0xB58CF0] }, { icon: '❄️', n: '눈송이 발자국', cols: [0xFFFFFF, 0xCFE8FF, 0x9FD0F5] }, { icon: '🌌', n: '오로라 발자국', cols: [0x5FE3A1, 0x7AB8FF, 0xC48CFF] }];
 const ssnById = (id) => SSNS.find(x => x.id === id);
@@ -28598,9 +28612,9 @@ function ssnStar(n = 1) { // ⭐ 시즌 별 (시즌이 열려 있을 때만 · �
 }
 const ssnHow = (kind) => kind === 'wear' ? '👕 옷가게에서 입어요' : kind === 'pet' ? '🐾 펫 가게에서 입혀요' : kind === 'title' ? '📊 → 🏷️ 내 칭호에서 달아요' : kind === 'ride' ? '🚲 탈것 가게에서 타요' : kind === 'hpet' ? '🐾 펫 가게에서 데려와요 (무료)' : kind === 'boat' ? '⛵ 조선소에서 배에 올려요' : kind === 'snow' ? '⛄ 광장 눈사람에 저절로 달려요' : '👣 시즌 창에서 골라요';
 function openSsnAirPick() { /* 🎁 1107x 시즌 2 패스 8단계: 🚁 드론 또는 🎈 열기구 하나 (한 번 고르면 바꿀 수 없어요) */
-  if (bag.ssOwn?.drone || bag.ssOwn?.balloon || isTeacher) return;
-  openLife('🎁 하늘 탈것 고르기', (box) => { box.textContent = ''; box.append(el2('p', 'lp-big', '시즌 패스 8단계 보상!'), el2('p', 'hint', '둘 중 하나를 골라요 · 한 번 고르면 바꿀 수 없어요'));
-    const row = el2('div', 'row-center wrap'); for (const R0 of [RIDE_DRONE, RIDE_BALLOON]) { const c = el2('button', 'btn', ''); c.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;min-width:150px;background:#F2FAFF';
+  if (airPicked() || isTeacher) return;
+  openLife('🎁 하늘 탈것 고르기', (box) => { box.textContent = ''; box.append(el2('p', 'lp-big', '시즌 패스 8단계 보상!'), el2('p', 'hint', '셋 중 하나를 골라요 · 한 번 고르면 바꿀 수 없어요'));
+    const row = el2('div', 'row-center wrap'); for (const R0 of [RIDE_DRONE, RIDE_BALLOON, RIDE_PLANE]) { const c = el2('button', 'btn', ''); c.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 14px;min-width:132px;background:#F2FAFF';
       const ic = el2('span', '', R0.icon); ic.style.fontSize = '44px'; c.append(ic, el2('b', '', R0.name), el2('span', 'hint', R0.desc.split(' · ')[0]));
       c.onclick = () => { if (!c.dataset.arm) { c.dataset.arm = 1; c.querySelector('b').textContent = `${R0.name} · 한 번 더 누르면 골라요`; return; } (bag.ssOwn ||= {})[R0.k] = 1; bag.ride = R0.k; saveBag(); closeLife(); playSfx('fanfare'); burst(player.pos.clone().setY(2.4), RAINBOW, 60, 6, 3); showBanner(`${R0.icon} ${R0.name}을(를) 받았어요!`, '🚲 탈것 버튼에서 언제든 타요 · 스페이스·⬆️ 오르기 · Shift·⬇️ 내리기', 6000); }; row.append(c); }
     box.append(row); });
@@ -28630,7 +28644,7 @@ function openSeason() {
     R.forEach(([kind, key, ic, nm, also], i) => { if (also) nm += also.map(x => ` + ${x[2]} ${x[3]}`).join(''); const got = isTeacher || me.lv > i, card = el2('div', ''); card.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 10px;margin:5px 0;border-radius:12px;background:${got ? '#E5F7DF' : '#fff'};box-shadow:0 1px 3px rgba(0,0,0,.07)`;
       const lv = el2('b', '', `${i + 1}단계`); lv.style.minWidth = '52px'; const icn = el2('span', '', got ? ic : '🔒'); icn.style.fontSize = '26px';
       const tx = el2('div', ''); tx.style.flex = '1'; tx.append(el2('b', '', nm), el2('div', 'hint', got ? `✅ 받았어요 · ${ssnHow(kind)}` : `⭐ ${SSN_STARS[i]}개 모으면`));
-      if (got && !isTeacher && also?.some(x => x[0] === 'pick') && !bag.ssOwn?.drone && !bag.ssOwn?.balloon) { const pk = el2('button', 'btn', '🎁 고르기'); pk.style.background = '#FFD23C'; pk.onclick = openSsnAirPick; tx.append(pk); } /* 🎁 1107x */
+      if (got && !isTeacher && also?.some(x => x[0] === 'pick') && !airPicked()) { const pk = el2('button', 'btn', '🎁 고르기'); pk.style.background = '#FFD23C'; pk.onclick = openSsnAirPick; tx.append(pk); } /* 🎁 1107x */
       card.append(lv, icn, tx); box.append(card); });
     { const got = isTeacher || !!bag.skyOwn || !!bag.dEgg, c2 = el2('div', ''); c2.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 10px;margin:5px 0;border-radius:12px;border:2px dashed #6EC1EC;background:${got ? '#E5F7DF' : '#F2FAFF'}`; const tx2 = el2('div', ''); tx2.style.flex = '1'; tx2.append(el2('b', '', `🎁 ${SKY_EGG_LV}단계 보너스: 🥚 하늘 용 알`), el2('div', 'hint', got ? (bag.skyOwn || isTeacher ? '✅ 🐲 하늘 용이 태어났어요 · 🚲 탈것 가게에서 타고 꾸며요' : `✅ 받았어요 · 🚲 탈것 가게에서 품어 줘요 (${bag.dEgg.n | 0}/${SKY_EGG_DAYS})`) : `${SKY_EGG_LV}단계가 되면 받아요 · 3일 품으면 계속 타는 🐲 하늘을 나는 용`)); c2.append(el2('span', '', got ? '🥚' : '🔒'), tx2); c2.firstChild.style.fontSize = '26px'; box.append(c2); } // 🐲 1102i
     const own = SSN_TRAIL.map((T, i) => [T, i]).filter(([T, i]) => T && ssOwn('t' + i));
