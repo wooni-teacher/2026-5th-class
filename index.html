@@ -19221,6 +19221,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1108d', d: '11월 26일', items: ['⭐ 역사 공방전 필살기 키가 G → 3 으로 바뀌었어요! (손가락이 닿기 쉬워요)'] },
   { id: '1108c', d: '11월 26일', items: ['👕 옷가게에 새 칸이 생겼어요! 🧥 몸 옷 · 👟 신발 · ✋ 손 소품 (망토·날개와 같이 입을 수 있어요)', '❄️ 겨울 옷: 🎅 산타 모자 · 🦌 루돌프 뿔 · ⛄ 눈사람 탈 · 🧣 목도리 · 🎄 스웨터 · 🧤 벙어리장갑', '😺 얼굴 꾸미기 9가지: 빨간 코 · 고양이 수염 · 호랑이 무늬 · 마스크 · 외알 안경 · 닌자 복면 · 반창고 · 뿔테 안경 · 스키 고글'] },
   { id: '1108b', d: '11월 26일', items: ['✈️ 종이 비행기: 다리를 앞으로 뻗고 앉아서 날개를 뚫고 보이지 않아요', '🎨 종이 비행기 색을 바꿀 수 있어요! 탈것 창에서 ✈️ 옆 🎨 (다른 탈것과 같은 색을 써요)'] },
   { id: '1108a', d: '11월 26일', items: ['✈️ 새 탈것 종이 비행기! 커다란 종이 비행기에 올라타 하늘을 날아요', '🎁 시즌 2 패스 8단계 보상에서 🚁 드론 · 🎈 열기구 · ✈️ 종이 비행기 중 하나를 골라요'] },
@@ -24877,7 +24878,7 @@ function sgDash() {
    게이지: 상대 맞히기 +8 · 쓰러뜨리기 +12 · 🤖 +5 · 성문 +2 · 🏛️ 창고 보급 문제 +25 · 살아 있으면 1초에 +0.5 · 한 판마다 0부터
    그림은 sgShot { m: 9, a: -1, v: 종류 1~5 } 로 모두에게 보여요 (규칙 그대로) · 피해는 쓴 사람 기기가 계산해요 (다른 스킬과 같아요) */
 const SG_ULT = { king: [1, '👑', '천하 호령', '둘레 16걸음 우리 편: 5초 무적 · 30초 함성(피해 +1·빨라져요) · 쓰러진 친구도 일으켜요'], gen: [2, '🎖️', '대지 가르기', '앞으로 10걸음 땅을 갈라요: 상대 모두 큰 피해 + 어질어질 · 성문 8'], sol: [3, '⚔️', '돌격 연타', '앞으로 길게 달려가며 부딪힌 상대 모두 베기 + 어질어질 · 성문 6'], pow: [3, '⛓️', '탈출 돌격', '앞으로 길게 달려가며 부딪힌 상대 모두 치기'], arch: [4, '🏹', '화살비', '보는 쪽 12걸음 앞 원 안에 화살이 쏟아져요 · 성문 6'], smith: [5, '⚒️', '투석기 일제 사격', '가장 가까운 상대 성문에 큰 돌 3개 · 둘레 상대도 피해'] };
-for (const [r, U] of Object.entries(SG_ULT)) SG_ROLES[r]?.can?.push(`⭐ 필살기(G): ${U[2]} — ${U[3]} · 게이지는 맞히기·🏛️ 창고 문제로 차요`);
+for (const [r, U] of Object.entries(SG_ULT)) SG_ROLES[r]?.can?.push(`⭐ 필살기(3): ${U[2]} — ${U[3]} · 게이지는 맞히기·🏛️ 창고 문제로 차요`);
 const SG_ULT_N = ['', '천하 호령', '대지 가르기', '돌격 연타', '화살비', '투석기 일제 사격'];
 const sgUltV = () => { const r = S.siege?.r; if (sgw.ultR !== r) { sgw.ultR = r; sgw.ult = 0; } return sgw.ult || 0; };
 function sgUltAdd(n) { if (!S.siege?.on || !sgMine() || sgWinner() || performance.now() < (sgw.ultMute || 0)) return; const was = sgUltV(); sgw.ult = Math.min(100, was + n); if (was < 100 && sgw.ult >= 100) { playSfx('right'); const U = SG_ULT[sgMyRole()]; toast(`⭐ 필살기가 다 찼어요! ${U ? `${U[1]} ${U[2]}` : ''} (G · ⭐ 버튼)`, 'success'); } if (Math.floor(was / 5) !== Math.floor(sgw.ult / 5)) renderSgBar(true); }
@@ -25847,7 +25848,7 @@ function renderSgBar(force) {
   $('sgSkFire').textContent = sgw.fireAim ? '🔥 여기에! (F)' : '🔥 화공'; $('sgSkFire').style.outline = sgw.fireAim ? '3px solid #FF4A1A' : '';
   $('sgArmBtn').classList.toggle('hidden', !!w || role !== 'smith'); $('sgArmBtn').disabled = hurt || sgArm(me) >= 2; $('sgArmBtn').textContent = sgArm(me) >= 2 ? '🛡️ 철 갑옷 완성' : `🛡️ 내 ${SG_ARM[sgArm(me) + 1].name} (⛓️${sgIron(SG_ARM[sgArm(me) + 1].cost)})`;
   $('sgBarBtn').classList.toggle('hidden', !!w || role !== 'smith'); $('sgBarBtn').disabled = hurt;
-  { const u = sgUltV(), U = SG_ULT[role], full = u >= 100; const b = $('sgUltBtn'); b.classList.toggle('hidden', !!w || !U); b.disabled = hurt || sgBreak(); b.classList.toggle('sg-ult-full', full); b.style.setProperty('--u', `${Math.floor(u)}%`); if (U) b.textContent = full ? `⭐ ${U[2]}! (G)` : `⭐ 필살기 ${Math.floor(u)}%`; b.title = U ? `${U[1]} ${U[2]}: ${U[3]}` : ''; } /* ⭐ 1107j */
+  { const u = sgUltV(), U = SG_ULT[role], full = u >= 100; const b = $('sgUltBtn'); b.classList.toggle('hidden', !!w || !U); b.disabled = hurt || sgBreak(); b.classList.toggle('sg-ult-full', full); b.style.setProperty('--u', `${Math.floor(u)}%`); if (U) b.textContent = full ? `⭐ ${U[2]}! (3)` : `⭐ 필살기 ${Math.floor(u)}%`; b.title = U ? `${U[1]} ${U[2]}: ${U[3]}` : ''; } /* ⭐ 1107j */
   $('sgRoleBtn').classList.toggle('hidden', !!w);
   $('sgHome').classList.toggle('hidden', !w);
 }
@@ -26020,7 +26021,7 @@ function initSiegeUI() {
   addEventListener('keydown', e => { if (e.target instanceof Element && e.target.matches('input, textarea, select')) return; const k = e.key.toLowerCase();
     if (k === 'r' && !e.repeat && !placing.active && S.siege && siegeRegion() && sgMyRole() === 'arch') sgMulti(); // 🏹 1101p 멀티샷
     else if (k === 'r' && !e.repeat && !placing.active && trRegion() && trw.role === 'arch') trMulti(); /* 1105l 체험장 */
-    if (k === 'g' && !e.repeat && S.siege && siegeRegion()) sgUlt(); /* ⭐ 1107j 필살기 */
+    if ((k === '3' || k === '#' || e.code === 'Digit3') && !e.repeat && S.siege && siegeRegion()) sgUlt(); /* ⭐ 1108d 필살기 3 키 (G → 3) */
     if (k === 'q' && !e.repeat) { if (S.siege && siegeRegion()) sgQ(); else if (trw.role === 'sol' && trRegion()) trDash(); else if (trRegion() && ['arch', 'gen', 'king', 'tur'].includes(trw.role)) trQ(); }
     if (k === 'escape' && sgw.fireAim) { sgw.fireAim = 0; renderSgBar(true); } });
   $('sgBarBtn').onclick = sgPlaceBar; $('sgRoleBtn').onclick = openSgRole; $('sgGuideBtn').onclick = () => openSgGuide(); $('tpSgGuide').onclick = () => openSgGuide(); /* 📖 1103c */
