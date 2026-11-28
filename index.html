@@ -7913,6 +7913,7 @@ function canStand(x, z) {
   if (Math.hypot(x - SW.cx, z - SW.cz) <= SW.R + 2) return true; /* ☁️ 1105zy 하늘 경기장 */
   if (inMk(x, z)) return true; /* 🛠️ 1107g 메이커 공방 */
   if (inAp(x, z)) return true; /* 🎡 1108i 놀이동산 */
+  if (inSpg(x, z)) return true; /* 🏃 1108o 체육 마당 */
   if (nvInWalk(x, z)) return true; /* 🧮 1106l 수학 해전 바다 · 부두 */
   if (inIsle(x, z)) return true; // 🏝️ 보물섬 (바다를 건너야 해서 배로만 와요)
   if (inField(x, z) || inBeach(x, z) || inMount(x, z) || inHV(x, z) || inClass(x, z) || inArena(x, z) || inHomeRoom(x, z) || inMath(x, z) || inMineCave(x, z) || inRoom(x, z) || inHist(x, z) || inSiege(x, z) || inEV(x, z) || inMP(x, z) || inTrain(x, z)) return true; // 우리 집 마을 들판 · 바닷가 · 뒷산 (늘 열려 있어요)
@@ -19452,6 +19453,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1108o', d: '11월 28일', items: ['🏃 새 장소 「체육 마당」! 🌀 마을 포털에서 가요', '📹 동작 인식 운동: 태블릿 앞에서 팔 벌려 뛰기 · 스쿼트 · 무릎 올리기를 하면 카메라가 세어 줘요 (영상은 저장하지 않아요) → 🏃 체육력 · 🐚', '🤝 스포츠맨십 카드: 체육 시간에 생길 일, 어떻게 할까요? 하루 3장 → 🏃 +3 · 🐚 +5', '🏆 체육 마당 순위판에 이번 주 체육력 1~5등'] },
   { id: '1108n', d: '11월 28일', items: ['🏃 새 능력치 「체육력」! 체육 시간에 규칙을 지키고 · 화내지 않고 · 상대를 존중하고 · 끝까지 열심히 · 응원·협동하면 선생님이 줘요', '🗑️ 반월몬스터즈 경기장·챔피언스리그를 정리했어요 (펫 대전은 그대로)'] },
   { id: '1108m', d: '11월 28일', items: ['📚 독서록 인증 국어력이 커졌어요! (쪽수 점수 × 1.5 + 20 · 선생님이 인정한 독서는 하루 상한 없이 다 올라요)', '📷 독서로 국어력을 올리는 방법은 이제 독서록 사진 인증 하나예요'] },
   { id: '1108l', d: '11월 28일', items: ['🐚 독서록 인증 보상이 커졌어요! 1차 통과 🐚 15 · 선생님 ✅ 인정 🐚 60 (그날 첫 권 +10) · 🏅 배지 받으면 🐚 100 더'] },
@@ -19938,11 +19940,12 @@ function openPortal() {
     const dests = [['🏯', '역사 마을', '시대 퀴즈 · 서당 · 역사의 길', 'hv'], ['⛏️', '수학 광산 마을', '수학 문제로 광석 캐기', 'math'], ['🗽', '영어 마을', 'Lesson 7~12 영어 놀이 · 훈련소', 'ev'], ['🔤', '한글 마을 (국어)', '문장 · 맞춤법 · 속담 · 읽기 · 시 · 🕵️ 매체 탐정', 'kv']]; // 1101i
     dests.push(['🛠️', '메이커 공방', '친구가 만든 맵 도전 · 내 맵 만들기', 'mk']); /* 1107g */
     dests.push(['🎡', '반월 놀이동산', '바이킹 · 드롭타워 · 🍿 영어 매점 · 🎨 꾸미기', 'ap']); /* 1108i */
+    dests.push(['🏃', '체육 마당', '📹 동작 인식 운동 · 🤝 스포츠맨십 카드 · 🏃 체육력', 'spg']); /* 1108o */
     /* 🗑️ 1108n 반월몬스터즈 경기장 포털 삭제 */
     if (S.siege?.on) dests.unshift(['⚔️', '전쟁터', '성 공방전 중! 우리 성으로 가요', 'sg']);
     for (const [ic, name, sub, d] of dests) {
       const b = el2('button', 'sg-role'), t = el2('span', 'sg-role-txt'); t.append(el2('b', '', name), el2('span', 'sg-role-tag', sub));
-      b.append(el2('span', 'sg-role-ic', ic), t); b.onclick = () => { closeLife(); setTimeout(() => d === 'mk' ? mkGo() : d === 'ap' ? apGo() : d === 'sg' ? sgSpawn() : d === 'pml' ? enterRoom('pml') : travelTo(d, true), 150); }; list.append(b);
+      b.append(el2('span', 'sg-role-ic', ic), t); b.onclick = () => { closeLife(); setTimeout(() => d === 'mk' ? mkGo() : d === 'ap' ? apGo() : d === 'spg' ? spgGo() : d === 'sg' ? sgSpawn() : d === 'pml' ? enterRoom('pml') : travelTo(d, true), 150); }; list.append(b);
     }
     box.append(list);
   });
@@ -24095,7 +24098,7 @@ const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
   math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🚴 레일바이크 · 📘 학당 · 🧮 혼합 계산 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
-  pe: { icon: '🏃', name: '체육력', where: '체육 시간 태도 평가 (선생님이 줘요) · ⚖️ 규칙 지키기 · 😌 화내지 않고 참여 · 🤝 상대 존중 · 🔥 끝까지 열심히 · 👏 응원·협동', role: '🏃 체육 시간에 멋진 태도로 자라요' }, /* 🏃 1108n */
+  pe: { icon: '🏃', name: '체육력', where: '🌀 체육 마당 (📹 동작 인식 운동 · 🤝 스포츠맨십 카드) · 체육 시간 태도 평가 (선생님) · ⚖️ 규칙 지키기 · 😌 화내지 않고 참여 · 🤝 상대 존중 · 🔥 끝까지 열심히 · 👏 응원·협동', role: '🏃 체육 시간에 멋진 태도로 자라요' }, /* 🏃 1108n */
   read: { icon: '📚', name: '국어력', where: '광장 독서 책상 📷 독서록 인증 (선생님 ✅ 인정 · 쪽수 × 책 모양 · 하루 상한 없음) · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 // ================= 🏛️ 1106c 능력치 1등 기념비 (광장 옛 🌼 꾸미기 구역 · 지난주 1등 · 월요일에 바뀌어요 · 겹쳐도 모두 그 학생) =================
@@ -24201,7 +24204,7 @@ function openStats() {
 }
 // ❓ 능력치 점수 얻는 방법 (학생 안내 · 1017c)
 const STAT_GUIDE = {
-  pe: [['🧑‍🏫 체육 시간 태도 평가', '선생님이 체육 시간이 끝나면 눌러 줘요 (하나에 +10)'], ['⚖️ 규칙 지키기 · 😌 화내지 않고 참여', '이기고 져도 웃으며 끝까지'], ['🤝 상대 존중 · 🔥 끝까지 열심히 · 👏 응원·협동', '친구를 배려하고 응원해요']], /* 🏃 1108n */
+  pe: [['📹 체육 마당 동작 인식 운동', '팔 벌려 뛰기 1개 +1 · 스쿼트 1개 +1.5 · 무릎 올리기 1개 +0.5 (하루 60까지)'], ['🤝 스포츠맨십 카드', '처음에 맞히면 +3 (하루 3장)'], ['🧑‍🏫 체육 시간 태도 평가', '선생님이 체육 시간이 끝나면 눌러 줘요 (하나에 +10)'], ['⚖️ 규칙 지키기 · 😌 화내지 않고 참여', '이기고 져도 웃으며 끝까지'], ['🤝 상대 존중 · 🔥 끝까지 열심히 · 👏 응원·협동', '친구를 배려하고 응원해요']], /* 🏃 1108n */
   eng: [['🗽 영어 마을 구역 놀이 · 🏋️ 영어 훈련소', '고르기 정답 +1 · 쓰기 정답 +2 · 한 판 통과 +3 (쓰기 1개마다 +1 더)'], ['🧭 영어 미로', '칸 도착 +2 × 단계 · 통과 +3 × 단계 (Level 3이 제일 많아요)'], ['🔨 천막 두더지 (영어 단어)', '잡은 단어 수의 절반']],
   math: [['⛏️ 단원 광산 (5단계)', '한 문제 +2 ~ +8'], ['🚴 광산 레일바이크', '광맥 한 곳 +2 ~ +8'], ['📘 단원 학당 기초 문제', '+1'], ['🧮 혼합 계산 공방', '한 문제 +4'], ['🪞 대칭 거울 공방 (3단원 학당)', '한 문제 +3'], ['⚖️ 저울 5문제 보물 (하루 1번)', '+10'], ['🔨 천막 두더지 (곱셈)', '잡은 문제 수만큼']],
   soc: [['🏯 역사의 길 시대 퀴즈', '처음 보는 문제 한 번에 정답 +4 · 다시 맞히면 +2'], ['🏛️ 역사 박물관 연표 맞추기', '쉬움 +5 · 보통 +8 · 어려움 +12 (한 번에 맞히면 +3 더)']],
@@ -30447,6 +30450,154 @@ function apTick(dt) {
   if (!joined) return; apClerkTick(); apBuyTick();
 }
 
+/* ================= 🏃 1108o 체육 마당 (🌀 포털 · 따로 있는 작은 맵) =================
+   · 📹 동작 인식 운동: 태블릿 앞 카메라 + MediaPipe Pose(cdn.jsdelivr · 기기 안에서만 · 영상은 저장·전송하지 않아요) → 팔 벌려 뛰기 · 스쿼트 · 무릎 올리기 개수 세기 → 🏃 체육력
+   · 🤝 스포츠맨십 상황 카드: 하루 3장 · 처음에 맞히면 🏃 +3 · 🐚 +5 */
+const SPG = { x: 3600, z: 320, w: 64, d: 52 };
+const inSpg = (x, z) => Math.abs(x - SPG.x) < SPG.w / 2 + 2 && Math.abs(z - SPG.z) < SPG.d / 2 + 2;
+const spgRegion = () => joined && inSpg(player.pos.x, player.pos.z);
+const spW = { built: false, g: null, board: null, bkey: '' };
+const EX = {
+  jack: { icon: '🙆', name: '팔 벌려 뛰기', how: '두 팔을 머리 위로 올렸다가 내려요', pts: 1, tgt: [10, 20, 30] },
+  squat: { icon: '🏋️', name: '스쿼트', how: '무릎을 굽혀 앉았다가 일어나요 (다리까지 화면에 보이게)', pts: 1.5, tgt: [5, 10, 15] },
+  knee: { icon: '🦵', name: '무릎 올리기', how: '왼쪽·오른쪽 무릎을 번갈아 허리 높이까지 올려요', pts: 0.5, tgt: [20, 30, 40] } };
+const EX_DAY_PE = 60, EX_DAY_SH = 30, POSE_V = '0.5.1675469404', POSE_CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${POSE_V}/`;
+const exW = { k: 'jack', tgt: 20, n: 0, st: '', on: false, stream: null, pose: null, raf: 0, busy: false, t0: 0, last: null, msg: '', side: '' };
+let poseLoad = null;
+function loadPose() { return poseLoad ||= new Promise((ok, no) => { if (window.Pose) return ok(); const sc = document.createElement('script'); sc.src = POSE_CDN + 'pose.js'; sc.crossOrigin = 'anonymous'; sc.onload = () => ok(); sc.onerror = () => { poseLoad = null; no(new Error('pose')); }; document.head.append(sc); }); }
+const exAng = (a, b, c) => { const v1x = a.x - b.x, v1y = a.y - b.y, v2x = c.x - b.x, v2y = c.y - b.y; const d = Math.hypot(v1x, v1y) * Math.hypot(v2x, v2y); return d ? Math.acos(Math.max(-1, Math.min(1, (v1x * v2x + v1y * v2y) / d))) * 180 / Math.PI : 180; };
+function exStep(k, L, S0) { // 자세 한 장 → { st 지금 자세, n 늘어난 개수, msg }  (L: 33개 점 · y는 아래로 커져요)
+  const vis = (i) => (L[i]?.visibility ?? 1) > 0.5, sh = (L[11].y + L[12].y) / 2, hp = (L[23].y + L[24].y) / 2, torso = Math.max(0.05, hp - sh);
+  if (![11, 12, 23, 24].every(vis)) return { st: S0, n: 0, msg: '🙂 몸이 화면에 보이게 조금 뒤로 가요' };
+  if (k === 'jack') { if (!vis(15) || !vis(16)) return { st: S0, n: 0, msg: '🙌 두 손이 보이게 해요' };
+    const up = L[15].y < sh - 0.05 && L[16].y < sh - 0.05, dn = L[15].y > sh + torso * 0.35 && L[16].y > sh + torso * 0.35;
+    if (up && S0 === 'down') return { st: 'up', n: 1, msg: '' }; if (up) return { st: S0 === '' ? 'up0' : S0, n: 0, msg: '' }; if (dn) return { st: 'down', n: 0, msg: '' }; return { st: S0, n: 0, msg: '' }; }
+  if (k === 'squat') { if (![25, 26, 27, 28].every(vis)) return { st: S0, n: 0, msg: '🦵 무릎과 발까지 보이게 뒤로 가요' };
+    const a = (exAng(L[23], L[25], L[27]) + exAng(L[24], L[26], L[28])) / 2;
+    if (a < 115) return { st: 'down', n: 0, msg: '' }; if (a > 155 && S0 === 'down') return { st: 'up', n: 1, msg: '' }; return { st: S0 || 'up', n: 0, msg: '' }; }
+  if (k === 'knee') { if (![25, 26].every(vis)) return { st: S0, n: 0, msg: '🦵 무릎이 보이게 뒤로 가요' };
+    const lu = L[25].y < hp + torso * 0.22, ru = L[26].y < hp + torso * 0.22, ld = L[25].y > hp + torso * 0.45, rd = L[26].y > hp + torso * 0.45;
+    if (lu && !ru && S0 !== 'L') return { st: 'L', n: S0 === 'R' || S0 === 'dn' ? 1 : 0, msg: '' }; if (ru && !lu && S0 !== 'R') return { st: 'R', n: S0 === 'L' || S0 === 'dn' ? 1 : 0, msg: '' };
+    if (ld && rd && S0 === '') return { st: 'dn', n: 0, msg: '' }; return { st: S0, n: 0, msg: '' }; }
+  return { st: S0, n: 0, msg: '' };
+}
+const EX_BONES = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28]];
+function exOverlay() {
+  let ov = $('exOv'); if (ov) return ov; ov = document.createElement('div'); ov.id = 'exOv'; ov.className = 'hidden';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:#0E1626;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:inherit';
+  ov.innerHTML = `<div style="position:relative;width:min(96vw,128vh);aspect-ratio:4/3;max-height:78vh;border-radius:16px;overflow:hidden;background:#000"><video id="exVid" playsinline muted autoplay style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)"></video><canvas id="exCv" style="position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1)"></canvas>
+    <div id="exTop" style="position:absolute;left:0;right:0;top:0;padding:10px 14px;background:linear-gradient(#0009,#0000);font-size:20px;font-weight:700"></div><div id="exCnt" style="position:absolute;right:18px;bottom:10px;font-size:min(18vw,120px);font-weight:900;text-shadow:0 4px 14px #000a"></div><div id="exMsg" style="position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:22px;font-weight:700;text-shadow:0 2px 8px #000"></div></div>
+    <div style="display:flex;gap:10px;margin-top:12px"><button class="btn" id="exStop" style="font-size:20px;padding:12px 26px;background:#FFD23C">🏁 그만하기</button></div><p style="opacity:.75;font-size:14px;margin:8px">🔒 카메라 영상은 이 태블릿 안에서만 쓰고 저장하거나 보내지 않아요</p>`;
+  document.body.append(ov); $('exStop').onclick = () => exFinish(false); return ov;
+}
+async function exStart(k, tgt) {
+  if (exW.on) return; exW.k = k; exW.tgt = tgt; exW.n = 0; exW.st = ''; exW.msg = ''; const ov = exOverlay(); ov.classList.remove('hidden'); closeLife(); exW.on = true;
+  $('exTop').textContent = `${EX[k].icon} ${EX[k].name} · 목표 ${tgt}개 · 준비 중…`; $('exCnt').textContent = ''; $('exMsg').textContent = '📷 카메라를 켜는 중이에요';
+  try { exW.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false }); }
+  catch (e) { $('exMsg').textContent = '⚠️ 카메라를 켜지 못했어요 (카메라 허용을 눌러 주세요)'; setTimeout(() => exFinish(true), 2500); return; }
+  const v = $('exVid'); v.srcObject = exW.stream; await v.play().catch(() => { });
+  $('exMsg').textContent = '🤖 동작 인식 준비 중… (처음엔 조금 걸려요)';
+  try { await loadPose(); if (!exW.pose) { exW.pose = new window.Pose({ locateFile: f => POSE_CDN + f }); exW.pose.setOptions({ modelComplexity: 0, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 }); exW.pose.onResults(exOnRes); await exW.pose.initialize?.(); } }
+  catch (e) { $('exMsg').textContent = '⚠️ 동작 인식을 불러오지 못했어요 (인터넷을 확인해요)'; setTimeout(() => exFinish(true), 3000); return; }
+  if (!exW.on) return;
+  for (const c of [3, 2, 1]) { if (!exW.on) return; $('exCnt').textContent = c; playSfx('pick'); await sleep(800); }
+  $('exCnt').textContent = '0'; $('exMsg').textContent = EX[k].how; exW.t0 = performance.now(); playSfx('bell'); exLoop();
+}
+async function exLoop() {
+  if (!exW.on) return; const v = $('exVid');
+  if (!exW.busy && v.readyState >= 2) { exW.busy = true; try { await exW.pose.send({ image: v }); } catch (e) { } exW.busy = false; }
+  const left = Math.max(0, 90 - (performance.now() - exW.t0) / 1000); $('exTop').textContent = `${EX[exW.k].icon} ${EX[exW.k].name} · ${exW.n} / ${exW.tgt}개 · ⏱️ ${Math.ceil(left)}초`;
+  if (left <= 0) { exFinish(false); return; } exW.raf = requestAnimationFrame(exLoop);
+}
+function exOnRes(r) {
+  const cv = $('exCv'), v = $('exVid'); if (!cv || !exW.on) return; cv.width = v.videoWidth || 640; cv.height = v.videoHeight || 480; const c = cv.getContext('2d'); c.clearRect(0, 0, cv.width, cv.height);
+  const L = r.poseLandmarks; if (!L) { $('exMsg').textContent = '🙂 화면 앞에 서 주세요'; return; }
+  c.lineWidth = 6; c.strokeStyle = '#7FFFD4'; c.fillStyle = '#FFD23C'; for (const [a, b] of EX_BONES) { if ((L[a].visibility ?? 1) < 0.4 || (L[b].visibility ?? 1) < 0.4) continue; c.beginPath(); c.moveTo(L[a].x * cv.width, L[a].y * cv.height); c.lineTo(L[b].x * cv.width, L[b].y * cv.height); c.stroke(); }
+  for (const i of [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28]) if ((L[i].visibility ?? 1) > 0.4) { c.beginPath(); c.arc(L[i].x * cv.width, L[i].y * cv.height, 7, 0, 7); c.fill(); }
+  const s = exStep(exW.k, L, exW.st); exW.st = s.st; $('exMsg').textContent = s.msg || EX[exW.k].how;
+  if (s.n) { exW.n += s.n; $('exCnt').textContent = exW.n; playSfx(exW.n % 5 ? 'pick' : 'coin'); if (exW.n >= exW.tgt) exFinish(false); }
+}
+function exFinish(fail) {
+  if (!exW.on) return; exW.on = false; cancelAnimationFrame(exW.raf); try { exW.stream?.getTracks().forEach(t => t.stop()); } catch (e) { } exW.stream = null; $('exOv')?.classList.add('hidden');
+  if (fail || !exW.n) { if (!fail) toast('🙂 다음엔 한 개라도 해 봐요!', 'info'); return; }
+  const D = bag.exDay?.d === dayNum() ? bag.exDay : { d: dayNum(), pe: 0, sh: 0, n: 0 }; const want = Math.round(exW.n * EX[exW.k].pts), pe = Math.max(0, Math.min(want, EX_DAY_PE - D.pe)), sh = Math.max(0, Math.min(Math.floor(exW.n / 2), EX_DAY_SH - D.sh));
+  D.pe += pe; D.sh += sh; D.n += exW.n; bag.exDay = D; if (pe) addStat('pe', pe); if (sh) earnShell(sh); bag.exBest ||= {}; const best = exW.n > (bag.exBest[exW.k] | 0); if (best) bag.exBest[exW.k] = exW.n; saveBag();
+  const done = exW.n >= exW.tgt; playSfx(done ? 'fanfare' : 'coin'); burst(player.pos.clone().setY(2.4), [0x7FFFD4, 0xFFD23C, 0xFFFFFF], 40, 4, 2);
+  showBanner(done ? `🎉 목표 달성! ${EX[exW.k].icon} ${exW.n}개` : `${EX[exW.k].icon} ${exW.n}개 했어요!`, `${pe ? `🏃 체육력 +${pe}` : '오늘 운동 체육력은 가득 찼어요'}${sh ? ` · 🐚 +${sh}` : ''}${best ? ' · 🏅 내 최고 기록!' : ''}`, 6000);
+}
+function openExStation() {
+  openLife('📹 동작 인식 운동', (box) => { box.textContent = ''; const D = bag.exDay?.d === dayNum() ? bag.exDay : { pe: 0, sh: 0, n: 0 };
+    box.append(el2('p', 'hint', `태블릿을 세워 두고 2~3걸음 뒤에 서요. 앞 카메라가 내 몸 움직임을 세어 줘요 · 🔒 영상은 저장·전송하지 않아요 · 오늘 ${D.n}개 · 운동 🏃 체육력 ${D.pe}/${EX_DAY_PE} · 🐚 ${D.sh}/${EX_DAY_SH}`));
+    for (const [k, E] of Object.entries(EX)) { const card = el2('div', 'lp-card wide'); card.append(el2('div', 'lp-name', `${E.icon} ${E.name}${bag.exBest?.[k] ? ` · 🏅 최고 ${bag.exBest[k]}개` : ''}`), el2('div', 'lp-sub', E.how)); const r = el2('div', 'row-center wrap');
+      for (const t of E.tgt) { const b = el2('button', 'btn', `${t}개 도전`); b.style.cssText = 'font-size:17px;padding:8px 14px;background:#E3F7E3'; b.onclick = () => exStart(k, t); r.append(b); } card.append(r); box.append(card); } });
+}
+/* ---------- 🤝 스포츠맨십 상황 카드 ---------- */
+const SPC = [
+  ['🏐 피구에서 친구가 공에 맞았는데 아니라고 우겨요.', ['선생님께 정중하게 확인을 부탁해요', '같이 소리 지르며 따져요', '화가 나서 경기를 그만해요'], '⚖️', '규칙 문제는 심판(선생님)께 차분하게 여쭤보면 모두가 기분 좋게 계속할 수 있어요.'],
+  ['😢 우리 팀이 경기에서 졌어요.', ["상대 팀에게 '잘했어!' 하고 인사해요", '실수한 우리 팀 친구를 탓해요', '공을 차고 나가 버려요'], '🤝', '이긴 팀을 축하하는 것도 멋진 운동 실력이에요. 다음 경기에서 다시 힘내요!'],
+  ['😣 내 실수로 상대 팀이 점수를 얻었어요.', ["'괜찮아, 다시 하자!' 하고 다시 집중해요", '울면서 그만하겠다고 해요', '다른 친구 탓을 해요'], '🔥', '실수는 누구나 해요. 털고 다시 집중하는 친구가 진짜 멋져요.'],
+  ['🤕 상대 팀 친구가 넘어졌어요.', ['잠깐 멈추고 괜찮은지 물어봐요', '기회다! 계속 공격해요', '넘어진 모습을 보고 웃어요'], '🤝', '경기보다 친구의 안전이 먼저예요. 상대도 함께 노는 친구예요.'],
+  ['🧑‍⚖️ 심판 판정이 마음에 안 들어요.', ['판정을 따르고, 끝난 뒤 궁금한 걸 여쭤봐요', '큰 소리로 항의해요', '몰래 규칙을 어겨요'], '⚖️', '경기 중에는 판정을 따르기로 약속해요. 궁금한 건 끝나고 차분히 물어봐요.'],
+  ['🙄 원하지 않던 친구와 같은 팀이 됐어요.', ['같은 팀으로 힘을 합쳐요', '싫은 티를 내요', '팀을 바꿔 달라고 떼써요'], '👏', '한 팀이 되면 서로 응원하는 게 이기는 방법이에요. 새 친구의 장점을 찾아봐요.'],
+  ['⚽ 공을 잘 다루지 못하는 친구가 있어요.', ['패스를 주고 응원해요', '그 친구에게는 공을 안 줘요', '못한다고 놀려요'], '👏', '응원을 받으면 누구나 더 잘하게 돼요. 다 같이 즐거운 게 최고의 경기예요.'],
+  ['😆 우리 팀이 크게 이기고 있어요.', ['상대를 놀리지 않고 끝까지 최선을 다해요', '상대 팀을 놀려요', '이겼으니 대충 해요'], '🤝', '이기고 있을 때 상대를 존중하는 모습이 진짜 챔피언이에요.'],
+  ['😡 화가 나서 참기 힘들어요.', ['잠깐 숨을 크게 쉬고 마음을 가라앉혀요', '물건을 던져요', '친구를 밀어요'], '😌', '숨을 크게 세 번 쉬면 화가 작아져요. 그래도 힘들면 선생님께 말해요.'],
+  ['❓ 규칙을 잘 모르는 친구가 있어요.', ['규칙을 친절하게 알려 줘요', '모른다고 무시해요', '틀리면 바로 아웃이라고 해요'], '👏', '친절하게 알려 주면 모두가 같은 규칙으로 즐겁게 할 수 있어요.'],
+  ['🤸 경기 전 준비 운동 시간이에요.', ['다치지 않게 열심히 따라 해요', '귀찮아서 대충 해요', '장난을 쳐요'], '🔥', '준비 운동은 다치지 않게 지켜 주는 약속이에요.'],
+  ['🧺 경기가 끝나고 공과 도구를 정리해요.', ['다 같이 정리해요', '이긴 팀만 하라고 해요', '몰래 먼저 가요'], '👏', '함께 쓰고 함께 정리하면 다음 체육 시간도 빨리 시작할 수 있어요.'],
+  ['🙊 우리 팀 친구가 반칙을 했어요.', ['반칙을 인정하고 상대에게 사과해요', '못 본 척해요', '상대도 반칙했다고 우겨요'], '⚖️', '우리 팀의 반칙도 솔직하게 인정하는 것이 공정한 경기예요.'],
+  ['⏳ 내 차례가 오래 오지 않아요.', ['차례를 기다리며 친구를 응원해요', '새치기를 해요', '투덜대며 앉아 있어요'], '😌', '기다리는 동안 응원하면 시간이 빨리 가고 팀 분위기도 좋아져요.'],
+  ['🏃 이어달리기에서 친구가 바통을 떨어뜨렸어요.', ["'괜찮아! 힘내!' 하고 응원해요", '왜 떨어뜨렸냐고 화내요', '한숨을 크게 쉬어요'], '👏', '응원 한마디가 친구를 다시 달리게 해요.'] ];
+const SPC_DAY = 3, spcW = { i: -1, pick: -1, tries: 0 };
+function spcToday() { if (bag.spc?.d !== dayNum()) bag.spc = { d: dayNum(), done: [], seen: bag.spc?.seen || [] }; return bag.spc; }
+function openSpCards() {
+  openLife('🤝 스포츠맨십 상황 카드', (box) => { box.textContent = ''; const T = spcToday();
+    box.append(el2('p', 'hint', `체육 시간에 이런 일이 생기면 어떻게 할까요? 하루 ${SPC_DAY}장 · 처음에 맞히면 🏃 체육력 +3 · 🐚 +5 · 오늘 ${T.done.length}/${SPC_DAY}`));
+    if (spcW.i < 0) { if (T.done.length >= SPC_DAY) { box.append(el2('p', 'lp-big', '🎉 오늘 카드는 다 했어요!'), el2('p', 'hint', '체육 시간에 직접 해 보면 선생님이 🏃 체육력 평가로 칭찬해 줄 거예요')); return; }
+      const pool = SPC.map((_, i) => i).filter(i => !T.done.includes(i)), fresh = pool.filter(i => !T.seen.includes(i)); spcW.i = (fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length || pool.length))]; spcW.pick = -1; spcW.tries = 0; spcW.ord = shuf([0, 1, 2]); }
+    const C = SPC[spcW.i]; box.append(Object.assign(el2('p', ''), { style: 'background:#EAF6FF;border-radius:14px;padding:14px;font-size:21px;font-weight:700;line-height:1.5', textContent: C[0] }), el2('h3', 'lp-sec', '어떻게 할까요?'));
+    for (const j of spcW.ord) { const b = el2('button', 'btn', C[1][j]); const sel = spcW.pick === j; b.style.cssText = `display:block;width:100%;text-align:left;font-size:18px;padding:12px 14px;margin:6px 0;background:${sel ? (j === 0 ? '#C8F0C8' : '#FFD6D6') : '#fff'}`;
+      b.disabled = spcW.pick === 0; b.onclick = () => { spcW.pick = j; spcW.tries++; if (j === 0) { const first = spcW.tries === 1; T.done.push(spcW.i); if (!T.seen.includes(spcW.i)) T.seen.push(spcW.i); T.seen = T.seen.slice(-SPC.length + 1);
+        if (first) { addStat('pe', 3); earnShell(5); } saveBag(); playSfx(first ? 'fanfare' : 'right'); toast(first ? '🎉 정답! 🏃 체육력 +3 · 🐚 +5' : '🙂 맞아요! (처음엔 틀려서 보상은 없어요)', 'success'); } else playSfx('wrong'); refillLife(); }; box.append(b); }
+    if (spcW.pick === 0) { box.append(Object.assign(el2('p', ''), { style: 'background:#E3F7E3;border-radius:12px;padding:10px 12px;font-size:17px', textContent: `${C[2]} ${C[3]}` })); const nx = el2('button', 'btn', T.done.length >= SPC_DAY ? '🎉 끝!' : '➡️ 다음 카드'); nx.style.background = '#FFD23C'; nx.onclick = () => { spcW.i = -1; refillLife(); }; box.append(el2('div', 'row-center')); box.lastChild.append(nx); }
+    else if (spcW.pick > 0) box.append(Object.assign(el2('p', ''), { style: 'background:#FFF1D6;border-radius:12px;padding:10px 12px;font-size:17px', textContent: '🤔 그렇게 하면 친구 마음은 어떨까요? 다시 골라 봐요' })); });
+}
+/* ---------- 🏟️ 맵 ---------- */
+function spgBuild() {
+  if (spW.built) return; spW.built = true; const g = new THREE.Group(); g.name = 'SportsYard'; scene.add(g); spW.g = g; const o = { solid: false }, S0 = { solid: true }, { x: X, z: Z, w: W, d: D } = SPG;
+  box(g, W, 0.3, D, 0x7CC16A, X, -0.15, Z, o);
+  for (const [px, pz, pw, pd] of [[X, Z - D / 2, W, 0.5], [X - W / 2, Z, 0.5, D], [X + W / 2, Z, 0.5, D], [X - W / 4 - 2, Z + D / 2, W / 2 - 4, 0.5], [X + W / 4 + 2, Z + D / 2, W / 2 - 4, 0.5]]) box(g, pw, 1.0, pd, 0xFFFFFF, px, 0.5, pz, S0);
+  { const tr = new THREE.Mesh(new THREE.RingGeometry(13, 17, 48), new THREE.MeshStandardMaterial({ color: 0xD9724A, roughness: 1 })); tr.rotation.x = -Math.PI / 2; tr.scale.set(1.35, 1, 1); tr.position.set(X, 0.03, Z - 2); g.add(tr);
+    for (const r of [14.3, 15.6]) { const ln = new THREE.Mesh(new THREE.RingGeometry(r, r + 0.12, 48), new THREE.MeshBasicMaterial({ color: 0xFFFFFF })); ln.rotation.x = -Math.PI / 2; ln.scale.set(1.35, 1, 1); ln.position.set(X, 0.04, Z - 2); g.add(ln); } }
+  for (const s of [-1, 1]) { const gx = X + s * 9, gz = Z - 2; for (const dz of [-1.6, 1.6]) cyl(g, 0.08, 1.6, 0xFFFFFF, gx, 0.8, gz + dz, o); cyl(g, 0.08, 3.3, 0xFFFFFF, gx, 1.6, gz, { solid: false, rx: Math.PI / 2 }); } // ⚽ 골대
+  { const hx = X, hz = Z - 14; cyl(g, 0.12, 3.2, 0x3B3B46, hx, 1.6, hz, S0); box(g, 1.6, 1.1, 0.08, 0xFFFFFF, hx, 3.3, hz + 0.1, o); mesh(WEAR_TORUS, g, 0.32, 0.32, 0.32, 0xF08A24, hx, 2.95, hz + 0.45, { solid: false, rx: Math.PI / 2 }); } // 🏀
+  makeLabel(g, ['🏃 체육 마당', '📹 동작 인식 운동 · 🤝 스포츠맨십 카드'], 1.3, X, 5.5, Z + D / 2 - 6);
+  // 📹 운동 스테이션
+  { const kx = X - 22, kz = Z + 6; box(g, 3.2, 2.2, 0.3, 0x2A3346, kx, 2.0, kz, S0); box(g, 2.8, 1.8, 0.05, 0x7FFFD4, kx, 2.0, kz + 0.18, { solid: false, emissive: 0.4 }); cyl(g, 0.15, 1.0, 0x3B3B46, kx, 0.5, kz, o);
+    signPlane(g, ['📹 동작 인식 운동'], 2.8, 0.6, kx, 3.5, kz + 0.2, { font: 46, fg: '#fff', bg: '#2A3346', stroke: false });
+    addInteract({ pos: new V3(kx, 1, kz + 2), r: 2.8, text: () => spgRegion() ? ['📹 동작 인식 운동', '팔 벌려 뛰기 · 스쿼트 · 무릎 올리기'] : null, run: openExStation }); }
+  // 🤝 카드 게시판
+  { const kx = X + 22, kz = Z + 6; box(g, 3.2, 2.2, 0.2, 0xB07A48, kx, 2.0, kz, S0); for (let k = 0; k < 6; k++) box(g, 0.8, 0.6, 0.04, [0xFFE9A8, 0xCDEFC2, 0xFFD6E4, 0xCFE6FF][k % 4], kx - 1 + (k % 3), 2.4 - Math.floor(k / 3) * 0.8, kz + 0.12, o);
+    signPlane(g, ['🤝 스포츠맨십 카드'], 2.8, 0.6, kx, 3.5, kz + 0.12, { font: 46, fg: '#3B2F2A', bg: '#FFF1D6', stroke: false }); for (const s of [-1, 1]) cyl(g, 0.1, 1.2, 0x6E4528, kx + s * 1.4, 0.5, kz, o);
+    addInteract({ pos: new V3(kx, 1, kz + 2), r: 2.8, text: () => spgRegion() ? ['🤝 스포츠맨십 카드', `오늘 ${spcToday().done.length}/${SPC_DAY}장`] : null, run: openSpCards }); }
+  // 🏆 이번 주 체육력 순위판
+  { const bx = X, bz = Z + D / 2 - 12; box(g, 4.4, 2.6, 0.2, 0x2E5AAC, bx, 2.2, bz, S0); for (const s of [-1, 1]) cyl(g, 0.1, 1.0, 0x2E5AAC, bx + s * 2, 0.5, bz, o); spW.board = makeLabel(g, [''], 0.75, bx, 2.4, bz + 0.3); }
+  // 🌀 광장으로
+  { const bx = X + 10, bz = Z + D / 2 - 4; const ring = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.22, 10, 32), new THREE.MeshStandardMaterial({ color: 0x3FB6A8, emissive: 0x3FB6A8, emissiveIntensity: 0.5 })); ring.position.set(bx, 1.9, bz); ring.rotation.y = Math.PI / 2; g.add(ring);
+    makeLabel(g, ['🌀 우리 마을 광장으로'], 0.9, bx, 4.0, bz); addInteract({ pos: new V3(bx, 1, bz), r: 2.6, text: () => spgRegion() ? ['🌀 광장으로 돌아가기', '우리 마을 광장'] : null, run: () => travelTo('home', true) }); }
+  for (const [tx, tz] of [[-29, -23], [29, -23], [-29, 20], [29, 20]]) { cyl(g, 0.3, 2.2, 0x7A5436, X + tx, 1.1, Z + tz, S0); ball(g, 1.6, 0x3E9A4C, X + tx, 3.2, Z + tz, o); }
+  g.updateMatrixWorld(true); registerSolids(g, 'spg');
+}
+function spgTick() { if (!spW.board || !spgRegion()) return; const w = weekNum(), L = rankList(w, 'pe').slice(0, 5).map(r => ({ n: cleanNick(nickOf(r[0], r[2]) || '') || '친구', v: r[1] })), key = JSON.stringify(L.map(r => [r.n, r.v])); if (key === spW.bkey) return; spW.bkey = key;
+  spW.board.userData.set(['🏆 이번 주 체육력', ...(L.length ? L.map((r, i) => `${['🥇', '🥈', '🥉', '4', '5'][i]} ${r.n} ${r.v}`) : ['아직 기록이 없어요'])]); }
+async function spgGo() {
+  if (hv.travel || !joined) return; if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
+  if (sail.on || sea.on) boatQuiet(); hv.travel = true; closeModals(); const fx = document.querySelector('#travelFx .tv-boat'); if (fx) fx.textContent = '🏃'; $('travelText').textContent = '🌀 포털을 지나 체육 마당으로 가는 중…'; $('travelFx').classList.remove('hidden'); playSfx('cast');
+  spgBuild(); await sleep(1000); try { mkEnd(true); } catch (e) { } player.pos.set(SPG.x, 0.2, SPG.z + SPG.d / 2 - 4); player.vy = 0; player.heading = Math.PI; camYaw = 0; camPitch = 0.3;
+  await sleep(600); $('travelFx').classList.add('hidden'); playSfx('plop'); if (fx) setTimeout(() => { fx.textContent = '⛵'; }, 300); hv.travel = false;
+  if (!spW.seen) { spW.seen = true; showBanner('🏃 체육 마당', '📹 동작 인식 운동 · 🤝 스포츠맨십 카드로 🏃 체육력을 길러요', 5500); }
+}
+
 /* ---------- 🚶 가기 · 도전 ---------- */
 async function mkGo() { // 🌀 포털 → 공방
   if (hv.travel || !joined) return; if (isFrozen()) { toast('✋ 지금은 잠깐 멈춤이에요', 'info'); return; }
@@ -33777,6 +33928,7 @@ function loop() {
   if (joined) { try { nvTick(dt); } catch (e) { console.warn('nv', e); } } /* ⛄ 1107a 눈싸움 공방전 */
   if (joined) { try { mkTick(dt); } catch (e) { console.warn('mk', e); } } /* 🛠️ 1107g 메이커 공방 */
   try { apTick(dt); } catch (e) { console.warn('ap', e); } /* 🎡 1108i 놀이동산 */
+  try { spgTick(); } catch (e) { console.warn('spg', e); } /* 🏃 1108o 체육 마당 */
   if (joined) { try { stgTick(dt); } catch (e) { console.warn('stg', e); } } // 🎤 1101d
   if (joined) { try { kvTick(); } catch (e) { console.warn('kv', e); } } // 🔤 1101i
   /* 🗑️ 1106m 시 짓기 지움 (kvPoemRwTick 멈춤) */
