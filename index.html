@@ -19167,6 +19167,7 @@ function updateRooms(dt) {
 // ---------- 📒 독서 기록장 ----------
 /* ---------- 📷 1108k 독서록 사진 인증: 📷 찍기 → 🤖 1차 확인(글씨 양·흐림·같은 사진) → ✉️ 선생님만 보는 곳(secrets/{반}/rl) → ✅ 선생님 인정(state/rlok) → 학생 기기에서 국어력·독서 나무 ---------- */
 const RL_SH1 = 15, RL_SH2 = 60, RL_SH_BADGE = 100; /* 🐚 1108l 1차 통과 · 인정(권마다) · 배지 받을 때 */
+const rlGain = (p, k) => Math.min(600, Math.round(readPts(p, k) * 1.5) + 20); /* 📚 1108m 인증 국어력 */
 const RL_DAY = 2, RL_WHY = ['✍️ 글씨를 또박또박 다시 써요', '📝 내용을 조금 더 써요', '📷 사진이 흐려요 · 다시 찍어요', '📖 책 내용과 느낌을 같이 써요', '🙂 선생님께 와서 이야기해요'];
 const RL_BADGE = [[1, '🌱', '첫 인증'], [5, '🐛', '책벌레'], [10, '📚', '독서왕'], [20, '🦉', '독서 박사'], [30, '👑', '책의 신']];
 const rlW = { stream: null, shot: null, busy: false };
@@ -19231,7 +19232,7 @@ async function rlSend(pick) {
 async function rlSync() { // 학생 기기: 선생님 결과 받기
   const uid = backend?.uid, R0 = S.rlok?.[uid]; if (!uid || isTeacher || !R0 || rlW.syncing) return; rlW.syncing = true;
   try { for (const [id, v] of Object.entries(R0)) { const q = (bag.rlq || []).find(x => x.id === id); bag.rlq = (bag.rlq || []).filter(x => x.id !== id);
-    if (q && v?.v === 1) { const res = await backend.readLog(q.g); let gain = 0; if (res.ok) { earnMat('독서 기록'); creditAction('read'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = Math.max(0, Math.min(readPts(q.p, q.k), READ_DAY_MAX - bag.readSt.n)); bag.readSt.n += gain; const r0 = statToday('read'); if (gain) addStat('read', gain); gain = statToday('read') - r0; }
+    if (q && v?.v === 1) { const res = await backend.readLog(q.g); let gain = 0; if (res.ok) { earnMat('독서 기록'); creditAction('read'); if (bag.readSt?.d !== dayNum()) bag.readSt = { d: dayNum(), n: 0 }; gain = rlGain(q.p, q.k); bag.readSt.n += gain; addStat('read', gain, true); } /* 📚 1108m 선생님이 인정한 독서는 하루 상한 없이 1.5배 + 20 */
       bag.reads.unshift({ g: q.g, k: q.k, p: q.p, at: Date.now(), ok: 1 }); bag.reads = bag.reads.slice(0, 60); bag.rlCnt = (bag.rlCnt || 0) + 1; let sh = RL_SH2; if (bag.readDay !== dayNum()) { bag.readDay = dayNum(); sh += 10; }
       const bd = RL_BADGE.find(([n]) => n === bag.rlCnt); if (bd) sh += RL_SH_BADGE; earnShell(sh); /* 🐚 1108l 인증 보상 늘림 */ playSfx('fanfare'); burst(player.pos.clone().setY(2.4), [0xFFD23C, 0x5FBE5A, 0xFFFFFF], 40, 4, 2);
       showBanner('✅ 독서록 인증 완료!', `${gain > 0 ? `📚 국어력 +${gain}` : '오늘 국어력은 가득 찼어요'}${sh ? ` · 🐚 +${sh}` : ''} · 🌳 독서 나무가 자라요${bd ? ` · 🏅 ${bd[1]} ${bd[2]} 배지!` : ''}`, 7000); }
@@ -19272,11 +19273,11 @@ function openReadLog() {
     READ_KINDS.forEach(([ic, nm, mul, d], i) => { const b = el2('button', 'btn', `${ic} ${nm}`); b.title = `${d} · ×${mul}`; b.style.background = pick.k === i ? '#FFF3C4' : '#fff'; b.setAttribute('aria-pressed', String(pick.k === i)); b.onclick = () => { pick.k = i; refillLife(); }; kd.append(b); });
     box.append(kd);
     const pr = el2('div', 'row-center wrap'), pin = el2('input', 'tinput', null); pin.type = 'number'; pin.min = 1; pin.max = 999; pin.inputMode = 'numeric'; pin.placeholder = '쪽수'; pin.style.width = '7em'; pin.value = pick.p || ''; pin.setAttribute('aria-label', '책 쪽수');
-    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 국어력 +${Math.min(readPts(pick.p, pick.k), capL)}${readPts(pick.p, pick.k) > capL ? ` (오늘 남은 ${capL}점까지)` : ''}${readFestOn() ? ' · 🎉 독서 축제: 상한 없음' : ''}` : '📚 책 모양과 쪽수를 골라요'; };
+    const prev = el2('b', 'read-pts', ''); const upd = () => { const capL = Math.max(0, statCap('read') - statToday('read')); prev.textContent = pick.k >= 0 && pick.p > 0 ? `📚 인정받으면 국어력 +${rlGain(pick.p, pick.k)} (하루 상한 없이)` : '📚 책 모양과 쪽수를 골라요'; void capL; };
     pin.oninput = () => { pick.p = Math.min(999, Math.max(0, parseInt(pin.value, 10) || 0)); upd(); };
     pr.append(pin, el2('span', 'hint', '쪽'));
     for (const n of [30, 50, 100, 150, 200, 300]) { const b = el2('button', 'btn', `${n}`); b.style.background = pick.p === n ? '#FFF3C4' : '#fff'; b.onclick = () => { pick.p = n; refillLife(); }; pr.append(b); }
-    box.append(pr, prev, el2('p', 'hint', '국어력 = 쪽수 × 책 모양 배율 · 줄글책 150쪽 → +150 · 그림이 많은 책 100쪽 → +50 · 만화책 200쪽 → +60 · 그림책 40쪽 → +10'));
+    box.append(pr, prev, el2('p', 'hint', '국어력 = (쪽수 × 책 모양 배율 + 10) × 1.5 + 20 · 줄글책 150쪽 → +260 · 그림이 많은 책 100쪽 → +140 · 만화책 200쪽 → +155 · 그림책 40쪽 → +65 · 📷 인증으로만 올라요'));
     upd(); rlPanel(box, pick); /* 📷 1108k 독서록 사진 인증 (예전 '바로 기록하기' 대신) */
     { const q = (bag.rlq || []).length, c = bag.rlCnt || 0, got = RL_BADGE.filter(([n]) => c >= n); box.append(el2('p', 'hint', `✉️ 선생님 확인을 기다리는 인증 ${q}개 · ✅ 인정받은 독서록 ${c}권${got.length ? ' · 🏅 ' + got.map(x => x[1] + x[2]).join(' ') : ''}${RL_BADGE.find(([n]) => c < n) ? ` · 다음 배지까지 ${RL_BADGE.find(([n]) => c < n)[0] - c}권` : ''}`)); }
     box.append(el2('h3', 'lp-sec', `📚 내 독서 기록장 (${bag.reads.length}권 · 나만 보여요)`));
@@ -19458,6 +19459,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1108m', d: '11월 28일', items: ['📚 독서록 인증 국어력이 커졌어요! (쪽수 점수 × 1.5 + 20 · 선생님이 인정한 독서는 하루 상한 없이 다 올라요)', '📷 독서로 국어력을 올리는 방법은 이제 독서록 사진 인증 하나예요'] },
   { id: '1108l', d: '11월 28일', items: ['🐚 독서록 인증 보상이 커졌어요! 1차 통과 🐚 15 · 선생님 ✅ 인정 🐚 60 (그날 첫 권 +10) · 🏅 배지 받으면 🐚 100 더'] },
   { id: '1108k', d: '11월 28일', items: ['📷 독서록 사진 인증! 광장 📒 독서 기록 책상에서 공책 독서록을 찍어 보내요', '🤖 글씨가 잘 보이면 1차 통과 🐚 +15 · 선생님이 ✅ 인정하면 📚 국어력 · 🌳 독서 나무가 자라요', '🏅 인정받은 권수로 배지: 🌱첫 인증 · 🐛책벌레 5 · 📚독서왕 10 · 🦉독서 박사 20 · 👑책의 신 30'] },
   { id: '1108j', d: '11월 27일', items: ['🏴‍☠️ 바이킹 기둥이 거꾸로(V자) 서 있던 것을 A자로 바로 세웠어요'] },
@@ -24099,7 +24101,7 @@ const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
   math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🚴 레일바이크 · 📘 학당 · 🧮 혼합 계산 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
-  read: { icon: '📚', name: '국어력', where: '광장 독서 책상 (선생님 확인 후 · 쪽수 × 책 모양) · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
+  read: { icon: '📚', name: '국어력', where: '광장 독서 책상 📷 독서록 인증 (선생님 ✅ 인정 · 쪽수 × 책 모양 · 하루 상한 없음) · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 // ================= 🏛️ 1106c 능력치 1등 기념비 (광장 옛 🌼 꾸미기 구역 · 지난주 1등 · 월요일에 바뀌어요 · 겹쳐도 모두 그 학생) =================
 // 모습: 랭킹에 남긴 lk('동물.옷.머리.머리색.옷가게') → 없으면 지금 접속 중인 모습 → 없으면 기본 · 금빛으로 칠해요 · 같은 점수 1등은 나란히 (최대 3)
