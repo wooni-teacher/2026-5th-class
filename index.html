@@ -2495,7 +2495,7 @@ function normalize(v) {
     sgive: Object.fromEntries(Object.entries(plainObj(v.sgive)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && x && typeof x === 'object').map(([u, x]) => [u, Object.fromEntries(['eng', 'math', 'soc', 'read', 'pe', 'pet'].filter(k => isInt(x[k], 0, 1e13)).map(k => [k, x[k]]).concat(isInt(x.per, 0, 31) ? [['per', x.per]] : []))])),
     praise: Object.fromEntries(Object.entries(plainObj(v.praise)).filter(([u, x]) => u.length >= 1 && u.length <= 64 && !/[.#$\[\]/]/.test(u) && x && isInt(x.d, 0, 1e6) && isInt(x.n, 0, 99)).map(([u, x]) => [u, { d: x.d, n: x.n }])),
     talk: v.talk && isInt(v.talk.d ?? 0, 0, 1e6) ? { d: v.talk.d | 0, n: Math.min(999, v.talk.n | 0), ...(isInt(v.talk.g, 0, 200) ? { g: v.talk.g } : {}), ...(isInt(v.talk.p, 0, 50) ? { p: v.talk.p } : {}), ...(isInt(v.talk.r, 0, 100) ? { r: v.talk.r } : {}) } : null,
-    chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 500)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), apd: plainObj(v.apd), rlok: plainObj(v.rlok), /* 📷 1108k */ apo: plainObj(v.apo), apc: v.apc && typeof v.apc === 'object' ? v.apc : null, /* 🎡 1108i */ attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
+    chatOff: v.chatOff === true, scap: Object.fromEntries(Object.entries(plainObj(v.scap)).filter(([k, x]) => ['eng', 'math', 'soc', 'read'].includes(k) && Number.isInteger(x) && x >= 10 && x <= 500)), lvx: toObj(v.lvx), pgb: toObj(v.pgb), pgq: Object.fromEntries(Object.entries(toObj(v.pgq)).map(([n, q]) => [n, plainObj(q)])), pgym: toObj(v.pgym), /* 1017g: 숫자 열쇠(1~4, 1~12)는 Firebase가 배열로 돌려줘서 toObj로 받아요 (관장 속성이 안 바뀌던 원인) */ pb: { o: plainObj(v.pb?.o), m: plainObj(v.pb?.m) }, coins: v.coins || 0, coinSpent: v.coinSpent || 0, cev: v.cev || null, stage: v.stage || null, evc: plainObj(v.evc), sdUrl: v.sdUrl || null, attr: plainObj(v.attr), apd: plainObj(v.apd), rlok: plainObj(v.rlok), pelv: plainObj(v.pelv), /* 📷 1108k */ apo: plainObj(v.apo), apc: v.apc && typeof v.apc === 'object' ? v.apc : null, /* 🎡 1108i */ attrq: plainObj(v.attrq), fest: v.fest || null, festv: plainObj(v.festv), festc: v.festc ? { ...v.festc, t: toObj(v.festc.t) } : {}, festp: plainObj(v.festp), rank: Object.fromEntries(Object.entries(plainObj(v.rank)).filter(([w]) => /^[0-9]{4}$/.test(w)).map(([w, x]) => [w, plainObj(x)])), rides: Object.fromEntries(Object.entries(plainObj(v.rides)).filter(([k, x]) => RIDE_K.includes(k) && x === 1)),
     dex: v.dex || {},
     control: v.control || {},
     quiz: v.quiz || null,
@@ -2840,7 +2840,7 @@ function createLocalBackend(storage = createBrowserStorage(), { onWarning = () =
       st.decor[key] = { t, r }; emit(); return { ok: true };
     },
     async kwsGet(s, k) { return k ? (KWS_LOCAL[s]?.[k] ?? null) : (KWS_LOCAL[s] || null); }, async kwsSet(s, k, o) { (KWS_LOCAL[s] ||= {}); if (o) KWS_LOCAL[s][k] = JSON.parse(JSON.stringify(o)); else delete KWS_LOCAL[s][k]; return { ok: true }; }, /* 📖 1105zk */
-    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async rlSend(id, v) { ((st.rlX ||= {}).me ||= {})[id] = v; return { ok: true }; }, async rlList(cnt) { const v = JSON.parse(JSON.stringify(st.rlX || {})); return cnt ? { ok: true, n: Object.values(v).reduce((a, x) => a + Object.keys(x).length, 0) } : { ok: true, v }; }, async rlDecide(u, id, v, r) { ((st.rlok ||= {})[u] ||= {})[id] = { v, r: r | 0 }; delete st.rlX?.[u]?.[id]; emit(); return { ok: true }; }, async rlokDel(id) { delete st.rlok?.me?.[id]; emit(); return { ok: true }; }, async apdSet(i, v) { (st.apd ||= {}); if (v) st.apd[i] = v; else delete st.apd[i]; emit(); return { ok: true }; }, async apoSet(b, v) { (st.apo ||= {}); if (v) st.apo[b] = v; else delete st.apo[b]; emit(); return { ok: true }; }, async apoUpd(b, up) { if (st.apo?.[b]) Object.assign(st.apo[b], up); emit(); return { ok: true }; }, async apcSet(on, n) { if (on) st.apc = { u: 'me', n: n || '', t: Date.now() }; else if (st.apc?.u === 'me') st.apc = null; emit(); return { ok: true }; }, async mkdSet(v, k = 1) { const key = 'me' + (k === 2 ? '_2' : ''); (st.mkd ||= {}); if (v) st.mkd[key] = v; else delete st.mkd[key]; emit(); return { ok: true }; }, async cmpSet(up) { const o = ((st.cmp ||= {}).me ||= {}); for (const [k, v] of Object.entries(up)) { if (v) o[k] = v; else delete o[k]; } emit(); return { ok: true }; }, async mailSend(id, v) { ((st.mailX ||= {}).me ||= {})[id] = v; return { ok: true }; }, async mailList() { return { ok: true, v: JSON.parse(JSON.stringify(st.mailX || {})) }; }, async mailDel(u, id) { delete st.mailX?.[u]?.[id]; return { ok: true }; }, async omTx(t, fn) { const c = st.om?.[t]; const o = fn(c ? JSON.parse(JSON.stringify(c)) : null); if (o === undefined) return { ok: false }; st.om ||= {}; if (o === null) delete st.om[t]; else st.om[t] = o; emit(); return { ok: true }; }, async nmPrep() { return { ok: false }; }, async rawGet() { return null; }, async rawUpdate() { return { ok: false }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
+    presence() {}, leave() {}, secInfo() { return { ok: false }; }, async gateGet() { return false; }, async gateSet() { return { ok: true }; }, async secPins() { return { ok: true, v: {} }; }, async pelvSet(v) { (st.pelv ||= {}).me = v; emit(); return { ok: true }; }, async rlSend(id, v) { ((st.rlX ||= {}).me ||= {})[id] = v; return { ok: true }; }, async rlList(cnt) { const v = JSON.parse(JSON.stringify(st.rlX || {})); return cnt ? { ok: true, n: Object.values(v).reduce((a, x) => a + Object.keys(x).length, 0) } : { ok: true, v }; }, async rlDecide(u, id, v, r) { ((st.rlok ||= {})[u] ||= {})[id] = { v, r: r | 0 }; delete st.rlX?.[u]?.[id]; emit(); return { ok: true }; }, async rlokDel(id) { delete st.rlok?.me?.[id]; emit(); return { ok: true }; }, async apdSet(i, v) { (st.apd ||= {}); if (v) st.apd[i] = v; else delete st.apd[i]; emit(); return { ok: true }; }, async apoSet(b, v) { (st.apo ||= {}); if (v) st.apo[b] = v; else delete st.apo[b]; emit(); return { ok: true }; }, async apoUpd(b, up) { if (st.apo?.[b]) Object.assign(st.apo[b], up); emit(); return { ok: true }; }, async apcSet(on, n) { if (on) st.apc = { u: 'me', n: n || '', t: Date.now() }; else if (st.apc?.u === 'me') st.apc = null; emit(); return { ok: true }; }, async mkdSet(v, k = 1) { const key = 'me' + (k === 2 ? '_2' : ''); (st.mkd ||= {}); if (v) st.mkd[key] = v; else delete st.mkd[key]; emit(); return { ok: true }; }, async cmpSet(up) { const o = ((st.cmp ||= {}).me ||= {}); for (const [k, v] of Object.entries(up)) { if (v) o[k] = v; else delete o[k]; } emit(); return { ok: true }; }, async mailSend(id, v) { ((st.mailX ||= {}).me ||= {})[id] = v; return { ok: true }; }, async mailList() { return { ok: true, v: JSON.parse(JSON.stringify(st.mailX || {})) }; }, async mailDel(u, id) { delete st.mailX?.[u]?.[id]; return { ok: true }; }, async omTx(t, fn) { const c = st.om?.[t]; const o = fn(c ? JSON.parse(JSON.stringify(c)) : null); if (o === undefined) return { ok: false }; st.om ||= {}; if (o === null) delete st.om[t]; else st.om[t] = o; emit(); return { ok: true }; }, async nmPrep() { return { ok: false }; }, async rawGet() { return null; }, async rawUpdate() { return { ok: false }; }, async dropPres() { return { ok: true }; }, async kickPlayers() { return { ok: true }; },
     async upVote(k) { const u = st.upvote; if (!u?.open || !u.c?.[k]) return { ok: false }; (u.v ||= {}).me = k; emit(); return { ok: true }; },
     async rankSet(wk, d) { ((st.rank ||= {})[wk] ||= {}).me = { ...d }; emit(); return { ok: true }; },
     async attrClaim(k) { const c = (st.attr ||= {})[k]; if (c && c.u !== 'me' && Date.now() - c.t < ATTR_STALE) return { ok: false }; st.attr[k] = { u: 'me', t: Date.now() }; emit(); return { ok: true }; },
@@ -3362,6 +3362,7 @@ async function createFirebaseBackend(room, { onWarning = () => {}, nick = '', te
     async mailSend(id, v) { try { await D.set(D.ref(db, `${DB_ROOT}/secrets/${room}/mail/${uid}/${id}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🕊️ 1108e 선생님만 읽어요 */
     async mailList() { try { return { ok: true, v: (await D.get(D.ref(db, `${DB_ROOT}/secrets/${room}/mail`))).val() || {} }; } catch (e) { return { ok: false }; } },
     async mailDel(u, id) { try { await D.set(D.ref(db, `${DB_ROOT}/secrets/${room}/mail/${u}/${id}`), null); return { ok: true }; } catch (e) { return { ok: false }; } },
+    async pelvSet(v) { try { await D.set(R(`state/pelv/${uid}`), v); return { ok: true }; } catch (e) { return { ok: false }; } }, /* 🏃 1108p */
     async sspSet(sid, lv) { try { await D.set(R(`state/ssp/${uid}/${sid}`), lv); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🗓️ 1028n 시즌 단계
     async scrpSet(o) { try { await D.set(R(`state/scrp/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🎭 1029c
     async swmSet(o) { try { await D.set(R(`state/swm/${uid}`), o); return { ok: true }; } catch (e) { return { ok: false }; } }, // 🏊 1029a 친구 수영 대결
@@ -4778,7 +4779,7 @@ function updatePlayer(dt) {
   const moving = Math.min(1, Math.hypot(mx, mz)), skate = (typeof iceW !== 'undefined' && iceW.on) || mkIceOn(); /* 🧊 1107g 메이커 얼음 칸 */ /* ⛸️ 1106j 얼음 위에서는 미끄러져요 */
   if (skate) { const v = mkW?.ice ? mkW.v : iceW.v, k = 1 - Math.exp(-dt * (moving > 0.05 ? 1.4 : 0.35)), tx = moving > 0.05 ? mx * SPEED * 1.25 : 0, tz = moving > 0.05 ? mz * SPEED * 1.25 : 0; v.x += (tx - v.x) * k; v.z += (tz - v.z) * k; p.x += v.x * dt; p.z += v.z * dt; }
   if (moving > 0.05) {
-    const spd = skate ? 0 : SPEED * sgSpeedMul() * swSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * szSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : inReef(p.x, p.z) ? 0.75 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt; /* 🏊 물속은 천천히 */
+    const spd = skate ? 0 : SPEED * peSpeedMul() * sgSpeedMul() * swSpeedMul() * (RIDE_BY[player.avatar.rideK]?.mul || 1) * buffSpeed() * szSpeed() * (sea.on ? 1.7 : sail.on ? boatMul() : 1) * (inPool(p.x, p.z) ? 0.6 : inReef(p.x, p.z) ? 0.75 : 1); p.x += mx * spd * dt; p.z += mz * spd * dt; /* 🏊 물속은 천천히 */
     const target = Math.atan2(mx, mz);
     let diff = target - player.heading;
     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
@@ -4987,7 +4988,7 @@ const PRESENCE_INTERVAL = 0.5; // 초
 function myRoleLv() { if (isTeacher || !S.siege?.on || !sgMine()) return null; const st = SG_ROLES[sgMyRole()]?.st; return st ? statLv(st) : null; } // 📊 1101p 공방전 내 직업 과목 레벨
 function lvOfU(u, tg) { if (!S.siege?.on) return null; const st = SG_ROLES[sgRoleOf(u)]?.st; if (!st) return null; if (u === backend?.uid || tg?.me) { const v = myRoleLv(); return v == null ? null : { st, v }; } const T = tg || remotes.get(u)?.target; if (T?.t) return null; const v = T?.sl; return Number.isInteger(v) ? { st, v } : null; }
 function warLvTag(u, data) { const L = lvOfU(u, data); return L ? ` ${STATS[L.st].icon}Lv${L.v}` : ''; } // ⚔️ 공방전 중 이름표: 맡은 직업 과목 레벨 (보병·장군 수학 · 궁병·대장장이 영어 · 왕 사회)
-function sgMySp() { return ['math', 'eng', 'soc', 'read'].map(k => Math.min(9, statTier(k))).join(''); } // 💪 1027o 수학·영어·사회·독서 단계 (0~4)
+function sgMySp() { return ['math', 'eng', 'soc', 'read'].map(k => Math.min(9, statTier(k))).join('') + Math.min(3, Math.floor(statLv('pe') / 5)); } /* 🏃 1108p 다섯째 자리 = 체육력 5레벨마다 1 (0~3) */ // 💪 1027o 수학·영어·사회·독서 단계 (0~4)
 let lastSent = '', lastSentAt = 0, lastInputAt = Date.now(), kicked = false, joinedAt = 0, presNoHb = false;
 function presResend() { lastSent = ''; lastSentAt = 0; } /* 👻 1105c 다시 연결되면 바로 내 자리 다시 올리기 */
 const PRES_GHOST_MIN = 3; /* 👻 1105c 3분 넘게 신호가 없으면 남은 캐릭터(유령)로 보고 숨겨요 · 선생님 기기가 지워요 */
@@ -15565,10 +15566,11 @@ WEAR.h[21] = { icon: '🎅', name: '산타 모자', price: 500 }; WEAR.h[22] = {
 WEAR.f[10] = { icon: '🔴', name: '빨간 코', price: 150 }; WEAR.f[11] = { icon: '🐱', name: '고양이 수염', price: 200 }; WEAR.f[12] = { icon: '🐯', name: '호랑이 볼 무늬', price: 300 }; WEAR.f[13] = { icon: '😷', name: '하얀 마스크', price: 200 };
 WEAR.f[14] = { icon: '🧐', name: '외알 안경', price: 400 }; WEAR.f[15] = { icon: '🥷', name: '닌자 복면', price: 600 }; WEAR.f[16] = { icon: '🩹', name: '볼 반창고', price: 150 }; WEAR.f[17] = { icon: '🤓', name: '뿔테 안경', price: 300 }; WEAR.f[18] = { icon: '⛷️', name: '스키 고글', price: 500 };
 WEAR.o = [null, { icon: '🧣', name: '빨간 목도리', price: 300 }, { icon: '🎄', name: '크리스마스 스웨터', price: 500 }, { icon: '🧑‍🍳', name: '요리사 앞치마', price: 350 }, { icon: '🦺', name: '형광 조끼', price: 350 }, { icon: '🥼', name: '하얀 가운', price: 600 }];
-WEAR.x = [null, { icon: '👟', name: '빨간 운동화', price: 200 }, { icon: '🥾', name: '노란 장화', price: 300 }, { icon: '🛼', name: '롤러스케이트', price: 700 }, { icon: '✨', name: '반짝이 신발', price: 800 }, { icon: '🐰', name: '토끼 슬리퍼', price: 500 }];
+WEAR.x = [null, { icon: '👟', name: '빨간 운동화', price: 200 }, { icon: '🥾', name: '노란 장화', price: 300 }, { icon: '🛼', name: '롤러스케이트', price: 700 }, { icon: '✨', name: '반짝이 신발', price: 800 }, { icon: '🐰', name: '토끼 슬리퍼', price: 500 }, { icon: '⚡', name: '번개 운동화', pe: 10 }]; /* ⚡ 1108p 체육력 Lv10 */
+WEAR.o[6] = { icon: '🏃', name: '반월 체육복', pe: 5 }; /* 🏃 1108p 체육력 Lv5 */
 WEAR.z = [null, { icon: '🧤', name: '벙어리장갑', price: 250 }, { icon: '🪄', name: '마법봉', price: 500 }, { icon: '☂️', name: '파랑 우산', price: 600 }, { icon: '🍦', name: '아이스크림', price: 300 }, { icon: '🚩', name: '깃발', price: 350 }, { icon: '🌟', name: '응원봉', price: 600 }];
 const WEAR_SLOT = { h: '모자', f: '얼굴', o: '몸 옷', b: '등·옷', x: '신발', z: '손 소품' }, WEAR_SLOTS = ['h', 'f', 'o', 'b', 'x', 'z'];
-const wearOwn = (slot, i) => !!bag.own[slot + i] || (!!WEAR[slot][i]?.kk && (isTeacher || kkHas(backend?.uid) || !!tgOf(backend?.uid)?.kkw)) || (isTeacher && !!(WEAR[slot][i]?.star || WEAR[slot][i]?.badge || WEAR[slot][i]?.ss)); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 · 🏅 배지 옷을 모두 입어 봐요
+const wearOwn = (slot, i) => !!bag.own[slot + i] || (!!WEAR[slot][i]?.kk && (isTeacher || kkHas(backend?.uid) || !!tgOf(backend?.uid)?.kkw)) || (isTeacher && !!(WEAR[slot][i]?.star || WEAR[slot][i]?.badge || WEAR[slot][i]?.ss || WEAR[slot][i]?.pe)); // 🧑‍🏫 선생님은 ⭐ 랭킹 보상 · 🏅 배지 옷을 모두 입어 봐요
 bag.own ||= {}; bag.wear ||= { h: 0, f: 0, b: 0 }; bag.seen ||= {}; bag.badges ||= {};
 for (const id of Object.keys(bag.c || {})) bag.seen[id] ||= 1; // 이미 가진 생물은 '잡아 본 생물'로
 const myWearCode = () => { const [h, f, b, o2, x, z] = ['h', 'f', 'b', 'o', 'x', 'z'].map(k => Math.min(31, bag.wear[k] | 0)); if (!o2 && !x && !z && h < 22 && f < 20 && b < 20) return h < 10 && f < 10 && b < 10 ? h * 100 + f * 10 + b : 1000 + h * 400 + f * 20 + b; return 10000 + ((((h * 32 + f) * 32 + b) * 32 + o2) * 32 + x) * 32 + z; }; /* 👕 1108c 새 칸이 있으면 10000 + 32진법 6칸 */ // 1028n: 10번째 옷부터는 1000 + 20진법
@@ -15688,15 +15690,18 @@ function setWear(a, code) {
       else if (ob === 2) { box(g, 0.86, 0.7, 0.56, 0x2E8B57, 0, 0.92, 0, o); for (const y of [0.74, 1.1]) box(g, 0.87, 0.06, 0.57, 0xFFFFFF, 0, y, 0, o); for (let k = -2; k <= 2; k++) box(g, 0.08, 0.08, 0.02, k % 2 ? 0xFFFFFF : 0xE2384A, k * 0.16, 0.92, 0.285, o); mesh(WEAR_CONE, g, 0.12, 0.2, 0.02, 0xFFD23C, 0, 1.0, 0.29, o); } // 🎄 크리스마스 스웨터
       else if (ob === 3) { box(g, 0.62, 0.6, 0.04, 0xFFFFFF, 0, 0.8, 0.27, o); for (const s of [-1, 1]) box(g, 0.05, 0.2, 0.04, 0xFFFFFF, s * 0.2, 1.17, 0.27, o); box(g, 0.3, 0.14, 0.02, 0xE6E6E6, 0, 0.7, 0.295, o); box(g, 0.82, 0.05, 0.52, 0xFFFFFF, 0, 0.92, 0, o); } // 🧑‍🍳 요리사 앞치마
       else if (ob === 4) { box(g, 0.86, 0.62, 0.56, 0xD6F23A, 0, 0.94, 0, o); for (const y of [0.8, 1.02]) box(g, 0.87, 0.05, 0.57, 0xE8EEF2, 0, y, 0, { solid: false, emissive: 0.25 }); box(g, 0.04, 0.6, 0.02, 0x8A9A2A, 0, 0.94, 0.285, o); } // 🦺 형광 조끼
+      else if (ob === 6) { box(g, 0.86, 0.7, 0.56, 0x2E5AAC, 0, 0.92, 0, o); for (const s of [-1, 1]) box(g, 0.06, 0.71, 0.57, 0xFFFFFF, s * 0.3, 0.92, 0, o); box(g, 0.3, 0.16, 0.02, 0xFFD23C, -0.18, 1.06, 0.285, o); box(g, 0.2, 0.1, 0.57, 0xFFFFFF, 0, 1.22, 0, o); } // 🏃 1108p 반월 체육복
       else if (ob === 5) { box(g, 0.86, 0.7, 0.56, 0xFAFAFA, 0, 0.92, 0, o); box(g, 0.9, 0.42, 0.58, 0xFAFAFA, 0, 0.47, 0, o); box(g, 0.04, 0.66, 0.02, 0xDADADA, 0, 0.92, 0.285, o); box(g, 0.03, 0.14, 0.02, 0x3E6AC8, 0.24, 1.06, 0.29, o); box(g, 0.16, 0.1, 0.02, 0xE6E6E6, 0.24, 1.0, 0.285, o); } // 🥼 하얀 가운
     });
-    if (ob === 2) sl(0x2E8B57, 0xFFFFFF); else if (ob === 5) sl(0xFAFAFA);
+    if (ob === 2) sl(0x2E8B57, 0xFFFFFF); else if (ob === 5) sl(0xFAFAFA); else if (ob === 6) sl(0x2E5AAC, 0xFFFFFF);
+    if (ob === 6) for (const leg of [a.legL, a.legR]) if (leg) add(leg, g => { box(g, 0.34, 0.5, 0.38, 0x2E5AAC, 0, -0.25, 0, o); box(g, 0.05, 0.5, 0.39, 0xFFFFFF, 0.15, -0.25, 0, o); });
   }
   if (sx) for (const leg of [a.legL, a.legR]) if (leg) add(leg, g => { // 👟 1108c 신발
     if (sx === 1) { box(g, 0.39, 0.16, 0.52, 0xE2584A, 0, -0.53, 0.06, o); box(g, 0.4, 0.05, 0.53, 0xFFFFFF, 0, -0.6, 0.06, o); box(g, 0.2, 0.02, 0.12, 0xFFFFFF, 0, -0.445, 0.2, o); }
     else if (sx === 2) { box(g, 0.38, 0.36, 0.42, 0xF2C230, 0, -0.44, 0.02, o); box(g, 0.39, 0.14, 0.53, 0xF2C230, 0, -0.55, 0.07, o); box(g, 0.4, 0.04, 0.54, 0x5A4A3A, 0, -0.61, 0.07, o); }
     else if (sx === 3) { box(g, 0.39, 0.2, 0.52, 0xF4F4F4, 0, -0.5, 0.06, o); box(g, 0.4, 0.05, 0.53, 0xFF7AA8, 0, -0.44, 0.06, o); box(g, 0.3, 0.04, 0.5, 0x9AA0A8, 0, -0.62, 0.06, o); for (const z of [-0.14, 0.26]) for (const x of [-0.12, 0.12]) cyl(g, 0.07, 0.06, 0xFF7AA8, x, -0.66, z, { solid: false, rz: Math.PI / 2 }); }
     else if (sx === 4) { box(g, 0.39, 0.16, 0.52, GOLD, 0, -0.53, 0.06, { solid: false, emissive: 0.35 }); box(g, 0.4, 0.05, 0.53, 0xFFFFFF, 0, -0.6, 0.06, o); }
+    else if (sx === 6) { box(g, 0.39, 0.17, 0.52, 0xFFFFFF, 0, -0.53, 0.06, o); box(g, 0.4, 0.05, 0.53, 0x2B2B36, 0, -0.6, 0.06, o); for (const z of [-0.08, 0.12]) box(g, 0.4, 0.05, 0.08, 0xFFD23C, 0, -0.5, z, { solid: false, rz: 0.5, emissive: 0.6 }); } // ⚡ 번개 운동화
     else if (sx === 5) { box(g, 0.42, 0.2, 0.56, 0xFFD6E4, 0, -0.52, 0.08, o); for (const s of [-1, 1]) { mesh(SPH_LO, g, 0.06, 0.16, 0.04, 0xFFFFFF, s * 0.09, -0.34, 0.24, o); ball(g, 0.03, 0x2B2B36, s * 0.08, -0.47, 0.36, o); } }
   });
   if (hz === 1) { for (const arm of [a.armL, a.armR]) if (arm) add(arm, g => { box(g, 0.3, 0.2, 0.44, 0xD93A3A, 0, -0.48, 0.05, o); box(g, 0.31, 0.06, 0.42, 0xFFFFFF, 0, -0.37, 0.03, o); }); } // 🧤 1108c 벙어리장갑
@@ -15721,9 +15726,9 @@ function openWardrobe() {
         if (!i) return;
         const key = slot + i, own = wearOwn(slot, i), worn = bag.wear[slot] === i, card = el2('div', 'lp-card' + (worn ? ' done' : '') + (it.star ? ' rk-star' : ''));
         if (!own && it.ss && !SSN_REW[ssnNow()?.id || '']?.some(r => r[1] === key)) return; // 지난 시즌 보상은 받은 사람만 보여요
-        card.append(el2('div', 'lp-icon', it.icon), el2('div', 'lp-name', it.name), el2('div', 'lp-sub', own ? (worn ? '입는 중' : '내 옷') : it.kk ? '🎭 꿈끼왕 칭호' : it.ss ? `🗓️ ${it.ss}` : it.star ? '⭐ 랭킹 보상' : it.badge ? `🏅 도감 ${it.badge}%` : `🐚 ${it.price}`));
-        const b = el2('button', 'btn lp-btn', own ? (worn ? '벗기' : '입기') : it.kk ? '🔒 꿈끼왕 보상' : it.ss ? '🔒 시즌 보상' : it.star ? '🔒 1~3등 보상' : it.badge ? '배지 필요' : '사기');
-        b.disabled = !own && (!!it.kk || !!it.ss || !!it.star || !!it.badge || (bag.shell || 0) < it.price);
+        card.append(el2('div', 'lp-icon', it.icon), el2('div', 'lp-name', it.name), el2('div', 'lp-sub', own ? (worn ? '입는 중' : '내 옷') : it.pe ? `🏃 체육력 Lv${it.pe}` : it.kk ? '🎭 꿈끼왕 칭호' : it.ss ? `🗓️ ${it.ss}` : it.star ? '⭐ 랭킹 보상' : it.badge ? `🏅 도감 ${it.badge}%` : `🐚 ${it.price}`));
+        const b = el2('button', 'btn lp-btn', own ? (worn ? '벗기' : '입기') : it.pe ? '🔒 체육력 보상' : it.kk ? '🔒 꿈끼왕 보상' : it.ss ? '🔒 시즌 보상' : it.star ? '🔒 1~3등 보상' : it.badge ? '배지 필요' : '사기');
+        b.disabled = !own && (!!it.pe || !!it.kk || !!it.ss || !!it.star || !!it.badge || (bag.shell || 0) < it.price);
         b.onclick = () => {
           if (!own) { if ((bag.shell || 0) < it.price) return; bag.shell -= it.price; bag.own[key] = true; bag.wear[slot] = i; playSfx('coin'); toast(`👕 ${it.icon} ${josa(it.name, '을', '를')} 샀어요! 바로 입었어요`, 'success'); }
           else bag.wear[slot] = worn ? 0 : i;
@@ -19453,6 +19458,7 @@ function openStudy() {
 
 // ---------- 📰 업데이트 소식 (날짜별 · 접속하면 새 소식이 있을 때 한 번 보여요) ----------
 const UPDATES = [
+  { id: '1108p', d: '11월 28일', items: ['🏃 체육력이 오르면 더 빨리 걸어요! (1레벨마다 +1% · 역사 공방전에서는 +1.5%)', '❤️ 역사 공방전 체력 +1 (체육력 Lv5) · +2 (Lv10) · +3 (Lv15)', '🏛️ 광장(펫 체육관 북쪽)에 지난주 체육력 1등 기념비', '🎁 체육력 Lv5 🏃 반월 체육복 · Lv10 ⚡ 번개 운동화 · Lv15 🏃체육왕 칭호'] },
   { id: '1108o', d: '11월 28일', items: ['🏃 새 장소 「체육 마당」! 🌀 마을 포털에서 가요', '📹 동작 인식 운동: 태블릿 앞에서 팔 벌려 뛰기 · 스쿼트 · 무릎 올리기를 하면 카메라가 세어 줘요 (영상은 저장하지 않아요) → 🏃 체육력 · 🐚', '🤝 스포츠맨십 카드: 체육 시간에 생길 일, 어떻게 할까요? 하루 3장 → 🏃 +3 · 🐚 +5', '🏆 체육 마당 순위판에 이번 주 체육력 1~5등'] },
   { id: '1108n', d: '11월 28일', items: ['🏃 새 능력치 「체육력」! 체육 시간에 규칙을 지키고 · 화내지 않고 · 상대를 존중하고 · 끝까지 열심히 · 응원·협동하면 선생님이 줘요', '🗑️ 반월몬스터즈 경기장·챔피언스리그를 정리했어요 (펫 대전은 그대로)'] },
   { id: '1108m', d: '11월 28일', items: ['📚 독서록 인증 국어력이 커졌어요! (쪽수 점수 × 1.5 + 20 · 선생님이 인정한 독서는 하루 상한 없이 다 올라요)', '📷 독서로 국어력을 올리는 방법은 이제 독서록 사진 인증 하나예요'] },
@@ -24098,13 +24104,13 @@ const STATS = {
   eng: { icon: '🔤', name: '영어력', where: '영어 마을 놀이 · 영어 훈련소 · 영어 미로 (쓰기 문제는 2배)', role: '🏹 궁병 화살 · ⚒️ 대장장이 성문 수리가 세져요' },
   soc: { icon: '🏛️', name: '사회력', where: '역사의 길 시대 퀴즈 · 역사 박물관 연표 맞추기', role: '👑 왕의 함성이 길어져요' },
   math: { icon: '🧮', name: '수학력', where: '⛏️ 단원 광산 · 🚴 레일바이크 · 📘 학당 · 🧮 혼합 계산 공방 · 🪞 대칭 거울 공방 · 균형 다리', role: '⚔️ 보병 · 🎖️ 장군 공격 피해 +1씩' },
-  pe: { icon: '🏃', name: '체육력', where: '🌀 체육 마당 (📹 동작 인식 운동 · 🤝 스포츠맨십 카드) · 체육 시간 태도 평가 (선생님) · ⚖️ 규칙 지키기 · 😌 화내지 않고 참여 · 🤝 상대 존중 · 🔥 끝까지 열심히 · 👏 응원·협동', role: '🏃 체육 시간에 멋진 태도로 자라요' }, /* 🏃 1108n */
+  pe: { icon: '🏃', name: '체육력', where: '🌀 체육 마당 (📹 동작 인식 운동 · 🤝 스포츠맨십 카드) · 체육 시간 태도 평가 (선생님) · ⚖️ 규칙 지키기 · 😌 화내지 않고 참여 · 🤝 상대 존중 · 🔥 끝까지 열심히 · 👏 응원·협동', role: '🏃 걷기 빨라져요(1레벨 +1% · 공방전 +1.5%) · ❤️ 공방전 체력 +1(Lv5·10·15) · 🎁 Lv5 체육복 · Lv10 번개 운동화 · Lv15 🏃체육왕' }, /* 🏃 1108n */
   read: { icon: '📚', name: '국어력', where: '광장 독서 책상 📷 독서록 인증 (선생님 ✅ 인정 · 쪽수 × 책 모양 · 하루 상한 없음) · 한글 마을 놀이 · 대본 연습 · 바닷속 퀴즈', role: '📚 성 공방전 모든 직업 능력 +1씩 (다른 능력치와 함께 올라요)' },
 };
 // ================= 🏛️ 1106c 능력치 1등 기념비 (광장 옛 🌼 꾸미기 구역 · 지난주 1등 · 월요일에 바뀌어요 · 겹쳐도 모두 그 학생) =================
 // 모습: 랭킹에 남긴 lk('동물.옷.머리.머리색.옷가게') → 없으면 지금 접속 중인 모습 → 없으면 기본 · 금빛으로 칠해요 · 같은 점수 1등은 나란히 (최대 3)
-const MONU = [['eng', 25, -25], ['math', -47, 19], ['soc', 47, 19], ['read', -12, -26], ['sum', 0, 49]]; // 📚 국어력 자리(옛 구역 -25,-25)는 🎲 보드게임 집이 있어 오른쪽 옆으로
-const MONU_INFO = (k) => k === 'sum' ? { icon: '👑', name: '능력치 합계', col: 0xFFD23C } : { ...STATS[k], col: { eng: 0x5AB4FF, soc: 0xE2584A, math: 0x5FBE5A, read: 0xB08AF0 }[k] };
+const MONU = [['eng', 25, -25], ['math', -47, 19], ['soc', 47, 19], ['read', -12, -26], ['sum', 0, 49], ['pe', -40, -15]]; /* 🏃 1108p 체육력 기념비 (펫 체육관 북쪽) */ // 📚 국어력 자리(옛 구역 -25,-25)는 🎲 보드게임 집이 있어 오른쪽 옆으로
+const MONU_INFO = (k) => k === 'sum' ? { icon: '👑', name: '능력치 합계', col: 0xFFD23C } : { ...STATS[k], col: { eng: 0x5AB4FF, soc: 0xE2584A, math: 0x5FBE5A, read: 0xB08AF0, pe: 0xFF8A3C }[k] };
 const monuW = { base: {}, st: {}, sig: {}, at: 0 }, MONU_GOLD = {};
 const monuGold = (lum) => { const k = Math.max(0, Math.min(6, Math.round(lum * 6))); return MONU_GOLD[k] ||= new THREE.MeshStandardMaterial({ color: new THREE.Color(0xFFD04A).multiplyScalar(0.55 + k / 6 * 0.6), metalness: 0.25, roughness: 0.4, emissive: new THREE.Color(0xB07800).multiplyScalar(0.35 + k / 6 * 0.4), emissiveIntensity: 0.6 }); };
 function goldify(o) { o.traverse(m => { if (!m.isMesh || m.userData.keep) return; const c = m.material?.color, lum = c ? 0.3 * c.r + 0.59 * c.g + 0.11 * c.b : 0.5; m.material = monuGold(lum); m.castShadow = false; }); }
@@ -24281,6 +24287,7 @@ const sgPow = (k) => statTier(k) + statTier('read'); // 📚 국어력은 모든
 /* 💪 1027o 공부의 힘이 눈에 보여요: 무기 모양(나무→철→강철→황금) · 📚 국어력 파란 고리 · 피해 숫자 · 전쟁 끝 결과
    친구 능력치 단계는 접속 정보 sp(수학·영어·사회·독서 4자리)로 알아요. ⚒️ 대장장이 갈기는 그 위에 🔥 불꽃(60초 +1) */
 const SG_TIER_I = { math: 0, eng: 1, soc: 2, read: 3 };
+const sgPeHp = (u) => u === backend?.uid ? Math.min(3, Math.floor(statLv('pe') / 5)) : (+String(remotes.get(u)?.target?.sp || '')[4] || 0); /* 🏃 1108p 체육력 ❤️ +1(Lv5) · +2(Lv10) · +3(Lv15) */
 const sgTierOf = (u, k) => { if (!k) return 0; if (u === backend?.uid) return Math.min(9, statTier(k)); const sp = String(remotes.get(u)?.target?.sp || ''); return +sp[SG_TIER_I[k]] || 0; };
 const sgGrade = (t) => Math.max(0, Math.min(3, t | 0)); // 0 나무 · 1 철 · 2 강철 · 3 황금
 const sgGradeOf = (u, role) => sgGrade(sgTierOf(u, SG_ROLES[role]?.st));
@@ -24404,7 +24411,7 @@ const SG_HERO_HP = 20; /* 인물 병사 체력 (보통 🤖의 2~3배) */
 const sgHero = (t, k) => !!t && Object.values(S.siege?.hero?.[t] || {}).some(h => h === k || SG_HERO[h]?.fx === k); /* ⏳ 1105zu fx: 같은 효과를 쓰는 인물 */
 const sgHeroB = (k) => sgHero(sgMine(), k) ? 1 : 0;
 const sgHeroesFor = (t) => { const N = sgSet()?.nat?.[t - 1]; if (!N || sgSet().scen && t === 2) return []; return Object.entries(SG_HERO).filter(([, H]) => H.nat.includes(N.name)).map(([k]) => k); };
-const sgMaxHp = (u) => { const t = sgTeamOf(u), role = sgRoleOf(u); return (role === 'pow' && sgHero(t, 'dae') ? 9 : (SG_ROLES[role]?.hp || 6)) + sgArm(u) * 2 + (sgHero(t, 'gyebaek') ? 2 : 0) + (sgHero(t, 'dae') ? 1 : 0) + (sgHero(t, 'gaya2') ? 1 : 0) + (sgSpcOf(u)?.hp || 0); }; /* ⭐ 1105zu 특수 병력 */
+const sgMaxHp = (u) => { const t = sgTeamOf(u), role = sgRoleOf(u); return (role === 'pow' && sgHero(t, 'dae') ? 9 : (SG_ROLES[role]?.hp || 6)) + sgArm(u) * 2 + (sgHero(t, 'gyebaek') ? 2 : 0) + (sgHero(t, 'dae') ? 1 : 0) + (sgHero(t, 'gaya2') ? 1 : 0) + (sgSpcOf(u)?.hp || 0) + sgPeHp(u); }; /* ⭐ 1105zu 특수 병력 · 🏃 1108p 체육력 */
 const sgCurHp = (u) => { const v = S.siege?.php?.[u]; return v == null ? sgMaxHp(u) : Math.max(0, Math.min(v, sgMaxHp(u))); };
 
 // ⚔️ 전쟁터는 역사 마을 밖의 따로 된 큰 땅이에요 (예전 92×92 → 약 166×166). 예전 자리 좌표를 SGK배로 넓혀서 옮겨요
@@ -24499,6 +24506,7 @@ const sgRes = (t) => S.siege?.res?.[t] || {};
 const sgLv = (t) => S.siege?.lv?.[t] || 1;
 const sgMax = (t) => SG_LV_HP(S.siege?.max || 30, sgLv(t)) + (sgHero(t, 'jangsu') ? 10 : 0) + (sgHero(t, 'hojok') ? 5 : 0); /* 🏛️ 장수왕 · 호족 */
 const sgHp = (t) => S.siege?.hp?.[t] ?? sgMax(t);
+const peSpeedMul = () => { if (!joined || player.avatar.rideK) return 1; const lv = statLv('pe'); return 1 + lv * (S.siege?.on && siegeRegion() ? 0.015 : 0.01); }; /* 🏃 1108p 체육력 1레벨마다 걷기 +1% (공방전에서는 +1.5%) · 탈것을 타면 그대로 */
 const sgSpeedMul = () => sgSpeedMul0() * (S.siege?.on && siegeRegion() ? (sgSpcOf(backend?.uid)?.spd || 1) : 1) * (sgAnsi() && ansiPh() === 3 && S.siege?.on && sgMine() === 2 && siegeRegion() ? 0.8 : 1); // ❄️ 1029i 안시성 겨울: 당나라는 느려져요
 const sgSpeedMul0 = () => (trw.horn > performance.now() ? 1.4 : 1) * ((S.siege?.on && siegeRegion() && sgMine()) ? 1 + (sgOwns(sgMine(), 'ferry') ? (sgHero(sgMine(), 'chunchu') ? 0.3 : 0.15) : 0) + (sgPB(backend.uid, 'horn') ? 0.2 : 0) + (sgPB(backend.uid, 'roar') ? 0.15 : 0) : 1) * (S.siege?.on && sgPB(backend.uid, 'stun') ? 0.5 : 1) * (sgw.draw ? 0.6 : 1); // 📣 함성 · 🏹 활을 당기는 동안은 천천히 // 🎯 체험장 나팔도 빨라져요 · 🔨 어질어질하면 절반
 const sgFrozen = () => !!S.siege && siegeRegion() && sgMine() && sgHurt(backend.uid);
@@ -27158,6 +27166,8 @@ function praiseSync() { // 학생 기기: 칭찬 · 반 목표 보상 받기
   const uid = backend?.uid; if (!uid || isTeacher || !stateLoaded) return;
   try { cmpSync(); } catch (e) { console.warn(e); } /* 💌 1108e */
   rlSync().catch(e => console.warn(e)); /* 📷 1108k 독서록 인증 결과 */
+  { const lv = statLv('pe'); for (const [n, sl, i, t] of [[5, 'o', 6, '🏃 반월 체육복'], [10, 'x', 6, '⚡ 번개 운동화']]) if (lv >= n && !bag.own[sl + i]) { bag.own[sl + i] = 1; saveBag(); playSfx('fanfare'); showBanner(`🏃 체육력 Lv${n} 보상!`, `${t}을(를) 받았어요 · 👕 옷가게에서 입어요`, 6500); }
+    if (lv >= 15 && (S.pelv?.[uid] | 0) < 15) { backend.pelvSet?.(15); if (!bag.pekTold) { bag.pekTold = 1; saveBag(); showBanner('🏃 체육왕 칭호를 받았어요!', '체육력 15레벨! 📊 → 🏷️ 내 칭호에서 🏃체육왕을 달아요', 7000); } } } /* 🏃 1108p 체육력 레벨 보상 */
   const n = praiseOf(uid), seen = bag.prz?.d === dayNum() ? bag.prz.n | 0 : 0;
   { const keys = [uid, rosterOf(uid)].filter(Boolean), got = []; bag.sgvT ||= {}; let ch = false; // ⭐ 선생님이 준 능력치 (1021c)
     for (const st of ['eng', 'math', 'soc', 'read', 'pe']) { const tot = keys.reduce((a, k) => a + (S.sgive?.[k]?.[st] | 0), 0), sn = bag.sgvT[st] | 0;
@@ -29174,6 +29184,7 @@ const TITLE_INFO = [ // [키, 글, 얻는 법, 겉모습]
   ['egm', '🏅골든벨마스터', '골든벨을 3번 울리면 (계속 가져요)', '머리 옆 작은 금종'],
   ['kkw', '🎭꿈끼왕', '🎭 꿈끼 대본 골든벨에서 모든 문제를 맞히면 (계속 가져요)', '👕 옷가게에서 안중근 꾸미기 (콧수염 · 태극 머리띠 · 코트)'],
   ['hiro', '🦎히로친구', '🔐 방탈출 네 방을 모두 탈출하면 (계속 가져요)', '이름표 칭호'],
+  ['pek', '🏃체육왕', '🏃 체육력 15레벨 (계속 가져요)', '이름표 칭호'], /* 🏃 1108p */
   ['cdr', '🏛️생물박사', '🫙🐠 우리 집 채집통·어항에 서로 다른 생물 15종 이상 전시 (곤충·물속 생물 모두)', '이름표 칭호'], ['cbg', '🫙곤충수집가', '🫙 우리 집 채집통·사육장에 곤충 6종 이상 전시', '이름표 칭호'], ['caq', '🐠어항수집가', '🐠 우리 집 어항·수조에 물속 생물 6종 이상 전시', '이름표 칭호'],
   ['kkf', '🎭꿈끼출연', '🎭 11월 20일 꿈끼 발표회 무대에 선 우리 반 모두 (계속 가져요)', '이름표 칭호'],
   ['ssa', '🍂수확꾼', '🍂 시즌 1 패스 2단계 (계속 가져요)', '이름표 칭호'], ['ssb', '🎭꿈끼스타', '🍂 시즌 1 패스 7단계', '이름표 칭호'], ['ssc', '👑수확제왕', '🍂 시즌 1 패스 10단계', '이름표 칭호'],
@@ -29191,6 +29202,7 @@ function titlesOf(u, data) { // 가진 칭호 [키, 글, 겉모습] (위에 있�
   if (egMaster(u, data)) out.push(['egm', '🏅골든벨마스터', 'egm']);
   if (kkHas(u, data)) out.push(['kkw', '🎭꿈끼왕', '']); // 🎭 1029d
   if (escHiroHas(u, data)) out.push(['hiro', '🦎히로친구', '']); // 🦎 1101b
+  if ((S.pelv?.[u] | 0) >= 15 || (u === backend?.uid && statLv('pe') >= 15)) out.push(['pek', '🏃체육왕', '']); /* 🏃 1108p */
   out.push(...colTitles(u)); /* 🫙🐠 1106a 전시 칭호 (집 정보로 확인) */
   out.push(...ssnTitles(u)); // 🗓️ 1028n 시즌 칭호
   if (dayNum() >= KKF_DAY) out.push(['kkf', '🎭꿈끼출연', '']); /* 🎭 1106j 꿈끼 발표회(11/20)에 나온 우리 반 모두 · 계속 가져요 */
@@ -32601,7 +32613,7 @@ function setCloth(a, d) { // 앞판 그림 입히기 ('' = 벗기)
 const clothShopD = (k) => clothOk(S.clothshop?.[k]?.d) ? S.clothshop[k].d : '';
 function clothOfCode(u, cf, mine) { if (cf === 'm') { const c = S.cloth?.[u]; return c && clothOk(c.d) && (mine || c.ok) ? c.d : ''; } if (typeof cf === 'string' && cf.startsWith('s:')) return clothShopD(cf.slice(2)); return ''; }
 const clothMyCode = () => { const c = bag.cf || ''; if (c === 'm') return S.cloth?.[backend?.uid] ? 'm' : ''; if (c.startsWith('s:')) return bag.own['cs:' + c.slice(2)] && S.clothshop?.[c.slice(2)] ? c : ''; return ''; };
-const clothCoat = (a) => { const d = wearDecode(Math.floor((a.wearKey || 0) / 100)); return d[2] === 16 || (d[3] >= 2 && d[3] <= 5); }; /* 👕 1108c 몸 옷(스웨터·앞치마·조끼·가운)도 앞판 그림을 가려요 */ // 🧥 안중근 코트를 입으면 앞판은 가려져요
+const clothCoat = (a) => { const d = wearDecode(Math.floor((a.wearKey || 0) / 100)); return d[2] === 16 || (d[3] >= 2 && d[3] <= 6); }; /* 👕 1108c 몸 옷(스웨터·앞치마·조끼·가운)도 앞판 그림을 가려요 */ // 🧥 안중근 코트를 입으면 앞판은 가려져요
 function clothTick(dt) {
   if (!joined || (clothW.t = (clothW.t || 0) - dt) > 0) return; clothW.t = 0.5;
   if (player.avatar) { setCloth(player.avatar, clothOfCode(backend.uid, clothMyCode(), true)); if (player.avatar.clothP) player.avatar.clothP.visible = !!player.avatar.clothD && !clothCoat(player.avatar); }
